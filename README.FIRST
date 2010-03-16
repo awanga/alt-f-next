@@ -1,0 +1,40 @@
+
+Of course this was the last file you read :-)
+
+This source tree is a modified buildroot http://buildroot.uclibc.org
+(buildroot-2009.08) source tree, resulting of my changes and fighting
+with buildroot. Instead of distributing a patch against, I decided to
+re-distribute the whole tree with my changes. IT IS NOT A FORK.
+I latter intend to use a more recent buildroot version.
+
+The files you might be interested in are the customroot directory, the
+mk*.sh scripts, the package/Alt-F-utils directory, the host-tools
+directory and the patches directory.
+
+If you really want try to build Alt-F, you can do
+
+make O=<path-to-build-directory> # its advisable to use a separate build tree
+
+make O=<path-to-build-directory> menuconfig # to configure the build
+make O=<path-to-build-directory> linux26-menuconfig # to configure linux
+make O=<path-to-build-directory> busybox-menuconfig # to configure busybox
+make O=<path-to-build-directory> uclibc-menuconfig  # to configure uclibc
+make O=<path-to-build-directory> saveconfig  # to save configuration (in local/dns323)
+
+The kernel tree must be manually patched with aufs and squashfs4-lzma,
+the best is to first do a clean build (you might have to wait one or two
+hours) and then patch and reconfigure the kernel.
+
+I believe that most other packages are automatically build and patched
+when needed. The (known) exception is the Alt-F-utils package. You must
+copy package/Alt-F-utils/Alt-F-utils-0.1.tar.gz to the download build directory:
+
+	mkdir -p <path-to-build-directory>/dl
+	cp package/Alt-F-utils/Alt-F-utils-0.1.tar.gz <path-to-build-directory>/dl
+
+Buildroot is temperamental, to say the least. After you do a "make", you
+should do a second one :-/, at least in the first build or when
+configuration files are changed.
+
+This is work in flux, and might change.
+
