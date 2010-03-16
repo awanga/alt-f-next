@@ -49,5 +49,7 @@ directory to the bin directory:
 -lzma 
 -mksquashfs from the squashfs-tools subdirectory of squashfs4.0-lzma-snapshot.tgz
 
+OK, I have made a script to automate it: mktools.sh
+
 This is work in flux, and might change.
 
