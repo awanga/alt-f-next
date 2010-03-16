@@ -1,5 +1,0 @@
-This is the initial release of devio.
-
-Basic functionality has been verified on x86 and ARM Linux (2.6)
-systems.  Scripts with conditional execution have not been
-verified or tested.
