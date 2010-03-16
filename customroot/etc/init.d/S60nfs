@@ -1,0 +1,139 @@
+#!/bin/sh
+#
+# nfs           This shell script takes care of starting and stopping
+#               the NFS services. Stolen from RedHat FC5.
+
+DESC="Network File System Server (unix)"
+TYPE=net
+NAME=rpc.mountd
+
+[ -x /usr/sbin/rpc.statd ] || exit 0
+[ -x /usr/sbin/rpc.nfsd ] || exit 0
+[ -x /usr/sbin/rpc.mountd ] || exit 0
+[ -x /usr/sbin/exportfs ] || exit 0
+
+# The /var/lib/nfs directory is actually on a tmpfs filesystem.
+mkdir -p /var/lib/nfs/sm
+mkdir -p /var/lib/nfs/sm.bak
+mkdir -p /var/lock/subsys
+
+touch /var/lib/nfs/etab
+touch /var/lib/nfs/rmtab
+touch /var/lib/nfs/state
+touch /var/lib/nfs/xtab
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+start() {
+
+    # Don't fail if /etc/exports doesn't exist;
+    # create a bare-bones version and continue.
+    if test ! -f /etc/exports; then
+	touch /etc/exports && chmod u+rw,g+r,o+r /etc/exports
+        echo "Creating default exports file..."
+        ip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
+        cnet=$(echo $ip | cut -d. -f1-3).0/24
+        options="rw,async,no_root_squash,no_subtree_check,anonuid=99,anongid=99"
+
+        for f in /mnt/*; do
+            if test -d $f; then
+                echo "$f $cnet($options)" >> /etc/exports
+            fi
+        done
+    fi
+
+	if ! test -f /proc/fs/nfsd/exports; then
+		mount -t nfsd nfsd /proc/fs/nfsd
+	fi
+
+	# start portmap
+	echo -n "Starting portmap: "
+	portmap
+	touch /var/lock/subsys/portmap
+	echo "done"
+
+	echo -n "Starting NFS services: "
+	/usr/sbin/exportfs -r
+	echo "done"
+
+	echo -n "Starting NFS mountd: "
+	rpc.mountd
+	echo "done"
+	
+	echo -n "Starting NFS statd: "
+	rpc.statd
+	touch /var/lock/subsys/nfslock
+	echo "done"
+
+	echo -n "Starting NFS daemon: "
+	rpc.nfsd 2
+	echo "done"
+
+	touch /var/lock/subsys/nfs
+}
+
+stop() {
+	# Stop daemons.
+
+	echo "Shutting down NFS daemon: "
+	kill -9 `pidof nfsd` 2>/dev/null
+	echo "done"
+
+	echo -n "Stopping NFS statd: "
+	killall -q rpc.statd
+	echo "done"
+
+	echo -n "Shutting down NFS mountd: "
+	killall -q rpc.mountd
+	echo "done"
+
+	echo -n "Shutting down NFS services: "
+	/usr/sbin/exportfs -au
+	echo "done"
+
+	echo -n "Stopping portmap: "
+	killall portmap
+	echo "done"
+
+	rm -rf /var/lock/subsys
+
+	if test -f /proc/fs/nfsd/exports; then
+		umount /proc/fs/nfsd
+	fi
+
+	modprobe -r nfsd
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	status
+	;;
+  restart)
+	stop
+	start
+	;;
+  reload)
+	/usr/sbin/exportfs -r
+	touch /var/lock/subsys/nfs
+	;;
+  *)
+	echo "Usage: nfs {start|stop|status|reload}"
+	exit 1
+esac
+
+

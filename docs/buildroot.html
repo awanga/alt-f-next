@@ -1,0 +1,1239 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Buildroot - Usage and documentation</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+</head>
+
+<body>
+  <div class="main">
+    <div class="titre">
+      <h1>Buildroot</h1>
+    </div>
+
+    <p><a href="http://buildroot.net/">Buildroot</a>
+    usage and documentation by Thomas Petazzoni. Contributions from
+    Karsten Kruse, Ned Ludd, Martin Herren and others. </p>
+
+    <ul>
+
+      <li><a href="#about">About Buildroot</a></li>
+      <li><a href="#download">Obtaining Buildroot</a></li>
+      <li><a href="#using">Using Buildroot</a></li>
+      <li><a href="#custom_targetfs">Customizing the target filesystem</a></li>
+      <li><a href="#custom_busybox">Customizing the Busybox
+      configuration</a></li>
+      <li><a href="#custom_uclibc">Customizing the uClibc
+      configuration</a></li>
+      <li><a href="#buildroot_innards">How Buildroot works</a></li>
+      <li><a href="#multi_project">Building several projects in the
+      same buildroot source tree</a></li>
+      <li><a href="#using_toolchain">Using the uClibc toolchain
+      outside Buildroot</a></li>
+      <li><a href="#external_toolchain">Use an external toolchain</a></li>
+      <li><a href="#downloaded_packages">Location of downloaded packages</a>
+      </li>
+      <li><a href="#adapting_rootfs">Adapting the rootfs for own binaries</a></li>
+      <li><a href="#add_software">Extending Buildroot with more
+      Software</a></li>
+      <li><a href="#links">Resources</a></li>
+    </ul>
+
+    <h2><a name="about" id="about"></a>About Buildroot</h2>
+
+    <p>Buildroot is a set of Makefiles and patches that allow to easily
+    generate both a cross-compilation toolchain and a root filesystem for your
+    target. The cross-compilation toolchain uses uClibc (<a href=
+    "http://www.uclibc.org/">http://www.uclibc.org/</a>), a tiny C standard
+    library. </p>
+
+    <p>Buildroot is useful mainly for people working with embedded systems.
+    Embedded systems often use processors that are not the regular x86
+    processors everyone is used to have on his PC. It can be PowerPC
+    processors, MIPS processors, ARM processors, etc. </p>
+
+    <p>A compilation toolchain is the set of tools that allows to
+    compile code for your system. It consists of a compiler (in our
+    case, <code>gcc</code>), binary utils like assembler and linker
+    (in our case, <code>binutils</code>) and a C standard library (for
+    example <a href="http://www.gnu.org/software/libc/libc.html">GNU
+    Libc</a>, <a href="http://www.uclibc.org/">uClibc</a> or <a
+    href="http://www.fefe.de/dietlibc/">dietlibc</a>). The system
+    installed on your development station certainly already has a
+    compilation toolchain that you can use to compile application that
+    runs on your system. If you're using a PC, your compilation
+    toolchain runs on an x86 processor and generates code for a x86
+    processor. Under most Linux systems, the compilation toolchain
+    uses the GNU libc as C standard library.  This compilation
+    toolchain is called the &quot;host compilation toolchain&quot;, and more
+    generally, the machine on which it is running, and on which you're
+    working is called the &quot;host system&quot;. The compilation toolchain
+    is provided by your distribution, and Buildroot has nothing to do
+    with it. </p>
+
+    <p>As said above, the compilation toolchain that comes with your system
+    runs and generates code for the processor of your host system. As your
+    embedded system has a different processor, you need a cross-compilation
+    toolchain: it's a compilation toolchain that runs on your host system but
+    that generates code for your target system (and target processor). For
+    example, if your host system uses x86 and your target system uses ARM, the
+    regular compilation toolchain of your host runs on x86 and generates code
+    for x86, while the cross-compilation toolchain runs on x86 and generates
+    code for ARM. </p>
+
+    <p>Even if your embedded system uses a x86 processor, you might interested
+    in Buildroot, for two reasons:</p>
+
+    <ul>
+      <li>The compilation toolchain of your host certainly uses the GNU Libc
+      which is a complete but huge C standard library. Instead of using GNU
+      Libc on your target system, you can use uClibc which is a tiny C standard
+      library. If you want to use this C library, then you need a compilation
+      toolchain to generate binaries linked with it. Buildroot can do it for
+      you. </li>
+
+      <li>Buildroot automates the building of a root filesystem with all needed
+      tools like busybox. It makes it much easier than doing it by hand. </li>
+    </ul>
+
+    <p>You might wonder why such a tool is needed when you can compile
+    <code>gcc</code>, <code>binutils</code>, uClibc and all the tools by hand.
+    Of course, doing so is possible. But dealing with all configure options,
+    with all problems of every <code>gcc</code> or <code>binutils</code>
+    version it very time-consuming and uninteresting. Buildroot automates this
+    process through the use of Makefiles, and has a collection of patches for
+    each <code>gcc</code> and <code>binutils</code> version to make them work
+    on most architectures. </p>
+
+    <p>Moreover, Buildroot provides an infrastructure for reproducing
+    the build process of your embedded root filesystem. Being able to
+    reproduce the build process will be useful when a component needs
+    to be patched or updated, or when another person is supposed to
+    take over the project.</p>
+
+    <h2><a name="download" id="download"></a>Obtaining Buildroot</h2>
+
+    <p>Buildroot releases are made approximately every 3
+    months. Direct Git access and daily snapshots are also
+    available if you want more bleeding edge.</p>
+
+    <p>Releases are available at <a
+    href="http://buildroot.net/downloads/">http://buildroot.net/downloads/</a>.</p>
+
+    <p>The latest snapshot is always available at <a
+    href="http://buildroot.net/downloads/snapshots/buildroot-snapshot.tar.bz2">http://buildroot.net/downloads/snapshots/buildroot-snapshot.tar.bz2</a>,
+    and previous snapshots are also available at <a
+    href="http://buildroot.net/downloads/snapshots/">http://buildroot.net/downloads/snapshots/</a>. </p>
+
+    <p>To download Buildroot using Git, you can simply follow
+    the rules described on the &quot;Accessing Git&quot;-page (<a href=
+    "http://buildroot.net/git.html">http://buildroot.net/git.html</a>)
+    of the Buildroot website (<a href=
+    "http://buildroot.net">http://buildroot.net</a>), and download
+    <code>buildroot</code> from Git. For the impatient, here's a quick
+    recipe:</p>
+
+ <pre>
+ $ git clone git://git.buildroot.net/buildroot
+</pre>
+
+    <h2><a name="using" id="using"></a>Using Buildroot</h2>
+
+    <p>Buildroot has a nice configuration tool similar to the one you can find
+    in the Linux Kernel (<a href=
+    "http://www.kernel.org/">http://www.kernel.org/</a>) or in Busybox
+    (<a href="http://www.busybox.org/">http://www.busybox.org/</a>). Note that
+    you can build everything as a normal user. There is no need to be root to
+    configure and use Buildroot. The first step is to run the configuration
+    assistant:</p>
+
+<pre>
+ $ make menuconfig
+</pre>
+
+<p>to run the curses-based configurator, or</p>
+
+<pre>
+ $ make xconfig
+</pre>
+
+    <p>to run the Qt3-based configurator. On Debian-like systems, the
+    <code>libncurses5-dev</code> package is required to use the
+    <i>menuconfig</i> interface, and the <code>libqt3-mt-dev</code> is
+    required to use the <i>xconfig</i> interface.</p>
+
+    <p>For each entry of the configuration tool, you can find associated help
+    that describes the purpose of the entry. </p>
+
+    <p>One of the key configuration items is the <code>PROJECT</code> which
+    determines where some board specific packages are built and where the
+    results are stored. </p>
+
+    <p>Once everything is configured, the configuration tool has generated a
+    <code>.config</code> file that contains the description of your
+    configuration. It will be used by the Makefiles to do what's needed. </p>
+
+
+    <p>Let's go:</p>
+
+<pre>
+ $ make
+</pre>
+
+    <p>This command will download, configure and compile all the selected
+    tools, and finally generate a target filesystem. The target filesystem will
+    be named <code>root_fs_ARCH.EXT</code> where <code>ARCH</code> is your
+    architecture and <code>EXT</code> depends on the type of target filesystem
+    selected in the <code>Target options</code> section of the configuration
+    tool.
+    The file is stored in the "binaries/<code>$(PROJECT)</code>/" directory</p>
+
+    <h3><a name="local_board_support" id="local_board_support"></a>
+    Creating your own board support</h3>
+
+    <p>Once a package has been unpacked, it is possible to manually update
+    configuration files. Buildroot can automatically save the configuration
+    of buildroot, linux, busybox, uclibc and u-boot in "local/$(PROJECT) by
+    using the command:
+    </p>
+
+<pre>
+ $ make saveconfig
+</pre>
+
+     <p>Once a buildroot configuration has been created by saveconfig,
+     the default "$(TOPDIR)/.config" file can be overridden by</p>
+
+<pre>
+ $ make BOARD=&lt;project&gt;
+</pre>
+
+    <p>Buildroot will then use "local/&lt;project&gt;/&lt;project&gt;.config"
+    instead of ".config". </p>
+
+    <p>If you want to modify your board, you can copy the project configuration
+     file to ".config" by using the command:</p>
+
+<pre>
+ $ make BOARD=&lt;project&gt; getconfig
+</pre>
+
+    <p>You can share your custom board support directory between several buildroot trees
+    by setting the environment variable <code>BUILDROOT_LOCAL</code> to this directory,
+    </p>
+
+
+    <h3><a name="offline_builds" id="offline_builds"></a>
+    Offline builds</h3>
+
+    <p>If you intend to do an offline-build and just want to download
+    all sources that you previously selected in the configurator
+    (<i>menuconfig</i> or <i>xconfig</i>) then issue:</p>
+<pre>
+ $ make source
+</pre>
+    <p>You can now disconnect or copy the content of your <code>dl</code>
+    directory to the build-host. </p>
+
+    <h3><a name="building_out_of_tree" id="building_out_of_tree"></a>
+    Building out-of-tree</h3>
+
+    <p>Buildroot supports building out of tree with a syntax similar
+    to the Linux kernel. To use it, add O=&lt;directory&gt; to the
+    make command line, E.G.:</p>
+
+<pre>
+ $ make O=/tmp/build
+</pre>
+
+    <p>And all the output files will be located under
+    <code>/tmp/build</code>.</p>
+
+    <h3><a name="environment_variables" id="environment_variables"></a>
+    Environment variables</h3>
+
+    <p>Buildroot optionally honors some environment variables that are passed
+    to <code>make</code> :</p>
+    <ul>
+    <li>HOSTCXX</li>
+    <li>HOSTCC</li>
+    <li>UCLIBC_CONFIG_FILE=&lt;path/to/.config&gt;</li>
+    <li>BUSYBOX_CONFIG_FILE=&lt;path/to/.config&gt;</li>
+    <li>BUILDROOT_COPYTO</li>
+    <li>BUILDROOT_DL_DIR</li>
+    <li>BUILDROOT_LOCAL</li>
+    </ul>
+
+    <p>An example that uses config files located in the toplevel directory and
+    in your $HOME:</p>
+<pre>
+$ make UCLIBC_CONFIG_FILE=uClibc.config BUSYBOX_CONFIG_FILE=$HOME/bb.config
+</pre>
+
+    <p>If you want to use a compiler other than the default <code>gcc</code>
+    or <code>g++</code> for building helper-binaries on your host, then do</p>
+<pre>
+$ make HOSTCXX=g++-4.3-HEAD HOSTCC=gcc-4.3-HEAD
+</pre>
+
+    <p>If you want the result of your build to be copied to another directory
+    like /tftpboot for downloading to a board using tftp, then you
+    can use BUILDROOT_COPYTO to specify your location</p>
+    <p>Typically, this is set in your ~/.bashrc file
+
+<pre>
+$ export BUILDROOT_COPYTO=/tftpboot
+</pre>
+
+
+    <h3><a name="helper_completion" id="helper_completion"></a>
+    Using auto-completion</h3>
+
+    <p>If you are lazy enough that you don't want to type the entire <i>make
+    menuconfig</i> command line, you can enable auto-completion in your shell.
+    Here is how you can do that using <i>bash</i>:</p>
+<pre>
+$ complete -W menuconfig make
+</pre>
+
+    <p>Then just enter the beginning of the line, and ask <i>bash</i> to
+    complete it for you by pressing the <i>TAB</i> key:</p>
+<pre>
+$ make me&lt;TAB&gt;
+</pre>
+
+    <p>will result in <i>bash</i> to append <i>nuconfig</i> for you!</p>
+
+    <p>Alternatively, some distributions (of which Debian and Mandriva are but
+    an example) have more powerful make completion. Depending on you
+    distribution, you may have to install a package to enable completion. Under
+    Mandriva, this is <i>bash-completion</i>, while Debian ships it as part of
+    the <i>bash</i> package.</p>
+
+    <p>Other shells, such as <i>zsh</i>, also have completion facilities. See
+    the documentation for your shell.</p>
+
+    <h2><a name="custom_targetfs" id="custom_targetfs"></a>Customizing the
+    target filesystem</h2>
+
+    <p>There are a few ways to customize the resulting target filesystem:</p>
+
+    <ul>
+      <li>Customize the target filesystem directly, and rebuild the image. The
+      target filesystem is available under <code>project_build_ARCH/root/</code>
+      where <code>ARCH</code> is the chosen target architecture.
+      You can simply make your changes here, and run make afterwards, which will
+      rebuild the target filesystem image. This method allows to do everything
+      on the target filesystem, but if you decide to completely rebuild your
+      toolchain and tools, these changes will be lost. </li>
+
+      <li>Customize the target filesystem skeleton, available under
+      <code>target/generic/target_skeleton/</code>. You can customize
+      configuration files or other stuff here. However, the full file hierarchy
+      is not yet present, because it's created during the compilation process.
+      So you can't do everything on this target filesystem skeleton, but
+      changes to it remain even if you completely rebuild the cross-compilation
+      toolchain and the tools. <br />
+      You can also customize the <code>target/generic/device_table.txt</code>
+      file which is used by the tools that generate the target filesystem image
+      to properly set permissions and create device nodes. The
+      <code>target/generic/skel.tar.gz</code> file contains the main
+      directories of a root filesystem and there is no obvious reason for which
+      it should be changed. These main directories are in an tarball inside of
+      inside the skeleton because it contains symlinks that would be broken
+      otherwise. <br />
+      These customizations are deployed into
+      <code>project_build_ARCH/root/</code> just before the actual image
+      is made. So simply rebuilding the image by running
+      make should propagate any new changes to the image. </li>
+
+      <li>When configuring the build system, using <code>make
+      menuconfig</code> or <code>make xconfig</code>, you can specify
+      the contents of the /etc/hostname and /etc/issue (the welcome
+      banner) in the <code>PROJECT</code> section</li>
+    </ul>
+
+    <h2><a name="custom_busybox" id="custom_busybox"></a>Customizing the
+    Busybox configuration</h2>
+
+    <p><a href="http://www.busybox.net/">Busybox</a> is very configurable, and
+    you may want to customize it. You can
+    follow these simple steps to do it. It's not an optimal way, but it's
+    simple and it works. </p>
+
+    <ol>
+      <li>Make a first compilation of buildroot with busybox without trying to
+      customize it. </li>
+
+      <li>Invoke <code>make busybox-menuconfig</code>.
+      The nice configuration tool appears and you can
+      customize everything. </li>
+
+      <li>Run the compilation of buildroot again. </li>
+    </ol>
+
+    <p>Otherwise, you can simply change the
+    <code>package/busybox/busybox-&lt;version&gt;.config</code> file if you
+    know the options you want to change without using the configuration tool.
+    </p>
+    <p>If you want to use an existing config file for busybox, then see
+    section <a href="#environment_variables">environment variables</a>. </p>
+
+    <h2><a name="custom_uclibc" id="custom_uclibc"></a>Customizing the uClibc
+    configuration</h2>
+
+    <p>Just like <a href="#custom_busybox">BusyBox</a>, <a
+    href="http://www.uclibc.org/">uClibc</a> offers a lot of
+    configuration options. They allow to select various
+    functionalities, depending on your needs and limitations. </p>
+
+    <p>The easiest way to modify the configuration of uClibc is to
+    follow these steps :</p>
+
+    <ol>
+
+      <li>Make a first compilation of buildroot without trying to
+      customize uClibc. </li>
+
+      <li>Invoke <code>make uclibc-menuconfig</code>.
+      The nice configuration assistant, similar to
+      the one used in the Linux Kernel or in Buildroot appears. Make
+      your configuration as appropriate. </li>
+
+      <li>Copy the <code>.config</code> file to
+      <code>toolchain/uClibc/uClibc.config</code> or
+      <code>toolchain/uClibc/uClibc.config-locale</code>. The former
+      is used if you haven't selected locale support in Buildroot
+      configuration, and the latter is used if you have selected
+      locale support. </li>
+
+      <li>Run the compilation of Buildroot again</li>
+
+    </ol>
+
+    <p>Otherwise, you can simply change
+    <code>toolchain/uClibc/uClibc.config</code> or
+    <code>toolchain/uClibc/uClibc.config-locale</code> without running
+    the configuration assistant. </p>
+
+    <p>If you want to use an existing config file for uclibc, then see
+    section <a href="#environment_variables">environment variables</a>. </p>
+
+    <h2><a name="buildroot_innards" id="buildroot_innards"></a>How Buildroot
+    works</h2>
+
+    <p>As said above, Buildroot is basically a set of Makefiles that download,
+    configure and compiles software with the correct options. It also includes
+    some patches for various software, mainly the ones involved in the
+    cross-compilation tool chain (<code>gcc</code>, <code>binutils</code> and
+    uClibc). </p>
+
+    <p>There is basically one Makefile per software, and they are named with
+    the <code>.mk</code> extension. Makefiles are split into four
+    sections:</p>
+
+    <ul>
+      <li><b>project</b> (in the <code>project/</code> directory) contains
+      the Makefiles and associated files for all software related to the
+      building several root file systems in the same buildroot tree. </li>
+
+      <li><b>toolchain</b> (in the <code>toolchain/</code> directory) contains
+      the Makefiles and associated files for all software related to the
+      cross-compilation toolchain : <code>binutils</code>, <code>ccache</code>,
+      <code>gcc</code>, <code>gdb</code>, <code>kernel-headers</code> and
+      <code>uClibc</code>. </li>
+
+      <li><b>package</b> (in the <code>package/</code> directory) contains the
+      Makefiles and associated files for all user-space tools that Buildroot
+      can compile and add to the target root filesystem. There is one
+      sub-directory per tool. </li>
+
+      <li><b>target</b> (in the <code>target</code> directory) contains the
+      Makefiles and associated files for software related to the generation of
+      the target root filesystem image. Four types of filesystems are supported
+      : ext2, jffs2, cramfs and squashfs. For each of them, there's a
+      sub-directory with the required files. There is also a
+      <code>default/</code> directory that contains the target filesystem
+      skeleton. </li>
+    </ul>
+
+    <p>Each directory contains at least 2 files :</p>
+
+    <ul>
+      <li><code>something.mk</code> is the Makefile that downloads, configures,
+      compiles and installs the software <code>something</code>. </li>
+
+      <li><code>Config.in</code> is a part of the configuration tool
+      description file. It describes the option related to the current
+      software. </li>
+
+    </ul>
+
+    <p>The main Makefile do the job through the following steps (once the
+    configuration is done) :</p>
+
+    <ol>
+      <li>Create the download directory (<code>dl/</code> by default). This is
+      where the tarballs will be downloaded. It is interesting to know that the
+      tarballs are in this directory because it may be useful to save them
+      somewhere to avoid further downloads. </li>
+
+      <li>Create the shared build directory (<code>build_ARCH/</code> by
+      default, where <code>ARCH</code> is your architecture). This is where all
+      non configurable user-space tools will be compiled.When building two or
+      more targets using the same architecture, the first build will go through
+      the full download, configure, make process, but the second and later
+      builds will only copy the result from the first build to its project
+      specific target directory significantly speeding up the build process</li>
+
+      <li>Create the project specific build directory
+      (<code>project_build_ARCH/$(PROJECT)</code> by default, where
+      <code>ARCH</code> is your architecture). This is where all configurable
+      user-space tools will be compiled. The project specific build directory
+      is neccessary, if two different targets needs to use a specific package,
+      but the packages have different configuration for both targets. Some
+      examples of packages built in this directory are busybox and linux.
+      </li>
+
+      <li>Create the project specific result directory
+      (<code>binaries/$(PROJECT)</code> by default, where <code>ARCH</code>
+      is your architecture). This is where the root filesystem images are
+      stored, It is also used to store the linux kernel image and any
+      utilities, boot-loaders etc. needed for a target.
+      </li>
+
+      <li>Create the toolchain build directory
+      (<code>toolchain_build_ARCH/</code> by default, where <code>ARCH</code>
+      is your architecture). This is where the cross compilation toolchain will
+      be compiled. </li>
+
+      <li>Setup the staging directory (<code>build_ARCH/staging_dir/</code> by
+      default). This is where the cross-compilation toolchain will be
+      installed. If you want to use the same cross-compilation toolchain for
+      other purposes, such as compiling third-party applications, you can add
+      <code>build_ARCH/staging_dir/usr/bin</code> to your PATH, and then use
+      <code>arch-linux-gcc</code> to compile your application. In order to
+      setup this staging directory, it first removes it, and then it creates
+      various subdirectories and symlinks inside it. </li>
+
+      <li>Create the target directory (<code>project_build_ARCH/root/</code> by
+      default) and the target filesystem skeleton. This directory will contain
+      the final root filesystem. To setup it up, it first deletes it, then it
+      uncompress the <code>target/generic/skel.tar.gz</code> file to create the
+      main subdirectories and symlinks, copies the skeleton available in
+      <code>target/generic/target_skeleton</code> and then removes useless
+      <code>.svn/CVS</code> directories. </li>
+
+      <li>Add the <code>TARGETS</code> dependency. This should generally check
+      if the configuration option for this package is enabled, and if so then
+      &quot;subscribe&quot; this package to be compiled by adding it to the
+      TARGETS global variable. </li>
+    </ol>
+
+    <h2><a name="multi_project" id="multi_project"></a>Building several
+      projects in the same buildroot source tree</h2>
+
+    <p><i>Note: the contents of this section are obsolete since this
+    feature has been implemented.</i></p>
+
+    <h3>Background</h3>
+
+    <p>Buildroot has always supported building several projects in the same
+    tree if each project was for a different architecture. </p>
+
+    <p>The root file system has been created in the
+    <code>&quot;build_&lt;ARCH&gt;/root&quot;</code>
+    directory which is unique for each architecture.
+    Toolchains have been built in
+    <code>&quot;toolchain_build_&lt;ARCH&gt;&quot;</code>. </p>
+
+    <p> It the user wanted to build several root file systems for the same
+    architecture, a prefix or suffix could be added in the configuration file
+    so the root file system would be built in
+    <code>&quot;&lt;PREFIX&gt;_build_&lt;ARCH&gt;_&lt;SUFFIX&gt;/root&quot;</code>
+    By supplying <u>unique</u> combinations of
+    <code>&quot;&lt;PREFIX&gt;&quot;</code> and
+    <code>&quot;&lt;SUFFIX&gt;&quot;</code>
+    each project would get a <u>unique</u> root file system tree. </p>
+
+    <p>The disadvantage of this approach is that a new toolchain was
+    built for each project,  adding considerable time to the build
+    process, even if it was two projects for the same chip. </p>
+
+    <p>This drawback has been somewhat lessened with
+    <code>gcc-4.x.y</code> which allows buildroot to use an external
+    toolchain. Certain packages requires special
+    features in the toolchain, and if an external toolchain is selected,
+    this may lack the neccessary features to complete the build of the root
+     file system.</p>
+
+    <p>A bigger problem was that the
+    <code>&quot;build_&lt;ARCH&gt;&quot;</code> tree
+    was also duplicated, so each </code>package</code> would also
+    be rebuilt once per project, resulting in even longer build times.</p>
+
+    <h3>Project to share toolchain and package builds</h3>
+
+    <p>Work has started on a project which will allow the user to build
+    multiple root file systems for the same architecture in the same tree.
+    The toolchain and the package build directory will be shared, but each
+    project will have a dedicated directory tree for project specific
+    builds. </p>
+
+    <p>With this approach, most, if not all packages will be compiled
+    when the first project is built.
+    The process is almost identical to the original process.
+    Packages are downloaded and extracted to the shared
+    <code>&quot;build_&lt;ARCH&gt;/&lt;package&gt;&quot;</code>
+    directory. They are configured and compiled. </p>
+
+    <p>Package libraries and headers are installed in the shared $(STAGING_DIR),
+    and then the project specific root file system &quot;$(TARGET_DIR)&quot;
+    is populated. </p>
+
+    <p>At the end of the build, the root file system will be used
+    to generate the resulting root file system binaries. </p>
+
+    <p>Once the first project has been built, building other projects will
+    typically involve populating the new project's root file system directory
+    from the existing binaries generated in the shared
+    <code>&quot;build_&lt;ARCH&gt;/&lt;&gt;&quot;</code> directory. </p>
+
+    <p>Only packages, not used by the first project, will have to go
+    through the normal extract-configure-compile flow. </p>
+
+    <h3>Implementation</h3>
+
+    <p>The core of the solution is the introduction
+    of two new directories: </p>
+
+    <ul>
+    <li><code>project_build_&lt;ARCH&gt;</code></li>
+
+    <li><code>binaries;</code></li>
+    </ul>
+
+    <p>Each of the directories contain one subdirectory per project.
+    The name of the subdirectory is configured by the user in the
+    normal buildroot configuration, using the value of: </p>
+
+    <p><code>Project Options ---> Project name</code></p>
+
+    <p>The configuration defines the $(PROJECT) variable.</p>
+
+    <p>The default project name is <code>&quot;uclibc&quot;</code>.</p>
+
+    <p><code>&quot;package/Makefile.in&quot;</code> defines:
+    <pre>
+    <code>PROJECT_BUILD_DIR:=project_build_$(ARCH)/$(PROJECT)</code>
+    <code>BINARIES_DIR:=binaries/$(PROJECT)</code>
+    </pre>
+    </p>
+
+    <p>It also defines the location for the target root file system:
+    <pre>
+    <code>TARGET_DIR:=$(PROJECT_BUILD_DIR)/$(PROJECT)/root</code>
+    </pre>
+    </p>
+
+    <p>I.E: If the user has choosen
+    <code>&quot;myproject&quot;</code>
+    as the $(PROJECT) name:
+
+    <ul>
+    <li><code>&quot;project_build_&lt;ARCH&gt;/myproject&quot;</code></li>
+    <li><code>&quot;binaries/myproject&quot;</code></li>
+    </ul>
+
+    <p>will be created. </p>
+
+    <p>Currently, the <u>root file system</u>, <u>busybox</u> and an Atmel
+    customized version of
+    <u><code>U-Boot</code></u>, as well as some Atmel specific
+    bootloaders like <u>at91-bootstrap</u> and <u>dataflashboot.bin</u>
+    are built in
+    <code>&quot;$(PROJECT_BUILD_DIR)&quot;</code>
+
+    <p>The resulting binaries for all architectures are stored in the
+    <code>&quot;$(BINARIES_DIR)&quot;</code> directory. <p>
+
+    <h3>Summary</h3>
+
+    <p>The project will share directories which can be share without
+    conflicts, but will use unique build directories, where the user
+    can configure the build. </p>
+
+    <h2><a name="Linux" id="Linux"></a>Linux</h2>
+
+     <p>The user can select from three different Linux strategies:
+
+     <ul>
+     <li>Legacy: Only use version supported by the kernel headers</li>
+     <li>Advanced: Allow any 2.6.X.Y combination.
+	(Minimum 2.6.19)</li>
+     <li>Power-User Strategy: Allow
+     <code>&quot;-git&quot;</code>, or
+     <code>&quot;-mm&quot;</code>, or user downloadable kernels</li>
+     </ul>
+
+     <p>The current kernel patches can be applied to the
+     linux source tree even if the version differs from the
+     kernel header version. </p>
+
+     <p>Since the user can select any kernel-patch
+     he/she will be able to select a non-working combination.
+     If the patch fails, the user will have to generate a new
+     proprietary kernel-patch or decide to not apply the kernel
+     patches</p>
+
+     <p>There is also support for <u>board specific</u> and
+     <u>architecture specific</u> patches. </p>
+
+     <p>There will also be a way for the user to supply absolute
+     or relative paths to patches, possibly outside the main tree.
+     This can be used to apply custom kernel-header-patches, if
+     the versions available in buildroot cannot be applied to the
+     specific linux version used</p>
+
+     <p>Maybe, there will also be a possibility to supply an
+     <code>&quot;URL&quot;</code> to a patch available on Internet. </p>
+
+     <p>
+	If there is no linux config file available,
+	buildroot starts the linux configuration system, which
+	defaults to "make menuconfig".
+     </p>
+
+    <h3>Todo</h3>
+    <ol>
+
+     <li>Configurable packages</li>
+     <p>Many packages can, on top of the simple
+     &quot;enable/disable build&quot;,
+     be further configured using Kconfig.
+     Currently these packages will be compiled using the
+     configuration specified in the
+     <code>&quot;.config&quot;</code> file of the <u>first</u>
+     project demanding the build of the package.</p>
+
+     <p>If <u>another</u> project uses the same packages, but with
+     a different configuration,these packages will <u>not</u> be rebuilt,
+     and the root file system for the new project will be populated
+     with files from the build of the <u>first</u> project</p>
+
+     <p>If multiple project are built, and a specific package
+     needs two different configuration, then the user must
+     delete the package from the
+     <code>&quot;build_&lt;ARCH&gt;&quot;</code> directory
+     before rebuilding the new project.<p>
+
+     <p>A long term solution is to edit the package makefile and move
+     the build of the configurable packages from
+     <code>&quot;build_&lt;ARCH&gt;&quot;</code> to
+     <code>&quot;project_build_&lt;ARCH&gt;/&lt;project name&gt;&quot;</code>
+     and send a patch to the buildroot mailing list.
+
+     <li>Naming conventions</li>
+
+     <p>Names of resulting binaries should reflect the
+     &quot;project name&quot;
+
+     <li>Generating File System binaries</li>
+     <p>
+     Packages which needs to be installed with the &quot;root&quot;
+     as owner, will generate a
+     <code>&quot;.fakeroot.&lt;package&gt;&quot;</code> file
+     which will be used for the final build of the root file system binary. </p>
+
+     <p>This was previously located in the
+     <code>&quot;$(STAGING_DIR)&quot;</code> directory, but was
+     recently moved to the
+     <code>&quot;$(PROJECT_BUILD_DIR)&quot;</code> directory. </p>
+
+     <p>Currently only three packages:
+     <code>&quot;at&quot;</code>,
+     <code>&quot;ltp-testsuite&quot;</code> and
+     <code>&quot;nfs-utils&quot;</code>
+     requests fakeroot. <p>
+
+     <p>The makefile fragments for each file system type like
+     <code>&quot;ext2&quot;</code>,
+     <code>&quot;jffs2&quot;</code> or
+     <code>&quot;squashfs&quot;</code>
+     will, when the file system binary is generated,
+     collect all present
+     <code>&quot;.fakeroot.&lt;package&gt;&quot;</code> files
+     to a single <code>&quot;_fakeroot.&lt;file system&gt;&quot;</code>
+     file and call fakeroot.</p>
+     <code>&quot;.fakeroot.&lt;package&gt;&quot;</code>
+     files are deleted as the last action of the Buildroot Makefile. </p>
+
+     <p>It needs to be evaluated if any further action for the
+     file system binary build is needed. </p>
+
+     </ol>
+
+    <h2><a name="using_toolchain" id="using_toolchain"></a>Using the
+    uClibc toolchain outside Buildroot</h2>
+
+    <p>You may want to compile your own programs or other software
+    that are not packaged in Buildroot. In order to do this, you can
+    use the toolchain that was generated by Buildroot. </p>
+
+    <p>The toolchain generated by Buildroot by default is located in
+    <code>build_ARCH/staging_dir/</code>. The simplest way to use it
+    is to add <code>build_ARCH/staging_dir/usr/bin/</code> to your PATH
+    environnement variable, and then to use
+    <code>arch-linux-gcc</code>, <code>arch-linux-objdump</code>,
+    <code>arch-linux-ld</code>, etc. </p>
+
+    <p>For example, you may add the following to your
+    <code>.bashrc</code> (considering you're building for the MIPS
+    architecture and that Buildroot is located in
+    <code>~/buildroot/</code>) :</p>
+
+<pre>
+export PATH=&quot;$PATH:~/buildroot/build_mips/staging_dir/usr/bin/&quot;
+</pre>
+
+    <p>Then you can simply do :</p>
+
+<pre>
+mips-linux-gcc -o foo foo.c
+</pre>
+
+     <p><b>Important</b> : do not try to move a gcc-3.x toolchain to an other
+     directory, it won't work. There are some hardcoded paths in the
+     <i>gcc</i> configuration. If you are using a current gcc-4.x, it
+     is possible to relocate the toolchain, but then
+     <code>--sysroot</code> must be passed every time the compiler is
+     called to tell where the libraries and header files are, which
+     might be cumbersome.</p>
+
+     <p>It is also possible to generate the Buildroot toolchain in
+     another directory than <code>build_ARCH/staging_dir</code> using
+     the <code>Build options -&gt; Toolchain and header file
+     location</code> option. This could be useful if the toolchain
+     must be shared with other users.</p>
+
+    <h2><a name="downloaded_packages"
+    id="downloaded_packages"></a>Location of downloaded packages</h2>
+
+    <p>It might be useful to know that the various tarballs that are
+    downloaded by the <i>Makefiles</i> are all stored in the
+    <code>DL_DIR</code> which by default is the <code>dl</code>
+    directory. It's useful for example if you want to keep a complete
+    version of Buildroot which is know to be working with the
+    associated tarballs. This will allow you to regenerate the
+    toolchain and the target filesystem with exactly the same
+    versions. </p>
+
+    <p>If you maintain several buildroot trees, it might be better to have
+    a shared download location. This can be accessed by creating a symbolic link
+    from the <code>dl</code> directory to the shared download location. </p>
+
+    <p>I.E:</p>
+
+<pre>
+ln -s &lt;shared download location&gt; dl
+</pre>
+
+    <p>Another way of accessing a shared download location is to
+    create the <code>BUILDROOT_DL_DIR</code> environment variable.
+    If this is set, then the value of DL_DIR in the project is
+    overridden. The following line should be added to
+    <code>&quot;~/.bashrc&quot;</code>. <p>
+
+<pre>
+export BUILDROOT_DL_DIR &lt;shared download location&gt;
+</pre>
+
+    <h2><a name="external_toolchain" id="external_toolchain"></a>Using
+    an external toolchain</h2>
+
+<p>It might be useful not to use the toolchain generated by
+Buildroot, for example if you already have a toolchain that is known
+to work for your specific CPU, or if the toolchain generation feature
+of Buildroot is not sufficiently flexible for you (for example if you
+need to generate a system with <i>glibc</i> instead of
+<i>uClibc</i>). Buildroot supports using an <i>external
+toolchain</i>.</p>
+
+<p>To enable the use of an external toolchain, go in the
+<code>Toolchain</code> menu, and&nbsp;:</p>
+
+<ul>
+  <li>Select the <code>External binary toolchain</code> toolchain
+  type</li>
+  <li>Adjust the <code>External toolchain path</code>
+  appropriately. It should be set to a path where a bin/ directory
+  contains your cross-compiling tools</li>
+  <li>Adjust the <code>External toolchain prefix</code>, so that the
+  prefix, suffixed with <code>-gcc</code> or <code>-ld</code> will
+  correspond to your cross-compiling tools</li>
+</ul>
+
+<p>If you are using an external toolchain based on <i>uClibc</i>, the
+<code>Core C library from the external toolchain</code> and
+<code>Libraries to copy from the external toolchain</code> options
+should already have correct values. However, if your external
+toolchain is based on <i>glibc</i>, you'll have to change these values
+according to your cross-compiling toolchain.</p>
+
+<p>To generate external toolchains, we recommend using <a
+href="http://ymorin.is-a-geek.org/dokuwiki/projects/crosstool">Crosstool-NG</a>.
+It allows to generate toolchains based on <i>uClibc</i>, <i>glibc</i>
+and <i>eglibc</i> for a wide range of architectures, and has good
+community support.</p>
+
+      <h2><a name="adapting_rootfs" id="adapting_rootfs">Adapting the rootfs
+      for own binaries</h2>
+
+      <p>When using BR2 in an environment where own software binaries or
+      static data should be part of the generated rootfs package, the
+      <code>BR2_ROOTFS_POST_BUILD_SCRIPT</code> feature might interest
+      you. You can specify a command here which is called <i>after</i> BR2
+      built all the selected software, but <i>before</i> the the rootfs
+      packages are assembled. The destination rootfs folder is given as
+      first argument. You can add own components here, change
+      default configurations and remove unwanted files.</p>
+      <p>You should, however, use that feature with care. Whenever you
+      find that a certain package generates wrong or unneeded files, you
+      should rather fix than package than working around it with a
+      cleanup script.</p>
+
+    <h2><a name="add_software" id="add_software"></a>Extending Buildroot with
+    more software</h2>
+
+    <p>This section will only consider the case in which you want to
+    add user-space software. </p>
+
+    <h3>Package directory</h3>
+
+    <p>First of all, create a directory under the <code>package</code>
+    directory for your software, for example <code>foo</code>. </p>
+
+    <h3><code>Config.in</code> file</h3>
+
+    <p>Then, create a file named <code>Config.in</code>. This file
+    will contain the portion of options description related to our
+    <code>foo</code> software that will be used and displayed in the
+    configuration tool. It should basically contain :</p>
+
+<pre>
+config BR2_PACKAGE_FOO
+        bool "foo"
+        help
+	  This is a comment that explains what foo is.
+
+	  http://foosoftware.org/foo/
+</pre>
+
+    <p>Of course, you can add other options to configure particular
+    things in your software. </p>
+    <p>Finally you have to add your new <code>foo/Config.in</code> to
+    <code>package/Config.in</code>. The files included there are
+    <em>sorted alphabetically</em> per category and are <em>NOT</em>
+    supposed to contain anything but the <em>bare</em> name of the package.</p>
+<pre>
+if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
+source "package/procps/Config.in"
+endif
+</pre>
+   <p><strong>Note:</strong><br>
+   Generally all packages should live <em>directly</em> in the
+   <code>package</code> directory to make it easier to find them.
+   </p>
+   <h3>The real <i>Makefile</i></h3>
+
+   <p>Finally, here's the hardest part. Create a file named
+   <code>foo.mk</code>. It will contain the <i>Makefile</i> rules that
+   are in charge of downloading, configuring, compiling and installing
+   the software.</p>
+
+   <p>Two types of <i>Makefiles</i> can be written&nbsp;:</p>
+
+   <ul>
+    <li>Makefiles for autotools-based (autoconf, automake, etc.)
+    softwares, are very easy to write thanks to the infrastructure
+    available in <code>package/Makefile.autotools.in</code>.</li>
+    <li>Makefiles for other types of packages are a little bit more
+    complex to write.</li>
+   </ul>
+
+   <p>First, let's see how to write a <i>Makefile</i> for an
+   autotools-based package, with an example&nbsp;:</p>
+
+<pre>
+     <a name="ex1line1" id="ex1line1">1</a>  #############################################################
+     <a name="ex1line2" id="ex1line2">2</a>  #
+     <a name="ex1line3" id="ex1line3">3</a>  # foo
+     <a name="ex1line4" id="ex1line4">4</a>  #
+     <a name="ex1line5" id="ex1line5">5</a>  #############################################################
+     <a name="ex1line6" id="ex1line6">6</a>  FOO_VERSION:=1.0
+     <a name="ex1line7" id="ex1line7">7</a>  FOO_SOURCE:=foo-$(FOO_VERSION).tar.gz
+     <a name="ex1line8" id="ex1line8">8</a>  FOO_SITE:=http://www.foosoftware.org/downloads
+     <a name="ex1line9" id="ex1line9">9</a>  FOO_INSTALL_STAGING = YES
+     <a name="ex1line10" id="ex1line10">10</a>  FOO_INSTALL_TARGET = YES
+     <a name="ex1line11" id="ex1line11">11</a>  FOO_CONF_OPT =  --enable-shared
+     <a name="ex1line12" id="ex1line12">12</a>  FOO_DEPENDENCIES = libglib2 host-pkgconfig
+     <a name="ex1line13" id="ex1line13">13</a>  $(eval $(call AUTOTARGETS,package,foo))
+</pre>
+
+    <p>On <a href="#ex1line6">line 6</a>, we declare the version of
+    the package. On line <a href="#ex1line7">7</a> and <a
+    href="#ex1line8">8</a>, we declare the name of the tarball and the
+    location of the tarball on the Web. Buildroot will automatically
+    download the tarball from this location.</p>
+
+    <p>On <a href="#ex1line9">line 9</a>, we tell Buildroot to install
+    the application to the staging directory. The staging directory,
+    located in <code>build_ARCH/staging_dir/</code> is the directory
+    where all the packages are installed, including their
+    documentation, etc. By default, packages are installed in this
+    location using the <code>make install</code> command.</p>
+
+    <p>On <a href="#ex1line10">line 10</a>, we tell Buildroot to also
+    install the application to the target directory. This directory
+    contains what will become the root filesystem running on the
+    target. Usually, we try not to install the documentation, and to
+    install stripped versions of the binary. By default, packages are
+    installed in this location using the <code>make
+    install-strip</code> command.</p>
+
+    <p>On <a href="#ex1line11">line 11</a>, we tell Buildroot to pass
+    a custom configure option, that will be passed to the
+    <code>./configure</code> script before configuring and building
+    the package.</p>
+
+    <p>On <a href="#ex1line12">line 12</a>, we declare our
+    dependencies, so that they are built before the build process of
+    our package starts.</p>
+
+    <p>Finally, on line <a href="#ex1line13">line 13</a>, we invoke
+    the <code>package/Makefile.autotools.in</code> magic to get things
+    working.</p>
+
+    <p>For more details about the available variables and options, see
+    the comment at the top of
+    <code>package/Makefile.autotools.in</code> and the examples in all
+    the available packages.</p>
+
+    <p>The second solution, suitable for every type of package, looks
+    like this&nbsp;:</p>
+
+
+<pre>
+     <a name="ex2line1" id="ex2line1">1</a>  #############################################################
+     <a name="ex2line2" id="ex2line2">2</a>  #
+     <a name="ex2line3" id="ex2line3">3</a>  # foo
+     <a name="ex2line4" id="ex2line4">4</a>  #
+     <a name="ex2line5" id="ex2line5">5</a>  #############################################################
+     <a name="ex2line6" id="ex2line6">6</a>  FOO_VERSION:=1.0
+     <a name="ex2line7" id="ex2line7">7</a>  FOO_SOURCE:=foo-$(FOO_VERSION).tar.gz
+     <a name="ex2line8" id="ex2line8">8</a>  FOO_SITE:=http://www.foosoftware.org/downloads
+     <a name="ex2line9" id="ex2line9">9</a>  FOO_DIR:=$(BUILD_DIR)/foo-$(FOO_VERSION)
+    <a name="ex2line10" id="ex2line10">10</a>  FOO_BINARY:=foo
+    <a name="ex2line11" id="ex2line11">11</a>  FOO_TARGET_BINARY:=usr/bin/foo
+    <a name="ex2line12" id="ex2line12">12</a>
+    <a name="ex2line13" id="ex2line13">13</a>  $(DL_DIR)/$(FOO_SOURCE):
+    <a name="ex2line14" id="ex2line14">14</a>          $(call DOWNLOAD,$(FOO_SITE),$(FOO_SOURCE))
+    <a name="ex2line15" id="ex2line15">15</a>
+    <a name="ex2line16" id="ex2line16">16</a>  $(FOO_DIR)/.source: $(DL_DIR)/$(FOO_SOURCE)
+    <a name="ex2line17" id="ex2line17">17</a>          $(ZCAT) $(DL_DIR)/$(FOO_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+    <a name="ex2line18" id="ex2line18">18</a>          touch $@
+    <a name="ex2line19" id="ex2line19">19</a>
+    <a name="ex2line20" id="ex2line20">20</a>  $(FOO_DIR)/.configured: $(FOO_DIR)/.source
+    <a name="ex2line21" id="ex2line21">21</a>          (cd $(FOO_DIR); rm -rf config.cache; \
+    <a name="ex2line22" id="ex2line22">22</a>                  $(TARGET_CONFIGURE_OPTS) \
+    <a name="ex2line23" id="ex2line23">23</a>                  $(TARGET_CONFIGURE_ARGS) \
+    <a name="ex2line24" id="ex2line24">24</a>                  ./configure \
+    <a name="ex2line25" id="ex2line25">25</a>                  --target=$(GNU_TARGET_NAME) \
+    <a name="ex2line26" id="ex2line26">26</a>                  --host=$(GNU_TARGET_NAME) \
+    <a name="ex2line27" id="ex2line27">27</a>                  --build=$(GNU_HOST_NAME) \
+    <a name="ex2line28" id="ex2line28">28</a>                  --prefix=/usr \
+    <a name="ex2line29" id="ex2line29">29</a>                  --sysconfdir=/etc \
+    <a name="ex2line30" id="ex2line30">30</a>          )
+    <a name="ex2line31" id="ex2line31">31</a>          touch $@
+    <a name="ex2line32" id="ex2line32">32</a>
+    <a name="ex2line33" id="ex2line33">33</a>  $(FOO_DIR)/$(FOO_BINARY): $(FOO_DIR)/.configured
+    <a name="ex2line34" id="ex2line34">34</a>          $(MAKE) CC=$(TARGET_CC) -C $(FOO_DIR)
+    <a name="ex2line35" id="ex2line35">35</a>
+    <a name="ex2line36" id="ex2line36">36</a>  $(TARGET_DIR)/$(FOO_TARGET_BINARY): $(FOO_DIR)/$(FOO_BINARY)
+    <a name="ex2line37" id="ex2line37">37</a>          $(MAKE) DESTDIR=$(TARGET_DIR) -C $(FOO_DIR) install-strip
+    <a name="ex2line38" id="ex2line38">38</a>          rm -Rf $(TARGET_DIR)/usr/man
+    <a name="ex2line39" id="ex2line39">39</a>
+    <a name="ex2line40" id="ex2line40">40</a>  foo: uclibc ncurses $(TARGET_DIR)/$(FOO_TARGET_BINARY)
+    <a name="ex2line41" id="ex2line41">41</a>
+    <a name="ex2line42" id="ex2line42">42</a>  foo-source: $(DL_DIR)/$(FOO_SOURCE)
+    <a name="ex2line43" id="ex2line43">43</a>
+    <a name="ex2line44" id="ex2line44">44</a>  foo-clean:
+    <a name="ex2line45" id="ex2line45">45</a>          $(MAKE) prefix=$(TARGET_DIR)/usr -C $(FOO_DIR) uninstall
+    <a name="ex2line46" id="ex2line46">46</a>          -$(MAKE) -C $(FOO_DIR) clean
+    <a name="ex2line47" id="ex2line47">47</a>
+    <a name="ex2line48" id="ex2line48">48</a>  foo-dirclean:
+    <a name="ex2line49" id="ex2line49">49</a>          rm -rf $(FOO_DIR)
+    <a name="ex2line50" id="ex2line50">50</a>
+    <a name="ex2line51" id="ex2line51">51</a> #############################################################
+    <a name="ex2line52" id="ex2line52">52</a> #
+    <a name="ex2line53" id="ex2line53">53</a> # Toplevel Makefile options
+    <a name="ex2line54" id="ex2line54">54</a> #
+    <a name="ex2line55" id="ex2line55">55</a> #############################################################
+    <a name="ex2line56" id="ex2line56">56</a> ifeq ($(BR2_PACKAGE_FOO),y)
+    <a name="ex2line57" id="ex2line57">57</a> TARGETS+=foo
+    <a name="ex2line58" id="ex2line58">58</a> endif
+
+</pre>
+
+    <p>First of all, this <i>Makefile</i> example works for a single
+    binary software. For other software such as libraries or more
+    complex stuff with multiple binaries, it should be adapted. Look at
+    the other <code>*.mk</code> files in the <code>package</code>
+    directory. </p>
+
+    <p>At lines <a href="#ex2line6">6-11</a>, a couple of useful variables are
+    defined :</p>
+
+    <ul>
+
+     <li><code>FOO_VERSION</code> : The version of <i>foo</i> that
+     should be downloaded. </li>
+
+     <li><code>FOO_SOURCE</code> : The name of the tarball of
+     <i>foo</i> on the download website of FTP site. As you can see
+     <code>FOO_VERSION</code> is used. </li>
+
+     <li><code>FOO_SITE</code> : The HTTP or FTP site from which
+     <i>foo</i> archive is downloaded. It must include the complete
+     path to the directory where <code>FOO_SOURCE</code> can be
+     found. </li>
+
+     <li><code>FOO_DIR</code> : The directory into which the software
+     will be configured and compiled. Basically, it's a subdirectory
+     of <code>BUILD_DIR</code> which is created upon decompression of
+     the tarball. </li>
+
+     <li><code>FOO_BINARY</code> : Software binary name. As said
+     previously, this is an example for a single binary software. </li>
+
+     <li><code>FOO_TARGET_BINARY</code> : The full path of the binary
+     inside the target filesystem. </li>
+
+    </ul>
+
+    <p>Lines <a href="#ex2line13">13-14</a> defines a target that downloads the
+    tarball from the remote site to the download directory
+    (<code>DL_DIR</code>). </p>
+
+    <p>Lines <a href="#ex2line16">16-18</a> defines a target and associated rules
+    that uncompress the downloaded tarball. As you can see, this target
+    depends on the tarball file, so that the previous target (line
+    <a href="#ex2line13">13-14</a>) is called before executing the rules of the
+    current target. Uncompressing is followed by <i>touching</i> a hidden file
+    to mark the software has having been uncompressed. This trick is
+    used everywhere in Buildroot <i>Makefile</i> to split steps
+    (download, uncompress, configure, compile, install) while still
+    having correct dependencies. </p>
+
+    <p>Lines <a href="#ex2line20">20-31</a> defines a target and associated rules
+    that configures the software. It depends on the previous target (the
+    hidden <code>.source</code> file) so that we are sure the software has
+    been uncompressed. In order to configure it, it basically runs the
+    well-known <code>./configure</code> script. As we may be doing
+    cross-compilation, <code>target</code>, <code>host</code> and
+    <code>build</code> arguments are given. The prefix is also set to
+    <code>/usr</code>, not because the software will be installed in
+    <code>/usr</code> on your host system, but in the target
+    filesystem. Finally it creates a <code>.configured</code> file to
+    mark the software as configured. </p>
+
+    <p>Lines <a href="#ex2line33">33-34</a> defines a target and a rule that
+    compiles the software. This target will create the binary file in the
+    compilation directory, and depends on the software being already
+    configured (hence the reference to the <code>.configured</code>
+    file). It basically runs <code>make</code> inside the source
+    directory. </p>
+
+    <p>Lines <a href="#ex2line36">36-38</a> defines a target and associated rules
+    that install the software inside the target filesystem. It depends on the
+    binary file in the source directory, to make sure the software has
+    been compiled. It uses the <code>install-strip</code> target of the
+    software <code>Makefile</code> by passing a <code>DESTDIR</code>
+    argument, so that the <code>Makefile</code> doesn't try to install
+    the software inside host <code>/usr</code> but inside target
+    <code>/usr</code>. After the installation, the
+    <code>/usr/man</code> directory inside the target filesystem is
+    removed to save space. </p>
+
+    <p>Line <a href="#ex2line40">40</a> defines the main target of the software,
+    the one that will be eventually be used by the top level
+    <code>Makefile</code> to download, compile, and then install
+    this package. This target should first of all depends on all
+    needed dependecies of the software (in our example,
+    <i>uclibc</i> and <i>ncurses</i>), and also depend on the
+    final binary. This last dependency will call all previous
+    dependencies in the correct order. </p>
+
+    <p>Line <a href="#ex2line42">42</a> defines a simple target that only
+    downloads the code source. This is not used during normal operation of
+    Buildroot, but is needed if you intend to download all required sources at
+    once for later offline build. Note that if you add a new package providing
+    a <code>foo-source</code> target is <i>mandatory</i> to support
+    users that wish to do offline-builds. Furthermore it eases checking
+    if all package-sources are downloadable. </p>
+
+    <p>Lines <a href="#ex2line44">44-46</a> define a simple target to clean the
+    software build by calling the <i>Makefiles</i> with the appropriate option.
+    The <code>-clean</code> target should run <code>make clean</code>
+    on $(BUILD_DIR)/package-version and MUST uninstall all files of the
+    package from $(STAGING_DIR) and from $(TARGET_DIR). </p>
+
+    <p>Lines <a href="#ex2line48">48-49</a> define a simple target to completely
+    remove the directory in which the software was uncompressed, configured and
+    compiled. The <code>-dirclean</code> target MUST completely rm $(BUILD_DIR)/
+    package-version. </p>
+
+    <p>Lines <a href="#ex2line51">51-58</a> adds the target <code>foo</code> to
+    the list of targets to be compiled by Buildroot by first checking if
+    the configuration option for this package has been enabled
+    using the configuration tool, and if so then &quot;subscribes&quot;
+    this package to be compiled by adding it to the TARGETS
+    global variable.  The name added to the TARGETS global
+    variable is the name of this package's target, as defined on
+    line <a href="#ex2line40">40</a>, which is used by Buildroot to download,
+    compile, and then install this package. </p>
+
+
+    <h3>Conclusion</h3>
+
+    <p>As you can see, adding a software to buildroot is simply a
+    matter of writing a <i>Makefile</i> using an already existing
+    example and to modify it according to the compilation process of
+    the software. </p>
+
+    <p>If you package software that might be useful for other persons,
+    don't forget to send a patch to Buildroot developers !</p>
+
+     <h2><a name="links" id="links"></a>Resources</h2>
+
+    <p>To learn more about Buildroot you can visit these
+    websites:</p>
+
+    <ul>
+      <li><a href="http://www.uclibc.org/">http://www.uclibc.org/</a></li>
+      <li><a href="http://www.busybox.net/">http://www.busybox.net/</a></li>
+    </ul>
+  </div>
+<!--
+       <a href="http://validator.w3.org/check?uri=referer"><img
+       border="0" height="31" width="88"
+       src="images/valid-html401.png"
+       alt="Valid HTML"></img></a>
+-->
+
+</body>
+</html>

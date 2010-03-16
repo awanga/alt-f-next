@@ -1,0 +1,91 @@
+config BR2_PACKAGE_BUSYBOX
+	bool "BusyBox"
+	default y
+	help
+	  The Swiss Army Knife of embedded Linux.  It slices, it dices, it
+	  makes Julian Fries.
+
+	  http://busybox.net/
+
+	  Most people will answer Y.
+
+choice
+	prompt "BusyBox Version"
+	depends on BR2_PACKAGE_BUSYBOX
+	default BR2_BUSYBOX_VERSION_1_15_X
+	help
+	  Select the version of BusyBox you wish to use.
+
+	config BR2_BUSYBOX_VERSION_1_12_X
+		bool "BusyBox 1.12.x"
+		depends on BR2_DEPRECATED
+
+	config BR2_BUSYBOX_VERSION_1_13_X
+		bool "BusyBox 1.13.x"
+		depends on BR2_DEPRECATED || BR2_RECENT
+
+	config BR2_BUSYBOX_VERSION_1_14_X
+		bool "BusyBox 1.14.x"
+
+	config BR2_BUSYBOX_VERSION_1_15_X
+		bool "BusyBox 1.15.x"
+
+	config BR2_PACKAGE_BUSYBOX_SNAPSHOT
+		bool "daily snapshot"
+
+endchoice
+
+config BR2_BUSYBOX_VERSION
+	string
+	default "1.12.4"	if BR2_BUSYBOX_VERSION_1_12_X
+	default "1.13.4"	if BR2_BUSYBOX_VERSION_1_13_X
+	default "1.14.3"	if BR2_BUSYBOX_VERSION_1_14_X
+	default "1.15.3"	if BR2_BUSYBOX_VERSION_1_15_X
+
+config BR2_PACKAGE_BUSYBOX_FULLINSTALL
+	bool "Run BusyBox's own full installation"
+	depends on BR2_PACKAGE_BUSYBOX
+	default y
+	help
+	  If you want to run BusyBox's own full install for the
+	  configured applets, then answer Y.
+
+	  This may overwrite files from other packages if your
+	  busybox includes replacement applets for the package.
+
+	  If you wish to just install /bin/busybox, then answer N.
+
+config BR2_PACKAGE_BUSYBOX_CONFIG
+	string "BusyBox configuration file to use?"
+	depends on BR2_PACKAGE_BUSYBOX
+	default "target/device/x86/i386/busybox.config" if BR2_PACKAGE_BUSYBOX_SNAPSHOT
+	default "package/busybox/busybox-1.11.x.config" if BR2_BUSYBOX_VERSION_1_12_X
+	default "package/busybox/busybox-1.13.x.config" if BR2_BUSYBOX_VERSION_1_13_X
+	default "package/busybox/busybox-1.13.x.config" if BR2_BUSYBOX_VERSION_1_14_X
+	default "package/busybox/busybox-1.13.x.config" if BR2_BUSYBOX_VERSION_1_15_X
+	help
+	  Some people may wish to use their own modified BusyBox configuration
+	  file, and will specify their config file location with this option.
+
+	  Most people will just use the default BusyBox configuration file.
+
+config BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
+	bool "Hide applications that are provided by busybox"
+	depends on BR2_PACKAGE_BUSYBOX
+	default y
+	help
+	  Do not show packages in menuconfig that are potentially provided
+	  by busybox.
+
+config BR2_PACKAGE_BUSYBOX_SKELETON
+	bool "use minimal target skeleton"
+	depends on BR2_PACKAGE_BUSYBOX
+	help
+	  Use a minimal target skeleton. Make sure to select mdev
+	  which is used to populate /dev/.
+
+#config BR2_PACKAGE_BUSYBOX_INITRAMFS
+#	bool "initramfs perusing busybox"
+#	depends on BR2_PACKAGE_BUSYBOX
+#	help
+#	  Build small initramfs perusing busybox.

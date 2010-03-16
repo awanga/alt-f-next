@@ -1,0 +1,93 @@
+#!/bin/sh
+
+# mount/swapon or unmount/swapoff partitions in bay
+# calls /usr/sbin/hot.sh, simulating kernel events
+
+usage() {
+	echo "eject: unmount partitions/swap/disk"
+	echo "eject [-r | -l | -f] <left | right | usb | sd?>"
+	exit 1
+}
+
+#if test $# = 0; then
+#	usage
+#fi
+
+if test $# = 0 -o "$1" = "-l"; then
+	while read ln; do
+		if test -z "$ln"; then continue; fi
+		eval $(echo $ln | awk '{printf "bay=%s;dsk=%s", $1, $2}')
+#		eval $(smartctl -i /dev/$dsk | awk \
+#        	    '/^Device Model:/{printf "mod=\"%s %s\";", $3, $4} \
+#	             /^Device:/{printf "mod=\"%s %s\";", $2, $3}')
+		mod=$(cat /sys/block/$dsk/device/model)
+		size=$(awk '{printf "%.1f", $0 * 512 / 1000000000}' //sys/block/$dsk/size)
+		echo -e "$bay\t $dsk\t $mod ($size GB)"
+	done < /etc/bay
+	exit 0
+fi
+
+
+if test "$1" = "-f"; then
+	force=yes
+	shift
+fi
+
+if test "$1" = "-r"; then
+	action="add"
+	msg="Loading"
+	shift
+else
+	action="remove"
+	msg="Ejecting"
+fi
+
+if test "$1" = "left" -o "$1" = "right" -o "$1" = "usb"; then
+	bay=$1
+	dsk=$(awk '/'$1'/{print $2}' /etc/bay)
+	if test ${#dsk} = 0; then
+		echo "No disk on $bay bay, use \"eject -l\" to see inserted disks"
+		exit 1
+	elif test ${#dsk} != 3; then
+		echo "More than one disk on $bay bay, use \"eject -l\" and give device name"
+		exit 1
+	fi
+else
+	dsk=${1%[0-9]}
+	if ! test -n "$dsk" -a -b /dev/$dsk; then
+		echo "Not a valid disk,  use \"eject -l\" and give a device name"
+		exit 1
+	fi
+	bay=$(awk '/'$dsk'/{print $1}' /etc/bay)
+fi
+
+if test $action = "remove" -a "$force" != "yes"; then
+	if test -z "$(cat /proc/mounts | grep /dev/$dsk)" -a \
+		-z "$(cat /proc/swaps | grep /dev/$dsk)"; then
+		echo "Disk $dsk in $bay bay is not in use"
+		exit 1
+	fi
+fi
+
+echo -n "$msg ${dsk}... "
+
+cd /dev
+
+ret=0
+for i in /dev/${dsk}?; do
+    ACTION=$action DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh >/dev/null 2>&1
+    ret=$(($ret + $?))
+done
+
+if test $ret = 0; then
+	echo done
+else
+	echo fail, some programs are using the device
+fi
+
+return $ret
+
+# don't! hot.sh will do it at real eject/insert time
+#ACTION=$action DEVTYPE=disk PWD=/dev MDEV=$dsk /usr/sbin/hot.sh
+
+

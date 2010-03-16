@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# Stop all executable init scripts in /etc/init.d
+# executing them in reverse numerical order.
+
+echo "rcE: Starting reboot/shutdown"
+
+for i in $(ls -r /etc/init.d/S??*) ;do
+     # dont ignore non executable files, case user started them manually
+     [ ! -f "$i" ] && continue
+
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set stop
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    /bin/sh $i stop
+	    ;;
+    esac
+done
+
+# wait for services to stop
+sleep 5
+
+# force kill resilient processes
+killall5 -KILL
+
+sleep 1
+
+# umount attached disks/partitions, simulating kernel hotplug events
+# hot.sh removes branch from aufs (if dir /Alt-F belongs to device)
+
+for i in /dev/sd[a-z]; do
+  if test -b $i; then
+	eject $(basename $i)
+  fi
+done
+
+# write system time to RTC, waiting for second change
+o=$(date +%s)
+while test $o = $(date +%s); do true; done
+hwclock -wu
+
+# do a kexec to a new kernel/rootfs instead of a reboot
+if test -f /root/zImage; then
+	cd /root
+
+	if test -f rootfs.arm.cpio.gz; then
+		mv rootfs.arm.cpio.gz rootfs.arm.cpio
+	elif test -f rootfs.arm.cpio.lzma; then
+		mv rootfs.arm.cpio.lzma rootfs.arm.cpio
+	elif test -f rootfs.arm.cpio-sq.gz; then
+		mv rootfs.arm.cpio-sq.gz rootfs.arm.cpio
+	elif test -f rootfs.arm.cpio-sq.lzma; then
+		mv rootfs.arm.cpio-sq.lzma rootfs.arm.cpio
+	fi
+	
+	mount / -o remount,ro
+
+	kexec -l zImage --command-line="console=ttyS0,115200" \
+		--initrd=rootfs.arm.cpio && kexec -e
+fi
+
+mount / -o remount,ro

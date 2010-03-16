@@ -1,0 +1,68 @@
+--- project_build_arm/dns323/linux-2.6.31.1/drivers/ata/sata_mv.c-orig	2009-09-24 16:45:25.000000000 +0100
++++ project_build_arm/dns323/linux-2.6.31.1/drivers/ata/sata_mv.c	2009-10-23 15:44:28.000000000 +0100
+@@ -67,6 +67,7 @@
+ #include <scsi/scsi_cmnd.h>
+ #include <scsi/scsi_device.h>
+ #include <linux/libata.h>
++#include <linux/gpio.h> // jc:
+ 
+ #define DRV_NAME	"sata_mv"
+ #define DRV_VERSION	"1.28"
+@@ -1485,6 +1486,8 @@
+  */
+ static void mv_soc_led_blink_enable(struct ata_port *ap)
+ {
++	void orion_gpio_set_blink(unsigned pin, int blink); //jc: arch/arm/plat-orion/include/plat/gpio.h
++	
+ 	struct ata_host *host = ap->host;
+ 	struct mv_host_priv *hpriv = host->private_data;
+ 	void __iomem *hc_mmio;
+@@ -1493,6 +1496,9 @@
+ 	if (hpriv->hp_flags & MV_HP_QUIRK_LED_BLINK_EN)
+ 		return;
+ 	hpriv->hp_flags |= MV_HP_QUIRK_LED_BLINK_EN;
++	
++	orion_gpio_set_blink(ap->port_no == 0 ? 14 : 15, 1); //jc:
++	
+ 	hc_mmio = mv_hc_base_from_port(mv_host_base(host), ap->port_no);
+ 	led_ctrl = readl(hc_mmio + SOC_LED_CTRL);
+ 	writel(led_ctrl | SOC_LED_CTRL_BLINK, hc_mmio + SOC_LED_CTRL);
+@@ -1500,6 +1506,8 @@
+ 
+ static void mv_soc_led_blink_disable(struct ata_port *ap)
+ {
++	void orion_gpio_set_blink(unsigned pin, int blink); // jc: arch/arm/plat-orion/include/plat/gpio.h
++	
+ 	struct ata_host *host = ap->host;
+ 	struct mv_host_priv *hpriv = host->private_data;
+ 	void __iomem *hc_mmio;
+@@ -1517,8 +1525,9 @@
+ 		if (pp->pp_flags & MV_PP_FLAG_NCQ_EN)
+ 			return;
+ 	}
+-
++	
+ 	hpriv->hp_flags &= ~MV_HP_QUIRK_LED_BLINK_EN;
++	orion_gpio_set_blink(ap->port_no == 0 ? 14 : 15,0); //jc:
+ 	hc_mmio = mv_hc_base_from_port(mv_host_base(host), ap->port_no);
+ 	led_ctrl = readl(hc_mmio + SOC_LED_CTRL);
+ 	writel(led_ctrl & ~SOC_LED_CTRL_BLINK, hc_mmio + SOC_LED_CTRL);
+@@ -3331,6 +3340,18 @@
+ static void mv_soc_enable_leds(struct mv_host_priv *hpriv,
+ 				      void __iomem *mmio)
+ {
++/*
++	jc: the driver doesnt honour the disk presence led for the dns323 with a mv88f5182 SOC.
++	Setting gpio direction to output makes the presence led light
++	when a disk is present, but then it stops blinkink when there
++	is disk access. This is a crude and nasty patch to cure that.
++	look also at mv_soc_led_blink_enable/disable() and in
++	arch/arm/mach-orion5x/dns323-setup.c, where the MPP_SATA_LED
++	for GPIO_14/15 for the mv88f5182 was changed to MPP_GPIO
++*/
++	gpio_direction_output(14,1); //jc: 
++	gpio_direction_output(15,1); //jc:
++	
+ 	return;
+ }
+ 

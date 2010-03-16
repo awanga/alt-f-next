@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBIDN
+	bool "libidn"
+	help
+	  Libidn's purpose is to encode and decode internationalized 
+	  domain names. 
+
+	  http://www.gnu.org/software/libidn/

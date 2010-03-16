@@ -1,0 +1,10 @@
+#!/bin/sh
+
+nm=$(basename $0)
+nm1=${nm#rc}
+
+srp="/etc/init.d/S??${nm1}"
+
+if test -f $srp; then
+	sh $srp $1
+fi

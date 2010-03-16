@@ -1,0 +1,9 @@
+config BR2_PACKAGE_LIBGLIB2
+	bool "libglib2"
+	select BR2_PACKAGE_GETTEXT
+	select BR2_PACKAGE_LIBINTL
+	select BR2_PACKAGE_LIBICONV if !BR2_ENABLE_LOCALE
+	help
+	  Low-level core library that forms the basis of GTK+ and GNOME.
+
+	  http://www.gtk.org/

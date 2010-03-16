@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GAMIN
+	bool "gamin"
+	select BR2_PACKAGE_LIBGLIB2
+	help
+	  the File Alteration Monitor
+
+	  http://www.gnome.org/~veillard/gamin/sources

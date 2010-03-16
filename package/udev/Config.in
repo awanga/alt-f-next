@@ -1,0 +1,41 @@
+config BR2_PACKAGE_UDEV
+	bool "udev"
+	help
+	  Userspace device daemon.
+
+	  ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/
+
+config BR2_PACKAGE_UDEV_UTILS
+	bool "udev-utils"
+	depends on BR2_PACKAGE_UDEV
+	help
+	  Adds the udevmonitor, udevinfo, and udevtest binaries
+	  to your filesystem.
+
+menu "Extra udev tools"
+	depends on BR2_PACKAGE_UDEV
+
+config BR2_PACKAGE_UDEV_VOLUME_ID
+	bool "udev-libvolume_id"
+	depends on BR2_PACKAGE_UDEV
+	help
+	  Build and install volume identification library.
+
+config BR2_PACKAGE_UDEV_SCSI_ID
+	bool "udev-scsi_id"
+	depends on BR2_PACKAGE_UDEV_VOLUME_ID
+	help
+	  Build and install SCSI disk identification library.
+
+config BR2_PACKAGE_UDEV_PATH_ID
+	bool "udev-path_id"
+	depends on BR2_PACKAGE_UDEV_VOLUME_ID
+	help
+	  Install udev's unique device path generation program path_id.
+
+config BR2_PACKAGE_UDEV_FIRMWARE_SH
+	bool "udev-firmware_sh"
+	depends on BR2_PACKAGE_UDEV_VOLUME_ID
+	help
+	  Install udev's firmware loading script firmware.sh.
+endmenu

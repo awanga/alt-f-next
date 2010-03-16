@@ -1,0 +1,68 @@
+#!/bin/sh -e
+
+NAME=ushare
+DAEMON=/usr/bin/$NAME
+DESC="UPnP A/V & DLNA Media Server"
+PIDFILE=/var/run/$NAME.pid
+CONFIGFILE=/etc/$NAME.conf
+TYPE=user
+
+# abort if no executable exists
+[ -x $DAEMON ] || exit 0
+
+
+[ -f /etc/default/ushare ] && . /etc/default/ushare
+
+checkpid() {
+	[ -e $PIDFILE ] || touch $PIDFILE
+}
+
+check_shares() {
+	if [ -r "$CONFIGFILE" ]; then
+		. $CONFIGFILE
+		[ -n "$USHARE_DIR" ] && return 0
+	fi
+	return 1
+}
+
+case "$1" in
+
+	start)
+		echo "Starting $DESC: $NAME"
+		if ! $(check_shares); then
+			echo "No shares avalaible ..."
+			exit 1
+		else
+			checkpid
+			start-stop-daemon --start --quiet --background --oknodo \
+				--make-pidfile --pidfile $PIDFILE \
+				--exec $DAEMON -- $USHARE_OPTIONS
+			exit $?
+		fi
+		;;
+
+	stop)
+		echo "Stopping $DESC: $NAME"
+		start-stop-daemon --stop --signal 2 --quiet --oknodo --pidfile $PIDFILE
+		exit $?
+		;;
+
+	reload|force-reload)
+		echo "Reloading $DESC: $NAME"
+		start-stop-daemon --stop --signal 1 --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON
+		exit $?
+		;;
+
+	restart)
+		sh $0 stop
+		sh $0 start
+		;;
+
+	*)
+		N=/etc/init.d/$NAME
+		echo "Usage: $0 {start|stop|restart|reload|force-reload}"
+		exit 1
+		;;
+esac
+
+exit 0

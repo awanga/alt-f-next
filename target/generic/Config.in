@@ -1,0 +1,217 @@
+comment "Generic System Support"
+
+config BR2_TARGET_GENERIC_ACCESS_POINT
+	bool "Generic wireless access point"
+	select BR2_PACKAGE_WIRELESS_TOOLS
+	select BR2_PACKAGE_DHCP_RELAY
+	select BR2_PACKAGE_BRIDGE
+	help
+	  Board support for a generic wireless access point.
+
+
+config BR2_TARGET_GENERIC_FIREWALL
+	bool "Generic firewall"
+	select BR2_PACKAGE_IPTABLES
+	help
+	  Board support for a generic firewalling router.
+
+
+config BR2_TARGET_GENERIC_DEV_SYSTEM
+	bool "Generic development system"
+	depends on BR2_USE_WCHAR && BR2_PROGRAM_INVOCATION
+	select BR2_CCACHE
+	select BR2_PACKAGE_GDB
+	select BR2_PACKAGE_GDB_SERVER
+	select BR2_PACKAGE_BASH
+	select BR2_PACKAGE_BZIP2
+	select BR2_PACKAGE_COREUTILS
+	select BR2_PACKAGE_DIFFUTILS
+	select BR2_PACKAGE_ED
+	select BR2_PACKAGE_FINDUTILS
+	select BR2_PACKAGE_FLEX
+	select BR2_PACKAGE_GAWK
+	select BR2_PACKAGE_GCC_TARGET
+	select BR2_PACKAGE_CCACHE_TARGET
+	select BR2_PACKAGE_GREP
+	select BR2_PACKAGE_MAKE
+	select BR2_PACKAGE_PATCH
+	select BR2_PACKAGE_SED
+	select BR2_PACKAGE_TAR
+	select BR2_PACKAGE_MICROPERL
+	select BR2_PACKAGE_AUTOCONF
+	select BR2_PACKAGE_AUTOMAKE
+	select BR2_PACKAGE_DROPBEAR
+	select BR2_PACKAGE_FILE
+	select BR2_PACKAGE_GZIP
+	select BR2_PACKAGE_LESS
+	select BR2_PACKAGE_LIBTOOL
+	select BR2_PACKAGE_M4
+	select BR2_PACKAGE_E2FSPROGS
+	select BR2_PACKAGE_NCURSES
+	select BR2_PACKAGE_NETKITBASE
+	select BR2_PACKAGE_PCIUTILS
+	select BR2_PACKAGE_PROCPS
+	select BR2_PACKAGE_RSYNC
+	select BR2_PACKAGE_STRACE
+	select BR2_PACKAGE_UTIL-LINUX
+	select BR2_PACKAGE_ZLIB
+	help
+	  Board support for a generic development system.
+
+comment "Generic development system requires a toolchain with WCHAR and PROGRAM_INVOCATION support"
+	depends on !(BR2_USE_WCHAR && BR2_PROGRAM_INVOCATION)
+
+menuconfig BR2_TARGET_GENERIC_GETTY
+	bool "Generic serial port config"
+	depends on !(BR2_TARGET_ATMEL||BR2_TARGET_KWIKBYTE||BR2_TARGET_VALKA)
+
+if BR2_TARGET_GENERIC_GETTY
+
+choice
+	prompt "Serial port to run a getty on"
+	default BR2_TARGET_GENERIC_GETTY_TTYS0
+	help
+	  Select a port to run a getty (login prompt) on.
+
+config BR2_TARGET_GENERIC_GETTY_NONE
+	bool "none"
+config BR2_TARGET_GENERIC_GETTY_TTYS0
+	bool "ttyS0"
+config BR2_TARGET_GENERIC_GETTY_TTYS1
+	bool "ttyS1"
+config BR2_TARGET_GENERIC_GETTY_TTYS2
+	bool "ttyS2"
+config BR2_TARGET_GENERIC_GETTY_TTYS3
+	bool "ttyS3"
+config BR2_TARGET_GENERIC_GETTY_TTYAMA0
+	bool "ttyAMA0"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYAMA1
+	bool "ttyAMA1"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYAMA2
+	bool "ttyAMA2"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYAMA3
+	bool "ttyAMA3"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYSAC0
+	bool "ttySAC0"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYSAC1
+	bool "ttySAC1"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYSAC2
+	bool "ttySAC2"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYSAC3
+	bool "ttySAC3"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYMXC0
+	bool "ttymxc0"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYMXC1
+	bool "ttymxc1"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYMXC2
+	bool "ttymxc2"
+	depends on BR2_arm
+config BR2_TARGET_GENERIC_GETTY_TTYUL0
+	bool "ttyUL0"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYUL1
+	bool "ttyUL1"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYUL2
+	bool "ttyUL2"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYUL3
+	bool "ttyUL3"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYPSC0
+	bool "ttyPSC0"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYPSC1
+	bool "ttyPSC1"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYPSC2
+	bool "ttyPSC2"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYPSC3
+	bool "ttyPSC3"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYCPM0
+	bool "ttyCPM0"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYCPM1
+	bool "ttyCPM1"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYCPM2
+	bool "ttyCPM2"
+	depends on BR2_powerpc
+config BR2_TARGET_GENERIC_GETTY_TTYCPM3
+	bool "ttyCPM3"
+	depends on BR2_powerpc
+endchoice
+
+config BR2_TARGET_GENERIC_GETTY_PORT
+	string
+	default "#ttyS0"	if BR2_TARGET_GENERIC_GETTY_NONE
+	default "ttyS0"		if BR2_TARGET_GENERIC_GETTY_TTYS0
+	default "ttyS1"		if BR2_TARGET_GENERIC_GETTY_TTYS1
+	default "ttyS2"		if BR2_TARGET_GENERIC_GETTY_TTYS2
+	default "ttyS3"		if BR2_TARGET_GENERIC_GETTY_TTYS3
+	default "ttyAMA0"	if BR2_TARGET_GENERIC_GETTY_TTYAMA0
+	default "ttyAMA1"	if BR2_TARGET_GENERIC_GETTY_TTYAMA1
+	default "ttyAMA2"	if BR2_TARGET_GENERIC_GETTY_TTYAMA2
+	default "ttyAMA3"	if BR2_TARGET_GENERIC_GETTY_TTYAMA3
+	default "ttySAC0"	if BR2_TARGET_GENERIC_GETTY_TTYSAC0
+	default "ttySAC1"	if BR2_TARGET_GENERIC_GETTY_TTYSAC1
+	default "ttySAC2"	if BR2_TARGET_GENERIC_GETTY_TTYSAC2
+	default "ttySAC3"	if BR2_TARGET_GENERIC_GETTY_TTYSAC3
+	default "ttymxc0"	if BR2_TARGET_GENERIC_GETTY_TTYMXC0
+	default "ttymxc1"	if BR2_TARGET_GENERIC_GETTY_TTYMXC1
+	default "ttymxc2"	if BR2_TARGET_GENERIC_GETTY_TTYMXC2
+	default "ttyUL0"	if BR2_TARGET_GENERIC_GETTY_TTYUL0
+	default "ttyUL1"	if BR2_TARGET_GENERIC_GETTY_TTYUL1
+	default "ttyUL2"	if BR2_TARGET_GENERIC_GETTY_TTYUL2
+	default "ttyUL3"	if BR2_TARGET_GENERIC_GETTY_TTYUL3
+	default "ttyPSC0"	if BR2_TARGET_GENERIC_GETTY_TTYPSC0
+	default "ttyPSC1"	if BR2_TARGET_GENERIC_GETTY_TTYPSC1
+	default "ttyPSC2"	if BR2_TARGET_GENERIC_GETTY_TTYPSC2
+	default "ttyPSC3"	if BR2_TARGET_GENERIC_GETTY_TTYPSC3
+	default "ttyCPM0"	if BR2_TARGET_GENERIC_GETTY_TTYCPM0
+	default "ttyCPM1"	if BR2_TARGET_GENERIC_GETTY_TTYCPM1
+	default "ttyCPM2"	if BR2_TARGET_GENERIC_GETTY_TTYCPM2
+	default "ttyCPM3"	if BR2_TARGET_GENERIC_GETTY_TTYCPM3
+
+choice
+	prompt "Baudrate to use"
+	default BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200
+	help
+	  Select a baudrate to use.
+
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE_KEEP
+       bool "keep kernel default"
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE_9600
+	bool "9600"
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE_19200
+	bool "19200"
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE_38400
+	bool "38400"
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE_57600
+	bool "57600"
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200
+	bool "115200"
+endchoice
+
+config BR2_TARGET_GENERIC_GETTY_BAUDRATE
+	string
+	default "0"		if BR2_TARGET_GENERIC_GETTY_BAUDRATE_KEEP
+	default "9600"		if BR2_TARGET_GENERIC_GETTY_BAUDRATE_9600
+	default "19200"		if BR2_TARGET_GENERIC_GETTY_BAUDRATE_19200
+	default "38400"		if BR2_TARGET_GENERIC_GETTY_BAUDRATE_38400
+	default "57600"		if BR2_TARGET_GENERIC_GETTY_BAUDRATE_57600
+	default "115200"	if BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200
+
+endif

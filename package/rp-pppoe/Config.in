@@ -1,0 +1,6 @@
+config BR2_PACKAGE_RP_PPPOE
+	bool "pppoe"
+	help
+	  An implementation of the Point-to-point protocol over Ethernet.
+
+	  http://www.roaringpenguin.com/pppoe.html

@@ -1,0 +1,5 @@
+config BR2_PACKAGE_AUFS-UTIL
+	bool "aufs2-util"
+	help
+    aufs-util is needed by the aufs union mount filesystem
+    http://aufs.sourceforge.net/

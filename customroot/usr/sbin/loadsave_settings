@@ -1,0 +1,259 @@
+#!/bin/sh
+
+saveflashdef() { 
+
+	save=0
+	if ! test -e $stamp; then
+		save=1
+	else
+		for i in $files; do
+			if test $i -nt $stamp; then
+				save=1
+				break
+			fi
+		done
+	for i in /etc/init.d/S*; do
+		# FIXME chmod doesnt change data, and stat is buggy
+		if test $i -nt $stamp; then 
+			save=1
+			break
+		fi
+	done
+	fi
+
+	if test $save = "0"; then
+		echo "No modified files since last save, nothing saved"
+		exit 1;
+	fi
+
+	for i in /etc/init.d/S*; do
+		if test -x $i; then
+			echo $i
+			fi
+	done > $initscript_perms
+	files="$files $initscript_perms"
+
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+
+# provide some flash wear leveling by writing into a new flash "location"
+
+	dt=$(date +%F_%T)
+	nm=set_$dt.tgz
+	tar -czf /tmp/$nm $files > /dev/null 2>&1
+	cp /tmp/$nm $save_dir/ 2>/dev/null
+	while test $? = 1; do
+		rm $save_dir/$nm $(ls $save_dir/set_*.tgz | head -1)
+		cp /tmp/$nm $save_dir/ 2>/dev/null
+	done
+	res=$?
+
+	umount $save_dir
+
+# TODO start using mtdblock1 when mtdblock0 fails
+#  mount /dev/mtdblock1 /tmp/mtd
+#  cp /tmp/set_$next.tgz $save_dir/set_$next.tgz
+#  umount /tmp/mtd
+
+	rm /tmp/$nm $initscript_perms
+	rmdir $save_dir
+
+	if test "$res" != 0; then
+		echo "Error saving settings!"
+		exit 1
+	fi
+
+	touch $stamp
+	exit 0
+
+}
+
+loadflashdef() {
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+
+	if test $# = 0; then
+		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1 
+	else
+		last=$save_dir/$1
+	fi
+
+	if test -z "$last"; then
+		echo "No settings file found!"
+		res=1
+	else
+		tar -C / -xzf $last
+		res=$?
+	fi
+
+	umount $save_dir
+	rmdir $save_dir
+
+	if test -s $initscript_perms; then
+	for i in $(cat $initscript_perms ); do
+		chmod +x $i
+	done
+	rm $initscript_perms
+	fi
+
+	exit $res
+}
+
+# including stock firmware setings! 
+clearflashdef() {
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+	rm -f $save_dir/* 	
+	#rm -f $save_dir/sib.conf 
+	rm -f $stamp
+	umount $save_dir
+	rmdir $save_dir
+}
+
+listflashdef() {
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+	(cd $save_dir; ls -1 set_* 2>/dev/null)
+	umount $save_dir
+	rmdir $save_dir
+}
+
+# from http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=30;filename=oldsys-preseed.patch;att=1;bug=502821
+# Parse the sib.conf file, as found in the Dlink DNS-323
+# Get the value from a string in the form of var = "value" from a file.
+# Named for the sib.conf file on the DNS-323 that this function was
+# originally written for.
+# $1 = file to read
+# $2 = var to read
+get_sib_var() {
+	grep "^$2[[:space:]]*=" $1 | \
+		sed "s/^$2[[:space:]]*=[[:space:]]*\"\(.*\)\"[[:space:]]*$/\1/"
+}
+ 
+# from http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=30;filename=oldsys-preseed.patch;att=1;bug=502821
+# Parse the sib.conf file, as found in the Dlink DNS-323
+# $1 = path to sib.conf
+parse_sib_conf() {
+	if [ "$(get_sib_var "$1" "CF-IP-DHCP-ENABLE")" != "0" ]; then
+		return 1
+	fi
+
+	IPADDRESS="$(get_sib_var "$1" "CF-IP-STATIC-IP")"
+	NETMASK="$(get_sib_var "$1" "CF-IP-STATIC-IP-NETMASK")"
+	GATEWAY="$(get_sib_var "$1" "CF-IP-STATIC-IP-GATEWAY")"
+	NS1="$(get_sib_var "$1" "CF-IP-DNS1")"
+	NS2="$(get_sib_var "$1" "CF-IP-DNS2")"
+	HOSTNAME="$(get_sib_var "$1" "CF-SYS-MODEL-STR")"
+	return 0
+}
+
+read_sib() {
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+	if ! test -e $save_dir/$sib; then
+		echo "No sib.conf file"
+		umount $save_dir
+		rmdir $save_dir
+		exit 1
+	fi
+
+	parse_sib_conf $save_dir/$sib
+	st=$?
+	
+	umount $save_dir
+	rmdir $save_dir
+
+	if test $st = 0; then
+		echo "ip=$IPADDRESS; mask=$NETMASK; gw=$GATEWAY; \
+			ns1=$NS1; ns2=$NS2; host=$HOSTNAME"
+	fi
+	return $st
+}
+
+# When a pen/disk is inserted, the current box settings 
+# must overwrite the ones existing in the pen/disk, 
+# and the reverse must happen when the pen is removed.
+# As the pen/disk is the top priority union branch, new files
+# are stored there and must be copied to the root directory,
+# so they are keep after the pen/disk is removed.
+
+# Copy current box settings to /Alt-F dir.
+# Used after mounting Alt-F dir but before adding it to the union.
+
+to_AltF() {
+	wfiles="$files $xfiles"
+	for i in $wfiles; do
+		if test -e $i -a -e /Alt-F/$i; then
+			cp -a $i /Alt-F/$i
+		elif test -e /Alt-F/$i; then
+			rm -f /Alt-F/$i
+		fi 
+	done
+}
+
+# Copy current box settings to root dir
+# Used after removing Alt-F from the union but before unmounting it
+
+from_AltF() {
+	wfiles="$files $xfiles"
+	for i in $wfiles; do
+		if test -e /Alt-F/$i; then
+			cp -a /Alt-F$i /$i
+		fi
+	done	
+}
+
+usage() {
+	echo -e "usage: loadsave_settings \n\
+	-lf [file] (load flash) | -sf (save flash) | \n\
+	-ls (list) | -cf (clear flash) | \n\
+	-ta (to Alt-F) | -fa (from Alt-F) | \n\
+	-rs (read sib ip)"
+	exit 1;
+}
+
+stamp=/tmp/settings_saved
+save_dir=/tmp/mtd
+initscript_perms=/tmp/initd_perms
+sib=sib.conf
+
+files="
+/etc/dropbear/dropbear_dss_host_key	/etc/dropbear/dropbear_rsa_host_key
+/etc/passwd	/etc/shadow	/etc/group
+/etc/TZ		/etc/timezone	/etc/timezone
+/etc/hosts	/etc/hostname	/etc/resolv.conf
+/etc/network/interfaces		/etc/web-secret
+/etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
+/etc/dnsmasq-resolv	/etc/mdadm2.conf	
+/etc/inetd.conf		/etc/vsftpd.conf	/etc/httpd.conf
+/etc/hdsleep.conf	/etc/rsyncd.conf	/etc/tune.conf
+/etc/inadyn.conf	/etc/samba/smb.conf
+/etc/adjtime.conf	/etc/ntp.conf		/etc/ntp.drift
+/etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf	
+/etc/transmission.conf	/etc/ushare.conf
+"
+
+# those are also used when mounting/unmounting the Alt-F aufs branch
+xfiles="/etc/fstab /etc/bay"
+
+if test $# = 0; then
+	usage
+elif test $1 = "-ls"; then
+	listflashdef
+elif test $1 = "-sf"; then
+	saveflashdef
+elif test $1 = "-lf"; then
+	arg=""
+	if test $# = 2; then arg=$2; fi
+	loadflashdef $arg
+elif test $1 = "-cf"; then
+	clearflashdef
+elif test $1 = "-ta"; then
+	to_AltF
+elif test $1 = "-fa"; then
+	from_AltF
+elif test $1 = "-rs"; then
+	read_sib
+else
+	usage
+fi

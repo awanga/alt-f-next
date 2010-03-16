@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MICROWIN
+	bool "microwin"
+	help
+	 Microwindows Graphical User Interface for small and
+	 embedded enviroments.
+	
+	 http://microwindows.censoft.com/

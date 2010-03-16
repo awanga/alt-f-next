@@ -1,0 +1,34 @@
+#!/bin/sh
+
+echo "pre-init started, pid=$$"
+
+mount -t proc proc /proc
+
+if ! $(/bin/grep -q "initdbg" < /proc/cmdline); then		
+		# don't overlay, enable access to the union branches 
+		mkdir /tmproot
+		mount -t tmpfs tmpfs /tmproot
+		mkdir /tmproot/root
+		umount /proc # /proc must not be mounted during the next "cp -a"
+		cp -a / /tmproot/root 
+		mount -t proc proc /proc
+		mkdir /newroot
+		#mount -t aufs -o dirs=/tmproot/root,udba=inotify aufs /newroot
+		mount -t aufs -o dirs=/tmproot/root aufs /newroot
+		if test -f /usr.squashfs; then
+			mknod /dev/loop0 b 7 0
+			mv /tmproot/root/usr.squashfs /tmproot
+			mkdir -p /tmproot/rootsq
+			mount -o loop /tmproot/usr.squashfs /tmproot/rootsq
+			mount -t aufs -o remount,append:/tmproot/rootsq=rr aufs /newroot
+		fi
+		mkdir /newroot/rootmnt
+		mount --move /tmproot /newroot/rootmnt	
+		umount /proc
+		rmdir /tmproot
+		cd /newroot
+		exec switch_root . sbin/init	
+fi
+
+# enter iterative shell if cmdlins has "initdbg" or switch_root above fails
+exec /bin/sh	

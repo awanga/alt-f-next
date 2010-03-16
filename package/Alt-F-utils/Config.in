@@ -1,0 +1,4 @@
+config BR2_PACKAGE_ALT_F_UTILS
+	bool "Alt-F-utils"
+	help
+	  Provides fan control, hdd sleep and buttons press detection

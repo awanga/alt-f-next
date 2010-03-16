@@ -1,0 +1,42 @@
+#! /bin/sh
+
+set -e
+
+DESC="Run ffp initialization script"
+TYPE=sys
+NAME=ffp
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		if test -x /ffp/etc/rc; then
+			/ffp/etc/rc start
+		else
+			echo "No ffp instalation found"
+		fi
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		if test -x /ffp/etc/rc; then
+			/ffp/etc/rc stop
+		else
+			echo "No ffp instalation found"
+		fi		
+		;;
+	status)
+		return 0 # FIXME
+		;;
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0

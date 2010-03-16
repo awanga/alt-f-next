@@ -1,0 +1,13 @@
+config BR2_PACKAGE_LIBGTK2
+	bool "libgtk2"
+	select BR2_PACKAGE_ATK
+	select BR2_PACKAGE_CAIRO
+	select BR2_PACKAGE_CAIRO_PS
+	select BR2_PACKAGE_CAIRO_PDF
+	select BR2_PACKAGE_LIBGLIB2
+	select BR2_PACKAGE_PANGO
+	depends on BR2_PACKAGE_XORG7||BR2_PACKAGE_DIRECTFB
+	help
+	  The GTK+ version 2 graphical user interface library
+
+	  http://www.gtk.org/

@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+# Stolen from RedHat FC5.
+#
+
+DESC="Samba Server (Windows)"
+NAME=smbd
+TYPE=net
+RETVAL=0
+
+# Check that smb.conf exists.
+[ -f /etc/samba/smb.conf ] || exit 0
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+sinit() {
+	# Make directories.
+	mkdir -p /var/cache/samba
+	mkdir -p /var/log/samba
+	mkdir -p /var/lock/subsys
+}
+
+start() {
+	echo -n "Starting NMB services: "
+	sinit
+	nmbd -D
+	RETVAL2=$?
+	echo "done"
+
+	echo -n "Starting SMB services: "
+	smbd -D
+	RETVAL=$?
+	echo "done"
+
+	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && touch /var/lock/subsys/smb || \
+	   RETVAL=1
+	return $RETVAL
+}	
+
+stop() {
+	echo -n "Shutting down SMB services: "
+	start-stop-daemon -K -q -n smbd
+	RETVAL=$?
+	rm -f /var/run/smbd.pid
+	echo "done"
+
+	echo -n "Shutting down NMB services: "
+	start-stop-daemon -K -q -n nmbd
+	RETVAL2=$?
+	rm -f /var/run/nmbd.pid
+
+	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && rm -f /var/lock/subsys/smb
+	echo "done"
+	return $RETVAL
+}	
+
+restart() {
+	stop
+	start
+}	
+
+reload() {
+	echo -n "Reloading smb.conf file: "
+	#kill -HUP `pidof smbd`
+	start-stop-daemon -K -q -n -s 1 $NAME
+	RETVAL=$?
+	echo "done"
+	return $RETVAL
+}	
+
+case "$1" in
+	start)
+  		start
+		;;
+	stop)
+  		stop
+		;;
+	restart)
+  		restart
+		;;
+	reload)
+  		reload
+		;;
+	status)
+		status
+		;;
+
+	  *)
+		echo "Usage: $0 {start|stop|status|restart|reload}"
+		exit 1
+esac
+
+exit $?

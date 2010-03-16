@@ -1,0 +1,65 @@
+TN5250_VERSION:=0.16.4
+TN5250_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/tn5250
+TN5250_DIR:=$(BUILD_DIR)/tn5250-$(TN5250_VERSION)
+TN5250_SOURCE:=tn5250-$(TN5250_VERSION).tar.gz
+TN5250_CAT:=$(ZCAT)
+
+$(DL_DIR)/$(TN5250_SOURCE):
+	$(call DOWNLOAD,$(TN5250_SITE),$(TN5250_SOURCE))
+
+$(TN5250_DIR)/.dist: $(DL_DIR)/$(TN5250_SOURCE)
+	$(TN5250_CAT) $(DL_DIR)/$(TN5250_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	toolchain/patch-kernel.sh $(TN5250_DIR) package/tn5250 tn5250\*.patch
+	-touch $(TN5250_DIR)/.dist
+
+$(TN5250_DIR)/.configured: $(TN5250_DIR)/.dist
+	(cd $(TN5250_DIR); rm -rf config.cache; \
+		$(TARGET_CONFIGURE_OPTS) \
+		$(TARGET_CONFIGURE_ARGS) \
+		./configure \
+		--target=$(GNU_TARGET_NAME) \
+		--host=$(GNU_TARGET_NAME) \
+		--build=$(GNU_HOST_NAME) \
+		--prefix=/usr \
+		--exec-prefix=/usr \
+		--bindir=/usr/bin \
+		--sbindir=/usr/sbin \
+		--libdir=/lib \
+		--libexecdir=/usr/lib \
+		--sysconfdir=/etc \
+		--datadir=/usr/share \
+		--localstatedir=/var \
+		--mandir=/usr/man \
+		--infodir=/usr/info \
+		$(DISABLE_NLS) \
+		--with-slang --without-x --without-ssl \
+	)
+	touch $(TN5250_DIR)/.configured
+
+$(TN5250_DIR)/src/tn5250: $(TN5250_DIR)/.configured
+	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(TN5250_DIR)
+
+$(TARGET_DIR)/usr/bin/tn5250: $(TN5250_DIR)/src/tn5250
+	install -c $(TN5250_DIR)/src/tn5250 $(TARGET_DIR)/usr/bin/tn5250
+
+tn5250: uclibc slang $(TARGET_DIR)/usr/bin/tn5250
+
+tn5250-source: $(DL_DIR)/$(TN5250_SOURCE)
+
+tn5250-clean:
+	-$(MAKE) -C $(TN5250_DIR) clean
+	rm -f $(TARGET_DIR)/usr/bin/tn5250
+
+tn5250-dirclean:
+	rm -rf $(TN5250_DIR)
+
+
+
+#############################################################
+#
+# Toplevel Makefile options
+#
+#############################################################
+ifeq ($(BR2_PACKAGE_TN5250),y)
+TARGETS+=tn5250
+endif

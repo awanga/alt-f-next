@@ -1,0 +1,57 @@
+#!/bin/sh
+
+#set -x
+
+if test $# != 1 -a $# != 2; then
+	echo "usage: flabel device [new label]"
+	exit 1
+fi
+
+lbl=""
+prog=""
+opt=""
+dsk=$1
+
+if ! test -b $dsk; then
+	if test -b /dev/$dsk; then
+		dsk=/dev/$dsk
+	else
+		echo "$dsk is not a disk partition"
+		exit 1
+	fi
+fi
+
+lbl=$(blkid -s LABEL -o value -w /dev/null -c /dev/null $dsk)
+
+if test $# = 1; then
+	if test -n "$lbl"; then
+		echo $lbl
+		exit 0
+	else
+		exit 1
+	fi
+fi
+
+type=$(blkid -s TYPE -o value -w /dev/null -c /dev/null $dsk)
+
+case $type in
+	vfat) prog=dosfslabel ;;
+	ntfs) prog=ntfslabel; opt="-f" ;;
+	ext2|ext3|ext4) prog=e2label ;;
+	*) echo "Unknown filesystem"; exit 1;;
+esac
+
+which $prog >/dev/null
+
+if test $? = 1; then
+	echo "Cant find $prog program to set label"
+	exit 1
+fi
+
+if test $# = 1; then
+	$prog $opt $dsk 2>/dev/null
+else
+	$prog $opt $dsk "$2" 2>/dev/null
+fi
+
+exit $?

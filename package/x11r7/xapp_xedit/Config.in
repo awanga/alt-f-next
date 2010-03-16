@@ -1,0 +1,7 @@
+config BR2_PACKAGE_XAPP_XEDIT
+	bool "xedit"
+	select BR2_PACKAGE_XLIB_LIBXAW
+	select BR2_PACKAGE_XLIB_LIBXPRINTUTIL
+	help
+	  xedit 1.0.2
+	  simple text editor for X

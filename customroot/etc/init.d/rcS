@@ -1,0 +1,185 @@
+#!/bin/sh
+
+/bin/mount -t proc proc /proc
+/bin/mount -o remount,rw /
+#/bin/mount -t usbfs usbfs /proc/bus/usb
+/bin/mount -t sysfs sysfs /sys
+/bin/mount -t tmpfs tmpfs /tmp
+#/bin/mount -t tmpfs -o size=64k,mode=0755 tmpfs /dev
+#/bin/mknod -m 666 /dev/null c 1 3
+#/bin/mknod -m 666 /dev/console c 5 1
+/bin/mount -t devpts devpts /dev/pts
+#/bin/mount -a
+
+#mount -t devtmpfs devtmpfs /dev # no obvious advantage
+
+mkdir -p /mnt
+mkdir -p /var/spool/lpd
+echo > /etc/bay
+
+# there is a problem here.
+# the kernel does not generate/buffer hot plug events before init starts,
+# but when init starts not all devices are yet enumerated by the kernel.
+#
+# give slow block devices an oportunity to appear. 5 seconds is
+# enough for 2 internal hdd, 2 external usb pens, and 1 external usb disk
+# but is 5 more seconds in boot time...
+sleep 5	
+
+# populate /dev
+/sbin/mdev -s
+
+# mount already attached disks/partitions, simulating kernel hotplug events
+# this does not work, don't remember why
+#for i in /dev/sd?; do
+#	dev=$(basename $i)
+#	echo "add" > /sys/block/$dev/uevent
+#	for j in /dev/$dev?; do
+#		sdev=$(basename $j)
+#		echo "add" > /sys/block/$dev/$sdev/uevent
+#	done
+#done
+# but this works
+for i in /dev/sd?; do
+  if test -b $i; then
+        (cd /dev && ACTION=add DEVTYPE=disk PWD=/dev \
+        MDEV=$(basename $i) /usr/sbin/hot.sh)
+    for j in ${i}?; do
+	  if test -b $j; then
+		(cd /dev && ACTION=add DEVTYPE=partition PWD=/dev \
+		MDEV=$(basename $j) /usr/sbin/hot.sh)
+	  fi
+	done
+  fi
+done
+
+# install already attached printers, simulating kernel hotplug events
+# kernel might have already generated the events before this script runs
+# create lpd spool dir
+for i in /dev/lp?; do
+ if test -c $i; then
+ 	mdev=$(basename $i)
+ 	if ! $(grep -q $mdev /etc/printcap); then
+       (cd /dev && ACTION=add PHYSDEVDRIVER=usblp \
+		MDEV=$mdev PWD=/dev /usr/sbin/hot.sh)
+	fi
+ fi
+done
+
+# "hotplug", mdev.conf registers /usr/sbin/hot.sh, mdev.seq sequences events
+# why can't this be done earlier? we risk to have duplicated hot.sh calls
+echo > /dev/mdev.seq
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+
+# set system clock from RTC, in UTC
+# kernel do it at boot time, but seems to not
+# wait for second change
+o="$(hwclock)"
+while test "$o" = "$(hwclock)"; do true; done
+hwclock -su
+
+# create rc* shortcuts to /etc/init.d/S??*
+for i in /etc/init.d/S??*; do
+	f=$(basename $i)
+	ln /usr/sbin/rcscript /sbin/$(basename rc${f#S??})
+done
+
+# don't load flash-saved defaults if "nodef" exists in kernel cmdline
+no_defaults=1
+if ! $(/bin/grep -q "nodef" < /proc/cmdline); then
+	loadsave_settings -lf
+	no_defaults=$?
+fi
+
+# host and network setup
+/bin/hostname -F /etc/hostname
+/sbin/ifconfig lo 127.0.0.1 up
+/sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
+
+# get an ip using the following priority:
+# 1st, use kernel cmd line ip= (kexec or fonz reloaded)
+# 2nd, use defaults stored in flash
+# 3d, try to read vendor sib.conf
+# 4th, try to use a dhcp server
+# 5th, find and use a non-used ip address from 192.168.1.245 to 240 range
+if $(/bin/grep -q "ip=" < /proc/cmdline); then
+	# "IP from kernel cmdline, kernel brings eth0 up"
+	cip="kip"
+elif test $no_defaults = "0"; then
+	# "IP from flash-defaults"
+	cip="def"
+	ifup eth0
+else
+	res=$(loadsave_defaults -rs)
+	if test $? = 0; then
+		# IP from sib.conf
+		cip="sib"
+		eval $res
+		ifconfig eth0 $ip netmask $mask
+	else
+		ifconfig eth0 up
+		udhcpc -fqn
+		if test $? = 0; then
+			# "IP from dhcp server"
+			cip="dhcp"
+		else
+			# "fixed IP"
+			ifconfig eth0 0.0.0.0
+			for i in $(seq 254 -1 240); do
+				arping -Dw 2 192.168.1.$i
+				if test $? = 0; then break; fi
+			done
+			ifconfig eth0 192.168.1.$i
+			cip="fip"
+		fi
+	fi
+fi
+
+# setup minimum network services (httpd is mandatory)
+case $cip in
+	"kip" | "fip" | "sib" | "dhcp")
+	# set hostname/hostip	
+	hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
+	#netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+	hostname=$(cat /etc/hostname)
+	domain=$(awk '/(domain|search)/{print $2}' /etc/resolv.conf)
+	echo "$hostip $hostname.$domain $hostname" >> /etc/hosts
+	hostname $hostname.$domain
+
+	# set httpd hosts allow/deny
+	network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
+	echo A:$network >> /etc/httpd.conf
+
+	# set smb.conf hosts allow, workgroup
+	sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
+	sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
+	
+	;;
+
+	"def") ;;
+esac	
+
+# Start all executable init scripts in /etc/init.d
+# executing them in numerical order.
+
+for i in /etc/init.d/S??* ;do
+
+     # Ignore dangling symlinks and non executable files
+     [ ! -f "$i" -o ! -x "$i" ] && continue
+
+     case "$i" in
+	*.sh)
+	    # Source shell script for speed.
+	    (
+		trap - INT QUIT TSTP
+		set start
+		. $i
+	    )
+	    ;;
+	*)
+	    # No sh extension, so fork subprocess.
+	    $i start
+	    ;;
+    esac
+done
+

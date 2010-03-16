@@ -1,0 +1,60 @@
+#! /bin/sh
+
+set -e
+
+DESC="Daemon to execute scheduled commands"
+NAME=crond
+TYPE=sys
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+sinit() {
+	if ! test -e /var/spool/cron/crontabs; then
+		mkdir -p /var/spool/cron/crontabs
+	fi
+	if ! test -e /var/spool/cron/crontabs/root; then
+		touch /var/spool/cron/crontabs/root
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		sinit
+		start-stop-daemon -S -q -b -x $NAME
+		echo "OK"
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -x $NAME
+		echo "OK"
+		;;
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+	status)
+		status
+		;;
+
+	init)
+		sinit
+		;;
+	*)
+		echo "Usage: $0 {start|stop|status|restart|force-reload|init}" >&2
+		exit 1
+		;;
+esac
+
+exit 0

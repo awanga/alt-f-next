@@ -1,0 +1,781 @@
+/****************************************************************************
+** ConfigList meta object code from reading C++ file 'qconf.h'
+**
+** Created: Fri Sep 4 04:09:05 2009
+**      by: The Qt MOC ($Id: qt/moc_yacc.cpp   3.3.8   edited Feb 2 14:59 $)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include <qmetaobject.h>
+#include <qapplication.h>
+
+#include <private/qucomextra_p.h>
+#if !defined(Q_MOC_OUTPUT_REVISION) || (Q_MOC_OUTPUT_REVISION != 26)
+#error "This file was generated using the moc from 3.3.8b. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+const char *ConfigList::className() const
+{
+    return "ConfigList";
+}
+
+QMetaObject *ConfigList::metaObj = 0;
+static QMetaObjectCleanUp cleanUp_ConfigList( "ConfigList", &ConfigList::staticMetaObject );
+
+#ifndef QT_NO_TRANSLATION
+QString ConfigList::tr( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigList", s, c, QApplication::DefaultCodec );
+    else
+	return QString::fromLatin1( s );
+}
+#ifndef QT_NO_TRANSLATION_UTF8
+QString ConfigList::trUtf8( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigList", s, c, QApplication::UnicodeUTF8 );
+    else
+	return QString::fromUtf8( s );
+}
+#endif // QT_NO_TRANSLATION_UTF8
+
+#endif // QT_NO_TRANSLATION
+
+QMetaObject* ConfigList::staticMetaObject()
+{
+    if ( metaObj )
+	return metaObj;
+    QMetaObject* parentObject = QListView::staticMetaObject();
+    static const QUParameter param_slot_0[] = {
+	{ "menu", &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod slot_0 = {"setRootMenu", 1, param_slot_0 };
+    static const QUParameter param_slot_1[] = {
+	{ "item", &static_QUType_ptr, "ConfigItem", QUParameter::In }
+    };
+    static const QUMethod slot_1 = {"updateList", 1, param_slot_1 };
+    static const QUParameter param_slot_2[] = {
+	{ "item", &static_QUType_ptr, "ConfigItem", QUParameter::In },
+	{ "val", &static_QUType_ptr, "tristate", QUParameter::In }
+    };
+    static const QUMethod slot_2 = {"setValue", 2, param_slot_2 };
+    static const QUParameter param_slot_3[] = {
+	{ "item", &static_QUType_ptr, "ConfigItem", QUParameter::In }
+    };
+    static const QUMethod slot_3 = {"changeValue", 1, param_slot_3 };
+    static const QUMethod slot_4 = {"updateSelection", 0, 0 };
+    static const QUMethod slot_5 = {"saveSettings", 0, 0 };
+    static const QMetaData slot_tbl[] = {
+	{ "setRootMenu(struct menu*)", &slot_0, QMetaData::Public },
+	{ "updateList(ConfigItem*)", &slot_1, QMetaData::Public },
+	{ "setValue(ConfigItem*,tristate)", &slot_2, QMetaData::Public },
+	{ "changeValue(ConfigItem*)", &slot_3, QMetaData::Public },
+	{ "updateSelection()", &slot_4, QMetaData::Public },
+	{ "saveSettings()", &slot_5, QMetaData::Public }
+    };
+    static const QUParameter param_signal_0[] = {
+	{ "menu", &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod signal_0 = {"menuChanged", 1, param_signal_0 };
+    static const QUParameter param_signal_1[] = {
+	{ "menu", &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod signal_1 = {"menuSelected", 1, param_signal_1 };
+    static const QUMethod signal_2 = {"parentSelected", 0, 0 };
+    static const QUParameter param_signal_3[] = {
+	{ 0, &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod signal_3 = {"gotFocus", 1, param_signal_3 };
+    static const QMetaData signal_tbl[] = {
+	{ "menuChanged(struct menu*)", &signal_0, QMetaData::Public },
+	{ "menuSelected(struct menu*)", &signal_1, QMetaData::Public },
+	{ "parentSelected()", &signal_2, QMetaData::Public },
+	{ "gotFocus(struct menu*)", &signal_3, QMetaData::Public }
+    };
+    metaObj = QMetaObject::new_metaobject(
+	"ConfigList", parentObject,
+	slot_tbl, 6,
+	signal_tbl, 4,
+#ifndef QT_NO_PROPERTIES
+	0, 0,
+	0, 0,
+#endif // QT_NO_PROPERTIES
+	0, 0 );
+    cleanUp_ConfigList.setMetaObject( metaObj );
+    return metaObj;
+}
+
+void* ConfigList::qt_cast( const char* clname )
+{
+    if ( !qstrcmp( clname, "ConfigList" ) )
+	return this;
+    return QListView::qt_cast( clname );
+}
+
+#include <qobjectdefs.h>
+#include <qsignalslotimp.h>
+
+// SIGNAL menuChanged
+void ConfigList::menuChanged( struct menu* t0 )
+{
+    if ( signalsBlocked() )
+	return;
+    QConnectionList *clist = receivers( staticMetaObject()->signalOffset() + 0 );
+    if ( !clist )
+	return;
+    QUObject o[2];
+    static_QUType_ptr.set(o+1,t0);
+    activate_signal( clist, o );
+}
+
+// SIGNAL menuSelected
+void ConfigList::menuSelected( struct menu* t0 )
+{
+    if ( signalsBlocked() )
+	return;
+    QConnectionList *clist = receivers( staticMetaObject()->signalOffset() + 1 );
+    if ( !clist )
+	return;
+    QUObject o[2];
+    static_QUType_ptr.set(o+1,t0);
+    activate_signal( clist, o );
+}
+
+// SIGNAL parentSelected
+void ConfigList::parentSelected()
+{
+    activate_signal( staticMetaObject()->signalOffset() + 2 );
+}
+
+// SIGNAL gotFocus
+void ConfigList::gotFocus( struct menu* t0 )
+{
+    if ( signalsBlocked() )
+	return;
+    QConnectionList *clist = receivers( staticMetaObject()->signalOffset() + 3 );
+    if ( !clist )
+	return;
+    QUObject o[2];
+    static_QUType_ptr.set(o+1,t0);
+    activate_signal( clist, o );
+}
+
+bool ConfigList::qt_invoke( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->slotOffset() ) {
+    case 0: setRootMenu((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    case 1: updateList((ConfigItem*)static_QUType_ptr.get(_o+1)); break;
+    case 2: setValue((ConfigItem*)static_QUType_ptr.get(_o+1),(tristate)(*((tristate*)static_QUType_ptr.get(_o+2)))); break;
+    case 3: changeValue((ConfigItem*)static_QUType_ptr.get(_o+1)); break;
+    case 4: updateSelection(); break;
+    case 5: saveSettings(); break;
+    default:
+	return QListView::qt_invoke( _id, _o );
+    }
+    return TRUE;
+}
+
+bool ConfigList::qt_emit( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->signalOffset() ) {
+    case 0: menuChanged((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    case 1: menuSelected((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    case 2: parentSelected(); break;
+    case 3: gotFocus((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    default:
+	return QListView::qt_emit(_id,_o);
+    }
+    return TRUE;
+}
+#ifndef QT_NO_PROPERTIES
+
+bool ConfigList::qt_property( int id, int f, QVariant* v)
+{
+    return QListView::qt_property( id, f, v);
+}
+
+bool ConfigList::qt_static_property( QObject* , int , int , QVariant* ){ return FALSE; }
+#endif // QT_NO_PROPERTIES
+
+
+const char *ConfigLineEdit::className() const
+{
+    return "ConfigLineEdit";
+}
+
+QMetaObject *ConfigLineEdit::metaObj = 0;
+static QMetaObjectCleanUp cleanUp_ConfigLineEdit( "ConfigLineEdit", &ConfigLineEdit::staticMetaObject );
+
+#ifndef QT_NO_TRANSLATION
+QString ConfigLineEdit::tr( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigLineEdit", s, c, QApplication::DefaultCodec );
+    else
+	return QString::fromLatin1( s );
+}
+#ifndef QT_NO_TRANSLATION_UTF8
+QString ConfigLineEdit::trUtf8( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigLineEdit", s, c, QApplication::UnicodeUTF8 );
+    else
+	return QString::fromUtf8( s );
+}
+#endif // QT_NO_TRANSLATION_UTF8
+
+#endif // QT_NO_TRANSLATION
+
+QMetaObject* ConfigLineEdit::staticMetaObject()
+{
+    if ( metaObj )
+	return metaObj;
+    QMetaObject* parentObject = QLineEdit::staticMetaObject();
+    metaObj = QMetaObject::new_metaobject(
+	"ConfigLineEdit", parentObject,
+	0, 0,
+	0, 0,
+#ifndef QT_NO_PROPERTIES
+	0, 0,
+	0, 0,
+#endif // QT_NO_PROPERTIES
+	0, 0 );
+    cleanUp_ConfigLineEdit.setMetaObject( metaObj );
+    return metaObj;
+}
+
+void* ConfigLineEdit::qt_cast( const char* clname )
+{
+    if ( !qstrcmp( clname, "ConfigLineEdit" ) )
+	return this;
+    return QLineEdit::qt_cast( clname );
+}
+
+bool ConfigLineEdit::qt_invoke( int _id, QUObject* _o )
+{
+    return QLineEdit::qt_invoke(_id,_o);
+}
+
+bool ConfigLineEdit::qt_emit( int _id, QUObject* _o )
+{
+    return QLineEdit::qt_emit(_id,_o);
+}
+#ifndef QT_NO_PROPERTIES
+
+bool ConfigLineEdit::qt_property( int id, int f, QVariant* v)
+{
+    return QLineEdit::qt_property( id, f, v);
+}
+
+bool ConfigLineEdit::qt_static_property( QObject* , int , int , QVariant* ){ return FALSE; }
+#endif // QT_NO_PROPERTIES
+
+
+const char *ConfigView::className() const
+{
+    return "ConfigView";
+}
+
+QMetaObject *ConfigView::metaObj = 0;
+static QMetaObjectCleanUp cleanUp_ConfigView( "ConfigView", &ConfigView::staticMetaObject );
+
+#ifndef QT_NO_TRANSLATION
+QString ConfigView::tr( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigView", s, c, QApplication::DefaultCodec );
+    else
+	return QString::fromLatin1( s );
+}
+#ifndef QT_NO_TRANSLATION_UTF8
+QString ConfigView::trUtf8( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigView", s, c, QApplication::UnicodeUTF8 );
+    else
+	return QString::fromUtf8( s );
+}
+#endif // QT_NO_TRANSLATION_UTF8
+
+#endif // QT_NO_TRANSLATION
+
+QMetaObject* ConfigView::staticMetaObject()
+{
+    if ( metaObj )
+	return metaObj;
+    QMetaObject* parentObject = QVBox::staticMetaObject();
+    static const QUParameter param_slot_0[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod slot_0 = {"setShowAll", 1, param_slot_0 };
+    static const QUParameter param_slot_1[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod slot_1 = {"setShowName", 1, param_slot_1 };
+    static const QUParameter param_slot_2[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod slot_2 = {"setShowRange", 1, param_slot_2 };
+    static const QUParameter param_slot_3[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod slot_3 = {"setShowData", 1, param_slot_3 };
+    static const QMetaData slot_tbl[] = {
+	{ "setShowAll(bool)", &slot_0, QMetaData::Public },
+	{ "setShowName(bool)", &slot_1, QMetaData::Public },
+	{ "setShowRange(bool)", &slot_2, QMetaData::Public },
+	{ "setShowData(bool)", &slot_3, QMetaData::Public }
+    };
+    static const QUParameter param_signal_0[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod signal_0 = {"showAllChanged", 1, param_signal_0 };
+    static const QUParameter param_signal_1[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod signal_1 = {"showNameChanged", 1, param_signal_1 };
+    static const QUParameter param_signal_2[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod signal_2 = {"showRangeChanged", 1, param_signal_2 };
+    static const QUParameter param_signal_3[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod signal_3 = {"showDataChanged", 1, param_signal_3 };
+    static const QMetaData signal_tbl[] = {
+	{ "showAllChanged(bool)", &signal_0, QMetaData::Public },
+	{ "showNameChanged(bool)", &signal_1, QMetaData::Public },
+	{ "showRangeChanged(bool)", &signal_2, QMetaData::Public },
+	{ "showDataChanged(bool)", &signal_3, QMetaData::Public }
+    };
+    metaObj = QMetaObject::new_metaobject(
+	"ConfigView", parentObject,
+	slot_tbl, 4,
+	signal_tbl, 4,
+#ifndef QT_NO_PROPERTIES
+	0, 0,
+	0, 0,
+#endif // QT_NO_PROPERTIES
+	0, 0 );
+    cleanUp_ConfigView.setMetaObject( metaObj );
+    return metaObj;
+}
+
+void* ConfigView::qt_cast( const char* clname )
+{
+    if ( !qstrcmp( clname, "ConfigView" ) )
+	return this;
+    return QVBox::qt_cast( clname );
+}
+
+// SIGNAL showAllChanged
+void ConfigView::showAllChanged( bool t0 )
+{
+    activate_signal_bool( staticMetaObject()->signalOffset() + 0, t0 );
+}
+
+// SIGNAL showNameChanged
+void ConfigView::showNameChanged( bool t0 )
+{
+    activate_signal_bool( staticMetaObject()->signalOffset() + 1, t0 );
+}
+
+// SIGNAL showRangeChanged
+void ConfigView::showRangeChanged( bool t0 )
+{
+    activate_signal_bool( staticMetaObject()->signalOffset() + 2, t0 );
+}
+
+// SIGNAL showDataChanged
+void ConfigView::showDataChanged( bool t0 )
+{
+    activate_signal_bool( staticMetaObject()->signalOffset() + 3, t0 );
+}
+
+bool ConfigView::qt_invoke( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->slotOffset() ) {
+    case 0: setShowAll((bool)static_QUType_bool.get(_o+1)); break;
+    case 1: setShowName((bool)static_QUType_bool.get(_o+1)); break;
+    case 2: setShowRange((bool)static_QUType_bool.get(_o+1)); break;
+    case 3: setShowData((bool)static_QUType_bool.get(_o+1)); break;
+    default:
+	return QVBox::qt_invoke( _id, _o );
+    }
+    return TRUE;
+}
+
+bool ConfigView::qt_emit( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->signalOffset() ) {
+    case 0: showAllChanged((bool)static_QUType_bool.get(_o+1)); break;
+    case 1: showNameChanged((bool)static_QUType_bool.get(_o+1)); break;
+    case 2: showRangeChanged((bool)static_QUType_bool.get(_o+1)); break;
+    case 3: showDataChanged((bool)static_QUType_bool.get(_o+1)); break;
+    default:
+	return QVBox::qt_emit(_id,_o);
+    }
+    return TRUE;
+}
+#ifndef QT_NO_PROPERTIES
+
+bool ConfigView::qt_property( int id, int f, QVariant* v)
+{
+    return QVBox::qt_property( id, f, v);
+}
+
+bool ConfigView::qt_static_property( QObject* , int , int , QVariant* ){ return FALSE; }
+#endif // QT_NO_PROPERTIES
+
+
+const char *ConfigInfoView::className() const
+{
+    return "ConfigInfoView";
+}
+
+QMetaObject *ConfigInfoView::metaObj = 0;
+static QMetaObjectCleanUp cleanUp_ConfigInfoView( "ConfigInfoView", &ConfigInfoView::staticMetaObject );
+
+#ifndef QT_NO_TRANSLATION
+QString ConfigInfoView::tr( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigInfoView", s, c, QApplication::DefaultCodec );
+    else
+	return QString::fromLatin1( s );
+}
+#ifndef QT_NO_TRANSLATION_UTF8
+QString ConfigInfoView::trUtf8( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigInfoView", s, c, QApplication::UnicodeUTF8 );
+    else
+	return QString::fromUtf8( s );
+}
+#endif // QT_NO_TRANSLATION_UTF8
+
+#endif // QT_NO_TRANSLATION
+
+QMetaObject* ConfigInfoView::staticMetaObject()
+{
+    if ( metaObj )
+	return metaObj;
+    QMetaObject* parentObject = QTextBrowser::staticMetaObject();
+    static const QUParameter param_slot_0[] = {
+	{ "menu", &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod slot_0 = {"setInfo", 1, param_slot_0 };
+    static const QUMethod slot_1 = {"saveSettings", 0, 0 };
+    static const QUParameter param_slot_2[] = {
+	{ "name", &static_QUType_QString, 0, QUParameter::In }
+    };
+    static const QUMethod slot_2 = {"setSource", 1, param_slot_2 };
+    static const QUParameter param_slot_3[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod slot_3 = {"setShowDebug", 1, param_slot_3 };
+    static const QMetaData slot_tbl[] = {
+	{ "setInfo(struct menu*)", &slot_0, QMetaData::Public },
+	{ "saveSettings()", &slot_1, QMetaData::Public },
+	{ "setSource(const QString&)", &slot_2, QMetaData::Public },
+	{ "setShowDebug(bool)", &slot_3, QMetaData::Public }
+    };
+    static const QUParameter param_signal_0[] = {
+	{ 0, &static_QUType_bool, 0, QUParameter::In }
+    };
+    static const QUMethod signal_0 = {"showDebugChanged", 1, param_signal_0 };
+    static const QUParameter param_signal_1[] = {
+	{ 0, &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod signal_1 = {"menuSelected", 1, param_signal_1 };
+    static const QMetaData signal_tbl[] = {
+	{ "showDebugChanged(bool)", &signal_0, QMetaData::Public },
+	{ "menuSelected(struct menu*)", &signal_1, QMetaData::Public }
+    };
+    metaObj = QMetaObject::new_metaobject(
+	"ConfigInfoView", parentObject,
+	slot_tbl, 4,
+	signal_tbl, 2,
+#ifndef QT_NO_PROPERTIES
+	0, 0,
+	0, 0,
+#endif // QT_NO_PROPERTIES
+	0, 0 );
+    cleanUp_ConfigInfoView.setMetaObject( metaObj );
+    return metaObj;
+}
+
+void* ConfigInfoView::qt_cast( const char* clname )
+{
+    if ( !qstrcmp( clname, "ConfigInfoView" ) )
+	return this;
+    return QTextBrowser::qt_cast( clname );
+}
+
+// SIGNAL showDebugChanged
+void ConfigInfoView::showDebugChanged( bool t0 )
+{
+    activate_signal_bool( staticMetaObject()->signalOffset() + 0, t0 );
+}
+
+// SIGNAL menuSelected
+void ConfigInfoView::menuSelected( struct menu* t0 )
+{
+    if ( signalsBlocked() )
+	return;
+    QConnectionList *clist = receivers( staticMetaObject()->signalOffset() + 1 );
+    if ( !clist )
+	return;
+    QUObject o[2];
+    static_QUType_ptr.set(o+1,t0);
+    activate_signal( clist, o );
+}
+
+bool ConfigInfoView::qt_invoke( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->slotOffset() ) {
+    case 0: setInfo((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    case 1: saveSettings(); break;
+    case 2: setSource((const QString&)static_QUType_QString.get(_o+1)); break;
+    case 3: setShowDebug((bool)static_QUType_bool.get(_o+1)); break;
+    default:
+	return QTextBrowser::qt_invoke( _id, _o );
+    }
+    return TRUE;
+}
+
+bool ConfigInfoView::qt_emit( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->signalOffset() ) {
+    case 0: showDebugChanged((bool)static_QUType_bool.get(_o+1)); break;
+    case 1: menuSelected((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    default:
+	return QTextBrowser::qt_emit(_id,_o);
+    }
+    return TRUE;
+}
+#ifndef QT_NO_PROPERTIES
+
+bool ConfigInfoView::qt_property( int id, int f, QVariant* v)
+{
+    return QTextBrowser::qt_property( id, f, v);
+}
+
+bool ConfigInfoView::qt_static_property( QObject* , int , int , QVariant* ){ return FALSE; }
+#endif // QT_NO_PROPERTIES
+
+
+const char *ConfigSearchWindow::className() const
+{
+    return "ConfigSearchWindow";
+}
+
+QMetaObject *ConfigSearchWindow::metaObj = 0;
+static QMetaObjectCleanUp cleanUp_ConfigSearchWindow( "ConfigSearchWindow", &ConfigSearchWindow::staticMetaObject );
+
+#ifndef QT_NO_TRANSLATION
+QString ConfigSearchWindow::tr( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigSearchWindow", s, c, QApplication::DefaultCodec );
+    else
+	return QString::fromLatin1( s );
+}
+#ifndef QT_NO_TRANSLATION_UTF8
+QString ConfigSearchWindow::trUtf8( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigSearchWindow", s, c, QApplication::UnicodeUTF8 );
+    else
+	return QString::fromUtf8( s );
+}
+#endif // QT_NO_TRANSLATION_UTF8
+
+#endif // QT_NO_TRANSLATION
+
+QMetaObject* ConfigSearchWindow::staticMetaObject()
+{
+    if ( metaObj )
+	return metaObj;
+    QMetaObject* parentObject = QDialog::staticMetaObject();
+    static const QUMethod slot_0 = {"saveSettings", 0, 0 };
+    static const QUMethod slot_1 = {"search", 0, 0 };
+    static const QMetaData slot_tbl[] = {
+	{ "saveSettings()", &slot_0, QMetaData::Public },
+	{ "search()", &slot_1, QMetaData::Public }
+    };
+    metaObj = QMetaObject::new_metaobject(
+	"ConfigSearchWindow", parentObject,
+	slot_tbl, 2,
+	0, 0,
+#ifndef QT_NO_PROPERTIES
+	0, 0,
+	0, 0,
+#endif // QT_NO_PROPERTIES
+	0, 0 );
+    cleanUp_ConfigSearchWindow.setMetaObject( metaObj );
+    return metaObj;
+}
+
+void* ConfigSearchWindow::qt_cast( const char* clname )
+{
+    if ( !qstrcmp( clname, "ConfigSearchWindow" ) )
+	return this;
+    return QDialog::qt_cast( clname );
+}
+
+bool ConfigSearchWindow::qt_invoke( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->slotOffset() ) {
+    case 0: saveSettings(); break;
+    case 1: search(); break;
+    default:
+	return QDialog::qt_invoke( _id, _o );
+    }
+    return TRUE;
+}
+
+bool ConfigSearchWindow::qt_emit( int _id, QUObject* _o )
+{
+    return QDialog::qt_emit(_id,_o);
+}
+#ifndef QT_NO_PROPERTIES
+
+bool ConfigSearchWindow::qt_property( int id, int f, QVariant* v)
+{
+    return QDialog::qt_property( id, f, v);
+}
+
+bool ConfigSearchWindow::qt_static_property( QObject* , int , int , QVariant* ){ return FALSE; }
+#endif // QT_NO_PROPERTIES
+
+
+const char *ConfigMainWindow::className() const
+{
+    return "ConfigMainWindow";
+}
+
+QMetaObject *ConfigMainWindow::metaObj = 0;
+static QMetaObjectCleanUp cleanUp_ConfigMainWindow( "ConfigMainWindow", &ConfigMainWindow::staticMetaObject );
+
+#ifndef QT_NO_TRANSLATION
+QString ConfigMainWindow::tr( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigMainWindow", s, c, QApplication::DefaultCodec );
+    else
+	return QString::fromLatin1( s );
+}
+#ifndef QT_NO_TRANSLATION_UTF8
+QString ConfigMainWindow::trUtf8( const char *s, const char *c )
+{
+    if ( qApp )
+	return qApp->translate( "ConfigMainWindow", s, c, QApplication::UnicodeUTF8 );
+    else
+	return QString::fromUtf8( s );
+}
+#endif // QT_NO_TRANSLATION_UTF8
+
+#endif // QT_NO_TRANSLATION
+
+QMetaObject* ConfigMainWindow::staticMetaObject()
+{
+    if ( metaObj )
+	return metaObj;
+    QMetaObject* parentObject = QMainWindow::staticMetaObject();
+    static const QUParameter param_slot_0[] = {
+	{ 0, &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod slot_0 = {"changeMenu", 1, param_slot_0 };
+    static const QUParameter param_slot_1[] = {
+	{ 0, &static_QUType_ptr, "struct menu", QUParameter::In }
+    };
+    static const QUMethod slot_1 = {"setMenuLink", 1, param_slot_1 };
+    static const QUMethod slot_2 = {"listFocusChanged", 0, 0 };
+    static const QUMethod slot_3 = {"goBack", 0, 0 };
+    static const QUMethod slot_4 = {"loadConfig", 0, 0 };
+    static const QUMethod slot_5 = {"saveConfig", 0, 0 };
+    static const QUMethod slot_6 = {"saveConfigAs", 0, 0 };
+    static const QUMethod slot_7 = {"searchConfig", 0, 0 };
+    static const QUMethod slot_8 = {"showSingleView", 0, 0 };
+    static const QUMethod slot_9 = {"showSplitView", 0, 0 };
+    static const QUMethod slot_10 = {"showFullView", 0, 0 };
+    static const QUMethod slot_11 = {"showIntro", 0, 0 };
+    static const QUMethod slot_12 = {"showAbout", 0, 0 };
+    static const QUMethod slot_13 = {"saveSettings", 0, 0 };
+    static const QMetaData slot_tbl[] = {
+	{ "changeMenu(struct menu*)", &slot_0, QMetaData::Public },
+	{ "setMenuLink(struct menu*)", &slot_1, QMetaData::Public },
+	{ "listFocusChanged()", &slot_2, QMetaData::Public },
+	{ "goBack()", &slot_3, QMetaData::Public },
+	{ "loadConfig()", &slot_4, QMetaData::Public },
+	{ "saveConfig()", &slot_5, QMetaData::Public },
+	{ "saveConfigAs()", &slot_6, QMetaData::Public },
+	{ "searchConfig()", &slot_7, QMetaData::Public },
+	{ "showSingleView()", &slot_8, QMetaData::Public },
+	{ "showSplitView()", &slot_9, QMetaData::Public },
+	{ "showFullView()", &slot_10, QMetaData::Public },
+	{ "showIntro()", &slot_11, QMetaData::Public },
+	{ "showAbout()", &slot_12, QMetaData::Public },
+	{ "saveSettings()", &slot_13, QMetaData::Public }
+    };
+    metaObj = QMetaObject::new_metaobject(
+	"ConfigMainWindow", parentObject,
+	slot_tbl, 14,
+	0, 0,
+#ifndef QT_NO_PROPERTIES
+	0, 0,
+	0, 0,
+#endif // QT_NO_PROPERTIES
+	0, 0 );
+    cleanUp_ConfigMainWindow.setMetaObject( metaObj );
+    return metaObj;
+}
+
+void* ConfigMainWindow::qt_cast( const char* clname )
+{
+    if ( !qstrcmp( clname, "ConfigMainWindow" ) )
+	return this;
+    return QMainWindow::qt_cast( clname );
+}
+
+bool ConfigMainWindow::qt_invoke( int _id, QUObject* _o )
+{
+    switch ( _id - staticMetaObject()->slotOffset() ) {
+    case 0: changeMenu((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    case 1: setMenuLink((struct menu*)static_QUType_ptr.get(_o+1)); break;
+    case 2: listFocusChanged(); break;
+    case 3: goBack(); break;
+    case 4: loadConfig(); break;
+    case 5: saveConfig(); break;
+    case 6: saveConfigAs(); break;
+    case 7: searchConfig(); break;
+    case 8: showSingleView(); break;
+    case 9: showSplitView(); break;
+    case 10: showFullView(); break;
+    case 11: showIntro(); break;
+    case 12: showAbout(); break;
+    case 13: saveSettings(); break;
+    default:
+	return QMainWindow::qt_invoke( _id, _o );
+    }
+    return TRUE;
+}
+
+bool ConfigMainWindow::qt_emit( int _id, QUObject* _o )
+{
+    return QMainWindow::qt_emit(_id,_o);
+}
+#ifndef QT_NO_PROPERTIES
+
+bool ConfigMainWindow::qt_property( int id, int f, QVariant* v)
+{
+    return QMainWindow::qt_property( id, f, v);
+}
+
+bool ConfigMainWindow::qt_static_property( QObject* , int , int , QVariant* ){ return FALSE; }
+#endif // QT_NO_PROPERTIES

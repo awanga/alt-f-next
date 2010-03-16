@@ -1,0 +1,5 @@
+config BR2_PACKAGE_XDATA_XCURSOR_THEMES
+        bool "xdata_xcursor-themes"
+        help
+	  No description available
+

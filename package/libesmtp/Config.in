@@ -1,0 +1,11 @@
+config BR2_PACKAGE_LIBESMTP
+	bool "libesmtp"
+	select BR2_PACKAGE_OPENSSL
+	help
+		SMTP client which manages posting (or submission of) electronic mail
+		via a preconfigured Mail Transport Agent (MTA). It may be used as part of
+		a Mail User Agent (MUA) or other program that must be able to post
+		electronic mail but where mail functionality is not that program's
+		primary purpose.
+
+		http://www.stafford.uklinux.net/libesmtp/index.html

@@ -1,0 +1,5 @@
+config BR2_PACKAGE_XPROTO_TRAPPROTO
+	bool "trapproto"
+	help
+	  trapproto 3.4.3
+	  X.Org Trap protocol headers

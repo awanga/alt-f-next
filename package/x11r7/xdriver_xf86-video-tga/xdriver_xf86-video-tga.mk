@@ -1,0 +1,14 @@
+################################################################################
+#
+# xdriver_xf86-video-tga -- X.Org driver for tga cards
+#
+################################################################################
+
+XDRIVER_XF86_VIDEO_TGA_VERSION = 1.2.0
+XDRIVER_XF86_VIDEO_TGA_SOURCE = xf86-video-tga-$(XDRIVER_XF86_VIDEO_TGA_VERSION).tar.bz2
+XDRIVER_XF86_VIDEO_TGA_SITE = http://xorg.freedesktop.org/releases/individual/driver
+XDRIVER_XF86_VIDEO_TGA_AUTORECONF = NO
+XDRIVER_XF86_VIDEO_TGA_DEPENDENCIES = xserver_xorg-server xproto_fontsproto xproto_randrproto xproto_renderproto xproto_videoproto xproto_xextproto xproto_xf86dgaproto xproto_xproto
+XDRIVER_XF86_VIDEO_TGA_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+
+$(eval $(call AUTOTARGETS,package/x11r7,xdriver_xf86-video-tga))

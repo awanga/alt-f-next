@@ -1,0 +1,191 @@
+#
+config BR2_LARGEFILE
+	bool "Enable large file (files > 2 GB) support?"
+	depends on !BR2_cris
+	help
+	  If you are building your own toolchain and you want to 
+	  support files larger than 2GB then enable this option.
+	  If you have an external binary toolchain that has been 
+	  built with large file support (files > 2GB) then enable 
+	  this option.
+
+config BR2_INET_IPV6
+	bool "Enable IPv6"
+	help
+	  If you are building your own toolchain and you want to 
+	  enable IPV6 support then enable this option.
+	  If you have an external binary toolchain that has been 
+	  built with IPV6 support then enable this option.
+
+config BR2_INET_RPC
+	bool "Enable RPC"
+	help
+	  Enable RPC. RPC support is needed for nfs.
+	  If you are building your own toolchain and you want to 
+	  enable RPC support then enable this option.
+	  If you have an external binary toolchain that has been 
+	  built with RPC support then enable this option.
+
+config BR2_ENABLE_LOCALE
+	bool "Enable toolchain locale/i18n support?"
+	select BR2_USE_WCHAR
+	help
+	  If you are building your own toolchain and you want to 
+	  enable locale/i18n support then enable this option.
+	  If you have an external binary toolchain that has been 
+	  built with locale/i18n support then enable this option.
+
+config BR2_ENABLE_LOCALE_PREGENERATED
+	bool "Use pregenerated locale data?"
+	depends on BR2_ENABLE_LOCALE && BR2_TOOLCHAIN_SOURCE
+	help
+	  Instead of generating the locale data locally you can optionally
+	  download a pregenerated set of locales.
+
+	  Say N here unless your buildhost lacks locale support and you
+	  desparately want to use internationalization on your target.
+
+config BR2_ENABLE_LOCALE_PURGE
+	bool "Purge unwanted locales"
+	help
+	  Explicitly specify what locales to install on target. If N
+	  then all locales supported by packages are installed.
+
+config BR2_ENABLE_LOCALE_WHITELIST
+	string "Locales to keep"
+	default "C en_US de fr"
+	depends on BR2_ENABLE_LOCALE_PURGE
+	help
+	  Whitespace seperated list of locales to allow on target.
+	  Locales not listed here will be removed from the target.
+	  See 'locale -a' on your host for a list of locales available
+	  on your build host, or have a look in /usr/share/locale in
+	  the target file system for available locales.
+
+	  Notice that listing a locale here doesn't guarantee that it
+	  will be available on the target - That purely depends on the
+	  support for that locale in the selected packages.
+
+config BR2_USE_WCHAR
+	bool "Enable WCHAR support"
+	help
+	  If you are building your own toolchain and you want to 
+	  enable WCHAR support then enable this option.
+	  If you have an external binary toolchain that has been built 
+	  with WCHAR support then enable this option.
+
+config BR2_SOFT_FLOAT
+	bool "Use software floating point by default"
+	depends on BR2_arm || BR2_armeb || BR2_avr32 || BR2_mips || BR2_mipsel || BR2_powerpc || BR2_nios2
+	help
+	  If your target CPU does not have a Floating Point Unit (FPU) or a
+	  kernel FPU emulator, but you still wish to support floating point
+	  functions, then everything will need to be compiled with soft
+	  floating point support (-msoft-float).
+
+	  Most people will answer N.
+
+config BR2_USE_SSP
+	bool "Enable stack protection support"
+	help
+	  Enable stack smashing protection support using GCCs
+	  -fstack-protector[-all] option.
+
+	  See http://www.linuxfromscratch.org/hints/downloads/files/ssp.txt
+	  for details.
+
+choice
+	prompt "Thread library implementation"
+	default BR2_PTHREADS_OLD
+	help
+	  If you are building your own toolchain then select the type of 
+	  libpthreads you want to use.
+	  Not all thread variants work with all versions of uClibc,
+	  the "linuxthreads (stable/old)" may be a working fallback
+	  if you need threading at all.
+	  If you have an external binary toolchain then select the type 
+	  of libpthreads it was built with.
+
+	config BR2_PTHREADS_NONE
+		bool "none"
+
+	config BR2_PTHREADS
+		bool "linuxthreads"
+
+	config BR2_PTHREADS_OLD
+		bool "linuxthreads (stable/old)"
+
+	config BR2_PTHREADS_NATIVE
+		bool "Native POSIX Threading (NPTL)"
+endchoice
+
+config BR2_PROGRAM_INVOCATION
+	bool "Enable 'program invocation name'"
+	help
+	  Support for the GNU-specific program_invocation_name and
+	  program_invocation_short_name strings.  Some GNU packages
+	  (like tar and coreutils) utilize these for extra useful
+	  output, but in general are not required.
+	  If you have an external binary toolchain that has been built
+	  with program invocation support then enable this option.
+
+config BR2_GCC_CROSS_CXX
+	bool
+	help
+	  If you are building your own toolchain and want to build 
+	  a C++ cross-compiler this needs to be enabled.
+	  If you have an external binary toolchain that has a C++ compiler
+	  and you want to use it then you need to enable this option.
+
+config BR2_INSTALL_LIBSTDCPP
+	bool "Build/install c++ compiler and libstdc++?"
+	select BR2_LARGEFILE if (!BR2_GCC_SUPPORTS_SYSROOT && BR2_TOOLCHAIN_SOURCE)
+	select BR2_GCC_CROSS_CXX
+	help
+	  If you are building your own toolchain and want to build and install
+	  the C++ compiler and library then you need to enable this option.
+	  If you have an external toolchain that has been built with C++ 
+	  support and you want to use the compiler / library then you need 
+	  to select this option.
+
+config BR2_TARGET_OPTIMIZATION
+	string "Target Optimizations"
+	default "-Os -pipe"
+	help
+	  Optimizations to use when building for the target host.
+
+if BR2_TOOLCHAIN_SOURCE
+source "toolchain/elf2flt/Config.in"
+source "toolchain/mklibs/Config.in"
+source "toolchain/sstrip/Config.in"
+
+config BR2_ENABLE_MULTILIB
+	bool "Enable multilib support?"
+	help
+	    Build libraries to support different ABIs.
+
+config BR2_VFP_FLOAT
+	bool "Use ARM Vector Floating Point unit"
+	depends on !BR2_SOFT_FLOAT
+	depends on BR2_arm || BR2_armeb
+	help
+	  Setting this option will enable the "-mfpu=vfp" option.
+	  If your ARM CPU has a Vector Floating Point Unit (VFP)
+	  and the toolchain supports the option, then the 
+	  code can be optimized.
+	  
+	  Most people will answer N.
+
+config BR2_CROSS_TOOLCHAIN_TARGET_UTILS
+	bool "Include target utils in cross toolchain"
+	default y
+	help
+	  When using buildroot to build a deployable cross toolchain,
+	  it is handy to include certain target apps with that toolchain
+	  as a convenience.
+	  Examples include ldd, gdbserver, and strace.
+
+	  Answer Y if you want these apps (if built) copied into the
+	  cross toolchain dir under <arch>-linux-uclibc/target_utils/.
+
+endif

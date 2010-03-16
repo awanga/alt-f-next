@@ -1,0 +1,5 @@
+config BR2_PACKAGE_PROFTPD
+	bool "proftpd"
+	help
+	  ProFTPD, a highly configurable FTP server.
+

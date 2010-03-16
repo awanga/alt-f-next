@@ -1,0 +1,90 @@
+#! /bin/sh
+#
+# System-V init script for the openntp daemon
+#
+
+DESC="Network Time Protocol Daemon"
+TYPE=net
+NAME=ntpd
+CONF=ntpd.conf
+NTPD_CRON=/tmp/ntpd.cron
+
+eval $(grep NTPD /etc/ntp.conf)
+
+status() {
+	if test $NTPD_DAEMON = "yes"; then
+		if start-stop-daemon -K -t -q -n $NAME; then
+			echo "$NAME running"
+			return 0
+		else
+			echo "$NAME stopped"
+			return 1
+		fi
+	else
+		crontab -l 2>/dev/null | grep -q adjtime 
+		if test $? = 0; then
+			echo "$NAME running"
+			return 0
+		else
+			echo "$NAME stopped"
+			return 1
+		fi
+	fi
+}
+
+update_cron() {
+	if ! rccron status; then
+		rccron start
+	fi
+	crontab -l > $NTPD_CRON
+	sed -i '/\/usr\/sbin\/adjtime/d' $NTPD_CRON
+	if test $# = 1; then
+		echo "$1" >> $NTPD_CRON
+	fi
+	crontab $NTPD_CRON
+	rm $NTPD_CRON
+}
+
+case "$1" in
+	start)
+		if test $NTPD_BOOT = "yes" ; then
+			echo -n "Getting initial time via ntp."
+			ntpd -qg
+		fi
+
+		if test $NTPD_DAEMON = "yes" ; then
+			echo -n "Starting $NAME"
+			update_cron
+			adjtimex -f 0 # if != 0 affects ntpd drift calculation 
+			start-stop-daemon -S -q -x $NAME
+		else
+			echo -n "Setting up crontab for $NAME"
+			adjtime -restart
+			update_cron "0 6 * * * /usr/sbin/adjtime -adjust"
+		fi
+		echo "."
+		;;
+
+	stop) 
+		echo -n "Stopping $NAME"
+		start-stop-daemon -K -q -n $NAME
+		update_cron
+		echo "."
+		;;
+
+	restart)
+		echo "Restarting $NAME"
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		;;
+
+	status)
+		status
+		;;
+
+	*) echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
+		exit 1
+		;;
+esac
+

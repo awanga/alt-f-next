@@ -1,0 +1,10 @@
+config BR2_PACKAGE_ESMTP
+	bool "esmtp"
+	select BR2_PACKAGE_LIBESMTP
+	help
+		esmtp is a user configurable relay-only Mail Transfer Agent (MTA)
+		with a sendmail compatible syntax. It's based on libESMTP supporting
+		the AUTH (including the CRAM-MD5 and NTLM SASL mechanisms) and the
+		StartTLS SMTP extensions. 
+
+		http://esmtp.sourceforge.net/index.html

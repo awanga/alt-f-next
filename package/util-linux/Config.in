@@ -1,0 +1,10 @@
+config BR2_PACKAGE_UTIL-LINUX
+	bool "util-linux"
+	select BR2_PACKAGE_GETTEXT if BR2_ENABLE_LOCALE
+	select BR2_PACKAGE_LIBINTL if BR2_ENABLE_LOCALE
+	help
+	  Various useful/essential Linux utilities.
+
+	  Things like mkfs, mkswap, swapon, fdisk, mount, dmesg, etc...
+
+	  http://www.kernel.org/pub/linux/utils/util-linux/

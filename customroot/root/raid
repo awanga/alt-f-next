@@ -1,0 +1,6 @@
+mdadm --create /dev/md1 --level=1 --metadata=1.0 --bitmap=internal \
+	--raid-devices=2 /dev/sda5 /dev/sdb5
+
+mdadm --create /dev/md0 --bitmap=internal --level=raid5 --metadata=1 \
+	--raid-devices=3 /dev/sda2 /dev/sdb2 /dev/sdc5
+mdadm --monitor --mail joaofscardoso@gmail.com --oneshot --test --scan

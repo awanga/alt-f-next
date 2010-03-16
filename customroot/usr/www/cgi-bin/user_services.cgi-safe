@@ -1,0 +1,69 @@
+#!/bin/sh
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+
+. common.sh
+check_cookie
+write_header "User Services"
+
+CONFD=/etc/init.d/
+
+s="<strong>"
+es="</strong>"
+
+cat<<-EOF
+	<form action="/cgi-bin/user_services_proc.cgi" method="post">
+	<TABLE>
+	<TR>
+	<TD> $s Service $es </TD>
+	<TD> $s Enabled $es </TD>
+	<td align=center> $s Status $es </td>
+	<td align=center> $s Action $es </td>
+	<td></td>
+	<td align=center> $s Description $es </td>
+	</tr>
+EOF
+
+for i in $(ls $CONFD); do
+	if ! $(grep -q '^TYPE=user' $CONFD/$i); then continue; fi
+
+	#sname=${i#S??}
+	sname=${i:3}
+	cap=$(echo -n ${sname:0:1} | tr [:lower:] [:upper:])
+	capname=$(echo -n ${cap}${sname:1})
+	eval $(grep '^DESC=' $CONFD/$i)
+	srvs="$srvs $sname"
+
+	echo "<TR><TD> $capname </TD>"
+	echo -n "<TD align=center><input type=checkbox "
+	if test -x /etc/init.d/$i; then
+		echo -n " CHECKED "
+	fi
+	echo " name=$sname value=enable></TD>"
+	if rc$sname status >/dev/null ; then
+		st="Running"
+		act="StopNow"
+	else
+		st="Stopped"
+		act="StartNow"
+	fi
+	cat<<-EOF
+		<td>$st</td>
+		<td><input type="submit" name=$sname value="$act"></td>
+		<td><input type="submit" name=$sname value="Configure"></td>
+		<td>$DESC</td></tr>
+	EOF
+done
+
+cat<<-EOF
+	<TR>
+        <TD></TD><TD> <input type="submit" name="$srvs" value="Submit"></TD>
+	</TR>        
+
+	</TABLE>
+	</form>
+
+	</body>
+	</html>
+EOF
+

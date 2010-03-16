@@ -1,0 +1,7 @@
+config BR2_PACKAGE_USHARE
+	bool "ushare"
+	select BR2_PACKAGE_LIBUPNP
+	help
+	  uPNP AV server. Needs libupnp
+
+	  http://ushare.geexbox.org

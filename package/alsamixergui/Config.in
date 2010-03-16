@@ -1,0 +1,7 @@
+config BR2_PACKAGE_ALSAMIXERGUI
+	select BR2_PACKAGE_FLTK
+	bool "alsamixergui"
+	help
+	  A nice GUI mixer for Alsa using fltk
+
+	  http://www.iua.upf.es/~mdeboer/projects/alsamixergui/

@@ -1,0 +1,7 @@
+config BR2_PACKAGE_TRANSMISSION
+	bool "transmission"
+	depends on BR2_PACKAGE_LIBCURL && BR2_PACKAGE_OPENSSL
+	help
+	  Bittorrent client
+
+	  http://download.m0k.org/transmission/files

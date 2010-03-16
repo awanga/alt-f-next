@@ -1,0 +1,14 @@
+config BR2_PACKAGE_LIBGMP
+	bool "gmp"
+	help
+	  GNU Multiple Precision Arithmetic Library.
+
+	  http://www.swox.com/gmp/
+
+
+config BR2_PACKAGE_LIBGMP_HEADERS
+	bool "gmp headers for target"
+	depends on BR2_PACKAGE_LIBGMP
+	help
+	  Install the gmp.h for the target.
+

@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GPERF
+	bool "gperf"
+	help
+	  A 'perfect hash function' generator
+
+	  http://www.gnu.org/software/gperf/

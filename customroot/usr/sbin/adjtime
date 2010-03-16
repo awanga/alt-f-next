@@ -1,0 +1,121 @@
+#!/bin/sh
+
+#set -x
+
+CONFF=/etc/adjtime.conf
+NTPD_CONF=/etc/ntp.conf
+
+usage() {
+	echo "Usage: adjtime -show | -setrtc | -adjust | -restart"
+	exit 1
+}
+
+if ! test -f $NTPD_CONF; then
+	echo "No $NTPD_CONF file, exiting"
+	exit 1
+fi
+
+while read arg server; do
+	if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
+		NTPD_SERVER=$server
+	elif test -z "$server"; then
+		eval "$arg"
+	fi
+done < $NTPD_CONF
+
+if test $# = 0; then
+	usage
+
+elif test "$1" = "-show"; then
+
+	echo "RTC:  $(hwclock -u | awk '{print $4}')"
+	echo "date: $(date | awk '{print $4}')"
+	echo "sntp: $(sntp $NTPD_SERVER | awk '{print $4 " " $5 $6}')"
+
+elif test "$1" = "-setrtc"; then
+
+	# wait for second change
+	o=$(date +%s)
+	while test $o = $(date +%s); do
+		true
+	done
+	
+	# adjust hwclock
+	hwclock -wu
+
+elif test "$1" = "-restart"; then
+
+	adj=0
+	if test -f $CONFF; then
+		adj=$(tail -1 $CONFF | cut -d" " -f2)
+	fi
+	adjtimex -f $adj > /dev/null 2>&1
+	# ntpd -qg # too slow, but accurate
+	sntp -a $NTPD_SERVER
+	echo "$(date +%s) $adj" >> $CONFF
+	tail -20 $CONFF > /tmp/adjtime
+	mv /tmp/adjtime $CONFF
+
+elif test "$1" = "-adjust"; then
+	
+	if ! test -f $CONFF; then
+
+		echo "No config file."
+		adjtimex -f 0 > /dev/null 2>&1
+		ntpd -qg
+		echo "$(date +%s) 0" > $CONFF
+
+	else	
+
+		# drift (sec) --- delta (sec)
+		#   x (ppm)   --- 1000000
+		##
+		#   1 (ppm) --- 65536
+		#   x (ppm) --- adj
+		#
+		#  adj = (x * 65536) = (drift * 1000000 ) / delta  * 65536
+
+		delta=$(expr $(date +%s) - $(tail -1 $CONFF | cut -d" " -f1)) # time since last adjust
+		if test -z "$delta"; then
+			echo "adjtime file possibly corrupted, not adjusting."
+			exit 1
+		fi
+	
+		#if test $delta -lt 86400; then
+		#if test $delta -lt 21600; then
+		#if test $delta -lt 3600; then
+		if test $delta -lt 360; then
+			echo "Wait at least one day between adjustments, not adjusting."
+			exit 1
+		fi
+	
+		up=$(cat /proc/uptime | cut -d'.' -f1)
+		if test $up -lt $delta; then
+			echo "System has been rebooted since last adjustment, reuse last adjustment."
+			adjtime -restart
+			exit 0
+		fi
+	
+		curr_adj=$(adjtimex | awk '/frequency/{print $3}')
+	
+		# expr does not accept decimals, so use awk
+		drift=$(ntpd -qg | awk '{printf "%d", $4 * -1000000}') # ntpd takes a variable execution time
+		delta=$(expr $(date +%s) - $(tail -1 $CONFF | cut -d" " -f1)) # time since last adjust
+		adj=$(expr $drift \* 65536 / $delta)
+		new_adj=$(expr $curr_adj - $adj) 
+	
+		echo "drift=$drift delta_adj=$adj new_adj=$new_adj (current=$curr_adj)"
+	
+		echo "$(date +%s) $new_adj" >> $CONFF
+		tail -20 $CONFF > /tmp/adjtime
+		mv /tmp/adjtime $CONFF
+
+		adjtimex -f $new_adj > /dev/null 2>&1
+	
+		adjtime -setrtc
+	fi
+
+else
+	usage
+fi
+

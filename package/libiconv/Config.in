@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBICONV
+	bool "libiconv"
+	help
+	  unicode conversion library
+
+	  http://ftp.gnu.org/pub/gnu/libiconv

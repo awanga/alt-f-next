@@ -1,0 +1,67 @@
+#!/bin/sh
+#
+# Starts sysctrl.
+#
+
+DESC="fan/temperature/buttons/sleep/MD Daemon"
+NAME=sysctrl
+TYPE=sys
+
+umask 077
+
+start() {
+ 	echo -n "Starting $NAME: "
+	start-stop-daemon -S -q -x $NAME
+	echo "OK"
+}
+
+stop() {
+	echo -n "Stopping $NAME: "
+	start-stop-daemon -K -q -n $NAME
+	echo "OK"
+}
+
+restart() {
+	stop
+	start
+}
+
+reload() {
+	echo -n "reloading $NAME: "
+	start-stop-daemon -K -q -s SIGHUP -n $NAME
+	echo "OK"
+}
+
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		status
+		;;
+	reload)
+		reload
+		;;
+	restart)
+		restart
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|status|restart}"
+		exit 1
+esac
+
+exit $?

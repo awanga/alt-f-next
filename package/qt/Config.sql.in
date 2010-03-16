@@ -1,0 +1,42 @@
+menuconfig BR2_PACKAGE_QT_SQL_MODULE
+	bool "SQL Module"
+	help
+	  Compile Qt SQL Module
+
+if BR2_PACKAGE_QT_SQL_MODULE
+config BR2_PACKAGE_QT_MYSQL
+	bool "MySQL Driver"
+	help
+	  Build MySQL driver
+	  If unsure, say n.
+
+config BR2_PACKAGE_QT_IBASE
+	bool "iBase Driver"
+	help
+	  Build iBase driver
+	  If unsure, say n.
+
+config BR2_PACKAGE_QT_ODBC
+	bool "ODBC Driver"
+	help
+	  Build ODBC driver
+	  If unsure, say n.
+
+config BR2_PACKAGE_QT_PSQL
+	bool "PostgreSQL Driver"
+	help
+	  Build PostgreSQL driver
+	  If unsure, say n.
+
+config BR2_PACKAGE_QT_SQLITE
+	bool "SQLite 3 Driver"
+	help
+	  Build SQLite driver
+	  If unsure, say n.
+
+config BR2_PACKAGE_QT_SQLITE2
+	bool "SQLite 2 Driver"
+	help
+	  Build SQLite 2 driver
+	  If unsure, say n.
+endif

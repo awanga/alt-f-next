@@ -1,0 +1,10 @@
+config BR2_PACKAGE_PKG_CONFIG
+	bool "pkg-config"
+	select BR2_PACKAGE_LIBGLIB2
+	help
+	  pkg-config is a system for managing library compile/link
+	  flags that works with automake and autoconf. It replaces
+	  the ubiquitous *-config scripts you may have seen with a
+	  single tool.
+
+	  http://www.freedesktop.org/software/pkgconfig/

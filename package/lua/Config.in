@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LUA
+	bool "lua"
+	select BR2_PACKAGE_READLINE
+	select BR2_PACKAGE_NCURSES
+	help
+	  Lua is a powerful, fast, light-weight, embeddable scripting language.
+
+	  http://www.lua.org/

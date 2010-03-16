@@ -1,0 +1,8 @@
+config BR2_PACKAGE_MUTT
+	bool "mutt (BROKEN for wchar; FIXME!)"
+	select BR2_PACKAGE_NCURSES
+	help
+	  Mutt is a sophisticated text-based Mail User Agent (MUA)
+
+	  http://www.mutt.org/
+

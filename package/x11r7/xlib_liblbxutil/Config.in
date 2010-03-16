@@ -1,0 +1,6 @@
+config BR2_PACKAGE_XLIB_LIBLBXUTIL
+	bool "liblbxutil"
+	select BR2_PACKAGE_XPROTO_XEXTPROTO
+	help
+	  liblbxutil 1.0.1
+	  X.Org lbxutil library

@@ -1,0 +1,83 @@
+config BR2_PACKAGE_IPSEC_TOOLS
+	bool "ipsec-tools"
+	select BR2_PACKAGE_OPENSSL
+	select BR2_PACKAGE_FLEX
+	select BR2_PACKAGE_FLEX_LIBFL
+	help
+	  This package is required to support IPSec for Linux 2.6+
+
+config BR2_PACKAGE_IPSEC_TOOLS_ADMINPORT
+	default y
+	depends on BR2_PACKAGE_IPSEC_TOOLS
+	bool "Enable racoonctl(8)."
+	help
+	  Lets racoon to listen to racoon admin port, which is to
+	  be contacted by racoonctl(8).
+
+config BR2_PACKAGE_IPSEC_TOOLS_NATT
+	depends on BR2_PACKAGE_IPSEC_TOOLS
+	bool "Enable NAT-Traversal"
+	help
+	  This needs kernel support, which is available on Linux. On
+	  NetBSD, NAT-Traversal kernel support has not been integrated
+	  yet, you can get it from here:
+
+	  http://ipsec-tools.sourceforge.net/netbsd_nat-t.diff If you
+
+	  live in a country where software patents are legal, using
+	  NAT-Traversal might infringe a patent.
+
+
+config BR2_PACKAGE_IPSEC_TOOLS_FRAG
+	depends on BR2_PACKAGE_IPSEC_TOOLS
+	bool "Enable IKE fragmentation."
+	help
+	  Enable IKE fragmentation, which is a workaround for
+	  broken routers that drop fragmented packets
+
+config BR2_PACKAGE_IPSEC_TOOLS_STATS
+	default y
+	depends on BR2_PACKAGE_IPSEC_TOOLS
+	bool "Enable statistics logging function."
+
+config BR2_PACKAGE_IPSEC_TOOLS_IPV6
+	default y
+	depends on BR2_PACKAGE_IPSEC_TOOLS && BR2_INET_IPV6
+	bool "Enable IPv6 support"
+	help
+	  This option has no effect if uClibc has been compiled without
+	  IPv6 support.
+
+config BR2_PACKAGE_IPSEC_TOOLS_READLINE
+	depends on BR2_PACKAGE_IPSEC_TOOLS
+	select BR2_PACKAGE_READLINE
+	bool "Enable readline input support if available."
+
+config BR2_PACKAGE_IPSEC_TOOLS_LIBS
+	bool "Install IPSec libraries under staging_dir/lib"
+	default y
+	depends on BR2_PACKAGE_IPSEC_TOOLS
+	help
+	  Install libipsec.a and libracoon.a under staging_dir/lib for further
+	  development on a host machine.
+
+if BR2_PACKAGE_IPSEC_TOOLS
+
+choice
+	prompt "Security context"
+	default BR2_PACKAGE_IPSEC_SECCTX_DISABLE
+	help
+	  Selects whether or not to enable security context support.
+
+config BR2_PACKAGE_IPSEC_SECCTX_DISABLE
+	bool "Disable security context support"
+
+config BR2_PACKAGE_IPSEC_SECCTX_ENABLE
+	bool "Enable SELinux security context support"
+
+config BR2_PACKAGE_IPSEC_SECCTX_KERNEL
+	bool "Enable kernel security context"
+
+endchoice
+
+endif

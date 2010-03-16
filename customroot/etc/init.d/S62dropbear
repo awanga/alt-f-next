@@ -1,0 +1,79 @@
+#!/bin/sh
+#
+# Starts dropbear sshd.
+#
+
+DESC="Light SSH/SFTP client/server"
+NAME=dropbear
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+sinit() {
+	# Make sure dropbear directory exists
+	if [ ! -d /etc/dropbear ] ; then
+		mkdir -p /etc/dropbear
+	fi
+
+	# Check for the Dropbear RSA key
+	if [ ! -f /etc/dropbear/dropbear_rsa_host_key ] ; then
+		echo -n "generating rsa key... "
+		/usr/bin/dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
+	fi
+
+	# Check for the Dropbear DSS key
+	if [ ! -f /etc/dropbear/dropbear_dss_host_key ] ; then
+		echo -n "generating dsa key... "
+		/usr/bin/dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
+	fi
+
+	umask 077
+	if ! test -e /var/log/lastlog; then touch /var/log/lastlog; fi
+}
+
+start() {
+ 	echo -n "Starting dropbear sshd: "
+	sinit
+	#start-stop-daemon -S -q -p /var/run/dropbear.pid --exec /usr/sbin/dropbear
+	start-stop-daemon -S -q -x $NAME
+	echo "OK"
+}
+
+stop() {
+	echo -n "Stopping dropbear sshd: "
+	#start-stop-daemon -K -q -p /var/run/dropbear.pid
+	start-stop-daemon -K -q -n $NAME
+	echo "OK"
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	status)
+		status
+		;;
+	restart|reload)
+		stop
+		start
+		;;
+	init)
+		sinit
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|init}"
+		exit 1
+esac
+
+exit $?
+

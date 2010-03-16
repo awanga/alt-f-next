@@ -1,0 +1,53 @@
+#! /bin/sh
+
+set -e
+
+DESC="vsftpd"
+NAME=vsftpd
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+sinit() {
+	if ! test -d /usr/share/empty; then
+		mkdir -p /usr/share/empty
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $DESC: "
+		sinit
+		start-stop-daemon -S -q -b -x $NAME
+		echo "OK"
+		;;
+	stop)
+		echo -n "Stopping $DESC: "
+		start-stop-daemon -K -q -x $NAME
+		echo "OK"
+		;;
+	status)
+		status
+		;;
+	init)
+		sinit
+		;;
+	restart|force-reload)
+		echo "Restarting $DESC: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|force-reload|init}" >&2
+		exit 1
+		;;
+esac

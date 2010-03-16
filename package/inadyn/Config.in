@@ -1,0 +1,6 @@
+config BR2_PACKAGE_INADYN
+	bool "inadyn"
+	help
+	  Dynamic DNS client for dyndns.org (in all three flavors:
+	  dynamic, static, custom), freedns.afraid.org,
+	  zoneedit.com, and no-ip.com

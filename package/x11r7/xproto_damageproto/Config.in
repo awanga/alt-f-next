@@ -1,0 +1,5 @@
+config BR2_PACKAGE_XPROTO_DAMAGEPROTO
+	bool "damageproto"
+	help
+	  damageproto 1.0.3
+	  X.Org Damage protocol headers

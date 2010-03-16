@@ -1,0 +1,63 @@
+#! /bin/sh
+
+set -e
+
+DESC="Bittorrent client"
+NAME=transmission-daemon
+DAEMON=/usr/bin/$NAME
+CONFF=/etc/transmission.conf
+TYPE=user
+
+. $CONFF
+
+network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
+
+OPTS="--no-auth --allowed=127.0.0.1,$network --config-dir=$CONF_DIR"
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+case "$1" in
+	start)
+		if test -d "$CONF_DIR"; then
+			if ! test -f "$CONF_DIR/settings.json"; then
+				OPTS="$OPTS --watch-dir=$WATCH_DIR --download-dir=$DOWNLOAD_DIR"
+			fi
+
+			echo -n "Starting $NAME: "
+			start-stop-daemon -S -x $NAME -- $OPTS
+			echo "OK"
+		else
+			echo -n "Didn't start $NAME, "$CONF_DIR" does not exist"
+			exit 1
+		fi
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -x $NAME
+		echo "OK"
+		;;
+	status)
+		status
+		;;
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|status|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0

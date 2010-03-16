@@ -1,0 +1,3 @@
+KC_QT_CFLAGS=$(shell pkg-config qt-mt --cflags)
+KC_QT_LIBS=$(shell pkg-config qt-mt --libs)
+KC_QT_MOC=$(shell pkg-config qt-mt --variable=prefix)/bin/moc

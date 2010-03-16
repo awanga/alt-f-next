@@ -1,0 +1,24 @@
+Source: uboot-mkimage
+Section: utils
+Priority: optional
+Build-Depends: debhelper (>= 7), zlib1g-dev
+Maintainer: Marc Singer <elf@debian.org>
+Standards-Version: 3.7.3
+Vcs-Git: git://scarlet.buici.com/uboot-mkimage
+
+Package: uboot-mkimage
+Architecture: any
+Section: utils
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: jigit (<= 1.16-1)
+Description: generate kernel image for U-Boot
+ This package contains the mkimage utility, which encapsulates a compressed
+ "uImage" Linux kerel image with header information, CRC32 checksum, etc,
+ for use with the U-Boot bootloader.
+ .
+ mkimage can also be used to create ramdisk images for use
+ with U-Boot, either separated from the Linux kernel image, or
+ combined into one file. mkimage encapsulates the images with a 64
+ byte header containing information about target architecture,
+ operating system, image type, compression method, entry points, time
+ stamp, CRC32 checksums, etc.

@@ -1,0 +1,8 @@
+config BR2_PACKAGE_TIFF
+	bool "tiff"
+	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_JPEG
+	help
+	  Library for handling TIFF (Tag Image File Format) images.
+
+	  http://www.libtiff.org/

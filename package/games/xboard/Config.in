@@ -1,0 +1,6 @@
+config BR2_PACKAGE_XBOARD
+	bool "xboard"
+	help
+	  XBoard and WinBoard are graphical user interfaces for chess.
+
+	  http://ftp.gnu.org/gnu/xboard

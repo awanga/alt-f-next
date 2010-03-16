@@ -1,0 +1,9 @@
+comment "smartmontools has no inherent support for AVR32" 
+	depends on BR2_avr32 && BR2_PACKAGE_SMARTMONTOOLS
+
+config BR2_PACKAGE_SMARTMONTOOLS
+	bool "smartmontools"
+	help
+	  Control and monitor storage systems using S.M.A.R.T.
+
+	  http://smartmontools.sourceforge.net/

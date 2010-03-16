@@ -1,0 +1,6 @@
+config BR2_PACKAGE_BEECRYPT
+	bool "beecrypt"
+	help
+	  Beecrypt is a general-purpose cryptography library.
+
+	  http://beecrypt.sf.net

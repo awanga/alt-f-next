@@ -1,0 +1,6 @@
+config BR2_PACKAGE_AXEL
+	bool "axel"
+	help
+	  HTTP/FTP download accelerator.
+
+	  http://axel.alioth.debian.org/

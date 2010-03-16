@@ -1,0 +1,4 @@
+config BR2_PACKAGE_SFDISK
+	bool "sfdisk"
+	help
+	  Partition table manipulator for Linux.

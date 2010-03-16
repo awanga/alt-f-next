@@ -1,0 +1,7 @@
+config BR2_PACKAGE_SYSVINIT
+	bool "sysvinit"
+	select BR2_PACKAGE_NCURSES
+	help
+	  /sbin/init - parent of all processes
+
+	  http://freshmeat.net/projects/sysvinit/
