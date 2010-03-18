@@ -59,8 +59,8 @@ elif test "$1" = "sqfs"; then
 	# mksquashfs tmp/ rootfs.arm.squashfs -comp lzma -noappend
 
 	# only /usr
-	cp rootfs.arm.ext2 rootfs.arm.ext2.safe
-	mount -o loop rootfs.arm.ext2 tmp
+	cp rootfs.arm.ext2 rootfs.arm.ext2.tmp
+	mount -o loop rootfs.arm.ext2.tmp tmp
 	# block sizes: 131072 262144 524288 1048576
 	mksquashfs tmp/usr/ usr.squashfs -comp lzma -b 262144 \
 		-always-use-fragments -keep-as-directory
@@ -70,7 +70,7 @@ elif test "$1" = "sqfs"; then
 	find . | cpio --quiet -o -H newc | lzma e -si -so  > ../rootfs.arm.cpio-sq.lzma
 	cd ..
 	umount tmp
-	mv rootfs.arm.ext2.safe rootfs.arm.ext2
+	rm rootfs.arm.ext2.tmp
 
 	chown $ME:$MG rootfs.arm.cpio-sq.lzma
 else
