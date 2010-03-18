@@ -82,7 +82,7 @@ generate a firmware file accepted by the vendors web page.
 The Alt-F firmware updater web page also accepts vendor distributed
 firmware, so you can revert the box back to its original state.
 
-other buildroot make options:
+Advanced: other buildroot make options:
 
 make O=<path-to-build-directory> # its advisable to use a separate build tree
 make O=<path-to-build-directory> menuconfig # to configure the build
@@ -94,7 +94,16 @@ make O=<path-to-build-directory> saveconfig  # to save configuration (in local/d
 Buildroot is temperamental, to say the least. After you do a "make", you
 should do a second one :-/, at least in the first build or when
 configuration files are changed.
-"make clean" does not do what you expect. The official way of cleaning is to
-delete the build tree and restart again :-/. I found a faster but involved way.
 
+"make clean" does not do what you would expect. The official way of
+cleaning is to delete the build tree and restart again :-/.
+
+A faster, non guaranteed and involved way:
+  rm $BLDDIR/project_build_arm/dns323/autotools-stamps/*
+  rm -rf $BLDDIR/project_build_arm/dns323/root
+  rm $BLDDIR/project_build_arm/dns323/.root
+  make O=$BLDDIR
+
+This way the toolchain, kernel, and already built packages are not
+rebuilt, only the root directory is repopulated and the rootfs rebuild.
 
