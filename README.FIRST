@@ -11,10 +11,80 @@ The files you might be interested in are in the customroot directory, the
 mk*.sh scripts, the package/Alt-F-utils directory, the host-tools
 directory and the patches directory.
 
-If you really want try to build Alt-F, you can do
+If you really want to try to build Alt-F, do:
+
+  svn checkout http://alt-f.googlecode.com/svn/trunk/ alt-f-read-only
+  cd alt-f-read-only
+  export BLDDIR=<dir> # where you want the build tree, e.g. ~/Alt-F-build
+  ./mkprepare
+  make O=$BLDDIR
+
+and go for a two hours walk (old 3.2GHz/2GB PC) 
+
+When finished, you should find in $BLDDIR/dns323/binaries, the kernel,
+zImage, and the root filesystem image, rootfs.arm.ext2.
+
+To create an initramfs, do
+  ./mkinitramfs sqfs
+
+and you will find the initramfs in $BLDDIR/dns323/binaries,
+rootfs.arm.cpio-sq.lzma, that you can use together with zImage and fonz
+"reloaded" to boot the new kernel. The kernel cmdline is simply
+"console=ttyS0,115200".
+
+If you have a serial connection, you can see the boot log and login as
+root, without password. Use the "passwd" command to set a new (volatile)
+root password.
+
+When booting, and to assign itself an IP, Alt-F tries to first use its
+own flashed settings; if unsuccessful it then tries to use the vendors
+sif.conf flashed file; if unsuccessful it then tries to requests a IP
+to a DHCP server and finally tries to find an unassigned IP in the
+192.168.1.254 to 192.168.1.240 range.
+
+So, after booting, your box will hopefully have the same IP as before,
+and you can telnet to it and login as root, without password. Use the
+"passwd" command to set a new (volatile) root password.
+
+If you want to use ssh, then after login do "rcdropbear start".
+
+You don't need to do the above telnet and ssh/dropbear thing. Just use
+Alt-F "lame" administering web page, opening a web browser to the box
+default IP. You have to setup a new (volatile) password, and, if still
+unset, roots password will be the same.
+
+To flash the settings, use the command line "loadsave_settings", or the
+web page "Settings management". The vendor flashed settings are only
+lost if you deliberately clear them.
+
+The web pages were developed in Linux using firefox. The first time I
+used then in windows under ie7 a bug appeared immediately :-/
+
+That's the reason why I prematurely announce Alt-F: I need your help. I
+find HTML/JS/sh programming boooring. The source code is available,
+please send your patches and contributions and help me finish Alt-F.
+It's future is now also in yours hands.
+
+Where was I?... ah, building Alt-F:
+
+You can also create a firmware image using
+  ./mkfw
+
+In $BLDDIR/dns323/binaries you will find Alt-F-0.1B1.bin, that you can
+use to flash Alt-F using Alt-F firmware updater web page.
+READ THE BIG RED WARNING BEFORE DOING IT.
+
+The firmware file can't deliberately be flashed using the vendors web
+page firmware updater. You have to experiment and try Alt-F before
+deciding to flash it. You can however tune the mkfw.sh script to
+generate a firmware file accepted by the vendors web page.
+
+The Alt-F firmware updater web page also accepts vendor distributed
+firmware, so you can revert the box back to its original state.
+
+other buildroot make options:
 
 make O=<path-to-build-directory> # its advisable to use a separate build tree
-
 make O=<path-to-build-directory> menuconfig # to configure the build
 make O=<path-to-build-directory> linux26-menuconfig # to fine configure linux
 make O=<path-to-build-directory> busybox-menuconfig # to fine configure busybox
@@ -27,29 +97,4 @@ configuration files are changed.
 "make clean" does not do what you expect. The official way of cleaning is to
 delete the build tree and restart again :-/. I found a faster but involved way.
 
-The kernel tree must be manually patched with aufs and squashfs4-lzma,
-the best is to first do a clean build (you might have to wait one hour)
-and then patch and reconfigure the kernel.
-
-I believe that most other packages are automatically build and patched
-when needed. The (known) exception is the Alt-F-utils package. You must
-copy package/Alt-F-utils/Alt-F-utils-0.1.tar.gz to the download build directory:
-
-	mkdir -p <path-to-build-directory>/dl  # "ele", not "one"
-	cp package/Alt-F-utils/Alt-F-utils-0.1.tar.gz <path-to-build-directory>/dl
-
-To use the mkxx.sh scripts you must manually edit them, adjusting the
-paths, (make sure that the bin directory is infront of your default
-PATH) and compile and copy some binaries found in the host-tools
-directory to the bin directory:
-
--devio
--mkimage
--dns323-fw from packages/Alt-F-utils/Alt-F-utils-0.1.tar.gz
--lzma 
--mksquashfs from the squashfs-tools subdirectory of squashfs4.0-lzma-snapshot.tgz
-
-OK, I have made a script to automate it: mktools.sh
-
-This is work in flux, and might change.
 
