@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# during install some packages install undesired files in root.
+# customize root directory
+
+# script called by buildroot after packages are installed in root dir, but
+# before the root filesystem is built
+
+# 1-during install some packages install undesired files in root.
 # the files to remove from root before creating the filesystem:
 
 RMF="etc/resolv.conf etc/default/ntpd etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb  usr/swat/lang usr/swat/help/welcome.html var/pcmcia var/lib/pcmcia usr/doc usr/share/locale sbin/fsck.ext4dev sbin/mkfs.ext4dev usr/bin/ntpdate lib/udev"
@@ -9,11 +14,11 @@ for i in $RMF; do rm -rf $1/$i; done
 
 #(cd $1 && ln -s bin/busybox init)
 
-# customroot has some additional needed files, copy them to root
+# 2-customroot has some additional needed files, copy them to root
 find customroot/ -name \*~ -delete
 cp -a customroot/* $1/
 
-# but some files in customroot might belong to packages not currently
+# 3-but some files in customroot might belong to packages not currently
 # configured, remove them
 # FIXME: add the corresponding /usr/www/cgi-bin files
 BR2_PACKAGES="BR2_PACKAGE_USHARE BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_OPENSSL"
@@ -33,7 +38,7 @@ done
 
 for i in $RMF; do rm -rf $1/$i; done
 
-# move some files to /usr, that will be lzma squashfs compressed
+# 4-move some files to /usr, that will be lzma squashfs compressed
 #
 # as a matter of fact everything but busybox and libUclibc could be moved,
 # because we are using aufs (squashfs is read-only, but aufs does COW to a tmpfs)
@@ -43,7 +48,8 @@ for i in $1/sbin/*; do
 	fi
 done
 
-# no kernel modules are needed at boot time, so move them to /usr/lib
+# 5-no kernel modules are needed at boot time, so move them to /usr/lib
+# to squashfs-lzma them and save memory
 if ! test -d $1/lib/modules -a -h $1/lib/modules; then
 	cd $1
 	rm -rf usr/lib/modules
