@@ -22,8 +22,13 @@
 
 #set -x
 
-CDIR=~jcard/Desktop/buildroot-2009.08
-BRDIR=~jcard/Desktop/buildroot-2009.08-build-2
+if test "$(dirname $0)" != "."; then
+	echo "This script must be run in the root of the tree, exiting."
+	exit 1;
+fi
+
+CDIR=$(pwd)
+BRDIR=$(BLDDIR)
 RFILES=rootfsfiles.lst
 PFILES=pkgfiles.lst
 

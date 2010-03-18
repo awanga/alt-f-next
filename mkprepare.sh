@@ -24,8 +24,9 @@ fi
 if test -z "$BLDDIR"; then
 	cat<<-EOF
 		Set the environment variable BLDDIR to the build directory, e.g
-		   export BLDDIR=<path to where you which the build dir>\nkeep it out of this tree."
-		exiting.
+		   export BLDDIR=<path to where you which the build dir>
+		Keep it out of this tree.
+		Exiting.
 	EOF
 	exit 1
 fi
