@@ -109,7 +109,7 @@ stop() {
 		umount /proc/fs/nfsd
 	fi
 
-	modprobe -r nfsd
+	# modprobe -r nfsd # blocks!
 }
 
 # See how we were called.
