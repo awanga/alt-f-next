@@ -280,10 +280,11 @@ echo "</body></html>"
 # to avoid this, the page is generated to a temporary file and sent when
 # all is done. 
 # The time spent is the same, but not seeing the page being slowly
-# generated # avoids the slowness sensation
+# generated
+# avoids the slowness sensation
 
 TF=/tmp/.status.tmp
 
 main > $TF 2>&1
 cat $TF
-rm $TF
+rm $TF >/dev/null 2>&1

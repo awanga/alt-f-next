@@ -31,36 +31,30 @@ fi
 cat<<-EOF
     <form action="/cgi-bin/ddns_proc.cgi" method="post">
 
-    <TABLE>
-    <TR>
-        <TD> Provider:</TD>
-        <TD><SELECT NAME="provider">
-                <OPTION SELECTED> $ddns
-		<OPTION> dyndns.org
-		<OPTION> freedns.afraid.org
-                <OPTION> zoneedit.com
-                <OPTION> no-ip.com
-        </SELECT></TD>
+    <table><tr>
+        <td> provider:</td>
+        <td><select name="provider">
+                <option selected> $ddns
+		<option> dyndns.org
+		<option> freedns.afraid.org
+                <option> zoneedit.com
+                <option> no-ip.com
+        </select></td></tr>
+    <tr>
+        <td>hostname:</td>
+        <td><input type="text" value="$alias" name="host" ></td>
+    </tr>
+    <tr>
+        <td>username:</td>
+        <td><input type="text" value="$username" name="user"></td>
+    </tr>
+    <tr>
+        <td>password:</td>
+        <td><input type="password" value="$password" name="passwd"></td>
+    </tr>
 
-    </TR>
-    <TR>
-        <TD>Hostname:</TD>
-        <TD><input type="text" value="$alias" name="host" ></TD>
-    </TR>
-    <TR>
-        <TD>Username:</TD>
-        <TD><input type="text" value="$username" name="user"></TD>
-    </TR>
-    <TR>
-        <TD>Password:</TD>
-        <TD><input type="password" value="$password" name="passwd"></TD>
-    </TR>
-
-    <TR><TD></TD><TD><input type="submit" value="Submit"></TR>
-
-    </TABLE>
-    </form>
-    </body>
-    </html>
+	<tr><td></td><td><input type="submit" value="submit">
+	<input type=button name=back value="Back" onclick="history.back()"></tr>
+    </table></form></body></html>
 EOF
 

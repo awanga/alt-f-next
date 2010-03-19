@@ -7,7 +7,7 @@ SECR=/etc/web-secret
 
 cat<<-EOF
     <center><form action="/cgi-bin/login_proc.cgi" method="post">
-    <table><tr><td>Password:</td><td> <input type="password"  name="passwd" ></td>
+    <table><tr><td>Password:</td><td> <input type="password" name="passwd" ></td>
 EOF
 
 if ! test -e $SECR; then

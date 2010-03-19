@@ -76,7 +76,7 @@ cat<<-EOF
 
     <tr><td>Frame size:</td><td><input type=text id=sip name=mtu value=$mtu></td></tr>
 
-    <TR><TD></TD><TD><input type="submit" value="Submit"></TD></TR>
+    <tr><td></td><td><input type="submit" value="Submit"></td></tr>
     </table>
 
     </form>        

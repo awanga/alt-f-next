@@ -54,6 +54,7 @@ for i in $(seq $cnt 3); do
 done
 
 cat<<-EOF
-	<tr><td></td><td><input type=submit value=Submit></td></tr>
+	<tr><td></td><td><input type=submit value=Submit>
+	<input type=button name=back value="Back" onclick="history.back()"></td></tr>
 	</table></form></body></html>
 EOF

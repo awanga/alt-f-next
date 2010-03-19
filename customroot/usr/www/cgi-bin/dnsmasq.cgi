@@ -154,5 +154,6 @@ cat<<EOF
 	</table></fieldset>
 	<input type=hidden name=cnt_dns value="$i">
 	<input type=submit name=submit value=Submit>
+	<input type=button name=back value="Back" onclick="history.back()">
 	</form></body></html>
 EOF

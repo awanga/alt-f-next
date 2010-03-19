@@ -17,6 +17,7 @@ cat<<-EOF
 	</fieldset>
 
 	<input type=submit name=swat value="Advanced">
+	<input type=button name=back value="Back" onclick="history.back()">
 	</form></body></html>
 EOF
 

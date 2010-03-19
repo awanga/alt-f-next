@@ -40,6 +40,6 @@ cat<<-EOF
 		<td><input type=text size=20 id=watch_dir name=WATCH_DIR value=$WATCH_DIR>
 		<td><input type=button onclick="browse_dir_popup('watch_dir')" value=Browse></td>
 		</tr>
-	<tr><td><input type=submit value=Submit></td>
+	<tr><td><input type=submit value=Submit>$(back_button)</td>
 	</table></form></body></html>
 EOF

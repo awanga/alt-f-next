@@ -28,6 +28,7 @@ fi
 if test "$passwd" = "$(cat $SECR)"; then
 	id=$(uuidgen)
 	echo $id > /tmp/cookie
+	chmod og-r /tmp/cookie
     
 	if test $(cat $TZF) = "NONE-0"; then
 		expl=""

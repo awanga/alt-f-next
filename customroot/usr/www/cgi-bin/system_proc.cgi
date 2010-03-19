@@ -65,6 +65,7 @@ case $action in
 		SECR=/etc/web-secret
 		if test "$passwd" = $(cat $SECR); then
 			rm -f $SECR
+			rm -f /tmp/cookie
 		fi
 		gotopage /cgi-bin/login.cgi
 		exit 0

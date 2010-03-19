@@ -73,5 +73,4 @@ fi
 #enddebug
 
 back=$(echo $HTTP_REFERER | sed -n 's|.*/cgi-bin/||p')
-
 gotopage /cgi-bin/$back

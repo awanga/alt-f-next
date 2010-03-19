@@ -5,7 +5,7 @@
 #	- special characters are not interpreted by sh
 read_args() {
 	read -r args
-	eval $(echo -n $args |  sed -e 's/'"'"'/%27/g' | \
+	eval $(echo -n $args | tr '\r' '\n' | sed -e 's/'"'"'/%27/g' | \
 		awk 'BEGIN{RS="&";FS="="}
 			$1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 			printf "%s=%c%s%c\n",$1,39,$2,39}')
@@ -63,6 +63,10 @@ msg() {
 	</script>
 	</body></html>"
 	exit 1
+}
+
+back_button() {
+	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
 
 select_part() {

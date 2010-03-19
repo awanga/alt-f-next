@@ -29,8 +29,8 @@ cat<<-EOF
 	<tr><td>Send test message</td><td><input type=checkbox $testck name=test value="--test">
 	Mail a test message when started</td></tr>
 	<tr><td></td><td><input type="submit" name=submit value="Submit">
-		<input type=submit value="Back">
-		<input type=hidden name=back value="back"></td></tr>
+		<input type=button value="Back" onclick="history.back()">
+		</td></tr>
 	</table></form></body></html>
 EOF
 
