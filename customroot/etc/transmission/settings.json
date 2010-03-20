@@ -10,7 +10,7 @@
     "bind-address-ipv6": "", 
     "blocklist-enabled": false, 
     "dht-enabled": true, 
-    "download-dir": "\/mnt\/sda1\/downloads", 
+    "download-dir": "", 
     "encryption": 1, 
     "lazy-bitfield-enabled": true, 
     "message-level": 2, 
@@ -47,6 +47,6 @@
     "speed-limit-up": 80, 
     "speed-limit-up-enabled": true, 
     "upload-slots-per-torrent": 14, 
-    "watch-dir": "\/mnt\/sda1\/torrents", 
+    "watch-dir": "", 
     "watch-dir-enabled": true
 }
