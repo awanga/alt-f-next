@@ -14,6 +14,8 @@ CONFNTP=/etc/ntp.conf
 s="<strong>"
 es="</strong>"
 
+if ! test -e $CONF_H; then touch $CONF_H; fi
+
 hostip=$(hostname -i)
 netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 hostnm=$(hostname -s)
@@ -50,6 +52,7 @@ while read mac nm ip lease rest; do
 	<td><input size=4 type=text name=lease_$cnt value=$lease></td></tr>"
     cnt=$((cnt+1))
 done < $CONF_H
+fi
 
 IFS=$oifs
 for i in $(seq $cnt $((cnt+2))); do
