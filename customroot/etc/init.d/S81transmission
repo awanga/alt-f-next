@@ -8,14 +8,18 @@ DAEMON=/usr/bin/$NAME
 CONFF=/etc/transmission.conf
 TYPE=user
 
-. $CONFF
+if test -f "$CONFF"; then # damned spaced in file names!
+	CONF_DIR="$(awk -F= '/^CONF_DIR/{print $2}' $CONFF)" 
+	DOWNLOAD_DIR="$(awk -F= '/^DOWNLOAD_DIR/{print $2}' $CONFF)" 
+	WATCH_DIR="$(awk -F= '/^WATCH_DIR/{print $2}' $CONFF)" 
+fi
 
 network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
 
 OPTS="--no-auth --allowed=127.0.0.1,$network --config-dir=$CONF_DIR"
 
 status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
+	if start-stop-daemon -K -t -q -x $NAME; then
 		echo "$NAME running"
 		return 0
 	else
@@ -26,27 +30,41 @@ status() {
 
 case "$1" in
 	start)
-		if test -d "$CONF_DIR"; then
-			if ! test -f "$CONF_DIR/settings.json"; then
-				OPTS="$OPTS --watch-dir=$WATCH_DIR --download-dir=$DOWNLOAD_DIR"
-			fi
-
-			echo -n "Starting $NAME: "
-			start-stop-daemon -S -x $NAME -- $OPTS
-			echo "OK"
-		else
-			echo -n "Didn't start $NAME, "$CONF_DIR" does not exist"
-			exit 1
+		OJSON=/etc/transmission/settings.json
+		JSON="$CONF_DIR/settings.json";
+		if ! test -f "$JSON"; then
+			mkdir -p "$CONF_DIR"
+			cp -a $OJSON $JSON 
 		fi
+	
+		if test "$CONFF" -nt "$JSON"; then
+			sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
+			  -e 's|.*"watch-dir":.*|    "watch-dir": "'$WATCH_DIR'",|' "$JSON"
+		fi
+
+		if ! test -d "$DOWNLOAD_DIR"; then
+			mkdir -p "$DOWNLOAD_DIR"
+		fi
+
+		if ! test -d "$WATCH_DIR"; then
+			mkdir -p "$WATCH_DIR"
+		fi
+
+		echo -n "Starting $NAME: "
+		start-stop-daemon -S -x $NAME -- $OPTS
+		echo "OK"
 		;;
+
 	stop)
 		echo -n "Stopping $NAME: "
 		start-stop-daemon -K -x $NAME
 		echo "OK"
 		;;
+
 	status)
 		status
 		;;
+
 	restart|force-reload)
 		echo "Restarting $NAME: "
 		sh $0 stop
@@ -54,6 +72,7 @@ case "$1" in
 		sh $0 start
 		echo ""
 		;;
+
 	*)
 		echo "Usage: $0 {start|stop|restart|status|force-reload}" >&2
 		exit 1
