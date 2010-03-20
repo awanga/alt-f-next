@@ -81,7 +81,7 @@ EOF
 . common.sh
 check_cookie
 read_args
-write_header "NFS Setup"
+write_header "NFS Setup -- Not working, and will change"
 
 #echo "<pre>$(set)</pre>"
 
