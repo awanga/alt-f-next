@@ -5,13 +5,8 @@ DAEMON=/usr/bin/$NAME
 DESC="UPnP A/V & DLNA Media Server"
 PIDFILE=/var/run/$NAME.pid
 CONFIGFILE=/etc/$NAME.conf
+#USHARE_OPTIONS=
 TYPE=user
-
-# abort if no executable exists
-[ -x $DAEMON ] || exit 0
-
-
-[ -f /etc/default/ushare ] && . /etc/default/ushare
 
 checkpid() {
 	[ -e $PIDFILE ] || touch $PIDFILE
@@ -19,7 +14,8 @@ checkpid() {
 
 check_shares() {
 	if [ -r "$CONFIGFILE" ]; then
-		. $CONFIGFILE
+		# . $CONFIGFILE # spaces in filepaths!
+		USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONFIGFILE)"
 		[ -n "$USHARE_DIR" ] && return 0
 	fi
 	return 1
@@ -28,39 +24,64 @@ check_shares() {
 case "$1" in
 
 	start)
-		echo "Starting $DESC: $NAME"
+		echo -n "Starting $NAME: "
 		if ! $(check_shares); then
-			echo "No shares avalaible ..."
+			echo "No shares available ..."
 			exit 1
 		else
 			checkpid
 			start-stop-daemon --start --quiet --background --oknodo \
 				--make-pidfile --pidfile $PIDFILE \
 				--exec $DAEMON -- $USHARE_OPTIONS
-			exit $?
+			if test $? = 1; then
+				echo "Fail."
+				exit 1
+			fi
+			echo "OK"
+			exit 0
 		fi
 		;;
 
 	stop)
-		echo "Stopping $DESC: $NAME"
+		echo -n "Stopping $NAME: "
 		start-stop-daemon --stop --signal 2 --quiet --oknodo --pidfile $PIDFILE
-		exit $?
+		if test $? = 1; then
+			echo "Fail."
+			exit 1
+		fi
+		echo "OK"
+		exit 0	
 		;;
 
-	reload|force-reload)
-		echo "Reloading $DESC: $NAME"
+	status)
+		if start-stop-daemon -K -t -q -n $NAME; then
+			echo "$NAME running"
+			exit 0
+		else
+			echo "$NAME stopped"
+			exit 1
+		fi
+		;;
+
+	reload)
+		echo -n "Reloading $NAME: "
 		start-stop-daemon --stop --signal 1 --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON
-		exit $?
+		if test $? = 1; then
+			echo "Fail."
+			exit 1
+		fi
+		echo "OK"
+		exit 0	
 		;;
 
-	restart)
+	restart|force-reload)
 		sh $0 stop
 		sh $0 start
 		;;
 
 	*)
 		N=/etc/init.d/$NAME
-		echo "Usage: $0 {start|stop|restart|reload|force-reload}"
+		echo "Usage: $0 {start|stop|status|restart|reload|force-reload}"
 		exit 1
 		;;
 esac
