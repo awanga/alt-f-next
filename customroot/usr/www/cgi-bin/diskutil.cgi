@@ -7,8 +7,8 @@ dstatus() {
 	dsk=$1
 	
 	if test -b /dev/$dsk; then
-		#res=$(hdparm -C /dev/$dsk | awk '/drive/{print $4}') >/dev/null 2>&1
-		res="$(eval echo \$power_mode_$dsk)"
+		res=$(hdparm -C /dev/$dsk | awk '/drive/{print $4}') >/dev/null 2>&1
+		#res="$(eval echo \$power_mode_$dsk)" # delayed results, not actual value
 	else
 		res="None"
 	fi
