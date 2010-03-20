@@ -26,6 +26,9 @@ case "$1" in
 			sed -i -e 's/^nameserver/#!&/' /etc/resolv.conf
 			echo -e "$FLG_MSG\nnameserver 127.0.0.1" >> /etc/resolv.conf
 		fi
+		if ! test -f /etc/dnsmasq-hosts; then
+			touch /etc/dnsmasq-hosts
+		fi 
 
 		start-stop-daemon -S -q -b -x $NAME
 		echo "OK"
