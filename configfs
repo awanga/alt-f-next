@@ -17,6 +17,7 @@ for i in $RMF; do rm -rf $1/$i; done
 # 2-customroot has some additional needed files, copy them to root
 find customroot/ -name \*~ -delete
 cp -a customroot/* $1/
+find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them
