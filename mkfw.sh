@@ -14,6 +14,9 @@ if test -z "$BLDDIR"; then
 	exit 1
 fi
 
+# max sizes, dns323-fw checks them:
+# kernel <= 1572800 + 64, initramfs <= 6488000 + 64
+
 PATH=$(pwd)/bin:$PATH
 DESTD=$BLDDIR/binaries/dns323/
 KVER=2.6.33.1
