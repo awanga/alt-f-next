@@ -7,7 +7,7 @@ read_args
 #echo "<pre>$(set)</pre>"
 
 newdir="$(httpd -d $newdir)"
-if test -d "$(dirname $newdir)"; then
+if test -d "$(dirname "$newdir")"; then
 	mkdir -p "$newdir"
 fi
 
