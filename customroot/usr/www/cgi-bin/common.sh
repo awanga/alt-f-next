@@ -110,7 +110,7 @@ gotopage() {
 }
 
 check_cookie() {
-	eval $HTTP_COOKIE
+	eval $HTTP_COOKIE >& /dev/null
 	if test -e "/tmp/cookie"; then
 		if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
 			return
