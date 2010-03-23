@@ -1,6 +1,6 @@
 /*
  * Automatically generated C config: don't edit
- * Mon Mar 15 20:38:30 2010
+ * Sat Mar 20 04:23:07 2010
  */
 #define BR2_KERNEL_LATEST_2_6_27 "27"
 #define BR2_PACKAGE_LINUX 1
@@ -66,7 +66,7 @@
 #define BR2_PACKAGE_SAMBA_CIFS 1
 #define BR2_DOWNLOAD_LINUX26_VERSION "$(BR2_KERNEL_CURRENT_VERSION)"
 #define BR2_WGET "wget --passive-ftp -nd"
-#define BR2_PACKAGE_LINUX_KCONFIG ".//local/dns323/linux-2.6.32.1.config"
+#define BR2_PACKAGE_LINUX_KCONFIG ".//local/dns323/linux-2.6.33.1.config"
 #define BR2_PACKAGE_BUSYBOX_SKELETON 1
 #define BR2_PACKAGE_NTP 1
 #define BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200 1
@@ -123,12 +123,12 @@
 #define BR2_ARM_TYPE "ARM926T"
 #define BR2_PACKAGE_WGET 1
 #define BR2_TARGET_ROOTFS_EXT2 1
-#define BR2_ROOTFS_POST_BUILD_SCRIPT "/home/jcard/Desktop/buildroot-2009.08/configfs"
+#define BR2_ROOTFS_POST_BUILD_SCRIPT "./configfs"
 #define BR2_PACKAGE_E2FSPROGS_FILEFRAG 1
 #define BR2_PACKAGE_LINUX_USE_KCONFIG 1
 #define BR2_PACKAGE_E2FSPROGS_DUMPE2FS 1
 #define BR2_LARGEFILE 1
-#define BR2_PACKAGE_BUSYBOX_CONFIG ".//local/dns323/busybox-1.14.3.config"
+#define BR2_PACKAGE_BUSYBOX_CONFIG ".//local/dns323/busybox-1.15.3.config"
 #define BR2_GCC_TARGET_TUNE "arm9tdmi"
 #define BR2_EXT_BINUTILS_VERSION_2_17 1
 #define BR2_EXT_BINUTILS_VERSION_2_18 1
@@ -140,7 +140,7 @@
 #define BR2_CROSS_TOOLCHAIN_TARGET_UTILS 1
 #define BR2_PACKAGE_LIBICONV 1
 #define BR2_TARGET_ROOTFS_EXT2_BLOCKS 0
-#define BR2_LINUX_BSP_PATCH ""
+#define BR2_LINUX_BSP_PATCH "aufs+sqfs4lzma-2.6.33.patch"
 #define BR2_TARGET_ROOTFS_EXT2_INODES 0
 #define BR2_PACKAGE_E2FSPROGS_BLKID 1
 #define BR2_ATMEL_MIRROR "ftp://www.at91.com/pub/buildroot/"
@@ -165,7 +165,7 @@
 #define BR2_PACKAGE_SAMBA_SMBPASSWD 1
 #define BR2_JLEVEL 2
 #define BR2_PACKAGE_DOSFSTOOLS_DOSFSCK 1
-#define BR2_UCLIBC_CONFIG ".//local/dns323/uclibc-0.9.30.1.config"
+#define BR2_UCLIBC_CONFIG ".//local/dns323/uclibc-0.9.30.3.config"
 #define BR2_KERNEL_CURRENT_VERSION "2.6.33.1"
 #define BR2_LINUX_COPYTO ""
 #define BR2_TARGET_OPTIMIZATION "-Os -pipe"
