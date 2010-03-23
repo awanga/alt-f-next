@@ -16,9 +16,19 @@ status() {
 	fi
 }
 
+inits() {
+	if ! test -d /var/lib/atjobs; then
+		mkdir -p /var/lib/atjobs
+		mkdir -p /var/lib/atspool
+		touch /var/lib/atjobs/.SEQ
+		chown at:at /var/lib/atjobs /var/lib/atspool /var/lib/atjobs/.SEQ	
+	fi
+}
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
+		inits
 		start-stop-daemon -S -q -b -x $NAME
 		echo "OK"
 		;;
