@@ -10,7 +10,6 @@
 #/bin/mknod -m 666 /dev/console c 5 1
 /bin/mount -t devpts devpts /dev/pts
 #/bin/mount -a
-
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
 mkdir -p /mnt
@@ -110,7 +109,7 @@ elif test $no_defaults = "0"; then
 	cip="def"
 	ifup eth0
 else
-	res=$(loadsave_defaults -rs)
+	res=$(loadsave_settings -rs)
 	if test $? = 0; then
 		# IP from sib.conf
 		cip="sib"
