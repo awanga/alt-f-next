@@ -73,10 +73,9 @@ void exec_userscript(char *script, int timeout);
 void read_config();
 void print_config();
 
-enum { right_led = 1, power_led = 2, left_led = 4 };
+enum { right_led = 1, left_led = 2 };
 char *leds[] = { "", "/sys/class/leds/right:amber/",
-	"/sys/class/leds/power:blue/",	/* 0 turns it on. FIXME Not anymore on 2.6.33 */
-	"", "/sys/class/leds/left:amber/"
+	"/sys/class/leds/left:amber/"
 };
 
 // configuration default values, overriden by configuration files
@@ -665,7 +664,7 @@ int md_stat()
 			read_str_from_file(buf, level);
 			sprintf(msg + strlen(msg), "level=%s ", level);
 
-			if (strcmp(level, "raid1") == 0) {
+			if (strcmp(level, "raid1") == 0 || strcmp(level, "raid5") == 0) {
 				sprintf(buf, "/sys/block/md%d/md/degraded",
 					dev);
 				read_int_from_file(buf, &degraded);
@@ -673,8 +672,6 @@ int md_stat()
 					degraded);
 
 				if (degraded != 0) {
-					ret = 1;
-					recover = 1;
 					sprintf(buf,
 						"/sys/block/md%d/md/sync_action",
 						dev);
@@ -687,9 +684,11 @@ int md_stat()
 						led(left_led, "1", "none", NULL,
 						    NULL);
 					} else
-						blink_leds(right_led |
-							   left_led);
-					syslog(LOG_INFO, msg);
+						blink_leds(right_led | left_led);
+					if (recover == 0)
+						syslog(LOG_INFO, msg);
+					ret = 1;
+					recover = 1;
 				}
 			}
 		}
@@ -811,7 +810,7 @@ void led(int which, char *value, char *mode, char *on, char *off)
 {
 	char buf[128];
 
-	if (which > 4 || strlen(leds[which]) == 0)
+	if (which == 0 || which > 2 )
 		return;
 
 	sprintf(buf, "%s%s", leds[which], "brightness");
