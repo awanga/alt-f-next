@@ -5,8 +5,9 @@ set -e
 DESC="Monitor MD devices (Linux Software RAID)"
 NAME=mdadm
 TYPE=sys
-SENDTO=joaofscardoso@gmail.com
-INTERVAL=36000
+PIDFILE=/var/run/mdadm.pid 
+SENDTO=
+INTERVAL=3600
 #TEST=--test
 
 status() {
@@ -22,7 +23,13 @@ status() {
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -b -x $NAME -- --monitor --scan --daemonise --mail $SENDTO --delay $INTERVAL $TEST --syslog --pid-file /tmp/mdadm.pid 
+		if test -z "$SENDTO" -o -z "$INTERVAL"; then
+			echo "Not configured, exiting."
+			exit 1
+		fi
+		start-stop-daemon -S -q -b -x $NAME -- --monitor --scan \
+			--daemonise --mail $SENDTO --delay $INTERVAL \
+			$TEST --syslog --pid-file $PIDFILE
 		echo "OK"
 		;;
 	stop)
