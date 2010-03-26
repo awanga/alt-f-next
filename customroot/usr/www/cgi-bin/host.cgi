@@ -4,6 +4,16 @@
 check_cookie
 write_header "Host Setup"
 
+if test -f /tmp/firstboot; then
+	cat<<-EOF
+		<center>
+		<h3>Welcome to your first login to Alt-F</h3>
+		<h4>You should now fill all the host details
+		and Submit them</h4>
+		</center>
+	EOF
+fi
+
 RESOLV=/etc/resolv.conf
 
 FLG_MSG="#!in use by dnsmasq, don't change"

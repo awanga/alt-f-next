@@ -16,6 +16,7 @@ if ! test -e $SECR; then
 	echo -n $passwd > $SECR
 	chmod og-r $SECR
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
+	touch /tmp/firstboot
 	loc="/cgi-bin/host.cgi"
 else
 	if test "$from_url" != "login.cgi"; then

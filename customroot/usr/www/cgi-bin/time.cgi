@@ -94,6 +94,17 @@ CONFNTP=/etc/ntp.conf
 check_cookie
 write_header "Time Setup"
 
+if test -f /tmp/firstboot; then
+	cat<<-EOF
+		<center>
+		<h3>Welcome to your first login to Alt-F</h3>
+		<h4>To continue setting up Alt-F, you should now specify where
+		 you live, Submit  it,</h4>
+		<h4> and then adjust the local time and date.</h4>
+		</center>
+	EOF
+fi
+
 if test -r $CONFZ; then
     tz=$(cat $CONFZ)
 else

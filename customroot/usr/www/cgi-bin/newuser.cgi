@@ -4,6 +4,16 @@
 check_cookie
 write_header "New User Setup"
 
+if test -f /tmp/firstboot; then
+	cat<<-EOF
+		<center>
+		<h3>Welcome to your first login to Alt-F</h3>
+		<h4>To continue setting up Alt-F, you should now specify</h4>
+		 <h4>the disk partition where users will store their data</h4>
+		</center>
+	EOF
+fi
+
 s="<strong>"
 es="</strong>"
 
@@ -19,6 +29,7 @@ if ! test -h /home -a -d "$(readlink -f /home)"; then
 		<h4>No users directory found, create it in:</h4>
 		<form action="/cgi-bin/newuser_proc.cgi" method=post>
 	EOF
+	# FIXME offer possibility of creation of Public directories
 	select_part
 	echo "</select><input type=submit name=create_dir value=CreateDir>
 		</form></body></html>"
@@ -62,10 +73,13 @@ if test -n "$QUERY_STRING"; then
 			</script>
 		EOF
 		chpass=""
-		#if test "$uid" -lt 1000; then uid=1000; fi
+		if test "$uid" -lt 1000; then uid=999; fi
 		uid=$((uid+1))
 	fi
 fi
+
+# FIXME add gid support!
+gid="not_yet"
 
 cat <<EOF
 	<!--form name=frm action="/cgi-bin/newuser_proc.cgi" method="post" onSubmit="pcheck()"-->
@@ -75,6 +89,7 @@ cat <<EOF
 	<tr><td>Full name</td><td><input type=text $chpass name=uname value="$uname" onChange="upnick()"></td></tr>
 	<tr><td>Nick name<td><input type=text $chpass name=nick value=$nick></td></tr>
 	<tr><td>User id<td><input type=text $chpass name=uid value=$uid></td></tr>
+<!--	<tr><td>Group id<td><input type=text $chpass name=gid value=$gid></td></tr> -->
 	<tr><td>Password<td><input type=password name=pass></td></tr>
 	<tr><td>Again<td><input type=password name=passa></td></tr>
 	<tr><td></td>

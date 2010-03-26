@@ -10,6 +10,8 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	uname="$(httpd -d "$uname")"
 	nick="$(httpd -d "$nick")"
 
+# FIXME add gid support!
+
 	if test "$submit" = "Submit"; then
 		ouname="$(awk -F: -v ouname="$uname" '$5 == ouname {print $5}' /etc/passwd)"
 		onick="$(awk -F: -v onick="$nick" '$1 == onick {print $1}' /etc/passwd)"
@@ -27,6 +29,11 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		#uname=$(echo "$uname" | tr ' ' '_')
 		#adduser -D -G users -u $uid -g "$uname" -h "/home/$nick" $nick > /dev/null 2>&1
 		adduser -D -G users -u $uid -g "$uname" -h "/home/$uname" $nick > /dev/null 2>&1
+		chmod og-rw "/home/$uname"
+
+		# why doesn't rsync uses unix authorization mechanisms?!
+		echo -e "\n[$nick]\npath = /home/$uname\ncomment = $uname home directory\n\
+read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> /etc/rsyncd.conf
 	fi
 
 	if test -z "$pass" -o "$pass" != "$passa"; then
@@ -34,6 +41,13 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	fi
 
 	echo "$nick:$pass" | chpasswd > /dev/null 2>&1
+	echo -e "$pass\n$pass" | smbpasswd -s -a $nick >& /dev/null
+	sed -i "/^$nick = /d" /etc/samba/smbusers  >& /dev/null
+	echo "$nick = \"$uname\"" >> /etc/samba/smbusers
+	sed -i "/^$nick:/d" /etc/rsyncd.secrets >& /dev/null
+	echo "$nick:$pass" >> /etc/rsyncd.secrets
+	chmod og-rw /etc/rsyncd.secrets
+
 	gotopage /cgi-bin/usersgroups.cgi
 
 elif test "$cancel" = "Cancel"; then
@@ -49,7 +63,18 @@ elif test "$create_dir" = "CreateDir"; then
 	mp="$(awk -v part=$part '$1 == part {print $2}' /proc/mounts)"
 	mkdir -p "$mp"/Users
 	ln -sf "$mp"/Users /home
-	gotopage /cgi-bin/newuser.cgi
+
+	mkdir -p "$mp"/Users/Public-RO
+
+	mkdir -p "$mp"/Users/Public-RW
+	chown nobody:nobody "$mp"/Users/Public-RW
+	chmod a+rwx "$mp"/Users/Public-RW
+
+	if test -f /tmp/firstboot; then
+		gotopage /cgi-bin/settings.cgi
+	else
+		gotopage /cgi-bin/newuser.cgi
+	fi
 fi
 
 #enddebug

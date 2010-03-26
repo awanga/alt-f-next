@@ -9,9 +9,13 @@ read_args
 case $action in
 
 	SaveSettings)
-		loadsave_settings -sf > /dev/null 2>&1
+		res=$(loadsave_settings -sf)
 		if test $? = 1; then
-			msg "No changes since last save"
+			msg "$res"
+		fi
+		if test -f /tmp/firstboot; then
+			rm -f /tmp/firstboot
+			gotopage /cgi-bin/status.cgi
 		fi
 		;;
 

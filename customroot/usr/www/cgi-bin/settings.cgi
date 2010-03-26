@@ -5,18 +5,26 @@ check_cookie
 
 write_header "Settings Management"
 
+if test -f /tmp/firstboot; then
+	cat<<-EOF
+		<center>
+		<h3>Welcome to your first login to Alt-F</h3>
+		<h4>To finish setting up Alt-F, you should now save the changes
+		that you have just made.</h4>
+		<h4>You should do it whenever you want your changes to survive a box reboot.</h4>
+		</center>
+	EOF
+fi
+
 res=$(loadsave_settings -ls)
 
 cat<<-EOF
 	<script type="text/javascript">
 	function ask() {
-		return confirm("Don't clear the flash-saved settings if" + '\n' +
-		 "your box still boots from the vendor firmware," + '\n' +
+		return confirm("Don't clear the flash-saved settings if your box still boots from the vendor firmware," + '\n' +
 		 "or the box might not boot up. Press Cancel." + '\n' + '\n' +
-		 "It's only safe to clear the flash-saved settings" + '\n' + 
-		 "if you have flashed Alt-F." + '\n' +
-		 "Without settings, the box will use a DHCP assigned IP," + '\n' +
-		 "or a free IP in the 192.168.1.254-240 range."); 
+		 "Under Alt-F, without settings, the box will first try to use a DHCP assigned IP," + '\n' +
+		 "and if not successful will try to find a free IP in the 192.168.1.254-240 range."); 
 	}
 	</script>
 	<form name=frm action="/cgi-bin/settings_proc.cgi" method="post">
