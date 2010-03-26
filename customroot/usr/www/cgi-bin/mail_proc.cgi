@@ -6,11 +6,23 @@ read_args
 
 CONFF=/etc/msmtprc
 
-user=$(httpd -d "$user")
-to=$(httpd -d "$to")
-
 if test -z "$tls"; then tls=off; fi
 if test -z "$auth"; then auth=on; fi
+
+if test -z "$to"; then
+	msg "Send To entry must be filled"
+fi
+
+if test -z "$host"; then
+	msg "Server Name must be filled"
+fi
+
+if test "$auth" = "on" -a \( -z "$user" -o -z "$password" \); then
+	msg "Username and Password must be filled"
+fi
+
+user=$(httpd -d "$user")
+to=$(httpd -d "$to")
 
 #debug
 
