@@ -39,51 +39,55 @@ if test "$iptype" = "static"; then
 	
 	sed -i 's|A:192.168.1.|A:'$network'|' /etc/httpd.conf
 	sed -i "s/workgroup =.*$/workgroup = $workgroup/" /etc/samba/smb.conf
-#sed -i "s/interfaces =.*$/interfaces = eth0 $hostip\/$netmask/" /etc/samba/smb.conf
 	sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
 	sed -i "s/server string =.*$/server string = $hostdesc/" /etc/samba/smb.conf
 	
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
-	if test -n "$(pidof smbd)"; then
-		kill -HUP $(pidof smbd)
+
+	if pidof udhcpc >& /dev/null; then
+		kill $(pidof udhcpc) >& /dev/null
 	fi
 
-	if test -n "$(pidof udhcpc)"; then
-		kill $(pidof udhcpc)
+	if rcsmb status >& /dev/null; then
+		rcsmb reload  >& /dev/null
 	fi
 
-	if test -n "$(pidof dnsmasq)"; then
-		rcdnsmasq reload
+	if rcdnsmasq status >& /dev/null; then
+		rcdnsmasq reload  >& /dev/null
 	fi
-	
-    cat<<-EOF > /etc/network/interfaces
-auto lo
-  iface lo inet loopback
+		
+	cat<<-EOF > /etc/network/interfaces
+	auto lo
+	  iface lo inet loopback
 
-auto eth0
-iface eth0 inet static
-  address $hostip
-  netmask $netmask
-  broadcast $broadcast
-  gateway $gateway
-  mtu $mtu
-EOF
+	auto eth0
+	iface eth0 inet static
+	  address $hostip
+	  netmask $netmask
+	  broadcast $broadcast
+	  gateway $gateway
+	  mtu $mtu
+	EOF
 
 else
-    cat<<-EOF > /etc/network/interfaces
-auto lo
-  iface lo inet loopback
+	cat<<-EOF > /etc/network/interfaces
+	auto lo
+	  iface lo inet loopback
 
-auto eth0
-iface eth0 inet dhcp
-  client udhcpc
-  mtu $mtu
-EOF
+	auto eth0
+	iface eth0 inet dhcp
+	  client udhcpc
+	  mtu $mtu
+	EOF
 fi
 
-rcnetwork restart >/dev/null 2>&1
+rcnetwork restart >& /dev/null
 
 #debug
-gotopage /cgi-bin/host.cgi
 
+if test "$(cat /etc/TZ)" = "NONE-0" -a -f /tmp/firstboot; then
+	gotopage /cgi-bin/time.cgi
+else
+	gotopage /cgi-bin/host.cgi
+fi
