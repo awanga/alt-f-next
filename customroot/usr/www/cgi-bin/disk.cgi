@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "Disk Setup -- This is to change"
+write_header "Disk Setup -- This is going to change"
 
 s="<strong>"
 es="</strong>"
