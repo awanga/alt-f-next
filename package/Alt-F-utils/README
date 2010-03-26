@@ -1,0 +1,5 @@
+
+FIXME: This is still a manual procedure:
+
+tar --exclude-vcs -cvzf Alt-F-utils-0.1.tar.gz Alt-F-utils-0.1
+cp Alt-F-utils-0.1.tar.gz <download dir>
