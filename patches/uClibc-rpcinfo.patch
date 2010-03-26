@@ -1,5 +1,5 @@
---- toolchain_build_arm/uClibc-0.9.30.1/libc/inet/rpc/pmap_rmt.c-	2008-05-19 23:57:34.000000000 +0100
-+++ toolchain_build_arm/uClibc-0.9.30.1/libc/inet/rpc/pmap_rmt.c	2009-10-27 02:32:41.000000000 +0000
+--- uClibc-0.9.30.1/libc/inet/rpc/pmap_rmt.c-	2008-05-19 23:57:34.000000000 +0100
++++ uClibc-0.9.30.1/libc/inet/rpc/pmap_rmt.c	2009-10-27 02:32:41.000000000 +0000
 @@ -340,7 +340,10 @@
     * Basic loop: broadcast a packet and wait a while for response(s).
     * The response timeout grows larger per iteration.
