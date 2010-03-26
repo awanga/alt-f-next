@@ -15,6 +15,10 @@ if test -e $CONFM; then
 	SENDTO=$(awk '/^from/{ print $2}' $CONFM)
 fi
 
+if test -z "$SENDTO"; then
+	msg "Please setup Mail Settings first"
+fi
+
 #back=$(echo $HTTP_REFERER | sed -n 's|.*/cgi-bin/||p')
 
 if test -n "$TEST"; then testck=checked; fi
