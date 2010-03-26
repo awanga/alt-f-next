@@ -469,7 +469,7 @@ void fanctl(void)
 
 	write_pwm(pwm);
 
-	if (fabsf(temp - last_temp) > 0.2) {
+	if (fabsf(temp - last_temp) >= 0.2) {
 		char buf[16];
 		last_temp = temp;
 		fan = read_fan();
@@ -613,16 +613,16 @@ void hdd_powercheck(int noleds)
 			else
 				wled = 0;
 
-			if (!noleds) {
-				if (st == 0) {	// standby
+			if (st == 0) {	// standby
+				if (!noleds)
 					led(wled, "1", "timer", "50", "2000");
-					syslog(LOG_INFO, "%s disk (%s) standby",
-					       bay, dev);
-				} else if (st == 1) {	// active
+				syslog(LOG_INFO, "%s disk (%s) standby",
+						bay, dev);
+			} else if (st == 1) {	// active
+				if (!noleds)
 					led(wled, "0", "none", NULL, NULL);
-					syslog(LOG_INFO, "%s disk (%s) wakeup",
-					       bay, dev);
-				}
+				syslog(LOG_INFO, "%s disk (%s) wakeup",
+						bay, dev);
 			}
 		}
 	}
