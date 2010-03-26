@@ -27,7 +27,16 @@ eval $(awk -F"," '/dhcp-range=/{printf "lrg=%s; hrg=%s; lease=%s",
 	 substr($1,12), $2, $3}' $CONF_F)
 
 cat <<-EOF
-	<form action=dnsmasq_proc.cgi method=post>
+	<script type="text/javascript">
+	function toogle(theform) {
+		for (var i = 0; i < theform.length; i++) {
+			if (theform.elements[i].id == "ntp_id")
+				theform.elements[i].disabled = theform.elements[i].disabled ? false : true;
+		}
+	}
+	</script>
+
+	<form name=dnsmasq action=dnsmasq_proc.cgi method=post>
 	<fieldset><Legend> $s Dynamically serve IPs $es</legend><table>
 	<tr><td> $s From IP $es </td><td><input type=text size=12 name=low_rg value=$lrg></td><tr>
 	<tr><td> $s To IP $es </td><td><input type=text size=12 name=high_rg value=$hrg></td><tr>
@@ -52,7 +61,6 @@ while read mac nm ip lease rest; do
 	<td><input size=4 type=text name=lease_$cnt value=$lease></td></tr>"
     cnt=$((cnt+1))
 done < $CONF_H
-fi
 
 IFS=$oifs
 for i in $(seq $cnt $((cnt+2))); do
@@ -109,18 +117,28 @@ while read tk ns; do
 	i=$((i+1))
 done  < $RESOLV
 
-echo "</fieldset><br><fieldset><legend> $s Time Servers $es </legend>"
+if test -x /etc/init.d/S??ntp; then
+	chklntp="checked"
+	chkntp="disabled"
+fi
+
+cat<<-EOF
+	</fieldset><br><fieldset><legend> $s Time Servers $es </legend><table>
+	<tr><td>Local NTP</td>
+	<td><input type=checkbox $chklntp value=yes name=lntp onchange="toogle(dnsmasq)"></td></tr>
+EOF
+
 i=0
 if test -e $CONFNTP; then
 	while read server host; do
 		if test "$server" = "server" -a "$host" != "127.127.1.0"; then
-			echo "Server $((i+1)) <input type=text readonly size=12 name=ntp_$i value=$host><br>"
+			echo "<tr><td>Server $((i+1))</td><td><input id=ntp_id type=text $chkntp readonly size=12 name=ntp_$i value=$host></td></tr>"
 			i=$((i+1))
 		fi
 	done < $CONFNTP
 fi
 
-echo "<input type=hidden name=cnt_ntp value="$i"></fieldset><br>"
+echo "<tr><td><input type=hidden name=cnt_ntp value="$i"></td><td></td></tr></table></fieldset><br>"
 
 eval $(awk -F= '/enable-tftp/{print "tftp=CHECKED"} \
 		/tftp-root/{printf "tftproot=%s", $2}' $CONF_F)

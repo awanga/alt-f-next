@@ -13,7 +13,10 @@ HOSTS=/etc/hosts
 #CONF_R=/etc/dnsmasq-resolv
 CONF_NTP=/etc/ntp.conf
 
-if test -n "$Get"; then
+# FIXME this "Get" must be an independent script,
+# or at least save the changes done by the user in the dnsmasq form
+# before returning and loosing them
+if test -n "$Get"; then 
 	ip=$(eval echo \$ip$Get)
 	name=$(eval echo \$nm$Get)
 
@@ -60,15 +63,20 @@ elif test -n "$Submit"; then
 	echo "option:router,$gw	# default route" >> $CONF_O
 
 	sed -i '/^option:ntp-server/d' $CONF_O
-	for i in $(seq 0 $cnt_ntp); do
-		ntp=$(eval echo \$ntp_$i)
-		if test -z "$ntp"; then continue; fi
-		res="$(nslookup $ntp)"
-		if test $? = 0; then
-			ntph=$(echo "$res" | awk '/Address/{ if (NR == 5) print $3}')
-			echo "option:ntp-server,$ntph	# ntp server" >> $CONF_O
-		fi
-	done
+	if test "$lntp" = "yes"; then
+		echo "option:ntp-server,0.0.0.0	# ntp server" >> $CONF_O
+		chmod +x /etc/init.d/S??ntp # FIXME hmmm... and if unconfigured?
+	else
+		for i in $(seq 0 $cnt_ntp); do
+			ntp=$(eval echo \$ntp_$i)
+			if test -z "$ntp"; then continue; fi
+			res="$(nslookup $ntp)"
+			if test $? = 0; then
+				ntph=$(echo "$res" | awk '/Address/{ if (NR == 5) print $3}')
+				echo "option:ntp-server,$ntph	# ntp server" >> $CONF_O
+			fi
+		done
+	fi
 
 	echo > $CONF_H
 	for i in $(seq 0 $cnt_din); do
@@ -136,7 +144,10 @@ elif test -n "$Submit"; then
 		echo "log-dhcp" >> $CONF_F
 	fi
 
-	rcdnsmasq reload > /dev/null 2>&1
+	rcdnsmasq status >& /dev/null
+	if test $? = 0; then
+		rcdnsmasq reload >& /dev/null
+	fi
 fi
 
 #  if grep -q -e $ip -e "$name " $HOSTS; then
