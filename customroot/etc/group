@@ -9,10 +9,8 @@ ftp:x:7:
 at:x:8:
 wheel:x:10:root
 utmp:x:43:
-staff:x:50:
-haldaemon:x:68:
-dbus:x:81:
 netdev:x:82:
-nobody:x:99:
+sshd:x:67
+nobody:x:98:
 nogroup:x:99:
 users:x:100:
