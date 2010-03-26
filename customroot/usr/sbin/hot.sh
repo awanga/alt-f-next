@@ -25,13 +25,24 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 
 	res=$(mdadm --query --examine --export --test $PWD/$MDEV)
 	if test $? = 0; then
+		if ! test -f /etc/mdadm.conf; then
+			mdadm --examine --scan > /etc/mdadm.conf
+			echo "DEVICE /dev/sd*" >> /etc/mdadm.conf
+		fi                                                            
 		mdadm --incremental --run $PWD/$MDEV
+
 		eval $res
-		MD_NAME=${MD_NAME##*:} # remove host: part
+		if test -z "$MD_NAME"; then # dlink formated MD doesnt have the MD_NAME attribute
+			MD_NAME=$(ls /sys/block/${MDEV:0:3}/$MDEV/holders/)
+			MD_NAME=${MD_NAME:2}
+			dlink="yes"
+		else
+			MD_NAME=${MD_NAME##*:} # remove host: part
+		fi
 		if test -e $PWD/md$MD_NAME -a -b $PWD/md$MD_NAME; then
 			mdadm --query --detail $PWD/md$MD_NAME
-			# this is needed to generate a *new* md? event when the 2nd disk is inserted 
-			if test $? = 0; then # generate hotplug event for /dev/md?
+			# this is needed to generate a *new* md? event when the 2nd disk is inserted. It mounts the device as soon as possible. It has the inconvenient that when the 2nd disk is added it is rsynced. For linear and raid 0 this is fine, but not for raid1 or 5. FIXME
+			if test $? = 0 -a -z "$dlink"; then # generate hotplug event for /dev/md?. 
 #				echo "add" > /sys/block/md$MD_NAME/uevent
 				(cd /dev && ACTION=add DEVTYPE=partition PWD=/dev MDEV=md$MD_NAME /usr/sbin/hot.sh)
 			fi
@@ -68,7 +79,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	res="$(fsck -p $PWD/$MDEV 2>&1)"
 	if test $? -ge 2; then fsflg="-o ro"; fi
 	logger "$res"
-	echo none > "/sys/class/leds/power:blue/trigger"
+	echo default-on > "/sys/class/leds/power:blue/trigger"
 	/bin/mount -t $fstype $fsflg $PWD/$MDEV /mnt/$lbl
 	sed -i '\|^'$PWD/$MDEV'|d' /etc/fstab
 	echo "$PWD/$MDEV /mnt/$lbl $fstype defaults 0 0" >> /etc/fstab
@@ -99,7 +110,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
 	# md disk
 	if test -d /sys/block/$MDEV/md; then
-		echo $MDEV: NO PARTITION BASED MD?
+		echo $MDEV: NO PARTITION BASED MD, neither dlink created raid.
 
 	# "normal" disk (not md)
 	#elif test -d /sys/block/$MDEV/device; then 
