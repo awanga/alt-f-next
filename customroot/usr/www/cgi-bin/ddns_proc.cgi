@@ -34,7 +34,7 @@ if test -n "$ddns" -a -n "host"; then
 	password $passwd \\n\
 	background \\n\
 	syslog \\n\
-	verbose 1 \\n\
+	verbose 0 \\n\
 	update_period_sec 60 \\n\
 	> $CONFF
 fi
