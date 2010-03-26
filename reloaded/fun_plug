@@ -1,0 +1,83 @@
+#!/bin/sh
+
+# disable recurring reboots,
+# comment if you want to go to Alt-F on every reboot
+ONCE=yes 
+
+TMP_DIR=/tmp2
+BASE_DIR=/mnt/HD_a2
+ALTF_DIR=alt-f
+ALTF_PATH=$BASE_DIR/alt-f
+ALTF_TARBALL=$BASE_DIR/alt-f.tar
+
+check() {
+	if ! test -r $1; then
+		echo "$1 not found, exiting"
+		exit 1
+	fi
+	cp "$1" $TMP_DIR
+}
+
+cd $BASE_DIR
+
+if test -r $ALTF_TARBALL; then
+    # tar xzf $ALTF_TARBALL
+	# what the heck?! -x doesn't work, but -v does, extract to stdout!
+	mkdir $ALTF_PATH
+	for i in $(tar -tf alt-f.tar ); do
+		if ! test -d $i; then
+			tar -xOf alt-f.tar $i > $i
+		fi
+	done
+    rm $ALTF_TARBALL
+fi
+
+mkdir $TMP_DIR
+mount -t tmpfs tmpfs $TMP_DIR
+
+cd $ALTF_PATH
+
+KV=$(uname -r)
+kernel=zImage
+initrd=rootfs.arm.cpio-sq.lzma
+machtype=1542
+cmdline="console=ttyS0,115200"
+
+check "$kernel"
+check "$initrd"
+check "reloaded-$KV.ko"
+
+cat<<EOF > $TMP_DIR/reload.sh
+
+cd $TMP_DIR
+
+# disable recurring reboots
+if test "$ONCE" = yes; then
+	chmod -x $BASE_DIR/fun_plug
+fi
+
+# stop processes
+smb stop
+proc=" wget smbclient pure-ftpd prescan upnp mt-daapd lpd inotify_itune inotify_upnp btdog bt inotifybt UpdateDB check_hotplug xmldb"
+for i in $proc; do
+	kill -9 $(pidof $i) 2> /dev/null
+done
+sleep 3
+
+# umount filesystems
+sync
+swapoff -a
+umount -a -r
+sync
+sleep 3
+if test -f /proc/mdstat; then
+	raidstop md0 md1 f
+fi
+
+# boot
+insmod reloaded-$KV.ko machtype=$machtype kernel=$kernel initrd=$initrd cmdline=\"$cmdline\"
+echo "Reload failed!"
+EOF
+
+chmod +x $TMP_DIR/reload.sh
+exec $TMP_DIR/reload.sh >/dev/console 2>&1 </dev/null
