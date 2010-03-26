@@ -21,5 +21,5 @@ else
 fi
 
 #enddebug
-gotopage /cgi-bin/mdadm.cgi
+gotopage /cgi-bin/sys_services.cgi
 
