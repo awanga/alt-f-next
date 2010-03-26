@@ -203,7 +203,7 @@ else
 		<td> $s Done $es </td> <td> $s ETA $es </td>
  		</tr>"
 
-	for i in /dev/md?; do
+	for i in /dev/md[0-9]*; do
 		mdev=$(basename $i)
 		if $(md_standby $mdev); then
 			lbl=$mdev
