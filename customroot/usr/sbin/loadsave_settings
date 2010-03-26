@@ -13,7 +13,7 @@ saveflashdef() {
 			fi
 		done
 	for i in /etc/init.d/S*; do
-		# FIXME chmod doesnt change data, and stat is buggy
+		# FIXME chmod doesnt change date, and stat is buggy
 		if test $i -nt $stamp; then 
 			save=1
 			break
@@ -29,7 +29,7 @@ saveflashdef() {
 	for i in /etc/init.d/S*; do
 		if test -x $i; then
 			echo $i
-			fi
+		fi
 	done > $initscript_perms
 	files="$files $initscript_perms"
 
@@ -38,34 +38,33 @@ saveflashdef() {
 
 # provide some flash wear leveling by writing into a new flash "location"
 
+	cnt=5
 	dt=$(date +%F_%T)
 	nm=set_$dt.tgz
 	tar -czf /tmp/$nm $files > /dev/null 2>&1
 	cp /tmp/$nm $save_dir/ 2>/dev/null
-	while test $? = 1; do
-		rm $save_dir/$nm $(ls $save_dir/set_*.tgz | head -1)
-		cp /tmp/$nm $save_dir/ 2>/dev/null
-	done
 	res=$?
+	while test $res = 1 -a "$cnt" -gt 0; do
+		cnt=$((cnt-1))
+		rm $save_dir/$nm $(ls $save_dir/set_*.tgz | head -1) >& /dev/null
+		cp /tmp/$nm $save_dir/ 2>/dev/null
+		res=$?
+	done
 
 	umount $save_dir
 
 # TODO start using mtdblock1 when mtdblock0 fails
-#  mount /dev/mtdblock1 /tmp/mtd
-#  cp /tmp/set_$next.tgz $save_dir/set_$next.tgz
-#  umount /tmp/mtd
 
 	rm /tmp/$nm $initscript_perms
 	rmdir $save_dir
 
 	if test "$res" != 0; then
-		echo "Error saving settings!"
+		echo "Error saving settings! No flash space available."
 		exit 1
 	fi
 
 	touch $stamp
 	exit 0
-
 }
 
 loadflashdef() {
@@ -114,6 +113,14 @@ listflashdef() {
 	mkdir -p $save_dir
 	mount /dev/mtdblock0 $save_dir
 	(cd $save_dir; ls -1 set_* 2>/dev/null)
+	umount $save_dir
+	rmdir $save_dir
+}
+
+llistflashdef() {
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+	(cd $save_dir; ls -l set_* 2>/dev/null)
 	umount $save_dir
 	rmdir $save_dir
 }
@@ -206,7 +213,7 @@ from_AltF() {
 usage() {
 	echo -e "usage: loadsave_settings \n\
 	-lf [file] (load flash) | -sf (save flash) | \n\
-	-ls (list) | -cf (clear flash) | \n\
+	-ls (list) | -ll (long list) | -cf (clear flash) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
 	-rs (read sib ip)"
 	exit 1;
@@ -217,20 +224,24 @@ save_dir=/tmp/mtd
 initscript_perms=/tmp/initd_perms
 sib=sib.conf
 
+# FIXME: move this to an independent file
+# during initramfs creation create a setting-default.tgz, to
+# load when user press the box back button more than 10 seconds.
+
 files="
 /etc/dropbear/dropbear_dss_host_key	/etc/dropbear/dropbear_rsa_host_key
+/etc/network/interfaces		/etc/web-secret
 /etc/passwd	/etc/shadow	/etc/group
 /etc/TZ		/etc/timezone	/etc/timezone
 /etc/hosts	/etc/hostname	/etc/resolv.conf
-/etc/network/interfaces		/etc/web-secret
+/etc/samba/smbpasswd	/etc/samba/smbusers	/etc/samba/smb.conf
 /etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
-/etc/dnsmasq-resolv	/etc/mdadm2.conf	
+/etc/dnsmasq-resolv	/etc/rsyncd.conf	/etc/rsyncd.secrets
 /etc/inetd.conf		/etc/vsftpd.conf	/etc/httpd.conf
-/etc/hdsleep.conf	/etc/rsyncd.conf	/etc/tune.conf
-/etc/inadyn.conf	/etc/samba/smb.conf
-/etc/adjtime.conf	/etc/ntp.conf		/etc/ntp.drift
-/etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf	
-/etc/transmission.conf	/etc/ushare.conf
+/etc/hdsleep.conf	/etc/mdadm2.conf	/etc/tune.conf
+/etc/inadyn.conf	/etc/ntp.conf		/etc/ntp.drift
+/etc/adjtime.conf	/etc/sysctrl.conf	/etc/msmtprc
+/etc/smartd.conf	/etc/transmission.conf	/etc/ushare.conf
 "
 
 # those are also used when mounting/unmounting the Alt-F aufs branch
@@ -240,6 +251,8 @@ if test $# = 0; then
 	usage
 elif test $1 = "-ls"; then
 	listflashdef
+elif test $1 = "-ll"; then
+	llistflashdef
 elif test $1 = "-sf"; then
 	saveflashdef
 elif test $1 = "-lf"; then
