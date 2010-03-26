@@ -19,8 +19,7 @@ cat<<-EOF
 	<input type=submit name=action value=SystemLog><br>
 
 	<input type="submit" name=action value="ChangePassword">	
-	Current Password:<input type="password" name="passwd"><br>
-
+	Current Password:<input type="password" autocomplete="off" name="passwd" value=""><br>
 
 	</form></body></html>
 EOF
