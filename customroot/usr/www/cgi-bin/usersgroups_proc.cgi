@@ -19,8 +19,13 @@ elif test -n "$DelUser"; then
 
 	udir=$(awk -F : '/'$nick'/{print $6}' /etc/passwd)
 #	rm -rf $(readlink -f "$udir")
+	smbpasswd -x $nick >& /dev/null
+	sed -i "/^$nick = /d" /etc/samba/smbusers >& /dev/null
+	sed -i "/^$nick:/d" /etc/rsyncd.secrets  >& /dev/null
+	sed -i "/^\[$nick\]/,/^$/d" /etc/rsyncd.conf
+	
 	deluser $nick
-	rmdir "$udir" >/dev/null 2>&1
+	rmdir "$udir" >& /dev/null
 	if test $? = 1; then
 		msg "The users home directory is not empty and was not deleted"
 	fi
