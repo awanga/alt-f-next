@@ -8,7 +8,7 @@
 # 1-during install some packages install undesired files in root.
 # the files to remove from root before creating the filesystem:
 
-RMF="etc/resolv.conf etc/default/ntpd etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb  usr/swat/lang usr/swat/help/welcome.html var/pcmcia var/lib/pcmcia usr/doc usr/share/locale sbin/fsck.ext4dev sbin/mkfs.ext4dev usr/bin/ntpdate lib/udev"
+RMF="etc/resolv.conf etc/default/ntpd etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb  usr/swat/lang usr/swat/help/welcome.html var/pcmcia var/lib/pcmcia usr/doc usr/share/locale sbin/fsck.ext4dev sbin/mkfs.ext4dev usr/bin/ntpdate lib/udev"
 
 for i in $RMF; do rm -rf $1/$i; done
 
