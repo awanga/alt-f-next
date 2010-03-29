@@ -32,15 +32,19 @@ rootfs.arm.cpio-sq.lzma, that you can use together with zImage and fonz
 "reloaded" to boot the new kernel. The kernel cmdline is simply
 "console=ttyS0,115200".
 
+Some mk*.sh scripts will ask for the root password; this is needed to
+mount the generated ext2 rootfs as a loop device and manipulate it.
+See the source.
+
 If you have a serial connection, you can see the boot log and login as
 root, without password. Use the "passwd" command to set a new (volatile)
 root password.
 
 When booting, and to assign itself an IP, Alt-F tries to first use its
 own flashed settings; if unsuccessful it then tries to use the vendors
-sif.conf flashed file; if unsuccessful it then tries to requests a IP
-to a DHCP server and finally tries to find an unassigned IP in the
-192.168.1.254 to 192.168.1.240 range.
+sif.conf flashed file (if the box was not using DHCP); if unsuccessful
+it then tries to requests a IP to a DHCP server and finally tries to find
+ an unassigned IP in the 192.168.1.254 to 192.168.1.240 range.
 
 So, after booting, your box will hopefully have the same IP as before,
 and you can telnet to it and login as root, without password. Use the
