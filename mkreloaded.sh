@@ -14,9 +14,14 @@ if test -z "$BLDDIR"; then
 	exit 1
 fi
 
+ver=$(cut -f2 -d" " customroot/etc/Alt-F)
+
+cd reloaded
+
 cp $BLDDIR/binaries/dns323/zImage \
 	$BLDDIR/binaries/dns323/rootfs.arm.cpio-sq.lzma \
-	reloaded/alt-f
+	alt-f
 
 # don't compress, no significant space saving and much slower extraction
-(cd reloaded; tar cvf alt-f.tar alt-f)
+rm alt-f/*~
+tar --exclude-vcs -cvf Alt-F-$ver.tar alt-f
