@@ -17,6 +17,8 @@ fi
 # max sizes, dns323-fw checks them:
 # kernel <= 1572800 + 64, initramfs <= 6488000 + 64
 
+ver=$(cut -f2 -d" " customroot/etc/Alt-F)
+
 PATH=$(pwd)/bin:$PATH
 DESTD=$BLDDIR/binaries/dns323/
 KVER=2.6.33.1
@@ -37,7 +39,7 @@ mkimage -A arm -O linux -T ramdisk -C none \
 	${DESTD}/urootfs.arm.cpio-sq.lzma
 
 dns323-fw -m -k ${DESTD}/uImage -i ${DESTD}/urootfs.arm.cpio-sq.lzma \
-	${DESTD}/Alt-F-0.1B1.bin
+	${DESTD}/Alt-F-$ver.bin
 
 rm ${DESTD}/urootfs.arm.cpio-sq.lzma ${DESTD}/uImage
 
