@@ -1,0 +1,41 @@
+
+How to install:
+
+1-If you don't have ffp or a fun_plug file in your box root directory, then
+	just download "Alt-F-<version>.tar" and "fun_plug" into your box root
+	directory, make sure that "fun_plug" has execution permission and reboot.
+	This will only work for one reboot; if you want to try again, you must
+	set the execution permissions of fun_plug again.
+	This is deliberate, you can override it by editing fun_plug and commenting
+	the line on top that says ONCE. Without this, if something goes wrong,
+	then your box would reboot endlessly!
+
+2-If you have a fun_plug file, but don't have ffp, than save your current
+	fun_plug file, and proceed as in 1 above.
+
+3-If you have ffp,
+	3-a) Just want to try Alt-F once in a while:
+		download Alt-F-<version>.tar and fun_plug, rename run_plug to, e.g,
+		alt-f.sh, put them in your box root directory, and call alt-f.sh from
+		the shell. Sometimes "reloading" fails complaining with a not enought
+		memory error -- and freezes. If this happens, stop first all ffp services.
+		Your ffp directory, if found in the root directory, will be recognized
+		and used by Alt-F. The ffp init script will be executed at "reload" time,
+		but you should disable all non needed ffp init scripts, and only keep
+		those that provide services that Alt-F don't have.
+		Alt-F binaries have precedence over others.
+
+	3-b) You want to always use it:
+		Proceed and in 2), but read 3-a) above.
+
+4-You want to replace the stock firmware:
+	download Alt-F-<version>.bin and use the Alt-F firmware upgrade web page to
+	flash it. You can't flash Alt-F with the vendor firmware. This is deliberate.
+	Alt-F firmware upgrade web page can flash the vendor supplied firmware, so
+	you can always do a "downgrade". DLink 1.07 and 1.08, as well as Conceptronic
+	1.05b5 firmware was flashed this way *** ON A REV-B1 BOARD ***
+	OF COURSE THIS IS DANGEROUS, AND CAN TURN YOUR BOX INTO AN EXPENSIVE BLACK
+	BRICK IN YOUR DESKTOP. YOU HAVE BEEN WARNED.
+
+The reloaded*.ko modules are from fonz ffp-reloaded-0.5-2,
+http://www.inreto.de/dns323/ffp-reloaded/packages/ffp-reloaded-0.5-2.tgz
