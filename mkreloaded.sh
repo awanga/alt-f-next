@@ -25,3 +25,4 @@ cp $BLDDIR/binaries/dns323/zImage \
 # don't compress, no significant space saving and much slower extraction
 rm alt-f/*~
 tar --exclude-vcs -cvf Alt-F-$ver.tar alt-f
+mv Alt-F-$ver.tar $BLDDIR/binaries/dns323/
