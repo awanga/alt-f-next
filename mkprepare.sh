@@ -13,9 +13,10 @@ if ! test -d dl; then
 	mkdir dl
 fi
 
-if ! test -e dl/Alt-F-utils-0.1.tar.gz; then
-	cp package/Alt-F-utils/Alt-F-utils-0.1.tar.gz dl
-fi
+# This is now done during the make. commit 121
+#if ! test -e dl/Alt-F-utils-0.1.tar.gz; then
+#	cp package/Alt-F-utils/Alt-F-utils-0.1.tar.gz dl
+#fi
 
 if ! test -e dl/aufs+sqfs4lzma-2.6.33.patch; then
 	cp patches/aufs+sqfs4lzma-2.6.33.patch dl
@@ -47,16 +48,19 @@ if ! test -d "$BLDDIR/dl"; then
 	fi
 fi
 
-echo "Building needed host tools and copying then to the bin dir. No checks done!"
+echo -e "\nBuilding needed host tools and copying then to the bin dir.\n\nNo checks done!\n\n"
 
 # just to be sure
-(cd  bin; rm devio  dns323-fw  lzma  mkimage  mksquashfs)
+(cd bin; rm devio dns323-fw lzma mkimage mksquashfs)
 
 cd host-tools
 
 # just to be sure
-rm -rf Alt-F-utils-0.1 squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage lzma465
+rm -rf Alt-F-utils-0.1 squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage 7z465
 
+if ! test -e devio-1.2.tar.gz; then
+	wget http://sourceforge.net/projects/devio/files/devio/devio-1.2/devio-1.2.tar.gz/download
+fi
 tar xzf devio-1.2.tar.gz
 cd devio-1.2
 ./configure
@@ -64,31 +68,45 @@ make
 cp src/devio ../../bin/
 cd ..
 
-tar xzf debian-uboot-mkimage_0.4.tar.gz
+if ! test -e uboot-mkimage_0.4.tar.gz; then
+	wget http://ftp.de.debian.org/debian/pool/main/u/uboot-mkimage/uboot-mkimage_0.4.tar.gz
+fi
+tar xzf uboot-mkimage_0.4.tar.gz
 cd uboot-mkimage
 make
 cp mkimage ../../bin/
 cd ..
 
-mkdir lzma465 # must be a windows gui
-tar -C lzma465 -xjf lzma465.tar.bz2
-cd lzma465
+if ! test -e 7z465.tar.bz2; then
+	wget http://sourceforge.net/projects/sevenzip/files/7-Zip/4.65/7z465.tar.bz2/download
+fi
+mkdir 7z465 # must be a windows gui!
+tar -C 7z465 -xjf 7z465.tar.bz2
+cd 7z465
 cd CPP/7zip/Compress/LZMA_Alone
 make -f makefile.gcc
 cp lzma ../../../../../../bin
 cd ../../../../..
 
+if ! test -e squashfs4.0-lzma-snapshot.tgz; then
+	wget http://www.kernel.org/pub/linux/kernel/people/pkl/squashfs4.0-lzma-snapshot.tgz
+fi
 tar xzf squashfs4.0-lzma-snapshot.tgz
 cd squashfs4.0-lzma-snapshot/squashfs-tools/
 sed -i 's/#LZMA_SUPPORT = 1/LZMA_SUPPORT = 1/' Makefile
-sed -i 's|../../LZMA/lzma465|../../lzma465|' Makefile 
+sed -i 's|../../LZMA/lzma465|../../7z465|' Makefile 
 make
 cp mksquashfs ../../../bin/
 cd ../../
 
-tar xzf ../package/Alt-F-utils/Alt-F-utils-0.1.tar.gz \
-	Alt-F-utils-0.1/dns323-fw.c
-cd Alt-F-utils-0.1/
+AFV=0.1 # Alt-F-utils version
+if ! test -e Alt-F-utils-$AFV.tar.gz; then
+	tar --exclude-vcs -C ../package/Alt-F-utils \
+		-cvzf Alt-F-utils-$AFV.tar.gz Alt-F-utils-$AFV
+fi
+tar xzf Alt-F-utils-$AFV.tar.gz \
+	Alt-F-utils-$AFV/dns323-fw.c
+cd Alt-F-utils-$AFV/
 make dns323-fw
 cp dns323-fw ../../bin/
 cd ../..
