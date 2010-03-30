@@ -27,10 +27,10 @@ and checkout the one of your choice, e.g.
 
 Then,
   
-  cd alt-f-read-only
-  export BLDDIR=<dir> # where you want the build tree, e.g. ~/Alt-F-build
-  ./mkprepare.sh
-  make O=$BLDDIR
+	cd alt-f-read-only
+	export BLDDIR=<dir> # where you want the build tree, e.g. ~/Alt-F-build
+	./mkprepare.sh
+	make O=$BLDDIR
 
 and go for a two hours walk (old P4HT@3.2GHz/2GB) 
 
@@ -42,12 +42,13 @@ mount the generated ext2 rootfs as a loop device and manipulate it.
 See the source.
 
 To create an initramfs, do
-  ./mkinitramfs.sh sqfs
+	./mkinitramfs.sh sqfs
 
 and you will find the initramfs in $BLDDIR/binaries/dns323,
 rootfs.arm.cpio-sq.lzma, that you can use together with zImage and fonz
 "reloaded" to boot the new kernel. The kernel cmdline is simply
 "console=ttyS0,115200".
+
 The initramfs is a cpio lzma compressed initramfs, where the /usr directory
 was squashfs-4 compressed with lzma, resulting in the file usr.squashfs.
 
@@ -56,11 +57,19 @@ cpio initramfs, faster to create and boot but using too much memory at runtime,
 or "lzma", that crates a lzma compressed cpio initramfs, smaller in size but
 slower to boot.
 
+If you are already in Alt-F, you can scp zImage and rootfs.arm.cpio-sq.lzma or
+rootfs.arm.cpio.gz or rootfs.arm.cpio.lzma to the box /root directory and issue
+a "reboot" command.
+The /etc/init.d/rcE script will recognize these files and will do a kexec after
+doing all other cleaning, thus reloading a new kernel and initramfs without
+an actual hardware reboot.
+
 To create a "reloaded" tar file, just
 	./mkreloaded.sh
 
-and you will find it in $BLDDIR/binaries/dns323/Alt-F-0.1B1.tar, not compressed.
-It makes no sense to compress it, because it is already internally compressed.
+and you will find it in $BLDDIR/binaries/dns323/Alt-F-0.1B1.tar.
+It is not compressed and it makes no sense to compress it, because it is already
+internally compressed.
 
 To create a firware image, just type
 	./mkfw.sh
@@ -101,4 +110,3 @@ A faster, non guaranteed and involved way:
 
 This way the toolchain, kernel, and already built packages are not
 rebuilt, only the root directory is repopulated and the rootfs rebuild.
-
