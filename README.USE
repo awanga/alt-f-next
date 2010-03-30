@@ -1,0 +1,116 @@
+
+To use Alt-F you can use its "lame" administering web pages, directing a
+web browser to the box default IP.
+
+When booting, and to assign itself an IP, Alt-F tries to first use its
+own flashed settings; if unsuccessful it then tries to use the vendors
+firmware flash defaults; if unsuccessful it then tries to requests a IP
+from a DHCP server and finally tries to find an unassigned IP in the
+192.168.1.254 to 192.168.1.240 range.
+
+In detail, when Alt-F boots, it search:
+0-For a kernel command line supplied IP (advanced users only)
+1-First for its own settings in flash, and use them; you should do a "Save
+	Settings" from the web page when you made any change that you want
+	to preserve across reboots. Alt-F and the vendors defaults can coexist
+	in flash while there is space available;
+2-If not found, it will use one of the vendors default file, and use the IP
+	specified there (if the box was not using DHCP);
+3-If not found, it will try to use DHCP, you can consult your router web page
+	to find what IP was assigned;
+4-If no DHCP server is available, Alt-F will use the first free IP in the
+	192.168.1.254 until 192.168.1.240 range.
+
+So, after booting, your box will hopefully have the same IP as before,
+In the "worst" scenario, the box IP will be 192.168.1.240, but this is
+very unlikely.
+
+To login in the web pages, you have to setup a new (volatile) password,
+and "root" password will be the same.
+
+You can then login using telnet or ssh and change the root password
+using the "passwd" command. Note that if you later change the password
+using the web page, than the root password will also be changed, so the
+recommend procedure is to first set up a web password and then login
+using telnet or ssh and change the root password.
+
+The pages were tested with firefox, if you are using another browser and
+find that something is not OK, try first with firefox and than report
+back or, preferably, send a patch.
+
+With the web pages, which are very crude and rude, you can do most of
+the administrative tasks. One of the most likely causes for failures in
+the web pages are spaces in filenames and browser caching. Please send a
+report and a patch.
+
+If you have a serial connection, you can see the boot log and login as
+root (without password if none was setup). Use the "passwd" command to
+set a new (volatile) root password.
+
+The first time that you use the web pages or change the password, you
+will be guided through a small set of pages, being prompted for a few
+configuration details. In the end, you should flash the settings.  The
+vendor flashed settings are only lost if you deliberately clear them.
+However, they use almost all available flash space, so when trying to
+save Alt-F settings you can see an error message.
+
+To flash the settings in the cli (command line "interface"), use the
+command "loadsave_settings". If you don't save settings, on each reboot
+a new RSA/DSA key pair is generated for dropbear usage, and your ssh
+client will complain.
+
+When a new disk is detected, either internal or USB connected, either at
+boot or by hot-plugging,  Alt-F will mount all the disks filesystems in
+the directory /mnt/<name>, where <name> can be either the disk partition
+name, as in /mnt/sda3, or a filesystem label, such as /mnt/Backups.
+You can set a filesystem label using the cli command "plabel" (not for
+NTFS). Ext2/3/4/VFAT/NTFS/ISO9660 filesystems are recognized.
+
+RAID-0/1/5 (using an external USB disk) and linear RAID are recognized,
+but RAID filesystems created by the vendor firmware are not
+automatically mounted, only assembled (otherwise the vendor firmware
+will not recognize it as RAID at the next boot). You can however
+manually mount and use them.
+
+When mounting filesystems, Alt-F will look for a directory called "ffp"
+in the filesystem root, and if found a link is created to it at the
+root, /. Using the "Package Manager" web page you can install, update or
+remove ffp packages.
+
+If a directory name "Users" is found, will be linked to /home.
+
+Alt-F also looks for a directory called Alt-F. If found it will be
+aufs-mounted on top of root, /, shadowing it. This means that any files
+(including executables) existing there will be used instead. This is
+likely to change, and poses some pathological problems, so don't use it.
+Mostly don't directly change nothing in that directory.
+ 
+USB attached printers will also be recognized, and a rudimentary lpd
+spooler used for them. They can also be used with samba.
+
+Disks will, by default, be set to sleep after one hour of inactivity;
+when this happens, the corresponding orange led will slowly flash.
+
+If you keep the box front button pressed for more than 3 seconds, the
+right led will start flashing, and if you release the button while it is
+flashing an ordered reboot will be done; if keep pressed by three more
+seconds, the left led will start flashing, and if the button is then
+released, the box will do an ordered shutdown.
+
+The leds will be steady orange when a RAID device is degraded, and will
+flash in  orange during resync or rebuild.
+
+Internal or external disks can be hot-removed after being "ejected"
+using the "eject" command or "Disk utils" web page.
+
+Please note that RAID hot-plugging is not yet fully functional; when
+devices are inserted, it works fine, they are incrementally assembled
+and filesystems are mounted, but if some device is removed and then
+reinserted, hot-plugging might not work properly.
+
+Also notice that because the arrays are incrementaly added and mounted
+as soon as possible, they must have the "intent bitmap" active,
+otherwise a rsync happens when the second (on raid-1) or third (on
+raid-5) device is inserted.
+This is work in progress, and hopefully in 0.1B2 it will be solved.
+
