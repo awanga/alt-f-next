@@ -18,6 +18,11 @@ ver=$(cut -f2 -d" " customroot/etc/Alt-F)
 
 cd reloaded
 
+if ! test -f alt-f/README.INSTALL -a -f alt-f/README.USE; then
+	mkdir alt-f
+	cp ../README.INSTALL ../README.USE alt-f
+fi
+
 if ! test -f alt-f/reloaded-2.6.12.6-arm1.ko; then
 	if ! test -f ffp-reloaded-0.5-2.tgz; then
 		wget http://www.inreto.de/dns323/ffp-reloaded/packages/ffp-reloaded-0.5-2.tgz
@@ -27,9 +32,16 @@ if ! test -f alt-f/reloaded-2.6.12.6-arm1.ko; then
 	rm -rf ffp
 fi
 
-cp $BLDDIR/binaries/dns323/zImage \
-	$BLDDIR/binaries/dns323/rootfs.arm.cpio-sq.lzma \
-	alt-f
+if test -e $BLDDIR/binaries/dns323/zImage -a \
+	-e $BLDDIR/binaries/dns323/rootfs.arm.cpio-sq.lzma; then
+
+	cp $BLDDIR/binaries/dns323/zImage \
+		$BLDDIR/binaries/dns323/rootfs.arm.cpio-sq.lzma \
+		alt-f
+else
+	echo "No kernel or initramfs found"
+	exit 1
+fi
 
 # don't compress, no significant space saving and much slower extraction
 rm alt-f/*~ >& /dev/null
