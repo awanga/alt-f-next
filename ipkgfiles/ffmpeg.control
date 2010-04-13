@@ -1,0 +1,11 @@
+Package: ffmpeg
+Version: 0.5.1
+Description: ffmpeg is command line tool to convert multimedia files between formats
+	  libavcodec is a library containing decoders and encoders for audio/video codecs.
+	  libavformat is a library containing demuxers and muxers for multimedia container formats.
+	  http://ffmpeg.org
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

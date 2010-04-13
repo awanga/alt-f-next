@@ -1,0 +1,9 @@
+Package: libfuse
+Version: 2.8.1
+Description: 	  FUSE (Filesystem in UserSpacE)
+	  http://fuse.sourceforge.net/
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

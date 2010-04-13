@@ -1,0 +1,10 @@
+Package: fuppes
+Version: 660
+Depends: libxml2, sqlite, pcre
+Description: uPNP AV server
+	  http://fuppes.ulrich-voelkel.de
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

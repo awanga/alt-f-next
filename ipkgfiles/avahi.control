@@ -1,0 +1,10 @@
+Package: avahi
+Version: 0.6.23
+Depends: libdaemon, expat 
+Description: 	  Avahi is a system which facilitates service discovery on a local network.
+	  http://www.avahi.org/
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

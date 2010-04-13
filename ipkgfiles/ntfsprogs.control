@@ -1,0 +1,10 @@
+Package: ntfsprogs
+Version: 2.0.0
+Description: Wide collection of NTFS utilities. ntfsmount needs libfuse
+	  http://www.linux-ntfs.org/
+Depends: libfuse
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

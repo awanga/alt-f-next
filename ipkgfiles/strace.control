@@ -1,0 +1,11 @@
+Package: strace
+Version: 4.5.18
+Description: A useful diagnostic, instructional, and debugging tool.
+	  Allows you to track what system calls a program makes
+	  while it is running.
+	  http://sourceforge.net/projects/strace/
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

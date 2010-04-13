@@ -1,0 +1,10 @@
+Package: sqlite
+Version: 3.6.16
+Description: SQLite is a small C library that implements a self-contained,
+	  embeddable, zero-configuration SQL database engine.
+	  http://www.sqlite.org/
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

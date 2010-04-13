@@ -1,0 +1,9 @@
+Package: ipkg
+Version: 0.99.163
+Description: 	  The Itsy Package Installer from handhelds.org
+	  http://www.handhelds.org
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

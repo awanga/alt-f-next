@@ -1,0 +1,8 @@
+./usr/bin/update-alternatives
+./usr/bin/ipkg-cl
+./usr/lib/libipkg.so.0
+./usr/lib/libipkg.so.0.0.0
+./usr/lib/libipkg.so
+./usr/share/ipkg/intercept/ldconfig
+./usr/share/ipkg/intercept/update-modules
+./usr/share/ipkg/intercept/depmod

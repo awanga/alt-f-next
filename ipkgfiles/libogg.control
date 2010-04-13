@@ -1,0 +1,8 @@
+Package: libogg
+Version: 1.1.4
+Description: Ogg is the name of Xiph.org's container format for audio, video, and metadata
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard
