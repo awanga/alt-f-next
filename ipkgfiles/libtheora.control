@@ -1,0 +1,10 @@
+Package: libtheora
+Version: 1.0
+Depends: libogg libvorbis
+Description: A library for the free and open video compression format "Theora" from the Xiph.org Foundation.
+	  http://www.theora.org/
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard
