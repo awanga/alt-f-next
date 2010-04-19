@@ -1,9 +1,0 @@
-config BR2_PACKAGE_FUPPES
-	bool "fuppes"
-	select BR2_PACKAGE_LIBXML2
-	select BR2_PACKAGE_SQLITE
-	select BR2_PACKAGE_PCRE
-	help
-	  uPNP AV server
-
-	  http://fuppes.ulrich-voelkel.de
