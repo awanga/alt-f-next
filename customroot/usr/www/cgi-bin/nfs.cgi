@@ -6,23 +6,8 @@ exports_row() {
 	edir=$1; ln=$2; cnt=$3
  
 	lopts="";
-	RO_SEL=""; RW_SEL=""; SYNC_SEL=""; ASYNC_SEL="";
- 	RS_SEL=""; NRS_SEL=""; AS_SEL=""; NAS_SEL="";
  	
 	eval $(echo $ln | tr '()' '|' | awk -F'|' '{printf "aip=%s; opts=%s", $1, $2}')
-	for i in $(echo $opts | tr ',' ' '); do
-		case $i in
-			ro)	RO_SEL="SELECTED" ;;
-			rw) RW_SEL="SELECTED" ;;
-			sync) SYNC_SEL="SELECTED" ;;
-			async) ASYNC_SEL="SELECTED" ;;
-			root_squash) RS_SEL="SELECTED" ;;
-			no_root_squash) NRS_SEL="SELECTED" ;;
-			all_squash) AS_SEL="SELECTED" ;;
-			no_all_squash) NAS_SEL="SELECTED" ;;
-			*) if test -z "$lopts"; then lopts="$i"; else lopts="$lopts,$i";fi ;;
-		esac
-	done
 
 	exdir=${edir#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${edir%%[!#]*}	# get possible comment char FIXME more than one and space
@@ -33,21 +18,8 @@ exports_row() {
 		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value=$exdir></td>
 		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
 		<td><input type=text size=10 name=ip_$cnt value=$aip></td>
-		<td><select name=rd_$cnt>
-			<option value=ro $RO_SEL >Read</option>
-			<option value=rw $RW_SEL >RD/WR</option>
-		</select></td>
-		<td><select name=mode_$cnt>
-			<option value=async $ASYNC_SEL >async</option>
-			<option value=sync $SYNC_SEL>sync</option>
-		</select></td>
-		<td><select name=perm_$cnt>
-			<option value=no_all_squash $NAS_SEL>def. mapping</option>
-			<option value=root_squash $RS_SEL>root to anon.</option>
-			<option value=no_root_squash $NRS_SEL>root to root</option>
-			<option value=all_squash $AS_SEL>all to anon.</option>
-		</select></td>
-		<td><input type=text size=20 name=xopts_$cnt value=$lopts></td>
+		<td><input type=text size=40 id=expopts_$cnt name=xopts_$cnt value="$opts" onclick="def_opts('xpt', 'expopts_$cnt')"></td>
+		<td><input type=button value=Browse onclick="opts_popup('expopts_$cnt', 'nfs_exp_opt')"></td>
 		</tr>
 EOF
 }
@@ -72,8 +44,8 @@ fstab_row() {
 		<td><input type=button value=Browse onclick="browse_nfs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
 		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value=$mdir></td>
 		<td><input type=button value=Browse onclick="browse_dir_popup('mdir_$cnt')"></td>
-		<td><input type=text size=20 id=fopts_$cnt name=fopts_$cnt value=$opts></td>
-		<td><input type=button value=Browse onclick="opts_popup('fopts_$cnt', 'nfs_mnt_opt')"></td>
+		<td><input type=text size=20 id=mntopts_$cnt name=mopts_$cnt value="$opts" onclick="def_opts('mnt', 'mntopts_$cnt')"></td>
+		<td><input type=button value=Browse onclick="opts_popup('mntopts_$cnt', 'nfs_mnt_opt')"></td>
 		</tr>
 EOF
 }
@@ -81,9 +53,9 @@ EOF
 . common.sh
 check_cookie
 read_args
-write_header "NFS Setup -- Not yet working, and will change"
+write_header "NFS Setup"
 
-#echo "<pre>$(set)</pre>"
+#debug
 
 CONFX=/etc/exports
 CONFT=/etc/fstab
@@ -106,13 +78,29 @@ cat<<-EOF
 			window.open("browse_opts.cgi?id=" + id + "?kind=" + kind + "?eopts=" + eopts, "Browse", "scrollbars=yes, width=500, height=500");
 			return false;
 		}
+		function def_opts(kind, id) {
+			var opts = document.getElementById(id);
+			if (opts.value != "")
+				return;
+			if (kind == "xpt")
+				opts.value = "rw,no_root_squash,no_subtree_check,anonuid=99,anongid=98"; // keep in sync with nfs_proc.cgi
+			else if (kind == "mnt")
+				opts.value = "rw,hard,intr"; // keep in sync with nfs_proc.cgi
+		}
 	</script>
 
 	<form name=expdir action=nfs_proc.cgi method="post" >
 		<fieldset>
 		<legend><strong>Directories to export to other hosts</strong></legend>
 		<table>
-		<tr align=center><td>Disable</td><td>Directory</td><td></td><td>Allowed hosts</td><td></td><td></td><td>User Mapping</td><td>Other Options</td></tr>
+		<tr align=center>
+		<td>Disable</td>
+		<td>Directory</td>
+		<td>Search</td>
+		<td>Allowed hosts</td>
+		<td>Export Options</td>
+		<td>Options</td>
+		</tr>
 EOF
 
 cnt=1
@@ -127,11 +115,9 @@ for i in $(seq $cnt $((cnt+2))); do
 	exports_row "" "" $i	# edir ln cnt
 done
 
-#rpcinfo to browse net, showmount to browse host
-
 cat<<-EOF
 	<input type=hidden name="n_exports" value="$cnt">
-	</table></fieldset>
+	</table></fieldset><br>
 	<fieldset>
 	<legend><strong>Directories to import from other hosts</strong></legend>
 	<table>
@@ -141,9 +127,9 @@ cat<<-EOF
 	<td>Directory</td>
 	<td>Discover</td>
 	<td>Local dir</td>
-	<td>Browse</td>
+	<td>Search</td>
 	<td>Mount Options</td>
-	<td>Browse</td>
+	<td>Options</td>
 	</tr>
 EOF
 
