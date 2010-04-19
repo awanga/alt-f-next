@@ -31,7 +31,11 @@ saveflashdef() {
 			echo $i
 		fi
 	done > $initscript_perms
-	files="$files $initscript_perms"
+
+	# special case, only save nfs and cifs mounts,
+	# as other entries are hotpluged?
+	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0}' /etc/fstab > /tmp/xfstab
+	files="$files /tmp/xfstab $initscript_perms"
 
 	mkdir -p $save_dir
 	mount /dev/mtdblock0 $save_dir
@@ -42,6 +46,7 @@ saveflashdef() {
 	dt=$(date +%F_%T)
 	nm=set_$dt.tgz
 	tar -czf /tmp/$nm $files > /dev/null 2>&1
+	rm /tmp/xfstab
 	cp /tmp/$nm $save_dir/ 2>/dev/null
 	res=$?
 	while test $res = 1 -a "$cnt" -gt 0; do
@@ -83,6 +88,9 @@ loadflashdef() {
 	else
 		tar -C / -xzf $last
 		res=$?
+		# special nfs and cifs cases
+		cat /etc/fstab /tmp/xfstab | sort | uniq > /etc/fstab
+		rm /tmp/xfstab
 	fi
 
 	umount $save_dir
