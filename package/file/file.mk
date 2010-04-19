@@ -3,7 +3,8 @@
 # file
 #
 #############################################################
-FILE_VERSION:=4.26
+#FILE_VERSION:=4.26
+FILE_VERSION:=5.04
 FILE_SOURCE:=file-$(FILE_VERSION).tar.gz
 FILE_SITE:=ftp://ftp.astron.com/pub/file/
 FILE_SOURCE_DIR:=$(BUILD_DIR)/file-$(FILE_VERSION)
@@ -73,7 +74,7 @@ $(FILE_DIR2)/.configured: $(FILE_SOURCE_DIR)/.unpacked
 		--libdir=/lib \
 		--libexecdir=/usr/lib \
 		--sysconfdir=/etc \
-		--datadir=/usr/share/misc \
+		--datadir=/usr/share/ \
 		--localstatedir=/var \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
@@ -104,6 +105,8 @@ endif
 	mv $(TARGET_DIR)/usr/include/magic.h $(STAGING_DIR)/usr/include
 
 file: zlib uclibc $(TARGET_DIR)/$(FILE_TARGET_BINARY)
+
+file-configure: $(FILE_DIR2)/.configured
 
 file-clean:
 	-$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(FILE_DIR2) uninstall
