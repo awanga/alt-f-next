@@ -18,7 +18,7 @@ $(eval $(call AUTOTARGETS,package,libfuse))
 $(LIBFUSE_TARGET_INSTALL_TARGET):
 	mkdir -p $(TARGET_DIR)/usr/lib
 	mkdir -p $(TARGET_DIR)/usr/bin
-	cp -dpf $(STAGING_DIR)/usr/bin/fusermount $(TARGET_DIR)/usr/bin/
+	cp -dpf $(STAGING_DIR)/usr/bin/arm-linux-fusermount $(TARGET_DIR)/usr/bin/fusermount
 	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/usr/bin/fusermount
 	cp -dpf $(STAGING_DIR)/usr/lib/libfuse.so* $(TARGET_DIR)/usr/lib/
 	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libfuse.so
