@@ -51,12 +51,12 @@ fi
 echo -e "\nBuilding needed host tools and copying then to the bin dir.\n\nNo checks done!\n\n"
 
 # just to be sure
-(cd bin; rm devio dns323-fw lzma mkimage mksquashfs)
+(cd bin; rm *)
 
 cd host-tools
 
 # just to be sure
-rm -rf Alt-F-utils-0.1 squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage 7z465
+rm -rf Alt-F-utils-0.1 squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage 7z465 ipkg-utils-050831
 
 if ! test -e devio-1.2.tar.gz; then
 	wget http://sourceforge.net/projects/devio/files/devio/devio-1.2/devio-1.2.tar.gz/download
@@ -100,14 +100,22 @@ cp mksquashfs ../../../bin/
 cd ../../
 
 AFV=0.1 # Alt-F-utils version
-if ! test -e Alt-F-utils-$AFV.tar.gz; then
-	tar --exclude-vcs -C ../package/Alt-F-utils \
-		-cvzf Alt-F-utils-$AFV.tar.gz Alt-F-utils-$AFV
+if ! test -e Alt-F-utils-$AFV/dns323-fw.c; then
+	mkdir Alt-F-utils-$AFV
+	cp ../package/Alt-F-utils/Alt-F-utils-$AFV/dns323-fw.c \
+		Alt-F-utils-$AFV
 fi
-tar xzf Alt-F-utils-$AFV.tar.gz \
-	Alt-F-utils-$AFV/dns323-fw.c
 cd Alt-F-utils-$AFV/
 make dns323-fw
 cp dns323-fw ../../bin/
-cd ../..
+cd ..
 
+if ! test -e ipkg-utils-050831.tar.gz; then
+	wget http://www.handhelds.org/download/packages/ipkg-utils/ipkg-utils-050831.tar.gz
+fi
+tar xzf ipkg-utils-050831.tar.gz
+cp ipkg-utils-050831/ipkg-build \
+	ipkg-utils-050831/ipkg-make-index \
+	ipkg-utils-050831/ipkg.py \
+	../bin
+sed -i 's|*control|./control|' ../bin/ipkg.py
