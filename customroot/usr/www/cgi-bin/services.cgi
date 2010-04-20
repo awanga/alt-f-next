@@ -35,16 +35,7 @@ s="<strong>"
 es="</strong>"
 
 cat<<-EOF
-	<script type="text/javascript">
-	function toogle(theform) {
-		for (var i = 0; i < theform.length; i++) {
-			if (theform.elements[i].id == "inetds")
-				theform.elements[i].disabled = theform.elements[i].disabled ? false : true;
-		}
-	}
-	</script>
-
-	<form name=srvf action="/cgi-bin/services_proc.cgi" method="post">
+	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<table><tr>
 	<td> $s Service $es </td>
 	<td> $s Boot Enabled $es </td>
@@ -70,45 +61,15 @@ for i in $srv; do
 		act="StartNow"
 	fi
 
-	script=""
-	if test "$i" = "inetd"; then
-		script="onchange=\"toogle(srvf)\""
-	fi
-
 	cat<<-EOF
 		<tr><td> $i </td>
-		<td align=center><input type=checkbox $chkf name=$i value=enable $script></td>
+		<td align=center><input type=checkbox $chkf name=$i value=enable></td>
 		<td>$st</td>
 		<td><input type="submit" name=$i value="$act"></td>
 		<td><input type="submit" name=$i value="Configure"></td>
 		<td>$DESC</td></tr>
 	EOF
 done
-
-# FIXME: add description
-if test $action = "net"; then
-
-	inetdf=""
-	if ! test -x /etc/init.d/S??inetd; then
-		inetdf="disabled"
-	fi
-
-	ssrv="rsync ssh telnet ftp http printer swat"
-	for i in $ssrv; do
-		chkf=""
-		if $(grep -q -e "^$i" $CONFF); then
-			chkf="CHECKED"
-		fi
-		
-		cat<<-EOF
-			<tr><td><em>&emsp; $i </em></td>
-			<td align=center><input type=checkbox $inetdf id=inetds $chkf name=$i value=enable></td>
-			<td></td><td></td>
-			<td><input type="submit" $inetdf id=inetds name=$i value="Configure"></td></tr>
-		EOF
-	done
-	echo "<tr><td><input type=hidden name=\"$ssrv\" value=SSubmit></td></tr>"
-fi
 
 cat<<-EOF
 	<tr><td></td>
