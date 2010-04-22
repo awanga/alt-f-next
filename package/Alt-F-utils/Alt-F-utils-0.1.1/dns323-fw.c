@@ -21,17 +21,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+#include <stdint.h>
 
 typedef struct {
-	unsigned long kernel_off;
-	unsigned long kernel_len;
-	unsigned long initramfs_off;
-	unsigned long initramfs_len;
-	unsigned long defaults_off;
-	unsigned long defaults_len;
-	unsigned long kernel_checksum;
-	unsigned long initramfs_checksum;
-	unsigned long defaults_checksum;
+	uint32_t kernel_off;
+	uint32_t kernel_len;
+	uint32_t initramfs_off;
+	uint32_t initramfs_len;
+	uint32_t defaults_off;
+	uint32_t defaults_len;
+	uint32_t kernel_checksum;
+	uint32_t initramfs_checksum;
+	uint32_t defaults_checksum;
 
 	unsigned char magic_num[12];
 	unsigned char product_id;
@@ -41,7 +42,7 @@ typedef struct {
 
 	unsigned char NewVersion;
 	unsigned char reserved[7];	//all structure is 64 bytes
-	unsigned long Next_offset;
+	uint32_t Next_offset;
 } CONTROL_HEADER;
 
 typedef unsigned long ulong;
@@ -58,7 +59,7 @@ char *signatures[] = { "\x55\xAA\FrodoII\x00\x55\xAA",
 char *kernel = NULL, *initramfs = NULL, *defaults = NULL, *fw = NULL;
 unsigned char product = 1, custom = 2, model = 3, sub = 4, version = 5, quiet = 0;
 
-int readwrite(int fdo, int fdi, ulong off, ulong sz, ulong *chk) {
+int readwrite(int fdo, int fdi, ulong off, ulong sz, uint32_t *chk) {
 
   char *buf = (char *) malloc(BLOCK_SIZE);
   if (buf == NULL) {
@@ -69,7 +70,8 @@ int readwrite(int fdo, int fdi, ulong off, ulong sz, ulong *chk) {
   if (lseek(fdi, off, SEEK_SET) < 0)
 	return -1;
 
-  int i, j, n; ulong lchk = 0;
+  int i, j, n;
+  uint32_t lchk = 0;
   ulong *bp;
   for (i=0; i<sz/BLOCK_SIZE; i++) {
 	n = read(fdi, buf, BLOCK_SIZE);
@@ -179,7 +181,7 @@ int merge() {
   }
     
   lseek(fo, 64, SEEK_SET);
-  ulong chks = 0;
+  uint32_t chks = 0;
   if (readwrite(fo, fi, 0, fsize, &chks) != 0) {
 	perror("readwrite kernel");
 	exit(1);
