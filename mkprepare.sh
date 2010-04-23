@@ -99,7 +99,7 @@ make
 cp mksquashfs ../../../bin/
 cd ../../
 
-AFV=0.1 # Alt-F-utils version
+AFV=0.1.1 # Alt-F-utils version
 if ! test -e Alt-F-utils-$AFV/dns323-fw.c; then
 	mkdir Alt-F-utils-$AFV
 	cp ../package/Alt-F-utils/Alt-F-utils-$AFV/dns323-fw.c \
