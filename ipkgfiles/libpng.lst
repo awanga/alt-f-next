@@ -1,6 +1,6 @@
 ./usr/bin/libpng12-config
 ./usr/bin/libpng-config
-./usr/lib/libpng.so
-./usr/lib/libpng12.so.0.38.0
 ./usr/lib/libpng12.so
 ./usr/lib/libpng12.so.0
+./usr/lib/libpng12.so.0.38.0
+./usr/lib/libpng.so

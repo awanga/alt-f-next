@@ -1,5 +1,5 @@
 Package: file
-Version: 4.26
+Version: 5.04
 Description: Program to identify a file's format by scanning binary data for known patterns.
 	  ftp://ftp.astron.com/pub/file/
 Architecture: arm
