@@ -14,6 +14,13 @@ if test -f "$CONFF"; then # damned spaced in file names!
 	WATCH_DIR="$(awk -F= '/^WATCH_DIR/{print $2}' $CONFF)" 
 fi
 
+if ! test -f $CONFF -a \
+	-n "$CONF_DIR" -a -n "$DOWNLOAD_DIR" -a -n "$WATCH_DIR"; then
+
+	echo "You must configure transmission first. Exiting."
+	exit 1
+fi
+
 network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
 
 OPTS="--no-auth --allowed=127.0.0.1,$network --config-dir=$CONF_DIR"
