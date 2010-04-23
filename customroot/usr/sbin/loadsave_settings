@@ -172,15 +172,16 @@ read_sib() {
 		exit 1
 	fi
 
+	DOMAIN=$(awk '/^workgroup/{print $3}' $save_dir/smb.default)
 	parse_sib_conf $save_dir/$sib
 	st=$?
-	
+
 	umount $save_dir
 	rmdir $save_dir
 
 	if test $st = 0; then
 		echo "ip=$IPADDRESS; mask=$NETMASK; gw=$GATEWAY; \
-			ns1=$NS1; ns2=$NS2; host=$HOSTNAME"
+			ns1=$NS1; ns2=$NS2; host=$HOSTNAME; domain=$DOMAIN"
 	fi
 	return $st
 }
