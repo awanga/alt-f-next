@@ -47,6 +47,8 @@ o=$(date +%s)
 while test $o = $(date +%s); do true; done
 hwclock -wu
 
+ifconfig eth0 down
+
 # do a kexec to a new kernel/rootfs instead of a reboot
 if test -f /root/zImage; then
 	cd /root
