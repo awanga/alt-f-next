@@ -1,8 +1,15 @@
 #!/bin/bash
 
+check() {
+	if test "$1" != 0; then
+		echo "Firmware creation FAILED at $2. exiting."
+		exit 1
+	fi
+}
+
 if test "$(dirname $0)" != "."; then
 	echo "This script must be run in the root of the tree, exiting."
-	exit 1;
+	exit 1
 fi
 
 if test -z "$BLDDIR"; then
@@ -17,33 +24,49 @@ fi
 # max sizes, dns323-fw checks them:
 # kernel <= 1572800 + 64, initramfs <= 6488000 + 64
 
-ver=$(cut -f2 -d" " customroot/etc/Alt-F)
-
 PATH=$(pwd)/bin:$PATH
 DESTD=$BLDDIR/binaries/dns323/
-KVER=2.6.33.1
-VER=0.1B1
+KVER=$(awk '/version:/{print $5}' $BLDDIR/project_build_arm/dns323/root/boot/linux*.config)
+VER=$(cut -f2 -d" " customroot/etc/Alt-F)
 
+if ! test -f ${DESTD}/zImage -a -f ${DESTD}/rootfs.arm.cpio-sq.lzma; then
+	echo "${DESTD}/zImage or ${DESTD}/rootfs.arm.cpio-sq.lzm not found, exiting"
+	exit 1
+fi
+
+# change machine ID
 devio > ${DESTD}/tImage 'wl 0xe3a01c06,4' 'wl 0xe3811006,4'
+check "$?" devio
+
 cat ${DESTD}/zImage >> ${DESTD}/tImage
 
+# create kernel uboot image
 mkimage -A arm -O linux -T kernel -C none \
 	-e 0x00008000 -a 0x00008000 \
 	-n "Alt-F-${VER}, kernel ${KVER}" -d ${DESTD}/tImage ${DESTD}/uImage
+check "$?" "kernel mkimage"
 
-rm ${DESTD}/tImage
-
+# create initramfs uboot image
 mkimage -A arm -O linux -T ramdisk -C none \
 	-e 0x00800000 -a 0x00800000 \
 	-n "Alt-F-${VER}, initramfs" -d ${DESTD}/rootfs.arm.cpio-sq.lzma \
 	${DESTD}/urootfs.arm.cpio-sq.lzma
+check "$?" "initramfs mkimage"
 
+# merge kernel and initramfs
 dns323-fw -m -k ${DESTD}/uImage -i ${DESTD}/urootfs.arm.cpio-sq.lzma \
-	${DESTD}/Alt-F-$ver.bin
+	${DESTD}/Alt-F-${VER}.bin
+check "$?" merging
 
-rm ${DESTD}/urootfs.arm.cpio-sq.lzma ${DESTD}/uImage
+# verification, check that splitint the created fw works fine
+dns323-fw -s ${DESTD}/Alt-F-${VER}.bin
+check "$?" split
 
-#dns323-fw -m [-q (quiet)] -k kernel_file -i initramfs_file
-#        [-d defaults_file] [-p product_id]  [-c custom_id] [-l model_id ]
-#        [-u sub_id] [-v new_version] firmware_file
+# paranoic, verify that the splited components equal the originals
+cmp kernel ${DESTD}/uImage
+check "$?" "paranoic kernel"
 
+cmp initramfs ${DESTD}/urootfs.arm.cpio-sq.lzma
+check "$?" "paranoic initramfs"
+
+rm kernel initramfs defaults ${DESTD}/urootfs.arm.cpio-sq.lzma ${DESTD}/uImage ${DESTD}/tImage
