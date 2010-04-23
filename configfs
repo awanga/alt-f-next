@@ -21,13 +21,12 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them
-# FIXME: add the corresponding /usr/www/cgi-bin files
-BR2_PACKAGES="BR2_PACKAGE_USHARE BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_OPENSSL"
+# add the corresponding /usr/www/cgi-bin files
+BR2_PACKAGES="BR2_PACKAGE_USHARE BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_MEDIATOMB"
 
 BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi"
 BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission etc/transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi"
 BR2_PACKAGE_MEDIATOMB="etc/init.d/S82mediatomb"
-BR2_PACKAGE_OPENSSL="etc/ssl/ca-bundle.crt etc/ssl/cert.pem "
 
 RMF=""
 for i in $BR2_PACKAGES; do
