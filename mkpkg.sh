@@ -36,6 +36,11 @@
 
 #set -x
 
+usage() {
+	echo -e "usage: mkpkg.sh <package> |\n -set (creates rootfs file list) |\n -setroot (creates rootfs base file list) |\n -cleanroot (remove all files not in rootfs base file list)\n"
+	exit 1
+}
+
 if test "$(dirname $0)" != "."; then
 	echo "This script must be run in the root of the tree, exiting."
 	exit 1;
@@ -51,9 +56,7 @@ if test -z "$BLDDIR"; then
 fi
 
 if test $# = 0; then
-	echo -e "usage: mkpkg.sh <package> |\n -set (creates rootfs file list) |\n -setroot (creates rootfs base file list) |\n -cleanroot (remove all files not in rootfs base file list)\n"
-	sed -n '3,35p' $0
-	exit 1
+	usage
 fi
 
 CDIR=$(pwd)
@@ -70,18 +73,18 @@ case "$1" in
 		if test -f $TFILES; then
 			mv $TFILES $TFILES-
 		fi
-		find . ! -type d > $TFILES
+		find . ! -type d | sort > $TFILES
 		chmod -w $TFILES
 		exit 0
 		;;
 	
 	"-setroot")
-		if test -f $TFILES; then
+		if test -f $ROOTFSFILES; then
 			mv $ROOTFSFILES $ROOTFSFILES-
 		fi
 	
 		cd $BLDDIR/project_build_arm/dns323/root
-		find . > $ROOTFSFILES
+		find . | sort > $ROOTFSFILES
 		chmod -w $ROOTFSFILES
 		exit 0
 		;;
@@ -94,25 +97,42 @@ case "$1" in
 		mv newroot root
 		exit 0
 		;;
+
+	"-all")
+		for i in $(ls ipkgfiles/*.lst); do
+			p=$(basename $i .lst)
+			echo Creating package $p
+			./mkpkg.sh $p
+		done
+		;;
+
+	"-help"|"--help"|"-h")
+		usage
+		sed -n '3,35p' $0
+		;;
+
+	-*)
+		usage
+		;;
 esac
 
+if ! test -e $TFILES; then
+	echo "file $TFILES not found, read help. Exiting"
+	exit 1
+fi
+
 pkg=$1
-PKGMK=$(find $CDIR/package -name $pkg.mk)	
+PKGMK=$(find $CDIR/package -name $pkg.mk)
+if test -z "$PKGMK"; then
+	echo Package $pkg not found, exiting
+	exit 1
+fi
+	
 PKGDIR=$(dirname $PKGMK)
 PKG=$(echo $pkg | tr [:lower:] [:upper:])
 eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
 version=$(eval echo \$${PKG}_VERSION)
 ARCH=arm
-
-if ! test -e $TFILES; then
-	echo "file $TFILES not found, exiting"
-	exit 1
-fi
-		
-if test -z "$PKGMK"; then
-	echo "Package $pkg not found,exiting."
-	exit 1
-fi
 
 if ! test -f $IPKGDIR/$pkg.control; then # first time build
 
@@ -154,7 +174,7 @@ fi
 if ! test -f $IPKGDIR/$pkg.lst; then # first time build
 	# create file list
 	cd ${BLDDIR}/project_build_arm/dns323/root	
-	find . ! -type d > $PFILES
+	find . ! -type d | sort > $PFILES
 	
 	diff $TFILES $PFILES | sed -n 's\> ./\./\p' > $IPKGDIR/$pkg.lst
 	cd $CDIR
@@ -172,8 +192,13 @@ fi
 
 mkdir -p tmp tmp/CONTROL
 
-(cd ${BLDDIR}/project_build_arm/dns323/root && \
-	cpio --quiet -pdmu $CDIR/tmp < $IPKGDIR/$pkg.lst)
+cd ${BLDDIR}/project_build_arm/dns323/root
+cpio --quiet -pdmu $CDIR/tmp < $IPKGDIR/$pkg.lst
+if test $? = 1; then # cpio doesnt return error?!
+	echo Fail
+	exit 1
+fi
+cd "$CDIR"
 
 for i in control conffiles preinst postinst prerm postrm; do
 	if test -f $IPKGDIR/$pkg.$i; then
@@ -187,6 +212,7 @@ done
 ipkg-build -o root -g root tmp
 
 mv ${pkg}_${version}_${ARCH}.ipk pkgs
+ipkg-make-index pkgs/ > pkgs/Packages
 rm -rf tmp
 
 # my own "sm" ipkg-build
