@@ -80,7 +80,7 @@ hwclock -su
 # create rc* shortcuts to /etc/init.d/S??*
 for i in /etc/init.d/S??*; do
 	f=$(basename $i)
-	ln /usr/sbin/rcscript /sbin/$(basename rc${f#S??})
+	ln -f /usr/sbin/rcscript /sbin/$(basename rc${f#S??})
 done
 
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
@@ -90,13 +90,7 @@ if ! $(/bin/grep -q "nodef" < /proc/cmdline); then
 	no_defaults=$?
 fi
 
-# try to clear the previous eth0 driver leftovers when reloading
-ifconfig eth0 up
-sleep 3
-ifconfig eth0 down
-
-# host and network setup
-/bin/hostname -F /etc/hostname
+# setup loopback interface
 /sbin/ifconfig lo 127.0.0.1 up
 /sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
 
@@ -109,6 +103,9 @@ ifconfig eth0 down
 if $(/bin/grep -q "ip=" < /proc/cmdline); then
 	echo "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
+	eval $(cat /proc/cmdline)
+	domain=$(echo $ip | awk -F: '{ print substr($5, index($5,".") + 1, length($5))}')
+	ifconfig eth0 up
 elif test $no_defaults = "0"; then
 	echo "IP from flash-defaults"
 	cip="def"
@@ -120,10 +117,9 @@ else
 		cip="sib"
 		eval $res
 		ifconfig eth0 up $ip netmask $mask
-		#ifconfig eth0 down # when reloaded, this is needed. previous driver issues?
-		#ifconfig eth0 up
 		route add default gw $gw
 		echo -e "nameserver $ns1\nnameserver $ns2" >> /etc/resolv.conf
+		hostname $host
 	else
 		ifconfig eth0 up
 		sleep 3 # needed?
@@ -148,24 +144,33 @@ fi
 # setup minimum network services (httpd is mandatory)
 case $cip in
 	"kip" | "fip" | "sib" | "dhcp")
-	# set hostname/hostip	
-	hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
-	#netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
-	hostname=$(cat /etc/hostname)
-	domain=$(awk '/(domain|search)/{print $2}' /etc/resolv.conf)
-	echo "$hostip $hostname.$domain $hostname" >> /etc/hosts
-	hostname $hostname.$domain
+		# set hostname/hostip	
+		hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
+		network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
+		#netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+		#gateway=$(route -n | awk '$1 == "0.0.0.0" { print $2 }')
+		#bcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
 
-	# set httpd hosts allow/deny
-	network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
-	echo A:$network >> /etc/httpd.conf
+		if test "$(hostname)" = "(none)"; then
+			hostname -F /etc/hostname
+		fi
+		if test -z "$domain"; then
+			domain=$(awk '/(domain|search)/{print $2}' /etc/resolv.conf)
+		fi
 
-	# set smb.conf hosts allow, workgroup
-	sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
-	sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
-	;;
+		echo "$hostip $(hostname).$domain $(hostname)" >> /etc/hosts
+		
+		# set httpd hosts allow/deny
+		echo A:$network >> /etc/httpd.conf
+
+		# set smb.conf hosts allow and workgroup
+		sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
+		sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
+		
+		;;
 
 	"def")
+		hostname -F /etc/hostname
 	;;
 esac	
 
