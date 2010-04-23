@@ -1,6 +1,6 @@
 /*
  * Automatically generated C config: don't edit
- * Sat Mar 20 04:23:07 2010
+ * Fri Apr 23 14:58:03 2010
  */
 #define BR2_KERNEL_LATEST_2_6_27 "27"
 #define BR2_PACKAGE_LINUX 1
@@ -92,7 +92,6 @@
 #define BR2_PACKAGE_LIBCURL 1
 #define BR2_EXT_GCC_VERSION_4_2_3 1
 #define BR2_PACKAGE_LIBUUID 1
-#define BR2_PACKAGE_LIBINTL 1
 #define BR2_PACKAGE_DOSFSTOOLS 1
 #define BR2_GCC_SUPPORTS_SYSROOT 1
 #define BR2_PACKAGE_NTFS_3G 1
@@ -106,7 +105,6 @@
 #define BR2_PACKAGE_PORTMAP 1
 #define BR2_PACKAGE_NCURSES 1
 #define BR2_PACKAGE_OPENSSL 1
-#define BR2_PACKAGE_GETTEXT 1
 #define BR2_EXT_UCLIBC_VERSION_0_9_30 1
 #define BR2_GCC_TARGET_ARCH "armv5te"
 #define BR2_PROGRAM_INVOCATION 1
@@ -142,6 +140,7 @@
 #define BR2_TARGET_ROOTFS_EXT2_BLOCKS 0
 #define BR2_LINUX_BSP_PATCH "aufs+sqfs4lzma-2.6.33.patch"
 #define BR2_TARGET_ROOTFS_EXT2_INODES 0
+#define BR2_PACKAGE_OPENSSL_BIN 1
 #define BR2_PACKAGE_E2FSPROGS_BLKID 1
 #define BR2_ATMEL_MIRROR "ftp://www.at91.com/pub/buildroot/"
 #define BR2_PACKAGE_MDADM 1
