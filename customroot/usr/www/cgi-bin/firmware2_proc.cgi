@@ -48,11 +48,15 @@ EOF
 	while test "$(jobs)" != ""; do jobs >/dev/null; echo .; sleep 1; done
 	echo "done.</p>"
 
+# FIXME compute md5sum to make sure flahing was OK.
+
     echo "<p>Flashing the ramdisk, it takes about 90 seconds "
     cat $initramfs_file > /dev/mtdblock3 &
 ##	sleep 10 &
 	while test "$(jobs)" != ""; do jobs >/dev/null; echo .; sleep 1; done
 	echo "done.</p>"
+
+# FIXME compute md5sum to make sure flahing was OK.
 
     if test "$flash_defaults" = "yes"; then
       echo "<p>Flashing defaults, it takes about 10 seconds..."
@@ -74,6 +78,8 @@ EOF
      
       echo " done.</p>"
     fi
+
+# FIXME handle mtd2. vendor bootlog: MTDC: Backup files from MTD1 to MTD2.
 
   rm $kernel_file $initramfs_file $defaults_file > /dev/null 2>&1
 
