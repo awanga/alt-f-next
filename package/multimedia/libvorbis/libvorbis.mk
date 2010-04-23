@@ -28,7 +28,8 @@ else
 ############################################################
 
 TREMOR_TRUNK:=http://svn.xiph.org/trunk/Tremor/
-TREMOR_VERSION:=svn-$(DATE)
+#TREMOR_VERSION:=svn-$(DATE)
+TREMOR_VERSION:=svn-20100415
 TREMOR_NAME:=Tremor-$(TREMOR_VERSION)
 TREMOR_DIR:=$(BUILD_DIR)/$(TREMOR_NAME)
 TREMOR_SOURCE:=$(TREMOR_NAME).tar.bz2

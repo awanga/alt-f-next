@@ -1,8 +1,12 @@
 config BR2_PACKAGE_FUPPES
 	bool "fuppes"
+	select BR2_PACKAGE_FFMPEG
+	select BR2_PACKAGE_FLAC	
+	select BR2_PACKAGE_LIBMAD	
 	select BR2_PACKAGE_LIBXML2
-	select BR2_PACKAGE_SQLITE
 	select BR2_PACKAGE_PCRE
+	select BR2_PACKAGE_SQLITE
+	select BR2_PACKAGE_TAGLIB
 	help
 	  uPNP AV server
 

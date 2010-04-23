@@ -9,7 +9,9 @@ MPLAYER_SITE:=http://www7.mplayerhq.hu/MPlayer/releases
 MPLAYER_DIR:=$(BUILD_DIR)/MPlayer-$(MPLAYER_VERSION)
 MPLAYER_CAT:=$(BZCAT)
 MPLAYER_BINARY:=mplayer
+MPLAYER_BINARY2:=mencoder
 MPLAYER_TARGET_BINARY:=usr/bin/$(MPLAYER_BINARY)
+MPLAYER_TARGET_BINARY2:=usr/bin/$(MPLAYER_BINARY2)
 
 ifeq ($(BR2_ENDIAN),"BIG")
 MPLAYER_ENDIAN:=--enable-big-endian
@@ -54,7 +56,7 @@ $(MPLAYER_DIR)/.configured: $(MPLAYER_DIR)/.unpacked
 		--as=$(TARGET_CROSS)as \
 		--with-extraincdir=$(STAGING_DIR)/usr/include \
 		--with-extralibdir=$(STAGING_DIR)/lib \
-		--charset=US-ASCII \
+		--charset=UTF-8 \
 		--enable-mad \
 		--enable-fbdev \
 		$(MPLAYER_ENDIAN) \
@@ -74,6 +76,8 @@ $(MPLAYER_DIR)/$(MPLAYER_BINARY): $(MPLAYER_DIR)/.configured
 $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY): $(MPLAYER_DIR)/$(MPLAYER_BINARY)
 	$(INSTALL) -m 0755 -D $(MPLAYER_DIR)/$(MPLAYER_BINARY) $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY)
 	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY)
+	$(INSTALL) -m 0755 -D $(MPLAYER_DIR)/$(MPLAYER_BINARY2) $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY2)
+	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY2)
 	touch -c $@
 
 mplayer: uclibc $(if $(BR2_PACKAGE_LIBMAD),libmad) $(if $(BR2_PACKAGE_ALSA_LIB),alsa-lib) $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY)
