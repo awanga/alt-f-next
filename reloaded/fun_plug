@@ -4,11 +4,16 @@
 # comment if you want to go to Alt-F on every reboot
 ONCE=yes 
 
+# let the kernel initialize the network.
+# comment if you want Alt-F /etc/init.d/rcS to do it
+KIP=yes
+
 TMP_DIR=/tmp
 BASE_DIR=/mnt/HD_a2
 ALTF_DIR=alt-f
 ALTF_PATH=$BASE_DIR/alt-f
 ALTF_TARBALL=$BASE_DIR/Alt-F-*.tar
+FFPRC=/ffp/etc/rc
 
 check() {
 	if ! test -r $1; then
@@ -17,21 +22,24 @@ check() {
 	fi
 }
 
+check $BASE_DIR
 cd $BASE_DIR
 
 if test -r $ALTF_TARBALL; then
-    # tar xzf $ALTF_TARBALL
+	# tar xzf $ALTF_TARBALL
 	# what the heck?! -x doesn't work, but -v does, so extract to stdout!
-	mkdir $ALTF_PATH
+	mkdir -p $ALTF_PATH
+	check $ALTF_PATH
 	for i in $(tar -tf $ALTF_TARBALL); do
 		if ! test -d $i; then
 			tar -xOf $ALTF_TARBALL $i > $i
 		fi
 	done
-    rm $ALTF_TARBALL
+	rm $ALTF_TARBALL
 	chown -R nobody:nobody alt-f
 fi
 
+check $ALTF_PATH
 cd $ALTF_PATH
 
 KV=$(uname -r)
@@ -44,28 +52,56 @@ check "$kernel"
 check "$initrd"
 check "reloaded-$KV.ko"
 
+if test -n "$KIP"; then
+	eval $(ifconfig egiga0 | sed -n '/inet addr/s/[a-zA-Z: ]*\([0-9.]*\)[a-zA-Z: ]*\([0-9.]*\)[a-zA-Z: ]*\([0-9.]*\)/ip=\1; bcast=\2; mask=\3/p')
+
+	eval $(route -n | sed -n '/^0.0.0.0/s/[0-9.]* *\([0-9.]*\) .*/gw=\1/p')
+
+	eval $(sed -n '/workgroup/s/.* = \(.*$\)/domain=\1/p' /etc/samba/smb.conf)
+
+	cmdline="$cmdline ip=$ip::$gw:$mask:$(hostname).$domain:eth0:none"
+fi
+
 cat<<EOF > $TMP_DIR/reload.sh
+#!/bin/sh
 
 # disable recurring reboots
 if test "$ONCE" = yes; then
 	chmod -x $BASE_DIR/fun_plug
 fi
 
+# stop ffp services
+if test -f $FFPRC; then
+	$FFPRC stop
+fi
+
 # stop processes
 smb stop
-proc="apkg atd crond wget smbclient pure-ftpd prescan upnp mt-daapd lpd inotify_itune inotify_upnp btdog bt inotifybt UpdateDB check_hotplug xmldb webs"
+proc="apkg atd crond wget smbclient pure-ftpd prescan upnp \
+	mt-daapd lpd inotify_itune inotify_upnp btdog bt op_server \
+	inotifybt UpdateDB check_hotplug xmldb webs check_daemon mserver"
 
-for i in $proc; do
-	if test -n "$(pidof $i)"; then
-		kill $(pidof $i)
-		sleep 1
-		if test -n "$(pidof $i)"; then
-			kill -9 $(pidof $i)
-		fi
+for i in \$proc; do
+	if test -n "\$(pidof \$i)"; then
+		kill -15 \$(pidof \$i)
 	fi
 done
 sleep 3
+for i in \$proc; do
+	if test -n "\$(pidof \$i)"; then
+		kill -9 \$(pidof \$i)
+	fi
+done
+
+# try to solve network problems in rev-C1 boards
+ifconfig egiga0 down
+
+# try to solve usb problems when reloading
+rmmod usblp
+
+sleep 3
 ps
+free
 
 # umount filesystems
 swapoff -a
