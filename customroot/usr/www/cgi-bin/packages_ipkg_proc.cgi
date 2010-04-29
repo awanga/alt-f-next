@@ -71,9 +71,10 @@ if test "$install" = "Install"; then
 	mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
 	gotopage /cgi-bin/packages_ipkg.cgi
 
-fi # not an elif, to safe mount/umount
+fi
 
 mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
+ipkg-cl -V0 update
 
 if test -n "$Remove"; then
 	res=$(ipkg-cl remove $Remove | sed -n '/Collected errors/,/^$/p' | tr '\n' ' ')
@@ -91,9 +92,11 @@ elif test -n "$Update"; then
 
 elif test -n "$UpdateAll"; then
 	ipkg-cl -V0 upgrade
-	
-elif test -n "$UpdateList"; then
-	ipkg-cl -V0 update
+
+# done automaticaly at start.
+# Wastes bandwidth, but is safer when instaling
+#elif test -n "$UpdateList"; then
+#	ipkg-cl -V0 update
 
 elif test -n "$ConfigureFeed"; then
 	mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
