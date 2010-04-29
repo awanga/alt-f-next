@@ -29,72 +29,56 @@ if ! test -f /Alt-F/usr/bin/ipkg-cl; then
 
 else
 
-	IFS=" - "
+ipkg-cl -V0 info | awk '
+	/Package:/{i++; nm=$2; pkg[i] = nm} # this relies on Package being the first field 
+	/Version:/{ver[i] = $2} 
+	/Source:/{url[i] = $2} 
+	/Description:/{des[i] = substr($0, index($0,$2))} 
+	/Status:/{if ($4 == "installed") inst[nm] = i; else uinst[nm] = i} 
+	END {
+		print "<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=post> \
+		<fieldset><legend><strong> Installed Packages </strong></legend> \
+		<table><tr> \
+			<th>Name</th><th>Version</th><th></th><th></th><th>Description</th> \
+		</tr>"
 
-	apkg=""
-	tf1=$(mktemp -t)
-	ipkg-cl -V 0 list > $tf1
-	while read pkg ver desc; do
-		eval ver_$pkg="$ver"
-		apkg="$apkg $pkg"
-	done < $tf1
-
-	cat <<-EOF
-		<form action="/cgi-bin/packages_ipkg_proc.cgi" method=post>
-		<fieldset><legend> $s Installed Packages $es</legend>
-		<table><tr>
-			<th>Name</th><th>Version</th><th></th><th></th><th>Description</th>
-		</tr>
-	EOF
+		for (nm in inst) {
+			if (nm in uinst) { # info in inst is incomplete in this case
+				i=uinst[nm]; v=ver[inst[nm]]; update=1;
+				upd=sprintf("<td><input type=submit name=%s value=Update></td>", nm);
+				delete uinst[nm];
+			} else {
+				i=inst[nm]; v=ver[i];
+				upd="<td></td>";
+			}
+			printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
+				url[i], nm, v;
+			printf "<td><input type=submit name=%s value=Remove></td>", nm;
+			print upd;
+			printf "<td>%s</td></tr>\n\n", des[i];
+		}
 	
-	update=""
-	tf2=$(mktemp -t)
-	ipkg-cl -V 0 list_installed > $tf2
-	while read pkg ver desc; do
-		apkg=$(echo $apkg | sed 's/'$pkg'//')
-		echo "<tr><td>$pkg</td><td>$ver</td>
-			<td><input type=submit name=$pkg value=Remove></td>"
-		if test $(eval echo \$ver_$pkg) != "$ver"; then
-			echo "<td><input type=submit name=$pkg value=Update></td>"
-			update=1
-		else
-			echo "<td></td>"
-		fi
-		desc=$(ipkg-cl -V 0 info $pkg | grep Description | cut -c 14-)
-		echo "<td>$desc</td></tr>"		
-	done < $tf2
-	
-	if test -n "$update"; then
-		echo "<tr><td></td><td></td><td></td>
-		<td><input type=submit name=updateall value=UpdateAll></td></tr>"
-	fi
+		if (update == 1)
+			print "<tr><td></td><td></td><td></td> \
+				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
-	cat <<-EOF
-		</table></fieldset>
-		<br><fieldset><legend> $s Available Packages $es </legend>
-		<table><tr>
-			<th>Name</th><th>Version</th>
-			<th></th><th>Description</th>
-		</tr>
-	EOF
-				
-	while read pkg ver desc; do
-		echo $apkg | grep -q "$pkg"
- 		if test $? = 0; then
- 			echo "<tr><td>$pkg</td><td>$ver</td>
-				<td><input type=submit name=$pkg value=Install></td>
-				<td>$desc</td></tr>"
-		fi
-	done < $tf1
+		print "</table></fieldset> \
+			<br><fieldset><legend><strong> Available Packages </strong></legend> \
+			<table><tr> \
+			<th>Name</th><th>Version</th> \
+			<th></th><th>Description</th></tr>"
 
-	cat <<-EOF
-		</table></fieldset><br>
-		<input type=submit name=updatelist value=UpdateList>
-		<input type=submit name=configfeed value=ConfigureFeed>
-		</form>
-	EOF
+		for (nm in uinst) {
+			i=uinst[nm];
+			printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
+				url[i], nm, ver[i];
+			printf "<td><input type=submit name=%s value=Install></td>", nm;
+			printf "<td>%s</td></tr>\n\n", des[i];
+		}
+		print "</table></fieldset><br> \
+		<input type=submit name=updatelist value=UpdateList> \
+		<input type=submit name=configfeed value=ConfigureFeed> \
+		</form>"
+	}'
 
-	rm $tf1 $tf2
 fi
-
-#enddebug

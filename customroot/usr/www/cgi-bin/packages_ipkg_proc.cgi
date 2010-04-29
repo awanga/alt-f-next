@@ -1,16 +1,5 @@
 #!/bin/sh
 
-download() {
-    wget -q http://www.inreto.de/dns323/fun-plug/0.5/packages/$1 \
-        -O /tmp/$1
-    if test $? = 1; then
-        wget -q http://www.inreto.de/dns323/fun-plug/0.5/extra-packages/All/$1 \
-        -O /tmp/$1
-        return $?
-    fi
-    return 0
-}
-
 . common.sh
 check_cookie
 read_args
@@ -49,8 +38,9 @@ if test "$install" = "Install"; then
 	#  /rootmnt/rootsq=rr
 	
 	TMPD=$(mktemp -d -t)
-	wget -P $TMPD $FEED/$IPKG
+	wget -nv -P $TMPD $FEED/$IPKG >& /dev/null
 	if test $? != 0; then
+		rm -rf $TMPD
 		msg "Downloading of $IPKG from $FEED failed."
 	fi
 	
@@ -64,23 +54,32 @@ if test "$install" = "Install"; then
 		' control
 		
 	if test $? != 0; then
+		rm -rf $TMPD
 		msg "Downloaded wrong package?"
 	fi
 	
-	# FIXME aufs remount /Alt-F with inotify, then back to normal
-##	mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
+	# aufs remount /Alt-F with inotify, then back to normal
+	mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
 	tar -C /Alt-F -xzf data.tar.gz
-##	mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
 	
 	cd
 	rm -rf $TMPD
 	
-	ipkg-cl update
-	ipkg-cl install ipkg
+	ipkg-cl -V0 update
+	ipkg-cl -V0 install ipkg
 
-elif test -n "$Remove"; then
+	mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
+	gotopage /cgi-bin/packages_ipkg.cgi
+
+fi # not an elif, to safe mount/umount
+
+mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
+
+if test -n "$Remove"; then
 	res=$(ipkg-cl remove $Remove | sed -n '/Collected errors/,/^$/p' | tr '\n' ' ')
+
 	if test -n "$res"; then
+		mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
 		msg "$res"
 	fi
 
@@ -88,7 +87,7 @@ elif test -n "$Install"; then
 	ipkg-cl -V0 install $Install
 
 elif test -n "$Update"; then
-	ipkg-cl -V0 update $Update
+	ipkg-cl -V0 install $Update
 
 elif test -n "$UpdateAll"; then
 	ipkg-cl -V0 upgrade
@@ -97,8 +96,11 @@ elif test -n "$UpdateList"; then
 	ipkg-cl -V0 update
 
 elif test -n "$ConfigureFeed"; then
+	mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
 	msg "Not yet"
 fi
+
+mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
 
 #enddebug
 gotopage /cgi-bin/packages_ipkg.cgi
