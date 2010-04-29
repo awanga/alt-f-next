@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if test -f /usr/bin/ipkg-cl; then
+	mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
+	ipkg-cl $*
+	res=$?
+	mount -t aufs -o remount,dirs=/Alt-F,udba=reval /
+	exit $res
+else
+	exit 1
+fi
