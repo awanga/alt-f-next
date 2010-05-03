@@ -34,6 +34,11 @@ write_header "$title"
 s="<strong>"
 es="</strong>"
 
+if test -z "$srv"; then
+	echo "<center><h4>No services available</h4></center></body></html>"
+	exit 0;
+fi
+
 cat<<-EOF
 	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<table><tr>
