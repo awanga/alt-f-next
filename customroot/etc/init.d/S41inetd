@@ -40,11 +40,18 @@ case "$1" in
 		sh $0 start
 		echo ""
 		;;
+	reload)
+		echo -n "Reloading inetd.conf for $NAME: "
+	        start-stop-daemon -K -q -s 1 -n $NAME
+	        RETVAL=$?
+        	echo "done"
+	        return $RETVAL
+		;;
 	status)
 		status
 		;;
 	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
+		echo "Usage: $0 {start|stop|status|restart|reload|force-reload}" >&2
 		exit 1
 		;;
 esac
