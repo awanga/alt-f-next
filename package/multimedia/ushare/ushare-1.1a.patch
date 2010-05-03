@@ -1,0 +1,21 @@
+--- ushare-1.1a/configure-orig	2010-04-25 21:25:14.000000000 +0100
++++ ushare-1.1a/configure	2010-04-25 21:26:39.000000000 +0100
+@@ -437,7 +437,6 @@
+   *)
+   echo "Unknown option \"$opt\"."
+   echo "See $0 --help for available options."
+-  exit 1
+   ;;
+   esac
+ done
+--- ushare-1.1a/src/Makefile-orig	2010-04-25 21:27:33.000000000 +0100
++++ ushare-1.1a/src/Makefile	2010-04-25 21:27:51.000000000 +0100
+@@ -53,7 +53,7 @@
+ all: depend $(PROG)
+ 
+ .c.o:
+-	$(CC) -c $(CFLAGS) $(OPTFLAGS) -o $@ $<
++	$(CC) -c $(CFLAGS) $(OPTFLAGS) -I.. -o $@ $<
+ 
+ $(PROG): $(OBJS)
+ 	$(CC) $(OBJS) $(LDFLAGS) $(EXTRALIBS) -o $@
