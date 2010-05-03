@@ -20,6 +20,6 @@ FUPPES_AUTORECONF = NO
 # taglib is using system header files - install host taglib-devel :-(
 # create lame/twolame buildroot package
 
-FUPPES_CONF_OPT = --disable-mp4v2 --enable-transcoder-ffmpeg --enable-tremor --enable-mad
+FUPPES_CONF_OPT = --disable-mp4v2 --enable-transcoder-ffmpeg --enable-mad
 
 $(eval $(call AUTOTARGETS,package/multimedia,fuppes))
