@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GDBM
+	bool "gdbm"
+	help
+	 gdbm is FIXME
+	 
+	 http://libexif.sourceforge.net/
