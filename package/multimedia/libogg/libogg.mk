@@ -13,3 +13,7 @@ LIBOGG_INSTALL_TARGET = YES
 LIBOGG_DEPENDENCIES = uclibc host-pkgconfig
 
 $(eval $(call AUTOTARGETS,package/multimedia,libogg))
+
+$(LIBOGG_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/share/aclocal/ogg.m4
+	touch $@
