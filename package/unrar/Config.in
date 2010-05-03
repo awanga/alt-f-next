@@ -2,3 +2,5 @@ config BR2_PACKAGE_UNRAR
 	bool "unrar"
 	help
 	  Provides unrar decompressor
+
+	  http://www.rarlab.com/rar_add.htm
