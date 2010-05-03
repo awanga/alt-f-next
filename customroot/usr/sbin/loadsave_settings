@@ -251,7 +251,8 @@ files="
 /etc/inadyn.conf	/etc/ntp.conf		/etc/ntp.drift
 /etc/adjtime.conf	/etc/sysctrl.conf	/etc/msmtprc
 /etc/smartd.conf	/etc/transmission.conf	/etc/ushare.conf
-/etc/ipkg.conf
+/etc/ipkg.conf		/etc/cups/cupsd.conf
+/etc/cups/ssl/server.crt	/etc/cups/ssl/server.key
 "
 
 # those are also used when mounting/unmounting the Alt-F aufs branch
