@@ -9,10 +9,7 @@ DNSMASQ_O=/etc/dnsmasq-opts
 
 #debug
 
-network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
 hostdesc=$(echo $hostdesc | sed 's/+/ /g')
-eval $(ipcalc -b $hostip $netmask)
-broadcast=$BROADCAST
 workgroup=$(httpd -d "$workgroup")
 
 hostname $hostname.$workgroup
@@ -24,6 +21,9 @@ sed -i '/^option:router,/d' $DNSMASQ_O
 echo "option:router,$gateway	# default route" >> $DNSMASQ_O
 
 if test "$iptype" = "static"; then
+	network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
+	eval $(ipcalc -b "$hostip" "$netmask")
+	broadcast=$BROADCAST
 
 	FLG_MSG="#!in use by dnsmasq, don't change"
 	if test -z "$cflg"; then
@@ -78,11 +78,13 @@ else
 	auto eth0
 	iface eth0 inet dhcp
 	  client udhcpc
-	  mtu $mtu
 	EOF
 fi
 
-rcnetwork restart >& /dev/null
+ifdown eth0 >& /dev/null
+sleep 1
+ifup eth0 >& /dev/null
+sleep 3
 
 #debug
 
