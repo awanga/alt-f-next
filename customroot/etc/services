@@ -165,6 +165,8 @@ afpovertcp	548/udp				# AFP over TCP
 remotefs	556/tcp		rfs_server rfs	# Brunhoff remote filesystem
 klogin		543/tcp				# Kerberized `rlogin' (v5)
 kshell		544/tcp		krcmd		# Kerberized `rsh' (v5)
+ipp             631/tcp    # IPP (Internet Printing Protocol)
+ipp             631/udp    # IPP (Internet Printing Protocol)
 kerberos-adm	749/tcp				# Kerberos `kadmin' (v5)
 #
 webster		765/tcp				# Network dictionary
