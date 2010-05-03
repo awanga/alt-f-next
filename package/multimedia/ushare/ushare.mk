@@ -10,12 +10,18 @@ USHARE_AUTORECONF = NO
 USHARE_INSTALL_STAGING = NO
 USHARE_INSTALL_TARGET = YES
 USHARE_LIBTOOL_PATCH = NO
-USHARE_DEPENDENCIES = uclibc libupnp
+USHARE_DEPENDENCIES = uclibc libupnp libdlna
+USHARE_CONF_OPT = --enable-dlna \
+	--disable-static \
+	--cross-compile \
+	--cross-prefix=$(STAGING_DIR)/usr/bin/arm-linux-uclibcgnueabi- \
+	--with-libdlna-dir=$(STAGING_DIR)/usr/ \
+	--with-libupnp-dir=$(STAGING_DIR)/usr/
 
-$(eval $(call AUTOTARGETS,package,ushare))
+$(eval $(call AUTOTARGETS,package/multimedia,ushare))
 
-$(USHARE_HOOK_POST_EXTRACT):
-	cat patches/ushare-1.1a.patch | patch -p0 -d $(USHARE_DIR)
+$(USHARE_TARGET_INSTALL_TARGET):
+	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(USHARE_DIR) install
 	touch $@
 
 $(USHARE_HOOK_POST_INSTALL):
