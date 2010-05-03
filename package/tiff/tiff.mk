@@ -4,7 +4,8 @@
 #
 #############################################################
 TIFF_VERSION:=3.8.2
-TIFF_SITE:=ftp://ftp.remotesensing.org/pub/libtiff
+#TIFF_SITE:=ftp://ftp.remotesensing.org/pub/libtiff
+TIFF_SITE:=http://dl.maptools.org/dl/libtiff
 TIFF_SOURCE:=tiff-$(TIFF_VERSION).tar.gz
 TIFF_LIBTOOL_PATCH = NO
 TIFF_INSTALL_STAGING = YES
