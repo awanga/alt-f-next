@@ -3,7 +3,8 @@
 # usbutils
 #
 #############################################################
-USBUTILS_VERSION:=0.72
+#USBUTILS_VERSION:=0.72
+USBUTILS_VERSION:=0.86
 USBUTILS_SOURCE:=usbutils-$(USBUTILS_VERSION).tar.gz
 USBUTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/linux-usb/
 USBUTILS_DIR:=$(BUILD_DIR)/usbutils-$(USBUTILS_VERSION)
@@ -38,8 +39,12 @@ $(USBUTILS_DIR)/$(USBUTILS_BINARY): $(USBUTILS_DIR)/.configured
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(USBUTILS_DIR)
 
 $(TARGET_DIR)/$(USBUTILS_TARGET_BINARY): $(USBUTILS_DIR)/$(USBUTILS_BINARY)
+	$(USBUTILS_DIR)/update-usbids.sh
 	$(MAKE) -C $(USBUTILS_DIR) DESTDIR=$(TARGET_DIR) install
-	rm -rf $(TARGET_DIR)/usr/man
+	rm -rf $(TARGET_DIR)/usr/share/pkgconfig/usbutils.pc \
+		$(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/usb.ids.gz \
+		$(TARGET_DIR)/usr/bin/usb-devices
+	rmdir $(TARGET_DIR)/usr/share/pkgconfig
 
 usbutils: uclibc libusb $(TARGET_DIR)/$(USBUTILS_TARGET_BINARY)
 
