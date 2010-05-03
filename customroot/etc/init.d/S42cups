@@ -1,0 +1,75 @@
+#! /bin/sh
+
+set -e
+
+DESC="The Common Unix Printing System daemon"
+TYPE=sys
+NAME=cupsd
+INETD_CONF=/etc/inetd.conf
+PRINTC=/etc/printcap
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		export TZ=$(cat /etc/TZ)
+		unset TMPDIR
+		if test -e $PRINTC; then # no short-circuit operator?
+			if test -z "$(grep cupsd $PRINTC)"; then 
+				mv  $PRINTC ${PRINTC}-safe
+			fi
+		fi
+		sed -i 's/^printer/#printer/' $INETD_CONF
+		rcinetd reload
+
+		start-stop-daemon -S -q -b -x $NAME
+		sleep 1
+		cupsctl _remote_admin=1
+		echo "OK"
+		;;
+
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -x $NAME
+		if test -e ${PRINTC}-safe; then # no short-circuit operator?
+				mv $PRINTC-safe $PRINTC
+		fi		
+		sed -i 's/#printer/printer/' $INETD_CONF
+		rcinetd reload
+		echo "OK"
+		;;
+
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+
+	reload)
+		echo "Reloading cupsd.conf for $NAME: "
+		start-stop-daemon -K -q -s 1 -n $NAME
+		echo ""
+		;;
+
+	status)
+		status
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop|status|restart|reload|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
