@@ -1,0 +1,9 @@
+config BR2_PACKAGE_MT_DAAPD
+	bool "mt-daapd"
+	select BR2_PACKAGE_GDBM
+	select BR2_PACKAGE_LIBID3TAG
+	select BR2_PACKAGE_LIBVORBIS
+	help
+	 mt-daapd is FIXME
+	 
+	 http://libexif.sourceforge.net/
