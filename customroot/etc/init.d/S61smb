@@ -68,9 +68,8 @@ restart() {
 }	
 
 reload() {
-	echo -n "Reloading smb.conf file: "
-	#kill -HUP `pidof smbd`
-	start-stop-daemon -K -q -n -s 1 $NAME
+	echo -n "Reloading smb.conf for $NAME: "
+	start-stop-daemon -K -q -s 1 -n $NAME
 	RETVAL=$?
 	echo "done"
 	return $RETVAL
