@@ -1,0 +1,13 @@
+config BR2_PACKAGE_MINIDLNA
+	bool "minidlna"
+	select BR2_PACKAGE_LIBEXIF
+	select BR2_PACKAGE_JPEG
+	select BR2_PACKAGE_LIBID3TAG
+	select BR2_PACKAGE_FLAC
+	select BR2_PACKAGE_LIBVORBIS
+	select BR2_PACKAGE_SQLITE
+	select BR2_PACKAGE_FFMPEG
+	help
+	  minidlna FIXME
+
+	  http://libdlna.geexbox.org/
