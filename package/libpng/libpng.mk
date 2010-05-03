@@ -26,5 +26,5 @@ $(LIBPNG_HOOK_POST_INSTALL):
 		-e "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include/libpng12\',g" \
 		-e "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" \
 		$(STAGING_DIR)/usr/bin/libpng12-config
+	rm -f $(TARGET_DIR)/usr/bin/libpng12-config $(TARGET_DIR)/usr/bin/libpng-config
 	touch $@
-
