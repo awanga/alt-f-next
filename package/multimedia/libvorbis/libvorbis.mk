@@ -19,6 +19,10 @@ LIBVORBIS_DEPENDENCIES = uclibc host-pkgconfig libogg
 
 $(eval $(call AUTOTARGETS,package/multimedia,libvorbis))
 
+$(LIBVORBIS_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/share/aclocal/vorbis.m4
+	touch $@
+
 else
 
 ############################################################
@@ -61,7 +65,7 @@ $(TREMOR_DIR)/.configured: $(TREMOR_DIR)/.source
 		--prefix=/usr \
 		--sysconfdir=/etc \
 		--enable-shared \
-		--enable-static \
+		--disable-static \
 		--disable-oggtest \
 		$(DISABLE_NLS) \
 	)
