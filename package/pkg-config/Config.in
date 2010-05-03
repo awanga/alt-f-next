@@ -1,6 +1,5 @@
-config BR2_PACKAGE_PKG_CONFIG
-	bool "pkg-config"
-	select BR2_PACKAGE_LIBGLIB2
+config BR2_PACKAGE_HOST_PKGCONFIG
+	bool "host-pkgconfig"
 	help
 	  pkg-config is a system for managing library compile/link
 	  flags that works with automake and autoconf. It replaces
