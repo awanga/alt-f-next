@@ -1,0 +1,5 @@
+config BR2_PACKAGE_NETATALK
+	bool "netatalk"
+	select BR2_PACKAGE_DB
+	help
+	 Apple Filling Protocol
