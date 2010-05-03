@@ -1,0 +1,21 @@
+#############################################################
+#
+# libexif
+#
+#############################################################
+LIBEXIF_VERSION = 0.6.19
+LIBEXIF_SOURCE = libexif-$(LIBEXIF_VERSION).tar.bz2
+LIBEXIF_SITE = http://libexif.sourceforge.net/ FIXME
+LIBEXIF_AUTORECONF = NO
+LIBEXIF_INSTALL_STAGING = YES
+LIBEXIF_INSTALL_TARGET = YES
+LIBEXIF_LIBTOOL_PATCH = NO
+
+LIBEXIF_CONF_OPT = --disable-docs \
+	--disable-nls \
+	--disable-static \
+	--without-libintl-prefix
+	
+LIBEXIF_DEPENDENCIES = uclibc
+
+$(eval $(call AUTOTARGETS,package,libexif))
