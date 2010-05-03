@@ -33,5 +33,5 @@ $(eval $(call AUTOTARGETS,package,Alt-F-utils))
 #
 #############################################################
 ifeq ($(BR2_PACKAGE_ALT_F_UTILS),y)
-TARGETS+=ALT_F_UTILS
+TARGETS+=Alt-F-utils
 endif
