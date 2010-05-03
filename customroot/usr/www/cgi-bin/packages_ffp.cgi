@@ -3,7 +3,7 @@
 . common.sh
 
 check_cookie
-write_header "Package Manager"
+write_header "ffp Package Manager"
 
 s="<strong>"
 es="</strong>"

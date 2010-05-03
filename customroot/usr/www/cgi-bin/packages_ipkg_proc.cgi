@@ -14,29 +14,31 @@ if test "$install" = "Install"; then
 		msg "You must select a partition"
 	fi
 
-	# create directory, aufs mount it in /Alt-F
-	if ! test -h /Alt-F -a -d $(readlink -f /Alt-F); then
-		part=$(httpd -d $part)
-		mp=$(cat /proc/mounts | grep $part | cut -d" " -f2)
-		mkdir -p $mp/Alt-F
-		ln -sf $mp/Alt-F /Alt-F
-		mount -t aufs -o remount,prepend:$mp/Alt-F=rw aufs /
+	# check that /Alt-F is a link, that points to a directory, and
+	# that directory is a aufs union branch
+	# If not, then create directory, aufs mount it, and create /Alt-F link
+	if ! test -h /Alt-F -a \
+		-d "$(readlink -f /Alt-F)" -a \
+		"$(cat /sys/fs/aufs/*/br* | grep -o Alt-F)" = "Alt-F" ; then
+			part=$(httpd -d $part)
+			mp=$(cat /proc/mounts | grep $part | cut -d" " -f2)
+			mkdir -p $mp/Alt-F
+			ln -sf $mp/Alt-F /Alt-F
+			mount -t aufs -o remount,prepend:$mp/Alt-F=rw aufs /
 	fi
 
 	IPKG=ipkg_0.99.163_arm.ipk
 	FEED=$(awk '/^src/{print $3}' $CONFF)
 	DESTD=$(awk '/^dest/{print $3}' $CONFF)
-	
-	if ! test -d "$DESTD"; then
-		msg "Destination directory not found."
+
+	if test "$DESTD" != "/Alt-F"; then
+		msg "Package destination directory must be /Alt-F"
 	fi
-		
-	#test if DESTDIR is a union branch
-	# cat /sys/fs/aufs/si_6a606a77/br*: 
-	#  /mnt/md0/Alt-F=rw
-	#  /rootmnt/root=rw
-	#  /rootmnt/rootsq=rr
-	
+
+	if ! test -d "$DESTD"; then
+		msg "Package destination directory not found."
+	fi
+			
 	TMPD=$(mktemp -d -t)
 	wget -nv -P $TMPD $FEED/$IPKG >& /dev/null
 	if test $? != 0; then
@@ -70,7 +72,7 @@ if test "$install" = "Install"; then
 
 	mount -t aufs -o remount,dirs=/Alt-F,udba=reval / 
 	gotopage /cgi-bin/packages_ipkg.cgi
-
+	exit 0
 fi
 
 mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
