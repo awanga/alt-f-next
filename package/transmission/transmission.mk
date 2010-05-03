@@ -10,13 +10,12 @@ TRANSMISSION_AUTORECONF = NO
 TRANSMISSION_INSTALL_STAGING = NO
 TRANSMISSION_INSTALL_TARGET = YES
 TRANSMISSION_LIBTOOL_PATCH = NO
-TRANSMISSION_CONF_OPT = --disable-nls --disable-gtk
+TRANSMISSION_CONF_OPT = --disable-cli --disable-nls
 
-TRANSMISSION_DEPENDENCIES = uclibc libcurl openssl
+TRANSMISSION_DEPENDENCIES = uclibc libcurl host-pkgconfig
 
 $(eval $(call AUTOTARGETS,package,transmission))
 
 $(TRANSMISSION_HOOK_POST_INSTALL):
-	rm -f $(TARGET_DIR)/usr/bin/transmissioncli \
-		$(TARGET_DIR)/usr/bin/transmission-remote
+	rm -f $(TARGET_DIR)/usr/bin/transmission-remote
 	touch $@
