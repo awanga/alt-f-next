@@ -2,7 +2,7 @@
 
 /bin/mount -t proc proc /proc
 /bin/mount -o remount,rw /
-#/bin/mount -t usbfs usbfs /proc/bus/usb
+/bin/mount -t usbfs usbfs /proc/bus/usb
 /bin/mount -t sysfs sysfs /sys
 /bin/mount -t tmpfs tmpfs /tmp
 #/bin/mount -t tmpfs -o size=64k,mode=0755 tmpfs /dev
@@ -147,9 +147,10 @@ case $cip in
 		# set hostname/hostip	
 		hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 		network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
-		#netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
-		#gateway=$(route -n | awk '$1 == "0.0.0.0" { print $2 }')
-		#bcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
+		netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+		gateway=$(route -n | awk '$1 == "0.0.0.0" { print $2 }')
+		broadcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
+		mtu=$(ifconfig eth0 | awk '/MTU/{print substr($5,5)}')
 
 		if test "$(hostname)" = "(none)"; then
 			hostname -F /etc/hostname
@@ -166,13 +167,44 @@ case $cip in
 		# set smb.conf hosts allow and workgroup
 		sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
 		sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
-		
 		;;
 
 	"def")
 		hostname -F /etc/hostname
 	;;
-esac	
+esac
+
+case $cip in
+		"dhcp")
+			cat<<-EOF > /etc/network/interfaces
+				auto lo
+				iface lo inet loopback
+
+				auto eth0
+				iface eth0 inet dhcp
+				client udhcpc
+			EOF			
+			;;
+
+		"def")
+			;;
+
+		*)
+			cat<<-EOF > /etc/network/interfaces
+				auto lo
+				iface lo inet loopback
+
+				auto eth0
+				iface eth0 inet static
+				address $hostip
+				netmask $netmask
+				broadcast $broadcast
+				gateway $gateway
+				mtu $mtu
+			EOF
+			;;
+esac
+		
 
 # Start all executable init scripts in /etc/init.d
 # executing them in numerical order.
