@@ -10,13 +10,23 @@ LIBDLNA_AUTORECONF = NO
 LIBDLNA_INSTALL_STAGING = YES
 LIBDLNA_INSTALL_TARGET = YES
 LIBDLNA_LIBTOOL_PATCH = NO
-LIBDLNA_CONF_OPT =  --disable-nls --disable-gtk
+LIBDLNA_CONF_OPT = --disable-static \
+	--cross-compile \
+	--cross-prefix=$(STAGING_DIR)/usr/bin/arm-linux-uclibcgnueabi- \
+	--with-ffmpeg-dir=$(STAGING_DIR)/usr/
+	
+LIBDLNA_DEPENDENCIES = uclibc ffmpeg
 
-LIBDLNA_DEPENDENCIES = uclibc libavformat libavcodec
+$(eval $(call AUTOTARGETS,package/multimedia,libdlna))
 
-$(eval $(call AUTOTARGETS,package,libdlna))
+$(LIBDLNA_TARGET_INSTALL_TARGET):
+	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(LIBDLNA_DIR) install
+	touch $@
 
-#$(LIBDLNA_HOOK_POST_INSTALL):
-#	rm -f $(TARGET_DIR)/usr/bin/libdlnacli \
-#		$(TARGET_DIR)/usr/bin/libdlna-remote
+$(LIBDLNA_TARGET_INSTALL_STAGING):
+	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(LIBDLNA_DIR) install
+	touch $@
+	
+#$(LIBDLNA_HOOK_POST_EXTRACT):
+#	cat package/multimedia/libdlna/libdlna-0.2.3.patch | patch -d $(LIBDLNA_DIR)
 #	touch $@
