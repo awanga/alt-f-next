@@ -5,7 +5,7 @@
 #############################################################
 MINIDLNA_VERSION = 230410
 MINIDLNA_SOURCE = minidlna-cvs-$(MINIDLNA_VERSION).tgz
-MINIDLNA_SITE = http://minidlna.geexbox.org/releases/minidlna-$(MINIDLNA_VERSION).tar.bz2
+MINIDLNA_SITE = http://sourceforge.net/projects/minidlna/develop
 MINIDLNA_AUTORECONF = NO
 MINIDLNA_INSTALL_STAGING = NO
 MINIDLNA_INSTALL_TARGET = YES

@@ -10,4 +10,4 @@ config BR2_PACKAGE_MINIDLNA
 	help
 	  minidlna FIXME
 
-	  http://libdlna.geexbox.org/
+	  http://sourceforge.net/projects/minidlna
