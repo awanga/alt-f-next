@@ -253,11 +253,21 @@ else
 		<td> $s Model $es </td><td> $s Jobs $es</td></tr>"
 
 	while read ln; do
-		eval $(echo $ln | awk -F '|' '{printf "pr=%s;desc=\"%s\"", $1, $2}')
+		if test "${ln:0:1}" = "#"; then continue; fi
+		jb="?"
+		eval $(echo $ln | sed 's/:/|/g' | \
+			awk -F '|' '{printf "pr=%s;desc=\"%s\";%s", $1, $2, $3}')
 		if test -d /var/spool/lpd/$pr; then
+			#host="local"
 			jb=$(ls /var/spool/lpd/$pr | wc -l)
-			echo "<tr><td>$pr</td><td>$desc</td><td>$jb</td></tr>"
+		else
+			#host="remote"
+			if test -f /usr/bin/lpstat; then
+				jb=$(lpstat | grep ^$pr | wc -l)
+			fi
 		fi
+		echo "<tr><td>$pr</td><td>$desc</td><td>$jb</td></tr>"
+		
 	done < /etc/printcap
 fi
 echo "</table></fieldset>"

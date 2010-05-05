@@ -34,6 +34,8 @@ case $action in
 					rm /var/spool/lpd/$i/$j
 				done
 				rmdir /var/spool/lpd/$i/.lockdir
+			elif test -f /usr/bin/lprm; then
+				lprm -P $i - >& /dev/null
 			fi
 		done
 		;;
