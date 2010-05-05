@@ -57,9 +57,9 @@ case "$1" in
 		;;
 
 	reload)
-		echo "Reloading cupsd.conf for $NAME: "
+		echo -n "Reloading cupsd.conf for $NAME: "
 		start-stop-daemon -K -q -s 1 -n $NAME
-		echo ""
+		echo "OK"
 		;;
 
 	status)
