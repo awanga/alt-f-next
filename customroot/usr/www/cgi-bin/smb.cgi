@@ -2,6 +2,10 @@
 
 . common.sh
 check_cookie
+
+# while the real page is not written, go directly to the swat web page
+gotopage http://$(hostname -i | sed 's/ //'):901
+
 write_header "Samba Setup"
 
 cat<<-EOF
