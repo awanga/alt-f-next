@@ -46,6 +46,10 @@ part_fsck() {
   fi
 }
 
+# FIXME if changing filesystem type from/to ext to vfat/ntfs or vice-versa,
+# the partition type must be changed too
+# also, fstab must be flushed, as labels/partition might have changed
+
 reformat() {
   local lpart ltype
   lpart=$1
@@ -70,6 +74,8 @@ reformat() {
   mount /dev/$lpart
   return 0
 }
+
+# FIXME - purge fstab (see FIXME above)
 
 newformat() {
   local ldisk ltype lpart lswap
@@ -166,6 +172,6 @@ fi
   echo  "<form action=\"/cgi-bin/disk.cgi\">
 	<input type=submit value=\"Continue\"></form></html></body>"
 
-enddbug
+enddebug
 #gotopage /cgi-bin/disk.cgi
 
