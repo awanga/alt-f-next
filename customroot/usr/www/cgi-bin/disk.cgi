@@ -17,14 +17,12 @@ if test -z "$disks"; then
 	exit 1
 fi
 
-echo "<h4 align=center> <font color=red>
+cat<<-EOF
+<h4 align=center> <font color=red>
 	WARNING: no further confirmation questions are made!
-       <font color=black></h4>"
+       <font color=black></h4>
 
-echo "<small>
-<p> $s NewFormat/ReFormat tested only on external USB disk/pens.</p>
-<p> If you have spare disks, please test and report back. $es </p>
-
+<small>
 <p>Disk/partition: Disk name (underlined)/Partition type (partition name)
 <p>Cap: Disk or partition capacity
 <p>FS: current filesystem on partition
@@ -32,14 +30,15 @@ echo "<small>
 <p>FSCK: Number of mounts to remain until a fsck is done at
   next boot or mount
 <p>Dirty: The filesystem is dirty, do an automatic repair OR
-  perform a fsck in antecipation (and avoid lenghly boot time)
+  perform a fsck in antecipation and avoid lenghly boot time
 <p>New Format: perform an ENTIRE DISK format with the selected filesystem.
   One partition per disk will be created. If Swap  is selected, an aditional
   swap partition will be created (at least one must be present on the box)
 <p>Re Format: reformat only the selected partition with the selected filesystem
-</small>"
+</small>
 
-echo	"<form action="/cgi-bin/disk_proc.cgi" method="post">"
+<form action="/cgi-bin/disk_proc.cgi" method="post">
+EOF
 
 for dsk in $disks; do
 
@@ -62,6 +61,11 @@ for dsk in $disks; do
   #disk=$(basename $dsk)
   bay=$(awk '/'$disk'/{print toupper($1)}' /etc/bay)
 
+ntfsopt=""
+if test -f /usr/sbin/mkntfs; then
+	ntfsopt="<option>ntfs</option>"
+fi
+
 cat<<-EOF
 	<fieldset><Legend> $s $bay $es ($mod - $cap GB) </legend><table>
 	<tr align=center>
@@ -79,7 +83,7 @@ cat<<-EOF
     <td align=center> $cap </td>
     <td></td><td></td><td></td><td></td>
     <td><input type=submit name=$disk value="NewFormat"></td>
-    <td><select name=type_$disk><option>ext2</option><option>ext3</option><option selected>ext4</option><option>vfat</option></select></td>
+    <td><select name=type_$disk><option>ext2</option><option>ext3</option><option selected>ext4</option><option>vfat</option>$ntfsopt</select></td>
     <td align=center><input type=checkbox checked name=swap_$disk value="yes"></td>
     </tr>
 EOF
@@ -128,7 +132,7 @@ EOF
 	   <input type=hidden name="$fsck_opt" value=opt_$ppart>
         <td><input type=submit $clean_dis name=$ppart value="Clean"></td>
         <td align=right><input type=submit name=$ppart value="ReFormat"></td>
-        <td><select name=type_$ppart><option>ext2</option><option>ext3</option><option selected>ext4</option><option>vfat</option></select></td>
+        <td><select name=type_$ppart><option>ext2</option><option>ext3</option><option selected>ext4</option><option>vfat</option>$ntfsopt</select></td>
         <td></td></tr>
 EOF
     fi

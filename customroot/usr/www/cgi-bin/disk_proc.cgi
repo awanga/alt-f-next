@@ -30,8 +30,15 @@ part_fsck() {
   local lpart opts
   lpart=$1
   opts=$2
-  if unmount_part $lpart; then 
-    e2fsck $opts /dev/$lpart
+  if unmount_part $lpart; then
+	eval $(blkid -c /dev/null -w /dev/null -s TYPE /dev/$lpart | cut -f2 -d" ") 
+	if test "$TYPE" = "ntfs" -a -f /usr/bin/ntfsfix; then
+		fsck.ntfs /dev/$lpart
+	elif test "$TYPE" = "vfat"; then
+		fsck.vfat -a /dev/$lpart
+	elif test "${TYPE:0:3}" = "ext"; then
+	    e2fsck $opts /dev/$lpart
+	fi
     mount /dev/$lpart
     return 0
   else
@@ -50,6 +57,8 @@ reformat() {
 
   if test "$ltype" = "vfat"; then
     mkfs.vfat /dev/$lpart
+  elif test "$ltype" = "ntfs" -a -f /usr/sbin/mkntfs; then
+    mkfs.ntfs -q /dev/$lpart
   else
     mke2fs -q -T $ltype /dev/$lpart
   fi
@@ -157,6 +166,6 @@ fi
   echo  "<form action=\"/cgi-bin/disk.cgi\">
 	<input type=submit value=\"Continue\"></form></html></body>"
 
-endddbug
+enddbug
 #gotopage /cgi-bin/disk.cgi
 
