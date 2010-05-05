@@ -250,17 +250,26 @@ elif test "$ACTION" = "add" -a "$PHYSDEVDRIVER" = "usblp"; then
 	mfg=${MFG:-$MANUFACTURER}
 
 	mkdir /var/spool/lpd/$MDEV
-	echo "$MDEV|$mfg $model" >> /etc/printcap
-	kill -HUP $(pidof smbd)
+	if test -f /etc/printcap-safe; then
+		echo "$MDEV|$mfg $model" >> /etc/printcap-safe
+	else
+		echo "$MDEV|$mfg $model" >> /etc/printcap
+		rcsmb reload
+	fi
 
 elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
 
 	rmdir /var/spool/lpd/$MDEV
-	sed -i '/^'$MDEV'/d' /etc/printcap
-	if test -e /etc/printcap -a ! -s /etc/printcap; then
-		rm /etc/printcap
+	PCAP=/etc/printcap
+	if test -e /etc/printcap-safe; then
+		PCAP=/etc/printcap-safe
 	fi
-	kill -HUP $(pidof smbd)
+	sed -i '/^'$MDEV'/d' $PCAP
+
+	if test -e $PCAP -a ! -s $PCAP; then
+		rm $PCAP
+	fi
+	rcsmb reload
 
 else
 	logger "hot.sh: WHAT"
