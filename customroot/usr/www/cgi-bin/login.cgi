@@ -7,11 +7,11 @@ SECR=/etc/web-secret
 
 cat<<-EOF
     <center><form action="/cgi-bin/login_proc.cgi" method="post">
-    <table><tr><td>Password:</td><td> <input type="password" name="passwd" ></td>
+    <table><tr><td>Password:</td><td> <input type="password" autocomplete="off" name="passwd" ></td>
 EOF
 
 if ! test -e $SECR; then
-    echo "</tr><tr><td>Again:</td><td> <input type="password" name="passwd_again" ></td>"
+    echo "</tr><tr><td>Again:</td><td> <input type="password" autocomplete="off" name="passwd_again" ></td>"
 fi
 
 cat<<-EOF
