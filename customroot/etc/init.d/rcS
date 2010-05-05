@@ -12,6 +12,11 @@
 #/bin/mount -a
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
+for i in run log lock cache; do
+	mkdir /tmp/$i
+	ln -sf /tmp/$i /var/$i
+done
+
 mkdir -p /mnt
 mkdir -p /var/spool/lpd
 echo > /etc/bay
@@ -183,7 +188,7 @@ case $cip in
 				auto eth0
 				iface eth0 inet dhcp
 				client udhcpc
-			EOF			
+			EOF
 			;;
 
 		"def")
