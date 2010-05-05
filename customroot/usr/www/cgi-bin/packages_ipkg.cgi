@@ -42,23 +42,28 @@ ipkg-cl -V0 info | awk '
 			<th>Name</th><th>Version</th><th></th><th></th><th>Description</th> \
 		</tr>"
 
-		for (nm in inst) {
-			if (nm in uinst) { # info in inst is incomplete in this case
-				i=uinst[nm]; v=ver[inst[nm]]; update=1;
-				upd=sprintf("<td><input type=submit name=%s value=Update></td>", nm);
-				delete uinst[nm];
-			} else {
-				i=inst[nm]; v=ver[i];
-				upd="<td></td>";
+
+		update = 0;
+		for (i=1; pkg[i] != ""; i++) {
+			nm = pkg[i];
+			if (nm in inst) {
+				if (nm in uinst) {	# new version available, old has missing info
+					j = uinst[nm]; v = ver[inst[nm]]; update++;
+					upd=sprintf("<td><input type=submit name=%s value=Update></td>", nm);
+					delete uinst[nm]; delete inst[nm];			
+				} else {
+					j = i; v = ver[i];
+					upd="<td></td>";
+				}
+				printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
+					url[j], nm, v;
+				printf "<td><input type=submit name=%s value=Remove></td>", nm;
+				print upd;
+				printf "<td>%s</td></tr>\n\n", des[j];
 			}
-			printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
-				url[i], nm, v;
-			printf "<td><input type=submit name=%s value=Remove></td>", nm;
-			print upd;
-			printf "<td>%s</td></tr>\n\n", des[i];
 		}
 	
-		if (update == 1)
+		if (update != 0)
 			print "<tr><td></td><td></td><td></td> \
 				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
@@ -68,12 +73,14 @@ ipkg-cl -V0 info | awk '
 			<th>Name</th><th>Version</th> \
 			<th></th><th>Description</th></tr>"
 
-		for (nm in uinst) {
-			i=uinst[nm];
-			printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
-				url[i], nm, ver[i];
-			printf "<td><input type=submit name=%s value=Install></td>", nm;
-			printf "<td>%s</td></tr>\n\n", des[i];
+		for (i=1; pkg[i] != ""; i++) {
+			nm = pkg[i];
+			if (nm in uinst) {
+				printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
+					url[i], nm, ver[i];
+				printf "<td><input type=submit name=%s value=Install></td>", nm;
+				printf "<td>%s</td></tr>\n\n", des[i];
+			}
 		}
 		print "</table></fieldset><br> \
 		<input type=submit name=updatelist value=UpdateList> \
