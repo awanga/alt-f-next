@@ -6,6 +6,19 @@ check_cookie
 
 #debug
 
+if test -n "$Configure"; then
+	if test -f $PWD/${Configure}.cgi; then
+		gotopage /cgi-bin/${Configure}.cgi
+	else
+		write_header "$Configure setup"
+		echo "<p>Write me</p>"
+		back_button
+		echo "</body></html>"
+		exit 0
+	fi
+
+elif test -n "$Submit"; then
+
 ssrvs="$(httpd -d $Submit)"
 
 for i in $ssrvs; do
@@ -23,6 +36,8 @@ done
 
 if test "$inetd_change" = 1; then
 	kill -HUP $(pidof inetd)
+fi
+
 fi
 
 #enddebug

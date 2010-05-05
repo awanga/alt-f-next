@@ -17,6 +17,7 @@ cat<<-EOF
 	<table><tr>
 	<td> $s Service $es </td>
 	<td> $s Enable $es </td>
+	<td></td>
 	</tr>
 EOF
 
@@ -31,6 +32,7 @@ EOF
 		cat<<-EOF
 			<tr><td> $i </td>
 			<td align=center><input type=checkbox $chkf name=$i value=enable></td>
+			<td><input type="submit" name=$i value="Configure"></td>
 			</tr>
 		EOF
 	done
