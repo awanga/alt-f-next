@@ -16,8 +16,10 @@ start_stop() {
 			chmod -x $sscript
 		elif test "$act" = "start"; then
 			sh $sscript start >/dev/null 2>&1
+			sleep 1
 		elif test "$act" = "stop"; then
 			sh $sscript stop >/dev/null 2>&1
+			sleep 1
 		fi
 	fi
 }
@@ -47,7 +49,15 @@ elif test -n "$StopNow"; then
 	start_stop $StopNow stop
 
 elif test -n "$Configure"; then
-	gotopage /cgi-bin/${Configure}.cgi
+	if test -f $PWD/${Configure}.cgi; then
+		gotopage /cgi-bin/${Configure}.cgi
+	else
+		write_header "$Configure setup"
+		echo "<p>Write me</p>"
+		back_button
+		echo "</body></html>"
+		exit 0
+	fi
 fi
 
 #enddebug

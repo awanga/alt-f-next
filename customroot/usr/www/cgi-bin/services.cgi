@@ -59,7 +59,7 @@ for i in $srv; do
 	fi
 
 	if rc$i status >/dev/null ; then
-		st="Running"
+		st="$s Running $es"
 		act="StopNow"
 	else
 		st="Stopped"
