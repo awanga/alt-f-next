@@ -14,10 +14,23 @@ case "$1" in
 		;;
 
 	renew|bound)
+		env
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
 
+		echo "updating /etc/hosts"
+		fnm=$(hostname -f)
+		sed -i '/\(^[^#].*\)\('$fnm'\)\(.*\)/s//'$ip'\t\2\3/' /etc/hosts
+
+		echo "updating /etc/httpd.conf"
+		sed -i '/^A:.*\.$/d' /etc/httpd.conf
+		network=$(echo $ip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
+		echo  "A:$network" >> /etc/httpd.conf
+
+		echo "updating /etc/samba/smb.conf"
+		sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
+		
 		if [ -n "$router" ] ; then
-			echo "deleting routers"
+			echo "updating gateway"
 			while route del default gw 0.0.0.0 dev $interface ; do
 				:
 			done

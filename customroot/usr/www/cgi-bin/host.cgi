@@ -93,20 +93,23 @@ cat<<-EOF
     <tr><td><br></td><td></td></tr>
     <tr>
         <td>Static IP<input type=radio id="static" name="iptype" value="static" onclick="edisable(false)"></td>
-        <td>DHCP<input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td>
+        <td>DHCP <input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td>
     </tr>
 
     <tr><td>Host IP:</td><td><input type=text id=sip name="hostip" value=$hostip></td></tr>
     <tr><td>Netmask:</td><td><input type=text id=sip name="netmask" value=$netmask></td></tr>
     <tr><td>Gateway:</td><td><input type=text id=sip name="gateway" value=$gateway></td></tr>
     <tr><td>Name server 1:</td><td><input type=text id=sip name="ns1" value=$ns1></td></tr>
-    <tr><td>Name server 2:</td><td><input type=text id=sip name="ns2" value=$ns2>
-	<input type=hidden name=cflg value="$cflg"></td></tr>
+    <tr><td>Name server 2:</td><td><input type=text id=sip name="ns2" value=$ns2></tr>
     <tr><td>Frame size:</td><td><input type=text id=sip[A name="mtu" value=$mtu></td></tr>
 
     <tr><td></td><td><input type="submit" value="Submit" onclick="return ipchange('$hostip')"></td></tr>
     </table>
-
+	<input type=hidden name=cflg value="$cflg">
+	<input type=hidden name=oldip value="$hostip">
+	<input type=hidden name=oldnm value="$hostname">
+	<input type=hidden name=oldwk value="$workgroup">
+	<input type=hidden name=oldes value="$hostdesc">
     </form>        
 EOF
 
