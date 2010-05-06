@@ -188,13 +188,17 @@ read_sib() {
 
 # When a pen/disk is inserted, the current box settings 
 # must overwrite the ones existing in the pen/disk, 
-# and the reverse must happen when the pen is removed.
-# As the pen/disk is the top priority union branch, new files
-# are stored there and must be copied to the root directory,
-# so they are keep after the pen/disk is removed.
+# and the reverse must happen when the pen/disk is removed.
+# As the pen/disk is the top priority union branch, new or modified
+# files are stored there
 
 # Copy current box settings to /Alt-F dir.
 # Used after mounting Alt-F dir but before adding it to the union.
+#
+# wouldn't be simpler to simply remove all configuration files from /Alt-F?
+# after all, if they exist they are overwritten...no, they can be created
+# in /Alt-F only and not flash saved! Next time they don't exist in RAM
+# but will survive in /Alt-F
 
 to_AltF() {
 	wfiles="$files $xfiles"
@@ -207,14 +211,14 @@ to_AltF() {
 	done
 }
 
-# Copy current box settings to root dir
+# Copy current box settings in /Alt-F to RAM root dir
 # Used after removing Alt-F from the union but before unmounting it
 
 from_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
-			cp -a /Alt-F$i /$i
+			cp -a /Alt-F/$i /$i
 		fi
 	done	
 }
