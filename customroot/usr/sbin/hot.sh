@@ -51,21 +51,32 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	fi
 
 	fstype=$(blkid -s TYPE -o value -w /dev/null -c /dev/null $PWD/$MDEV)
+	fsckcmd="fsck"
 	case $fstype in
-		ext2|ext3|ext4|vfat|iso9660)
+		ext2|ext3|ext4)
+			fsopt="-p"
 			;;
-		ntfs) fstype="ntfs-3g"
+		iso9660)
+			fsckcmd="echo";
+			;;
+		vfat)
+			fsopt="-a"
+			;;			
+		ntfs)
+			if ! test -f /usr/bin/ntfsfix; then fsckcmd="echo "; fi
+			fstype="ntfs-3g"
+			fsopt=""
 			;; 
 		swap)
 			swapon -p 1 $PWD/$MDEV
 			sed -i '\|^'$PWD/$MDEV'|d' /etc/fstab
 			echo "$PWD/$MDEV none swap pri=1 0 0" >> /etc/fstab
 			return 0
-				;;
+			;;
 		*)
 			logger "hot: unknown partition type $fstype"
 			return 0
-				;;
+			;;
 	esac
 
 	lbl=$(blkid -s LABEL -o value -w /dev/null -c /dev/null $PWD/$MDEV | tr ' ' '_')
@@ -76,7 +87,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 #	if test $? = 1; then exit 1; fi
 
 	echo heartbeat > "/sys/class/leds/power:blue/trigger"
-	res="$(fsck -p $PWD/$MDEV 2>&1)"
+	res="$($fsckcmd $fsopt $PWD/$MDEV 2>&1)"
 	if test $? -ge 2; then fsflg="-o ro"; fi
 	logger "$res"
 	echo default-on > "/sys/class/leds/power:blue/trigger"
