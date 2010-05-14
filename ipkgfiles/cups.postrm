@@ -1,0 +1,6 @@
+#!/bin/sh
+
+deluser cuppes
+delgroup lpadmin
+rm -f /sbin/rccups 
+rm -rf /etc/cups /var/run/cups /var/spool/cups /var/cache/cups

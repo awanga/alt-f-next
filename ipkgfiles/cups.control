@@ -1,9 +1,9 @@
 Package: cups
-Version: 1.3.9
+Version: 1.4.3
 Description: The Common Unix Printing System
-	  http://www.cups.org
+Depends: libusb tiff libpng jpeg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://www.cups.org
 Maintainer: jcard

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+addgroup -S -g 9 lpadmin
+adduser -D -S -g "CUPS Daemon" -G lpadmin -u 9 cups
+
+chown -R cups:lpadmin /etc/cups
+
+ln -sf /usr/sbin/rcscript /sbin/rccups
