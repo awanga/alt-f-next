@@ -1,0 +1,51 @@
+#! /bin/sh
+
+set -e
+
+DESC="FUPPES, the Free UPnP Entertainment Service"
+TYPE=user
+NAME=fuppesd
+DAEMON_ARGS="--config-dir /etc/fuppes/ --log-file /var/log/fuppes.log \
+	--database-file /var/lib/fuppes/fuppes.db --log-level 2"
+FUPPES_USER=fuppes
+FUPPES_GROUP=multimedia
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		start-stop-daemon -S -q -b --chuid $FUPPES_USER:$FUPPES_GROUP \
+			-x $NAME -- $DAEMON_ARGS
+		echo "OK"
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -s 2 -n $NAME
+		echo "OK"
+		;;
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
