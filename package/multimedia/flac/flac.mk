@@ -10,17 +10,16 @@ FLAC_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/flac
 FLAC_AUTORECONF = NO
 FLAC_INSTALL_TARGET = YES
 FLAC_INSTALL_STAGING = YES
+FLAC_DEPENDENCIES = libogg
 
 FLAC_CONF_OPT = \
 	--enable-shared \
 	--disable-cpplibs \
-	--disable-xmms-plugin
-
-ifeq ($(BR2_PACKAGE_LIBOGG),y)
-FLAC_CONF_OPT += --with-ogg=$(STAGING_DIR)/usr
-FLAC_DEPENDENCIES = libogg
-else
-FLAC_CONF_OPT += --disable-ogg
-endif
+	--disable-xmms-plugin \
+	--with-ogg=$(STAGING_DIR)/usr
 
 $(eval $(call AUTOTARGETS,package/multimedia,flac))
+
+$(FLAC_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/share/aclocal/libFLAC.m4
+	touch $@
