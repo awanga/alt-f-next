@@ -1,9 +1,8 @@
 Package: pcre
 Version: 7.7
 Description: Perl Compatible Regular Expressions
-	  http://www.pcre.org/
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://www.pcre.org/
 Maintainer: jcard

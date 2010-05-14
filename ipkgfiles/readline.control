@@ -1,8 +1,8 @@
 Package: readline
 Version: 5.2
-Description: GNU readline libraries
+Description: The GNU readline librarie
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://tiswww.case.edu/php/chet/readline/rltop.html
 Maintainer: jcard

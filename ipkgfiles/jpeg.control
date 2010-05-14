@@ -1,9 +1,8 @@
 Package: jpeg
 Version: 6b
 Description: The ubiquitous C library for manipulating JPEG images.
-	  http://www.ijg.org/
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://www.ijg.org/
 Maintainer: jcard

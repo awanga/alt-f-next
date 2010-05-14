@@ -1,9 +1,8 @@
 Package: libdaemon
 Version: 0.13
-Description: 	  libdaemon is a lightweight C library that eases the writing of UNIX daemons.
-	  http://0pointer.de/lennart/projects/libdaemon/
+Description: libdaemon is a lightweight C library that eases the writing of UNIX daemons.
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://0pointer.de/lennart/projects/libdaemon/
 Maintainer: jcard

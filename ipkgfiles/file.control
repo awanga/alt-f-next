@@ -1,9 +1,8 @@
 Package: file
 Version: 5.04
 Description: Program to identify a file's format by scanning binary data for known patterns.
-	  ftp://ftp.astron.com/pub/file/
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: ftp://ftp.astron.com/pub/file/
 Maintainer: jcard

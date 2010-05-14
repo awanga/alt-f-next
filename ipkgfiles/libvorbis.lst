@@ -1,4 +1,9 @@
-./usr/lib/libvorbisidec.so
-./usr/lib/libvorbisidec.so.1
-./usr/lib/libvorbisidec.so.1.0.2
-./usr/lib/tremor.so
+./usr/lib/libvorbisenc.so
+./usr/lib/libvorbisenc.so.2
+./usr/lib/libvorbisenc.so.2.0.6
+./usr/lib/libvorbisfile.so
+./usr/lib/libvorbisfile.so.3
+./usr/lib/libvorbisfile.so.3.3.2
+./usr/lib/libvorbis.so
+./usr/lib/libvorbis.so.0
+./usr/lib/libvorbis.so.0.4.3

@@ -1,4 +1,4 @@
-./etc/init.d/S82mediatomb
+./etc/init.d/S80mediatomb
 ./usr/bin/mediatomb
 ./usr/share/mediatomb/js/common.js
 ./usr/share/mediatomb/js/import.js

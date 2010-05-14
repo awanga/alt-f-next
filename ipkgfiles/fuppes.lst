@@ -1,3 +1,6 @@
+./etc/fuppes
+./etc/fuppes/fuppes.cfg
+./etc/init.d/S80fuppes
 ./usr/bin/fuppes
 ./usr/bin/fuppesd
 ./usr/lib/fuppes/libdatabase_sqlite3.so
@@ -6,6 +9,9 @@
 ./usr/lib/fuppes/libdecoder_flac.so
 ./usr/lib/fuppes/libdecoder_flac.so.0
 ./usr/lib/fuppes/libdecoder_flac.so.0.0.0
+./usr/lib/fuppes/libdecoder_vorbis.so
+./usr/lib/fuppes/libdecoder_vorbis.so.0
+./usr/lib/fuppes/libdecoder_vorbis.so.0.0.0
 ./usr/lib/fuppes/libencoder_pcm.so
 ./usr/lib/fuppes/libencoder_pcm.so.0
 ./usr/lib/fuppes/libencoder_pcm.so.0.0.0
@@ -31,3 +37,4 @@
 ./usr/share/fuppes/header-gradient.png
 ./usr/share/fuppes/header-gradient-small.png
 ./usr/share/fuppes/style.css
+./usr/www/cgi-bin/fuppes.cgi

@@ -1,10 +1,9 @@
 Package: fuppes
 Version: 660
-Depends: libxml2, sqlite, pcre, ffmpeg, taglib, flac, libmad, taglib
-Description: uPNP AV server
-	  http://fuppes.ulrich-voelkel.de
+Depends: libxml2, sqlite, pcre, ffmpeg, taglib, flac, libmad
+Description: FUPPES, the Free UPnP Entertainment Service
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://fuppes.ulrich-voelkel.de
 Maintainer: jcard

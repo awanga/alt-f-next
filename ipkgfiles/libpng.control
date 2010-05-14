@@ -1,9 +1,8 @@
 Package: libpng
 Version: 1.2.38
 Description: Library for handling PNG (Portable Network Graphics) images.
-	  http://www.libpng.org/
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://www.libpng.org/
 Maintainer: jcard

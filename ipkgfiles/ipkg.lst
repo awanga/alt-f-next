@@ -3,6 +3,8 @@
 ./usr/lib/libipkg.so
 ./usr/lib/libipkg.so.0
 ./usr/lib/libipkg.so.0.0.0
+./usr/share/ipkg
+./usr/share/ipkg/intercept
 ./usr/share/ipkg/intercept/depmod
 ./usr/share/ipkg/intercept/ldconfig
 ./usr/share/ipkg/intercept/update-modules

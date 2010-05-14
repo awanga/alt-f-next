@@ -1,9 +1,9 @@
 Package: flac
 Version: 1.2.1
 Description: FLAC is an Open Source lossless audio codec.
-          http://flac.sourceforge.net/
+Depends: libogg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://flac.sourceforge.net/
 Maintainer: jcard

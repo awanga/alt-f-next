@@ -1,9 +1,8 @@
 Package: expat
 Version: 2.0.1
-Description: 	  The Expat XML Parser.
-	  http://expat.sourceforge.net
+Description: The Expat XML Parser.
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://expat.sourceforge.net
 Maintainer: jcard

@@ -1,2 +1,5 @@
 ./usr/bin/file
+./usr/lib/libmagic.so.1.0.0
+./usr/lib/libmagic.so.1
+./usr/lib/libmagic.so
 ./usr/share/misc/magic.mgc
