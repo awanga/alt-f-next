@@ -3,8 +3,12 @@
 # samba
 #
 #############################################################
+
+# uClibc must be compiled with UCLIBC_SUPPORT_AI_ADDRCONFIG, or else an
+# "interface" option must be specified in the samba config.file
+# (or an "couln'd get interface address" (or similar) error happens at runtime 
+
 SAMBA_VERSION:=3.3.9
-# jc: uclibc must be compiled with UCLIBC_SUPPORT_AI_ADDRCONFIG, or else an "interface" option must be specified in the samba config.file (or an "couln'd get interface address" (or similar) error happens at runtime 
 SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
 SAMBA_SITE:=http://samba.org/samba/ftp/stable/
 SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/source
@@ -26,6 +30,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		./autogen.sh; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
+		CFLAGS=-O2 \
 		samba_cv_HAVE_GETTIMEOFDAY_TZ=yes \
 		samba_cv_USE_SETREUID=yes \
 		samba_cv_HAVE_KERNEL_OPLOCKS_LINUX=yes \
@@ -59,7 +64,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--disable-cups \
 		$(DISABLE_LARGEFILE) \
 	)
-	cat patches/samba-Makefile.patch | patch -p0 -d $(SAMBA_DIR) # jc
+	cat patches/samba-Makefile.patch | patch -p0 -b -d $(SAMBA_DIR) # jc
 	touch $@
 
 $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
@@ -67,7 +72,6 @@ $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
 	$(MAKE) -C $(SAMBA_DIR) proto
 	$(MAKE) -C $(SAMBA_DIR)
 
-#jc:
 SAMBA_TARGETS_ := usr/bin/sharesec
 SAMBA_TARGETS_y :=
 
@@ -100,6 +104,12 @@ SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_TESTPARM) += usr/bin/testparm
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_WINBINDD) += usr/sbin/winbindd
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_WBINFO) += usr/bin/wbinfo
 
+INSTALL_TARGETS = installlibs installservers installbin installcifsmount installscripts
+
+ifeq ($(BR2_PACKAGE_SAMBA_DOC),y)
+	SAMBA_DOC_TARGET = $(TARGET_DIR)/usr/swat/using_samba/toc.html
+endif
+
 $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) \
 		prefix="${TARGET_DIR}/usr" \
@@ -109,7 +119,7 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 		PRIVATEDIR="${TARGET_DIR}/etc/samba" \
 		CONFIGDIR="${TARGET_DIR}/etc/samba" \
 		VARDIR="${TARGET_DIR}/var/log/samba" \
-		-C $(SAMBA_DIR) installlibs installservers installbin installcifsmount installscripts
+		-C $(SAMBA_DIR) $(INSTALL_TARGETS)
 	# jc: 	
 	-cp $(SAMBA_DIR)/bin/libsmbcommon.so $(TARGET_DIR)/usr/lib/
 	-chmod +w $(TARGET_DIR)/usr/lib/libsmbcommon.so
@@ -140,7 +150,20 @@ endif
 	rm -rf $(TARGET_DIR)/var/lib/samba
 	find $(TARGET_DIR) -name \*.old -delete # jc:
 
-samba: libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY)
+$(SAMBA_DOC_TARGET): $(SAMBA_DIR)/$(SAMBA_BINARY)
+	$(MAKE) $(TARGET_CONFIGURE_OPTS) \
+		prefix="${TARGET_DIR}/usr" \
+		BASEDIR="${TARGET_DIR}/usr" \
+		SBINDIR="${TARGET_DIR}/usr/sbin" \
+		LOCKDIR="${TARGET_DIR}/var/cache/samba" \
+		PRIVATEDIR="${TARGET_DIR}/etc/samba" \
+		CONFIGDIR="${TARGET_DIR}/etc/samba" \
+		VARDIR="${TARGET_DIR}/var/log/samba" \
+		-C $(SAMBA_DIR) installswat
+
+samba: libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) $(SAMBA_DOC_TARGET)
+
+samba-configure: $(SAMBA_DIR)/.configured
 
 samba-source: $(DL_DIR)/$(SAMBA_SOURCE)
 

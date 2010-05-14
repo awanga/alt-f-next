@@ -162,6 +162,13 @@ config BR2_PACKAGE_SAMBA_SWAT
 	help
 	  Samba Web Administration Tool
 
+config BR2_PACKAGE_SAMBA_DOC
+	bool "samba-doc"
+	default y
+	depends on BR2_PACKAGE_SAMBA_SWAT
+	help
+	  Samba Web Administration Tool online help
+
 config BR2_PACKAGE_SAMBA_SMBTAR
 	bool "smbtar"
 	default y
