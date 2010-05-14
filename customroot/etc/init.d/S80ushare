@@ -2,11 +2,14 @@
 
 NAME=ushare
 DAEMON=/usr/bin/$NAME
-DESC="UPnP A/V & DLNA Media Server"
+DESC="GeeXboX uShare, A free UPnP A/V & DLNA Media Server for Linux"
+TYPE=user
+
 PIDFILE=/var/run/$NAME.pid
 CONFIGFILE=/etc/$NAME.conf
+USHARE_USER=ushare
+USHARE_GROUP=multimedia
 #USHARE_OPTIONS=
-TYPE=user
 
 checkpid() {
 	[ -e $PIDFILE ] || touch $PIDFILE
@@ -31,6 +34,7 @@ case "$1" in
 		else
 			checkpid
 			start-stop-daemon --start --quiet --background --oknodo \
+				--chuid $USHARE_USER:$USHARE_GROUP \
 				--make-pidfile --pidfile $PIDFILE \
 				--exec $DAEMON -- $USHARE_OPTIONS
 			if test $? = 1; then
