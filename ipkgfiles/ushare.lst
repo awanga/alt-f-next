@@ -1,0 +1,5 @@
+./etc/init.d/S80ushare
+./etc/ushare.conf
+./usr/bin/ushare
+./usr/www/cgi-bin/ushare.cgi
+./usr/www/cgi-bin/ushare_proc.cgi

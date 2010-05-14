@@ -1,0 +1,9 @@
+Package: ushare
+Description: GeeXboX uShare, A free UPnP A/V & DLNA Media Server for Linux
+Version: 1.1a
+Depends: libupnp, libdlna
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://ushare.geexbox.org
+Maintainer: jcard
