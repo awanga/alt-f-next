@@ -9,7 +9,10 @@ OPENNTPD_SITE:=ftp://ftp.openbsd.org/pub/OpenBSD/OpenNTPD
 OPENNTPD_DIR:=$(BUILD_DIR)/openntpd-$(OPENNTPD_VERSION)
 OPENNTPD_CAT:=$(ZCAT)
 OPENNTPD_BINARY:=ntpd
-OPENNTPD_TARGET_BINARY:=usr/sbin/ntpd
+
+# colides with ntpd
+#OPENNTPD_TARGET_BINARY:=usr/sbin/ntpd
+OPENNTPD_TARGET_BINARY:=usr/bin/ntpd
 
 $(DL_DIR)/$(OPENNTPD_SOURCE):
 	$(call DOWNLOAD,$(OPENNTPD_SITE),$(OPENNTPD_SOURCE))
