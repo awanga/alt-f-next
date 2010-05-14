@@ -69,7 +69,6 @@ $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY): $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY)
 
 ffmpeg-po:
 
-	
 ffmpeg: uclibc $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY)
 
 ffmpeg-source: $(DL_DIR)/$(FFMPEG_SOURCE)
