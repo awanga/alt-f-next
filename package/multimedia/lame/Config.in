@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LAME
+	bool "lame"
+	help
+	  LAME Ain't an Mp3 Encoder. LAME is an educational tool to be used for learning about MP3 encoding.
+	
+	  http://lame.sourceforge.net
