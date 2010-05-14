@@ -1,0 +1,36 @@
+--- cups-1.4.3/Makefile-orig	2010-04-30 00:21:56.189160873 +0100
++++ cups-1.4.3/Makefile	2010-04-30 00:22:11.653034282 +0100
+@@ -27,8 +27,8 @@
+ # Directories to make...
+ #
+ 
+-DIRS	=	cups filter backend berkeley cgi-bin driver locale man monitor \
+-		notifier ppdc scheduler systemv test \
++DIRS	=	cups filter backend berkeley cgi-bin driver locale man monitor \
++		notifier ppdc scheduler systemv  \
+ 		$(PHPDIR) \
+ 		conf data doc examples $(FONTS) templates
+ 
+--- cups-1.4.3/man/Makefile-orig	2010-04-30 00:19:29.762217540 +0100
++++ cups-1.4.3/man/Makefile	2010-04-30 00:20:44.337158642 +0100
+@@ -227,7 +227,8 @@
+ 	done
+ 
+ mantohtml:	mantohtml.o
+-	$(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ mantohtml.o
++	#$(CC) $(ARCHFLAGS) $(LDFLAGS) -o $@ mantohtml.o
++	gcc -I/usr/include -I../ -L/usr/lib mantohtml.c -o mantohtml
+ 
+ 
+ #
+--- cups-1.4.3/ppdc/Makefile-orig	2010-04-30 03:59:13.481034979 +0100
++++ cups-1.4.3/ppdc/Makefile	2010-04-30 03:59:30.601159811 +0100
+@@ -244,7 +244,7 @@
+ 		libcupsppdc.a ../cups/libcups.a $(LIBGSSAPI) $(SSLLIBS) \
+ 		$(DNSSDLIBS) $(COMMONLIBS) $(LIBZ)
+ 	echo Generating localization strings...
+-	./genstrings >sample.c
++	#./genstrings >sample.c
+ 
+ 
+ #
