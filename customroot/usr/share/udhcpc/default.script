@@ -14,23 +14,35 @@ case "$1" in
 		;;
 
 	renew|bound)
+		echo "udhcpc environment:"
 		env
+
+		if test -z "$domain"; then
+			domain="Workgroup"
+		fi
+
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
 
-		echo "updating /etc/hosts"
-		fnm=$(hostname -f)
-		sed -i '/\(^[^#].*\)\('$fnm'\)\(.*\)/s//'$ip'\t\2\3/' /etc/hosts
+		echo "Updating /etc/hosts"
+		fnm=$(hostname -f) >& /dev/null
+		if test $? = 0; then
+			sed -i '/\(^[^#].*\)\('$fnm'\)\(.*\)/s//'$ip'\t\2\3/' /etc/hosts
+		else
+			hname=$(hostname)
+			echo -e "$ip\t$hname.$domain\t$hname\n" >> /etc/hosts
+		fi
 
-		echo "updating /etc/httpd.conf"
+		echo "Updating /etc/httpd.conf"
 		sed -i '/^A:.*\.$/d' /etc/httpd.conf
 		network=$(echo $ip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
 		echo  "A:$network" >> /etc/httpd.conf
 
-		echo "updating /etc/samba/smb.conf"
+		echo "Updating /etc/samba/smb.conf"
+		sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
 		sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
 		
-		if [ -n "$router" ] ; then
-			echo "updating gateway"
+		if test -n "$router"; then
+			echo "Updating default route"
 			while route del default gw 0.0.0.0 dev $interface ; do
 				:
 			done
@@ -40,8 +52,9 @@ case "$1" in
 			done
 		fi
 
+		echo "Updating /etc/resolv.conf"
 		echo -n > $RESOLV_CONF
-		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
+		echo search $domain >> $RESOLV_CONF
 		for i in $dns ; do
 			echo adding dns $i
 			echo nameserver $i >> $RESOLV_CONF
