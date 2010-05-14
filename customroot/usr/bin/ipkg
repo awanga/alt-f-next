@@ -1,11 +1,101 @@
 #!/bin/sh
 
-if test -f /usr/bin/ipkg-cl; then
-	mount -t aufs -o remount,dirs=/Alt-F,udba=inotify /
+usage() {
+	echo "This is a frontend to ipkg.
+	ipkg is not installed, install using the web interface,
+	or using \"ipkg -install [<mount_point>]\""
+	exit 1
+}
+
+msg() {
+	echo $1
+	exit 1
+}
+
+install() {
+	echo Installing ipkg
+	
+	CONFF=/etc/ipkg.conf
+	IPKG=ipkg_0.99.163_arm.ipk
+	FEED=$(awk '/^src/{print $3}' $CONFF)
+	DESTD=$(awk '/^dest/{print $3}' $CONFF)
+
+	if test "$DESTD" != "/Alt-F"; then
+		msg "Package destination directory must be /Alt-F"
+	fi
+
+	if ! test -d "$DESTD"; then
+		msg "Package destination directory not found."
+	fi
+			
+	TMPD=$(mktemp -d -t)
+	wget -nv -P $TMPD $FEED/$IPKG >& /dev/null
+	if test $? != 0; then
+		rm -rf $TMPD
+		msg "Downloading of $IPKG from $FEED failed."
+	fi
+	
+	cd $TMPD
+	ar x $IPKG # busybox ar is not extracting control: "ar: invalid ar header "
+	tar xzf control.tar.gz
+	awk '/^Package:/ {
+			if( $2 != "ipkg") exit 1 }
+		/^Architecture:/ {
+			if ($2 != "arm") exit 1 }
+		' control
+		
+	if test $? != 0; then
+		rm -rf $TMPD
+		msg "Downloaded wrong package?"
+	fi
+	
+	# remount /Alt-F with inotify
+	aufs.sh -n
+	tar -C /Alt-F -xzf data.tar.gz
+	
+	cd
+	rm -rf $TMPD
+	
+	ipkg-cl update
+	ipkg-cl install ipkg
+
+	# remount /Alt-F with reval
+	aufs.sh -r
+	exit 0
+}
+
+if test "$#" != 0 -a "$1" = "-install"; then
+	if test $# = 1 -a "$(aufs.sh -s)" != "OK"; then
+		echo "/Alt-F does not exists or is not an aufs branch."
+		echo "you must supply a mountpoint where to install ipkg."
+		exit 1
+
+	elif test $# = 1 -a "$(aufs.sh -s)" = "OK"; then
+		install
+
+	elif test $# = 2 -a "$(aufs.sh -s)" = "OK"; then
+		echo "Alt-F already exists, you shouldn't supply a mountpoint."
+		exit 1
+
+	elif test "$#" != 2; then
+		usage
+	
+	elif ! $(mountpoint -q $2); then
+		echo "\"$2\" is not a mountpoint."
+		usage
+
+	else
+		aufs.sh -i $2 && install
+		exit $?
+	fi
+
+elif test -f /usr/bin/ipkg-cl; then
+	mount -t aufs -o remount,udba=inotify /
 	ipkg-cl $*
 	res=$?
-	mount -t aufs -o remount,dirs=/Alt-F,udba=reval /
+	mount -t aufs -o remount,udba=reval /
 	exit $res
+
 else
-	exit 1
+	usage
 fi
