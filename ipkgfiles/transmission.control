@@ -1,0 +1,8 @@
+Package: transmission
+Description: A Fasy, Easy and Free Bittorrent client
+Version: 1.92
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.transmissionbt.com/
+Maintainer: jcard
