@@ -88,6 +88,9 @@ for i in /etc/init.d/S??*; do
 	ln -f /usr/sbin/rcscript /sbin/$(basename rc${f#S??})
 done
 
+# set a default hostname
+hostname -F /etc/hostname
+
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! $(/bin/grep -q "nodef" < /proc/cmdline); then
@@ -123,19 +126,22 @@ else
 		eval $res
 		ifconfig eth0 up $ip netmask $mask
 		route add default gw $gw
-		echo -e "nameserver $ns1\nnameserver $ns2" >> /etc/resolv.conf
+		echo "nameserver $ns1" >> /etc/resolv.conf
+		if test -n "$ns2"; then
+			echo "nameserver $ns2" >> /etc/resolv.conf
+		fi
 		hostname $host
 	else
 		ifconfig eth0 up
-		sleep 3 # needed?
-		udhcpc -fqn
+		sleep 3
+		udhcpc -fqns /dev/null
 		if test $? = 0; then
 			echo "IP from dhcp server"
 			cip="dhcp"
 		else
 			echo "fixed IP"
 			ifconfig eth0 0.0.0.0
-			sleep 3 # needed?
+			sleep 3
 			for i in $(seq 254 -1 240); do
 				arping -Dw 2 192.168.1.$i
 				if test $? = 0; then break; fi
@@ -148,7 +154,7 @@ fi
 
 # setup minimum network services (httpd is mandatory)
 case $cip in
-	"kip" | "fip" | "sib" | "dhcp")
+	"kip" | "fip" | "sib")
 		# set hostname/hostip	
 		hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 		network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
@@ -172,45 +178,39 @@ case $cip in
 		# set smb.conf hosts allow and workgroup
 		sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
 		sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
+
+		cat<<-EOF > /etc/network/interfaces
+			auto lo
+			iface lo inet loopback
+
+			auto eth0
+			iface eth0 inet static
+			address $hostip
+			netmask $netmask
+			broadcast $broadcast
+			gateway $gateway
+			mtu $mtu
+		EOF
+		;;
+
+	"dhcp")
+		cat<<-EOF > /etc/network/interfaces
+			auto lo
+			iface lo inet loopback
+
+			auto eth0
+			iface eth0 inet dhcp
+			client udhcpc
+		EOF
+		
+		ifup eth0
 		;;
 
 	"def")
 		hostname -F /etc/hostname
-	;;
-esac
-
-case $cip in
-		"dhcp")
-			cat<<-EOF > /etc/network/interfaces
-				auto lo
-				iface lo inet loopback
-
-				auto eth0
-				iface eth0 inet dhcp
-				client udhcpc
-			EOF
-			;;
-
-		"def")
-			;;
-
-		*)
-			cat<<-EOF > /etc/network/interfaces
-				auto lo
-				iface lo inet loopback
-
-				auto eth0
-				iface eth0 inet static
-				address $hostip
-				netmask $netmask
-				broadcast $broadcast
-				gateway $gateway
-				mtu $mtu
-			EOF
-			;;
+		;;
 esac
 		
-
 # Start all executable init scripts in /etc/init.d
 # executing them in numerical order.
 
