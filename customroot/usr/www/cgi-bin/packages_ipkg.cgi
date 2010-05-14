@@ -9,7 +9,8 @@ write_header "ipkg Package Manager"
 s="<strong>"
 es="</strong>"
 
-if ! test -f /Alt-F/usr/bin/ipkg-cl; then
+#if ! test -f /usr/bin/ipkg-cl; then
+if ! ipkg status >/dev/null; then
 
 	disks=$(ls /dev/sd?) >/dev/null 2>&1
 
