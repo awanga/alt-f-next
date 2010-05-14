@@ -7,6 +7,8 @@ TYPE=sys
 NAME=cupsd
 INETD_CONF=/etc/inetd.conf
 PRINTC=/etc/printcap
+CUPS_USER=cups
+CUPS_GROUP=lpadmin
 
 status() {
 	if start-stop-daemon -K -t -q -n $NAME; then
@@ -31,7 +33,7 @@ case "$1" in
 		sed -i 's/^printer/#printer/' $INETD_CONF
 		rcinetd reload
 
-		start-stop-daemon -S -q -b -x $NAME
+		start-stop-daemon -S -q -b --chuid $CUPS_USER:$CUPS_GROUP -x $NAME 
 		sleep 1
 		cupsctl _remote_admin=1
 		echo "OK"
