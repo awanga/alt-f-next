@@ -9,7 +9,7 @@ NTP_SITE:=http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/
 NTP_DIR:=$(BUILD_DIR)/ntp-$(NTP_VERSION)
 NTP_CAT:=$(ZCAT)
 NTP_BINARY:=ntpd/ntpd
-NTP_TARGET_BINARY:=usr/bin/ntpd
+NTP_TARGET_BINARY:=usr/sbin/ntpd
 
 $(DL_DIR)/$(NTP_SOURCE):
 	$(call DOWNLOAD,$(NTP_SITE),$(NTP_SOURCE))
@@ -61,7 +61,6 @@ $(NTP_DIR)/$(NTP_BINARY): $(NTP_DIR)/.configured
 	$(MAKE) -C $(NTP_DIR)
 
 $(TARGET_DIR)/$(NTP_TARGET_BINARY): $(NTP_DIR)/$(NTP_BINARY)
-	install -m 755 $(NTP_DIR)/ntpd/ntpd $(TARGET_DIR)/usr/sbin/ntpd
 	install -m 755 $(NTP_DIR)/$(NTP_BINARY) $(TARGET_DIR)/$(NTP_TARGET_BINARY)
 ifeq ($(BR2_PACKAGE_NTP_SNTP),y)
 	install -m 755 $(NTP_DIR)/sntp/sntp $(TARGET_DIR)/usr/bin/sntp
