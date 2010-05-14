@@ -1,14 +1,51 @@
 #!/bin/sh
 
+jsback() {
+	cat<<-EOF
+		<script type="text/javascript">
+			function err() {
+				window.location.assign(document.referrer)
+			}
+		</script>
+	EOF
+}
+
 download() {
-    wget -q http://www.inreto.de/dns323/fun-plug/0.5/packages/$1 \
-        -O /tmp/$1
-    if test $? = 1; then
-        wget -q http://www.inreto.de/dns323/fun-plug/0.5/extra-packages/All/$1 \
-        -O /tmp/$1
-        return $?
-    fi
-    return 0
+	nm=${2%%.tgz}
+	write_header "Installing ffp package $nm" 
+	jsback
+
+	echo "<pre>"
+	wget --tries=3 --progress=dot:mega \
+		http://www.inreto.de/dns323/fun-plug/0.5/packages/$2 \
+		-O $TMPDIR/$2
+	if test $? = 1; then
+		wget --tries=3 --progress=dot:mega  \
+			http://www.inreto.de/dns323/fun-plug/0.5/extra-packages/All/$2 \
+			-O $TMPDIR/$2
+	fi
+	st=$?
+
+	if test $st = 0; then
+		funpkg $1 $TMPDIR/$2
+		st=$?
+	fi
+	
+	rm -f $TMPDIR/$2
+	if test $st = 0; then
+		cat<<-EOF
+			</pre><p> $s Success $es </p>
+			<script type="text/javascript">
+				setTimeout("err()", 2000);
+			</script>
+		EOF
+	else
+		cat<<-EOF
+			</pre><p> $s Error $es </p>
+			<input type="button" value="Back" onclick="err()"></p>
+		EOF
+	fi
+	echo "</body></html>"
 }
 
 . common.sh
@@ -19,6 +56,10 @@ read_args
 
 s="<strong>"
 es="</strong>"
+TMPDIR=/ffp/tmp
+
+# this script needs thi, as funpkg doesn't set its own PATH
+PATH=$PATH:/ffp/bin:/ffp/sbin 
 
 if test "$install" = "Install"; then
 	if test "$part" = "none"; then
@@ -30,9 +71,10 @@ if test "$install" = "Install"; then
 	#SITE=http://silver/~jcard/fun_plug.tgz
 
 	write_header "Installing FFP"
+	jsback
 
 	echo "<p>$s Downloading... $es </p><pre>"
-	wget --progress=dot:mega  $SITE -O $TMPF #\ 
+	wget --tries=3 --progress=dot:mega  $SITE -O $TMPF #\ 
 		# 2>&1 | sed -nu -e 's/^ *=>.*//' -e 's/^ //p'
 	st=$?
 	echo "</pre>"
@@ -51,37 +93,38 @@ if test "$install" = "Install"; then
 			chmod u+s /ffp/bin/busybox
 			chmod -x /ffp/start/*
 			echo " success. $es </p>"
+			st=0
 		else
 			echo " fail. $es </p>"
+			st=1
 		fi
 	else
-		echo "<p> $s Downloading failed. $es </p>"
+		echo "<p> $s Download failed. $es </p>"
+		st=1
 	fi
 	rm -f $TMPF
-	echo  "<form action=\"/cgi-bin/packages_ffp.cgi\">
-	<input type=submit value=\"Continue\"></form></body></html>"
-	exit
+
+	if test $st = 0; then
+		cat<<-EOF
+			<script type="text/javascript">
+				setTimeout("err()", 2000);
+			</script>
+		EOF
+	else
+		cat<<-EOF
+			<input type="button" value="Back" onclick="err()">
+		EOF
+	fi
+	echo "</body></html>"
 
 elif test -n "$Remove"; then
-    /ffp/sbin/funpkg -r $Remove >/dev/null 2>&1
+	funpkg -r $Remove >& /dev/null
+	gotopage /cgi-bin/packages_ffp.cgi
 
 elif test -n "$Install"; then
-    download $Install.tgz
-    if test $? = 0; then
-        /ffp/sbin/funpkg -i /tmp/$Install.tgz >/dev/null 2>&1
-        rm /tmp/$Install.tgz
-    fi
+	download -i $Install.tgz
 
 elif test -n "$Update"; then
-    download $Update.tgz
-    if test $? = 0; then
-# FIXME -- get and use currently installed package    
-#        for i in $(grep -e '/ffp/start/.*.sh' -e '/ffp/etc/.*.conf' /ffp/var/packages/$Update); do
-#            cp $i $i-safe
-#        done
-        /ffp/sbin/funpkg -u /tmp/$Update.tgz >/dev/null 2>&1
-        rm /tmp/$Update.tgz
-    fi
-fi
+	download -u $Update.tgz
 
-gotopage /cgi-bin/packages_ffp.cgi
+fi
