@@ -1,0 +1,9 @@
+Package: tiff
+Description: Library for handling TIFF (Tag Image File Format) images.
+Version: 3.8.2
+Depends: jpeg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.libtiff.org/
+Maintainer: jcard

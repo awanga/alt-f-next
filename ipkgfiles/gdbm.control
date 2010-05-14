@@ -1,0 +1,8 @@
+Package: gdbm
+Version: 1.8.3
+Description: GNU dbm is a set of database routines that use extensible hashing.
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.gnu.org/software/gdbm/
+Maintainer: jcard

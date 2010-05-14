@@ -1,0 +1,9 @@
+Package: usbutils
+Description: USB enumeration utilities
+Version: 0.86
+Depends:libusb, 
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sourceforge.net/projects/linux-usb/
+Maintainer: jcard

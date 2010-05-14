@@ -1,0 +1,8 @@
+#!/bin/sh
+
+addgroup -S -g 101 multimedia
+adduser -D -h /var/lib/fuppes -g "Fuppes user" -G multimedia -u 11 fuppes
+
+chown -R fuppes:multimedia /etc/fuppes
+
+ln -sf /usr/sbin/rcscript /sbin/rcfuppes

@@ -1,0 +1,9 @@
+Package: libdlna
+Description: Reference DLNA open-source implementation for Linux
+Version: 0.2.3
+Depends: ffmpeg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://libdlna.geexbox.org/
+Maintainer: jcard

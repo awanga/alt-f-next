@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser fuppes
+delgroup multimedia
+rm -f /sbin/rcfuppes /var/lib/fuppes

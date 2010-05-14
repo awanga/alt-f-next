@@ -1,0 +1,8 @@
+Package: lsof
+Description: LiSt Open Files -The lsof tool lists information about files opened by processes.
+Version: 4.81
+Architecture: arm
+Priority: optional
+Section: admin
+Source: ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
+Maintainer: jcard

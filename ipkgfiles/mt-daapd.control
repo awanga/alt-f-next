@@ -1,0 +1,9 @@
+Package: mt-daapd
+Description: The best open-source media server for the Roku SoundBridge and iTunes
+Version: 0.2.4.2
+Depends: gdbm, libid3tag
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.fireflymediaserver.org/ 
+Maintainer: jcard

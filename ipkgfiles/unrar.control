@@ -1,0 +1,8 @@
+Package: unrar
+Description: Portable UnRAR - free utility for RAR archives. Provides unrar decompressor
+Version: 3.9.7
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.rarlab.com/rar_add.htm
+Maintainer: jcard

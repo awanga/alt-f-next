@@ -1,0 +1,8 @@
+Package: libexif
+Version: 0.6.19
+Description: libexif is a library for parsing, editing, and saving EXIF data.
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://libexif.sourceforge.net/
+Maintainer: jcard

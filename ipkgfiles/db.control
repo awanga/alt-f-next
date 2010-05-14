@@ -1,0 +1,8 @@
+Package: db
+Version: 4.6.21
+Description: Berkeley DB
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.oracle.com/database/berkeley-db/index.html
+Maintainer: jcard

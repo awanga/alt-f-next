@@ -1,0 +1,8 @@
+Package: samba-doc
+Description: Samba Web Administration Tool (swat) online help
+Version: 3.3.9
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.samba.org
+Maintainer: jcard

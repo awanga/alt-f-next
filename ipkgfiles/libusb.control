@@ -1,0 +1,8 @@
+Package: libusb
+Description: Userspace library for accessing USB devices
+Version: 0.1.12
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://libusb.sourceforge.net/
+Maintainer: jcard
