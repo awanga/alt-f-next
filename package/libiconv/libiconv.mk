@@ -15,8 +15,11 @@ LIBICONV_DEPENDENCIES = uclibc
 
 $(eval $(call AUTOTARGETS,package,libiconv))
 
+# a patch in uClibc removes iconv.h. Added a patch to undo part of that patch
+
 $(LIBICONV_HOOK_POST_INSTALL):
-	cp $(LIBICONV_DIR)/include/iconv.h.inst $(STAGING_DIR)/usr/include/iconv.h # jc
+	# jc: added and now commented cp -f $(LIBICONV_DIR)/include/iconv.h.inst $(STAGING_DIR)/usr/include/iconv.h
+	# jc: added and now commented chmod -w $(STAGING_DIR)/usr/include/iconv.h
 	# Remove not used preloadable libiconv.so
 	rm -f $(STAGING_DIR)/usr/lib/preloadable_libiconv.so
 	rm -f $(TARGET_DIR)/usr/lib/preloadable_libiconv.so
