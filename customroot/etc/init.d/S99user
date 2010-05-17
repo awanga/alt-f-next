@@ -1,0 +1,68 @@
+#! /bin/sh
+
+set -e
+
+DESC="Run user script"
+TYPE=user
+NAME=user
+
+# inspired by "nogi"
+BOOTLOG=yes
+LOGF="alt-f.log"
+SEP="**********************"
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		if test -n "$BOOTLOG"; then
+			for i in /mnt/*; do
+				if mountpoint $i >& /dev/null; then
+					echo -e "$SEP $(cat /etc/Alt-F) $SEP\n" > $i/$LOGF
+
+					echo -e "\n\n$SEP DMESG $SEP\n" >> $i/$LOGF
+					dmesg >> $i/$LOGF
+
+					echo -e "\n\n$SEP SYSLOG $SEP\n" >> $i/$LOGF
+					logread >> $i/$LOGF
+
+					echo -e "\n\n$SEP IFCONFIG $SEP\n" >> $i/$LOGF
+					ifconfig >> $i/$LOGF
+
+					echo -e "\n\n$SEP ROUTE $SEP\n" >> $i/$LOGF
+					route >> $i/$LOGF
+
+					echo -e "\n\n$SEP RESOLVER $SEP\n" >> $i/$LOGF
+					cat /etc/resolv.conf >> $i/$LOGF
+
+					echo -e "\n\n$SEP RAID $SEP\n" >> $i/$LOGF
+					cat /proc/mdstat >> $i/$LOGF
+
+					echo -e "\n\n$SEP MOUNT $SEP\n" >> $i/$LOGF
+					cat /proc/mounts >> $i/$LOGF
+
+					echo -e "\n\n$SEP PS $SEP\n" >> $i/$LOGF
+					ps >> $i/$LOGF
+				fi
+			done
+		fi
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		;;
+	status)
+		return 0 # FIXME
+		;;
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		sleep 1
+		sh $0 start
+		echo ""
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
