@@ -65,10 +65,8 @@ cat<<EOF
 	<input type=text size=4 name=mounts value=$mounts> mounts
 	or every <input type=text size=4 name=days value=$days> days
 	<input type=submit name=tune value=Submit>
-	</fieldset>
-	</form>
+	</fieldset><br>
 
-	<form action="/cgi-bin/diskutil_proc.cgi" method="post">
 	<fieldset><Legend> $s Utilities $es </legend>
 	<TABLE>
 	<TR align=center><TD> $s Bay $es </td>

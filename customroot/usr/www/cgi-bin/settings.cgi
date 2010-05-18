@@ -28,7 +28,7 @@ cat<<-EOF
 	}
 	</script>
 	<form name=frm action="/cgi-bin/settings_proc.cgi" method="post">
-	<input type=submit name=action value=SaveSettings><br>
+	<input type=submit name=action value=SaveSettings><br><br>
 	<select name=settings>
 	<option value="">Select one</option>
 EOF
@@ -38,7 +38,7 @@ for i in $res; do
 done	
 
 cat<<-EOF
-	</select><input type=submit name=action value=LoadSettings><br>
+	</select><input type=submit name=action value=LoadSettings><br><br>
 	<input type=submit name=action value=ClearSettings onclick="return ask()">
 		<strong>Don't clear if the box still has the vendor firmware!</strong><br>
 	</form></body></html>

@@ -33,7 +33,7 @@ EOF
 IFS=":" # WARNING: for all the script
 #account:password:UID:GID:GECOS:directory:shell
 cnt=0
-echo "<tr><td colspan=2><SELECT MULTIPLE style='width:30ex' SIZE=8 NAME=users onChange=update_users()>"
+echo "<tr><td colspan=2><SELECT MULTIPLE style='width:40ex' SIZE=8 NAME=users onChange=update_users()>"
 while read user upass uid ugid uname dir shell;do
 	if test "${user:0:1}" = "#" -o -z "$user" -o -z "$uid" -o -z "$uname"; then continue; fi
 	if test $shell = "/bin/false"; then continue; fi
@@ -50,7 +50,7 @@ cat<<-EOF
 <!--	<tr><td>Nick name<td><input type=text size=12 name=nick></td></tr> -->
 	<input type=hidden size=12 name=nick>
 	<tr><td>Groups this user belongs to:</td>
-		<td><textarea cols=12 name=groupsInUser READONLY></textarea></td></tr>		
+		<td><textarea cols=12 name=groupsInUser READONLY></textarea></td></tr>
 	<tr><td><input type=submit name=new_user value=NewUser>
 		<input type=submit name=change_pass value=ChangePass>
 		<td><input type=submit name=del_user value=DelUser></td>
@@ -64,7 +64,7 @@ EOF
 
 #group_name:passwd:GID:user_list
 cnt=0
-echo "<td colspan=2><SELECT MULTIPLE style='width:30ex' SIZE=8 NAME=groups onChange=update_groups()>"
+echo "<td colspan=2><SELECT MULTIPLE style='width:40ex' SIZE=8 NAME=groups onChange=update_groups()>"
 while read group gpass ggid userl;do
 	if test $gpass = "!"; then continue; fi
 	if test $ggid -lt 100; then continue; fi
@@ -87,12 +87,12 @@ cat <<-EOF
 	<tr><td>Group name</td><td><input type=text size=12 name=gname></td></tr>
 <!--	<tr><td colspam=2><br></td></tr> -->
 	<tr><td>Users belonging to this group:</td>
-		<td><textarea cols=12 name=usersInGroup READONLY></textarea></td></tr>		
+		<td><textarea cols=12 name=usersInGroup READONLY></textarea></td></tr>
 	<tr><td><input type=submit name=new_group value=NewGroup></td>
 	    <td><input type=submit name=del_group value=DelGroup></td></tr>
 	</table></fieldset>
 	
-	</td></tr></table>
+	</td></tr></table><br>
 	
 	<fieldset><legend><strong>Users and Groups</strong></legend><table border=$BRD>
 		<tr><td>Add selected user to selected group</td>
@@ -101,25 +101,5 @@ cat <<-EOF
 			<td><input type=submit name=delFromGroup value=DelFromGroup></td></tr>
 	</table></fieldset>
 EOF
-
-if false; then
-	
-	#for i in $(seq $num_users); do
-	#for ((i=1; $i<$num_users; i=$((i+1)) )) do
-	i=1
-	while test $i -lt $num_users; do
-	#for ((i=1; i<num_users; i=i+1 )) do
-		echo "$(eval echo \$user_$i : \$uname_$i) <br>"
-		i=$((i+1))
-	done
-	
-	i=1
-	while test $i -lt $num_groups; do
-	#for ((i=1; i<num_groups; i=i+1 )) do
-		echo "$(eval echo \$group_$i) <br>"
-		i=$((i+1))
-	done
-	
-fi
 
 echo "</form></body></html>"

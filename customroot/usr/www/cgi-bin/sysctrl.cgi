@@ -47,7 +47,7 @@ cat<<-EOF
     	  <td>High Fan Speed (RPM):</td>
           <td><input type=text size=4 name=hi_fan value="$hi_fan"></td>
         </tr>
-      </table></fieldset>
+      </table></fieldset><br>
 
     <fieldset><Legend><strong>Maximum ratings</strong>
       </legend><table>
@@ -57,7 +57,7 @@ cat<<-EOF
       	<tr><td>Max Fan Speed (RPM)</td>
           <td><input type=text size=4 name=max_fan_speed value="$max_fan_speed"></td>
         </tr>
-    </table></fieldset>
+    </table></fieldset><br>
 
     <fieldset><Legend><strong>System Safety</strong>
       </legend><table>
@@ -74,7 +74,7 @@ cat<<-EOF
 	  <td><input type=text name=crit_temp_command 
 		value="$crit_temp_command"></td>
         </tr>
-    </table></fieldset>
+    </table></fieldset><br>
 
     <fieldset><Legend><strong>Action to execute on Button press</strong>
       </legend><table>
@@ -92,7 +92,7 @@ cat<<-EOF
           <td COLSPAN=3><input type=text name=back_button_command 
 		value="$back_button_command"></td>
         </tr>
-      </table></fieldset>
+      </table></fieldset><br>
 
     <table><tr><td><input type="submit" value="Submit">
 	<input type=button name=back value="Back" onclick="history.back()"></TD>

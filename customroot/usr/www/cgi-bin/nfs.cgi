@@ -167,8 +167,11 @@ done)
 echo "<ul> $res </ul>"
 fi
 
-echo "<input type=submit value=Submit>
-	<input type=button name=back value=\"Back\" onclick=\"history.back()\">
-	</form></body></html>"
+cat<<-EOF
+	<br><input type="submit" value="Submit">
+	<input type="button" name="back" value="Back" onclick="history.back()">
+	</form></body></html>
+EOF
+
 exit 0
 

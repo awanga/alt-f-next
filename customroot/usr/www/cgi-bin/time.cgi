@@ -223,7 +223,7 @@ cat<<-EOF
 
 	<TR><TD></td><td><input type="submit" name="country" value="Submit"></TD>
 	<td></td></TR>
-	</table></fieldset>
+	</table></fieldset><br>
 
 <fieldset>
 <legend><strong>Adjust time through internet</strong></legend>
@@ -246,7 +246,7 @@ cat<<-EOF
     </tr>
     <tr><td></td><td><input type=submit name=ntpserver value=Submit></td><td></td></tr>
 </table>
-</fieldset>
+</fieldset><br>
 
 <fieldset>
 <legend><strong>Adjust time manually</strong></legend>    

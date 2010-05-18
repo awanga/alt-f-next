@@ -172,7 +172,7 @@ cat<<EOF
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>
 	<tr><td>Log DHCP queries</td>
 		<td><input type=checkbox $dhcplog name=dhcplog value=true></td></tr>
-	</table></fieldset>
+	</table></fieldset><br>
 	<input type=hidden name=cnt_dns value="$i">
 	<input type=submit name=submit value=Submit>
 	<input type=button name=back value="Back" onclick="history.back()">

@@ -48,6 +48,15 @@ elif test -n "$StartNow"; then
 elif test -n "$StopNow"; then
 	start_stop $StopNow stop
 
+elif test -n "$StartAll"; then
+	rcall start >& /dev/null
+
+elif test -n "$StopAll"; then
+	rcall stop >& /dev/null
+
+elif test -n "$RestartAll"; then
+	rcall restart >& /dev/null
+
 elif test -n "$Configure"; then
 	if test -f $PWD/${Configure}.cgi; then
 		gotopage /cgi-bin/${Configure}.cgi

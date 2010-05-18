@@ -87,7 +87,8 @@ main() {
 
 . common.sh
 #check_cookie # status don't need passwd
-write_header "Status Page" 15
+ver=$(awk '/version/{print $2}' /etc/Alt-F)
+write_header "Alt-F $ver Status Page" 15
 
 fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
 temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
@@ -119,7 +120,7 @@ cat <<-EOF
 	$s Fan speed:  $es $(cat $fan_dev) RPM 
 	<br> $s Uptime:	 $es $out $s Load: $es $load  
 	$s Swap:  $es $swap 
-	</fieldset>
+	</fieldset><br>
 
 	<fieldset><Legend> $s Network $es </legend>
 	$s Speed: $es $Speed
@@ -127,7 +128,7 @@ cat <<-EOF
 	$s TX: $es $Tx
 	$s Rx: $es $Rx
 	$s MAC: $es $MAC
-	</fieldset>
+	</fieldset><br>
 
 	<fieldset><Legend> $s Disks $es </legend><table>
 EOF
@@ -159,7 +160,7 @@ else
 fi
 
 cat<<-EOF
-	</table></fieldset>
+	</table></fieldset><br>
 	<fieldset><legend> $s Mounted Filesystems $es </legend>
 EOF
 
@@ -184,7 +185,7 @@ else
 fi
 
 cat<<-EOF
-	</table></fieldset>
+	</table></fieldset><br>
 	<fieldset><Legend> $s RAID $es </legend><table>
 EOF
 
@@ -242,7 +243,7 @@ else
 fi
 
 cat <<-EOF
-	</table></fieldset>
+	</table></fieldset><br>
 	<fieldset><Legend> $s Printers $es </legend><table>
 EOF
 
@@ -270,16 +271,16 @@ else
 		
 	done < /etc/printcap
 fi
-echo "</table></fieldset>"
+echo "</table></fieldset><br>"
 
-cat <<-EOF
-	<fieldset><Legend> $s Software versions $es </legend>
-	$s Alt-F: $es $(awk '/version/{print $2}' /etc/Alt-F)
-	$s Linux: $es $(uname -r) 
-	$s BusyBox: $es $(awk '/version:/ {print $4}' /boot/busybox.config) 
-	$s Uclib: $es $(awk '/Version:/ {print $3}' /boot/uclibc.config) 
-	</fieldset>
-EOF
+#cat <<-EOF
+#	<fieldset><Legend> $s Software versions $es </legend>
+#	$s Alt-F: $es $(awk '/version/{print $2}' /etc/Alt-F)
+#	$s Linux: $es $(uname -r) 
+#	$s BusyBox: $es $(awk '/version:/ {print $4}' /boot/busybox.config) 
+#	$s Uclib: $es $(awk '/Version:/ {print $3}' /boot/uclibc.config) 
+#	</fieldset>
+#EOF
 
 echo "</body></html>"
 
