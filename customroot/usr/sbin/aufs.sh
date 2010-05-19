@@ -28,6 +28,8 @@ install() {
 
 	rm -f /Alt-F
 	ln -s $mp/Alt-F /Alt-F
+	mkdir -p /Alt-F/var
+	cp -a /var/lib /var/spool /Alt-F/var
 	loadsave_settings -ta
 	mount -t aufs -o remount,prepend:$mp/Alt-F=rw /
 	return $?
@@ -70,6 +72,9 @@ case $1 in
 			echo "$mp is already a aufs branch."
 			exit 1
 		fi
+		mkdir -p /Alt-F/var
+		cp -a /var/lib /var/spool /Alt-F/var
+		loadsave_settings -ta
 		mount -t aufs -o remount,prepend:${mp}=rw /
 		exit $?
 		;;
@@ -80,7 +85,9 @@ case $1 in
 			echo "$mp is not a aufs branch."
 			exit 1
 		fi
-		mount -t aufs -o remount,del:${mp} /
+		mount -t aufs -o remount,del:$mp /
+		loadsave_settings -fa
+		cp -a /Alt-F/var /var				
 		exit $?
 		;;
 
