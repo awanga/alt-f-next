@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "Firmware Setup"
+write_header "Firmware Update"
 cat<<-EOF
 	<center>
 	<h3><font color=red>By following this procedure you can

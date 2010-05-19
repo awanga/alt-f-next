@@ -3,7 +3,7 @@
 . common.sh
 check_cookie
 
-write_header "Mail Settings"
+write_header "Mail Setup"
 
 CONFF=/etc/msmtprc
 

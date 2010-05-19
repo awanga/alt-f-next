@@ -18,7 +18,7 @@ dstatus() {
 . common.sh
 
 check_cookie
-write_header "Disc Utilities"
+write_header "Disk Utilities"
 
 s="<strong>"
 es="</strong>"

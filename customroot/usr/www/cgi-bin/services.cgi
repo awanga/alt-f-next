@@ -19,7 +19,7 @@ done
 
 case $action in
 	net)
-		title="Net Services"
+		title="Network Services"
 		;;
 	sys)
 		title="System Services"

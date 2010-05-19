@@ -87,7 +87,7 @@ main() {
 
 . common.sh
 #check_cookie # status don't need passwd
-ver=$(awk '/version/{print $2}' /etc/Alt-F)
+ver=$(cat /etc/Alt-F)
 write_header "Alt-F $ver Status Page" 15
 
 fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"

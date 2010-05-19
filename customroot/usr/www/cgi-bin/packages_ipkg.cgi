@@ -2,7 +2,7 @@
 . common.sh
 
 check_cookie
-write_header "ipkg Package Manager"
+write_header "Alt-F Package Manager"
 
 #debug
 
