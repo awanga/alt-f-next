@@ -194,12 +194,6 @@ read_sib() {
 
 # Copy current box settings to /Alt-F dir.
 # Used after mounting Alt-F dir but before adding it to the union.
-#
-# wouldn't be simpler to simply remove all configuration files from /Alt-F?
-# after all, if they exist they are overwritten...no, they can be created
-# in /Alt-F only and not flash saved! Next time they don't exist in RAM
-# but will survive in /Alt-F
-
 to_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
@@ -213,14 +207,13 @@ to_AltF() {
 
 # Copy current box settings in /Alt-F to RAM root dir
 # Used after removing Alt-F from the union but before unmounting it
-
 from_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
 			cp -a /Alt-F/$i /$i
 		fi
-	done	
+	done
 }
 
 usage() {
@@ -245,7 +238,7 @@ files="
 /etc/dropbear/dropbear_dss_host_key	/etc/dropbear/dropbear_rsa_host_key
 /etc/network/interfaces		/etc/web-secret
 /etc/passwd	/etc/shadow	/etc/group
-/etc/TZ		/etc/timezone	/etc/timezone
+/etc/TZ		/etc/timezone
 /etc/hosts	/etc/hostname	/etc/resolv.conf
 /etc/samba/smbpasswd	/etc/samba/smbusers	/etc/samba/smb.conf
 /etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
@@ -254,12 +247,10 @@ files="
 /etc/hdsleep.conf	/etc/mdadm2.conf	/etc/tune.conf
 /etc/inadyn.conf	/etc/ntp.conf		/etc/ntp.drift
 /etc/adjtime.conf	/etc/sysctrl.conf	/etc/msmtprc
-/etc/smartd.conf	/etc/transmission.conf	/etc/ushare.conf
-/etc/ipkg.conf		/etc/cups/cupsd.conf
-/etc/cups/ssl/server.crt	/etc/cups/ssl/server.key
+/etc/smartd.conf	/etc/ipkg.conf		
 "
 
-# those are also used when mounting/unmounting the Alt-F aufs branch
+# those are also used only when mounting/unmounting the aufs branch
 xfiles="/etc/fstab /etc/bay"
 
 if test $# = 0; then
