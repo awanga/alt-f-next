@@ -4,26 +4,14 @@ set -e
 
 DESC="Bittorrent client"
 NAME=transmission-daemon
-DAEMON=/usr/bin/$NAME
-CONFF=/etc/transmission.conf
+CONFF=/var/lib/transmission
+JSON=settings.json
 TYPE=user
 
-if test -f "$CONFF"; then # damned spaced in file names!
-	CONF_DIR="$(awk -F= '/^CONF_DIR/{print $2}' $CONFF)" 
-	DOWNLOAD_DIR="$(awk -F= '/^DOWNLOAD_DIR/{print $2}' $CONFF)" 
-	WATCH_DIR="$(awk -F= '/^WATCH_DIR/{print $2}' $CONFF)" 
-fi
+OPTS="--logfile /var/log/transmission.log --config-dir=$CONFF"
 
-if ! test -f $CONFF -a \
-	-n "$CONF_DIR" -a -n "$DOWNLOAD_DIR" -a -n "$WATCH_DIR"; then
-
-	echo "You must configure transmission first. Exiting."
-	exit 1
-fi
-
-network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
-
-OPTS="--no-auth --allowed=127.0.0.1,$network --config-dir=$CONF_DIR"
+TRANSMISSION_USER=transmission
+TRANSMISSION_GROUP=network
 
 status() {
 	if start-stop-daemon -K -t -q -x $NAME; then
@@ -37,39 +25,49 @@ status() {
 
 case "$1" in
 	start)
-		OJSON=/etc/transmission/settings.json
-		JSON="$CONF_DIR/settings.json";
-		if ! test -f "$JSON"; then
-			mkdir -p "$CONF_DIR"
-			cp -a $OJSON $JSON 
-		fi
-	
-		if test "$CONFF" -nt "$JSON"; then
-			sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
-			  -e 's|.*"watch-dir":.*|    "watch-dir": "'$WATCH_DIR'",|' "$JSON"
+		if ! test -f "$CONFF/$JSON"; then
+			echo "You must configure transmission first. Exiting."
+			exit 1
 		fi
 
-		if ! test -d "$DOWNLOAD_DIR"; then
-			mkdir -p "$DOWNLOAD_DIR"
+		eval $(awk '/"download-dir"/ { \
+				gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2 } \
+			/"watch-dir"/ { \
+				gsub(",|\\\\", "", $2); printf "WATCH_DIR=%s;", $2 } \
+			/"incomplete-dir"/ { \
+				gsub(",|\\\\", "", $2); printf "INCOMPLETE_DIR=%s;", $2 }' \
+			"$CONFF/$JSON")
+
+		if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
+			echo "Directories $DOWNLOAD_DIR $WATCH_DIR $INCOMPLETE_DIR does not exists, exiting."
+			exit 1
 		fi
 
-		if ! test -d "$WATCH_DIR"; then
-			mkdir -p "$WATCH_DIR"
-		fi
+		network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
+
+		sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
+			"$CONFF/$JSON"
+
+		chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
 		echo -n "Starting $NAME: "
-		start-stop-daemon -S -x $NAME -- $OPTS
-		echo "OK"
+		start-stop-daemon -S -q -b -p /var/run/transmission.pid -m \
+			--chuid $TRANSMISSION_USER:$TRANSMISSION_GROUP -x $NAME -- $OPTS
+		if test $? = 0; then echo "OK."; else echo "Not OK."; fi
 		;;
 
 	stop)
 		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -x $NAME
-		echo "OK"
+		start-stop-daemon -K -q -x $NAME
+		if test $? = 0; then echo "OK."; else echo "Not OK."; fi
 		;;
 
 	status)
 		status
+		;;
+
+	reload)
+		start-stop-daemon -K -q -s SIGHUP -x $NAME
 		;;
 
 	restart|force-reload)
@@ -81,7 +79,7 @@ case "$1" in
 		;;
 
 	*)
-		echo "Usage: $0 {start|stop|restart|status|force-reload}" >&2
+		echo "Usage: $0 {start|stop|reload|restart|status|force-reload}" >&2
 		exit 1
 		;;
 esac
