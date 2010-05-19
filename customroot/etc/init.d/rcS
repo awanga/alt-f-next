@@ -18,6 +18,7 @@ for i in run log lock cache; do
 done
 
 mkdir -p /mnt
+rm -f /var/spool	# buildroot creates it?! not in target/generic/target_busybox_skeleton
 mkdir -p /var/spool/lpd
 echo > /etc/bay
 
@@ -34,16 +35,6 @@ sleep 5
 /sbin/mdev -s
 
 # mount already attached disks/partitions, simulating kernel hotplug events
-# this does not work, don't remember why
-#for i in /dev/sd?; do
-#	dev=$(basename $i)
-#	echo "add" > /sys/block/$dev/uevent
-#	for j in /dev/$dev?; do
-#		sdev=$(basename $j)
-#		echo "add" > /sys/block/$dev/$sdev/uevent
-#	done
-#done
-# but this works
 for i in /dev/sd?; do
   if test -b $i; then
         (cd /dev && ACTION=add DEVTYPE=disk PWD=/dev \
@@ -59,7 +50,6 @@ done
 
 # install already attached printers, simulating kernel hotplug events
 # kernel might have already generated the events before this script runs
-# create lpd spool dir
 for i in /dev/lp?; do
  if test -c $i; then
  	mdev=$(basename $i)
@@ -83,6 +73,7 @@ while test "$o" = "$(hwclock)"; do true; done
 hwclock -su
 
 # create rc* shortcuts to /etc/init.d/S??*
+ln -f /etc/init.d/rcall /sbin/rcall
 for i in /etc/init.d/S??*; do
 	f=$(basename $i)
 	ln -f /usr/sbin/rcscript /sbin/$(basename rc${f#S??})
@@ -91,16 +82,16 @@ done
 # set a default hostname
 hostname -F /etc/hostname
 
+# setup loopback interface
+/sbin/ifconfig lo 127.0.0.1 up
+/sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
+
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! $(/bin/grep -q "nodef" < /proc/cmdline); then
 	loadsave_settings -lf
 	no_defaults=$?
 fi
-
-# setup loopback interface
-/sbin/ifconfig lo 127.0.0.1 up
-/sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
 
 # get an ip using the following priority:
 # 1st, use kernel cmd line ip= (kexec or fonz reloaded)
@@ -139,13 +130,14 @@ else
 			echo "IP from dhcp server"
 			cip="dhcp"
 		else
-			echo "fixed IP"
+			echo "Fixed IP"
 			ifconfig eth0 0.0.0.0
 			sleep 3
 			for i in $(seq 254 -1 240); do
 				arping -Dw 2 192.168.1.$i
 				if test $? = 0; then break; fi
 			done
+			echo "using 192.168.1.$i"
 			ifconfig eth0 192.168.1.$i
 			cip="fip"
 		fi
@@ -213,25 +205,5 @@ esac
 		
 # Start all executable init scripts in /etc/init.d
 # executing them in numerical order.
-
-for i in /etc/init.d/S??* ;do
-
-     # Ignore dangling symlinks and non executable files
-     [ ! -f "$i" -o ! -x "$i" ] && continue
-
-     case "$i" in
-	*.sh)
-	    # Source shell script for speed.
-	    (
-		trap - INT QUIT TSTP
-		set start
-		. $i
-	    )
-	    ;;
-	*)
-	    # No sh extension, so fork subprocess.
-	    $i start
-	    ;;
-    esac
-done
+rcall start
 

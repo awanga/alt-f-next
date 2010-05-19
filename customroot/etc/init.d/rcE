@@ -1,29 +1,9 @@
 #!/bin/sh
 
+logger "rcE: Starting reboot/shutdown"
 # Stop all executable init scripts in /etc/init.d
 # executing them in reverse numerical order.
-
-echo "rcE: Starting reboot/shutdown"
-
-for i in $(ls -r /etc/init.d/S??*) ;do
-     # dont ignore non executable files, case user started them manually
-     [ ! -f "$i" ] && continue
-
-     case "$i" in
-	*.sh)
-	    # Source shell script for speed.
-	    (
-		trap - INT QUIT TSTP
-		set stop
-		. $i
-	    )
-	    ;;
-	*)
-	    # No sh extension, so fork subprocess.
-	    /bin/sh $i stop
-	    ;;
-    esac
-done
+/etc/init.d/rcall rstop
 
 # wait for services to stop
 sleep 5
