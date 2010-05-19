@@ -9,7 +9,7 @@ NAME=user
 # inspired by "nogi"
 BOOTLOG=yes
 LOGF="alt-f.log"
-SEP="**********************"
+SEP="======================"
 
 case "$1" in
 	start)
@@ -17,7 +17,7 @@ case "$1" in
 		if test -n "$BOOTLOG"; then
 			for i in /mnt/*; do
 				if mountpoint $i >& /dev/null; then
-					echo -e "$SEP $(cat /etc/Alt-F) $SEP\n" > $i/$LOGF
+					echo -e "$SEP Alt-F $(cat /etc/Alt-F) $SEP\n" > $i/$LOGF
 
 					echo -e "\n\n$SEP DMESG $SEP\n" >> $i/$LOGF
 					dmesg >> $i/$LOGF
@@ -34,6 +34,9 @@ case "$1" in
 					echo -e "\n\n$SEP RESOLVER $SEP\n" >> $i/$LOGF
 					cat /etc/resolv.conf >> $i/$LOGF
 
+					echo -e "\n\n$SEP HOSTS $SEP\n" >> $i/$LOGF
+					cat /etc/hosts >> $i/$LOGF
+
 					echo -e "\n\n$SEP RAID $SEP\n" >> $i/$LOGF
 					cat /proc/mdstat >> $i/$LOGF
 
@@ -45,13 +48,18 @@ case "$1" in
 				fi
 			done
 		fi
+		echo "Ok."
 		;;
+
 	stop)
 		echo -n "Stopping $NAME: "
+		echo "Ok."
 		;;
+
 	status)
 		return 0 # FIXME
 		;;
+
 	restart|force-reload)
 		echo "Restarting $NAME: "
 		sh $0 stop
@@ -59,6 +67,7 @@ case "$1" in
 		sh $0 start
 		echo ""
 		;;
+
 	*)
 		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
 		exit 1
