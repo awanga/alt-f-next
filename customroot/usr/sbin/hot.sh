@@ -102,17 +102,17 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	if test -d "/mnt/$lbl/ffp"; then
 		if ! test -h /ffp -a -d "$(readlink -f /ffp)" ; then
 			ln -s "/mnt/$lbl/ffp" /ffp
-			if test $? = 0 -a -x /etc/init.d/S99ffp; then
-					/etc/init.d/S99ffp start
+			if test $? = 0 -a -x /etc/init.d/S??ffp; then
+					/etc/init.d/S??ffp start
 			fi
 		fi
 	fi
 	if test -d /mnt/$lbl/Alt-F; then
 		if ! test -h /Alt-F -a -d "$(readlink -f /Alt-F)"; then
-			rm /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp
+			rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
 			ln -s /mnt/$lbl/Alt-F /Alt-F
 			loadsave_settings -ta
-			mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw aufs /
+			mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw /
 		fi
 	fi
 
@@ -194,13 +194,16 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 		ret=$?
 	elif $(grep -q -e ^$PWD/$MDEV /proc/mounts); then
 		if test "$(readlink -f /ffp)" = "$mpt/ffp"; then
-			if test -x /etc/init.d/S99ffp; then
-				/etc/init.d/S99ffp stop
+			if test -x /etc/init.d/S??ffp; then
+				/etc/init.d/S??ffp stop
 			fi
 			rm -f /ffp
 		fi
+		if test "$(readlink -f /home)" = "$mpt/Users"; then
+			rm -f /home
+		fi
  		if test "$(readlink -f /Alt-F)" = "$mpt/Alt-F"; then
- 			mount -t aufs -o remount,del:$mpt/Alt-F aufs /
+ 			mount -t aufs -o remount,del:$mpt/Alt-F /
 			if test $? = "0"; then
 				loadsave_settings -fa
 				rm -f /Alt-F
@@ -208,9 +211,6 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 				exit	# busy?
 			fi
  		fi
-		if test "$(readlink -f /home)" = "$mpt/Users"; then
-			rm -f /home
-		fi
 		# umount $PWD/$MDEV
 		umount $mpt
 		ret=$?
