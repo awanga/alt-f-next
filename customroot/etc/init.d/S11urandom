@@ -5,49 +5,34 @@
 #
 # Version:	@(#)urandom  1.33  22-Jun-1998  miquels@cistron.nl
 
+NAME=urandom
+RFILE=/var/lib/misc/random-seed
+
 case "$1" in
 	start)
-		if ! test -c /dev/urandom; then
-			echo "No /dev/urandom caracter file. exiting."
-			exit 1
-		fi
-
-		if [ "$VERBOSE" != no ]
-		then
-			echo -n "Initializing random number generator... "
-		fi
+		echo -n "Starting $NAME: "
 		# Load and then save 512 bytes,
 		# which is the size of the entropy pool
-		if [ -f /etc/random-seed ]
-		then
-			cat /etc/random-seed >/dev/urandom
+		if test -f $RFILE; then
+			cat $RFILE >/dev/urandom
 		fi
-		# check for read only file system
-		if ! touch /etc/random-seed 2>/dev/null
-		then
-			echo "read-only file system detected...done"
-			exit
-		fi
-		rm -f /etc/random-seed
-		umask 077
-		dd if=/dev/urandom of=/etc/random-seed count=1 \
-			>/dev/null 2>&1 || echo "urandom start: failed."
-		umask 022
-		[ "$VERBOSE" != no ] && echo "done."
+
+		rm -f $RFILE
+		dd if=/dev/urandom of=$RFILE count=1 >& /dev/null
+		chmod og-rwx $RFILE
+		echo "OK."
 		;;
+		
 	stop)
-		if ! touch /etc/random-seed 2>/dev/null
-                then
-                        exit
-                fi
+		echo -n "Starting $NAME: "
 		# Carry a random seed from shut-down to start-up;
 		# see documentation in linux/drivers/char/random.c
-		[ "$VERBOSE" != no ] && echo -n "Saving random seed... "
-		umask 077
-		dd if=/dev/urandom of=/etc/random-seed count=1 \
-			>/dev/null 2>&1 || echo "urandom stop: failed."
-		[ "$VERBOSE" != no ] && echo "done."
+		# Saving random seed
+		dd if=/dev/urandom of=$RFILE count=1 >& /dev/null
+		chmod og-rwx $RFILE
+		echo "OK."
 		;;
+		
 	*)
 		echo "Usage: urandom {start|stop}" >&2
 		exit 1
