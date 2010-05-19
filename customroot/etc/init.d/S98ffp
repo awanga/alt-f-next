@@ -11,20 +11,26 @@ case "$1" in
 		echo -n "Starting $NAME: "
 		if test -x /ffp/etc/rc; then
 			/ffp/etc/rc start
+			echo "OK."
 		else
-			echo "No ffp instalation found"
+			echo "No ffp instalation found."
+			exit 1
 		fi
 		;;
 	stop)
 		echo -n "Stopping $NAME: "
 		if test -x /ffp/etc/rc; then
 			/ffp/etc/rc stop
+			echo "OK."
 		else
-			echo "No ffp instalation found"
+			echo "No ffp instalation found."
+			exit 1
 		fi		
 		;;
 	status)
-		return 0 # FIXME
+		if ! test -x /ffp/etc/rc; then
+			exit 1
+		fi
 		;;
 	restart|force-reload)
 		echo "Restarting $NAME: "
