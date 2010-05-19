@@ -18,8 +18,13 @@ start_stop() {
 			sh $sscript start >/dev/null 2>&1
 			sleep 1
 		elif test "$act" = "stop"; then
-			sh $sscript stop >/dev/null 2>&1
-			sleep 1
+			sh $sscript stop >& /dev/null
+			for i in $(seq 1 50); do
+				if ! sh $sscript status >& /dev/null; then
+					break
+				fi	
+				usleep 200000
+			done
 		fi
 	fi
 }
