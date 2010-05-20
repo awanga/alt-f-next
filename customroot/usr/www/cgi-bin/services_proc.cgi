@@ -10,14 +10,19 @@ start_stop() {
 	if test -n "$sscript"; then    
 		if test "$act" = "enable"; then
 			chmod +x $sscript
-			$sscript start >/dev/null 2>&1
+			#$sscript start >/dev/null 2>&1
 		elif test "$act" = "disable"; then
-			$sscript stop >/dev/null 2>&1
+			#$sscript stop >/dev/null 2>&1
 			chmod -x $sscript
-		elif test "$act" = "start"; then
-			sh $sscript start >/dev/null 2>&1
-			sleep 1
-		elif test "$act" = "stop"; then
+		fi
+
+		if test "$act" = "start" -o "$act" = "enable"; then
+			res=$(sh $sscript start)
+			if test $? = 1; then
+				scp=$(basename $sscript)
+				msg "${scp:3}: $res"
+			fi
+		elif test "$act" = "stop" -o "$act" = "disable"; then
 			sh $sscript stop >& /dev/null
 			for i in $(seq 1 50); do
 				if ! sh $sscript status >& /dev/null; then
