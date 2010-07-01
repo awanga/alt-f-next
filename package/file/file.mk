@@ -34,13 +34,13 @@ $(FILE_HOST)/.configured: $(FILE_HOST)/.unpacked
 	(cd $(FILE_HOST); rm -rf config.cache; \
 		CC="$(HOSTCC)" \
 		$(FILE_HOST)/configure \
-		--prefix=$(STAGING_DIR) \
+		--prefix=$(TOOL_BUILD_DIR) \
 	)
 	touch $@
 
-$(STAGING_DIR)/$(FILE_TARGET_BINARY): $(FILE_HOST)/.configured
+$(TOOL_BUILD_DIR)/$(FILE_TARGET_BINARY): $(FILE_HOST)/.configured
 	$(MAKE) -C $(FILE_HOST) install
-	ln -sf $(STAGING_DIR)/bin/file $(TOOL_BUILD_DIR)/bin/file
+	#ln -sf $(TOOL_BUILD_DIR)/bin/file $(TOOL_BUILD_DIR)/bin/file
 
 #host-file: $(TOOL_BUILD_DIR)/bin/file
 #
@@ -96,9 +96,9 @@ $(FILE_DIR)/$(FILE_BINARY): $(FILE_DIR)/.configured
 
 $(TARGET_DIR)/$(FILE_TARGET_BINARY): $(FILE_DIR)/$(FILE_BINARY)
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) DESTDIR=$(TARGET_DIR) -C $(FILE_DIR) install
+	$(MAKE) $(TARGET_CONFIGURE_OPTS) DESTDIR=$(STAGING_DIR) -C $(FILE_DIR) install
 
-
-file-host: $(STAGING_DIR)/$(FILE_TARGET_BINARY)
+file-host: $(TOOL_BUILD_DIR)/$(FILE_TARGET_BINARY)
 
 file-target: $(TARGET_DIR)/$(FILE_TARGET_BINARY)
 
