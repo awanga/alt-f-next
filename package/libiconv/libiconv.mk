@@ -15,7 +15,15 @@ LIBICONV_DEPENDENCIES = uclibc
 
 $(eval $(call AUTOTARGETS,package,libiconv))
 
-# a patch in uClibc removes iconv.h. Added a patch to undo part of that patch
+# a patch in uClibc removes iconv.h.
+# Added a patch to undo part of that patch
+# but the iconv.h installed by uclibc is not OK!
+# The one installed by libiconv is OK. 
+# One expects that libiconv when installed, will overwrite the one
+# installed by uclibc.
+# FIXME: the above patch must be uninstalled, and one must force
+# reinstallation of libiconv when uclibc is re-installed
+# toolchain/uClibc/uClibc-0.9.30.3-iconv-h.patch
 
 $(LIBICONV_HOOK_POST_INSTALL):
 	# jc: added and now commented cp -f $(LIBICONV_DIR)/include/iconv.h.inst $(STAGING_DIR)/usr/include/iconv.h
