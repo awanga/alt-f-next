@@ -3,30 +3,30 @@
 # make
 #
 #############################################################
-GNUMAKE_VERSION:=3.81
-GNUMAKE_SOURCE:=make-$(GNUMAKE_VERSION).tar.bz2
-GNUMAKE_SITE:=$(BR2_GNU_MIRROR)/make
-GNUMAKE_DIR:=$(BUILD_DIR)/make-$(GNUMAKE_VERSION)
-GNUMAKE_CAT:=$(BZCAT)
-GNUMAKE_BINARY:=make
-GNUMAKE_TARGET_BINARY:=usr/bin/make
+MAKE_VERSION:=3.81
+MAKE_SOURCE:=make-$(MAKE_VERSION).tar.bz2
+MAKE_SITE:=$(BR2_GNU_MIRROR)/make
+MAKE_DIR:=$(BUILD_DIR)/make-$(MAKE_VERSION)
+MAKE_CAT:=$(BZCAT)
+MAKE_BINARY:=make
+MAKE_TARGET_BINARY:=usr/bin/make
 
-$(DL_DIR)/$(GNUMAKE_SOURCE):
-	 $(call DOWNLOAD,$(GNUMAKE_SITE),$(GNUMAKE_SOURCE))
+$(DL_DIR)/$(MAKE_SOURCE):
+	 $(call DOWNLOAD,$(MAKE_SITE),$(MAKE_SOURCE))
 
-make-source: $(DL_DIR)/$(GNUMAKE_SOURCE)
+make-source: $(DL_DIR)/$(MAKE_SOURCE)
 
-$(GNUMAKE_DIR)/.unpacked: $(DL_DIR)/$(GNUMAKE_SOURCE)
-	$(GNUMAKE_CAT) $(DL_DIR)/$(GNUMAKE_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	$(CONFIG_UPDATE) $(GNUMAKE_DIR)/config
+$(MAKE_DIR)/.unpacked: $(DL_DIR)/$(MAKE_SOURCE)
+	$(MAKE_CAT) $(DL_DIR)/$(MAKE_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	$(CONFIG_UPDATE) $(MAKE_DIR)/config
 	touch $@
 
-$(GNUMAKE_DIR)/.configured: $(GNUMAKE_DIR)/.unpacked
-	(cd $(GNUMAKE_DIR); rm -rf config.cache; \
+$(MAKE_DIR)/.configured: $(MAKE_DIR)/.unpacked
+	(cd $(MAKE_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		make_cv_sys_gnu_glob=no \
-		GLOBINC='-I$(GNUMAKE_DIR)/glob' \
+		GLOBINC='-I$(MAKE_DIR)/glob' \
 		GLOBLIB=glob/libglob.a \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
@@ -48,22 +48,22 @@ $(GNUMAKE_DIR)/.configured: $(GNUMAKE_DIR)/.unpacked
 	)
 	touch $@
 
-$(GNUMAKE_DIR)/$(GNUMAKE_BINARY): $(GNUMAKE_DIR)/.configured
-	$(MAKE) MAKE=$(HOSTMAKE) -C $(GNUMAKE_DIR)
+$(MAKE_DIR)/$(MAKE_BINARY): $(MAKE_DIR)/.configured
+	$(MAKE) MAKE=$(HOSTMAKE) -C $(MAKE_DIR)
 
-$(TARGET_DIR)/$(GNUMAKE_TARGET_BINARY): $(GNUMAKE_DIR)/$(GNUMAKE_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GNUMAKE_DIR) install
+$(TARGET_DIR)/$(MAKE_TARGET_BINARY): $(MAKE_DIR)/$(MAKE_BINARY)
+	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(MAKE_DIR) install
 	rm -rf $(TARGET_DIR)/share/locale $(TARGET_DIR)/usr/info \
 		$(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/doc
 
-make: uclibc $(if $(BR2_PACKAGE_GETTEXT),gettext) $(TARGET_DIR)/$(GNUMAKE_TARGET_BINARY)
+make: uclibc $(if $(BR2_PACKAGE_GETTEXT),gettext) $(TARGET_DIR)/$(MAKE_TARGET_BINARY)
 
 make-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GNUMAKE_DIR) uninstall
-	-$(MAKE) -C $(GNUMAKE_DIR) clean
+	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(MAKE_DIR) uninstall
+	-$(MAKE) -C $(MAKE_DIR) clean
 
 make-dirclean:
-	rm -rf $(GNUMAKE_DIR)
+	rm -rf $(MAKE_DIR)
 
 #############################################################
 #
