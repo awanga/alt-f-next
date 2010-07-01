@@ -1,0 +1,15 @@
+config BR2_PACKAGE_HPLIP
+	bool "hplip"
+	select BR2_PACKAGE_SANE
+	select BR2_PACKAGE_GS
+	select BR2_PACKAGE_LIBUSB
+	select BR2_PACKAGE_NETSNMP
+	select BR2_PACKAGE_CUPS
+	select BR2_PACKAGE_JPEG
+	select BR2_PACKAGE_TIFF
+	select BR2_PACKAGE_LIBPNG
+	help
+	  HP Linux imaging and printing
+
+	  http://hplipopensource.com/hplip-web/about.html
+
