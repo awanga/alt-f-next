@@ -44,7 +44,7 @@ start() {
         options="rw,async,no_root_squash,no_subtree_check,anonuid=99,anongid=99"
 
         for f in /mnt/*; do
-            if test -d $f; then
+            if mountpoint -q $f; then
                 echo "$f $cnet($options)" >> /etc/exports
             fi
         done
