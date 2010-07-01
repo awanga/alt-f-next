@@ -25,11 +25,6 @@ status() {
 
 case "$1" in
 	start)
-		if ! test -f "$CONFF/$JSON"; then
-			echo "You must configure transmission first. Exiting."
-			exit 1
-		fi
-
 		eval $(awk '/"download-dir"/ { \
 				gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2 } \
 			/"watch-dir"/ { \
@@ -39,7 +34,7 @@ case "$1" in
 			"$CONFF/$JSON")
 
 		if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
-			echo "Directories $DOWNLOAD_DIR $WATCH_DIR $INCOMPLETE_DIR does not exists, exiting."
+			echo "Directories does not exist, you must configure transmission first. Exiting."
 			exit 1
 		fi
 
@@ -53,13 +48,15 @@ case "$1" in
 		echo -n "Starting $NAME: "
 		start-stop-daemon -S -q -b -p /var/run/transmission.pid -m \
 			--chuid $TRANSMISSION_USER:$TRANSMISSION_GROUP -x $NAME -- $OPTS
-		if test $? = 0; then echo "OK."; else echo "Not OK."; fi
+		st=$?
+		if test $st = 0; then echo "OK."; else echo "Failed."; fi
+		exit $st
 		;;
 
 	stop)
 		echo -n "Stopping $NAME: "
 		start-stop-daemon -K -q -x $NAME
-		if test $? = 0; then echo "OK."; else echo "Not OK."; fi
+		if test $? = 0; then echo "OK."; else echo "Failed."; fi
 		;;
 
 	status)
@@ -84,4 +81,3 @@ case "$1" in
 		;;
 esac
 
-exit 0
