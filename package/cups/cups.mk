@@ -3,7 +3,6 @@
 # cups
 #
 ################################################################################
-#CUPS_VERSION = 1.3.9
 CUPS_VERSION = 1.4.3
 CUPS_NAME = cups-$(CUPS_VERSION)
 CUPS_DIR = $(BUILD_DIR)/$(CUPS_NAME)
@@ -12,7 +11,7 @@ CUPS_SOURCE:=$(CUPS_NAME)-source.tar.bz2
 CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
 CUPS_CAT:=$(BZCAT)
 CUPS_TARGET_BINARY:=usr/sbin/cupsd
-CUPS_DEPENDENCIES = libusb
+CUPS_DEPENDENCIES = openssl libusb libpng jpeg tiff
 
 ifeq ($(BR2_PACKAGE_DBUS),y)
 	CUPS_CONF_OPT += --enable-dbus
@@ -94,6 +93,7 @@ $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
 		--exec-prefix=/usr \
+		--libdir=/usr/lib \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
 		--disable-gnutls \
@@ -124,7 +124,6 @@ $(TARGET_DIR)/$(CUPS_TARGET_BINARY): $(CUPS_DIR)/.compiled
 		./etc/init.d/cups; \
 	cp -f ./usr/share/cups/charmaps/iso-8859-1.txt \
 		./usr/share/cups/charmaps/us-ascii.txt; \
-	ln -sf /usr/sbin/rcscript sbin/rccups; \
 	)
 	touch $@
 
