@@ -11,43 +11,62 @@ BOOTLOG=yes
 LOGF="alt-f.log"
 SEP="======================"
 
+bootlog() {
+	if test -n "$BOOTLOG"; then
+		for i in /mnt/*; do
+			if mountpoint $i >& /dev/null; then
+				writelog
+			fi
+		done
+	fi
+}
+
+writelog() {
+	echo -e "$SEP Alt-F $(cat /etc/Alt-F) $SEP\n" > $i/$LOGF
+	date >>  $i/$LOGF
+
+	echo -e "\n\n$SEP BOARD $SEP\n" >> $i/$LOGF
+	cat /tmp/board >> $i/$LOGF
+
+	echo -e "\n\n$SEP DMESG $SEP\n" >> $i/$LOGF
+	dmesg >> $i/$LOGF
+
+	echo -e "\n\n$SEP SYSLOG $SEP\n" >> $i/$LOGF
+	logread >> $i/$LOGF
+
+	echo -e "\n\n$SEP ETHTOOL $SEP\n" >> $i/$LOGF
+	ethtool eth0 >> $i/$LOGF
+
+	echo -e "\n\n$SEP IFCONFIG $SEP\n" >> $i/$LOGF
+	ifconfig >> $i/$LOGF
+
+	echo -e "\n\n$SEP ROUTE $SEP\n" >> $i/$LOGF
+	route >> $i/$LOGF
+
+	echo -e "\n\n$SEP RESOLVER $SEP\n" >> $i/$LOGF
+	cat /etc/resolv.conf >> $i/$LOGF
+
+	echo -e "\n\n$SEP HOSTS $SEP\n" >> $i/$LOGF
+	cat /etc/hosts >> $i/$LOGF
+
+	echo -e "\n\n$SEP RAID $SEP\n" >> $i/$LOGF
+	cat /proc/mdstat >> $i/$LOGF
+
+	echo -e "\n\n$SEP MOUNT $SEP\n" >> $i/$LOGF
+	cat /proc/mounts >> $i/$LOGF
+
+	echo -e "\n\n$SEP PS $SEP\n" >> $i/$LOGF
+	ps >> $i/$LOGF
+
+	chmod a+rw $i/$LOGF
+}
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		if test -n "$BOOTLOG"; then
-			for i in /mnt/*; do
-				if mountpoint $i >& /dev/null; then
-					echo -e "$SEP Alt-F $(cat /etc/Alt-F) $SEP\n" > $i/$LOGF
-
-					echo -e "\n\n$SEP DMESG $SEP\n" >> $i/$LOGF
-					dmesg >> $i/$LOGF
-
-					echo -e "\n\n$SEP SYSLOG $SEP\n" >> $i/$LOGF
-					logread >> $i/$LOGF
-
-					echo -e "\n\n$SEP IFCONFIG $SEP\n" >> $i/$LOGF
-					ifconfig >> $i/$LOGF
-
-					echo -e "\n\n$SEP ROUTE $SEP\n" >> $i/$LOGF
-					route >> $i/$LOGF
-
-					echo -e "\n\n$SEP RESOLVER $SEP\n" >> $i/$LOGF
-					cat /etc/resolv.conf >> $i/$LOGF
-
-					echo -e "\n\n$SEP HOSTS $SEP\n" >> $i/$LOGF
-					cat /etc/hosts >> $i/$LOGF
-
-					echo -e "\n\n$SEP RAID $SEP\n" >> $i/$LOGF
-					cat /proc/mdstat >> $i/$LOGF
-
-					echo -e "\n\n$SEP MOUNT $SEP\n" >> $i/$LOGF
-					cat /proc/mounts >> $i/$LOGF
-
-					echo -e "\n\n$SEP PS $SEP\n" >> $i/$LOGF
-					ps >> $i/$LOGF
-				fi
-			done
-		fi
+		# to apply your own settings, create an external script and add
+		# source/call it here; this will it will survive firmware upgrades.
+		bootlog
 		echo "Ok."
 		;;
 
@@ -57,7 +76,8 @@ case "$1" in
 		;;
 
 	status)
-		return 0 # FIXME
+		echo "$NAME is stopped."
+		exit 1
 		;;
 
 	restart|force-reload)
@@ -73,5 +93,3 @@ case "$1" in
 		exit 1
 		;;
 esac
-
-exit 0
