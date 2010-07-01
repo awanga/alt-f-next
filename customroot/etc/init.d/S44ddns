@@ -20,7 +20,9 @@ case "$1" in
 	start)
 		echo -n "Starting $NAME: "
 		start-stop-daemon -S -q -b -x $NAME
-		echo "OK"
+		st=$?
+		if test $st = 0; then echo "OK."; else echo "Failed."; fi
+		exit $st
 		;;
 	stop)
 		echo -n "Stopping $NAME: "
@@ -43,4 +45,3 @@ case "$1" in
 		;;
 esac
 
-exit 0
