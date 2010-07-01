@@ -16,10 +16,11 @@ checkpid() {
 }
 
 check_shares() {
-	if [ -r "$CONFIGFILE" ]; then
-		# . $CONFIGFILE # spaces in filepaths!
+	if test -r "$CONFIGFILE"; then
 		USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONFIGFILE)"
-		[ -n "$USHARE_DIR" ] && return 0
+		if test -n "$USHARE_DIR"; then
+			return 0
+		fi
 	fi
 	return 1
 }
@@ -29,7 +30,7 @@ case "$1" in
 	start)
 		echo -n "Starting $NAME: "
 		if ! $(check_shares); then
-			echo "No shares available ..."
+			echo "No shares available, exiting"
 			exit 1
 		else
 			checkpid
@@ -41,7 +42,7 @@ case "$1" in
 				echo "Fail."
 				exit 1
 			fi
-			echo "OK"
+			echo "OK."
 			exit 0
 		fi
 		;;
@@ -84,7 +85,6 @@ case "$1" in
 		;;
 
 	*)
-		N=/etc/init.d/$NAME
 		echo "Usage: $0 {start|stop|status|restart|reload|force-reload}"
 		exit 1
 		;;
