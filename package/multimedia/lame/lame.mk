@@ -9,11 +9,7 @@ LAME_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/lame
 LAME_AUTORECONF = NO
 LAME_INSTALL_STAGING = YES
 LAME_INSTALL_TARGET = YES
-
 LAME_DEPENDENCIES = uclibc
+LAME_CONF_OPT = --disable-static 
 
 $(eval $(call AUTOTARGETS,package/multimedia,lame))
-
-#$(LAME_HOOK_POST_INSTALL):
-#	rm -f $(TARGET_DIR)/usr/share/aclocal/ogg.m4
-#	touch $@
