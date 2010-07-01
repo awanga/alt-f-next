@@ -1,0 +1,60 @@
+#! /bin/sh
+
+set -e
+
+DESC="Media server for the Roku SoundBridge and iTunes"
+TYPE=user
+NAME=mt-daapd
+
+MTDAAPD_USER=mt-daapd
+MTDAAPD_GROUP=multimedia
+
+MTDAAPD_ARGS="-d1 -y"
+
+status() {
+	if start-stop-daemon -K -t -q -n $NAME; then
+		echo "$NAME running"
+		return 0
+	else
+		echo "$NAME stopped"
+		return 1
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		start-stop-daemon -S -q -b -o \
+			--exec $NAME -- $MTDAAPD_ARGS
+		echo "OK"
+		;;
+
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -o -s 2 -n $NAME
+		if test $? = 1; then
+			echo "Fail."
+			exit 1
+		fi
+		echo "OK."
+		exit 0	
+		;;
+
+	restart|force-reload)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
+		sh $0 start
+		echo ""
+		;;
+
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
