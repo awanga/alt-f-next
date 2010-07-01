@@ -17,10 +17,17 @@ for i in run log lock cache; do
 	ln -sf /tmp/$i /var/$i
 done
 
-mkdir -p /mnt
-rm -f /var/spool	# buildroot creates it?! not in target/generic/target_busybox_skeleton
-mkdir -p /var/spool/lpd
+mkdir -p /mnt /var/lib /var/spool/lpd
 echo > /etc/bay
+
+# what board revision? (Should be available in /proc/cpuinfo!)
+dmesg | awk '/Orion ID:/ {
+	if (match($3, "MV88F5181")) print "A1";
+	else if (match($3, "MV88F5182") &&
+		system("ls /sys/bus/i2c/drivers/g760a >/dev/null") == 0) print "B1";
+	else if (match($3, "MV88F5182")) print "C1";
+	else print "??";
+	}' > /tmp/board
 
 # there is a problem here.
 # the kernel does not generate/buffer hot plug events before init starts,
