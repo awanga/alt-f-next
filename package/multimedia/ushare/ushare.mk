@@ -25,5 +25,7 @@ $(USHARE_TARGET_INSTALL_TARGET):
 	touch $@
 
 $(USHARE_HOOK_POST_INSTALL):
-	rm -f $(TARGET_DIR)/etc/init.d/ushare
+	(cd $(TARGET_DIR); \
+	rm -f etc/init.d/ushare; \
+	)
 	touch $@
