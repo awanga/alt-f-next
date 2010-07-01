@@ -44,6 +44,7 @@ $(FFMPEG_DIR)/.configured: $(FFMPEG_DIR)/.unpacked
 		--disable-devices \
 		--disable-debug \
 		--disable-stripping \
+		--enable-swscale \
 	)
 	touch $@
 
@@ -57,7 +58,7 @@ $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY): $(FFMPEG_DIR)/$(FFMPEG_BINARY)
 
 $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY): $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY)
 	mkdir -p $(STAGING_DIR)/usr/include/ffmpeg
-	for i in libavcodec libavformat libavdevice libavutil; do \
+	for i in libavcodec libavformat libavdevice libavutil libswscale; do \
 		cp -dpf $(STAGING_DIR)/usr/lib/$$i.so* $(TARGET_DIR)/usr/lib/; \
 		$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/$$i.so*; \
 		cp $(STAGING_DIR)/usr/include/$$i/* $(STAGING_DIR)/usr/include/ffmpeg; \
