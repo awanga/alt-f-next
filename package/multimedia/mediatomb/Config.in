@@ -6,6 +6,6 @@ config BR2_PACKAGE_MEDIATOMB
 	select BR2_PACKAGE_TAGLIB
 	select BR2_PACKAGE_FFMPEG
 	help
-	  uPNP AV server, selects sqlite
+	  UPnP MediaServer
 
 	  http://mediatomb.cc

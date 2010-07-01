@@ -10,7 +10,9 @@ MEDIATOMB_AUTORECONF = YES
 MEDIATOMB_INSTALL_STAGING = NO
 MEDIATOMB_INSTALL_TARGET = YES
 MEDIATOMB_LIBTOOL_PATCH = NO
-MEDIATOMB_DEPENDENCIES = uclibc sqlite expat file taglib ffmpeg
+MEDIATOMB_DEPENDENCIES = uclibc sqlite expat file taglib ffmpeg curl
+
+MEDIATOMB_CONF_OPT = --enable-sighup
 
 $(eval $(call AUTOTARGETS,package/multimedia,mediatomb))
 
