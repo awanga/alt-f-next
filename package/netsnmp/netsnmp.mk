@@ -3,7 +3,8 @@
 # netsnmp
 #
 #############################################################
-NETSNMP_VERSION:=5.4.2.1
+#NETSNMP_VERSION:=5.4.2.1
+NETSNMP_VERSION:=5.4.3
 NETSNMP_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/net-snmp/
 NETSNMP_DIR:=$(BUILD_DIR)/net-snmp-$(NETSNMP_VERSION)
 NETSNMP_SOURCE:=net-snmp-$(NETSNMP_VERSION).tar.gz
@@ -111,6 +112,7 @@ $(TARGET_DIR)/usr/sbin/snmpd: $(NETSNMP_DIR)/agent/snmpd
 	    includedir=$(STAGING_DIR)/usr/include/net-snmp \
 	    ucdincludedir=$(STAGING_DIR)/usr/include/ucd-snmp \
 	    -C $(NETSNMP_DIR) install
+	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(NETSNMP_DIR) installlibs	    
 	rm -rf $(TARGET_DIR)/usr/share/doc
 ifneq ($(BR2_HAVE_MANPAGES),y)
 	rm -rf $(TARGET_DIR)/usr/share/man
