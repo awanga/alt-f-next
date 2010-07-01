@@ -17,5 +17,7 @@ TRANSMISSION_DEPENDENCIES = uclibc libcurl host-pkgconfig
 $(eval $(call AUTOTARGETS,package,transmission))
 
 $(TRANSMISSION_HOOK_POST_INSTALL):
-	rm -f $(TARGET_DIR)/usr/bin/transmission-remote
+	(cd $(TARGET_DIR); \
+	rm -f ./usr/bin/transmission-remote; \
+	)
 	touch $@
