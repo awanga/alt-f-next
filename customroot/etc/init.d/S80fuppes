@@ -5,8 +5,10 @@ set -e
 DESC="FUPPES, the Free UPnP Entertainment Service"
 TYPE=user
 NAME=fuppesd
-DAEMON_ARGS="--config-dir /etc/fuppes/ --log-file /var/log/fuppes.log \
-	--database-file /var/lib/fuppes/fuppes.db --log-level 2"
+
+PIDFILE=/var/run/fuppes.pid
+FUPPES_ARGS="--config-dir /etc/fuppes/ --log-file /var/log/fuppes.log \
+	--database-file /var/lib/fuppes/fuppes.db --log-level 3"
 FUPPES_USER=fuppes
 FUPPES_GROUP=multimedia
 
@@ -23,19 +25,26 @@ status() {
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -b --chuid $FUPPES_USER:$FUPPES_GROUP \
-			-x $NAME -- $DAEMON_ARGS
+#	fuppes does a fork...	--make-pidfile --pidfile $PIDFILE \
+		start-stop-daemon -S -q -b \
+			--chuid $FUPPES_USER:$FUPPES_GROUP \
+			-x $NAME -- $FUPPES_ARGS
 		echo "OK"
 		;;
 	stop)
 		echo -n "Stopping $NAME: "
 		start-stop-daemon -K -q -s 2 -n $NAME
-		echo "OK"
+		if test $? = 1; then
+			echo "Fail."
+			exit 1
+		fi
+		echo "OK."
+		exit 0	
 		;;
 	restart|force-reload)
 		echo "Restarting $NAME: "
 		sh $0 stop
-		sleep 1
+		while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
 		sh $0 start
 		echo ""
 		;;
