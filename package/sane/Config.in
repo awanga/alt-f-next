@@ -1,0 +1,10 @@
+config BR2_PACKAGE_SANE
+	bool "sane"
+	select BR2_PACKAGE_LIBUSB
+	select BR2_PACKAGE_TIFF
+	select BR2_PACKAGE_JPEG
+	help
+	  SANE stands for Scanner Access Now Easy.
+
+	  http://www.sane-project.org/
+
