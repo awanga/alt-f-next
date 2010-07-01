@@ -1,0 +1,11 @@
+config BR2_PACKAGE_GS
+	bool "gs"
+	select BR2_PACKAGE_CUPS
+	select BR2_PACKAGE_TIFF
+	select BR2_PACKAGE_JPEG
+	select BR2_PACKAGE_LIBPNG
+	help
+	  An interpreter for the PostScript (TM) language and the Adobe Portable Document Format
+
+	  http://pages.cs.wisc.edu/~ghost/doc/GPL/index.htm
+
