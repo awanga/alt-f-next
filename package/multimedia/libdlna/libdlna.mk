@@ -26,7 +26,3 @@ $(LIBDLNA_TARGET_INSTALL_TARGET):
 $(LIBDLNA_TARGET_INSTALL_STAGING):
 	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(LIBDLNA_DIR) install
 	touch $@
-	
-#$(LIBDLNA_HOOK_POST_EXTRACT):
-#	cat package/multimedia/libdlna/libdlna-0.2.3.patch | patch -d $(LIBDLNA_DIR)
-#	touch $@
