@@ -33,15 +33,18 @@ case "$1" in
 		sed -i 's/^printer/#printer/' $INETD_CONF
 		rcinetd reload
 
-		start-stop-daemon -S -q -b --chuid $CUPS_USER:$CUPS_GROUP -x $NAME 
+# don't, cupsd must start as root, then it drops privileges (I think)
+# --chuid $CUPS_USER:$CUPS_GROUP \
+		start-stop-daemon --start --quiet --background --oknodo \
+			--exec $NAME 
 		sleep 1
-		cupsctl _remote_admin=1
+		cupsctl _remote_admin=1 _share_printers=1 >& /dev/null
 		echo "OK"
 		;;
 
 	stop)
 		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -x $NAME
+		start-stop-daemon --stop --quiet --oknodo --exec $NAME
 		if test -e ${PRINTC}-safe; then # no short-circuit operator?
 				mv $PRINTC-safe $PRINTC
 		fi		
@@ -53,7 +56,7 @@ case "$1" in
 	restart|force-reload)
 		echo "Restarting $NAME: "
 		sh $0 stop
-		sleep 1
+		while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
 		sh $0 start
 		echo ""
 		;;
