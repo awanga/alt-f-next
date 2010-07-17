@@ -87,7 +87,7 @@ case $1 in
 		fi
 		mount -t aufs -o remount,del:$mp /
 		loadsave_settings -fa
-		cp -a /Alt-F/var /var				
+		cp -a /Alt-F/var/* /var				
 		exit $?
 		;;
 
