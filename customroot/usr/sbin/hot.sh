@@ -3,7 +3,7 @@
 debug=true
 
 if test -n "$debug"; then
-	exec >> /tmp/hot.log 2>&1
+	exec >> /var/log/hot.log 2>&1
 	set -x
 	echo "DATE=$(date)"
 	env	
@@ -22,6 +22,7 @@ if test ${MDEV%%[0-9]} = "md" -a -z "$PHYSDEVDRIVER" -a \
 fi
 
 if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
+	if test -z "$MDEV"; then exit 0; fi
 
 	res=$(mdadm --query --examine --export --test $PWD/$MDEV)
 	if test $? = 0; then
@@ -74,7 +75,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			return 0
 			;;
 		*)
-			logger "hot: unknown partition type $fstype"
+			logger "hot: unknown partition type \"$fstype\" in \"$MDEV\""
 			return 0
 			;;
 	esac
@@ -208,7 +209,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 				loadsave_settings -fa
 				rm -f /Alt-F
 			else
-				exit	# busy?
+				exit 1	# busy?
 			fi
  		fi
 		# umount $PWD/$MDEV
@@ -216,6 +217,9 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 		ret=$?
 		if test "$ret" = "0"; then
 			rmdir $mpt
+		else
+			umount -r $mpt
+			ret=$?	
 		fi
 	elif test -e /proc/mdstat -a -n "$(grep $MDEV /proc/mdstat)"; then
 		eval $(mdadm --examine --export $PWD/$MDEV)
