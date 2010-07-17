@@ -9,7 +9,14 @@ usage() {
 
 msg() {
 	echo $1
+	clean
 	exit 1
+}
+
+clean() {
+	aufs.sh -u
+	rm -rf $(readlink -f /Alt-F)
+	rm -f /Alt-F
 }
 
 install() {
@@ -36,7 +43,7 @@ install() {
 	fi
 	
 	cd $TMPD
-	ar x $IPKG # busybox ar is not extracting control: "ar: invalid ar header "
+	ar x $IPKG
 	tar xzf control.tar.gz
 	awk '/^Package:/ {
 			if( $2 != "ipkg") exit 1 }
@@ -64,7 +71,10 @@ install() {
 	exit 0
 }
 
-if test "$#" != 0 -a "$1" = "-install"; then
+if test "$#" != 0 -a "$1" = "-clean"; then
+	clean
+
+elif test "$#" != 0 -a "$1" = "-install"; then
 	if test $# = 1 -a "$(aufs.sh -s)" != "OK"; then
 		echo "/Alt-F does not exists or is not an aufs branch."
 		echo "you must supply a mountpoint where to install ipkg."
@@ -82,7 +92,7 @@ if test "$#" != 0 -a "$1" = "-install"; then
 	
 	elif ! $(mountpoint -q $2); then
 		echo "\"$2\" is not a mountpoint."
-		usage
+		exit 1
 
 	else
 		aufs.sh -i $2 && install
@@ -90,10 +100,10 @@ if test "$#" != 0 -a "$1" = "-install"; then
 	fi
 
 elif test -f /usr/bin/ipkg-cl; then
-	mount -t aufs -o remount,udba=inotify /
+	aufs.sh -n
 	ipkg-cl $*
 	res=$?
-	mount -t aufs -o remount,udba=reval /
+	aufs.sh -r
 	exit $res
 
 else
