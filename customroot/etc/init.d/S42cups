@@ -25,7 +25,7 @@ case "$1" in
 		echo -n "Starting $NAME: "
 		export TZ=$(cat /etc/TZ)
 		unset TMPDIR
-		if test -e $PRINTC; then # no short-circuit operator?
+		if test -e $PRINTC; then
 			if test -z "$(grep cupsd $PRINTC)"; then 
 				mv  $PRINTC ${PRINTC}-safe
 			fi
@@ -37,7 +37,7 @@ case "$1" in
 # --chuid $CUPS_USER:$CUPS_GROUP \
 		start-stop-daemon --start --quiet --background --oknodo \
 			--exec $NAME 
-		sleep 1
+		while ! cupsctl >& /dev/null ; do usleep 100000; done
 		cupsctl _remote_admin=1 _share_printers=1 >& /dev/null
 		echo "OK"
 		;;
