@@ -6,25 +6,38 @@ read_args
 
 DNSMASQ_F=/etc/dnsmasq.conf
 DNSMASQ_O=/etc/dnsmasq-opts
+DNSMASQ_R=/etc/dnsmasq-resolv
+
+CONFH=/etc/hosts
+CONFR=/etc/resolv.conf
+CONFS=/etc/samba/smb.conf
+CONFHTTP=/etc/httpd.conf
+CONFINT=/etc/network/interfaces
 
 #debug
 
-#hostdesc=$(echo $hostdesc | sed 's/+/ /g')
-hostdesc=$(httpd -d $hostdesc)
-workgroup=$(httpd -d "$workgroup")
+if test "$iptype" = "static"; then
+	arping -Dw 2 $hostip >& /dev/null
+	if test $? = 1; then
+		msg "IP $hostip seems to be already in use"
+	fi
+fi
 
-hostname $hostname.$workgroup
+hostdesc=$(httpd -d $hostdesc)
+workgp=$(httpd -d "$workgp")
+
+hostname $hostname.$workgp
 echo $hostname > /etc/hostname
 
 # remove entries with oldip and oldname 
-sed -i "/^[^#].*$oldnm$/d" /etc/hosts
-sed -i "/^$oldip[ \t]/d" /etc/hosts
+sed -i "/^[^#].*$oldnm$/d" $CONFH
+sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
-echo "$oldip $hostname.$workgroup $hostname" >> /etc/hosts
+echo "$oldip $hostname.$workgp $hostname" >> $CONFH
 
-sed -i '/^A:.*\.$/d' /etc/httpd.conf
-sed -i "s/workgroup =.*$/workgroup = $workgroup/" /etc/samba/smb.conf
-sed -i "s/server string =.*$/server string = $hostdesc/" /etc/samba/smb.conf
+sed -i '/^A:.*\.$/d' $CONFHTTP
+sed -i "s/^workgroup =.*$/workgroup = $workgp/" $CONFS
+sed -i "s/^server string =.*$/server string = $hostdesc/" $CONFS
 
 if test "$iptype" = "static"; then
 	network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
@@ -32,28 +45,28 @@ if test "$iptype" = "static"; then
 	broadcast=$BROADCAST
 
 	sed -i '/^domain=/d' $DNSMASQ_F
-	echo "domain=$workgroup" >> $DNSMASQ_F
+	echo "domain=$workgp" >> $DNSMASQ_F
 	sed -i '/^option:router,/d' $DNSMASQ_O
 	echo "option:router,$gateway	# default route" >> $DNSMASQ_O
 
 	FLG_MSG="#!in use by dnsmasq, don't change"
 	if test -z "$cflg"; then
-		echo -e "search $workgroup\nnameserver $ns1" > /etc/resolv.conf
-		if test -n "$ns2"; then echo "nameserver $ns2" >> /etc/resolv.conf; fi
+		echo -e "search $workgp\nnameserver $ns1" > $CONFR
+		if test -n "$ns2"; then echo "nameserver $ns2" >> $CONFR; fi
 	else
-		echo -e "$FLG_MSG\nnameserver 127.0.0.1\nsearch $workgroup\n#!nameserver $ns1\n#!nameserver $ns2" > /etc/resolv.conf
-		if test -n "$ns2"; then echo "#!nameserver $ns2" >> /etc/resolv.conf; fi
-		echo -e "search $workgroup\nnameserver $ns1\nnameserver $ns2" > /etc/dnsmasq-resolv
-		if test -n "$ns2"; then echo "nameserver $ns2" >> /etc/dnsmasq-resolv; fi
+		echo -e "$FLG_MSG\nnameserver 127.0.0.1\nsearch $workgp\n#!nameserver $ns1\n#!nameserver $ns2" > $CONFR
+		if test -n "$ns2"; then echo "#!nameserver $ns2" >> $CONFR; fi
+		echo -e "search $workgp\nnameserver $ns1\nnameserver $ns2" > $DNSMASQ_R
+		if test -n "$ns2"; then echo "nameserver $ns2" >> $DNSMASQ_R; fi
 	fi
 	
 	# remove any hosts with same name or ip
-	sed -i "/ $hostname$/d" /etc/hosts
-	sed -i "/^$hostip/d" /etc/hosts
-	echo "$hostip $hostname.$workgroup $hostname" >> /etc/hosts
+	sed -i "/ $hostname$/d" $CONFH
+	sed -i "/^$hostip/d" $CONFH
+	echo "$hostip $hostname.$workgp $hostname" >> $CONFH
 	
-	echo  "A:$network" >> /etc/httpd.conf
-	sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
+	echo  "A:$network" >> $CONFHTTP
+	sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" $CONFS
 
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
@@ -73,7 +86,7 @@ if test "$iptype" = "static"; then
 		rcdnsmasq reload  >& /dev/null
 	fi
 		
-	cat<<-EOF > /etc/network/interfaces
+	cat<<-EOF > $CONFINT
 	auto lo
 	  iface lo inet loopback
 
@@ -87,7 +100,7 @@ if test "$iptype" = "static"; then
 	EOF
 
 else # FIXME: not enought, the udhcpc script should do updates
-	cat<<-EOF > /etc/network/interfaces
+	cat<<-EOF > $CONFINT
 	auto lo
 	  iface lo inet loopback
 
