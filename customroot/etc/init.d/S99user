@@ -41,7 +41,7 @@ writelog() {
 	ifconfig >> $i/$LOGF
 
 	echo -e "\n\n$SEP ROUTE $SEP\n" >> $i/$LOGF
-	route >> $i/$LOGF
+	route -n >> $i/$LOGF
 
 	echo -e "\n\n$SEP RESOLVER $SEP\n" >> $i/$LOGF
 	cat /etc/resolv.conf >> $i/$LOGF
@@ -50,7 +50,11 @@ writelog() {
 	cat /etc/hosts >> $i/$LOGF
 
 	echo -e "\n\n$SEP RAID $SEP\n" >> $i/$LOGF
-	cat /proc/mdstat >> $i/$LOGF
+	if test -f /proc/mdstat; then
+		cat /proc/mdstat >> $i/$LOGF
+	else
+		echo None  >> $i/$LOGF
+	fi
 
 	echo -e "\n\n$SEP MOUNT $SEP\n" >> $i/$LOGF
 	cat /proc/mounts >> $i/$LOGF
