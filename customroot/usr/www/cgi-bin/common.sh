@@ -65,6 +65,15 @@ msg() {
 	exit 1
 }
 
+# $1=part (sda2, eg)
+isdirty() {
+	if test "$(tune2fs -l /dev/$part 2>/dev/null | awk '
+		/Filesystem state:/ {print $3}')" = "clean"; then
+		return 1
+	fi
+	return 0
+}
+
 back_button() {
 	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
@@ -76,25 +85,27 @@ select_part() {
 	df -h | while read ln; do
 
 	part=""
-	eval $(echo $ln | awk '/^\/dev\//{printf "part=%s; pcap=%s; avai=%s", \
+	eval $(echo $ln | awk '/^\/dev\/(sd|md)/{printf "part=%s; pcap=%s; avai=%s", \
 		$1, $2, $4}')
 	if test -z $part; then continue; fi
+	part=$(basename $part)
 	partl=$(plabel $part)
-	if test -z "$partl"; then partl=$(basename $part); fi
+	if test -z "$partl"; then partl=$part; fi
 
-	res=$(mdadm --query --detail --test --export $part 2>/dev/null )
-	if test $? = 4; then
-		dsk=$(basename $part)
-		mod=$(cat /sys/block/${dsk%%[1-9]}/device/model) >/dev/null 2>&1
-		if test -z "$mod"; then continue; fi
-		dcap=$(awk -v sz=$(cat /sys/block/${dsk%%[1-9]}/size) 'BEGIN{printf "%.1f", sz*512/1e9}' /dev/null)
-	else
-		eval $res
-		mod=$MD_LEVEL
-		dcap=$pcap
-	fi
+#	res=$(mdadm --query --detail --test --export $part 2>/dev/null )
+#	if test $? = 4; then
+#		dsk=$(basename $part)
+#		mod=$(cat /sys/block/${dsk%%[1-9]}/device/model) >/dev/null 2>&1
+#		if test -z "$mod"; then continue; fi
+#		dcap=$(awk -v sz=$(cat /sys/block/${dsk%%[1-9]}/size) 'BEGIN{printf "%.1f", sz*512/1e9}' /dev/null)
+#	else
+#		eval $res
+#		mod=$MD_LEVEL
+#		dcap=$pcap
+#	fi
 
-	echo "<option value=$part> $partl ($mod, ${dcap}GB)</option>"
+	#echo "<option value=$part> $partl ($mod, ${dcap}GB)</option>"
+	echo "<option value=$part> $partl ($part, ${pcap}B, ${avai}B free)</option>"
 	done
 	echo "</select>"
 }
