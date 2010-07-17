@@ -80,10 +80,6 @@ cat<<-EOF
 	<tr><td></td>
 	<td><input type="submit" name="$srv" value="Submit"></td></tr>
 	</table>
-	<br>
-	<input type="submit" name="start" value="StartAll">
-	<input type="submit" name="stop" value="StopAll">
-	<input type="submit" name="restart" value="RestartAll">
 	</form></body></html>
 EOF
 
