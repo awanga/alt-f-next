@@ -58,8 +58,7 @@ elif test "$create_dir" = "CreateDir"; then
         	msg "You must select a partition"
 	fi
 
-	part=$(httpd -d $part)
-#	mp=$(cat /proc/mounts | grep $part | cut -d" " -f2)
+	part=/dev/$(httpd -d $part)
 	mp="$(awk -v part=$part '$1 == part {print $2}' /proc/mounts)"
 	mkdir -p "$mp"/Users
 	ln -sf "$mp"/Users /home
