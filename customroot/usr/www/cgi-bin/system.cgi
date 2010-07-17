@@ -12,14 +12,19 @@ cat<<-EOF
 
 	<input type=submit name=action value=Poweroff><br><br>
 
-	<input type=submit name=action value=ClearPrintQueues><br><br>
-
 	<input type=submit name=action value=KernelLog><br><br>
 
 	<input type=submit name=action value=SystemLog><br><br>
 
-	<input type="submit" name=action value="ChangePassword">	
-	Current Password:<input type="password" autocomplete="off" name="passwd" value=""><br><br>
+	<input type=submit name=action value=ClearPrintQueues><br><br>
+
+	Services: 
+	<input type="submit" name="action" value="StartAll">
+	<input type="submit" name="action" value="StopAll">
+	<input type="submit" name="action" value="RestartAll"><br><br>
+
+	Current Password:<input type="password" autocomplete="off" name="passwd" value="">
+	<input type="submit" name=action value="ChangePassword"><br><br>
 
 	</form></body></html>
 EOF

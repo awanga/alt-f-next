@@ -8,7 +8,16 @@ read_args
 
 # the user can hit the enter key instead of pressing the button
 if test -n "$passwd"; then
-	action="ChangePassword";
+	action="ChangePassword"
+
+elif test "$kernel" = "Refresh"; then
+	action="KernelLog"
+
+elif test "$syslog" = "Refresh"; then
+	action="SystemLog"
+
+elif test "$kernel" = "Back" -o "$syslog" = "Back"; then
+	gotopage /cgi-bin/system.cgi
 fi
 
 case $action in
@@ -44,8 +53,13 @@ case $action in
 		write_header "Kernel Log"
 		echo "<pre>"
 		dmesg
-		echo  "</pre><form action=\"/cgi-bin/system.cgi\">
-			<input type=submit value=\"Done\"></form></body></html>"
+		cat<<-EOF
+			</pre>
+			<form action="/cgi-bin/system_proc.cgi" method="post">
+			<input type=submit name=kernel value="Refresh">
+			<input type=submit name=kernel value="Back">
+			</form></body></html>
+		EOF
 		exit 0
 		;;
 
@@ -58,9 +72,25 @@ case $action in
 			logread
 			echo "</pre>"
 		fi
-		echo  "<form action=\"/cgi-bin/system.cgi\">
-			<input type=submit value=\"Done\"></form></body></html>"
+		cat<<-EOF
+			<form action="/cgi-bin/system_proc.cgi" method="post">
+			<input type=submit name=syslog value="Refresh">
+			<input type=submit name=syslog value="Back">
+			</form></body></html>
+		EOF
 		exit 0
+		;;
+
+	StartAll)
+		rcall start >& /dev/null
+		;;
+
+	StopAll)
+		rcall stop >& /dev/null
+		;;
+
+	RestartAll)
+		rcall restart >& /dev/null
 		;;
 
 	ChangePassword)
