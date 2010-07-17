@@ -18,7 +18,7 @@ case "$1" in
 		env
 
 		if test -z "$domain"; then
-			domain="Workgroup"
+			domain=$(sed -n "s/workgroup = \(.*$\)/\1/p" /etc/samba/smb.conf)
 		fi
 
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
