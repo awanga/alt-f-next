@@ -10,10 +10,6 @@ JSON=settings.json
 
 webhost=$(hostname -i | tr -d ' ')
 
-if ! test -e "$CONFF/$JSON"; then
-	cp /etc/transmission/settings.json "$CONFF/$JSON"
-fi
-
 eval $(awk '/"download-dir"/ { \
 		gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2} \
 	/"watch-dir"/ { \
