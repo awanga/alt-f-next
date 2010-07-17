@@ -66,7 +66,7 @@ EOF
 cnt=0
 echo "<td colspan=2><SELECT MULTIPLE style='width:40ex' SIZE=8 NAME=groups onChange=update_groups()>"
 while read group gpass ggid userl;do
-	if test $gpass = "!"; then continue; fi
+	if test "${group:0:1}" = "#" -o "$gpass" = "!"; then continue; fi
 	if test $ggid -lt 100; then continue; fi
 	echo "<OPTION>$group</OPTION>"
 	# primary group
