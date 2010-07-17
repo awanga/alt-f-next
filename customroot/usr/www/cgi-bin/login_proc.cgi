@@ -39,6 +39,10 @@ if test "$passwd" = "$(cat $SECR)"; then
 		expl="expires=$exp"
 	fi
     
+	# if the local time is ahead of real time the cookie will always
+	# be expired and login always fails. Don't use 
+	expl="" 
+
 	cat<<-EOF
 		HTTP/1.1 303
 		Content-Type: text/html
