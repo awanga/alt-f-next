@@ -25,7 +25,11 @@ hwclock -w -u
 #enddebug
 
 if test -n "$next" -a -f /tmp/firstboot; then
-	gotopage /cgi-bin/newuser.cgi
+	if test -d "$(readlink -f /home)"; then
+		gotopage /cgi-bin/settings.cgi
+	else
+		gotopage /cgi-bin/newuser.cgi
+	fi
 else
 	gotopage /cgi-bin/time.cgi
 fi
