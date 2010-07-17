@@ -65,7 +65,7 @@ if test $action = "remove" -a "$force" != "yes"; then
 	if test -z "$(cat /proc/mounts | grep /dev/$dsk)" -a \
 		-z "$(cat /proc/swaps | grep /dev/$dsk)"; then
 		echo "Disk $dsk in $bay bay is not in use"
-		exit 1
+		exit 0
 	fi
 fi
 
