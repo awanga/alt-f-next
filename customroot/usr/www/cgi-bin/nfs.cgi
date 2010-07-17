@@ -94,12 +94,12 @@ cat<<-EOF
 		<legend><strong>Directories to export to other hosts</strong></legend>
 		<table>
 		<tr align=center>
-		<td>Disable</td>
-		<td>Directory</td>
-		<td>Search</td>
-		<td>Allowed hosts</td>
-		<td>Export Options</td>
-		<td>Options</td>
+		<th>Disable</th>
+		<th>Directory</th>
+		<th>Search</th>
+		<th>Allowed hosts</th>
+		<th>Export Options</th>
+		<th>Options</th>
 		</tr>
 EOF
 
@@ -122,14 +122,14 @@ cat<<-EOF
 	<legend><strong>Directories to import from other hosts</strong></legend>
 	<table>
 	<tr align=center>
-	<td>Disable</td>
-	<td>Host</td>
-	<td>Directory</td>
-	<td>Discover</td>
-	<td>Local dir</td>
-	<td>Search</td>
-	<td>Mount Options</td>
-	<td>Options</td>
+	<th>Disable</th>
+	<th>Host</th>
+	<th>Directory</th>
+	<th>Discover</th>
+	<th>Local dir</th>
+	<th>Search</th>
+	<th>Mount Options</th>
+	<th>Options</th>
 	</tr>
 EOF
 
