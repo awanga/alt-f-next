@@ -10,9 +10,11 @@ CONFF=/etc/ushare.conf
 
 for i in $(seq 1 $cnt); do
 	d="$(eval echo \$sdir_$i)"
-	if test -n "$d"; then
-		res="$d,$res"
+	if test -z "$d"; then continue; fi
+	if ! test -d "$(httpd -d $d)"; then
+		msg "At least one directory does not exists."
 	fi
+	res="$d,$res"
 done
 
 shares="$(httpd -d $res)"

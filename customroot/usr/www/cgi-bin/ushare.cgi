@@ -7,20 +7,20 @@ write_header "uShare Setup"
 
 CONFF=/etc/ushare.conf
 
-if test -e $CONFF; then # damned spaces in file names!
+if test -e $CONFF; then
 	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONFF)" 
 	eval $(grep ^USHARE_PORT $CONFF)
+	webhost="$(hostname -i | tr -d ' '):$USHARE_PORT/web/ushare.html"
 	eval $(grep ^ENABLE_WEB $CONFF)
 	if test "$ENABLE_WEB" = "yes"; then
 		chkweb="checked"
 	fi
 fi
 
-webhost="$(hostname -i | tr -d ' '):$USHARE_PORT/web/ushare.html"
-
+webbut="enabled"
 rcushare status >& /dev/null
-if test $? != 0; then
-		webchk="disabled"
+if test $? != 0 -o "$chkweb" != "checked"; then
+		webbut="disabled"
 fi
 
 cat<<-EOF
@@ -31,6 +31,14 @@ cat<<-EOF
 				start_dir="/mnt";
 			window.open("browse_dir.cgi?id=" + input_id + "?browse=" + start_dir, "Browse", "scrollbars=yes, width=500, height=500");
 			return false;
+		}
+		function edisable(chk, but, st) {
+			if (st == "disabled")
+				return;
+			if (document.getElementById(chk).checked == true)
+				document.getElementById(but).disabled = false;
+			else
+				document.getElementById(but).disabled = true;
 		}
 	</script>
 
@@ -60,10 +68,10 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
-	<tr><td>Enable Web</td><td><input type=checkbox $chkweb name="ENABLE_WEB" value="yes"></td></tr>
+	<tr><td>Enable Web</td><td><input type=checkbox id=chkweb $chkweb name="ENABLE_WEB" value="yes" onclick="edisable('chkweb','webbut', '$webbut')"></td></tr>
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
-		<input type="button" $webchk value="WebPage" onClick="document.location.href='http://$webhost';">
+	<input type="button" id=webbut $webbut value="WebPage" onClick="document.location.href='http://$webhost';">
 	</td></tr></table></form></body></html>
 EOF
