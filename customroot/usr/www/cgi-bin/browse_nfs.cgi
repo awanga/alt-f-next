@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "NFS Network Browse"
+write_header "NFS Browse"
 
 #echo "<pre>$(set)</pre>"
 
@@ -25,7 +25,7 @@ cat <<-EOF
 	</script>
 EOF
 
-echo "Browsing network...<br>
+echo "Browsing network, it takes 30 sec...<br>
 	<form><strong>Host:Directory</strong><br>"
 
 rpcinfo -b 100005 3 | sort -u  | while read hip hnm; do
