@@ -21,6 +21,9 @@ clean() {
 
 install() {
 	echo Installing ipkg
+	if ! nslookup www.dropbox.com >& /dev/null; then
+		msg "You don't seem to have a name server configured, or a working internet connection."
+	fi
 	
 	CONFF=/etc/ipkg.conf
 	IPKG=ipkg_0.99.163_arm.ipk
