@@ -4,31 +4,47 @@ echo "pre-init started, pid=$$"
 
 mount -t proc proc /proc
 
-if ! $(/bin/grep -q "initdbg" < /proc/cmdline); then		
-		# don't overlay, enable access to the union branches 
-		mkdir /tmproot
-		mount -t tmpfs tmpfs /tmproot
-		mkdir /tmproot/root
-		umount /proc # /proc must not be mounted during the next "cp -a"
-		cp -a / /tmproot/root 
-		mount -t proc proc /proc
-		mkdir /newroot
-		#mount -t aufs -o dirs=/tmproot/root,udba=inotify aufs /newroot
-		mount -t aufs -o dirs=/tmproot/root aufs /newroot
-		if test -f /usr.squashfs; then
-			mknod /dev/loop0 b 7 0
-			mv /tmproot/root/usr.squashfs /tmproot
-			mkdir -p /tmproot/rootsq
-			mount -o loop /tmproot/usr.squashfs /tmproot/rootsq
-			mount -t aufs -o remount,append:/tmproot/rootsq=rr aufs /newroot
-		fi
-		mkdir /newroot/rootmnt
-		mount --move /tmproot /newroot/rootmnt	
-		umount /proc
-		rmdir /tmproot
-		cd /newroot
-		exec switch_root . sbin/init	
+# don't create aufs union branches -- can't install or use packages!
+if grep -q "noaufs" /proc/cmdline; then
+	umount /proc
+	exec chroot / /sbin/init
+
+# enter iterative shell if cmdline has "initdbg"
+elif grep -q "initdbg" /proc/cmdline; then
+	/bin/mount -t sysfs sysfs /sys
+	/bin/mount -t tmpfs tmpfs /tmp
+	/bin/mount -t devpts devpts /dev/pts
+	/sbin/mdev -s				# create device nodes
+	mkdir -p /usr/share/empty	# ftp needs it
+	/usr/sbin/inetd				# telnet or ftp to the box
+	exec /bin/sh				# enter iterative shell on serial line
+
+# normal boot, create aufs union branches
+else
+	# don't overlay, enable access to the union branches 
+	mkdir /tmproot
+	mount -t tmpfs tmpfs /tmproot
+	mkdir /tmproot/root
+	umount /proc # /proc must not be mounted during the next "cp -a"
+	cp -a / /tmproot/root 
+	mount -t proc proc /proc
+	mkdir /newroot
+	#mount -t aufs -o dirs=/tmproot/root,udba=inotify aufs /newroot
+	mount -t aufs -o dirs=/tmproot/root aufs /newroot
+	if test -f /usr.squashfs; then
+		mknod /dev/loop0 b 7 0
+		mv /tmproot/root/usr.squashfs /tmproot
+		mkdir -p /tmproot/rootsq
+		mount -o loop /tmproot/usr.squashfs /tmproot/rootsq
+		mount -t aufs -o remount,append:/tmproot/rootsq=rr aufs /newroot
+	fi
+	mkdir /newroot/rootmnt
+	mount --move /tmproot /newroot/rootmnt	
+	umount /proc
+	rmdir /tmproot
+	cd /newroot
+	exec switch_root . sbin/init	
 fi
 
-# enter iterative shell if cmdlins has "initdbg" or switch_root above fails
+# enter iterative shell on serial line if above fails
 exec /bin/sh	
