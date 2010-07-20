@@ -29,9 +29,9 @@ if ! ipkg status >/dev/null; then
 
 else
 
-feed=$(awk '/^src /{print $3}' /etc/ipkg.conf)
+	feed=$(awk '/^src /{print $3}' /etc/ipkg.conf)
 
-ipkg-cl -V0 info | awk -v confeeds="$feed" '
+	ipkg-cl -V0 info | awk -v confeeds="$feed" '
 	BEGIN {
 		nfeeds = split(confeeds, feeds);
 	}
@@ -46,12 +46,12 @@ ipkg-cl -V0 info | awk -v confeeds="$feed" '
 	END {
 		printf "<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=post> \
 			<fieldset><legend><strong> Configure Feeds </strong></legend> \
-			<input type=hidden name=nfeeds value=%d>", nfeeds
+			<input type=hidden name=nfeeds value=%d><table>", nfeeds
 		for (i=1; i<=nfeeds; i++) 
-			printf "Feed %d: <input type=text size=50 name=feed_%d value=%s><br>", i, i, feeds[i];
-		print "<input type=submit name=changeFeed value=ChangeFeed> \
-			<input type=submit name=defaultFeed value=DefaultFeed><br><br> \
-			Update package list: <input type=submit name=updatelist value=UpdateList> \
+			printf "<tr><td>Feed %d:</td><td><input type=text size=50 name=feed_%d value=%s></td></tr>", i, i, feeds[i];
+		print "<tr><td></td><td><input type=submit name=changeFeed value=ChangeFeed> \
+			<input type=submit name=defaultFeed value=DefaultFeed></td></tr></table><br> \
+			<strong>Update package list:</strong><input type=submit name=updatelist value=UpdateList> \
 			</fieldset><br> \
 			<fieldset><legend><strong> Installed Packages </strong></legend> \
 			<table><tr> \
@@ -80,7 +80,7 @@ ipkg-cl -V0 info | awk -v confeeds="$feed" '
 	
 		print "<tr><td><br></td></tr>"
 		if (update != 0)
-			print "<tr><td colspan=2>UpdateAll</td> \
+			print "<tr><td colspan=2><strong>UpdateAll</strong></td> \
 				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
 		print "<script type=\"text/javascript\"> \
@@ -88,7 +88,7 @@ ipkg-cl -V0 info | awk -v confeeds="$feed" '
 					return confirm(\"All files and configurations will be erased. You will have to reinstall ipkg on a disk partition.\"); \
 				} \
 			</script> \
-			<tr><td colspan=2>Remove all installed</td> \
+			<tr><td colspan=2><strong>Remove all installed</strong></td> \
 				<td><input type=submit name=removeall value=RemoveAll onclick=\"return ask()\"></td></tr> \
 			</table></fieldset> \
 			<br><fieldset><legend><strong> Available Packages </strong></legend><table>"
@@ -109,7 +109,7 @@ ipkg-cl -V0 info | awk -v confeeds="$feed" '
 				}
 			}
 		}
-		printf ("<tr><td><br></td></tr><tr><td colspan=2>Install all available</td> \
+		printf ("<tr><td><br></td></tr><tr><td colspan=2><strong>Install all available</strong></td> \
 			<td><input type=submit name=installall value=InstallAll></td></tr>\
 		</table></fieldset></form>", pkgfeed)
 	}'
