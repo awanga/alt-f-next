@@ -14,6 +14,9 @@ ALTF_DIR=alt-f
 ALTF_PATH=$BASE_DIR/alt-f
 ALTF_TARBALL=$BASE_DIR/Alt-F-*.tar
 FFPRC=/ffp/etc/rc
+LOG_FILE=altf-reload.log
+
+exec > $TMP_DIR/$LOG_FILE
 
 check() {
 	if ! test -r $1; then
@@ -21,6 +24,15 @@ check() {
 		exit 1
 	fi
 }
+
+# disable recurring reboots
+if test "$ONCE" = yes; then
+	if test "$(dirname $0)" = "."; then
+		chmod -x "$(basename $0)"
+	else 
+		chmod -x "$0"
+	fi
+fi
 
 check $BASE_DIR
 cd $BASE_DIR
@@ -44,9 +56,11 @@ cd $ALTF_PATH
 
 KV=$(uname -r)
 kernel=zImage
-initrd=rootfs.arm.cpio-sq.lzma
 machtype=1542
+initrd=rootfs.arm.cpio-sq.lzma
 cmdline="console=ttyS0,115200"
+#initrd=rootfs.arm.cpio.gz
+#cmdline="initdbg console=ttyS0,115200"
 
 check "$kernel"
 check "$initrd"
@@ -62,14 +76,6 @@ if test -n "$KIP"; then
 	cmdline="$cmdline ip=$ip::$gw:$mask:$(hostname).$domain:eth0:none"
 fi
 
-cat<<EOF > $TMP_DIR/reload.sh
-#!/bin/sh
-
-# disable recurring reboots
-if test "$ONCE" = yes; then
-	chmod -x $BASE_DIR/fun_plug
-fi
-
 # stop ffp services
 if test -f $FFPRC; then
 	$FFPRC stop
@@ -81,15 +87,15 @@ proc="apkg atd crond wget smbclient pure-ftpd prescan upnp \
 	mt-daapd lpd inotify_itune inotify_upnp btdog bt op_server \
 	inotifybt UpdateDB check_hotplug xmldb webs check_daemon mserver"
 
-for i in \$proc; do
-	if test -n "\$(pidof \$i)"; then
-		kill -15 \$(pidof \$i)
+for i in $proc; do
+	if test -n "$(pidof $i)"; then
+		kill -15 $(pidof $i)
 	fi
 done
 sleep 3
-for i in \$proc; do
-	if test -n "\$(pidof \$i)"; then
-		kill -9 \$(pidof \$i)
+for i in $proc; do
+	if test -n "$(pidof $i)"; then
+		kill -9 $(pidof $i)
 	fi
 done
 
@@ -103,6 +109,8 @@ sleep 3
 ps
 free
 
+mv $TMP_DIR/$LOG_FILE $BASE_DIR
+
 # umount filesystems
 swapoff -a
 sync
@@ -111,8 +119,5 @@ sleep 3
 
 # boot
 insmod reloaded-$KV.ko machtype=$machtype kernel=$kernel initrd=$initrd cmdline=\"$cmdline\"
-echo "Reload failed!"
-EOF
 
-chmod +x $TMP_DIR/reload.sh
-exec $TMP_DIR/reload.sh >/dev/console 2>&1 </dev/null
+echo "Reload failed!"
