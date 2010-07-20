@@ -5,7 +5,7 @@
 
 usage() {
 	echo "eject: unmount partitions/swap/disk"
-	echo "eject [-r | -l | -f] <left | right | usb | sd?>"
+	echo "eject [-r | -l | -f | -s] <left | right | usb | sd?>"
 	exit 1
 }
 
@@ -17,14 +17,24 @@ if test $# = 0 -o "$1" = "-l"; then
 	while read ln; do
 		if test -z "$ln"; then continue; fi
 		eval $(echo $ln | awk '{printf "bay=%s;dsk=%s", $1, $2}')
-#		eval $(smartctl -i /dev/$dsk | awk \
-#        	    '/^Device Model:/{printf "mod=\"%s %s\";", $3, $4} \
-#	             /^Device:/{printf "mod=\"%s %s\";", $2, $3}')
 		mod=$(cat /sys/block/$dsk/device/model)
-		size=$(awk '{printf "%.1f", $0 * 512 / 1000000000}' //sys/block/$dsk/size)
+		size=$(awk '{printf "%.1f", $0 * 512 / 1000000000}' /sys/block/$dsk/size)
 		echo -e "$bay\t $dsk\t $mod ($size GB)"
 	done < /etc/bay
 	exit 0
+fi
+
+if test $# = 2 -a "$1" = "-s"; then
+	dsk=$(awk '/'$2'/{print $2}' /etc/bay)
+	if test -z "$(grep /dev/$dsk /proc/mounts)" -a \
+		-z "$(grep /dev/$dsk /proc/swaps)" -a \
+		-z "$(grep $dsk /proc/mdstat)"; then
+			echo "Disk $dsk is not in use"
+			exit 0
+	else
+		echo "Disk $dsk is in use"
+		exit 1
+	fi
 fi
 
 
@@ -47,7 +57,7 @@ if test "$1" = "left" -o "$1" = "right" -o "$1" = "usb"; then
 	dsk=$(awk '/'$1'/{print $2}' /etc/bay)
 	if test ${#dsk} = 0; then
 		echo "No disk on $bay bay, use \"eject -l\" to see inserted disks"
-		exit 1
+		exit 0
 	elif test ${#dsk} != 3; then
 		echo "More than one disk on $bay bay, use \"eject -l\" and give device name"
 		exit 1
@@ -62,10 +72,11 @@ else
 fi
 
 if test $action = "remove" -a "$force" != "yes"; then
-	if test -z "$(cat /proc/mounts | grep /dev/$dsk)" -a \
-		-z "$(cat /proc/swaps | grep /dev/$dsk)"; then
-		echo "Disk $dsk in $bay bay is not in use"
-		exit 0
+	if test -z "$(grep /dev/$dsk /proc/mounts)" -a \
+		-z "$(grep /dev/$dsk /proc/swaps)" -a \
+		-z "$(grep $dsk /proc/mdstat)"; then
+			echo "Disk $dsk in $bay bay is not in use"
+			exit 0
 	fi
 fi
 
