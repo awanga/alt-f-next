@@ -1,8 +1,15 @@
 #!/bin/sh
 
 debug=true
+maxsize=50000 # bytes
 
 if test -n "$debug"; then
+	if test "$(stat -t /var/log/hot.log 2>/dev/null | cut -d" " -f2)" -gt $maxsize; then
+		tf=$(mktemp -t)
+		mv /var/log/hot.log $tf
+		tail -n $(expr $maxsize / 26) $tf > /var/log/hot.log
+		rm $tf
+	fi
 	exec >> /var/log/hot.log 2>&1
 	set -x
 	echo "DATE=$(date)"
@@ -223,7 +230,10 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 		fi
 	elif test -e /proc/mdstat -a -n "$(grep $MDEV /proc/mdstat)"; then
 		eval $(mdadm --examine --export $PWD/$MDEV)
-		md=md${MD_NAME##*:} # remove host: part
+		#md=md${MD_NAME##*:} # remove host: part # 1.x metadata (could use /sys/...holders)
+		#if test -z "$md"; then
+			md=$(ls /sys/block/${MDEV%%[0-9]}/$MDEV/holders) # 0.9 metadata
+		#fi
 		type=$MD_LEVEL
 		if test -n "$md" -a -b $PWD/$md ; then
 			act=$(cat /sys/block/$md/md/array_state)
