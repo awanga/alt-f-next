@@ -18,15 +18,23 @@ if ! test -d /ffp/var/packages; then
 		exit 1
 	fi
 
-  cat<<EOF
-	<h4>No ffp instalation found, install ffp in:</h4>
-	<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
-EOF
+	cat<<-EOF
+		<h4>No ffp instalation found, install ffp in:</h4>
+		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
+	EOF
 	select_part
 	echo "</select><input type=submit name=install value=Install>
 	</form></body></html>"
 
 else
+
+	cat<<-EOF
+		<script type="text/javascript">
+			function ask() {
+				return confirm("All ffp files will be erased. You will have to reinstall ffp on a disk partition.");
+			}
+		</script>
+	EOF
 
 	echo "<h4 align=center>Warning: configuration files are
 		overwritten when updating</h4>"
@@ -57,16 +65,16 @@ else
 		base_name=${i%-*-*}
 		echo "<tr><td><a href=\"http://www.inreto.de/dns323/fun-plug/0.5/PACKAGES.html#$base_name\">$i</a></td>"
 		echo "<td><input type=submit name=$i value=Remove></td>"
-					echo "$avail_pkg" | grep -q $i
-					if test $? = "0"; then
-						echo "<td><td>"
-					else
-						update_name=$(echo "$avail_pkg" | grep $base_name)
-						if test -n "$update_name"; then
+		echo "$avail_pkg" | grep -q $i
+		if test $? = "0"; then
+			echo "<td><td>"
+		else
+			update_name=$(echo "$avail_pkg" | grep $base_name)
+			if test -n "$update_name"; then
 				to_update="$to_update $update_name"
-							echo "<td><input type=submit name="$update_name" value=Update ></td>"
-						fi
-					fi
+				echo "<td><input type=submit name="$update_name" value=Update ></td>"
+			fi
+		fi
 #		if test -f "/ffp/etc/www/${base_name}.html"; then
 #			echo "<td><a href="/ffp/etc/www/${base_name}.html">Configure</a></td>" # FIXME
 #		fi
@@ -74,7 +82,12 @@ else
 	done
 	
 	cat <<-EOF
-		</table></fieldset><br><fieldset><legend>
+		<tr><td><br></td></tr>
+		<tr><td> $s Uninstall ffp $es </td>
+			<td><input type=submit name=uninstall value=Uninstall onclick="return ask()"></td></tr>
+		</table></fieldset><br>
+        
+		<fieldset><legend>
 		<a href="http://www.inreto.de/dns323/fun-plug/0.5/">
 		$s FFP Available Packages $es </a></legend><table>
 	EOF

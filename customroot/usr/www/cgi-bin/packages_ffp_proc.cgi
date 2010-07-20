@@ -46,6 +46,7 @@ download() {
 		EOF
 	fi
 	echo "</body></html>"
+	exit 0
 }
 
 . common.sh
@@ -64,6 +65,10 @@ PATH=$PATH:/ffp/bin:/ffp/sbin
 if test "$install" = "Install"; then
 	if test "$part" = "none"; then
 		msg "You must select a partition"
+	fi
+
+	if ! nslookup www.inreto.de >& /dev/null; then
+		msg "You don't seem to have a name server configured, or a working internet connection."
 	fi
 
 	TMPF=/tmp/fun_plug.tgz
@@ -116,10 +121,10 @@ if test "$install" = "Install"; then
 		EOF
 	fi
 	echo "</body></html>"
+	exit 0
 
 elif test -n "$Remove"; then
 	funpkg -r $Remove >& /dev/null
-	gotopage /cgi-bin/packages_ffp.cgi
 
 elif test -n "$Install"; then
 	download -i $Install.tgz
@@ -127,4 +132,8 @@ elif test -n "$Install"; then
 elif test -n "$Update"; then
 	download -u $Update.tgz
 
+elif test -n "$Uninstall"; then
+	rm -rf $(readlink -f /ffp) /ffp
 fi
+
+gotopage /cgi-bin/packages_ffp.cgi
