@@ -29,6 +29,9 @@ dmesg | awk '/Orion ID:/ {
 	else print "??";
 	}' > /tmp/board
 
+# temporary. syslog has not yet started, and hot.sh uses "logger",
+start-stop-daemon -S -q -x syslogd -- -D -m 0 -O /var/log/fsckboot.log
+
 # there is a problem here.
 # the kernel does not generate/buffer hot plug events before init starts,
 # but when init starts not all devices are yet enumerated by the kernel.
@@ -42,6 +45,7 @@ sleep 5
 /sbin/mdev -s
 
 # mount already attached disks/partitions, simulating kernel hotplug events
+# This "blocks" if some partitions needs to be fsck
 for i in /dev/sd?; do
   if test -b $i; then
         (cd /dev && ACTION=add DEVTYPE=disk PWD=/dev \
@@ -95,7 +99,7 @@ hostname -F /etc/hostname
 
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
-if ! $(/bin/grep -q "nodef" < /proc/cmdline); then
+if ! grep -q "nodef" /proc/cmdline; then
 	loadsave_settings -lf
 	no_defaults=$?
 fi
@@ -106,11 +110,16 @@ fi
 # 3d, try to read vendor sib.conf
 # 4th, try to use a dhcp server
 # 5th, find and use a non-used ip address from 192.168.1.245 to 240 range
-if $(/bin/grep -q "ip=" < /proc/cmdline); then
+if grep -q "ip=" /proc/cmdline; then
 	echo "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
 	eval $(cat /proc/cmdline)
-	domain=$(echo $ip | awk -F: '{ print substr($5, index($5,".") + 1, length($5))}')
+	#domain=$(echo $ip | awk -F: '{ print substr($5, index($5,".") + 1, length($5))}')
+	hn="$(echo $ip | awk -F: '{ print $5 }')"
+	if test -n "$hn"; then
+		domain=$(echo $hn | cut -d"." -f2)
+		hostname $(echo $hn | cut -d"." -f1)
+	fi
 	ifconfig eth0 up
 elif test $no_defaults = "0"; then
 	echo "IP from flash-defaults"
@@ -210,6 +219,9 @@ case $cip in
 		;;
 esac
 		
+# stop temporary syslog.
+start-stop-daemon -K -q -n syslogd
+
 # Start all executable init scripts in /etc/init.d
 # executing them in numerical order.
 rcall start
