@@ -119,3 +119,4 @@ cp ipkg-utils-050831/ipkg-build \
 	ipkg-utils-050831/ipkg.py \
 	../bin
 sed -i 's|*control|./control|' ../bin/ipkg.py
+sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
