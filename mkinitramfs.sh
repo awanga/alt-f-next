@@ -62,7 +62,7 @@ elif test "$1" = "sqfs"; then
 	cp rootfs.arm.ext2 rootfs.arm.ext2.tmp
 	mount -o loop rootfs.arm.ext2.tmp tmp
 	# block sizes: 131072 262144 524288 1048576
-	mksquashfs tmp/usr/ usr.squashfs -comp lzma -b 262144 \
+	mksquashfs tmp/usr/ usr.squashfs -comp lzma -b 131072 \
 		-always-use-fragments -keep-as-directory
 	rm -rf tmp/usr/*
 	mv usr.squashfs tmp
