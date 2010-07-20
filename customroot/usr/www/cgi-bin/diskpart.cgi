@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "Disk Formating -- prototype, does nothing"
+write_header "Disk Partitioning"
 
 s="<strong>"
 es="</strong>"
@@ -19,38 +19,45 @@ fi
 
 cat<<-EOF
 	<script type="text/javascript">
+	function ask(msg) {
+		return confirm(msg);
+        }
 	function keeppart(ipart) {
 		st = document.getElementById("keep_" + ipart).checked;
 		document.getElementById("cap_" + ipart).disabled = st;
 		document.getElementById("type_" + ipart).disabled = st;
-		if (st == true) {
-			document.getElementById("raid_" + ipart).disabled = true;
-			document.getElementById("pair1_" + ipart).disabled = true;
-			document.getElementById("pair2_" + ipart).disabled = true;
-		}
+		raidsel(ipart);
 	}
 	function raidsel(ipart) {
+		dis = document.getElementById("type_" + ipart).disabled;
 		type = document.getElementById("type_" + ipart).selectedIndex;
+
 		stat = false;
-		if (type != 1)
+		if (type != 1) // 0-empty 1-raid, 2-swap, 3-linux, 4-vfat, 5-ntfs
 			stat = true;
 
-		document.getElementById("raid_" + ipart).disabled = stat;
-		document.getElementById("pair1_" + ipart).disabled = stat;
-		document.getElementById("pair2_" + ipart).disabled = stat;
+		document.getElementById("raid_" + ipart).disabled = stat || dis;
+		raidtype(ipart)
+
 	}
-	// does any sense to have JDB or raid0 on external disks? No
 	function raidtype(ipart) {
+		dis = document.getElementById("raid_" + ipart).disabled;
+		document.getElementById("pair1_" + ipart).disabled = dis;
+		document.getElementById("pair2_" + ipart).disabled = dis;
+		if (dis == true)
+			return;
+
 		type = document.getElementById("raid_" + ipart).selectedIndex;
-		stat = false;
-		if (type < 3) // 0-none, 1-jbd, 2-raid0, 3-raid1, 4-raid5
-			stat = true;
-		document.getElementById("pair2_" + ipart).disabled = stat;
 
 		stat = false;
 		if (type == 0)
 			stat = true;
 		document.getElementById("pair1_" + ipart).disabled = stat;
+
+		stat = false;
+		if (type < 3) // 0-none, 1-jbd, 2-raid0, 3-raid1, 4-raid5
+			stat = true;
+		document.getElementById("pair2_" + ipart).disabled = stat;
 	}
 	function updatefree(dcap, dsk, part) {
 		free = dcap;
@@ -67,7 +74,7 @@ cat<<-EOF
 	}
 
 	</script>
-	<form action="/cgi-bin/format_proc.cgi" method="post">
+	<form action="/cgi-bin/diskpart_proc.cgi" method="post">
 EOF
 
 if test -n "$QUERY_STRING"; then
@@ -90,9 +97,9 @@ pairs="$(fdisk -l | awk 'substr($1,1,8) != "'$dsk'" && ($5 == "da" || $5 == "fd"
 
 cat<<-EOF
 	<fieldset>
-	<legend><strong>Select the disk you want to format</strong></legend>
+	<legend><strong>Select the disk you want to partition</strong></legend>
 	<table><tr>
-	<th>Format</th>
+	<th>Partition</th>
 	<th>Bay</th>
 	<th>Device</th>
 	<th>Capacity</th>
@@ -125,15 +132,15 @@ done
 echo "</table></fieldset><br>"	
 
 ddsk=$(basename $dsk)
-dcap=$(expr $(sfdisk -s $dsk) \* 1024 / 1000000)
+rawcap=$(expr $(sfdisk -s $dsk) \* 1024 / 1000000)
 
 mod=$(cat /sys/block/$ddsk/device/model)
-cap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$ddsk/size)
+diskcap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$ddsk/size)
 bay=$(awk '/'$ddsk'/{print toupper($1)}' /etc/bay)
 
 cat<<-EOF
 	<fieldset>
-	<legend><strong>Format $bay disk, $cap GB, $mod </strong></legend>
+	<legend><strong>Partition $bay disk, $diskcap GB, $mod </strong></legend>
 	<table>
 	<tr align=center>
 	<th> Keep </th>
@@ -157,8 +164,8 @@ ${dsk}4          0       -       0          0    0  Empty"
 fi
 
 used=0
-for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do
-	
+for pl in 1 2 3 4; do
+	part=${dsk}$pl
 	ppart=$(basename $part)
 	id=""; type="";cap=""
 	eval $(echo "$fout" | awk '
@@ -166,24 +173,41 @@ for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do
 		$6, substr($0, index($0,$7)), $5*1024/1e9, $5}')
 
 	used=$((used + rcap))
-	
-	swaps=""; linuxs=""; raids=""; vfats=""; ntfss=""
-	raid0s=""; raid1s=""; raid5s=""; jbds=""
+
+	emptys=""; swaps=""; linuxs=""; raids=""; vfats=""; ntfss=""
+	nones=""; raid0s=""; raid1s=""; raid5s=""; jbds=""; rlevel=""
+	xpair1=""; xpair2=""
 	case $id in
+		0) emptys="selected" ;;
 		82) swaps="selected" ;;
 		83) linuxs="selected" ;;
 		fd|da) raids="selected"
-			case "$(mdadm --examine $part 2> /dev/null | awk '/Raid Level/ {print $4}')" in
+			eval $(mdadm --examine $part 2> /dev/null | awk -v part=$ppart '
+				BEGIN { excl = part }
+				/Raid Level/ { printf "rlevel=%s; ", $4 }
+				/this/ { getline; while (getline) {
+					if (substr($NF, 1,5) == "/dev/") { 
+						dev = substr($NF, 6, 4);
+						if (dev != excl)
+							devs[i++] = dev }}}
+				END {printf "p1=%s; p2=%s", devs[0], devs[1]}')
+
+			case "$rlevel" in
 				raid0) raid0s="selected" ;;
 				raid1) raid1s="selected" ;;
 				raid5) raid5s="selected" ;;
 				jbd) jbds="selected" ;;
-				*)	nones="selected" ;;
+				*) nones="selected" ;;
 			esac
+			if test -n "$p1"; then
+				xpair1="<option selected value=$p1>$p1 *</option>"
+			fi
+			if test -n "$p2"; then
+				xpair2="<option selected value=$p2>$p2 *</option>"
+			fi
 			;;
 		b|c) vfats="selected" ;;
 		7) ntfss="selected" ;;
-		0) emptys="selected" ;;
 	esac
 
 	cat<<-EOF
@@ -193,8 +217,7 @@ for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do
 	<td>$ppart</td>
 	<td>$type</td>
 	<td><input type=text disabled size=6 id=cap_$ppart name=cap_$ppart 
-		value=$cap onchange="updatefree('$dcap', '$ddsk', '$ppart')"></td>
-
+		value=$cap onchange="updatefree('$rawcap', '$ddsk', '$ppart')"></td>
 	<td><select disabled id=type_$ppart name=type_$ppart 
 		onclick="raidsel('$ppart')">
 	<option $emptys>empty</option>
@@ -217,11 +240,13 @@ for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do
 	<td><select disabled id=pair1_$ppart name=pair1_$ppart>
 	<option>missing</option>
 	$pairs
+	$xpair1
 	</select></td>
 
 	<td><select disabled id=pair2_$ppart name=pair2_$ppart>
 	<option>missing</option>
 	$pairs
+	$xpair2
 	</select></td>
 
 	</tr>
@@ -229,8 +254,24 @@ for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do
 
 done 
 
-free="$(expr $dcap - $used \* 1024 / 1000000)"
-free=$(awk 'BEGIN {printf "%.1f", ('$dcap' - '$used' * 1024/1e6)/1000}')
+free="$(expr $rawcap - $used \* 1024 / 1000000)"
+free=$(awk 'BEGIN {printf "%.3f", ('$rawcap' - '$used' * 1024/1e6)/1000}')
+
+cat<<-EOF
+	<tr><td colspan=2></td>
+	<td align=right>Free</td>
+	<td><input type=text readonly id="free_id" size=6 value="$free"></td>
+	</tr>
+	<tr><td align=center colspan=2><input type=submit name=$ddsk value=Partition
+		onclick="return ask('Partitioning the $diskcap GB $bay disk can make all its data inacessible.\n\nContinue?')"></td>
+	</tr>
+	</table></fieldset><br>
+	</form></body></html>
+EOF
+
+# wizard, not yet
+
+exit 0
 
 nodisk="checked"; no2disk=""; no3disk=""
 case "$ndisks" in
@@ -241,14 +282,6 @@ case "$ndisks" in
 esac
 
 cat<<-EOF
-	<tr><td colspan=2></td>
-	<td align=right>Free</td>
-	<td><input type=text readonly id="free_id" size=6 value="$free"></td>
-	</tr>
-	<tr><td align=center colspan=2><input type=submit name=$ddsk value=Format></td>
-	</tr>
-	</table></fieldset><br>
-
 	<fieldset>
 	<legend><strong>Please advise, I want...</strong></legend>
 	<table>

@@ -4,12 +4,13 @@
 check_cookie
 read_args
 
-debug
+#debug
 
-if test -n "$Format"; then
-	dsk="$Format"
-	if ! eject $dsk >& /dev/null; then
-		msg "Couldn't unmount disk $dsk"
+if test -n "$Partition"; then
+	dsk="$Partition"
+	if ! eject $dsk > /dev/null; then
+		# this makes sense, as some partitions can be preserved
+		msg "Couldn't unmount disk $dsk for partitioning it"
 	fi
 
 	FMTFILE=$(mktemp -t sfdisk-XXXXXX)
@@ -29,7 +30,9 @@ if test -n "$Format"; then
 /dev/${dsk}4          0       -       0          0    0  Empty"
 	fi
 
-	for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do	
+	for pl in 1 2 3 4; do
+
+		part=/dev/${dsk}${pl}
 		ppart=$(basename $part)
 		id=""; type="";cap=""
 		eval $(echo "$fout" | awk '
@@ -38,9 +41,10 @@ if test -n "$Format"; then
 
 		if test "$(eval echo \$keep_$ppart)" = "yes"; then
 			if test "$pos" -gt "$start" -a "$id" != 0 -a "$sects" != 0; then
+				rm -f $FMTFILE
 				msg "Partition $last is too big, it extends over $ppart,\nor\npartitions are not in order"
 			fi
-			if test "$id" = 0 -o "$nsect" -eq 0; then
+			if test "$id" = 0 -a "$sects" = 0; then
 				echo "0,0,0" >> $FMTFILE
 			else
 				echo "$start,$sects,$id" >> $FMTFILE
@@ -57,7 +61,7 @@ if test -n "$Format"; then
 			esac
 
 			nsect=$(eval echo \$cap_$ppart | awk '{printf "%d", $0 * 1e9/512}')
-			if test "$id" = 0 -o "$nsect" -eq 0; then
+			if test "$id" = 0 -a "$nsect" = 0; then
 				echo "0,0,0" >> $FMTFILE
 			else
 				rem=$(expr \( $pos + $nsect \) % $sect_cyl) # number of sectors past end of cylinder
@@ -72,21 +76,46 @@ if test -n "$Format"; then
 	res=$(sfdisk -uS /dev/$dsk < $FMTFILE 2>&1)
 	st=$?
 	rm -f $FMTFILE
-	if test "$st" != 0; then
+	if test $st != 0; then
 		msg "Partitioning $dsk failed:\n\n$res"
 	fi
 
-	for part in $(echo "$fout" | awk '/^\/dev\// {print $1}'); do	
+	sleep 1
+
+	while ! eject $dsk >& /dev/null; do
+		usleep 300000
+	done
+
+	sfdisk -R /dev/$dsk >& /dev/null
+
+	for pl in 1 2 3 4; do
+
+		part=/dev/${dsk}${pl}
 		ppart=$(basename $part)
 
 		if test "$(eval echo \$keep_$ppart)" = "yes"; then continue; fi
 
-		if test "$(eval echo \$type_$ppart)" != "RAID" ; then continue; fi
-
+		type=$(eval echo \$type_$ppart)
 		rtype=$(eval echo \$raid_$ppart)
 		pair1=$(eval echo \$pair1_$ppart)
 		pair2=$(eval echo \$pair2_$ppart)
 
+# this is dubious... in order to clean any traces of the previous filesystem
+# on a given partition, that blkid will find regardeless of the partition ID,
+# shall we clear the beginning os the partition with dd?
+
+		case "$type" in				
+			swap) 	mkswap $part
+					continue ;;
+
+			vfat)	dd if=/dev/zero of=$part bs=512 count=1 >& /dev/null
+					continue ;;
+
+			linux|ntfs|empty)
+					continue ;;
+		esac
+
+		# raid case
 		opts=""
 		rspare=""
 
@@ -147,12 +176,15 @@ if test -n "$Format"; then
 			--raid-devices=$ndevices /dev/$ppart $pair1 $rspare 2>&1)
 
 		if test "$?" != 0; then
-			msg "Creating RAID on $ppart failed:\n\n$res"
+			msg "Partitioning succeeded but creating RAID on $ppart failed:\n\n$res"
 		fi
 
 	done
+
+else
+	debug
 fi
 
-enddebug
-#gotopage /cgi-bin/format.cgi
+#enddebug
+gotopage /cgi-bin/diskpart.cgi?disk=$dsk
 
