@@ -7,12 +7,11 @@
 
 # 1-during install some packages install undesired files in root.
 # the files to remove from root before creating the filesystem:
+# this should be fixed in buildroot and packages.mk
 
-RMF="etc/resolv.conf etc/default/ntpd etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb  usr/swat/lang usr/swat/help/welcome.html var/pcmcia var/lib/pcmcia usr/doc usr/share/locale sbin/fsck.ext4dev sbin/mkfs.ext4dev usr/bin/ntpdate lib/udev"
+RMF="etc/resolv.conf etc/default/ntpd etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb  usr/swat/lang var/log var/cache var/pcmcia var/lib/pcmcia usr/doc usr/share/locale sbin/fsck.ext4dev sbin/mkfs.ext4dev usr/bin/ntpdate lib/udev var/run"
 
 for i in $RMF; do rm -rf $1/$i; done
-
-#(cd $1 && ln -s bin/busybox init)
 
 # 2-customroot has some additional needed files, copy them to root
 find customroot/ -name \*~ -delete
@@ -20,13 +19,20 @@ cp -a customroot/* $1/
 find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
-# configured, remove them
-# add the corresponding /usr/www/cgi-bin files
-BR2_PACKAGES="BR2_PACKAGE_USHARE BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_MEDIATOMB"
+# configured, remove them in this case
+BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFSPROGS"
 
+BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi"
 BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi"
-BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission etc/transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi"
-BR2_PACKAGE_MEDIATOMB="etc/init.d/S82mediatomb"
+BR2_PACKAGE_MEDIATOMB="etc/init.d/S80mediatomb usr/www/cgi-bin/mediatomb.cgi usr/www/cgi-bin/mediatomb_proc.cgi"
+BR2_PACKAGE_FUPPES="etc/fuppes etc/init.d/S80fuppes usr/www/cgi-bin/fuppes.cgi usr/www/cgi-bin/fuppes_proc.cgi"
+BR2_PACKAGE_MINIDLNA="etc/minidlna.conf etc/init.d/S80minidlna usr/www/cgi-bin/minidlna.cgi usr/www/cgi-bin/minidlna_proc.cgi"
+BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt-daapd usr/www/cgi-bin/mt-daapd.cgi"
+
+BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
+BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
+
+BR2_PACKAGE_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g sbin/mkfs.ntfs"
 
 RMF=""
 for i in $BR2_PACKAGES; do
