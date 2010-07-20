@@ -23,6 +23,8 @@ fi
 
 # max sizes, dns323-fw checks them:
 # kernel <= 1572800 + 64, initramfs <= 6488000 + 64
+MAXK=1572800
+MAXFS=6488000
 
 PATH=$(pwd)/bin:$PATH
 DESTD=$BLDDIR/binaries/dns323/
@@ -68,5 +70,9 @@ check "$?" "paranoic kernel"
 
 cmp initramfs ${DESTD}/urootfs.arm.cpio-sq.lzma
 check "$?" "paranoic initramfs"
+
+# report kernel and initramfs available flash space
+echo Available kernel flash space: $(expr $MAXK - $(stat --format=%s kernel)) bytes
+echo Available initramfs flash space: $(expr $MAXFS - $(stat --format=%s initramfs)) bytes
 
 rm kernel initramfs defaults ${DESTD}/urootfs.arm.cpio-sq.lzma ${DESTD}/uImage ${DESTD}/tImage
