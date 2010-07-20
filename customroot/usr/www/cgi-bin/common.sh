@@ -53,11 +53,13 @@ enddebug() {
 }
 
 msg() {
+	txt=$(echo "$1" | awk '{printf "%s\\n", $0}')
+
 	echo "Content-Type: text/html; charset=UTF-8;
 
 	<html><body>
 	<script type=text/javascript>
-	alert(\"$1\")
+	alert(\"$txt\")
 	window.history.back()
 //	window.location.reload(window.history.back())
 	</script>
