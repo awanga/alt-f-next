@@ -7,46 +7,48 @@ md_standby() {
 	mdev=$1
 	for i in $(ls /sys/block/$mdev/slaves); do
 		if test "$(eval echo \$power_mode_${i:0:3})" = "standby"; then
-			#eval check_${i:5:7}="NO"
 			return 0
 		fi
 	done
 	return 1
 }
 
+# $1-device
+smart() {
+	health_st=""; temp="??"; fam=""; pstatus="unknown"
+	res=$(smartctl -n standby -iAH /dev/$1)
+	st=$?
+	eval $(echo "$res" | awk -v st=$st '
+		/^194/ {printf "temp=\"%d\";", $10}
+		/^Model Family/ {printf "fam=\"%s\";", $3}
+		/^Device:/ {printf "fam=\"%s\";", $2}
+		/not support SMART|Device is in/ { print "health_st=\"unknown\";"
+			if (st == 2) print "pstatus=\"standby\";"}
+		/SMART overall-health/ {
+			if (st == 0) color="black"
+			else if  (st == 32) color="blue"
+			else color="red"
+			printf "health_st=\"<font color=%s>%s</font>\";", color, tolower($NF) }
+		/Power mode is:/ { printf "pstatus=\"%s\";", 
+			tolower(substr($0, index($0,":")+2))}')
+	echo "health_st=\"$health_st\"; temp=$temp; fam=\"$fam\"; pstatus=\"$pstatus\"" > /tmp/SMART-$1
+}
+
 disk() {
 	nm="$1"
 	dsk="$2"
-	temp="--"
-	fam=""
-	mod="None"
-	tcap=""
-	pstatus=""
-	health_st="--"
+	temp="--"; fam=""; mod="None"; tcap=""; pstatus="--"; health_st="--"
 
 	if test -b /dev/$dsk; then
 		mod=$(cat /sys/block/$dsk/device/model)
 		tcap=$(awk '{printf "%.1f GB", $1*0.5e-6}' /sys/block/$dsk/size)
-		pstatus="$(eval echo \$power_mode_$dsk)"
-		if test "$pstatus" != "standby"; then
-			# smartctl is too slow, +/- 0.5 sec, use the *previous* value if not older than 2 minutes
-			if test -f /tmp/SMART-$dsk; then
-				if test "$(expr $(date +%s) - $(stat -t /tmp/SMART-$dsk | cut -d" " -f 14))" -gt 120; then
-					res=$(smartctl -iA /dev/$dsk)
-					if test $? = "0"; then
-						health_st="OK"
-					elif test $? = "1"; then
-						health_st="unknown"
-					else
-						health_st="<font color=red> Failing</font>"
-					fi
-					eval $(echo "$res" | awk '/^194/ {printf "temp=\"%d\";", $10}
-						/^Model Family/ {printf "fam=\"%s\";", $3}
-						/^Device:/ {printf "fam=\"%s\";", $2}')
-				else
-					. /tmp/SMART-$dsk
-				fi
-			fi
+		# smartctl is too slow, +/- 0.5 sec, use the *previous* value if not older than 2 minutes
+		if ! test -f /tmp/SMART-$dsk; then
+			smart $dsk
+		elif test "$(expr $(date +%s) - $(stat -t /tmp/SMART-$dsk | cut -d" " -f 14))" -lt 120; then
+			. /tmp/SMART-$dsk
+		else
+			smart $dsk
 		fi
 	fi	
 
@@ -66,13 +68,13 @@ disk() {
 filesys() {
 	dsk="$1"
 	dev=$(basename $dsk)
-	type=$(blkid -s TYPE -o value $dsk)
-	lbl="$(plabel $dsk)"
-	#if test -z "$lbl"; then lbl=$dev; fi
 	
 	if test -b $dsk; then
-		cnt=""; dirty="";
 		eval $(df -h $dsk | awk '/'$dev'/{printf "cap=%s;free=%s", $2, $4}')
+		type=$(blkid -s TYPE -o value $dsk)
+		lbl="$(plabel $dsk)"
+
+		cnt=""; dirty="";
 		res=$(tune2fs -l $dsk 2> /dev/null)
 		if test $? = 0; then
 			eval $(echo "$res" | awk \
@@ -89,7 +91,7 @@ filesys() {
 					print toupper(a[i]) }' /proc/mounts)"
 	fi
 
-	if test "$cnt" -lt 5; then cnt="<font color=RED> $cnt </font>"; fi
+	if test "$cnt" -lt 5; then cnt="<font color=red> $cnt </font>"; fi
 	cat<<-EOF
 		<tr align=center>
 		<td>$dev</td>
@@ -357,23 +359,8 @@ else
 	main
 fi
 
-# smartctl is too slow. Run it now and use the colected values in the *next* run
+# smartctl is too slow.
+# Run it now and use the colected values in the *next* run
 for i in /dev/sd?; do
-	dsk=$(basename $i)
-	pstatus="$(eval echo \$power_mode_$dsk)"
-	if test "$pstatus" != "standby"; then
-		res=$(smartctl -iA $i)
-		if test $? = "0"; then
-			health_st="OK"
-		elif test $? = "1"; then
-			health_st="unknown"
-		else
-			health_st="<font color=red> Failing</font>"
-		fi
-		temp="??"; fam=""
-		eval $(echo "$res" | awk '/^194/ {printf "temp=\"%d\";", $10}
-			/^Model Family/ {printf "fam=\"%s\";", $3}
-			/^Device:/ {printf "fam=\"%s\";", $2}')
-	fi
-	echo "health_st=$health_st; temp=$temp; fam=$fam" > /tmp/SMART-$(basename $i)
+	smart $(basename $i)
 done
