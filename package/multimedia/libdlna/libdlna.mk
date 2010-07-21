@@ -5,7 +5,7 @@
 #############################################################
 LIBDLNA_VERSION = 0.2.3
 LIBDLNA_SOURCE = libdlna-$(LIBDLNA_VERSION).tar.bz2
-LIBDLNA_SITE = http://libdlna.geexbox.org/releases/libdlna-$(LIBDLNA_VERSION).tar.bz2
+LIBDLNA_SITE = http://libdlna.geexbox.org/releases/
 LIBDLNA_AUTORECONF = NO
 LIBDLNA_INSTALL_STAGING = YES
 LIBDLNA_INSTALL_TARGET = YES
