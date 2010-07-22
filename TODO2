@@ -1,0 +1,179 @@
+FIXED -fix OABI compatibility mode for the kernel.
+	when starting a fresh build, the kernel configuration stored in
+	local/dns323/linux- is processed by buildroot, and CONFIG_OABI_COMPAT
+	is disabled!
+
+-compile for speed.
+	The default buildroot configuration is now -O2.
+	As a result, available flash space is not enough anymore and some
+	apps (ushare and transmission) were removed from the base system and
+	added as a package. Also, ext2/3/4 are now kernel modules.
+	Some packages redefine CFLAGS in their Makefile, thus buildroot configured
+	default is lost (as it appears first in the compiler options list)
+	This has to be done package by package.
+	DONE -Samba needs it
+	DONE -Kernel .config (don't compile for space)
+
+DONE -URL in ipkg web page.
+	Provide the source URL, so user can click it and see the
+	package	homepage
+
+DONE -Add ffp in ffp web package manager title
+
+FIXED -Fix User services web page when there are no services available
+
+DONT -Fix the /sbin/rc* shortcuts. They live in /Alt-F after a reboot.
+	Remove before installing new ones. Is harmless.
+
+-Fix the pkg-config and host-pkgconfig mess
+	Read the package/pkg-config.mk comments
+	Merge pkg-config and host-pkgconfig, with an option to create
+	only on the host
+
+HACKED -The start/stop services button should wait a little before returning, as
+	some services takes some time to settle (transmission, e.g.)
+	added a one second delay... too much for most services,
+	too small for others (transmission)
+
+FIXED -Remount /Alt-F with inotify during installing, etc, ipkg
+	-packages_ipkg_proc.cgi 
+	-create instead a ipkg wrapper? yes... ipkg calls ipkg-cl
+	-but not for web page, sloow.
+
+-Change Alt-F directory name to .Alt-F, to make it "invisible" to most users
+	-or use the bind technique explained in aufs page?:
+
+		hide=/tmp/.aufs.hide
+		mkdir $hide
+		mount -n --bind $hide /Alt-F
+
+		When you unmount the aufs, delete/modify the branch by
+		remount, or you want to show the hidden branches again,
+		unmount the bound /tmp/.aufs.hide.
+
+		umount -n /Alt-F
+	-just call it .Alt-F
+
+FIXED -Fix package_ipkg.cgi
+	-is slooow
+	-pkg names with a '-' are wrongly parsed (- is also the field separator)
+
+-FIXED Fix package_ipkg_proc.cgi.
+	-when installing ipkg, output is generated that makes a error page appear.
+
+-fix "configfs" to handle the new packages files
+
+-CUPS:
+	DONE create user/group cups:lpadmin
+	DONE fix /etc/mdev.conf to make /dev/lp* belong to lp:lp
+	add conf file to cups package
+
+FIXED -status.cgi, handle comments and cups additions in /etc/printcap
+
+-long standing issue: sntp/ntpd will issue the following error with the first built:
+	# sntp pt.pool.ntp.org
+	sntp: can't resolve symbol '__aeabi_d2iz'
+	
+	this happens either with the stripped or non stripped binary.
+	one must remove the binaries from the rootfs and source and rebuild
+	the package. After that it works fine... build problem?
+
+	-this also happens with package nano.
+
+	The missing symbols are defined in /lib/libgcc_s.so.
+	Why are they not used?! ld (/lib/ld-uClibc-0.9.30.3.so) problem?
+
+	The problem is not the app, it seems to be in libm. It happens
+	after the second make, as it seems to not make libraries in /lib
+	correctly.
+
+
+	******** FOR A RELEASE, ALWAYS DO A FRESH BUILD! ***************
+
+
+-add -o owner:group option to "mkpkg.sh" so ipkg-build can use it to
+	create the package files with another ownership
+
+
+DONE -Add a don't cache passwd in the login/again page, as is done in the
+	System Utilities->Change password
+
+FIXED -After changing the host IP in the host setup page, it will not change
+
+DONE -Sort the packages by name in ipkg web manager
+	
+-The DHCP udhcpc script /usr/share/udhcpc/default.script should do more
+	configuration files and daemons signaling updates.
+	It is already done in rcS, use it.
+	FIXED -The script, at first boot, does not has a hostname.
+	DONE -The host setup web page in DHCP mode also.
+
+
+-iconv.h is removed from the stagging dir by buildroot! it says something
+	like "removing iconv.h as locale is not defined".
+	It comes from uClibc
+	$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3/Makefile.in
+	as UCLIBC_HAS_XLOCALE is not defined, iconv.h is removed, even if
+	it is not from uClibc.
+	Note that this happens on the *second* initial build, not the first!
+	(this is do a "make -O=...", followed for a second one)
+	No solution? Patch this? hmmm
+	Created a uClibc-0.9.30.3-iconv-h.patch, put in toolchain/uClibc lets see...
+
+DONE -Add a configure button for each inetd service
+	(dropped when splited inetd from network services)
+
+-fix disk-proc.cgi:
+	-if changing filesystem type from/to ext to vfat/ntfs or
+	 vice-versa, the partition type must be changed too
+	-also, fstab must be flushed, as labels/partition might have changed
+
+
+-lpstat: Connection refused in web status page, when cups is not running
+
+-change name of ipkg to Alt-F in package manager web pages
+
+-add some feedback when downloading ipkg packages
+
+-show error status if ipkg fails for some reason
+
+-read aufsutils carefully, to see if they are needed.
+	Alt-F has already used them, but currently not
+
+-The disk maker name does not appear in Disc Utilities (but appears in Status)
+
+-ipkg frontend, aufs.sh, packages_ipkg_proc.cgi and hot.sh needs to be
+	fixed. Each one of them mounts/create /Alt-F in its own way!
+	-aufs.sh install should be called by ipkg -install
+	-aufs.sh inotify/reval be called before/afters ipkg calls ipkg-cl
+	-aufs.sh mount/umount be called by hot.sh
+	-ipkg -install be called by packages_ipkg_proc.cgi install
+	-aufs.sh be called by packages_ipkg_proc.cgi
+
+FIXED -host.cgi/host_proc.cgi: there is a bug when changing workgroup. The
+	new workgroup becomes "oldwk" which is the name of a hidden
+	input form... it seems to only hapens the *first* time it is changed
+	
+
+DONE -ipkg:	web manager only supports one feed!
+
+-nfs not working: MTU must be the same on both hosts! or else the msg
+	received packet spanning multiple descriptors
+	
+-big MTU (>3712) generate lots of "page allocation failure", which impair the
+	performance
+
+FIXED -web login does not work if date is incorrect and timezone has been set
+	If the box time is ahead of the real time, the web cookie expiration
+	date is always expired... better to remove the cookie expiration date
+
+-when RAID is recovering/syncing, sysctrl is continuously reporting
+	a disk wakeup.
+
+-The "eject" script should have a status output, indicating if the device is
+	or is not ejected.
+	This would be used by the "Disk Maintenance" web page to change the
+	"Eject" to a "Load" button.
+
+-"Disk Maintenance" web page should have a StandbyNow/WakeupNow button,
+	(and removing the power status label?)
