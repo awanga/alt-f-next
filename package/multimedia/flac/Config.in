@@ -1,6 +1,6 @@
 config BR2_PACKAGE_FLAC
 	bool "flac"
-	select libogg
+	select BR2_PACKAGE_LIBOGG
 	help
           FLAC is an Open Source lossless audio codec.
 
