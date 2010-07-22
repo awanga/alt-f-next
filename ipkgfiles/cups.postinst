@@ -1,8 +1,12 @@
 #!/bin/sh
 
-addgroup -S -g 9 lpadmin
-adduser -D -S -g "CUPS Daemon" -G lpadmin -u 9 cups
+DIRS="/var/spool/cups /var/cache/cups /var/run/cups /var/log/cups"
 
-chown -R cups:lpadmin /etc/cups
+addgroup -S -g 9 lpadmin
+adduser -S -g "CUPS Daemon" -G lpadmin -u 9 -h /var/lib/cups cups
+
+mkdir -p $DIRS
+chown -R cups:lpadmin /etc/cups $DIRS
+chmod a+rx /usr/sbin/cupsd
 
 ln -sf /usr/sbin/rcscript /sbin/rccups

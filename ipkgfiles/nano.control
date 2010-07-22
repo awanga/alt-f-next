@@ -1,7 +1,6 @@
 Package: nano
 Description: A nice ncurses-based editor. Started out as a clone of pico. Great editor for new users.
 Version: 2.2.4
-Depends: ncurses
 Architecture: arm
 Priority: optional
 Section: admin

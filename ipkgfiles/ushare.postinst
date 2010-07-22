@@ -1,8 +1,8 @@
 #!/bin/sh
 
-addgroup -S -g 101 multimedia
-adduser -D -S -g "Ushare user" -G multimedia -u 10 ushare
+addgroup -S -g 80 multimedia
+adduser -S -g "uShare daemon" -G multimedia -u 10 -h /var/lib/ushare ushare
 
-chown -R ushare:multimedia /etc/ushare.conf
+chown ushare:multimedia /etc/ushare.conf
 
 ln -sf /usr/sbin/rcscript /sbin/rcushare

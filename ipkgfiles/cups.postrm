@@ -1,6 +1,8 @@
 #!/bin/sh
 
-deluser cuppes
+DIRS="/var/spool/cups /var/cache/cups /var/run/cups /var/log/cups"
+
+deluser cups
 delgroup lpadmin
-rm -f /sbin/rccups 
-rm -rf /etc/cups /var/run/cups /var/spool/cups /var/cache/cups
+
+rm -rf /sbin/rccups $DIRS

@@ -1,2 +1,5 @@
 ./etc/minidlna.conf
+./etc/init.d/S80minidlna
 ./usr/sbin/minidlna
+./usr/www/cgi-bin/minidlna.cgi
+./usr/www/cgi-bin/minidlna_proc.cgi

@@ -1,5 +1,5 @@
 Package: minidlna
-Description: MiniDLNA (aka ReadyDLNA) is server software with the aim of being fully compliant with DLNA/UPnP-AV clients.
+Description: Media server compliant with DLNA/UPnP-AV clients.
 Version: 230410
 Depends: libexif, jpeg, libid3tag, flac, libvorbis, sqlite, ffmpeg
 Architecture: arm

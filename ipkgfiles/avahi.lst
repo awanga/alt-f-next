@@ -30,4 +30,4 @@
 ./usr/sbin/avahi-dnsconfd
 ./usr/share/avahi/avahi-service.dtd
 ./usr/share/avahi/service-types
-./var/lib/avahi-autoipd
+

@@ -1,5 +1,4 @@
 ./etc/init.d/S81transmission
-./etc/transmission/settings.json
 ./usr/bin/transmission-daemon
 ./usr/share/transmission/web/images/buttons/cancel.png
 ./usr/share/transmission/web/images/buttons/file_priority_buttons.png
@@ -40,4 +39,4 @@
 ./usr/share/transmission/web/stylesheets/iphone.css
 ./usr/www/cgi-bin/transmission.cgi
 ./usr/www/cgi-bin/transmission_proc.cgi
-./sbin/rctransmission
+

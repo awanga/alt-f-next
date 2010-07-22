@@ -1,3 +1,6 @@
+./etc/mt-daapd.conf
+./etc/mt-daapd.playlist
+./etc/init.d/S80mt-daapd
 ./usr/sbin/mt-daapd
 ./usr/share/mt-daapd/admin-root/aspl-license.html
 ./usr/share/mt-daapd/admin-root/aspl-license.txt
@@ -16,3 +19,5 @@
 ./usr/share/mt-daapd/admin-root/required.gif
 ./usr/share/mt-daapd/admin-root/status.html
 ./usr/share/mt-daapd/admin-root/thanks.html
+./usr/www/cgi-bin/mt-daapd.cgi
+./usr/www/cgi-bin/mt-daapd_proc.cgi

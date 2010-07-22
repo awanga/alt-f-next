@@ -1,7 +1,7 @@
 #!/bin/sh
 
-addgroup -S -g 101 multimedia
-adduser -D -h /var/lib/fuppes -g "Fuppes user" -G multimedia -u 11 fuppes
+addgroup -S -g 80 multimedia
+adduser -S -g "Fuppes user" -G multimedia -u 12 -h /var/lib/fuppes fuppes
 
 chown -R fuppes:multimedia /etc/fuppes
 

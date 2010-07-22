@@ -12,3 +12,6 @@
 ./usr/lib/libavutil.so
 ./usr/lib/libavutil.so.49
 ./usr/lib/libavutil.so.49.15.0
+./usr/lib/libswscale.so
+./usr/lib/libswscale.so.0
+./usr/lib/libswscale.so.0.7.1

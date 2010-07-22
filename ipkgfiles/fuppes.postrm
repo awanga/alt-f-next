@@ -2,4 +2,4 @@
 
 deluser fuppes
 delgroup multimedia
-rm -f /sbin/rcfuppes /var/lib/fuppes
+rm -rf /sbin/rcfuppes

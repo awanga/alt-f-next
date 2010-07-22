@@ -38,3 +38,4 @@
 ./usr/share/fuppes/header-gradient-small.png
 ./usr/share/fuppes/style.css
 ./usr/www/cgi-bin/fuppes.cgi
+./usr/www/cgi-bin/fuppes_proc.cgi

@@ -87,3 +87,5 @@
 ./usr/share/mediatomb/web/top.html
 ./usr/share/mediatomb/web/topleft.html
 ./usr/share/mediatomb/web/topright.html
+./usr/www/cgi-bin/mediatomb.cgi
+./usr/www/cgi-bin/mediatomb_proc.cgi

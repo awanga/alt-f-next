@@ -9,6 +9,7 @@
 ./usr/lib/libntfs.so
 ./usr/lib/libntfs.so.10
 ./usr/lib/libntfs.so.10.0.0
+./usr/sbin/fsck.ntfs
 ./usr/sbin/mkntfs
 ./usr/sbin/ntfsclone
 ./usr/sbin/ntfscp
