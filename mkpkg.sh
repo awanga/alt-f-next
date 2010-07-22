@@ -35,9 +35,21 @@
 # 5 /usr/www/cgi-bin/<pkgname>_proc.cgi
 
 #set -x
+set -u
 
 usage() {
-	echo -e "usage: mkpkg.sh <package> |\n -set (creates rootfs file list) |\n -setroot (creates rootfs base file list) |\n -cleanroot (remove all files not in rootfs base file list)\n"
+	echo -e "usage: mkpkg.sh <package> |
+	-rm <package> (remove from rootfs files from <pkg> |
+	-ls <package> (list package file contents) |
+	-set (store current rootfs file list) |
+	-clean (remove new files since last -set) |
+	-diff (show new files since last -set) |
+	-force <package> (force create package. You must first create the .control file) |
+	-setroot (creates rootfs base file list) |
+	-cleanroot (remove all files not in rootfs base file list) |
+	-index (create ipkg package index) |
+	-all (recreates all packages in ipkfiles dir) |
+	-help"
 	exit 1
 }
 
@@ -64,51 +76,117 @@ PATH=$CDIR/bin:$PATH
 IPKGDIR=$CDIR/ipkgfiles
 
 ROOTFSFILES=$CDIR/rootfsfiles-base.lst
+ROOTFSDIR=$BLDDIR/project_build_arm/dns323/root
 TFILES=$CDIR/rootfsfiles.lst
 PFILES=$CDIR/pkgfiles.lst
 
+force=n
+
 case "$1" in
-	"-set")
-		cd $BLDDIR/project_build_arm/dns323/root
+	-rm)
+		if test $# != 2 -o ! -f $IPKGDIR/$2.lst; then
+			usage
+		fi
+		cd $ROOTFSDIR
+		# remove files first
+		xargs --arg-file=$IPKGDIR/$2.lst rm -f >& /dev/null
+		# and then empty directories. reverse sort to remove subdirs first
+		cat $IPKGDIR/$2.lst | sort -r | xargs rmdir >& /dev/null
+		exit 0
+		;;
+
+	-ls)
+		if test $# != 2 -o ! -f $IPKGDIR/$2.lst; then
+			usage
+		fi
+		cd $ROOTFSDIR
+		xargs --arg-file=$IPKGDIR/$2.lst ls
+		exit 0
+		;;
+
+	-set)
+		cd $ROOTFSDIR
 		if test -f $TFILES; then
 			mv $TFILES $TFILES-
 		fi
-		find . ! -type d | sort > $TFILES
+		#find . ! -type d | sort > $TFILES
+		find . | sort > $TFILES
 		chmod -w $TFILES
 		exit 0
 		;;
-	
-	"-setroot")
+
+	-diff)
+		cd $ROOTFSDIR
+		TF=$(mktemp)
+		#find . ! -type d | sort > $TF
+		find . | sort > $TF
+		diff $TFILES $TF | sed -n 's\> ./\./\p'
+		rm $TF
+		exit 0
+		;;
+
+	-clean)
+		tf=$(mktemp -t)
+		cd $ROOTFSDIR
+		find . | cat $TFILES - | sort | \
+			uniq -u | xargs rm >& $tf
+		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
+		rm $tf
+		exit 0
+		;;
+
+	-force)
+		if test "$#" != 2; then usage; fi
+		shift
+		force=y
+		;;
+
+	-setroot)
+		# records the current files in the rootfs
+		# must be done after the first make with only the base packages configured
 		if test -f $ROOTFSFILES; then
 			mv $ROOTFSFILES $ROOTFSFILES-
 		fi
 	
-		cd $BLDDIR/project_build_arm/dns323/root
+		cd $ROOTFSDIR
+		#find . ! -type d | sort > $ROOTFSFILES
 		find . | sort > $ROOTFSFILES
 		chmod -w $ROOTFSFILES
 		exit 0
 		;;
 
-	"-cleanroot")
-		cd $BLDDIR/project_build_arm/dns323
-		rm -rf newroot
-		(cd root && cpio --quiet -pdm ../newroot < $ROOTFSFILES)
-		mv root oldroot
-		mv newroot root
+	-cleanroot)
+		# remove all files found in the rootfs after the last "-setroot"
+		# to recreate the rootfs.ext2, a make with the base system configured must be done
+		tf=$(mktemp -t)
+		cd $ROOTFSDIR
+		find . | cat $ROOTFSFILES - | sort | \
+			uniq -u | xargs rm >& $tf
+		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
+		rm $tf
 		exit 0
 		;;
 
-	"-all")
-		for i in $(ls ipkgfiles/*.lst); do
+	-index)
+		ipkg-make-index pkgs/ > pkgs/Packages
+		exit 0
+		;;
+
+	-all)
+		for i in $(ls $IPKGDIR/*.lst); do
 			p=$(basename $i .lst)
 			echo Creating package $p
 			./mkpkg.sh $p
+			#if test $? = 1; then exit 1; fi
 		done
+		ipkg-make-index pkgs/ > pkgs/Packages
+		exit 0
 		;;
 
-	"-help"|"--help"|"-h")
+	-help|--help|-h)
 		usage
 		sed -n '3,35p' $0
+		exit 1
 		;;
 
 	-*)
@@ -121,18 +199,39 @@ if ! test -e $TFILES; then
 	exit 1
 fi
 
-pkg=$1
-PKGMK=$(find $CDIR/package -name $pkg.mk)
-if test -z "$PKGMK"; then
-	echo Package $pkg not found, exiting
-	exit 1
-fi
-	
-PKGDIR=$(dirname $PKGMK)
-PKG=$(echo $pkg | tr [:lower:] [:upper:])
-eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
-version=$(eval echo \$${PKG}_VERSION)
 ARCH=arm
+
+pkg=$1
+PKG=$(echo $pkg | tr '[:lower:]-' '[:upper:]_')
+
+if test "$force" != "y"; then
+	PKGMK=$(find $CDIR/package -name $pkg.mk)
+	if test -z "$PKGMK"; then
+		echo Package $pkg not found, is it a sub-package?
+		
+		if $(grep -q ^BR2_PACKAGE_$PKG .config); then
+			MPKG=$(echo $PKG | cut -f1 -d "_")
+			mpkg=$(echo $MPKG | tr '[:upper:]_' '[:lower:]-' )
+			MPKGMK=$(find $CDIR/package -name $mpkg.mk)
+			if test -z "$MPKGMK"; then
+				echo Main Package $mpkg not found, exiting.
+				exit 1
+			fi
+		else
+			echo Package $pkg is not configured, exiting.
+			exit 1
+		fi
+		echo $pkg is a sub-package of $mpkg
+
+		PKGDIR=$(dirname $MPKGMK)
+		eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
+		version=$(eval echo \$${MPKG}_VERSION)	
+	else
+		PKGDIR=$(dirname $PKGMK)
+		eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
+		version=$(eval echo \$${PKG}_VERSION)
+	fi
+fi
 
 if ! test -f $IPKGDIR/$pkg.control; then # first time build
 
@@ -140,28 +239,28 @@ if ! test -f $IPKGDIR/$pkg.control; then # first time build
 	# and do a new "./mkpkg <package>
 	# the "Depends" entry is just a helper, it has to be checked
 	# and corrected		
-	awk -v ver=$version '
-		/config BR2_PACKAGE/ {
-			printf "Package: %s\nVersion: %s\n", tolower(substr($2,13)), ver
-		}
+
+	awk -v ver=$version -v pkg=$pkg '
 		/(depends|select)/ && /BR2_PACKAGE/ {
 			for (i=1; i<=NF; i++) {
 				p = tolower(substr($i,13));
 				if (p != "")
-					printf "Depends: %s\n", p;
+					deps = p ", " deps ;
 			}
 		}
 		/\thelp/,/^\w/ {
 			a=substr($0,1,1);
 			if (a != "" && a != "\t")
 				exit;
-			else
-				if ($1 == "help")
-					printf "Description: "
-				else if ($1 != "")
-					print $0
+			else if ($1 != "" && $1 != "help")
+				desc = desc $0 "\n";
 		}
 		END {
+			printf "Package: %s\n", pkg;
+			printf "Description: %s", desc;
+			printf "Version: %s\n", ver;
+			if (deps != "")
+				printf "Depends: %s\n", deps;
 			printf "Architecture: arm\n";
 			printf "Priority: optional\n";
 			printf "Section: admin\n";
@@ -169,13 +268,22 @@ if ! test -f $IPKGDIR/$pkg.control; then # first time build
 			printf "Maintainer: jcard\n";
 		}
 	' $PKGDIR/Config.in > $IPKGDIR/$pkg.control
+elif test "$force" != "y"; then 
+	cver=$(awk '/^Version/{print $2}' $IPKGDIR/$pkg.control)
+ 	if test "$cver" != "$version"; then
+		echo "ERROR: $pkg.control has version $cver and built package has version $version."
+		exit 1
+	fi
+else
+	version=$(awk '/^Version/{print $2}' $IPKGDIR/$pkg.control)
 fi
-	
+
 if ! test -f $IPKGDIR/$pkg.lst; then # first time build
 	# create file list
-	cd ${BLDDIR}/project_build_arm/dns323/root	
-	find . ! -type d | sort > $PFILES
-	
+	cd $ROOTFSDIR	
+	#find . ! -type d | sort > $PFILES
+	find . | sort > $PFILES
+
 	diff $TFILES $PFILES | sed -n 's\> ./\./\p' > $IPKGDIR/$pkg.lst
 	cd $CDIR
 	rm $PFILES
@@ -192,10 +300,22 @@ fi
 
 mkdir -p tmp tmp/CONTROL
 
-cd ${BLDDIR}/project_build_arm/dns323/root
-cpio --quiet -pdmu $CDIR/tmp < $IPKGDIR/$pkg.lst
-if test $? = 1; then # cpio doesnt return error?!
-	echo Fail
+cd ${BLDDIR}/project_build_arm/dns323
+#cd root
+#cpio --quiet -pdu $CDIR/tmp < $IPKGDIR/$pkg.lst
+# cpio creates needed directories ignoring umask, so use tar
+# but using tar with a pipe, if the first tar fails we can't know it,
+# so check files first
+for i in $(cat $IPKGDIR/$pkg.lst); do
+	if ! test -e root/$i; then
+		echo "Fail creating $pkg package ($i not found)"
+		exit 1
+	fi
+done
+
+tar -C root -c -T $IPKGDIR/$pkg.lst | tar -C $CDIR/tmp -x
+if test $? = 1; then 
+	echo Fail creating $pkg package
 	exit 1
 fi
 cd "$CDIR"
@@ -212,7 +332,6 @@ done
 ipkg-build -o root -g root tmp
 
 mv ${pkg}_${version}_${ARCH}.ipk pkgs
-ipkg-make-index pkgs/ > pkgs/Packages
 rm -rf tmp
 
 # my own "sm" ipkg-build
