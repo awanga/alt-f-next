@@ -11,11 +11,11 @@ ifeq ($(BR2_ENABLE_DEBUG),y) # install-exec doesn't install aclocal stuff
 PKG_CONFIG_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 endif
 
-PKG_CONFIG_DEPENDENCIES = uclibc libglib2
+PKG_CONFIG_DEPENDENCIES = uclibc
 
 PKG_CONFIG_CONF_OPT = --with-installed-glib
 
-$(eval $(call AUTOTARGETS,package,pkg-config))
+#$(eval $(call AUTOTARGETS,package,pkg-config))
 
 # pkg-config for the host
 PKG_CONFIG_HOST_DIR:=$(BUILD_DIR)/pkg-config-$(PKG_CONFIG_VERSION)-host
@@ -41,6 +41,7 @@ $(STAMP_DIR)/host_pkgconfig_configured: $(STAMP_DIR)/host_pkgconfig_unpacked
 		--sysconfdir="$(HOST_DIR)/etc" \
 		--with-pc-path="$(STAGING_DIR)/usr/lib/pkgconfig" \
 		--disable-static \
+		--with-installed-glib \
 	)
 	touch $@
 
@@ -55,6 +56,7 @@ $(STAMP_DIR)/host_pkgconfig_installed: $(STAMP_DIR)/host_pkgconfig_compiled
 	touch $@
 
 host-pkgconfig: $(STAMP_DIR)/host_pkgconfig_installed
+	touch $@
 
 host-pkgconfig-clean:
 	rm -f $(addprefix $(STAMP_DIR)/host_pkgconfig_,unpacked configured compiled installed)
@@ -63,3 +65,10 @@ host-pkgconfig-clean:
 
 host-pkgconfig-dirclean:
 	rm -rf $(PKG_CONFIG_HOST_DIR)
+
+pkg-config: host-pkgconfig
+	touch @
+
+ifeq ($(BR2_PACKAGE_PKG_CONFIG),y)
+TARGETS+=pkg-config
+endif
