@@ -239,7 +239,8 @@ fi
 			/Raid Level/ { printf "level=%s; ", $4}
 			/Preferred Minor/ { printf "rdev=\"md%d\"; ", $4}
 			/this/ { getline; while (getline) {
-				devs = substr($NF, 6, 4) " " devs;}
+				if (substr($NF, 1,5) == "/dev/") {
+					devs = substr($NF, 6, 4) " " devs;}}
 				printf "devs=\"%s\";", devs}')
 		if test -b /dev/$rdev; then continue; fi
 		if echo "$ex" | grep -q "$rdev" ; then continue; fi
