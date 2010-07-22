@@ -1,0 +1,9 @@
+Package: sane
+Description: SANE stands for Scanner Access Now Easy.
+Version: 1.0.21
+Depends: libusb
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.sane-project.org/
+Maintainer: jcard

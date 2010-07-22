@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser minidlna
+delgroup multimedia
+rm -f /sbin/rcminidlna

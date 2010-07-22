@@ -1,0 +1,9 @@
+Package: ffmpegthumbnailer
+Description: This video thumbnailer can be used to create thumbnails for your video files.
+Version: 2.0.2
+Depends: ffmpeg, jpeg, libpng
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/ffmpegthumbnailer/
+Maintainer: jcard

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser transmission
+delgroup network
+rm -f /sbin/rctransmission

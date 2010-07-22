@@ -1,0 +1,7 @@
+#!/bin/sh
+
+addgroup -S -g 80 multimedia
+adduser -S -g "minidlna daemon" -G multimedia -u 11 -h /var/lib/minidlna minidlna
+
+chown -R minidlna:multimedia /etc/minidlna.conf
+ln -sf /usr/sbin/rcscript /sbin/rcminidlna

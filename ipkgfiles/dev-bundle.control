@@ -1,0 +1,9 @@
+Package: dev-bundle
+Version: 0.1
+Description: Everything needed to compile programs on the DNS-323. 
+ gcc-4.3.3, binutils-2.19.1, header files, and shared and static libraries.
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://gcc.gnu.org/ http://www.gnu.org/software/binutils/
+Maintainer: jcard

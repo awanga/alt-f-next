@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser mt-daapd
+delgroup multimedia
+rm -f /sbin/rcmt-daapd

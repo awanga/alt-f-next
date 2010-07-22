@@ -1,0 +1,28 @@
+#!/bin/sh
+
+MT_HOME=/var/lib
+MT_DIR=mediatomb
+MT_PIDFILE="/var/run/mediatomb.pid"
+MT_CFG="/var/lib/mediatomb/config.xml"
+
+addgroup -S -g 80 multimedia
+adduser -D -h $MT_HOME/$MT_DIR -g "mediatomb daemon" -G multimedia -u 14 mediatomb
+
+ln -sf /usr/sbin/rcscript /sbin/rcmediatomb
+
+# create the config file
+if test -e $MT_CFG; then exit 0; fi
+
+touch $MT_PIDFILE
+chmod a+w $MT_PIDFILE
+mediatomb -d -u mediatomb -g multimedia -m $MT_HOME -f $MT_DIR -P $MT_PIDFILE
+sleep 2
+kill $(cat $MT_PIDFILE)
+rm $MT_PIDFILE
+
+# add holder for shares
+sed -i '/<import hidden-files/a \
+    <autoscan> \
+    </autoscan>' $MT_CFG
+
+

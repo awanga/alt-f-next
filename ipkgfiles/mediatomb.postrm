@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser mediatomb
+delgroup multimedia
+rm -f /sbin/rcmediatomb

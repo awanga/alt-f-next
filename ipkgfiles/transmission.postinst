@@ -1,0 +1,13 @@
+#!/bin/sh
+
+THOME=/var/lib/transmission
+JSON=settings.json
+
+addgroup -S -g 81 network
+adduser -S -g "Transmission daemon" -G network -u 13 -h $THOME transmission
+
+transmission-daemon -d -c "" -w "" --incomplete-dir ""  >& $THOME/$JSON
+sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true,|' $THOME/$JSON
+
+chown transmission:network $THOME/$JSON
+ln -sf /usr/sbin/rcscript /sbin/rctransmission
