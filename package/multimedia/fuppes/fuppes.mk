@@ -11,7 +11,7 @@ FUPPES_INSTALL_TARGET = YES
 FUPPES_LIBTOOL_PATCH = NO
 FUPPES_AUTORECONF = NO
 
-FUPPES_DEPENDENCIES = uclibc host-pkgconfig pcre libxml2 sqlite ffmpeg taglib flac libvorbis libmad taglib lame ffmpegthumbnailer
+FUPPES_DEPENDENCIES = uclibc pkg-config pcre libxml2 sqlite ffmpeg taglib flac libvorbis libmad taglib lame ffmpegthumbnailer
 
 FUPPES_CONF_ENV += MYSQL_CONFIG=no \
  TAGLIB_CONFIG=$(STAGING_DIR)/usr/bin/taglib-config \

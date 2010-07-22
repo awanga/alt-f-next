@@ -12,7 +12,7 @@ TRANSMISSION_INSTALL_TARGET = YES
 TRANSMISSION_LIBTOOL_PATCH = NO
 TRANSMISSION_CONF_OPT = --disable-cli --disable-nls
 
-TRANSMISSION_DEPENDENCIES = uclibc libcurl host-pkgconfig
+TRANSMISSION_DEPENDENCIES = uclibc libcurl pkg-config
 
 $(eval $(call AUTOTARGETS,package,transmission))
 
