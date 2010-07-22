@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Wed May 12 00:34:26 2010
+# Thu Jul  1 22:45:58 2010
 #
 BR2_HAVE_DOT_CONFIG=y
 BR2_VERSION="2009.08"
@@ -43,7 +43,7 @@ BR2_ARM_TYPE="ARM926T"
 BR2_ARM_EABI=y
 BR2_ARCH="arm"
 BR2_ENDIAN="LITTLE"
-BR2_GCC_TARGET_TUNE="arm9tdmi"
+BR2_GCC_TARGET_TUNE="arm926ej-s"
 BR2_GCC_TARGET_ARCH="armv5te"
 BR2_GCC_TARGET_ABI="aapcs-linux"
 
@@ -162,7 +162,7 @@ BR2_OPTIMIZE_2=y
 # BR2_HAVE_MANPAGES is not set
 # BR2_HAVE_INFOPAGES is not set
 # BR2_HAVE_DOCUMENTATION is not set
-# BR2_HAVE_DEVFILES is not set
+BR2_HAVE_DEVFILES=y
 BR2_UPDATE_CONFIG=y
 
 #
@@ -304,7 +304,8 @@ BR2_CROSS_TOOLCHAIN_TARGET_UTILS=y
 # BR2_PACKAGE_FINDUTILS is not set
 # BR2_PACKAGE_FLEX is not set
 # BR2_PACKAGE_GAWK is not set
-# BR2_PACKAGE_GCC_TARGET is not set
+BR2_PACKAGE_GCC_TARGET=y
+BR2_EXTRA_TARGET_GCC_CONFIG_OPTIONS=""
 # BR2_PACKAGE_GREP is not set
 # BR2_PACKAGE_MAKE is not set
 # BR2_PACKAGE_PATCH is not set
@@ -331,8 +332,8 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_LIBTOOL is not set
 # BR2_PACKAGE_M4 is not set
 # BR2_PACKAGE_LIBMPFR is not set
+# BR2_PACKAGE_MPATROL is not set
 # BR2_PACKAGE_OPROFILE is not set
-# BR2_PACKAGE_PKG_CONFIG is not set
 # BR2_PACKAGE_READLINE is not set
 # BR2_PACKAGE_PCRE is not set
 
@@ -534,6 +535,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_HDPARM is not set
 # BR2_PACKAGE_HOTPLUG is not set
 # BR2_PACKAGE_HDDTEMP is not set
+# BR2_PACKAGE_HPLIP is not set
 # BR2_PACKAGE_HWDATA is not set
 # BR2_PACKAGE_I2C_TOOLS is not set
 # BR2_PACKAGE_INPUT_TOOLS is not set
@@ -550,6 +552,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_NTFS_3G is not set
 # BR2_PACKAGE_NTFSPROGS is not set
 # BR2_PACKAGE_PCIUTILS is not set
+# BR2_PACKAGE_SANE is not set
 # BR2_PACKAGE_SETSERIAL is not set
 # BR2_PACKAGE_SFDISK is not set
 # BR2_PACKAGE_SG3_UTILS is not set
@@ -571,6 +574,7 @@ BR2_HOST_FAKEROOT=y
 #
 # BR2_PACKAGE_AUMIX is not set
 # BR2_PACKAGE_FFMPEG is not set
+# BR2_PACKAGE_FFMPEGTHUMBNAILER is not set
 # BR2_PACKAGE_FLAC is not set
 # BR2_PACKAGE_FUPPES is not set
 # BR2_PACKAGE_GSTREAMER is not set
@@ -700,6 +704,7 @@ BR2_HOST_FAKEROOT=y
 #
 # Interpreter languages / Scripting
 #
+# BR2_PACKAGE_GS is not set
 # BR2_PACKAGE_LUA is not set
 # BR2_PACKAGE_MICROPERL is not set
 # BR2_PACKAGE_PYTHON is not set
