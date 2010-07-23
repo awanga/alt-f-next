@@ -3,7 +3,8 @@
 # e2fsprogs
 #
 #############################################################
-E2FSPROGS_VERSION:=1.41.3
+#E2FSPROGS_VERSION:=1.41.3
+E2FSPROGS_VERSION:=1.41.12
 E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
 E2FSPROGS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/e2fsprogs
 E2FSPROGS_DIR=$(BUILD_DIR)/e2fsprogs-$(E2FSPROGS_VERSION)
@@ -38,7 +39,6 @@ $(E2FSPROGS_DIR)/.configured: $(E2FSPROGS_DIR)/.unpacked
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
-		--with-cc=$(TARGET_CC) \
 		--with-linker=$(TARGET_CROSS)ld \
 		--prefix=/usr \
 		--exec-prefix=/usr \
@@ -54,7 +54,7 @@ $(E2FSPROGS_DIR)/.configured: $(E2FSPROGS_DIR)/.unpacked
 		--disable-tls \
 		--enable-elf-shlibs --enable-dynamic-e2fsck --disable-swapfs \
 		--disable-debugfs --disable-imager \
-		--disable-resizer --enable-fsck \
+		--enable-resizer --enable-fsck \
 		--disable-e2initrd-helper \
 		--without-catgets $(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
@@ -97,6 +97,7 @@ E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_LSATTR) += ${TARGET_DIR}/usr/bin/lsattr
 E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_MKE2FS) += ${TARGET_DIR}/usr/sbin/mke2fs
 E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_MKLOSTFOUND) += ${TARGET_DIR}/usr/sbin/mklost+found
 E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_UUIDGEN) += ${TARGET_DIR}/usr/bin/uuidgen
+E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_RESIZE) += ${TARGET_DIR}/usr/bin/resize2fs
 
 $(TARGET_DIR)/$(E2FSPROGS_TARGET_BINARY): $(STAGING_DIR)/$(E2FSPROGS_TARGET_BINARY)
 	$(MAKE1) PATH=$(TARGET_PATH) DESTDIR=$(TARGET_DIR) LDCONFIG=true \

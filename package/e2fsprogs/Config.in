@@ -87,5 +87,10 @@ config BR2_PACKAGE_E2FSPROGS_UUIDGEN
 	default y
 	depends on BR2_PACKAGE_E2FSPROGS
 
+config BR2_PACKAGE_E2FSPROGS_RESIZE
+	bool "resize2fs"
+	default y
+	depends on BR2_PACKAGE_E2FSPROGS
+
 comment "e2fsprogs requires a toolchain with LARGEFILE support"
 	depends on !BR2_LARGEFILE
