@@ -4,6 +4,6 @@ config BR2_PACKAGE_MT_DAAPD
 	select BR2_PACKAGE_LIBID3TAG
 	select BR2_PACKAGE_LIBVORBIS
 	help
-	 mt-daapd is FIXME
+	 mt-daapd is Media server for the Roku SoundBridge and iTunes
 	 
-	 http://libexif.sourceforge.net/
+	 http://www.fireflymediaserver.org/

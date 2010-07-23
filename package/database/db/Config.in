@@ -3,4 +3,4 @@ config BR2_PACKAGE_DB
 	help
 	  Berkeley DB
 
-	  FIXME http://www.sqlite.org/
+	  http://www.oracle.com/us/products/database/berkeley-db

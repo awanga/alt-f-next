@@ -6,7 +6,7 @@
 
 HPLIP_VERSION = 3.10.5
 HPLIP_SOURCE = hplip-$(HPLIP_VERSION).tar.gz
-HPLIP_SITE = http://fixme
+HPLIP_SITE = http://prdownloads.sourceforge.net/hplip/
 HPLIP_AUTORECONF = NO
 HPLIP_LIBTOOL_PATCH = YES
 HPLIP_INSTALL_STAGING = NO

@@ -8,6 +8,6 @@ config BR2_PACKAGE_MINIDLNA
 	select BR2_PACKAGE_SQLITE
 	select BR2_PACKAGE_FFMPEG
 	help
-	  minidlna FIXME
+	  minidlna is a media server compliant with DLNA/UPnP-AV clients
 
 	  http://sourceforge.net/projects/minidlna

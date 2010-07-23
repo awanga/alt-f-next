@@ -6,7 +6,6 @@
 
 DB_VERSION = 4.6.21
 DB_SOURCE = db-$(DB_VERSION).tar.gz
-#DB_SITE = http://www.oracle.com/database/berkeley-db/index.html
 DB_SITE = http://download.oracle.com/berkeley-db
 DB_LIBTOOL_PATCH = NO
 DB_DEPENDENCIES = uclibc

@@ -5,7 +5,7 @@
 #############################################################
 GDBM_VERSION = 1.8.3
 GDBM_SOURCE = gdbm-$(GDBM_VERSION).tar.gz
-GDBM_SITE = http://libexif.sourceforge.net/ FIXME
+GDBM_SITE = $(BR2_GNU_MIRROR)/gdbm
 GDBM_AUTORECONF = NO
 GDBM_INSTALL_STAGING = YES
 GDBM_INSTALL_TARGET = YES

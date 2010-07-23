@@ -1,6 +1,6 @@
 config BR2_PACKAGE_GDBM
 	bool "gdbm"
 	help
-	 gdbm is FIXME
+	 GNU dbm is a set of database routines that use extensible hashing.
 	 
-	 http://libexif.sourceforge.net/
+	 http://www.gnu.org/software/gdbm/

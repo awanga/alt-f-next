@@ -3,3 +3,5 @@ config BR2_PACKAGE_NETATALK
 	select BR2_PACKAGE_DB
 	help
 	 Apple Filling Protocol
+
+	  http://netatalk.sourceforge.net/
