@@ -88,7 +88,9 @@ elif test -n "$InstallAll"; then
 	html_header
 	echo "<pre>"
 	for i in $(ipkg -V0 list | cut -f1 -d" "); do
-		ipkg install $i
+		if ! ipkg -V0 list_installed | cut -f1 -d" " | grep -q $i; then
+			ipkg install $i
+		fi
 	done 
 	cat<<-EOF
 		</pre>
