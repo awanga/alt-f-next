@@ -108,10 +108,10 @@ else
 					printf "<td>%s</td></tr>\n\n", des[i];
 				}
 			}
-		}
 		printf ("<tr><td><br></td></tr><tr><td colspan=2><strong>Install all available</strong></td> \
 			<td><input type=submit name=installall value=InstallAll></td></tr>\
 		</table></fieldset></form>", pkgfeed)
+		}
 	}'
 
 fi
