@@ -1,7 +1,6 @@
 #!/bin/sh
 
-saveflashdef() { 
-
+status() {
 	save=0
 	if ! test -e $stamp; then
 		save=1
@@ -12,18 +11,27 @@ saveflashdef() {
 				break
 			fi
 		done
-	for i in /etc/init.d/S*; do
-		# FIXME chmod doesnt change date, and stat is buggy
-		if test $i -nt $stamp; then 
-			save=1
-			break
-		fi
-	done
+
+		for i in /etc/init.d/S*; do
+			# FIXME chmod doesnt change date, and stat is buggy
+			if test $i -nt $stamp; then 
+				save=1
+				break
+			fi
+		done
 	fi
 
 	if test $save = "0"; then
-		echo "No modified files since last save, nothing saved"
-		exit 1;
+		echo "No modified files since last save."
+	fi
+
+	return $save
+}
+
+saveflashdef() { 
+
+	if status; then
+		exit 1
 	fi
 
 	for i in /etc/init.d/S*; do
@@ -73,6 +81,7 @@ saveflashdef() {
 }
 
 loadflashdef() {
+
 	mkdir -p $save_dir
 	mount /dev/mtdblock0 $save_dir
 
@@ -97,12 +106,13 @@ loadflashdef() {
 	rmdir $save_dir
 
 	if test -s $initscript_perms; then
-	for i in $(cat $initscript_perms ); do
-		chmod +x $i
-	done
-	rm $initscript_perms
+		for i in $(cat $initscript_perms ); do
+			chmod +x $i
+		done
+		rm $initscript_perms
 	fi
 
+	touch $stamp
 	exit $res
 }
 
@@ -221,7 +231,7 @@ usage() {
 	-lf [file] (load flash) | -sf (save flash) | \n\
 	-ls (list) | -ll (long list) | -cf (clear flash) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
-	-rs (read sib ip)"
+	-rs (read sib ip) | -st (status)"
 	exit 1;
 }
 
@@ -255,24 +265,20 @@ xfiles="/etc/fstab /etc/bay"
 
 if test $# = 0; then
 	usage
-elif test $1 = "-ls"; then
-	listflashdef
-elif test $1 = "-ll"; then
-	llistflashdef
-elif test $1 = "-sf"; then
-	saveflashdef
-elif test $1 = "-lf"; then
-	arg=""
-	if test $# = 2; then arg=$2; fi
-	loadflashdef $arg
-elif test $1 = "-cf"; then
-	clearflashdef
-elif test $1 = "-ta"; then
-	to_AltF
-elif test $1 = "-fa"; then
-	from_AltF
-elif test $1 = "-rs"; then
-	read_sib
-else
-	usage
 fi
+
+case $1 in
+	"-ls") 	listflashdef ;;
+	"-ll")	llistflashdef ;;
+	"-sf")	saveflashdef ;;
+	"-lf")	arg=""
+		if test $# = 2; then arg=$2; fi
+		loadflashdef $arg
+		;;
+	"-cf")	clearflashdef ;;
+	"-ta")	to_AltF ;;
+	"-fa")	from_AltF ;;
+	"-rs")	read_sib ;;
+	"-st")	status ;;
+	*)	usage ;;
+esac
