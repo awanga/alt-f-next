@@ -1,0 +1,12 @@
+config BR2_PACKAGE_FOOMATIC_FILTERS
+	bool "foomatic-filters"
+	select BR2_PACKAGE_A2PS
+	select BR2_PACKAGE_GS
+	select BR2_PACKAGE_CUPS
+	select BR2_PACKAGE_FOOMATIC_DB
+	help
+	Filter scripts used by the printer spoolers to convert the incoming
+	PostScript data into the printer's native format using a
+	printer/driver specific, but spooler-independent PPD file.
+	
+	  http://www.openprinting.org/

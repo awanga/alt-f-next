@@ -1,0 +1,11 @@
+--- foomatic-filters-4.0.4/foomaticrip.c-orig	2010-07-30 02:37:06.399651135 +0100
++++ foomatic-filters-4.0.4/foomaticrip.c	2010-07-30 02:37:12.349774199 +0100
+@@ -177,7 +177,7 @@
+                                 "/opt/cups/filter:"
+                                 "/usr/lib/cups/filter";
+ 
+-char modern_shell[64] = "/bin/bash";
++char modern_shell[64] = "/bin/sh";
+ 
+ void config_set_option(const char *key, const char *value)
+ {

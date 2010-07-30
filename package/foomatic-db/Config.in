@@ -1,0 +1,9 @@
+config BR2_PACKAGE_FOOMATIC_DB
+	bool "foomatic-db"
+	help
+	 The collected knowledge about printers, drivers, and driver options in XML files,
+	 used by foomatic-db-engine to generate PPD files. It also contains manufacturer-
+	 supplied PPD files which got released under free software licenses.
+	 Packaged together with foomatic-db-engine, and distribute only the PPD
+	
+	 http://www.openprinting.org/
