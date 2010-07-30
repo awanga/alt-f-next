@@ -94,19 +94,6 @@ select_part() {
 	partl=$(plabel $part)
 	if test -z "$partl"; then partl=$part; fi
 
-#	res=$(mdadm --query --detail --test --export $part 2>/dev/null )
-#	if test $? = 4; then
-#		dsk=$(basename $part)
-#		mod=$(cat /sys/block/${dsk%%[1-9]}/device/model) >/dev/null 2>&1
-#		if test -z "$mod"; then continue; fi
-#		dcap=$(awk -v sz=$(cat /sys/block/${dsk%%[1-9]}/size) 'BEGIN{printf "%.1f", sz*512/1e9}' /dev/null)
-#	else
-#		eval $res
-#		mod=$MD_LEVEL
-#		dcap=$pcap
-#	fi
-
-	#echo "<option value=$part> $partl ($mod, ${dcap}GB)</option>"
 	echo "<option value=$part> $partl ($part, ${pcap}B, ${avai}B free)</option>"
 	done
 	echo "</select>"
@@ -142,6 +129,10 @@ write_header() {
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	EOF
 
+	if ! loadsave_settings -st >/dev/null; then
+		warn="<center><h5><font color=red>When done you should save settings</font></h5></center>"
+	fi
+
 	if test $# == 2; then
 		echo "<meta http-equiv=\"refresh\" content=\"$2\">"
 	fi
@@ -149,6 +140,7 @@ write_header() {
 		<title>$1</title>
 		</head><body>
 		<center><h2>$1</h2></center>
+		$warn
 	EOF
 }
 
