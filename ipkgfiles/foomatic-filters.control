@@ -1,0 +1,9 @@
+Package: foomatic-filters
+Description: Printer filter scripts used to convert PostScript data into the printer's native format using a printer/driver specific PPD file.
+Version: 4.0.4
+Depends: a2ps, gs, cups, foomatic-db 
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://FIXME
+Maintainer: jcard

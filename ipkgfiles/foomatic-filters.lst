@@ -1,0 +1,6 @@
+./etc/foomatic
+./etc/foomatic/direct
+./etc/foomatic/filter.conf
+./etc/foomatic/filter.conf.sample
+./usr/bin/foomatic-rip
+./usr/lib/cups/filter/foomatic-rip

@@ -1,0 +1,8 @@
+Package: foomatic-db
+Description: Foomatic PPD files.
+Version: 4.0
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://FIXME
+Maintainer: jcard

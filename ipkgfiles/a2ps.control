@@ -1,0 +1,9 @@
+Package: a2ps
+Description: GNU a2ps is an Any to PostScript filter.
+Version: 4.14
+Depends: file
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www-inf.enst.fr/~demaille/a2ps
+Maintainer: jcard
