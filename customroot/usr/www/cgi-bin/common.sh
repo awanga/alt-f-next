@@ -60,8 +60,8 @@ msg() {
 	<html><body>
 	<script type=text/javascript>
 	alert(\"$txt\")
-	window.history.back()
-//	window.location.reload(window.history.back())
+//	window.history.back()
+	window.location.assign(document.referrer)
 	</script>
 	</body></html>"
 	exit 1
