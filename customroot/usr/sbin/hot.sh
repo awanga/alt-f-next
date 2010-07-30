@@ -77,6 +77,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			;; 
 		swap)
 			swapon -p 1 $PWD/$MDEV
+			mount -o remount,size=64M /tmp
 			sed -i '\|^'$PWD/$MDEV'|d' /etc/fstab
 			echo "$PWD/$MDEV none swap pri=1 0 0" >> /etc/fstab
 			return 0
@@ -200,6 +201,9 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	if $(grep -q -e ^$PWD/$MDEV /proc/swaps); then
 		swapoff $PWD/$MDEV
 		ret=$?
+		if test $(awk '/SwapTotal/ {print $2}' /proc/meminfo) = "0"; then
+			mount -o remount,size=32M /tmp
+		fi
 	elif $(grep -q -e ^$PWD/$MDEV /proc/mounts); then
 		if test "$(readlink -f /ffp)" = "$mpt/ffp"; then
 			if test -x /etc/init.d/S??ffp; then
