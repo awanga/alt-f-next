@@ -54,7 +54,12 @@ char *signatures[] = { "\x55\xAA\FrodoII\x00\x55\xAA",
 					   "\x55\xAA\Chopper\x00\x55\xAA",
 					   "\x55\xAAGandolf\x00\x55\xAA"};
 
-#define BLOCK_SIZE		0x10000
+#define BLOCK_SIZE	0x10000
+
+// cat /proc/mtd
+#define MTD_DEFLT	0x00010000
+#define MTD2_KERNEL	0x00180000
+#define MTD3_FSYS	0x00630000
 
 char *kernel = NULL, *initramfs = NULL, *defaults = NULL, *fw = NULL;
 unsigned char product = 1, custom = 2, model = 3, sub = 4, version = 5, quiet = 0;
@@ -72,15 +77,15 @@ int readwrite(int fdo, int fdi, ulong off, ulong sz, uint32_t *chk) {
 
   int i, j, n;
   uint32_t lchk = 0;
-  ulong *bp;
+  uint32_t *bp;
   for (i=0; i<sz/BLOCK_SIZE; i++) {
 	n = read(fdi, buf, BLOCK_SIZE);
 	if (n < 0)
 	  return -1;
 	if (write(fdo, buf, n) < 0)
 	  return -1;
-	bp = (ulong *) buf;
-	for (j=0; j<n/sizeof(ulong); j++)
+	bp = (uint32_t *) buf;
+	for (j=0; j<n/sizeof(uint32_t); j++)
 	  lchk ^= *bp++; 
   }
 
@@ -89,8 +94,8 @@ int readwrite(int fdo, int fdi, ulong off, ulong sz, uint32_t *chk) {
 	return -1;
   if (write(fdo, buf, n) < 0)
 	return -1;
-  bp = (ulong *) buf;
-  for (j=0; j<n/sizeof(ulong); j++)
+  bp = (uint32_t *) buf;
+  for (j=0; j<n/sizeof(uint32_t); j++)
 	lchk ^= *bp++; 
 
   free(buf);
@@ -175,8 +180,8 @@ int merge() {
   }
 
   ulong fsize = lseek(fi, 0, SEEK_END);
-  if (fsize > (0x1a0000-0x2000) ) {
-	if (!quiet) printf("Kernel sizes can not be more than 1572864 bytes\n");
+  if (fsize > MTD2_KERNEL ) {
+	if (!quiet) printf("Kernel sizes can not be more than %d bytes\n", MTD2_KERNEL);
 	exit(1);
   }
     
@@ -206,8 +211,8 @@ int merge() {
   }
 
   fsize = lseek(fi, 0, SEEK_END);
-  if (fsize > (0x7d0000-0x1a0000) ) {
-	if (!quiet) printf("initramfs size can not be more than 6488064 bytes\n");
+  if (fsize > MTD3_FSYS) {
+	if (!quiet) printf("initramfs size can not be more than %d bytes\n", MTD3_FSYS );
 	exit(1);
   }
 
@@ -232,8 +237,8 @@ int merge() {
 	}
 
 	fsize = lseek(fi, 0, SEEK_END);
-	if (fsize > 0x10000 ) {
-	  if (!quiet) printf("default size can not more than 65536 bytes\n");
+	if (fsize > MTD_DEFLT ) {
+	  if (!quiet) printf("default size can not more than %d bytes\n", MTD_DEFLT);
 	  exit(1);
 	}
 
