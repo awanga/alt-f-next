@@ -3,10 +3,15 @@
 # portmap
 #
 #############################################################
-PORTMAP_VERSION:=5b
-PORTMAP_SOURCE:=portmap_$(PORTMAP_VERSION)eta.tar.gz
-PORTMAP_SITE:=ftp://ftp.porcupine.org/pub/security/
-PORTMAP_DIR:=$(BUILD_DIR)/portmap_$(PORTMAP_VERSION)eta
+#PORTMAP_VERSION:=5b
+#PORTMAP_SOURCE:=portmap_$(PORTMAP_VERSION)eta.tar.gz
+#PORTMAP_DIR:=$(BUILD_DIR)/portmap_$(PORTMAP_VERSION)eta
+#PORTMAP_SITE:=ftp://ftp.porcupine.org/pub/security/
+
+PORTMAP_VERSION:=6.0
+PORTMAP_SOURCE:=portmap-$(PORTMAP_VERSION).tgz
+PORTMAP_SITE:=http://neil.brown.name/portmap/
+PORTMAP_DIR:=$(BUILD_DIR)/portmap_$(PORTMAP_VERSION)
 PORTMAP_CAT:=$(ZCAT)
 PORTMAP_BINARY:=portmap
 PORTMAP_TARGET_BINARY:=sbin/portmap
@@ -18,11 +23,11 @@ portmap-source: $(DL_DIR)/$(PORTMAP_SOURCE)
 
 $(PORTMAP_DIR)/.unpacked: $(DL_DIR)/$(PORTMAP_SOURCE)
 	$(PORTMAP_CAT) $(DL_DIR)/$(PORTMAP_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(PORTMAP_DIR) package/portmap/ portmap\*.patch
+	toolchain/patch-kernel.sh $(PORTMAP_DIR) package/portmap/ portmap-$(PORTMAP_VERSION)\*.patch
 	touch $(PORTMAP_DIR)/.unpacked
 
 $(PORTMAP_DIR)/$(PORTMAP_BINARY): $(PORTMAP_DIR)/.unpacked
-	$(MAKE) CC=$(TARGET_CC) O="$(TARGET_CFLAGS)" -C $(PORTMAP_DIR)
+	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" -C $(PORTMAP_DIR)
 
 $(TARGET_DIR)/$(PORTMAP_TARGET_BINARY): $(PORTMAP_DIR)/$(PORTMAP_BINARY)
 	$(INSTALL) -D $(PORTMAP_DIR)/$(PORTMAP_BINARY) $(TARGET_DIR)/$(PORTMAP_TARGET_BINARY)
