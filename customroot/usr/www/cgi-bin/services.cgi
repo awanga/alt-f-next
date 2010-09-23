@@ -42,12 +42,12 @@ fi
 cat<<-EOF
 	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<table><tr>
-	<td> $s Service $es </td>
-	<td> $s Boot Enabled $es </td>
-	<td align=center> $s Status $es </td>
-	<td align=center> $s Action $es </td>
+	<td> <strong> Service $es </td>
+	<td> <strong> Boot Enabled $es </td>
+	<td align=center> <strong> Status $es </td>
+	<td align=center> <strong> Action $es </td>
 	<td></td>
-	<td align=center> $s Description $es </td></tr>
+	<td align=center> <strong> Description $es </td></tr>
 EOF
 
 for i in $srv; do
@@ -59,11 +59,17 @@ for i in $srv; do
 	fi
 
 	if rc$i status >/dev/null ; then
-		st="$s Running $es"
+		st="<strong> Running $es"
 		act="StopNow"
 	else
 		st="Stopped"
 		act="StartNow"
+	fi
+
+	if test -f $PWD/${i}.cgi; then
+                conf="<td><input type="submit" name=$i value="Configure"></td>"
+        else
+		conf="<td></td>"
 	fi
 
 	cat<<-EOF
@@ -71,7 +77,7 @@ for i in $srv; do
 		<td align=center><input type=checkbox $chkf name=$i value=enable></td>
 		<td>$st</td>
 		<td><input type="submit" name=$i value="$act"></td>
-		<td><input type="submit" name=$i value="Configure"></td>
+		$conf
 		<td>$DESC</td></tr>
 	EOF
 done
