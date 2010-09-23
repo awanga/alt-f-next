@@ -21,14 +21,21 @@ clean() {
 
 install() {
 	echo Installing ipkg
-	if ! nslookup www.dropbox.com >& /dev/null; then
-		msg "You don't seem to have a name server configured, or a working internet connection."
-	fi
 	
 	CONFF=/etc/ipkg.conf
 	IPKG=ipkg_0.99.163_arm.ipk
 	FEED=$(awk '/^src/{print $3}' $CONFF)
 	DESTD=$(awk '/^dest/{print $3}' $CONFF)
+
+	if ! nslookup www.dropbox.com >& /dev/null; then
+		if ! test -e /tmp/$IPKG; then
+			msg "You don't seem to have a name server configured,
+or a working internet connection,
+and no /tmp/$IPKG file found. Exiting"
+		else
+			local="true"
+		fi
+	fi
 
 	if test "$DESTD" != "/Alt-F"; then
 		msg "Package destination directory must be /Alt-F"
@@ -39,12 +46,16 @@ install() {
 	fi
 			
 	TMPD=$(mktemp -d -t)
-	wget -nv -P $TMPD $FEED/$IPKG >& /dev/null
-	if test $? != 0; then
-		rm -rf $TMPD
-		msg "Downloading of $IPKG from $FEED failed."
+	if test -z "$local"; then
+		wget -nv -P $TMPD $FEED/$IPKG >& /dev/null
+		if test $? != 0; then
+			rm -rf $TMPD
+			msg "Downloading of $IPKG from $FEED failed."
+		fi
+	else
+		mv /tmp/$IPKG $TMPD
 	fi
-	
+
 	cd $TMPD
 	ar x $IPKG
 	tar xzf control.tar.gz
@@ -66,8 +77,10 @@ install() {
 	cd
 	rm -rf $TMPD
 	
-	ipkg-cl update
-	ipkg-cl install ipkg
+	if test -z "$local"; then
+		ipkg-cl update
+		ipkg-cl install ipkg
+	fi
 
 	# remount /Alt-F with reval
 	aufs.sh -r
