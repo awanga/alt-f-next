@@ -16,8 +16,12 @@ if ! test -e $SECR; then
 	echo -n $passwd > $SECR
 	chmod og-r $SECR
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
-	touch /tmp/firstboot
-	loc="/cgi-bin/host.cgi"
+	if test -z "$(loadsave_settings -ls)"; then
+		touch /tmp/firstboot
+		loc="/cgi-bin/host.cgi"
+	else
+		loc="/cgi-bin/status.cgi"
+	fi
 else
 	if test "$from_url" != "login.cgi"; then
 		loc="/cgi-bin/$from_url"
