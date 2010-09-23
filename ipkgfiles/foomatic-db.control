@@ -1,5 +1,5 @@
 Package: foomatic-db
-Description: Foomatic PPD files.
+Description: Foomatic PPD (Postscript Printer Description) files.
 Version: 4.0
 Architecture: arm
 Priority: optional
