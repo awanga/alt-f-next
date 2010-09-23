@@ -34,14 +34,14 @@ download() {
 	rm -f $TMPDIR/$2
 	if test $st = 0; then
 		cat<<-EOF
-			</pre><p> $s Success $es </p>
+			</pre><p> <strong> Success </strong> </p>
 			<script type="text/javascript">
 				setTimeout("err()", 2000);
 			</script>
 		EOF
 	else
 		cat<<-EOF
-			</pre><p> $s Error $es </p>
+			</pre><p> <strong> Error </strong> </p>
 			<input type="button" value="Back" onclick="err()"></p>
 		EOF
 	fi
@@ -55,8 +55,6 @@ read_args
 
 #debug
 
-s="<strong>"
-es="</strong>"
 TMPDIR=/ffp/tmp
 
 # this script needs thi, as funpkg doesn't set its own PATH
@@ -78,14 +76,14 @@ if test "$install" = "Install"; then
 	write_header "Installing FFP"
 	jsback
 
-	echo "<p>$s Downloading... $es </p><pre>"
+	echo "<p><strong> Downloading... </strong> </p><pre>"
 	wget --tries=3 --progress=dot:mega  $SITE -O $TMPF #\ 
 		# 2>&1 | sed -nu -e 's/^ *=>.*//' -e 's/^ //p'
 	st=$?
 	echo "</pre>"
 
 	if test $st = 0; then
-		echo "<p> $s Installing... "
+		echo "<p> <strong> Installing... "
 		part=$(httpd -d $part)
 		mp=$(cat /proc/mounts | grep $part | cut -d" " -f2)
 		mkdir -p $mp/ffp
@@ -97,14 +95,14 @@ if test "$install" = "Install"; then
 			chmod 0755 /ffp/bin/busybox
 			chmod u+s /ffp/bin/busybox
 			chmod -x /ffp/start/*
-			echo " success. $es </p>"
+			echo " success. </strong> </p>"
 			st=0
 		else
-			echo " fail. $es </p>"
+			echo " fail. </strong> </p>"
 			st=1
 		fi
 	else
-		echo "<p> $s Download failed. $es </p>"
+		echo "<p> <strong> Download failed. </strong> </p>"
 		st=1
 	fi
 	rm -f $TMPF

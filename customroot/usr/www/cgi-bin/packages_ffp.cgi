@@ -5,18 +5,8 @@
 check_cookie
 write_header "ffp Package Manager"
 
-s="<strong>"
-es="</strong>"
-
 if ! test -d /ffp/var/packages; then
-
-	disks=$(ls /dev/sd?) >/dev/null 2>&1
-
-	if test -z "$disks"; then
-		echo "<br> $s No disks found! $es <br>"
-		echo "</body></html>"
-		exit 1
-	fi
+	has_disks
 
 	cat<<-EOF
 		<h4>No ffp instalation found, install ffp in:</h4>
@@ -57,7 +47,7 @@ else
 	
 	cat <<-EOF
 		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
-		<fieldset><legend> $s Installed Packages $es </legend><table>
+		<fieldset><legend> <strong> Installed Packages </strong> </legend><table>
 	EOF
 	
 	for i in $inst_pkg; do
@@ -83,13 +73,13 @@ else
 	
 	cat <<-EOF
 		<tr><td><br></td></tr>
-		<tr><td> $s Uninstall ffp $es </td>
+		<tr><td> <strong> Uninstall ffp </strong> </td>
 			<td><input type=submit name=uninstall value=Uninstall onclick="return ask()"></td></tr>
 		</table></fieldset><br>
         
 		<fieldset><legend>
 		<a href="http://www.inreto.de/dns323/fun-plug/0.5/">
-		$s FFP Available Packages $es </a></legend><table>
+		<strong> FFP Available Packages </strong> </a></legend><table>
 	EOF
 	
 	for i in $avail_pkg; do

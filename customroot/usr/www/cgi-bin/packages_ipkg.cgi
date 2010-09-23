@@ -6,18 +6,8 @@ write_header "Alt-F Package Manager"
 
 #debug
 
-s="<strong>"
-es="</strong>"
-
 if ! ipkg status >/dev/null; then
-
-	disks=$(ls /dev/sd?) >/dev/null 2>&1
-
-	if test -z "$disks"; then
-		echo "<br> $s No disks found! $es <br>"
-		echo "</body></html>"
-		exit 1
-	fi
+	has_disks
 
 	cat<<-EOF
 		<h4>No ipkg instalation found, install ipkg in:</h4>
