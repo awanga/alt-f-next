@@ -4,23 +4,37 @@ echo "pre-init started, pid=$$"
 
 mount -t proc proc /proc
 
-# don't create aufs union branches -- can't install or use packages!
-if grep -q "noaufs" /proc/cmdline; then
-	umount /proc
-	exec chroot / /sbin/init
-
 # enter iterative shell if cmdline has "initdbg"
-elif grep -q "initdbg" /proc/cmdline; then
+# use with a plain gzip/lzma compressed initramfs
+# and/or a non aufs/squashfs patched kernel
+if grep -q "initdbg" /proc/cmdline; then
+	echo "pre-init: initdbg"
 	/bin/mount -t sysfs sysfs /sys
 	/bin/mount -t tmpfs tmpfs /tmp
 	/bin/mount -t devpts devpts /dev/pts
 	/sbin/mdev -s				# create device nodes
-	mkdir -p /usr/share/empty	# ftp needs it
+	mkdir -p /var/run/vsftpd	# ftp needs it
 	/usr/sbin/inetd				# telnet or ftp to the box
 	exec /bin/sh				# enter iterative shell on serial line
 
+# don't create aufs union branches -- can't install or use packages!
+elif test -n "$(grep noaufs /proc/cmdline)" -o -z "$(grep aufs /proc/filesystems)"; then
+	echo "pre-init: noaufs"
+	if test -f /usr.squashfs -a -n "$(grep squashfs /proc/filesystems)"; then
+		echo "pre-init: squashfs"
+		mknod /dev/loop0 b 7 0
+		mkdir -p /tmp/tmpusr
+		mount /usr.squashfs /tmp/tmpusr
+		mount -o bind /tmp/tmpusr/usr /usr
+		umount /tmp/tmpusr
+		rmdir /tmp/tmpusr
+	fi
+	umount /proc	
+	exec /bin/busybox chroot / /sbin/init
+
 # normal boot, create aufs union branches
 else
+	echo "pre-init: normal"
 	# don't overlay, enable access to the union branches 
 	mkdir /tmproot
 	mount -t tmpfs tmpfs /tmproot
@@ -29,9 +43,9 @@ else
 	cp -a / /tmproot/root 
 	mount -t proc proc /proc
 	mkdir /newroot
-	#mount -t aufs -o dirs=/tmproot/root,udba=inotify aufs /newroot
 	mount -t aufs -o dirs=/tmproot/root aufs /newroot
-	if test -f /usr.squashfs; then
+	if test -f /usr.squashfs -a -n "$(grep squashfs /proc/filesystems)"; then
+		echo "pre-init: squashfs"
 		mknod /dev/loop0 b 7 0
 		mv /tmproot/root/usr.squashfs /tmproot
 		mkdir -p /tmproot/rootsq
@@ -47,4 +61,5 @@ else
 fi
 
 # enter iterative shell on serial line if above fails
+echo "pre-init: fail"
 exec /bin/sh	
