@@ -6,12 +6,50 @@ read_args
 
 #debug
 
-if test -n "$Partition"; then
+# $1=-r to load
+ejectall() {
+	for i in $(ls /dev/sd? 2>/dev/null); do
+		if ! eject $1 $(basename $i) > /dev/null; then
+			msg "Couldn't stop disk $(basename $i)"
+		fi
+	done
+}
+
+if test -n "$cp_from"; then
+	eval cp_to=$(echo \$cp_$cp_from)
+	#echo copy from $cp_from to $cp_to
+	
+	rcall stop >& /dev/null
+	ejectall
+
+	TFILE=$(mktemp -t sfdisk-XXXXXX)
+	sfdisk -d /dev/$cp_from > $TFILE
+	sfdisk /dev/$cp_to < $TFILE >& /dev/null
+	rm -f $TFILE
+	sfdisk -R /dev/$cp_to >& /dev/null
+	sleep 5
+	blkid -c /dev/null >& /dev/null
+
+elif test -n "$Erase"; then
+	dsk=$Erase
+
+	rcall stop >& /dev/null
+	ejectall
+	dd if=/dev/zero of=/dev/$dsk bs=512 count=1
+	sfdisk -R /dev/$dsk >& /dev/null
+	sleep 5
+	blkid -c /dev/null >& /dev/null
+	
+elif test -n "$Partition"; then
+
 	dsk="$Partition"
-	if ! eject $dsk > /dev/null; then
-		# this makes sense, as some partitions can be preserved
-		msg "Couldn't unmount disk $dsk for partitioning it"
-	fi
+
+# play safe, "stop" all disks. This mean unmounting, unswapping, stopping raid
+# if there are active raid devices, they are probably using 
+# some of this disk partitions
+
+	rcall stop >& /dev/null
+	ejectall
 
 	FMTFILE=$(mktemp -t sfdisk-XXXXXX)
 
@@ -55,9 +93,24 @@ if test -n "$Partition"; then
 				empty) id=0 ;;
 				swap) id=82 ;;
 				linux) id=83 ;;
-				RAID) id=da ;;
 				vfat) id=c ;;
 				ntfs) id=7 ;;
+				RAID) id=da 
+					rtype=$(eval echo \$raid_$ppart)
+					pair1=$(eval echo \$pair1_$ppart)
+
+					# verify raid setting 
+					case "$rtype" in
+						none|raid1)
+							;;
+
+						JBD|raid0|raid5)
+							if test "$pair1" = "none"; then
+								msg "To create a $rtype on $ppart you must specify a device to pair with"
+							fi
+							;;
+					esac
+					;;
 			esac
 
 			nsect=$(eval echo \$cap_$ppart | awk '{printf "%d", $0 * 1e9/512}')
@@ -73,6 +126,11 @@ if test -n "$Partition"; then
 		last=$ppart
 	done
 
+	# partitioning can make devices appear/disappear, so stop hot-plugging
+	# disabling hotplug seems to avoid the kernel to reread the part table...
+	# hot=$(cat /proc/sys/kernel/hotplug)
+	# echo > /proc/sys/kernel/hotplug
+
 	res=$(sfdisk -uS /dev/$dsk < $FMTFILE 2>&1)
 	st=$?
 	rm -f $FMTFILE
@@ -80,14 +138,21 @@ if test -n "$Partition"; then
 		msg "Partitioning $dsk failed:\n\n$res"
 	fi
 
-	sleep 1
+	# eject again, sfdisk -R needs it
+	sleep 5
+	ejectall
 
-	while ! eject $dsk >& /dev/null; do
-		usleep 300000
-	done
-
+	# make kernel reread part table
 	sfdisk -R /dev/$dsk >& /dev/null
 
+	# eject again, as hotplugging is enabled and we want no raid/swap/mount  
+	sleep 5
+	ejectall
+
+	allst=0
+	allres="Partitioning succeeded but some RAID operations failed:"
+
+	# now setup some filesystem and raid on created partitions
 	for pl in 1 2 3 4; do
 
 		part=/dev/${dsk}${pl}
@@ -100,69 +165,75 @@ if test -n "$Partition"; then
 		pair1=$(eval echo \$pair1_$ppart)
 		pair2=$(eval echo \$pair2_$ppart)
 
-# this is dubious... in order to clean any traces of the previous filesystem
-# on a given partition, that blkid will find regardeless of the partition ID,
-# shall we clear the beginning os the partition with dd?
+# in order to clean any traces of the previous filesystem on a given partition,
+# that blkid will find regardeless of the partition ID,
+# shall we clear the beginning/end of the partition with dd?
 
 		case "$type" in				
-			swap) 	mkswap $part
-					continue ;;
+			swap)
+				mkswap $part >& /dev/null
+				continue ;;
 
-			vfat)	dd if=/dev/zero of=$part bs=512 count=1 >& /dev/null
-					continue ;;
+			vfat)
+				# clean raid superblock, otherwise blkid will report it as mdraid
+				mdadm  --zero-superblock $part >& /dev/null
+				# s/fdisk say to do it
+				dd if=/dev/zero of=$part bs=512 count=1 >& /dev/null
+				continue ;;
 
 			linux|ntfs|empty)
-					continue ;;
+				# clean raid superblock, otherwise blkid will report it as mdraid
+				mdadm  --zero-superblock $part >& /dev/null
+				continue ;;
 		esac
 
 		# raid case
 		opts=""
 		rspare=""
 
+		# settings verified above, just do it
 		case "$rtype" in
 			none)	continue
-					;;
+				;;
 
-			JBD)	if test "$pair1" = "missing"; then
-						echo "To create a $rtype on $ppart you must specify a device to pair with"
-					fi
-					rlevel=linear
-					ndevices=2
-					;;
+			JBD)	pair1="/dev/$pair1"
+				rlevel=linear
+				ndevices=2
+				;;
 
-			raid0)	if test "$pair1" = "missing"; then
-						echo "To create a $rtype on $ppart you must specify a device to pair with"
-					fi
-					rlevel=0
-					ndevices=2
-					;;
+			raid0)	pair1="/dev/$pair1"
+				rlevel=0
+				ndevices=2
+				;;
 
-			raid1)	if test "$pair2" != "missing"; then
-						rspare="--spare-devices=/dev/$pair2"
-					fi
-					opts="--bitmap=internal"
-					rlevel=1
-					ndevices=2
-					;;
+			raid1)
+				opts="--bitmap=internal"	
+				if test "$pair1" = "none"; then
+					pair1="missing"
+				else
+					pair1="/dev/$pair1"
+				fi
+				if test "$pair2" != "none"; then
+					opts="$opts --spare-devices=1"
+					rspare="/dev/$pair2"
+				fi
+				
+				rlevel=1
+				ndevices=2
+				;;
 
-			raid5)	if test "$pair1" = "missing"; then
-						echo "To create a $rtype on $ppart you must specify a device to pair with"
-					fi
-					if test "$pair2" != "missing"; then
-						rspare="/dev/$pair2"
-					else
-						rspare="$pair2"
-					fi
-					opts="--bitmap=internal"
-					rlevel=5
-					ndevices=3
-					;;
+			raid5)	pair1="/dev/$pair1"
+				if test "$pair2" = "none"; then
+					rspare="missing"
+				else
+					rspare="/dev/$pair2"
+				fi
+				opts="--bitmap=internal"
+				rlevel=5
+				ndevices=3
+				;;
 
 		esac
-
-		if test "$pair1" != "missing"; then
-			pair1="/dev/$pair1"
-		fi
 
 		for i in $(seq 0 9); do
 			if ! test -b /dev/md$i; then
@@ -170,17 +241,44 @@ if test -n "$Partition"; then
 				break
 			fi
 		done
+		
+		for i in $pair1 $rspare; do
+			if grep -q $i /proc/mounts; then
+				umount $i
+				sed -i '\|^'$i'|d' /etc/fstab
+			fi
+		done
 
 		res=$(mdadm --create /dev/$MD --run \
 			--level=$rlevel --metadata=0.9 $opts \
 			--raid-devices=$ndevices /dev/$ppart $pair1 $rspare 2>&1)
-
-		if test "$?" != 0; then
-			msg "Partitioning succeeded but creating RAID on $ppart failed:\n\n$res"
+		st=$?
+		# dont stop on one error, other operations can be successefull
+		if test "$st" != 0; then
+			allst=$((allst + $st))
+			allres="$allres\n\nCreating RAID on $ppart failed:\n\n$res"
 		fi
-
 	done
 
+	# reload disks
+	if test -f /etc/mdadm.conf; then rm -f /etc/mdadm.conf; fi
+	blkid -c /dev/null >& /dev/null
+	ejectall -r
+
+	# restart hot-plugging
+	# echo "$hot" > /proc/sys/kernel/hotplug
+
+	if test "$allst" != 0; then
+		txt=$(echo "$allres" | awk '{printf "%s\\n", $0}')
+		html_header
+		cat<<-EOF
+			<script type=text/javascript>
+			alert("$txt")
+			window.history.back()
+			//window.location.assign(document.referrer)
+			</script></body></html>
+		EOF
+	fi
 else
 	debug
 fi

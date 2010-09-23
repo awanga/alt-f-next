@@ -4,24 +4,35 @@
 check_cookie
 write_header "Disk Partitioning"
 
-s="<strong>"
-es="</strong>"
-c="<center>"
-ec="</center>"
-
-disks=$(ls /dev/sd? 2> /dev/null)
-
-if test -z "$disks"; then
-	echo "<br> $s No disks found $es <br>"
-	echo "</body></html>"
-	exit 1
-fi
+has_disks
 
 cat<<-EOF
 	<script type="text/javascript">
-	function ask(msg) {
-		return confirm(msg);
-        }
+	function msubmit(frompart, frombay, fromsz) {
+		obj = document.getElementById("cp_" + frompart)
+		idx = obj.selectedIndex
+		topart = obj.options[idx].value
+
+		ret = false
+		if (topart == frompart) {
+			alert("Select a destination disk different from the origin disk.")
+			obj.selectedIndex = 0
+		}
+		else if (topart == "CopyTo") {
+			alert("Select a destination disk.")
+			obj.selectedIndex = 0
+		} else {
+			ret = confirm("The partition table of the " + frompart + " disk will be copied" + '\n' + "to the " + topart + " disk, " + \
+"making all " +  topart + " disk data inacessible." + '\n' + '\n' + "Continue?")
+		}
+
+		if (ret == false) {
+			obj.selectedIndex = 0
+			return false
+		}
+		document.diskp.cp_from.value = frompart
+		document.diskp.submit()
+	}
 	function keeppart(ipart) {
 		st = document.getElementById("keep_" + ipart).checked;
 		document.getElementById("cap_" + ipart).disabled = st;
@@ -74,7 +85,7 @@ cat<<-EOF
 	}
 
 	</script>
-	<form action="/cgi-bin/diskpart_proc.cgi" method="post">
+	<form id=diskp name=diskp action="/cgi-bin/diskpart_proc.cgi" method="post">
 EOF
 
 if test -n "$QUERY_STRING"; then
@@ -83,7 +94,13 @@ if test -n "$QUERY_STRING"; then
 		printf "%s=%c%s%c\n",$1,39,$2,39}')
 	dsk="/dev/$(httpd -d "$disk")"
 else
-	dsk="/dev/sda"
+	eval $(cat /etc/bay | sed -n 's/ /=/p')
+	for i in $right $left $usb; do
+		if test -n "$i"; then
+			dsk="/dev/$i"
+			break
+		fi
+	done
 fi
 
 ntfsopt="disabled"
@@ -104,10 +121,13 @@ cat<<-EOF
 	<th>Device</th>
 	<th>Capacity</th>
 	<th>Model</th>
+	<th colspan=2>Partition Table</th>
 	</tr>
 EOF
 
-ndisks=0
+opt_disks="$(for i in $disks; do echo "<option>$(basename $i)</option>"; done)"
+opt_disks="<option>CopyTo</option> $opt_disks"
+ 
 for i in $disks; do
 	disk=$(basename $i)
 
@@ -125,10 +145,13 @@ for i in $disks; do
 		<td align=center>$disk</td>
 		<td align=right>$cap GB</td>
 		<td>$mod</td>
+		<td><input type="submit" name="$disk" value="Erase" onClick="return confirm('The $cap GB $bay disk partition table will be erased,\n\
+and all disk data will become inacessible.\n\nContinue?')"></td>
+		<td><select id=cp_$disk name=cp_$disk onChange="msubmit('$disk','$bay', '$cap')">$opt_disks</select></td>
 		</tr>
 	EOF
-	ndisks=$((ndisks + 1))
 done
+echo "<input type=hidden name=cp_from>"
 echo "</table></fieldset><br>"	
 
 ddsk=$(basename $dsk)
@@ -156,11 +179,15 @@ EOF
 
 fout=$(sfdisk -l $dsk | tr '*' ' ') # *: the boot flag...
 
+keepchk="checked"
+keepdis="disabled"
 if $(echo $fout | grep -q "No partitions found"); then
 	fout="${dsk}1          0       -       0          0    0  Empty
 ${dsk}2          0       -       0          0    0  Empty
 ${dsk}3          0       -       0          0    0  Empty
 ${dsk}4          0       -       0          0    0  Empty"
+keepchk=""
+keepdis=""
 fi
 
 used=0
@@ -196,7 +223,7 @@ for pl in 1 2 3 4; do
 				raid0) raid0s="selected" ;;
 				raid1) raid1s="selected" ;;
 				raid5) raid5s="selected" ;;
-				jbd) jbds="selected" ;;
+				linear) jbds="selected" ;;
 				*) nones="selected" ;;
 			esac
 			if test -n "$p1"; then
@@ -212,13 +239,13 @@ for pl in 1 2 3 4; do
 
 	cat<<-EOF
 	<tr>
-	<td align=center><input type=checkbox checked id=keep_$ppart name=keep_$ppart value=yes 
+	<td align=center><input type=checkbox $keepchk id=keep_$ppart name=keep_$ppart value=yes 
 		onclick="keeppart('$ppart')"</td>
 	<td>$ppart</td>
 	<td>$type</td>
-	<td><input type=text disabled size=6 id=cap_$ppart name=cap_$ppart 
+	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
 		value=$cap onchange="updatefree('$rawcap', '$ddsk', '$ppart')"></td>
-	<td><select disabled id=type_$ppart name=type_$ppart 
+	<td><select $keepdis id=type_$ppart name=type_$ppart 
 		onclick="raidsel('$ppart')">
 	<option $emptys>empty</option>
 	<option $raids>RAID</option>
@@ -238,13 +265,13 @@ for pl in 1 2 3 4; do
 	</select></td>
 
 	<td><select disabled id=pair1_$ppart name=pair1_$ppart>
-	<option>missing</option>
+	<option>none</option>
 	$pairs
 	$xpair1
 	</select></td>
 
 	<td><select disabled id=pair2_$ppart name=pair2_$ppart>
-	<option>missing</option>
+	<option>none</option>
 	$pairs
 	$xpair2
 	</select></td>
@@ -263,45 +290,8 @@ cat<<-EOF
 	<td><input type=text readonly id="free_id" size=6 value="$free"></td>
 	</tr>
 	<tr><td align=center colspan=2><input type=submit name=$ddsk value=Partition
-		onclick="return ask('Partitioning the $diskcap GB $bay disk can make all its data inacessible.\n\nContinue?')"></td>
+		onclick="return confirm('Partitioning the $diskcap GB $bay disk can make all its data inacessible.\n\nContinue?')"></td>
 	</tr>
 	</table></fieldset><br>
-	</form></body></html>
-EOF
-
-# wizard, not yet
-
-exit 0
-
-nodisk="checked"; no2disk=""; no3disk=""
-case "$ndisks" in
-	0)	nodisk=disabled ;;
-	1)	no2disk=disabled; no3disk=disabled; ;;
-	2)	no3disk=disabled ;;
-	*)	;;	
-esac
-
-cat<<-EOF
-	<fieldset>
-	<legend><strong>Please advise, I want...</strong></legend>
-	<table>
-	<tr><td align=center>
-		<input type=radio $nodisk name=suggest value=standard></td>
-		<td>One big standard partition per disk, easy management</td></tr>
-	<tr><td align=center>
-		<input type=radio $no2disk name=suggest value=jbd></td>
-		<td>Merge the two disks in one big partition, low data security (JDB)</td></tr>
-	<tr><td align=center>
-		<input type=radio $no2disk name=suggest value=raid0></td>
-		<td>Maximum performance on both disks and low data security (raid0)</td></tr>
-	<tr><td align=center>
-		<input type=radio $no2disk name=suggest value=raid1></td>
-		<td>Duplicate everything on both disks (raid1)</td></tr>
-	<tr><td align=center>
-		<input type=radio $no3disk $threedisks name=suggest value=raid5></td>
-		<td>Performance and security, with two disks plus an external USB disk (raid5)</td></tr>
-	<tr><td align=center>
-		<input type=submit name=advise value=Advise onclick="alert('Not yet')"></td></tr>
-	</table></fieldset>
 	</form></body></html>
 EOF
