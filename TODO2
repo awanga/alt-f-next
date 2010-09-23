@@ -128,14 +128,13 @@ DONE -Add a configure button for each inetd service
 	 vice-versa, the partition type must be changed too
 	-also, fstab must be flushed, as labels/partition might have changed
 
+FIXED -lpstat: Connection refused in web status page, when cups is not running
 
--lpstat: Connection refused in web status page, when cups is not running
+DONE -change name of ipkg to Alt-F in package manager web pages
 
--change name of ipkg to Alt-F in package manager web pages
+DONE -add some feedback when downloading ipkg packages
 
--add some feedback when downloading ipkg packages
-
--show error status if ipkg fails for some reason
+DONE -show error status if ipkg fails for some reason
 
 -read aufsutils carefully, to see if they are needed.
 	Alt-F has already used them, but currently not
@@ -170,10 +169,42 @@ FIXED -web login does not work if date is incorrect and timezone has been set
 -when RAID is recovering/syncing, sysctrl is continuously reporting
 	a disk wakeup.
 
--The "eject" script should have a status output, indicating if the device is
+DONE -The "eject" script should have a status output, indicating if the device is
 	or is not ejected.
 	This would be used by the "Disk Maintenance" web page to change the
 	"Eject" to a "Load" button.
+	-now has the "-s" option
 
 -"Disk Maintenance" web page should have a StandbyNow/WakeupNow button,
 	(and removing the power status label?)
+
+DONE -create tmpfs with more space; some packages are too big to fit the
+	default 30MB while downloading.
+	-now uses 64MB, (assume that disk swap is active...)
+
+-cups uses a huge amount of memory in /tmp/cache.
+	See how to make cups use the disk
+
+FIXED -when installing some packages /etc/passwd et all are changed.
+	If the user does not save settings in  flash afterwards, those
+	users/groups are lost.
+	They should be in /alt-F/etc/passwd et all, so when installing Alt-F
+	they should reappear, but NO, the box settings take effect, as
+	loadsave-setting from-alt-f is run when /Alt-F is mounted.
+	-- Remember, the identity is in the box flash, not on the disk. --
+	-In all web pages the user is warned to save settings, if needed to
+
+DONE -foomatic-filters: beh should be removed from the package, as it is perl based
+
+DONE -Add start short/long smart disk test to disk utils
+
+DONE -merge /etc/tune.conf and /etc/hdsleep.conf into /etc/misc.conf
+
+-check --spare-devices usage in diskpart and diskwizard with raid1, raid5
+
+DONE -do a mdadm --scan at diskpart/diskwiz end to regenerate /etc/mdadm.comf
+
+-set disk sleep timeout in rcS, as settings are not yet loaded at start when
+ hotplugging disks.
+
+-fix sysctrl to not show "xx disk wakeup" messages when mdadm is rebuilding raid 
