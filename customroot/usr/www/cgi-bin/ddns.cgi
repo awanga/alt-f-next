@@ -8,7 +8,25 @@ check_cookie
 write_header "Dynamic DNS Setup"
 
 CONFF=/etc/inadyn.conf
-SSCRIPT=/etc/init.d/S75ddns
+
+cat<<EOF
+	<script type="text/javascript">
+	function val() {
+		idx = document.formd.provider.selectedIndex
+		prov = document.formd.provider.options[idx].value
+		if (prov == "freedns.afraid.org") {
+			document.formd.user.disabled = true;
+			document.formd.passwd.disabled = true;
+			document.getElementById("po").innerHTML = 
+"hostname,<a href=http://inatech.eu/inadyn/readme.html#special_freedns target=_blank>hash:</a>"
+		} else {
+			document.formd.user.disabled = false;
+			document.formd.passwd.disabled = false;
+			document.getElementById("po").innerHTML = "hostname:"
+		}
+	}
+	</script>
+EOF
 
 if test -f $CONFF; then
 	while read line; do
@@ -16,45 +34,34 @@ if test -f $CONFF; then
 	done < $CONFF
 
 	case $dyndns_system in
-		dyndns@dyndns.org) ddns=dyndns.org ;;	
-		default@zoneedit.com) ddns=zoneedit.com ;;
-		default@no-ip.com) ddns=no-ip.com ;;
-		default@freedns.afraid.org) ddns=freedns.afraid.org ;;
+		dyndns@dyndns.org) dyndns=selected ;;
+		default@zoneedit.com) zoneedit=selected ;;
+		default@no-ip.com)  noip=selected ;;
+		default@freedns.afraid.org)
+			updis=disabled
+			freedns=selected
+			;;
 	esac
-else
-	ddns="Select one"
-	alias=""
-	username=""
-	password=""
 fi
 
 cat<<-EOF
-    <form action="/cgi-bin/ddns_proc.cgi" method="post">
+	<form name="formd" action="/cgi-bin/ddns_proc.cgi" method="post">
 
-    <table><tr>
-        <td> provider:</td>
-        <td><select name="provider">
-                <option selected> $ddns
-		<option> dyndns.org
-		<option> freedns.afraid.org
-                <option> zoneedit.com
-                <option> no-ip.com
-        </select></td></tr>
-    <tr>
-        <td>hostname:</td>
-        <td><input type="text" value="$alias" name="host" ></td>
-    </tr>
-    <tr>
-        <td>username:</td>
-        <td><input type="text" value="$username" name="user"></td>
-    </tr>
-    <tr>
-        <td>password:</td>
-        <td><input type="password" value="$password" name="passwd"></td>
-    </tr>
-
-	<tr><td></td><td><input type="submit" value="submit">
-	<input type=button name=back value="Back" onclick="history.back()"></tr>
-    </table></form></body></html>
+	<table><tr>
+		<td> provider:</td>
+		<td><select name="provider" onchange="val()">
+			<option> Select one
+			<option $dyndns> dyndns.org
+			<option $freedns> freedns.afraid.org
+			<option $zoneedit> zoneedit.com
+			<option $noip> no-ip.com
+		</select></td></tr>
+	<tr><td><div id=po>hostname:</div</td>
+		<td><input type="text" value="$alias" name="host" ></td></tr>
+	<tr><td>username:</td>
+		<td><input type="text" $updis value="$username" name="user"></td></tr>
+	<tr><td>password:</td>
+		<td><input type="password" $updis value="$password" name="passwd"></td></tr>
+	<tr><td></td><td><br><input type="submit" value="Submit">$(back_button)</tr>	
+	</table></form></body></html>
 EOF
-
