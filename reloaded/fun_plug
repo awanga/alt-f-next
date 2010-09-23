@@ -4,8 +4,8 @@
 # comment if you want to go to Alt-F on every reboot
 ONCE=yes 
 
-# let the kernel initialize the network.
-# comment if you want Alt-F /etc/init.d/rcS to do it
+# let the kernel initialize the network
+# comment if you want Alt-F to do it
 KIP=yes
 
 TMP_DIR=/tmp
@@ -14,13 +14,14 @@ ALTF_DIR=alt-f
 ALTF_PATH=$BASE_DIR/alt-f
 ALTF_TARBALL=$BASE_DIR/Alt-F-*.tar
 FFPRC=/ffp/etc/rc
-LOG_FILE=altf-reload.log
+LOG_FILE=alt-f-reloaded.log
 
 exec > $TMP_DIR/$LOG_FILE
 
 check() {
-	if ! test -r $1; then
+	if ! test -r "$1"; then
 		echo "$1 not found, exiting"
+		mv $TMP_DIR/$LOG_FILE $BASE_DIR
 		exit 1
 	fi
 }
@@ -57,7 +58,7 @@ cd $ALTF_PATH
 KV=$(uname -r)
 kernel=zImage
 machtype=1542
-initrd=rootfs.arm.cpio-sq.lzma
+initrd=$(ls rootfs.arm.cpio*)
 cmdline="console=ttyS0,115200"
 #initrd=rootfs.arm.cpio.gz
 #cmdline="initdbg console=ttyS0,115200"
@@ -85,7 +86,8 @@ fi
 smb stop
 proc="apkg atd crond wget smbclient pure-ftpd prescan upnp \
 	mt-daapd lpd inotify_itune inotify_upnp btdog bt op_server \
-	inotifybt UpdateDB check_hotplug xmldb webs check_daemon mserver"
+	inotifybt UpdateDB check_hotplug xmldb webs check_daemon mserver \
+	mDNSResponder"
 
 for i in $proc; do
 	if test -n "$(pidof $i)"; then
