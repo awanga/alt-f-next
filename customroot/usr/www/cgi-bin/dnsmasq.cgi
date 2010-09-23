@@ -11,9 +11,6 @@ RESOLV=/etc/resolv.conf
 HOSTS=/etc/hosts
 CONFNTP=/etc/ntp.conf
 
-s="<strong>"
-es="</strong>"
-
 if ! test -e $CONF_H; then touch $CONF_H; fi
 
 hostip=$(hostname -i)
@@ -37,16 +34,16 @@ cat <<-EOF
 	</script>
 
 	<form name=dnsmasq action=dnsmasq_proc.cgi method=post>
-	<fieldset><Legend> $s Dynamically serve IPs $es</legend><table>
-	<tr><td> $s From IP $es </td><td><input type=text size=12 name=low_rg value=$lrg></td><tr>
-	<tr><td> $s To IP $es </td><td><input type=text size=12 name=high_rg value=$hrg></td><tr>
-	<tr><td> $s Lease Time: $es </td><td><input type=text size=4 name=lease value=$lease></td><tr>
+	<fieldset><Legend> <strong> Dynamically serve IPs </strong></legend><table>
+	<tr><td> From IP</td><td><input type=text size=12 name=low_rg value=$lrg></td><tr>
+	<tr><td>To IP</td><td><input type=text size=12 name=high_rg value=$hrg></td><tr>
+	<tr><td>Lease Time: </td><td><input type=text size=4 name=lease value=$lease></td><tr>
 	</table></fieldset><br>
 
-	<fieldset><Legend> $s Serve fixed IPs based on MAC $es</legend>
+	<fieldset><Legend> <strong> Serve fixed IPs based on MAC </strong></legend>
 	<table><tr align=center>
-	<td> $s Name $es </td><td> $s IP $es </td><td> $s Get MAC $es </td>
-	<td> $s MAC $es </td><td> $s Lease $es </td></tr>
+	<td> <strong> Name </strong> </td><td> <strong> IP </strong> </td><td> <strong> Get MAC </strong> </td>
+	<td> <strong> MAC </strong> </td><td> <strong> Lease </strong> </td></tr>
 EOF
 
 oifs="$IFS"; IFS=","; cnt=0
@@ -75,8 +72,8 @@ cat <<-EOF
 	</table></fieldset><br>
 	<input type=hidden name=cnt_din value="$i">
 
-	<fieldset><legend> $s Local hosts with fixed IP $es </legend><table>
-	<tr align=center><td> $s Name $es </td><td> $s IP $es </td></tr>
+	<fieldset><legend> <strong> Local hosts with fixed IP </strong> </legend><table>
+	<tr align=center><td> <strong> Name </strong> </td><td> <strong> IP </strong> </td></tr>
 EOF
 
 cnt=0
@@ -101,7 +98,7 @@ cat <<EOF
 	<input type=hidden name=cnt_know value="$i">
 EOF
 
-echo "<br><fieldset><legend> $s Forward DNS Servers $es </legend>"
+echo "<br><fieldset><legend> <strong> Forward DNS Servers </strong> </legend>"
 
 FLG_MSG="#!in use by dnsmasq, don't change"
 if $(grep -q "$FLG_MSG" $RESOLV); then
@@ -123,7 +120,7 @@ if test -x /etc/init.d/S??ntp; then
 fi
 
 cat<<-EOF
-	</fieldset><br><fieldset><legend> $s Time Servers $es </legend><table>
+	</fieldset><br><fieldset><legend> <strong> Time Servers </strong> </legend><table>
 	<tr><td>Local NTP</td>
 	<td><input type=checkbox $chklntp value=yes name=lntp onchange="toogle(dnsmasq)"></td></tr>
 EOF
@@ -153,7 +150,7 @@ cat<<-EOF
 			return false;
 		}
 	</script>
-	<fieldset><legend> $s TFTP server $es </legend>
+	<fieldset><legend> <strong> TFTP server </strong> </legend>
 	<table>
 	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp></td><tr>
 	<tr><td>Root Directory</td>
@@ -167,14 +164,13 @@ eval $(awk '/log-queries/{print "dnslog=CHECKED"} \
 		/log-dhcp/{print "dhcplog=CHECKED"}' $CONF_F)
 
 cat<<EOF	
-	<fieldset><legend> $s Logging $es </legend><table>
+	<fieldset><legend> <strong> Logging </strong> </legend><table>
 	<tr><td>Log DNS queries</td>
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>
 	<tr><td>Log DHCP queries</td>
 		<td><input type=checkbox $dhcplog name=dhcplog value=true></td></tr>
 	</table></fieldset><br>
 	<input type=hidden name=cnt_dns value="$i">
-	<input type=submit name=submit value=Submit>
-	<input type=button name=back value="Back" onclick="history.back()">
+	<input type=submit name=submit value=Submit>$(back_button)
 	</form></body></html>
 EOF
