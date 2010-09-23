@@ -254,10 +254,10 @@ files="
 /etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
 /etc/dnsmasq-resolv	/etc/rsyncd.conf	/etc/rsyncd.secrets
 /etc/inetd.conf		/etc/vsftpd.conf	/etc/httpd.conf
-/etc/hdsleep.conf	/etc/mdadm2.conf	/etc/tune.conf
-/etc/inadyn.conf	/etc/ntp.conf		/etc/ntp.drift
-/etc/adjtime.conf	/etc/sysctrl.conf	/etc/msmtprc
-/etc/smartd.conf	/etc/ipkg.conf		
+/etc/misc.conf		/etc/inadyn.conf	/etc/ipkg.conf
+/etc/ntp.conf		/etc/ntp.drift		/etc/adjtime.conf
+/etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf
+/etc/wgetrc			/etc/ssl/certs/vsftpd.pem
 "
 
 # those are also used only when mounting/unmounting the aufs branch
