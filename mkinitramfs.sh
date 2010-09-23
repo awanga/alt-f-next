@@ -61,13 +61,24 @@ elif test "$1" = "sqfs"; then
 	# only /usr
 	cp rootfs.arm.ext2 rootfs.arm.ext2.tmp
 	mount -o loop rootfs.arm.ext2.tmp tmp
+
+	# lzma or gzip
+	COMP=lzma
+
 	# block sizes: 131072 262144 524288 1048576
-	mksquashfs tmp/usr/ usr.squashfs -comp lzma -b 131072 \
+	mksquashfs tmp/usr/ usr.squashfs -comp $COMP -b 131072 \
 		-always-use-fragments -keep-as-directory
 	rm -rf tmp/usr/*
 	mv usr.squashfs tmp
 	cd tmp
-	find . | cpio --quiet -o -H newc | lzma e -si -so  > ../rootfs.arm.cpio-sq.lzma
+
+	# there is little space savings (100KB) trying to compress with lzma
+	# when /usr is gzip compressed, and boot times are looonger
+	if test "$COMP" = "lzma"; then 
+		find . | cpio --quiet -o -H newc | lzma e -si -so  > ../rootfs.arm.cpio-sq.lzma
+	else
+		find . | cpio --quiet -o -H newc | gzip > ../rootfs.arm.cpio-sq.gz
+	fi
 	cd ..
 	umount tmp
 	rm rootfs.arm.ext2.tmp
