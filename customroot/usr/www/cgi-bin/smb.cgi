@@ -20,8 +20,7 @@ cat<<-EOF
 	Write Me
 	</fieldset>
 
-	<input type=submit name=swat value="Advanced">
-	<input type=button name=back value="Back" onclick="history.back()">
+	<input type=submit name=swat value="Advanced">$(back_button)
 	</form></body></html>
 EOF
 
