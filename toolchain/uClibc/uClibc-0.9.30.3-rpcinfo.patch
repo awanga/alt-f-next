@@ -1,0 +1,11 @@
+--- uClibc-0.9.30.3/libc/inet/rpc/pmap_rmt.c-orig	2010-06-19 19:43:08.000000000 +0100
++++ uClibc-0.9.30.3/libc/inet/rpc/pmap_rmt.c	2010-06-19 19:45:23.000000000 +0100
+@@ -340,7 +340,7 @@
+    * Basic loop: broadcast a packet and wait a while for response(s).
+    * The response timeout grows larger per iteration.
+    */
+-  for (t.tv_sec = 4; t.tv_sec <= 14; t.tv_sec += 2)
++  for (t.tv_sec = 4; t.tv_sec <= 8; t.tv_sec += 2) // reduce total timeout from 60 to 20 secs
+     {
+       for (i = 0; i < nets; i++)
+ 	{
