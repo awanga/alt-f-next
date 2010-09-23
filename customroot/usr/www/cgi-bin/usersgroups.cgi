@@ -21,6 +21,26 @@ cat <<EOF
 		document.frm.gname.value = groups[document.frm.groups.selectedIndex];
 		document.frm.usersInGroup.value = usersInGroup[document.frm.groups.selectedIndex]
 	}
+	function check_group() {
+		if (document.frm.gname.value == "") {
+			alert("You must fill in the group name or select one group first.")
+			return false
+		}
+		return true
+	}
+	function check_user() {
+		if (document.frm.uname.value == "") {
+			alert("You must fill in the user name or select one user first.")
+			return false
+		}
+		return true
+	}
+	function check_usergroup() {
+		if (check_user() && check_group())
+			return true
+		else
+			return false
+	}
 	</script>
 	<form name=frm action=/cgi-bin/usersgroups_proc.cgi method="post">
 	<table border=$BRD><tr><td>
@@ -52,8 +72,8 @@ cat<<-EOF
 	<tr><td>Groups this user belongs to:</td>
 		<td><textarea cols=12 name=groupsInUser READONLY></textarea></td></tr>
 	<tr><td><input type=submit name=new_user value=NewUser>
-		<input type=submit name=change_pass value=ChangePass>
-		<td><input type=submit name=del_user value=DelUser></td>
+		<input type=submit name=change_pass value=ChangePass onclick="return check_user()">
+		<td><input type=submit name=del_user value=DelUser onclick="return check_user()"></td>
 	</tr></table></fieldset>
 	
 	</td><td>
@@ -88,17 +108,17 @@ cat <<-EOF
 <!--	<tr><td colspam=2><br></td></tr> -->
 	<tr><td>Users belonging to this group:</td>
 		<td><textarea cols=12 name=usersInGroup READONLY></textarea></td></tr>
-	<tr><td><input type=submit name=new_group value=NewGroup></td>
-	    <td><input type=submit name=del_group value=DelGroup></td></tr>
+	<tr><td><input type=submit name=new_group value=NewGroup onclick="return check_group()"></td>
+	    <td><input type=submit name=del_group value=DelGroup onclick="return check_group()"></td></tr>
 	</table></fieldset>
 	
 	</td></tr></table><br>
 	
 	<fieldset><legend><strong>Users and Groups</strong></legend><table border=$BRD>
 		<tr><td>Add selected user to selected group</td>
-			<td><input type=submit name=addToGroup value=AddToGroup></td></tr>
+			<td><input type=submit name=addToGroup value=AddToGroup onclick="return check_usergroup()"></td></tr>
 		<tr><td>Remove selected user from selected group</td>
-			<td><input type=submit name=delFromGroup value=DelFromGroup></td></tr>
+			<td><input type=submit name=delFromGroup value=DelFromGroup onclick="return check_usergroup()"></td></tr>
 	</table></fieldset>
 EOF
 
