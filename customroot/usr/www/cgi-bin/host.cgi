@@ -5,6 +5,8 @@ check_cookie
 write_header "Host Setup"
 
 RESOLV=/etc/resolv.conf
+CONFS=/etc/samba/smb.conf
+CONFINT=/etc/network/interfaces
 
 if test -f /tmp/firstboot; then
 	cat<<-EOF
@@ -23,18 +25,18 @@ else
 	stk="nameserver"
 fi
 
-if test -e /etc/resolv.conf; then
+if test -e $RESOLV; then
 	eval $(awk 'BEGIN{i=1} /^'$stk'/{print "ns" i "=" $2; i++}' $RESOLV)
 else
 	ns1=""
 	ns2=""
 fi
 
-if test -e /etc/samba/smb.conf; then
+if test -e $CONFS; then
 	eval $(awk '/server string/{split($0, a, "= ");
 		print "hostdesc=\"" a["2"] "\""}
 		/workgroup/{split($0, a, "= ");
-		print "workgp=\"" a["2"] "\""}' /etc/samba/smb.conf)
+		print "workgp=\"" a["2"] "\""}' $CONFS)
 else
 	hostdesc=""
 	workgp=""
@@ -81,15 +83,17 @@ cat<<-EOF
 	</script>
 
 	<form id="sipf" action="/cgi-bin/host_proc.cgi" method="post">
-	<table>
+	<fieldset><legend><strong>Host details</strong></legend><table>
 	<tr><td>Host name:</td>
 		<td><input type=text name=hostname value=$hostname></td></tr>
 	<tr><td>Host description:</td>
 		<td><input type=text name=hostdesc value="$hostdesc"></td></tr>
-	<tr><td>Work Group:</td>
+	<tr><td>Workgroup:</td>
 		<td><input type=text name=workgp value="$workgp"></td></tr>
 
-	<tr><td><br></td><td></td></tr>
+	</table></fieldset><br>
+
+	<fieldset><legend><strong>IP settings</strong></legend><table>
 	<tr>
 	<td>Static IP<input type=radio id="static" name="iptype" value="static" onclick="edisable(false)"></td>
 	<td>DHCP <input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td>
@@ -101,17 +105,18 @@ cat<<-EOF
 	<tr><td>Name server 1:</td><td><input type=text id=sip name="ns1" value=$ns1></td></tr>
 	<tr><td>Name server 2:</td><td><input type=text id=sip name="ns2" value=$ns2></tr>
 	<tr><td>Frame size:</td><td><input type=text id=sip name="mtu" value=$mtu></td></tr>
+	</table></fieldset><br>
 
-	<tr><td></td><td><input type="submit" value="Submit" onclick="return ipchange('$hostip')"></td></tr>
-	</table>
 	<input type=hidden name=cflg value="$cflg">
 	<input type=hidden name=oldip value="$hostip">
 	<input type=hidden name=oldnm value="$hostname">
+	<input type="submit" value="Submit" onclick="return ipchange('$hostip')">
+
 	</form>
 EOF
 
 ipdisable="false"
-if $(grep -q '^ *iface.*eth0.*dhcp' /etc/network/interfaces); then
+if $(grep -q '^ *iface.*eth0.*dhcp' $CONFINT); then
 	ipdisable="true"
 fi
 

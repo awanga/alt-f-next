@@ -85,7 +85,9 @@ if test "$iptype" = "static"; then
 	if rcdnsmasq status >& /dev/null; then
 		rcdnsmasq reload  >& /dev/null
 	fi
-		
+
+	if test -n "$gateway"; then igw="gateway $gateway"; fi
+
 	cat<<-EOF > $CONFINT
 	auto lo
 	  iface lo inet loopback
@@ -95,8 +97,8 @@ if test "$iptype" = "static"; then
 	  address $hostip
 	  netmask $netmask
 	  broadcast $broadcast
-	  gateway $gateway
 	  mtu $mtu
+	  $igw
 	EOF
 
 else # FIXME: not enought, the udhcpc script should do updates
@@ -116,7 +118,7 @@ sleep 1
 ifup eth0 >& /dev/null
 sleep 3
 
-#debug
+#enddebug
 
 if test "$(cat /etc/TZ)" = "NONE-0" -a -f /tmp/firstboot; then
 	gotopage /cgi-bin/time.cgi
