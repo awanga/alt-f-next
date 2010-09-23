@@ -33,10 +33,10 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 
 	res=$(mdadm --query --examine --export --test $PWD/$MDEV)
 	if test $? = 0; then
-		if ! test -f /etc/mdadm.conf; then
+		#if ! test -f /etc/mdadm.conf; then
 			mdadm --examine --scan > /etc/mdadm.conf
-			echo "DEVICE /dev/sd*" >> /etc/mdadm.conf
-		fi                                                            
+			#echo "DEVICE /dev/sd*" >> /etc/mdadm.conf
+		#fi                                                            
 		mdadm --incremental --run $PWD/$MDEV
 
 		eval $res
@@ -99,7 +99,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	res="$($fsckcmd $fsopt $PWD/$MDEV 2>&1)"
 	if test $? -ge 2; then fsflg="-o ro"; fi
 	logger "$res"
-	echo default-on > "/sys/class/leds/power:blue/trigger"
+	echo none > "/sys/class/leds/power:blue/trigger"
 	/bin/mount -t $fstype $fsflg $PWD/$MDEV /mnt/$lbl
 	sed -i '\|^'$PWD/$MDEV'|d' /etc/fstab
 	echo "$PWD/$MDEV /mnt/$lbl $fstype defaults 0 0" >> /etc/fstab
@@ -120,6 +120,10 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 		if ! test -h /Alt-F -a -d "$(readlink -f /Alt-F)"; then
 			rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
 			ln -s /mnt/$lbl/Alt-F /Alt-F
+			for i in /Alt-F/etc/init.d/S??*; do
+				f=$(basename $i)
+				ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
+			done
 			loadsave_settings -ta
 			mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw /
 		fi
@@ -153,7 +157,11 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 			echo "$bay $MDEV" >> /etc/bay
 	
 			# set disk spin down
-			tm=$(awk '/'$bay'/{print $2}' /etc/hdsleep.conf )
+			#tm=$(awk '/'$bay'/{print $2}' /etc/hdsleep.conf)
+			if test -f /etc/misc.conf; then
+				. /etc/misc.conf
+				eval tm=$(echo \$HDSLEEP_$bay | tr 'a-z' 'A-Z' )
+			fi
 		
 			if test "$tm" -le "20"; then
 				val=$((tm * 60 / 5))
@@ -164,6 +172,9 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 			if test -n "$tm"; then
 				hdparm -S $val $PWD/$MDEV
 			fi
+			if rcsmart status; then
+				rcsmart reload
+			fi
 		fi
 	
 		# no low latency (server, not desktop)
@@ -171,12 +182,11 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 	
 		# for now use only disk partition-based md
 		fdisk -l $PWD/$MDEV | awk '/^\/dev\// && $5 == "fd" { exit 1 }'   
-		if test $? = 1; then                                              
-			if ! test -f /etc/mdadm.conf; then
+		if test $? = 1; then
+			#if ! test -f /etc/mdadm.conf; then
 				mdadm --examine --scan > /etc/mdadm.conf
-				echo "DEVICE /dev/sd*" >> /etc/mdadm.conf
-			fi                                                            
-			# mdadm --assemble --auto=no --scan                                        
+				#echo "DEVICE /dev/sd*" >> /etc/mdadm.conf
+			#fi                                                            
 		fi
 	fi
 
@@ -190,6 +200,10 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 
 	# which bay?
 	# PHYSD=$(readlink /sys/block/$MDEV/device) 
+
+	if rcsmart status; then
+		rcsmart reload
+	fi
 
 elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 
@@ -247,7 +261,9 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 			if test "$actdev" = 2; then # FIXME
 				other=$(ls /sys/block/$md/slaves/ | grep -v $MDEV)
 			fi
-			if test "$act" != "inactive" -a "$type" = "raid1" -a "$actdev" = 2; then
+			if test "$act" != "inactive" -a \( \
+				\( "$type" = "raid1" -a "$actdev" = 2 \) -o \
+				\( "$type" = "raid5" -a "$actdev" = 3 \) \) ; then
 				mdadm $PWD/$md --fail $PWD/$MDEV --remove $PWD/$MDEV
 				return $ret
 			elif $(grep -q ^$PWD/$md /proc/mounts); then
