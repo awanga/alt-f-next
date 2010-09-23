@@ -169,7 +169,7 @@ fi
 
 cat<<-EOF
 	<br><input type="submit" value="Submit">
-	<input type="button" name="back" value="Back" onclick="history.back()">
+	$(back_button)
 	</form></body></html>
 EOF
 
