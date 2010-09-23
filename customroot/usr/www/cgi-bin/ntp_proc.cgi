@@ -4,18 +4,19 @@
 check_cookie
 read_args
 
-CONFF=/etc/ntp.conf
+CONFN=/etc/ntp.conf
+CONFF=/etc/misc.conf
 
 #debug
 
-sed -i '/^server/d' $CONFF
-echo "server 127.127.1.0" >> $CONFF
+sed -i '/^server/d' $CONFN
+echo "server 127.127.1.0" >> $CONFN
 
-sed -i '/^NTPD_/d' $CONFF
+sed -i '/^NTPD_/d' $CONFF >& /dev/null
 
 for i in $(seq 1 3); do
 	if test -n "$(eval echo \$server_$i)"; then
-		echo "server $(eval echo \$server_$i)" >> $CONFF
+		echo "server $(eval echo \$server_$i)" >> $CONFN
 	fi
 done
 
@@ -25,9 +26,8 @@ if test -z "$runatboot"; then
 fi
 echo "NTPD_BOOT=$runatboot" >> $CONFF
 
-rcntp status >/dev/null 2>&1
-if test $? = 0; then
-	rcntp restart >/dev/null 2>&1
+if rcntp status >& /dev/null ; then
+	rcntp restart >& /dev/null
 fi
 
 #enddebug

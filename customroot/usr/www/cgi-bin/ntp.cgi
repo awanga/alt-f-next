@@ -5,17 +5,19 @@ check_cookie
 
 write_header "NTP Setup"
 
-CONFF=/etc/ntp.conf
+CONFN=/etc/ntp.conf
+CONFF=/etc/misc.conf
 
-eval $(grep ^NTPD_DAEMON $CONFF)
-eval $(grep ^NTPD_BOOT $CONFF)
+if test -e $CONFF; then
+	. $CONFF
+fi
 
 sel_cron=""; sel_daemon=""; sel_boot=""
 
-if test "$NTPD_DAEMON" = "yes"; then
-	sel_daemon="CHECKED"
-else
+if test "$NTPD_DAEMON" = "no"; then
 	sel_cron="CHECKED"
+else
+	sel_daemon="CHECKED"
 fi
 
 if test "$NTPD_BOOT" = "yes"; then
@@ -43,18 +45,18 @@ cnt=1
 while read arg server; do
 	if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
 		echo "<tr><td>Server $cnt</td>
-			<td><input type=text size=20 name=server_$cnt value=$server></td></tr>"
+			<td><input type=text size=20 name="server_$cnt" value="$server"></td></tr>"
 		cnt=$(($cnt+1))
 	fi
-done < $CONFF
+done < $CONFN
 
 for i in $(seq $cnt 3); do
 		echo "<tr><td>Server $i</td>
-			<td><input type=text size=20 name=server_$i></td></tr>"
+			<td><input type=text size=20 name="server_$i"></td></tr>"
 done
 
 cat<<-EOF
-	<tr><td></td><td><input type=submit value=Submit>
-	<input type=button name=back value="Back" onclick="history.back()"></td></tr>
+	<tr><td></td><td><br><input type=submit value=Submit>
+	$(back_button)</td></tr>
 	</table></form></body></html>
 EOF
