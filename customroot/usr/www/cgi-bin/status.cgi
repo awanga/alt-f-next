@@ -50,19 +50,19 @@ disk() {
 		else
 			smart $dsk
 		fi
-	fi	
 
-	cat<<-EOF
-		<tr align=center>
-		<td align=left> $s $nm $es </td>
-		<td>$dsk</td>
-		<td align=left> $fam $mod</td>
-		<td> $tcap </td>
-		<td> $pstatus </td>
-		<td> $temp </td> 
-		<td> $health_st </td>
-		</tr>
-	EOF
+		cat<<-EOF
+			<tr align=center>
+			<td align=left> $nm </td>
+			<td>$dsk</td>
+			<td align=left> $fam $mod</td>
+			<td> $tcap </td>
+			<td> $pstatus </td>
+			<td> $temp </td> 
+			<td> $health_st </td>
+			</tr>
+		EOF
+	fi
 }
 
 filesys() {
@@ -140,22 +140,22 @@ eval $(cat $temp_dev | awk '{printf "temp=\"%.1f\"", $1 / 1000 }')
 eval $(free | awk '/Swap/{printf "swap=\"%.1f/%d MB\"", $3/1024, $4/1024}')
 
 cat <<-EOF
-	<fieldset><Legend> $s System $es </legend>
-	$s Temperature:	 $es  $temp
-	$s Fan speed:  $es $(cat $fan_dev) RPM 
-	<br> $s Uptime:	 $es $up $s Load: $es $load  
-	$s Swap:  $es $swap 
+	<fieldset><Legend> <strong> System </strong> </legend>
+	<strong> Temperature:	 </strong>  $temp
+	<strong> Fan speed:  </strong> $(cat $fan_dev) RPM 
+	<br> <strong> Uptime:	 </strong> $up <strong> Load: </strong> $load  
+	<strong> Swap:  </strong> $swap 
 	</fieldset><br>
 
-	<fieldset><Legend> $s Network $es </legend>
-	$s Speed: $es $Speed
-	$s MTU: $es $MTU
-	$s TX: $es $Tx
-	$s Rx: $es $Rx
-	$s MAC: $es $MAC
+	<fieldset><Legend> <strong> Network </strong> </legend>
+	<strong> Speed: </strong> $Speed
+	<strong> MTU: </strong> $MTU
+	<strong> TX: </strong> $Tx
+	<strong> Rx: </strong> $Rx
+	<strong> MAC: </strong> $MAC
 	</fieldset><br>
 
-	<fieldset><Legend> $s Disks $es </legend><table>
+	<fieldset><Legend> <strong> Disks </strong> </legend><table>
 EOF
 
 . /tmp/power_mode
@@ -164,7 +164,7 @@ if test -z "$(ls /dev/sd?? 2>/dev/null)"; then
 	echo "None<br>"
 else
 	cat<<-EOF
-		<tr align=center><td align=left> $s Bay $es </td>
+		<tr align=center><td align=left> <strong> Bay </strong> </td>
 		<th>Dev.</th>
 		<th>Model</th>
 		<th>Capacity</th>
@@ -187,7 +187,7 @@ fi
 
 cat<<-EOF
 	</table></fieldset><br>
-	<fieldset><legend> $s Mounted Filesystems $es </legend>
+	<fieldset><legend> <strong> Mounted Filesystems </strong> </legend>
 EOF
 
 if ! grep -q '^/dev/\(sd\|md\)' /proc/mounts; then
@@ -214,7 +214,7 @@ fi
 
 cat<<-EOF
 	</table></fieldset><br>
-	<fieldset><Legend> $s RAID $es </legend><table>
+	<fieldset><Legend> <strong> RAID </strong> </legend><table>
 EOF
 
 if ! test -e /proc/mdstat; then
@@ -247,7 +247,7 @@ else
 		sz=""; deg=""; act=""; compl=""; exp="";
 		if test "$state" != "inactive"; then
 			#eval $(df -h | awk '/'$mdev'/{printf "sz=%s", $2}')
-			sz=$(awk '{ printf "%.1f", $1/2/1024/1024}' /sys/block/$mdev/size)
+			sz=$(awk '{ printf "%.1f GB", $1/2/1024/1024}' /sys/block/$mdev/size)
 			if test "$type" = "raid1" -o "$type" = "raid5"; then
 				if test "$(cat /sys/block/$mdev/md/degraded)" != 0; then
 					deg="<font color=RED> degraded </font>"
@@ -259,14 +259,14 @@ else
 					act="<font color=RED> $act </font>"
 					compl=$(awk '{printf "%.1f%%", $1 * 100 / $3}' /sys/block/$mdev/md/sync_completed)
 					speed=$(cat /sys/block/$mdev/md/sync_speed)
-					exp=$(awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60 }' /sys/block/$mdev/md/sync_completed)
+					exp=$(awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60}' /sys/block/$mdev/md/sync_completed 2> /dev/null)
 				fi
 			fi
 		fi
 		cat<<-EOF
 			<tr align=center>
 			<td align=left>$lbl</td> 
-			<td>${sz} GB</td>
+			<td>$sz</td>
 			<td>$type</td>
 			<td>$state</td>
 			<td>$deg</td>
@@ -280,18 +280,25 @@ fi
 
 echo "</table></fieldset><br>"
 
-if test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* 2>/dev/null)"; then
+fswork=""
+for k in clean format convert shrink enlarg wip; do
+	if ls /tmp/$k-* >& /dev/null; then
+		fswork="true"
+	fi
+done
 
+if test "$fswork" = "true"; then
 	cat<<-EOF
-		<fieldset><Legend> $s Filesystem Maintenance $es </legend>
+		<fieldset><Legend> <strong> Filesystem Maintenance </strong> </legend>
 		<table><tr><th>Part.</th><th>Label</th><th>Operation</th></tr>
 	EOF
 
 	for j in /dev/sd[a-z][1-9] /dev/md[0-9]*; do
 		part=$(basename $j)
-		for k in clean format convert; do
+		for k in clean format convert shrink enlarg wip; do
 			if test -f /tmp/$k-$part; then
-				if test -d /proc/$(cat /tmp/$k-$part.pid); then
+				#if test -d /proc/$(cat /tmp/$k-$part.pid); then
+				if kill -1 $(cat /tmp/$k-$part.pid) 2> /dev/null; then
 					cat<<-EOF
 						<tr><td>$part</td><td>$(plabel $part)</td>
 						<td><font color=RED>${k}ing...</font></td>
@@ -306,7 +313,7 @@ if test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* 2>/dev/null)"; then
 	echo "</table></fieldset>"
 fi
 
-echo "<fieldset><Legend> $s Printers $es </legend><table>"
+echo "<fieldset><Legend> <strong> Printers </strong> </legend><table>"
 
 if ! test -f /etc/printcap; then
 	echo "None"
