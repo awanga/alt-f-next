@@ -8,19 +8,10 @@ NAME=dnsmasq
 
 FLG_MSG="#!in use by dnsmasq, don't change"
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
-		echo -n "Starting $NAME: "
 		if ! $(grep -q "^$FLG_MSG" /etc/resolv.conf); then
 			cp /etc/resolv.conf /etc/dnsmasq-resolv
 			sed -i -e 's/^nameserver/#!&/' /etc/resolv.conf
@@ -29,42 +20,16 @@ case "$1" in
 		if ! test -f /etc/dnsmasq-hosts; then
 			touch /etc/dnsmasq-hosts
 		fi 
-
-		start-stop-daemon -S -q -b -x $NAME
-		echo "OK"
+		start $NAME
 		;;
 	stop)
-		echo -n "Stopping $NAME: "
 		if $(grep -q "$FLG_MSG" /etc/resolv.conf); then
 			cp /etc/dnsmasq-resolv /etc/resolv.conf
-			#sed -i -e "/nameserver 127.0.0.1/d" \
-			#		-e 's/^#nameserver/nameserver/' \
-			#		-e "/$FLG_MSG/d" /etc/resolv.conf
 		fi
-		
-		start-stop-daemon -K -q -x $NAME
-		echo "OK"
+		stop $NAME
 		;;
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
-		;;
-	reload)
-		echo "Reloading $NAME: "
-		start-stop-daemon -K -q -s SIGHUP -n $NAME
-		echo ""
-		;;
-
-	status)
-		status
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
-		exit 1
-		;;
+	restart) restart $NAME ;;
+	reload) reload $NAME ;;
+	status) status $NAME ;;	
+	*) usage $0 "start|stop|status|restart" ;;
 esac
-
-exit 0

@@ -6,15 +6,7 @@
 DESC="Light SSH/SFTP client/server"
 NAME=dropbear
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 sinit() {
 	# Make sure dropbear directory exists
@@ -38,42 +30,11 @@ sinit() {
 	if ! test -e /var/log/lastlog; then touch /var/log/lastlog; fi
 }
 
-start() {
- 	echo -n "Starting dropbear sshd: "
-	sinit
-	#start-stop-daemon -S -q -p /var/run/dropbear.pid --exec /usr/sbin/dropbear
-	start-stop-daemon -S -q -x $NAME
-	echo "OK"
-}
-
-stop() {
-	echo -n "Stopping dropbear sshd: "
-	#start-stop-daemon -K -q -p /var/run/dropbear.pid
-	start-stop-daemon -K -q -n $NAME
-	echo "OK"
-}
-
 case "$1" in
-	start)
-		start
-		;;
-	stop)
-		stop
-		;;
-	status)
-		status
-		;;
-	restart|reload)
-		stop
-		start
-		;;
-	init)
-		sinit
-		;;
-	*)
-		echo $"Usage: $0 {start|stop|restart|init}"
-		exit 1
+	start) start $NAME ;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	init) sinit ;;
+	*) usage $0 "start|stop|status|restart|init" ;;
 esac
-
-exit $?
-

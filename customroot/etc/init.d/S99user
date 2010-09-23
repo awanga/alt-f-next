@@ -11,6 +11,8 @@ BOOTLOG=yes
 LOGF="alt-f.log"
 SEP="======================"
 
+. $(dirname $0)/common
+
 bootlog() {
 	if test -n "$BOOTLOG"; then
 		for i in /mnt/*; do
@@ -59,8 +61,8 @@ writelog() {
 	echo -e "\n\n$SEP MOUNT $SEP\n" >> $i/$LOGF
 	cat /proc/mounts >> $i/$LOGF
 
-	echo -e "\n\n$SEP PS $SEP\n" >> $i/$LOGF
-	ps >> $i/$LOGF
+	echo -e "\n\n$SEP TOP $SEP\n" >> $i/$LOGF
+	top -n1 >> $i/$LOGF
 
 	chmod a+rw $i/$LOGF
 }
@@ -71,12 +73,12 @@ case "$1" in
 		# to apply your own settings, create an external script and add
 		# source/call it here; this will it will survive firmware upgrades.
 		bootlog
-		echo "Ok."
+		echo "OK."
 		;;
 
 	stop)
 		echo -n "Stopping $NAME: "
-		echo "Ok."
+		echo "OK."
 		;;
 
 	status)
@@ -84,16 +86,13 @@ case "$1" in
 		exit 1
 		;;
 
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
+	restart) restart $NAME
+#		echo "Restarting $NAME: "
+#		sh $0 stop
+#		sleep 1
+#		sh $0 start
+#		echo ""
 		;;
 
-	*)
-		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
-		exit 1
-		;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac

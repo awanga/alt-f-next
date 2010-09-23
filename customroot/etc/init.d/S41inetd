@@ -6,54 +6,20 @@ DESC="Internet Services Daemon (don't disable!)"
 TYPE=net
 NAME=inetd
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
-		echo -n "Starting $NAME: "
-
-		# FIXME add service specific file/directory creation
-		# ex, dropbear needs /var/log/lastlog, /etc/dropbear, key generation, etc
 		rcdropbear init
 		rcvsftpd init
 
-		start-stop-daemon -S -q -b -x $NAME
-		echo "OK"
+#		start-stop-daemon -S -q -b -x $NAME
+#		omsg $?
+		start $NAME
 		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -x $NAME
-		echo "OK"
-		;;
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
-		;;
-	reload)
-		echo -n "Reloading inetd.conf for $NAME: "
-	        start-stop-daemon -K -q -s 1 -n $NAME
-	        RETVAL=$?
-        	echo "done"
-	        return $RETVAL
-		;;
-	status)
-		status
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|restart|reload|force-reload}" >&2
-		exit 1
-		;;
+	stop) stop $NAME ;;
+	restart) restart $NAME ;;
+	reload) reload $NAME ;;
+	status) status $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac
-
-exit 0

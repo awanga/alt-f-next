@@ -6,6 +6,8 @@ DESC="Run ffp initialization script"
 TYPE=sys
 NAME=ffp
 
+. $(dirname $0)/common
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
@@ -32,17 +34,14 @@ case "$1" in
 			exit 1
 		fi
 		;;
-	restart|force-reload)
+	restart)
 		echo "Restarting $NAME: "
 		sh $0 stop
 		sleep 1
 		sh $0 start
 		echo ""
 		;;
-	*)
-		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
-		exit 1
-		;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac
 
 exit 0

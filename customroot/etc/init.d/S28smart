@@ -5,44 +5,30 @@ set -e
 DESC="SMART Disk Monitoring Daemon"
 NAME=smartd
 TYPE=sys
-INTERVAL=5400
+CONFM=/etc/misc.conf
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -b -x $NAME -- -i $INTERVAL 
-		# -p /tmp/smartd.pid -q never
-		echo "OK"
-		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -x $NAME
-		echo "OK"
-		;;
-	status)
-		status
-		;;
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
-		exit 1
-		;;
-esac
+		if test -e $CONFM; then
+			. $CONFM
+		fi
 
-exit 0
+		if test -z "$SMARTD_INTERVAL"; then
+			SMARTD_INTERVAL=1800
+		else
+			SMARTD_INTERVAL=$(expr $SMARTD_INTERVAL \* 60)
+		fi
+
+		#start-stop-daemon -S -q -b -x $NAME -- -i $SMARTD_INTERVAL 
+		#omsg $?
+		start $NAME -- -i $SMARTD_INTERVAL
+		;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	reload)	reload $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
+esac

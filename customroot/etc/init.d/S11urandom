@@ -8,6 +8,8 @@
 NAME=urandom
 RFILE=/var/lib/misc/random-seed
 
+. $(dirname $0)/common
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
@@ -33,8 +35,5 @@ case "$1" in
 		echo "OK."
 		;;
 		
-	*)
-		echo "Usage: urandom {start|stop}" >&2
-		exit 1
-		;;
+	*)  usage $0 "start|stop" ;;
 esac

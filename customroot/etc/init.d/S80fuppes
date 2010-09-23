@@ -12,15 +12,7 @@ FUPPES_ARGS="--config-dir /etc/fuppes/ --log-file /var/log/fuppes.log \
 FUPPES_USER=fuppes
 FUPPES_GROUP=multimedia
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
@@ -29,32 +21,14 @@ case "$1" in
 		start-stop-daemon -S -q -b \
 			--chuid $FUPPES_USER:$FUPPES_GROUP \
 			-x $NAME -- $FUPPES_ARGS
-		echo "OK"
+		omsg $?
 		;;
 	stop)
 		echo -n "Stopping $NAME: "
 		start-stop-daemon -K -q -s 2 -n $NAME
-		if test $? = 1; then
-			echo "Fail."
-			exit 1
-		fi
-		echo "OK."
-		exit 0	
+		omsg $?
 		;;
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
-		sh $0 start
-		echo ""
-		;;
-	status)
-		status
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
-		exit 1
-		;;
+	restart) restart $NAME ;;
+	status) status $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac
-
-exit 0

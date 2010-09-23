@@ -18,15 +18,7 @@ MT_PORT=50500
 MT_ARGS="-d -u $MT_USER -g $MT_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
 -m $MT_HOME -f $MT_CFGDIR -p $MT_PORT -e eth0"
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
   start)
@@ -39,52 +31,12 @@ case "$1" in
 
 	start-stop-daemon --start --quiet --background --oknodo \
 		--exec $NAME -- $MT_ARGS
-	if test $? = 1; then
-		echo "Fail."
-		exit 1
-	fi
-	echo "OK."
-	exit 0
+	omsg $?
 	;;
 
-  stop)
-        # Stop daemons.
-        echo -n "Shutting down mediatomb: "
-	start-stop-daemon -K -q -n $NAME
-	if test $? = 1; then
-		echo "Fail."
-		exit 1
-	fi
-	echo "OK."
-	exit 0	
-        ;;
-
-  reload)
-        echo -n "Reloading mediatomb: "
-	start-stop-daemon -K -q -s 1 -n $NAME
-	if test $? = 1; then
-		echo "Fail."
-		exit 1
-	fi
-	echo "OK."
-	exit 0	
-        ;;
-
-  restart|force-reload)
-	echo "Restarting $NAME: "
-	sh $0 stop
-	while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
-	sh $0 start
-	echo ""
-        ;;
-
-  status)
-	status
-	;;
-
-  *)
-	echo "Usage: $0 {start|stop|restart|reload|force-reload|status}"
-	exit 1
-	;;
-
+  stop) stop $NAME ;;
+  reload) reload $NAME ;;
+  restart) restart $NAME ;;
+  status) status $NAME ;;
+  *) usage $0 "start|stop|status|restart|reload" ;;
 esac

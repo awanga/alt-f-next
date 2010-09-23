@@ -11,6 +11,8 @@ MINIDLNA_GROUP=multimedia
 #MINIDLNA_ARGS="-d -P $PIDFILE"
 MINIDLNA_ARGS=""
 
+. $(dirname $0)/common
+
 check_shares() {
 	if test -r "$CONFF"; then
 		MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONFF)"
@@ -46,44 +48,17 @@ case "$1" in
 		start-stop-daemon --start --quiet --background --oknodo \
 			--chuid $MINIDLNA_USER:$MINIDLNA_GROUP \
 			--exec $NAME -- $MINIDLNA_ARGS
-		if test $? = 1; then
-			echo "Fail."
-			exit 1
-		fi
-		echo "OK."
-		exit 0
+		omsg $?
 		;;
 
 	stop)
 		echo -n "Stopping $NAME: "
 		# it should do a clean shutdown on SIGTERM or SIGINT, but hangs
 		start-stop-daemon --stop --quiet --oknodo --signal 1 --exec $NAME
-		if test $? = 1; then
-			echo "Fail."
-			exit 1
-		fi
-		echo "OK"
-		exit 0	
+		omsg $?
 		;;
 
-	status)
-		if start-stop-daemon -K -t -q -n $NAME; then
-			echo "$NAME running"
-			exit 0
-		else
-			echo "$NAME stopped"
-			exit 1
-		fi
-		;;
-
-	restart|force-reload)
-		sh $0 stop
-		while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
-		sh $0 start
-		;;
-
-	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}"
-		exit 1
-		;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac

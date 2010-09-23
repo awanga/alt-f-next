@@ -10,15 +10,7 @@ PRINTC=/etc/printcap
 CUPS_USER=cups
 CUPS_GROUP=lpadmin
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
@@ -39,42 +31,22 @@ case "$1" in
 			--exec $NAME 
 		while ! cupsctl >& /dev/null ; do usleep 100000; done
 		cupsctl _remote_admin=1 _share_printers=1 >& /dev/null
-		echo "OK"
+		echo "OK."
 		;;
 
 	stop)
 		echo -n "Stopping $NAME: "
 		start-stop-daemon --stop --quiet --oknodo --exec $NAME
-		if test -e ${PRINTC}-safe; then # no short-circuit operator?
+		if test -e ${PRINTC}-safe; then 
 				mv $PRINTC-safe $PRINTC
 		fi		
 		sed -i 's/#printer/printer/' $INETD_CONF
 		rcinetd reload
-		echo "OK"
+		echo "OK."
 		;;
 
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		while start-stop-daemon -K -t -q -n $NAME; do usleep 200000; done
-		sh $0 start
-		echo ""
-		;;
-
-	reload)
-		echo -n "Reloading cupsd.conf for $NAME: "
-		start-stop-daemon -K -q -s 1 -n $NAME
-		echo "OK"
-		;;
-
-	status)
-		status
-		;;
-
-	*)
-		echo "Usage: $0 {start|stop|status|restart|reload|force-reload}" >&2
-		exit 1
-		;;
+	restart) restart $NAME ;;
+	reload) reload $NAME ;;
+	status) status $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
 esac
-
-exit 0

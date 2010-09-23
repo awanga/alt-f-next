@@ -7,6 +7,8 @@ DESC="Network File System Server (unix)"
 TYPE=net
 NAME=rpc.mountd
 
+. $(dirname $0)/common
+
 [ -x /usr/sbin/rpc.statd ] || exit 0
 [ -x /usr/sbin/rpc.nfsd ] || exit 0
 [ -x /usr/sbin/rpc.mountd ] || exit 0
@@ -22,23 +24,13 @@ touch /var/lib/nfs/rmtab
 touch /var/lib/nfs/state
 touch /var/lib/nfs/xtab
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
-
 start() {
 
     # Don't fail if /etc/exports doesn't exist;
     # create a bare-bones version and continue.
     if test ! -f /etc/exports; then
 	touch /etc/exports && chmod u+rw,g+r,o+r /etc/exports
-        echo "Creating default exports file..."
+        echo "Creating default NFS exports file."
         ip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
         cnet=$(echo $ip | cut -d. -f1-3).0/24
         options="rw,async,no_root_squash,no_subtree_check,anonuid=99,anongid=99"
@@ -55,53 +47,52 @@ start() {
 	fi
 
 	# start portmap
-	echo -n "Starting portmap: "
+	echo -n "Starting NFS portmap: "
 	portmap
+	omsg $?	
 	touch /var/lock/subsys/portmap
-	echo "done"
 
 	echo -n "Starting NFS services: "
 	/usr/sbin/exportfs -r
-	echo "done"
+	omsg $?
 
 	echo -n "Starting NFS mountd: "
 	rpc.mountd
-	echo "done"
+	omsg $?
 	
 	echo -n "Starting NFS statd: "
 	rpc.statd
+	omsg $?
 	touch /var/lock/subsys/nfslock
-	echo "done"
 
 	echo -n "Starting NFS daemon: "
 	rpc.nfsd 2
-	echo "done"
-
+	omsg $?
 	touch /var/lock/subsys/nfs
 }
 
 stop() {
 	# Stop daemons.
 
-	echo "Shutting down NFS daemon: "
+	echo "Stopping NFS daemon: "
 	kill -9 `pidof nfsd` 2>/dev/null
-	echo "done"
+	omsg $?
 
 	echo -n "Stopping NFS statd: "
 	killall -q rpc.statd
-	echo "done"
+	omsg $?
 
-	echo -n "Shutting down NFS mountd: "
+	echo -n "Stopping NFS mountd: "
 	killall -q rpc.mountd
-	echo "done"
+	omsg $?
 
-	echo -n "Shutting down NFS services: "
+	echo -n "Stopping NFS services: "
 	/usr/sbin/exportfs -au
-	echo "done"
+	omsg $?
 
-	echo -n "Stopping portmap: "
+	echo -n "Stopping NFS portmap: "
 	killall portmap
-	echo "done"
+	omsg $?
 
 	rm -rf /var/lock/subsys
 
@@ -114,26 +105,15 @@ stop() {
 
 # See how we were called.
 case "$1" in
-  start)
-	start
-	;;
-  stop)
-	stop
-	;;
-  status)
-	status
-	;;
-  restart)
-	stop
-	start
-	;;
+  start) start ;;
+  stop) stop ;;
+  status) status $NAME ;;
+  restart) restart $NAME ;;
   reload)
 	/usr/sbin/exportfs -r
 	touch /var/lock/subsys/nfs
 	;;
-  *)
-	echo "Usage: nfs {start|stop|status|reload}"
-	exit 1
+  *) usage $0 "start|stop|status|restart|reload" ;;
 esac
 
 

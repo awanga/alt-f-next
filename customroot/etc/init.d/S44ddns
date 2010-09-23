@@ -5,43 +5,21 @@ set -e
 DESC="Dynamic DNS update daemon"
 TYPE=net
 NAME=inadyn
+CONF=/etc/inadyn.conf
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
-		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -b -x $NAME
-		st=$?
-		if test $st = 0; then echo "OK."; else echo "Failed."; fi
-		exit $st
+		if ! test -f $CONF; then
+			echo "Starting $NAME: No $CONF configuration file, fail"
+			exit 1
+		fi
+		start $NAME
 		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -x $NAME
-		echo "OK"
-		;;
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
-		;;
-	status)
-		status
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
-		exit 1
-		;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac
 

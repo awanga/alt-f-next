@@ -1,0 +1,58 @@
+ 
+status() {
+	if start-stop-daemon -K -t -q -n $1; then
+		echo "$1 running"
+		return 0
+	else
+		echo "$1 stopped"
+		return 1
+	fi
+}
+
+omsg() {
+	if test $1 = 0; then
+		echo "OK."
+	else
+		echo "Fail."
+	fi
+	return $1	
+}
+
+start() {
+ 	echo -n "Starting $1: "
+	start-stop-daemon -S -q -o -x $*
+	omsg $?
+}
+
+stop() {
+	sig=""
+	echo -n "Stopping $1: "
+	if test -n "$2"; then
+		sig="-s $2"
+	fi	
+	start-stop-daemon -K -q -o $sig -n $1
+	omsg $?
+}
+
+restart() {
+	echo "Restarting $1: "
+	sh $0 stop
+	while start-stop-daemon -K -t -q -n $1; do usleep 200000; done
+	sh $0 start
+}
+
+reload() {
+	echo -n "Reloading $1: "
+	if test -z "$2"; then
+		sig=SIGHUP
+	else
+		sig=$2
+	fi
+	start-stop-daemon -K -q -s $sig -n $1
+	omsg $?
+}
+
+usage() {
+	echo "Usage: $1 {$2}"
+	exit 1
+}

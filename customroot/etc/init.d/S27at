@@ -6,15 +6,7 @@ DESC="Daemon to run jobs queued for later execution"
 NAME=atd
 TYPE=sys
 
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 inits() {
 	if ! test -d /var/lib/atjobs; then
@@ -26,31 +18,9 @@ inits() {
 }
 
 case "$1" in
-	start)
-		echo -n "Starting $NAME: "
-		inits
-		start-stop-daemon -S -q -b -x $NAME
-		echo "OK"
-		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -n $NAME
-		echo "OK"
-		;;
-	status)
-		status
-		;;
-	restart|force-reload)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
-		;;
-	*)
-		echo "Usage: $0 {start|stop|status|restart|force-reload}" >&2
-		exit 1
-		;;
+	start) start $NAME ;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac
-
-exit 0

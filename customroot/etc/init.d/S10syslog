@@ -5,61 +5,27 @@
 
 DESC="System and Kernel log Daemon"
 NAME=syslogd
+NAME1=klogd
 TYPE=sys
 
 umask 077
 
-start() {
- 	echo -n "Starting $NAME: "
-	start-stop-daemon -S -q -x $NAME -- -C -D -m 0
-	echo "OK"
-
-	echo -n "Starting klogd: "
-	start-stop-daemon -S -q -x klogd
-	echo "OK"
-}
-
-stop() {
-	echo -n "Stopping klogd: "
-	start-stop-daemon -K -q -n klogd
-	echo "OK"
-
-	echo -n "Stopping $NAME: "
-	start-stop-daemon -K -q -n $NAME
-	echo "OK"
-}
-
-restart() {
-	stop
-	start
-}
-
-status() {
-	if start-stop-daemon -K -t -q -n $NAME; then
-		echo "$NAME running"
-		return 0
-	else
-		echo "$NAME stopped"
-		return 1
-	fi
-}
+. $(dirname $0)/common
 
 case "$1" in
 	start)
-		start
+		start $NAME -- -C -D -m 0
+		start $NAME1
 		;;
 	stop)
-		stop
+		stop $NAME1
+		stop $NAME
 		;;
 	status)
-		status
+		status $NAME
 		;;
-	restart|reload)
-		restart
+	restart)
+		restart $NAME
 		;;
-	*)
-		echo $"Usage: $0 {start|stop|status|restart}"
-		exit 1
+	*) usage $0 "start|stop|status|restart" ;;
 esac
-
-exit $?
