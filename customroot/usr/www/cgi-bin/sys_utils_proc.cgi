@@ -15,14 +15,21 @@ elif test "$kernel" = "Refresh"; then
 
 elif test "$syslog" = "Refresh"; then
 	action="SystemLog"
-
-elif test "$kernel" = "Back" -o "$syslog" = "Back"; then
-	gotopage /cgi-bin/system.cgi
 fi
 
 case $action in
 	Reboot)
 		/sbin/reboot
+		html_header
+		cat<<-EOF
+			<style>	body { height : 100%;} </style>
+			<script type="text/javascript">
+				document.body.style.cursor = 'wait'
+				close()
+				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 30000);
+			</script></body></html>
+		EOF
+		exit 0
 		;;
 	
 	Poweroff) 
@@ -31,15 +38,13 @@ case $action in
 
 	ClearPrintQueues)
 		#lpq -d doesnt work
-		for i in $(cut -f1 -d"|" /etc/printcap ); do
+		for i in $(cut -f1 -d"|" /etc/printcap 2>/dev/null); do
 			if test -d /var/spool/lpd/$i; then
 				mkdir -p /var/spool/lpd/$i/.lockdir  # see /usr/bin/print
 				if test -n "$(pidof print)"; then kill $(pidof print); fi
 				for j in $(ls /var/spool/lpd/$i); do
 					p=$(top -n1 | grep $j | grep -v grep | cut -f2 -d" ")
-					if test -n "$p"; then
-						kill $p
-					fi	
+					if test -n "$p"; then kill $p; fi	
 					rm /var/spool/lpd/$i/$j
 				done
 				rmdir /var/spool/lpd/$i/.lockdir
@@ -51,13 +56,13 @@ case $action in
 
 	KernelLog)
 		write_header "Kernel Log"
-		echo "<pre>"
+		echo "<small><pre>"
 		dmesg
 		cat<<-EOF
-			</pre>
-			<form action="/cgi-bin/system_proc.cgi" method="post">
+			</small></pre>
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 			<input type=submit name=kernel value="Refresh">
-			<input type=submit name=kernel value="Back">
+			$(back_button)
 			</form></body></html>
 		EOF
 		exit 0
@@ -68,14 +73,14 @@ case $action in
 		if ! rcsyslog status >/dev/null; then
 			echo "Syslog is disabled, enable at \"System Services\""
 		else
-			echo "<pre>"
+			echo "<pre><small>"
 			logread
-			echo "</pre>"
+			echo "</small></pre>"
 		fi
 		cat<<-EOF
-			<form action="/cgi-bin/system_proc.cgi" method="post">
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 			<input type=submit name=syslog value="Refresh">
-			<input type=submit name=syslog value="Back">
+			$(back_button)
 			</form></body></html>
 		EOF
 		exit 0
@@ -103,7 +108,6 @@ case $action in
 		exit 0
 		;;
 
-
 	*)
 		echo Hu? ;;
 
@@ -111,6 +115,6 @@ esac
 
 #enddebug
 
-gotopage /cgi-bin/system.cgi
+gotopage /cgi-bin/sys_utils.cgi
 
 
