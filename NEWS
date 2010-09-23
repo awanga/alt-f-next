@@ -1,4 +1,40 @@
-July, ?? 2010: Alt-F-0.1B3 released
+September 22, 2010: Alt-F-0.1B4 released
+
+What's new:
+
+	-kernel 2.6.35.4
+		-owners of A1 hardware boards should try this.
+		-no lzma squashfs backported patch, as it turns the kernel
+		unstable; as a result there are less 11MB of RAM available :-(
+	-sftp and ftps support
+	-ftp administering web page (AWP)
+	-wget proxy AWP (untested)
+	-disk wizard AWP
+	-disk maintenance AWP redesigned, more disk/raid operations supported
+	-disk partitioning AWP bugs fixed
+	-remote web administration AWP (untested)
+	-redesigned side menu and added drop-down menus on AWP
+	-SMART AWP
+	-Board revision level detection
+	-several other fixes and improvements.
+
+Known Issues:
+
+	-Rev-A1 (try it an report) and rev-C1 hardware boards not yet supported
+
+	-network link auto-negotiation doesn't work. As result Alt-F
+	 only works when the box is connected to Gbit switches/routers
+	 or network cards. 100/10Mbps switch or routers won't work.
+
+	-ghostscrip/hplip can fail with an "Unable to get scanline 0/1" error,
+	 and cups does not noticies it, sending the print job to the printer,
+	 which prints a black page, wasting all your cartridge ink.
+	 After configure the printer in cups, DISCONECT THE PRINTER and print
+	 a test page. If in the State column of cups jobs web page, or using
+	 "lpstat -p" you see a  "Unable to get scanline 0/1" message,
+	 CANCEL THE PRINT JOB AND DON'T USE THAT PRINT CONFIGURATION.
+
+July, 22, 2010: Alt-F-0.1B3 released
 
 What's new:
 
@@ -22,7 +58,7 @@ What's new:
     -networking:
         -avahi, netatalk (both untested)
     -filesystems:
-	-ntfsprogs
+		-ntfsprogs
     -databases:
         -sqlite, bdb, gdbm, 
     -support libraries and tools:
