@@ -24,8 +24,12 @@ case $action in
 		;;
 
 	LoadSettings)
-		settings=$(httpd -d $(echo $settings))
-		loadsave_settings -lf "$settings"
+		settings=$(httpd -d "$(echo $settings)")
+		if test -n "$settings"; then
+			loadsave_settings -lf "$settings"
+		else
+			msg "You must select a settings set."
+		fi
 		;;
 
 	*)
