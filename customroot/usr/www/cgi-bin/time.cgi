@@ -170,71 +170,69 @@ cat<<-EOF
 	}
 	</script>
 
-    <form name=frm action="/cgi-bin/time_proc.cgi" method="post">
+	<form name=frm action="/cgi-bin/time_proc.cgi" method="post">
 
 	<fieldset>
 	<legend><strong>Country</strong></legend>
-	<table>    
-    <tr><td>Timezone:</td>
-        <td><input type=text size=30 name=tz value=$tz></td>
-        <td>$(tzones)</td>
-        <td><input type=hidden name=timezone value=$timezone></td>
-        <!--TD><a href="http://www.sonoracomm.com/support/20-voice-support/107-uclibc-tz">Some examples</TD-->
-    </tr>
+	<table>	
+	<tr><td>Timezone:</td>
+		<td><input type=text size=30 name=tz value=$tz></td>
+		<td>$(tzones)</td>
+		<td><input type=hidden name=timezone value=$timezone></td>
+	</tr>
 
-    <tr><td></td><td>Daylight Saving Time (DST)</td>
-	<td><input type=checkbox name=po value=po onclick="toogle(frm)"></td>
+	<tr><td></td><td>Daylight Saving Time (DST)</td>
+		<td><input type=checkbox name=po value=po onclick="toogle(frm)"></td>
 	</tr>
 
 	<tr><td></td>
-	<td>DST start date</td>
+		<td>DST start date</td>
+		<td><select disabled id=dst name=dst_week_start onChange=update_tz2()>
+			$(opt_week)</select>
 
-	<td><select disabled id=dst name=dst_week_start onChange=update_tz2()>
-	$(opt_week)</select>
-	
 	<select disabled id=dst name=dst_day_start onChange=update_tz2()>
-	$(opt_wday)</select>
+		$(opt_wday)</select>
 
 	of <select disabled id=dst name=dst_mth_start onChange=update_tz2()>
-	$(opt_month)</select>
+		$(opt_month)</select>
 
 	at <select disabled id=dst name=dst_hour_start onChange=update_tz2()>
-	$(opt_hour)</select>
+		$(opt_hour)</select>
 
 	:<select disabled id=dst name=dst_min_start onChange=update_tz2()>
-	$(opt_min)</select></td></tr>
+		$(opt_min)</select></td></tr>
 
 	<tr><td></td><td>DST end date</td>
 	
 	<td><select disabled id=dst name=dst_week_end onChange=update_tz2()>
-	$(opt_week)</select>
+		$(opt_week)</select>
 
 	<select disabled id=dst name=dst_day_end onChange=update_tz2()>
-	$(opt_wday)</select>
+		$(opt_wday)</select>
 
 	of <select disabled id=dst name=dst_mth_end onChange=update_tz2()>
 	$(opt_month)</select>
 
 	at <select disabled id=dst name=dst_hour_end onChange=update_tz2()>
-	$(opt_hour)</select>
+		$(opt_hour)</select>
 
 	:<select disabled id=dst name=dst_min_end onChange=update_tz2()>
-	$(opt_min)</select></td></tr>
+		$(opt_min)</select></td></tr>
 
-	<TR><TD></td><td><input type="submit" name="country" value="Submit"></TD>
-	<td></td></TR>
-	</table></fieldset><br>
+	<tr><td></td><td><input type="submit" name="country" value="Submit"></td>
+	<td></td></tr>
+</table></fieldset><br>
 
 <fieldset>
 <legend><strong>Adjust time through internet</strong></legend>
 <table>
-    <tr><td>Local time:</td>
+	<tr><td>Local time:</td>
 	<td colspan=2><input type=text size=30 READONLY value="$ltime"></td>
-    </tr>
+	</tr>
 
-    <tr><td>Adjust from:</td>
-        <td><input type=text size=20 name=ntps value=$ntps></td>
-        <td><select name=ntps_opt onChange="update_smtp()">
+	<tr><td>Adjust from:</td>
+		<td><input type=text size=20 name=ntps value=$ntps></td>
+		<td><select name=ntps_opt onChange="update_smtp()">
 		$default_ntpd_server
 		<option value=pool.ntp.org>Worldwide</option>
 		<option value=asia.pool.ntp.org>Asia</option>
@@ -243,29 +241,27 @@ cat<<-EOF
 		<option value=oceania.pool.ntp.org>Oceania</option>
 		<option value=south-america.pool.ntp.org>South America</option>
 	</select></td>
-    </tr>
-    <tr><td></td><td><input type=submit name=ntpserver value=Submit></td><td></td></tr>
+	</tr>
+	<tr><td></td><td><input type=submit name=ntpserver value=Submit></td><td></td></tr>
 </table>
 </fieldset><br>
 
 <fieldset>
-<legend><strong>Adjust time manually</strong></legend>    
-<table>    
-    <tr><td>Set Hour:</td>
-    	<td><input type=text name=hour value="$hour"></td>
-	<td>24H</td></tr>
-    
-    <tr><td>And Date:</td>
-	<td><input type=text name=date value="$date"></td>
-	<td>YYYY-MM-DD</td></tr>
+<legend><strong>Adjust time manually</strong></legend>	
+<table>	
+	<tr><td>Set Hour:</td>
+		<td><input type=text name=hour value="$hour"></td>
+		<td>24H</td></tr>
+	
+	<tr><td>And Date:</td>
+		<td><input type=text name=date value="$date"></td>
+		<td>YYYY-MM-DD</td></tr>
 
-    <TR><TD></td><td><input type="submit" name="manual" value="Submit"></TD>
-	<td></td></TR>
+	<tr><td></td><td><input type="submit" name="manual" value="Submit"></td>
+	<td></td></tr>
 </table>	
 </fieldset>
 
-    </form>        
-    </body>
-    </html>
+</form></body></html>
 EOF
 

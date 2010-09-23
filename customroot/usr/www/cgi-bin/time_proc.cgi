@@ -12,15 +12,16 @@ if test "$Submit" = "country"; then
 
 elif test "$Submit" = "manual"; then
 	hour=$(httpd -d $hour)
-	date -s "$date $hour"
+	date=$(httpd -d $date)
+	date -s "$date $hour" >& /dev/null
 	next="true"
 
 elif test "$Submit" = "ntpserver"; then
-	sntp -P no -r $ntps
+	sntp -P no -r $ntps >& /dev/null
 	next="true"
 fi
 
-hwclock -w -u
+hwclock -w -u >& /dev/null
 
 #enddebug
 
@@ -28,7 +29,7 @@ if test -n "$next" -a -f /tmp/firstboot; then
 	if test -d "$(readlink -f /home)"; then
 		gotopage /cgi-bin/settings.cgi
 	else
-		gotopage /cgi-bin/newuser.cgi
+		gotopage /cgi-bin/diskwiz.cgi
 	fi
 else
 	gotopage /cgi-bin/time.cgi
