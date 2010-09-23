@@ -28,7 +28,7 @@ if test $# = 2 -a "$1" = "-s"; then
 	dsk=$(awk '/'$2'/{print $2}' /etc/bay)
 	if test -z "$(grep /dev/$dsk /proc/mounts)" -a \
 		-z "$(grep /dev/$dsk /proc/swaps)" -a \
-		-z "$(grep $dsk /proc/mdstat)"; then
+		-z "$(grep $dsk /proc/mdstat 2> /dev/null)"; then
 			echo "Disk $dsk is not in use"
 			exit 0
 	else
@@ -74,7 +74,7 @@ fi
 if test $action = "remove" -a "$force" != "yes"; then
 	if test -z "$(grep /dev/$dsk /proc/mounts)" -a \
 		-z "$(grep /dev/$dsk /proc/swaps)" -a \
-		-z "$(grep $dsk /proc/mdstat)"; then
+		-z "$(grep $dsk /proc/mdstat 2> /dev/null)"; then
 			echo "Disk $dsk in $bay bay is not in use"
 			exit 0
 	fi
