@@ -48,7 +48,11 @@ read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> /etc/rsyncd.c
 	echo "$nick:$pass" >> /etc/rsyncd.secrets
 	chmod og-rw /etc/rsyncd.secrets
 
-	gotopage /cgi-bin/usersgroups.cgi
+	if test -f /tmp/firstboot; then
+		gotopage /cgi-bin/settings.cgi
+	else
+		gotopage /cgi-bin/usersgroups.cgi
+	fi
 
 elif test "$cancel" = "Cancel"; then
 	gotopage /cgi-bin/usersgroups.cgi
@@ -63,17 +67,15 @@ elif test "$create_dir" = "CreateDir"; then
 	mkdir -p "$mp"/Users
 	ln -sf "$mp"/Users /home
 
-	mkdir -p "$mp"/Users/Public-RO
+	mkdir -p "$mp"/Users/Public
 
-	mkdir -p "$mp"/Users/Public-RW
-	chown nobody:nobody "$mp"/Users/Public-RW
-	chmod a+rwx "$mp"/Users/Public-RW
+	mkdir -p "$mp"/Users/Public/RO
 
-	if test -f /tmp/firstboot; then
-		gotopage /cgi-bin/settings.cgi
-	else
-		gotopage /cgi-bin/newuser.cgi
-	fi
+	mkdir -p "$mp"/Users/Public/RW
+	chown nobody:nobody "$mp"/Users/Public/RW
+	chmod a+rwx "$mp"/Users/Public/RW
+
+	gotopage /cgi-bin/newuser.cgi
 fi
 
 #enddebug

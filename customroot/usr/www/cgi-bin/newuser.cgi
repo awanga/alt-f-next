@@ -14,15 +14,7 @@ if test -f /tmp/firstboot; then
 	EOF
 fi
 
-s="<strong>"
-es="</strong>"
-
-disks=$(ls /dev/sd?) >/dev/null 2>&1
-if test -z "$disks"; then
-	echo "<br> $s No disks found! $es <br>"
-	echo "</body></html>"
-	exit 1
-fi
+has_disks
 
 if ! test -h /home -a -d "$(readlink -f /home)"; then
 	cat<<-EOF
