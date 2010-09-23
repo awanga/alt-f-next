@@ -1,20 +1,5 @@
 #!/bin/sh
 
-tune() {
-	eval $1
-	shift
-	eval $2
-
-	while read ln; do
-		eval $(echo $ln | awk '/^(\/dev\/sd[a-z]|\/dev\/md[0-9])/{printf "part=%s;type=%s", $1, $3}')
-		if test "$type" = "ext2" -o "$type" = "ext3" -o "$type" = "ext4"; then
-			tune2fs -c $mounts -i $days $part >& /dev/null
-			mounts=$((mounts - 2)) # try to avoid simultaneus fsck at mount time
-			days=$((days - 2))
-		    fi
-	done < /proc/mounts
-} 
-
 prog() {
 	local dsk tmout
 	dsk=/dev/"$1"
@@ -104,34 +89,25 @@ read_args
 		    
 #debug
 
-CONFF=/etc/hdsleep.conf
-CONFT=/etc/tune.conf
+CONFT=/etc/misc.conf
 CONFB=/etc/bay
 CONFTB=/etc/fstab
 
 . /tmp/power_mode
 
 if test "$Submit" = "standby"; then
-	while read ln; do
-		eval $(echo $ln | awk '/sd[a-z]/{printf "bay=%s;dsk=%s", $1, $2}')
-		eval tmout=\$$bay
-		sed -i '/^'$bay'/d' $CONFF
-		echo "$bay $tmout" >> $CONFF
-		prog $dsk $tmout
-	done < $CONFB
-
-elif test "$Submit" = "tune"; then
-	arg=""
-	for i in days mounts; do
-		eval val=\$$i
-		sed -i '/^'$i'/d' $CONFT
-		echo "$i $val" >> $CONFT
-		arg="$arg $i=$val"
+	for i in HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
+		if test -n "$(eval echo \$$i)"; then
+			sed -i '/^'$i'/d' $CONFT >& /dev/null
+			echo "$i=$(eval echo \$$i)" >> $CONFT
+		fi
 	done
-	tune $arg
   
 elif test -n "$StandbyNow"; then
 	sleepnow $StandbyNow
+
+elif test -n "$WakeupNow"; then
+	blkid -c /dev/null /dev/$WakeupNow >& /dev/null
 	
 elif test -n "$Eject"; then
 	bay_eject $Eject
@@ -139,9 +115,20 @@ elif test -n "$Eject"; then
 elif test -n "$Load"; then
 	bay_eject $Load -r
 
-elif test -n "$Status"; then
-	health $Status
+elif test -n "$hstatus"; then
+	health $hstatus
 	exit
+
+elif test -n "$shorttest"; then
+	res="$(smartctl -t short /dev/$shorttest)"
+	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
+	msg "$res\n\nYou can see the result using Health Status."
+
+elif test -n "$longtest"; then
+	res="$(smartctl -t long /dev/$longtest)"
+	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
+	msg "$res\n\nYou can see the result using Health Status."
+
 else
 	debug
 fi
