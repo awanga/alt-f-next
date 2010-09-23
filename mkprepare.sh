@@ -18,9 +18,11 @@ fi
 #	cp package/Alt-F-utils/Alt-F-utils-0.1.tar.gz dl
 #fi
 
-if ! test -e dl/aufs+sqfs4lzma-2.6.33.patch; then
-	cp patches/aufs+sqfs4lzma-2.6.33.patch dl
-fi
+# kernel patches are now in toolchain/kernel-headers
+# and are applied automatically
+#if ! test -e dl/aufs+sqfs4lzma-2.6.33.patch; then
+#	cp patches/aufs+sqfs4lzma-2.6.33.patch dl
+#fi
 
 if test -z "$BLDDIR"; then
 	cat<<-EOF
