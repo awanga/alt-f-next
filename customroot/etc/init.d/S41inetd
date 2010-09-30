@@ -2,7 +2,7 @@
 
 set -e
 
-DESC="Internet Services Daemon (don't disable!)"
+DESC="Internet Services Daemon (<strong>Don't disable unless you have a serial port!</strong>!)"
 TYPE=net
 NAME=inetd
 
