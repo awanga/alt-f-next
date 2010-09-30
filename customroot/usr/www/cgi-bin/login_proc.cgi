@@ -10,7 +10,11 @@ read_args
 
 if ! test -e $SECR; then
 	if test "$passwd" != "$passwd_again"; then
-		gotopage /cgi-bin/login.cgi
+		msg "The two passwords don't match."
+	fi
+
+	if test "$(httpd -d $passwd)" != "$passwd"; then    
+		msg "You are using illegal characters, use only alphanumeric characters."
 	fi
 
 	echo -n $passwd > $SECR
