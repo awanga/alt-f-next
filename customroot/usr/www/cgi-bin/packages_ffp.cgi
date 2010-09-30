@@ -21,7 +21,7 @@ else
 	cat<<-EOF
 		<script type="text/javascript">
 			function ask() {
-				return confirm("All ffp files will be erased. You will have to reinstall ffp on a disk partition.");
+				return confirm("All ffp files will be erased." + '\n\n' + "You will have to reinstall ffp.");
 			}
 		</script>
 	EOF
