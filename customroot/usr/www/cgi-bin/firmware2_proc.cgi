@@ -88,7 +88,7 @@ echo none > "/sys/class/leds/power:blue/trigger"
 cat<<-EOF
 	<center>
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-	<input type=submit name=action value=Reboot onClick="return confirm('The box will reboot now.\nWait 30 seconds to connect again.\n\nProceed?')">
+	<input type=submit name=action value=Reboot onClick="return confirm('The box will reboot now.\nYou will be connected again in 45 seconds.\n\nProceed?')">
 	</body></html>
 EOF
 	exit 0
