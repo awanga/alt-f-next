@@ -53,6 +53,7 @@ fi
 echo -e "\nBuilding needed host tools and copying then to the bin dir.\n\nNo checks done!\n\n"
 
 # just to be sure
+mkdir -p bin
 (cd bin; rm *)
 
 cd host-tools
