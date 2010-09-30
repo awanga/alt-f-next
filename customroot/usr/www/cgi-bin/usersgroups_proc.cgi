@@ -4,6 +4,12 @@
 check_cookie
 read_args
 
+CONFP=/etc/passwd
+CONFG=/etc/group
+CONFS=/etc/samba/smbusers
+CONFR=/etc/rsyncd.conf
+CONFRS=/etc/rsyncd.secrets
+
 #if test -z "$NewUser"; then # the gotopage in NewUser
 #	debug
 #fi
@@ -17,17 +23,19 @@ elif test -n "$ChangePass"; then
 elif test -n "$DelUser"; then
 #	echo "Del User: nick=$nick"
 
-	udir=$(awk -F : '/'$nick'/{print $6}' /etc/passwd)
+	udir=$(awk -F : '/'$nick'/{print $6}' $CONFP)
 #	rm -rf $(readlink -f "$udir")
 	smbpasswd -x $nick >& /dev/null
-	sed -i "/^$nick = /d" /etc/samba/smbusers >& /dev/null
-	sed -i "/^$nick:/d" /etc/rsyncd.secrets  >& /dev/null
-	sed -i "/^\[$nick\]/,/^$/d" /etc/rsyncd.conf
+	sed -i "/^$nick = /d" $CONFS >& /dev/null
+	sed -i "/^$nick:/d" $CONFRS  >& /dev/null
+	sed -i "/^\[$nick\]/,/^$/d" $CONFR
 	
 	deluser $nick
-	rmdir "$udir" >& /dev/null
-	if test $? = 1; then
-		msg "The users home directory is not empty and was not deleted"
+	if test -d "$udir"; then
+		rmdir "$udir" >& /dev/null
+		if test $? = 1; then
+			msg "The users home directory is not empty and was not deleted"
+		fi
 	fi
 
 elif test -n "$NewGroup"; then
@@ -36,7 +44,7 @@ elif test -n "$NewGroup"; then
 	if test $(eatspaces $gname) != "$gname"; then
 		msg "Group name must not contain spaces"
 	fi
-	eval $(awk -F : '{if ($3 > mg) mg=$3} END{printf "ggid=%d", mg+1}' /etc/group)
+	eval $(awk -F : '{if ($3 > mg) mg=$3} END{printf "ggid=%d", mg+1}' $CONFG)
 	addgroup -g $ggid "$gname"
 
 elif test -n "$DelGroup"; then
@@ -45,8 +53,8 @@ elif test -n "$DelGroup"; then
 	if test $(eatspaces $gname) != "$gname"; then
 		msg "Group name must not contain spaces"
 	fi
-	gid=$(awk -F: -v gname=$gname '$1 == gname {print $3}' /etc/group)
-	ug="$(awk -F: -v gid=$gid '$4 == gid {print $1}' /etc/passwd)"
+	gid=$(awk -F: -v gname=$gname '$1 == gname {print $3}' $CONFG)
+	ug="$(awk -F: -v gid=$gid '$4 == gid {print $1}' $CONFP)"
 	if test -n "$ug"; then
 		msg "This group is the main group of several users, can't delete it"
 	fi
@@ -64,7 +72,7 @@ elif test -n "$DelFromGroup"; then
 		-e '/^'$gname':/s/:'$nick',/:/' \
 		-e '/^'$gname':/s/,'$nick',/,/' \
 		-e '/^'$gname':/s/:'$nick'$/:/'  \
-		/etc/group
+		$CONFG
 fi
 
 gotopage /cgi-bin/usersgroups.cgi

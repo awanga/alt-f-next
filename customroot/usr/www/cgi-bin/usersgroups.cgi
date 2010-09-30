@@ -4,6 +4,9 @@
 check_cookie
 write_header "Users and Groups Setup"
 
+CONFP=/etc/passwd
+CONFG=/etc/group
+
 BRD=0
 
 cat <<EOF
@@ -61,7 +64,7 @@ while read user upass uid ugid uname dir shell;do
 	echo "<OPTION>$uname</OPTION>"
 	echo "<script type=text/javascript>users[$cnt]=\"$user\"; groupsInUser[$cnt]=\"$(id -Gn $user)\";</script>"
 	cnt=$((cnt+1))
-done < /etc/passwd
+done < $CONFP
 echo "</SELECT></td></tr>"
 num_users=$cnt
 
@@ -90,16 +93,16 @@ while read group gpass ggid userl;do
 	if test $ggid -lt 100; then continue; fi
 	echo "<OPTION>$group</OPTION>"
 	# primary group
-	uu=$(awk -F: '{if ($4 == '$ggid') printf "%s, ", $5}' /etc/passwd)
+	uu=$(awk -F: '{if ($4 == '$ggid') printf "%s, ", $5}' $CONFP)
 	# suplementary groups
 	if test -n "$userl"; then 
 		for i in $(echo $userl | tr ',' ':'); do # IFS is a ":"
-			uu="$uu, $(awk -F: '/'$i'/{print $5}' /etc/passwd)"
+			uu="$uu, $(awk -F: '/'$i'/{print $5}' $CONFP)"
 		done
 	fi
 	echo "<script type=text/javascript>groups[$cnt]=\"$group\";usersInGroup[$cnt]=\"$uu\"</script>"
 	cnt=$((cnt+1))
-done < /etc/group
+done < $CONFG
 echo "</SELECT></td></tr>"
 num_groups=$cnt
 
