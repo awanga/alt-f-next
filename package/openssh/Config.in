@@ -7,3 +7,9 @@ config BR2_PACKAGE_OPENSSH
 	  tools.  The standard 'ssh', 'sshd', 'scp', and friends.
 
 	  http://www.openssh.com/
+
+config BR2_PACKAGE_OPENSSH_SFTP_ONLY
+	bool "sftp server only"
+	depends on BR2_PACKAGE_OPENSSH
+	help
+	 Installs only sftp-server
