@@ -32,7 +32,7 @@ for i in $(seq 1 $((n_fstab+3))); do
 	if test -n "$(eval echo \$rhost_$i)"; then
 		if test -z "$eval echo \$mopts_$i)"; then
 		# keep in sync with nfs.cgi
-			mopts_$i= "rw,hard,intr"
+			mopts_$i= "rw,hard,intr,proto=tcp" # keep in sync with nfs.cgi
 		fi
 		httpd -d "$(eval echo \$fcmtd_$i)$(eval echo \$rhost_$i):$(eval echo \$rdir_$i) $(eval echo \$mdir_$i) nfs $(eval echo \$mopts_$i) 0 0"
 		echo

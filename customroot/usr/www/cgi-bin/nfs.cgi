@@ -85,7 +85,7 @@ cat<<-EOF
 			if (kind == "xpt")
 				opts.value = "rw,no_root_squash,no_subtree_check,anonuid=99,anongid=98"; // keep in sync with nfs_proc.cgi
 			else if (kind == "mnt")
-				opts.value = "rw,hard,intr"; // keep in sync with nfs_proc.cgi
+				opts.value = "rw,hard,intr,proto=tcp"; // keep in sync with nfs_proc.cgi
 		}
 	</script>
 
