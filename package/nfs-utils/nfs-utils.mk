@@ -3,7 +3,8 @@
 # nfs-utils
 #
 #############################################################
-NFS_UTILS_VERSION:=1.2.0
+#NFS_UTILS_VERSION:=1.2.0
+NFS_UTILS_VERSION:=1.2.3
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
 NFS_UTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/nfs/
 NFS_UTILS_CAT:=$(BZCAT)
@@ -12,11 +13,12 @@ NFS_UTILS_BINARY:=utils/nfsd/nfsd
 NFS_UTILS_TARGET_BINARY:=usr/sbin/rpc.nfsd
 
 BR2_NFS_UTILS_CFLAGS=
+
 ifeq ($(BR2_LARGEFILE),)
 BR2_NFS_UTILS_CFLAGS+=-U_LARGEFILE64_SOURCE -U_FILE_OFFSET_BITS
 endif
-BR2_NFS_UTILS_CFLAGS+=-DUTS_RELEASE='\"$(LINUX_HEADERS_VERSION)\"'
 
+BR2_NFS_UTILS_CFLAGS+=-DUTS_RELEASE='\"$(LINUX_HEADERS_VERSION)\"'
 
 $(DL_DIR)/$(NFS_UTILS_SOURCE):
 	 $(call DOWNLOAD,$(NFS_UTILS_SITE),$(NFS_UTILS_SOURCE))
@@ -25,10 +27,8 @@ nfs-utils-source: $(DL_DIR)/$(NFS_UTILS_SOURCE)
 
 $(NFS_UTILS_DIR)/.unpacked: $(DL_DIR)/$(NFS_UTILS_SOURCE)
 	$(NFS_UTILS_CAT) $(DL_DIR)/$(NFS_UTILS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	# jc: toolchain/patch-kernel.sh $(NFS_UTILS_DIR) package/nfs-utils/ nfs-utils\*.patch
-	# jc: toolchain/patch-kernel.sh $(NFS_UTILS_DIR) $(NFS_UTILS_DIR)/debian/ \*.patch
+	toolchain/patch-kernel.sh $(NFS_UTILS_DIR) package/nfs-utils/ nfs-utils-$(NFS_UTILS_VERSION)\*.patch
 	$(CONFIG_UPDATE) $(NFS_UTILS_DIR)
-	cat patches/nfs-utils-1.2.patch | patch -p0 -d $(NFS_UTILS_DIR)
 	touch $@
 
 $(NFS_UTILS_DIR)/.configured: $(NFS_UTILS_DIR)/.unpacked
@@ -46,6 +46,8 @@ $(NFS_UTILS_DIR)/.configured: $(NFS_UTILS_DIR)/.unpacked
 		--disable-uuid \
 		--disable-nfsv4 \
 		--disable-gss \
+		--disable-tirpc \
+		--disable-static \
 	)
 	touch $@
 
@@ -64,7 +66,7 @@ NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD) += usr/sbin/rpc.rquotad
 
 $(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
 	# Use fakeroot to pretend to do 'make install' as root
-	echo '$(MAKE) RPCGEN=/usr/bin/rpcgen prefix=$(TARGET_DIR)/usr statedir=$(TARGET_DIR)/var/lib/nfs $(TARGET_CONFIGURE_OPTS) -C $(NFS_UTILS_DIR) install' > $@
+	echo '$(MAKE) RPCGEN=/usr/bin/rpcgen prefix=$(TARGET_DIR)/usr statedir=$(TARGET_DIR)/var/lib/nfs $(TARGET_CONFIGURE_OPTS) sbindir=$(TARGET_DIR)/sbin -C $(NFS_UTILS_DIR) install' > $@
 	# jc: echo 'rm -f $(TARGET_DIR)/usr/bin/event_rpcgen.py $(TARGET_DIR)/usr/sbin/nhfs* $(TARGET_DIR)/usr/sbin/nfsstat $(TARGET_DIR)/usr/sbin/showmount' >> $@
 	echo 'rm -f $(TARGET_DIR)/usr/bin/event_rpcgen.py $(TARGET_DIR)/usr/sbin/nhfs* $(TARGET_DIR)/usr/sbin/nfsstat' >> $@
 	echo 'rm -rf $(TARGET_DIR)/usr/share/man' >> $@
@@ -78,6 +80,9 @@ $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY): $(PROJECT_BUILD_DIR)/.fakeroot.nfs-uti
 	touch  $@
 	
 nfs-utils: uclibc host-fakeroot $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY)
+
+nfs-utils-uninstall:
+	$(MAKE) -i DESTDIR=$(TARGET_DIR) -C $(NFS_UTILS_DIR) uninstall
 
 nfs-utils-clean:
 	rm -f $(TARGET_DIR)/etc/init.d/S60nfs
