@@ -31,6 +31,11 @@ cat <<-EOF
 				theform.elements[i].disabled = theform.elements[i].disabled ? false : true;
 		}
 	}
+	function toogle_tftp(theform) {
+		st = document.dnsmasq.tftp.checked == true ? false : true
+		document.dnsmasq.tftproot.disabled = st
+		document.dnsmasq.ftpbrowse.disabled = st
+	}
 	</script>
 
 	<form name=dnsmasq action=dnsmasq_proc.cgi method=post>
@@ -137,8 +142,11 @@ fi
 
 echo "<tr><td><input type=hidden name=cnt_ntp value="$i"></td><td></td></tr></table></fieldset><br>"
 
-eval $(awk -F= '/enable-tftp/{print "tftp=CHECKED"} \
+eval $(awk -F= '/enable-tftp/{print "tftp=checked"} \
 		/tftp-root/{printf "tftproot=%s", $2}' $CONF_F)
+if test -z "$tftp"; then
+	tftpdis=disabled
+fi
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -152,10 +160,10 @@ cat<<-EOF
 	</script>
 	<fieldset><legend> <strong> TFTP server </strong> </legend>
 	<table>
-	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp></td><tr>
+	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp onchange="toogle_tftp()"></td><tr>
 	<tr><td>Root Directory</td>
-		<td><input id=tftproot type=text size=20 name=tftproot value=$tftproot>
-		<input type=button onclick="browse_dir_popup('tftproot')" value=Browse>
+		<td><input id=tftproot $tftpdis type=text size=20 name=tftproot value=$tftproot>
+		<input type=button $tftpdis name=ftpbrowse onclick="browse_dir_popup('tftproot')" value=Browse>
 		</td></tr>
 	</table></fieldset><br>
 EOF
