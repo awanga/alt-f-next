@@ -65,7 +65,6 @@ msg() {
 	html_header
 	echo "<script type=text/javascript>
 	alert(\"$txt\")
-//	window.history.back()
 	window.location.assign(document.referrer)
 	</script>
 	</body></html>"
@@ -104,7 +103,7 @@ back_button() {
 
 select_part() {
 	echo "<select name=part>"
-	echo "<option value=none>Select a partition</option>"
+	echo "<option value=none>Select a filesystem</option>"
 
 	df -h | while read ln; do
 
@@ -151,56 +150,81 @@ check_cookie() {
 	gotopage /cgi-bin/login.cgi?$REQUEST_URI
 }
 
-
 # usage:
-# hlp_msg="This is help"
-# <input ... $(help "$hlp_msg")>
-help() {
-	echo "onmouseover=\"start_pop('$*')\" onmouseout=\"end_pop()\""
+# <div id="tt1" class="ttip">This is a <br>three line<br>Javascript Tooltip</div>
+# <input ... $(ttip tt1)>
+ttip() {
+	echo "onmouseover=\"popUp(event,'$1')\" onmouseout=\"popDown('$1')\""
 }
 
-help_setup() {
-	cat<<-EOF
-		<script type=text/javascript>
-		var wind = null
-		var smsg
-		var ev = null
-		var tid = null
-		function end_pop() {
-			if (wind != null) {
-				wind.close()
-				wind = null
-			}
-			if (tid != null) {
-				clearTimeout(tid)
-				tid = null
-			}
-		}
-		function start_pop(msg) {
-			ev=this.event
-			smsg = msg
-			end_pop
-			tid = setTimeout("help_pop()", 1000);
-		}
-		function help_pop() {
-			if (ev == undefined) {
-				x = 100
-				y = 100
-			} else {
-				x = ev.screenX
-				y = ev.screenY
-			}
-			wind = window.open("","","screenX="+x+",screenY="+y+",status=no,location=no,titlebar=no,menubar=no,width=300,height=300")
-			wind.document.write("<head><title>Message window</title></head>")
-			wind.document.write("<center><big><b>" + smsg + "</b></big></center>")
-		}
-		</script>
-	EOF
+tooltip_setup() {
+cat<<EOF
+	<script type="text/javascript">
+
+	var stat_id
+	var stat_ev
+
+	function popDown(id) {
+		if (stat_id)
+			clearTimeout(stat_id);
+		stat_id = null;
+		document.getElementById(id).style.visibility = "hidden";
+	}
+
+	function popUp(ev, id) {
+		if (stat_id)
+			clearTimeout(stat_id);
+		stat_ev = ev;
+		stat_id = id;
+		setTimeout("iPopUp()", 1000)
+	}
+
+	function iPopUp() {
+		if (! stat_id)
+			return;
+
+		obj = document.getElementById(stat_id);
+		stat_id = null
+
+		objWidth = obj.offsetWidth;
+		objHeight = obj.offsetHeight;
+
+		y = stat_ev.pageY + 20;
+		x = stat_ev.pageX - objWidth/4;
+
+		if (x + objWidth > window.innerWidth)
+			x -= objWidth/2;
+		else if (x < 2)
+			x = 2;
+
+		if (y + objHeight > window.innerHeight)
+			y -= 2*objHeight;
+
+		obj.style.left = x + 'px';
+		obj.style.top = y + 'px';
+		obj.style.visibility = "visible";
+	}
+	</script>
+
+	<style type="text/css">
+	.ttip {
+		font-family: sans-serif;
+		border: solid 1px black;
+		padding: 2px;
+
+		color: #333333;
+		background-color: #ffffaa;
+
+		position: absolute;
+		visibility: hidden;
+	}
+	</style
+EOF
 }
 
 menu_setup() {
 cat<<EOF
-<script type="text/javascript">
+	<script type="text/javascript">
 	function MenuShow() {
 		var menu = document.getElementById(this["m_id"])
 		var smenu = document.getElementById(this["sm_id"])
@@ -238,9 +262,9 @@ cat<<EOF
 		smenu.onmouseover = MenuShow
 		smenu.onmouseout = MenuHide
 	}
-</script>
+	</script>
 
-<style type="text/css">
+	<style type="text/css">
 	a.Menu, div.Menu {
 		display: block;
 		width: 100px;
@@ -253,70 +277,68 @@ cat<<EOF
 		font-weight: 900;
 		text-decoration: none;
 	}	
-</style>
+	</style>
 EOF
 }
 
 menu_setup2() {
 cat<<EOF
+	<table><tr>
+		<td><a class="Menu" href="/cgi-bin/logout.cgi" target="content">Logout</a></td>
+		<td><a class="Menu" href="/cgi-bin/status.cgi" target="content">Status</a></div></td>
+		<td><div id="Setup" class="Menu">Setup</div></td>
+		<td><div id="Disk" class="Menu">Disk</div></td>
+		<td><div id="Services" class="Menu">Services</div></td>
+		<td><div id="Packages" class="Menu">Packages</div></td>
+		<td><div id="System" class="Menu">System</div></td>
+	</tr></table>
 
-<table><tr>
-	<td><a class="Menu" href="/cgi-bin/logout.cgi" target="content">Logout</a></td>
-	<td><a class="Menu" href="/cgi-bin/status.cgi" target="content">Status</a></div></td>
-	<td><div id="Setup" class="Menu">Setup</div></td>
-	<td><div id="Disk" class="Menu">Disk</div></td>
-	<td><div id="Services" class="Menu">Services</div></td>
-	<td><div id="Packages" class="Menu">Packages</div></td>
-	<td><div id="System" class="Menu">System</div></td>
-</tr></table>
+	<div id="Setup_sub">
+		<a class="Menu" href="/cgi-bin/host.cgi" target="content">Host</a>
+		<a class="Menu" href="/cgi-bin/time.cgi" target="content">Time</a>
+		<a class="Menu" href="/cgi-bin/mail.cgi" target="content">Mail</a>
+		<a class="Menu" href="/cgi-bin/proxy.cgi" target="content">Proxy</a>
+		<a class="Menu" href="/cgi-bin/usersgroups.cgi" target="content">Users</a>
+	</div>
+	<script type="text/javascript">
+		MenuEntry("Setup");
+	</script>
 
-<div id="Setup_sub">
-	<a class="Menu" href="/cgi-bin/host.cgi" target="content">Host</a>
-	<a class="Menu" href="/cgi-bin/time.cgi" target="content">Time</a>
-	<a class="Menu" href="/cgi-bin/mail.cgi" target="content">Mail</a>
-	<a class="Menu" href="/cgi-bin/proxy.cgi" target="content">Proxy</a>
-	<a class="Menu" href="/cgi-bin/usersgroups.cgi" target="content">Users</a>
-</div>
-<script type="text/javascript">
-	MenuEntry("Setup");
-</script>
+	<div id="Disk_sub">
+		<a class="Menu" href="/cgi-bin/diskutil.cgi" target="content">Utilities</a>	
+		<a class="Menu" href="/cgi-bin/diskpart.cgi" target="content">Partition</a>
+		<a class="Menu" href="/cgi-bin/diskmaint.cgi" target="content">Maintenance</a>
+		<a class="Menu" href="/cgi-bin/diskwiz.cgi" target="content">Wizard</a>
+	</div>
+	<script type="text/javascript">
+		MenuEntry("Disk");
+	</script>
 
-<div id="Disk_sub">
-	<a class="Menu" href="/cgi-bin/diskutil.cgi" target="content">Utilities</a>	
-	<a class="Menu" href="/cgi-bin/diskpart.cgi" target="content">Partition</a>
-	<a class="Menu" href="/cgi-bin/diskmaint.cgi" target="content">Maintenance</a>
-	<a class="Menu" href="/cgi-bin/diskwiz.cgi" target="content">Wizard</a>
-</div>
-<script type="text/javascript">
-	MenuEntry("Disk");
-</script>
+	<div id="Services_sub">
+		<a class="Menu" href="/cgi-bin/net_services.cgi" target="content">Network</a>
+		<a class="Menu" href="/cgi-bin/sys_services.cgi" target="content">System</a>
+		<a class="Menu" href="/cgi-bin/user_services.cgi" target="content">User</a>
+	</div>
+	<script type="text/javascript">
+		MenuEntry("Services");
+	</script>
 
-<div id="Services_sub">
-	<a class="Menu" href="/cgi-bin/net_services.cgi" target="content">Network</a>
-	<a class="Menu" href="/cgi-bin/sys_services.cgi" target="content">System</a>
-	<a class="Menu" href="/cgi-bin/user_services.cgi" target="content">User</a>
-</div>
-<script type="text/javascript">
-	MenuEntry("Services");
-</script>
+	<div id="Packages_sub">
+		<a class="Menu" href="/cgi-bin/packages_ipkg.cgi" target="content">Alt-F</a>
+		<a class="Menu" href="/cgi-bin/packages_ffp.cgi" target="content">ffp</a>
+	</div>
+	<script type="text/javascript">
+		MenuEntry("Packages");
+	</script>
 
-<div id="Packages_sub">
-	<a class="Menu" href="/cgi-bin/packages_ipkg.cgi" target="content">Alt-F</a>
-	<a class="Menu" href="/cgi-bin/packages_ffp.cgi" target="content">ffp</a>
-</div>
-<script type="text/javascript">
-	MenuEntry("Packages");
-</script>
-
-<div id="System_sub">
-	<a class="Menu" href="/cgi-bin/sys_utils.cgi" target="content">Utilities</a>
-	<a class="Menu" href="/cgi-bin/settings.cgi" target="content">Settings</a>
-	<a class="Menu" href="/cgi-bin/firmware.cgi" target="content">Firmware</a>
-</div>
-<script type="text/javascript">
-	MenuEntry("System");
-</script>
-		
+	<div id="System_sub">
+		<a class="Menu" href="/cgi-bin/sys_utils.cgi" target="content">Utilities</a>
+		<a class="Menu" href="/cgi-bin/settings.cgi" target="content">Settings</a>
+		<a class="Menu" href="/cgi-bin/firmware.cgi" target="content">Firmware</a>
+	</div>
+	<script type="text/javascript">
+		MenuEntry("System");
+	</script>		
 EOF
 }
 
@@ -341,13 +363,22 @@ write_header() {
 		act="onLoad=\"$3\""
 	fi
 
+	hf=${0%.cgi}_hlp.html
+	if test -f /usr/www/$hf; then
+		hlp="http://$HTTP_HOST/$hf"
+	else
+		hlp="http://$HTTP_HOST/nohelp.html"
+	fi
+
 	cat<<-EOF
 		<title>$1</title>
 		$(menu_setup)
-		</head><body $act>
+		$(tooltip_setup)
+		</head>
+		<body $act>
 		$(menu_setup2)
-		<!--$(help_setup)-->
-		<center><h2>$1</h2></center>
+		<div id=tt_help class="ttip">Click to get a descriptive help</div>
+		<center><h2>$1 <a href="$hlp" $(ttip tt_help)><img src="../help.png" alt="help" border=0></a></h2></center>
 		$warn
 	EOF
 }
