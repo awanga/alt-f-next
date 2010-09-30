@@ -4,7 +4,12 @@
 check_cookie
 read_args
 
-#debug # dont forget to comment/uncomment "enddebug" in script
+CONFP=/etc/passwd
+CONFR=/etc/rsyncd.conf
+CONFRS=/etc/rsyncd.secrets
+CONFS=/etc/samba/smbusers
+
+#debug
 
 if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	uname="$(httpd -d "$uname")"
@@ -13,15 +18,15 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 # FIXME add gid support!
 
 	if test "$submit" = "Submit"; then
-		ouname="$(awk -F: -v ouname="$uname" '$5 == ouname {print $5}' /etc/passwd)"
-		onick="$(awk -F: -v onick="$nick" '$1 == onick {print $1}' /etc/passwd)"
+		ouname="$(awk -F: -v ouname="$uname" '$5 == ouname {print $5}' $CONFP)"
+		onick="$(awk -F: -v onick="$nick" '$1 == onick {print $1}' $CONFP)"
 		snick="$(echo $nick | tr -d ' ')"
 
 		if test -z "$uname" -o -n "$ouname"; then
 			msg "The user name can't be empty or a user with that name already exists"
 		elif test -z "$nick" -o -n "$onick" -o "$nick" != "$snick"; then 
 			msg "The nickname cant be empty, have spaces, or a user with same nickname already exists"
-		elif test -z "$uid" -o "$(awk -F: '$3 == "'$uid'" {print $3}' /etc/passwd)"; then
+		elif test -z "$uid" -o "$(awk -F: '$3 == "'$uid'" {print $3}' $CONFP)"; then
 			msg "A user with that user id already exists"
 		elif test -z "$pass" -o "$pass" != "$passa"; then
 			msg "Password can't be empty or does not match"
@@ -33,7 +38,7 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 
 		# why doesn't rsync uses unix authorization mechanisms?!
 		echo -e "\n[$nick]\npath = /home/$uname\ncomment = $uname home directory\n\
-read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> /etc/rsyncd.conf
+read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> $CONFR
 	fi
 
 	if test -z "$pass" -o "$pass" != "$passa"; then
@@ -42,11 +47,11 @@ read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> /etc/rsyncd.c
 
 	echo "$nick:$pass" | chpasswd > /dev/null 2>&1
 	echo -e "$pass\n$pass" | smbpasswd -s -a $nick >& /dev/null
-	sed -i "/^$nick = /d" /etc/samba/smbusers  >& /dev/null
-	echo "$nick = \"$uname\"" >> /etc/samba/smbusers
-	sed -i "/^$nick:/d" /etc/rsyncd.secrets >& /dev/null
-	echo "$nick:$pass" >> /etc/rsyncd.secrets
-	chmod og-rw /etc/rsyncd.secrets
+	sed -i "/^$nick = /d" $CONFS  >& /dev/null
+	echo "$nick = \"$uname\"" >> $CONFS
+	sed -i "/^$nick:/d" $CONFRS >& /dev/null
+	echo "$nick:$pass" >> $CONFRS
+	chmod og-rw $CONFRS
 
 	if test -f /tmp/firstboot; then
 		gotopage /cgi-bin/settings.cgi

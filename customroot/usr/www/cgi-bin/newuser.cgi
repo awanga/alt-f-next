@@ -4,6 +4,8 @@
 check_cookie
 write_header "New User Setup"
 
+CONFP=/etc/passwd
+
 if test -f /tmp/firstboot; then
 	cat<<-EOF
 		<center>
@@ -50,7 +52,7 @@ cat <<EOF
 EOF
 
 eval $(awk -F: '{if ($3 > uid) uid=$3} END{ 
-	printf "uid=%d", uid}' /etc/passwd)
+	printf "uid=%d", uid}' $CONFP)
 
 if test -n "$QUERY_STRING"; then
 	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
