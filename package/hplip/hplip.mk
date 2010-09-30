@@ -19,4 +19,4 @@ $(eval $(call AUTOTARGETS,package,hplip))
 
 $(HPLIP_HOOK_POST_INSTALL):
 	rm -rf $(TARGET_DIR)/etc/udev $(TARGET_DIR)/var/lib/hp
-	touch @
+	touch $@
