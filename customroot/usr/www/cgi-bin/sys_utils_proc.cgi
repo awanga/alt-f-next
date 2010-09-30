@@ -26,7 +26,7 @@ case $action in
 			<script type="text/javascript">
 				document.body.style.cursor = 'wait'
 				close()
-				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 30000);
+				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 45000);
 			</script></body></html>
 		EOF
 		exit 0
