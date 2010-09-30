@@ -36,10 +36,10 @@ cat<<-EOF
 		<td><input type=text size=20 id=host name=host value=$host></td></tr>
 	<tr><td>Server Port</td>
 		<td><input type=text size=5 id=port name=port value=$port></td></tr>
-	<tr><td></td><td>TLS/SSL<input type=checkbox $tlsf name=tls value="on">
-		Anonymous<input type=checkbox $authf name=auth value="off" onchange="toogle(authf)"></td></tr>
+	<tr><td>TLS/SSL</td><td><input type=checkbox $tlsf name=tls value="on"></td></tr>
 
 	<tr><td><br></td></tr>
+	<tr><td>Anonymous</td><td><input type=checkbox $authf name=auth value="off" onchange="toogle(authf)"></td></tr>
 
 	<tr><td>Username</td>
 		<td><input type=text size=20 id=sip $sipf name=user value=$user></td></tr>
