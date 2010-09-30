@@ -25,7 +25,7 @@ cat <<-EOF
 	</script>
 EOF
 
-echo "Browsing network, it takes 30 sec...<br>
+echo "Browsing the network for NFS servers, it takes 20 sec...<br>
 	<form><strong>Host:Directory</strong><br>"
 
 rpcinfo -b 100005 3 | sort -u  | while read hip hnm; do
