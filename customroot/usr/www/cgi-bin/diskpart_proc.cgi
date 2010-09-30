@@ -35,7 +35,7 @@ elif test -n "$Erase"; then
 
 	rcall stop >& /dev/null
 	ejectall
-	dd if=/dev/zero of=/dev/$dsk bs=512 count=1
+	dd if=/dev/zero of=/dev/$dsk bs=512 count=1 >& /dev/null
 	sfdisk -R /dev/$dsk >& /dev/null
 	sleep 5
 	blkid -c /dev/null >& /dev/null
