@@ -67,7 +67,7 @@ host-pkgconfig-dirclean:
 	rm -rf $(PKG_CONFIG_HOST_DIR)
 
 pkg-config: host-pkgconfig
-	touch @
+	touch $@
 
 ifeq ($(BR2_PACKAGE_PKG_CONFIG),y)
 TARGETS+=pkg-config
