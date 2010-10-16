@@ -12,7 +12,7 @@
 #/bin/mount -a
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
-for i in run log lock cache; do
+for i in run log cache; do
 	mkdir /tmp/$i
 	ln -sf /tmp/$i /var/$i
 done
@@ -82,8 +82,8 @@ echo /sbin/mdev > /proc/sys/kernel/hotplug
 # set system clock from RTC, in UTC
 # kernel do it at boot time, but seems to not
 # wait for second change
-o="$(hwclock)"
-while test "$o" = "$(hwclock)"; do true; done
+i=0; o="$(hwclock)"
+while test "$o" = "$(hwclock)" -a "$i" -lt 200; do i=$((i+1)); done
 hwclock -su
 
 # create rc* shortcuts to /etc/init.d/S??*
