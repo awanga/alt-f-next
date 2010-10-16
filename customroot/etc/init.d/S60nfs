@@ -5,115 +5,92 @@
 
 DESC="Network File System Server (unix)"
 TYPE=net
-NAME=rpc.mountd
+NAME=nfsd
+
+PORTMAP_FLAG=-v
 
 . $(dirname $0)/common
 
-[ -x /usr/sbin/rpc.statd ] || exit 0
-[ -x /usr/sbin/rpc.nfsd ] || exit 0
-[ -x /usr/sbin/rpc.mountd ] || exit 0
-[ -x /usr/sbin/exportfs ] || exit 0
+istart() {
+	# The /var/lib/nfs directory is actually on a tmpfs filesystem.
+	# except when Alt-F is aufs mounted (just install ipkg for this to take effect)
 
-# The /var/lib/nfs directory is actually on a tmpfs filesystem.
-mkdir -p /var/lib/nfs/sm
-mkdir -p /var/lib/nfs/sm.bak
-mkdir -p /var/lock/subsys
+	mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
 
-touch /var/lib/nfs/etab
-touch /var/lib/nfs/rmtab
-touch /var/lib/nfs/state
-touch /var/lib/nfs/xtab
+	touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
+		/var/lib/nfs/state /var/lib/nfs/xtab
 
-start() {
+	chown -R daemon /var/lib/nfs /var/lib/nfs
 
-    # Don't fail if /etc/exports doesn't exist;
-    # create a bare-bones version and continue.
-    if test ! -f /etc/exports; then
-	touch /etc/exports && chmod u+rw,g+r,o+r /etc/exports
-        echo "Creating default NFS exports file."
-        ip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
-        cnet=$(echo $ip | cut -d. -f1-3).0/24
-        options="rw,async,no_root_squash,no_subtree_check,anonuid=99,anongid=99"
+	# Don't fail if /etc/exports doesn't exist;
+	# create a bare-bones version and continue.
 
-        for f in /mnt/*; do
-            if mountpoint -q $f; then
-                echo "$f $cnet($options)" >> /etc/exports
-            fi
-        done
-    fi
+	if test ! -f /etc/exports; then
+		touch /etc/exports
+		chmod u+rw,g+r,o+r /etc/exports
+		echo "Creating default NFS exports file."
+		ip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
+		cnet=$(echo $ip | cut -d. -f1-3).0/24
+		options="rw,no_root_squash,no_subtree_check,anonuid=99,anongid=98"
+
+		for f in /mnt/*; do
+			if mountpoint -q $f; then
+				echo "$f $cnet($options)" >> /etc/exports
+			fi
+		done
+	fi
 
 	if ! test -f /proc/fs/nfsd/exports; then
 		mount -t nfsd nfsd /proc/fs/nfsd
 	fi
 
-	# start portmap
-	echo -n "Starting NFS portmap: "
-	portmap
-	omsg $?	
-	touch /var/lock/subsys/portmap
-
-	echo -n "Starting NFS services: "
-	/usr/sbin/exportfs -r
-	omsg $?
-
-	echo -n "Starting NFS mountd: "
-	rpc.mountd
-	omsg $?
+	# portmap fails when starting/stopping it in fast succession.
+	# Port 111 stays open in CLOSE_WAIT for 1 minute. Why?
+	#
+	# oddly, portmap does returns 0 when failing (uclibc bug?)
+	# so, check if it started successfuly using rpcinfo to check.
 	
-	echo -n "Starting NFS statd: "
-	rpc.statd
-	omsg $?
-	touch /var/lock/subsys/nfslock
+	echo -n "Starting portmap: "
+	portmap $PORTMAP_FLAG
+	sleep 2
+	while ! rpcinfo -p >& /dev/null ; do
+		portmap $PORTMAP_FLAG
+		echo -n .
+		sleep 2
+	done
+	echo "OK."
 
-	echo -n "Starting NFS daemon: "
-	rpc.nfsd 2
-	omsg $?
-	touch /var/lock/subsys/nfs
+	exportfs -r
+	start rpc.mountd
+	start rpc.statd -- --no-notify
+	start rpc.nfsd -- -s 2
+	start sm-notify
 }
 
-stop() {
-	# Stop daemons.
-
-	echo "Stopping NFS daemon: "
-	kill -9 `pidof nfsd` 2>/dev/null
-	omsg $?
-
-	echo -n "Stopping NFS statd: "
-	killall -q rpc.statd
-	omsg $?
-
-	echo -n "Stopping NFS mountd: "
-	killall -q rpc.mountd
-	omsg $?
-
-	echo -n "Stopping NFS services: "
-	/usr/sbin/exportfs -au
-	omsg $?
-
-	echo -n "Stopping NFS portmap: "
-	killall portmap
-	omsg $?
-
-	rm -rf /var/lock/subsys
+istop() {
+	stop nfsd 9 # should be 2.
+	stop rpc.statd
+	stop rpc.mountd
+	exportfs -au
+	stop portmap
+	rm -f /var/run/portmap_mapping /var/run/sm-notify.pid
 
 	if test -f /proc/fs/nfsd/exports; then
 		umount /proc/fs/nfsd
 	fi
 
-	# modprobe -r nfsd # blocks!
+	# blocks, as sunrpc modules has refcont = 2, although not in use
+	# modprobe -r nfsd 
+	rmmod -f nfsd lockd exportfs
 }
 
-# See how we were called.
 case "$1" in
-  start) start ;;
-  stop) stop ;;
-  status) status $NAME ;;
-  restart) restart $NAME ;;
-  reload)
-	/usr/sbin/exportfs -r
-	touch /var/lock/subsys/nfs
-	;;
-  *) usage $0 "start|stop|status|restart|reload" ;;
+	start) istart ;;
+	stop) istop ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	reload)
+		/usr/sbin/exportfs -r
+		;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
 esac
-
-
