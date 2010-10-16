@@ -17,12 +17,10 @@
 ::sysinit:/etc/init.d/rcS
 
 # Put a getty on the serial port
-ttyS0::respawn:/sbin/getty -L ttyS0 115200 vt100
+ttyS0::respawn:/sbin/getty -n -l /bin/sh -L ttyS0 115200 vt100
 
 # Logging junk
 null::sysinit:/bin/touch /var/log/messages
-#null::once:/sbin/syslogd -n -m 0
-#null::once:/sbin/klogd -n
 
 # Stuff to do before reboot/shutdown
 null::shutdown:/etc/init.d/rcE
