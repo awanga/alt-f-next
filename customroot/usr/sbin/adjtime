@@ -82,10 +82,8 @@ elif test "$1" = "-adjust"; then
 		fi
 	
 		#if test $delta -lt 86400; then
-		#if test $delta -lt 21600; then
-		#if test $delta -lt 3600; then
-		if test $delta -lt 360; then
-			echo "Wait at least one day between adjustments, not adjusting."
+		if test $delta -lt 21600; then
+			echo "Wait at least six hours between adjustments, not adjusting."
 			exit 1
 		fi
 	
