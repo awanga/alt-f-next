@@ -26,6 +26,7 @@ elif test -n "$DelUser"; then
 	udir=$(awk -F : '/'$nick'/{print $6}' $CONFP)
 #	rm -rf $(readlink -f "$udir")
 	smbpasswd -x $nick >& /dev/null
+	rm -f /etc/samba/credentials.$nick
 	sed -i "/^$nick = /d" $CONFS >& /dev/null
 	sed -i "/^$nick:/d" $CONFRS  >& /dev/null
 	sed -i "/^\[$nick\]/,/^$/d" $CONFR
