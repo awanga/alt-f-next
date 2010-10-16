@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>ALT-F Login Help Page</title>
+</head>
+
+<body>
+<h2><center>Firmware Update Help</center></h2>
+
+<p>Most processor-based devices run at boot a program that is stored in
+some form of non-volatile memory.
+
+<p>A PC, for example, has the BIOS, that is the first program that the
+processor runs when it is powered-up.<br>
+It is the BIOS that loads the operating system from disk; the BIOS
+itself doesn't need a disk to operate. 
+
+<p>In order to correct bugs or provide enhancements in such programs, most
+manufacturers store the program in non-volatile, re-writable, flash memory.
+
+<p>When you upgrade your box firmware from the vendor's distributed version
+1.07 to 1.08, e.g., you are written a new version of the software into the flash
+memory. 
+
+<p>This process has a certain risk involved, because if something goes wrong
+the box will not power up properly, and you have to return it for repair.<br>
+
+Sometimes, but only if using a <a
+href="http://wiki.dns323.info/hardware:serial"> serial-port</a>
+connection to the box, it is  possible to recover from the error, but it
+is a relatively complex process.
+
+<p>Also, flashing non vendor's distributed firmware files generally voids
+the box warranty. 
+
+<p>Alt-F Firmware Upgrade program accepts its own firmware files as well
+as firmware files from the box vendor. After flashing Alt-F you can
+always flash a vendor's firmware file back into your box. 
+
+<p>The most common reasons for "something going wrong" are power losses
+during the flashing, a defective new firmware, or an error in the
+program that makes the writing into flash. 
+
+<p>After uploading a file to the box, Alt-F Firmware Upgrade program
+verifies its validity and only then offers you the possibility of
+flashing it.<br>
+
+<p>After verifying the correcteness of the firmware file you uploaded to
+the box, you are offered the possibility of flashing and trying it.
+
+<p>If you have already flashed Alt-F in your box, you shall try the new
+version before flashing it. By trying first you will be be reasured that
+it works fine with your current setup, and also that it is not in error,
+avoiding further serious problems.<br>
+After trying you can flash it.
+
+<p>When you choose to flash the new firmware you should take into attention
+how to deal with the settings already saved in flash, and the settings
+file eventually contained in the firmware file: <br>
+
+<li><strong>Erase all flashed settings</strong>: all saved settings are
+erased from flash, and all yours previous setting are lost.<br>
+
+This option should be chosen when flashing Alt-F but only if you want to
+loose the previous settings. Configuration files structure sometime
+change between releases, and using and old configuration file with new
+software might cause problems.<br><br>
+
+<li><strong>Erase all flashed settings and flash new settings from
+defaults file</strong> Besides doing the same as the above option, if
+you select this option the settings contained in the defaults file extracted
+from the firmware file are also flashed.<br>
+
+Vendors distributed firmware files have a section of defaults setting,
+that are flashed if you check this option. This option is only available
+is there exists a non-empty defaults section -- Alt-F firmware don't
+have a defaults section.<br>
+
+This option should be chosen when flashing the vendors firmware.
+
+</ul>
+
+<p>In any case, saving default settings or clearing the saved settings,
+makes your box loose its IP, and it will not certainly be accessible
+using the old IP address.<br>
+
+<input type=button value="Back" onclick="history.back()"> </body>
+
+
