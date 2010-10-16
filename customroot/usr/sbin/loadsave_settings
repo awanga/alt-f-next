@@ -1,11 +1,27 @@
 #!/bin/sh
 
+listchanged() {
+	for i in $files /etc/fstab; do
+		if test $i -nt $stamp; then
+			echo -n "$i "
+		fi
+	done
+
+	for i in /etc/init.d/S*; do
+		# FIXME chmod doesnt change date, and stat is buggy
+		if test $i -nt $stamp; then 
+			echo -n "$i "
+		fi
+	done
+	echo
+}
+
 status() {
 	save=0
 	if ! test -e $stamp; then
 		save=1
 	else
-		for i in $files; do
+		for i in $files /etc/fstab; do
 			if test $i -nt $stamp; then
 				save=1
 				break
@@ -83,7 +99,7 @@ saveflashdef() {
 loadflashdef() {
 
 	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
+	mount -o ro /dev/mtdblock0 $save_dir
 
 	if test $# = 0; then
 		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1 
@@ -98,7 +114,8 @@ loadflashdef() {
 		tar -C / -xzf $last
 		res=$?
 		# special nfs and cifs cases
-		cat /etc/fstab /tmp/xfstab | sort | uniq > /etc/fstab
+		#cat /etc/fstab /tmp/xfstab | sort | uniq > /etc/fstab
+		cat /tmp/xfstab >> /etc/fstab
 		rm /tmp/xfstab
 	fi
 
@@ -221,15 +238,15 @@ from_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
-			cp -a /Alt-F/$i /$i
+			rm /Alt-F/$i /$i
 		fi
 	done
 }
 
 usage() {
 	echo -e "usage: loadsave_settings \n\
-	-lf [file] (load flash) | -sf (save flash) | \n\
-	-ls (list) | -ll (long list) | -cf (clear flash) | \n\
+	-lf [file] (load flash) | -sf (save flash) | -cf (clear flash) |\n\
+	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
 	-rs (read sib ip) | -st (status)"
 	exit 1;
@@ -249,8 +266,9 @@ files="
 /etc/network/interfaces		/etc/web-secret
 /etc/passwd	/etc/shadow	/etc/group
 /etc/TZ		/etc/timezone
-/etc/hosts	/etc/hostname	/etc/resolv.conf
+/etc/hosts		/etc/resolv.conf	/etc/hostname
 /etc/samba/smbpasswd	/etc/samba/smbusers	/etc/samba/smb.conf
+/etc/samba/credentials.*
 /etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
 /etc/dnsmasq-resolv	/etc/rsyncd.conf	/etc/rsyncd.secrets
 /etc/inetd.conf		/etc/vsftpd.conf	/etc/httpd.conf
@@ -270,6 +288,7 @@ fi
 case $1 in
 	"-ls") 	listflashdef ;;
 	"-ll")	llistflashdef ;;
+	"-lc")	listchanged ;;
 	"-sf")	saveflashdef ;;
 	"-lf")	arg=""
 		if test $# = 2; then arg=$2; fi
