@@ -1,0 +1,18 @@
+#!/bin/sh
+
+case $1 in
+
+	t)	# open telnet on port 26, login as root, no password
+		telnetd -p 26 -l /bin/sh
+		;;
+	f)	# this should be only done as a last resort.
+		# clear the flash saved settings and reboot
+		# returns the box to Alt-F "factory" settings. 
+		#
+		loadsave_settings -cf
+		reboot
+		;;
+	*)	echo "usage: recover <t|f> (t-open telnet, f-clear flash)"
+		return 1
+		;;
+esac
