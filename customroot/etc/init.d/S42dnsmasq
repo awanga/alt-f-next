@@ -6,26 +6,44 @@ DESC="Combined DHCP/DNS/TFTP Server"
 TYPE=net
 NAME=dnsmasq
 
-FLG_MSG="#!in use by dnsmasq, don't change"
-
 . $(dirname $0)/common
+
+FLG_MSG="#!in use by dnsmasq, don't change"
+CONF_R=/etc/resolv.conf
+CONF_DR=/etc/dnsmasq-resolv
+CONF_DN=/etc/dnsmasq-hosts
+CONF_DO=/etc/dnsmasq-opts
+CONF_M=/etc/misc.conf
 
 case "$1" in
 	start)
-		if ! $(grep -q "^$FLG_MSG" /etc/resolv.conf); then
-			cp /etc/resolv.conf /etc/dnsmasq-resolv
-			sed -i -e 's/^nameserver/#!&/' /etc/resolv.conf
-			echo -e "$FLG_MSG\nnameserver 127.0.0.1" >> /etc/resolv.conf
+		if ! $(grep -q "^$FLG_MSG" $CONF_R); then
+			cp $CONF_R $CONF_DR
+			sed -i -e 's/^nameserver/#!&/' $CONF_R
+			echo -e "$FLG_MSG\nnameserver 127.0.0.1" >> $CONF_R
 		fi
-		if ! test -f /etc/dnsmasq-hosts; then
-			touch /etc/dnsmasq-hosts
-		fi 
+		if ! test -f $CONF_DN; then
+			touch $CONF_DN
+		fi
+		if test -f $CONF_M; then
+			. $CONF_M
+		fi
+		if test "$(grep 'option:ntp-server' $CONF_DO | tr ',\t' ' ' | cut -f2 -d' ')" = "0.0.0.0"; then # advertise local ntp server
+			if test "$NTPD_DAEMON" = "no"; then # but ntpd is not a daemon
+				sed -i '/^option:ntp-server/d' $CONF_DO # don't advertise
+			elif test "$NTPD_DAEMON" = "yes"; then
+				if ! rcntp status >& /dev/null; then
+					rcntp start
+				fi
+			fi
+		fi
 		start $NAME
 		;;
 	stop)
-		if $(grep -q "$FLG_MSG" /etc/resolv.conf); then
-			cp /etc/dnsmasq-resolv /etc/resolv.conf
+		if $(grep -q "$FLG_MSG" $CONF_R); then
+			cp $CONF_DR $CONF_R
 		fi
+		#  FIXME: if started ntps, stop it if its rcscript is not executable
 		stop $NAME
 		;;
 	restart) restart $NAME ;;
