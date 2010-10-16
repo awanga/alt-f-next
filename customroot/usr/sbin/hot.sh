@@ -243,8 +243,8 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 		if test "$ret" = "0"; then
 			rmdir $mpt
 		else
-			umount -r $mpt
-			ret=$?	
+			umount -r $mpt # damage control
+		#	ret=$?	# "eject" should fail.
 		fi
 	elif test -e /proc/mdstat -a -n "$(grep $MDEV /proc/mdstat)"; then
 		eval $(mdadm --examine --export $PWD/$MDEV)
