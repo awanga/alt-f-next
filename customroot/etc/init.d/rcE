@@ -23,30 +23,21 @@ for i in /dev/sd[a-z]; do
 done
 
 # write system time to RTC, waiting for second change
-o=$(date +%s)
-while test $o = $(date +%s); do true; done
+i=0; o="$(date +%s)"
+while test "$o" = "$(date +%s)" -a "$i" -lt 200; do i=$((i+1)); done
 hwclock -wu
 
 ifconfig eth0 down
+
+mount / -o remount,ro
 
 # do a kexec to a new kernel/rootfs instead of a reboot
 if test -f /root/zImage; then
 	cd /root
 
-	if test -f rootfs.arm.cpio.gz; then
-		mv rootfs.arm.cpio.gz rootfs.arm.cpio
-	elif test -f rootfs.arm.cpio.lzma; then
-		mv rootfs.arm.cpio.lzma rootfs.arm.cpio
-	elif test -f rootfs.arm.cpio-sq.gz; then
-		mv rootfs.arm.cpio-sq.gz rootfs.arm.cpio
-	elif test -f rootfs.arm.cpio-sq.lzma; then
-		mv rootfs.arm.cpio-sq.lzma rootfs.arm.cpio
+	initrfs=$(ls rootfs.arm.cpio*)
+	if test -f "$initrfs"; then 	# make sure that only one exists
+		kexec -l zImage --command-line="console=ttyS0,115200" \
+			--initrd="$initrfs" && kexec -e
 	fi
-	
-	mount / -o remount,ro
-
-	kexec -l zImage --command-line="console=ttyS0,115200" \
-		--initrd=rootfs.arm.cpio && kexec -e
 fi
-
-mount / -o remount,ro
