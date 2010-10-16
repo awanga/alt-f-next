@@ -49,6 +49,8 @@ read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> $CONFR
 	echo -e "$pass\n$pass" | smbpasswd -s -a $nick >& /dev/null
 	sed -i "/^$nick = /d" $CONFS  >& /dev/null
 	echo "$nick = \"$uname\"" >> $CONFS
+	echo -e "username=$nick\npassword=$pass" > /etc/samba/credentials.$nick
+	chmod og-rw /etc/samba/credentials.$nick
 	sed -i "/^$nick:/d" $CONFRS >& /dev/null
 	echo "$nick:$pass" >> $CONFRS
 	chmod og-rw $CONFRS
