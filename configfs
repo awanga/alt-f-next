@@ -11,7 +11,7 @@
 
 RMF="etc/resolv.conf etc/default/ntpd
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
-var/log var/cache var/run var/pcmcia var/lib/pcmcia
+var/spool var/log var/cache var/run var/pcmcia var/lib/pcmcia
 usr/doc usr/share/locale usr/swat/lang
 sbin/fsck.ext4dev sbin/mkfs.ext4dev
 usr/bin/ntpdate lib/udev"
@@ -32,7 +32,7 @@ BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.
 BR2_PACKAGE_MEDIATOMB="etc/init.d/S80mediatomb usr/www/cgi-bin/mediatomb.cgi usr/www/cgi-bin/mediatomb_proc.cgi"
 BR2_PACKAGE_FUPPES="etc/fuppes etc/init.d/S80fuppes usr/www/cgi-bin/fuppes.cgi usr/www/cgi-bin/fuppes_proc.cgi"
 BR2_PACKAGE_MINIDLNA="etc/minidlna.conf etc/init.d/S80minidlna usr/www/cgi-bin/minidlna.cgi usr/www/cgi-bin/minidlna_proc.cgi"
-BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt-daapd usr/www/cgi-bin/mt-daapd.cgi"
+BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt-daapd usr/www/cgi-bin/mt-daapd.cgi usr/www/cgi-bin/mt-daapd_proc.cgi"
 
 BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
 BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
