@@ -52,8 +52,7 @@ health() {
 	html_header
 	echo "<pre><small>"
 	echo "$res"
-	echo  "</small></pre><form action=\"/cgi-bin/diskutil.cgi\">
-	<input type=submit value=\"Continue\"></form></html></body>"
+	echo  "</small></pre>$(back_button)</html></body>"
 }
 
 # dsk op
@@ -128,9 +127,6 @@ elif test -n "$longtest"; then
 	res="$(smartctl -t long /dev/$longtest)"
 	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
 	msg "$res\n\nYou can see the result using Health Status."
-
-else
-	debug
 fi
 
 #enddebug

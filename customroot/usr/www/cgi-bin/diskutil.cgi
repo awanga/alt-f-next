@@ -61,7 +61,8 @@ while read ln; do
 	if test "$stat" != "active/idle"; then
 		paction="WakeupNow"
 	fi
-	mod=$(cat /sys/block/$dsk/device/model)
+	#mod=$(cat /sys/block/$dsk/device/model)
+	mod=$(disk_name $dsk)
 	val=$(eval echo \$$hdtimeout)
  
 	echo "<tr><td>$bay</td><td>$dsk</td><td> $mod </td>"
