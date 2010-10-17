@@ -83,7 +83,7 @@ filesys() {
 				/Maximum/{FS=":"; max_cnt=$2} \
 				END{printf "cnt=%d", max_cnt-curr_cnt}')
 		fi
-		MD="$(awk '/'$dev'/{ n = split($4, a,",")
+		MD="$(awk '$1 == "/dev/'$dev'" { n = split($4, a,",")
 			for (i=1;i<=n;i++)
 				if (a[i] == "ro")
 					printf ("<font color=red> %s </font>", toupper(a[i]))
@@ -93,7 +93,7 @@ filesys() {
 
 	if test "$cnt" -lt 5; then cnt="<font color=red> $cnt </font>"; fi
 	cat<<-EOF
-		<tr align=center>
+		<tr>
 		<td>$dev</td>
 		<td>$lbl</td>
 		<td align=right>${cap}B</td>
@@ -140,11 +140,16 @@ eval $(cat $temp_dev | awk '{printf "temp=\"%.1f\"", $1 / 1000 }')
 eval $(free | awk '/Swap/{printf "swap=\"%.1f/%d MB\"", $3/1024, $4/1024}')
 
 cat <<-EOF
-	<fieldset><Legend> <strong> System </strong> </legend>
-	<strong> Temperature:	 </strong>  $temp
-	<strong> Fan speed:  </strong> $(cat $fan_dev) RPM 
-	<br> <strong> Uptime:	 </strong> $up <strong> Load: </strong> $load  
-	<strong> Swap:  </strong> $swap 
+	<fieldset><Legend> <strong> System </strong> </legend><table>
+	<tr>
+		<td><strong>Temperature:</strong>  $temp</td>
+		<td><strong>Fan speed:</strong> $(cat $fan_dev) RPM</td>
+		<td><strong> Load:</strong> $load</td>
+	</tr><tr>
+		<td><strong>Swap:</strong> $swap</td>
+		<td><strong>Uptime:</strong> $up</td>
+		<td><strong>Date:</strong> $(date)</td>
+	</tr></table>
 	</fieldset><br>
 
 	<fieldset><Legend> <strong> Network </strong> </legend>
@@ -204,10 +209,50 @@ else
 		</tr>
 	EOF
 
-	while read dev mnt rest; do
+	while read dev mnt fs rest; do
 		dsk=$(echo $dev | grep '^/dev/\(sd\|md\)')
 		if test -n "$dsk"; then
 			filesys $dsk
+		fi
+	done < /proc/mounts
+fi
+
+cat<<-EOF
+	</table></fieldset><br>
+	<fieldset><Legend> <strong>Mounted Remote Filesystems </strong> </legend><table>
+EOF
+
+
+if ! grep -q '\(nfs \|cifs\)' /proc/mounts; then
+	echo "None"
+else
+	cat<<-EOF
+		<table>
+		<tr align=center>
+		<th>Host</th>
+		<th>Remote Dir</th>
+		<th>Local Dir</th>
+		<th>Capacity</th><th>Available</th>
+		<th>FS</th>
+		</tr>
+	EOF
+
+	while read rhost mnt fs rest; do
+		if test "$fs" = "nfs" -o $fs = "cifs"; then
+			if test "$fs" = "cifs"; then
+				rrhost=$(echo $rhost | cut -d'/' -f3)
+				rrdir=$(echo $rhost | cut -d'/' -f4)
+			else 
+				rrhost=${rhost%.*}
+				rrdir=${rhost#*:}
+			fi
+			# "df" breaks lines when are long nfs host:dir 
+			eval $(df -h "$mnt" | awk '{if (NF == 6) printf "sz=%sB; avai=%sB;", $2, $4
+				if (NF == 5) printf "sz=%sB; avai=%sB;", $1, $3}')
+			echo "<tr><td>$rrhost</td>
+				<td>$rrdir</td><td>$mnt</td>
+				<td>$sz</td><td>$avai</td>
+				<td>$fs</td></tr>"
 		fi
 	done < /proc/mounts
 fi
