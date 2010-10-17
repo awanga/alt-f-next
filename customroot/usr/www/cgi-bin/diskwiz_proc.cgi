@@ -134,12 +134,17 @@ partition() {
 create_swap() {
 	local i
 	for i in $disks; do
-		echo "<p>Creating swap in disk $(basename $i)..."
+		echo "<p>Creating and activating swap in disk $(basename $i)..."
 		res="$(mkswap ${i}1 2>&1)"
 		if test $? != 0; then
 			err "$res"
 		else
-			echo " done.</p>"
+			res="$(swapon -p 1 ${i}1 2>&1)"
+			if test $? != 0; then
+				err "$res"
+			else
+				echo " done.</p>"
+			fi
 		fi
 	done
 }

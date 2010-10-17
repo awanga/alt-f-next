@@ -62,7 +62,8 @@ EOF
 for i in $disks; do
 	disk=$(basename $i)
 
-	mod=$(cat /sys/block/$disk/device/model)
+	mod=$(disk_name $disk)
+	#mod=$(cat /sys/block/$disk/device/model)
 	cap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$disk/size)
 	bay=$(awk '/'$disk'/{print toupper($1)}' /etc/bay)
 
