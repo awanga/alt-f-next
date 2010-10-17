@@ -5,7 +5,8 @@
 #############################################################
 MDNSRESPONDER_VERSION:=107.6
 MDNSRESPONDER_SOURCE:=mDNSResponder-$(MDNSRESPONDER_VERSION).tar.gz
-MDNSRESPONDER_SITE:=http://www.opensource.apple.com/darwinsource/tarballs/other/$(MDNSRESPONDER_SOURCE)
+#MDNSRESPONDER_SITE:=http://www.opensource.apple.com/darwinsource/tarballs/other/$(MDNSRESPONDER_SOURCE)
+MDNSRESPONDER_SITE:=http://opensource.apple.com/tarballs/mDNSResponder/$(MDNSRESPONDER_SOURCE)
 MDNSRESPONDER_DIR:=$(BUILD_DIR)/mDNSResponder-$(MDNSRESPONDER_VERSION)
 MDNSRESPONDER_CAT:=$(ZCAT)
 MDNSRESPONDER_INSTDEPS:=
