@@ -20,6 +20,9 @@ if ! test -e $SECR; then
 	echo -n $passwd > $SECR
 	chmod og-r $SECR
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
+    echo -e "username=admin\npassword=$passwd" > /etc/samba/credentials.root
+    chmod og-rw /etc/samba/credentials.root
+
 	if test -z "$(loadsave_settings -ls)"; then
 		touch /tmp/firstboot
 		loc="/cgi-bin/host.cgi"

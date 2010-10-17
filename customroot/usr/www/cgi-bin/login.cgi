@@ -5,9 +5,10 @@ write_header "Alt-F Login"
 
 SECR=/etc/web-secret
 
+mktt tt_login "Enter your web administration password."
+mktt tt_again "Type your password again."
+
 cat<<-EOF
-	<div id="tt_login" class="ttip">Enter your web administration password.</div>
-	<div id="tt_again" class="ttip">Type your password again.</div>
     <center>
 	<form action="/cgi-bin/login_proc.cgi" method="post">
     <table>
