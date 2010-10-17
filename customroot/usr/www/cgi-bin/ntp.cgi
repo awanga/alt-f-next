@@ -14,10 +14,10 @@ fi
 
 sel_cron=""; sel_daemon=""; sel_boot=""
 
-if test "$NTPD_DAEMON" = "no"; then
-	sel_cron="CHECKED"
+if test "$NTPD_DAEMON" = "yes"; then
+	sel_daemon="checked"
 else
-	sel_daemon="CHECKED"
+	sel_cron="checked"
 fi
 
 if test "$NTPD_BOOT" = "yes"; then
@@ -33,11 +33,11 @@ cat <<-EOF
 
 	<form name=ntp action=ntp_proc.cgi method="post" >
 	<input type=radio $sel_daemon name=runasdaemon value=yes>
-		Run continuously as a daemon<br>
+		Run continuously as a server<br>
 	<input type=radio $sel_cron name=runasdaemon value=no>
-		Run everyday at 6:00<br><br>
+		Run once everyday at 6:00<br><br>
 	<input type=checkbox id=bootcheck $sel_boot name=runatboot value=yes>
-		Adjust time at boot<br> 
+		Adjust time when starts<br> 
 	<br><table>
 EOF
 
