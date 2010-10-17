@@ -20,7 +20,7 @@ case $action in
 		;;
 
 	ClearSettings)
-		loadsave_settings -cf > /dev/null 2>&1
+		loadsave_settings -cf >& /dev/null
 		;;
 
 	LoadSettings)
