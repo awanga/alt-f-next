@@ -8,10 +8,17 @@ CONF_H=/etc/dnsmasq-hosts
 CONF_O=/etc/dnsmasq-opts
 CONF_F=/etc/dnsmasq.conf
 RESOLV=/etc/resolv.conf
-HOSTS=/etc/hosts
 CONFNTP=/etc/ntp.conf
+CONFM=/etc/misc.conf
 
 if ! test -e $CONF_H; then touch $CONF_H; fi
+
+if test -f $CONFM; then
+	. $CONFM
+	if test "$NTPD_DAEMON" = "no"; then
+		dislntp=disabled
+	fi
+fi
 
 hostip=$(hostname -i)
 netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
@@ -25,16 +32,22 @@ eval $(awk -F"," '/dhcp-range=/{printf "lrg=%s; hrg=%s; lease=%s",
 
 cat <<-EOF
 	<script type="text/javascript">
-	function toogle(theform) {
-		for (var i = 0; i < theform.length; i++) {
-			if (theform.elements[i].id == "ntp_id")
-				theform.elements[i].disabled = theform.elements[i].disabled ? false : true;
-		}
+	function toogle_ntp(st) {
+		if (st == "true")
+			stt = true
+		else
+			stt = false
+		document.dnsmasq.ntp_entry.disabled = stt;
 	}
 	function toogle_tftp(theform) {
 		st = document.dnsmasq.tftp.checked == true ? false : true
 		document.dnsmasq.tftproot.disabled = st
 		document.dnsmasq.ftpbrowse.disabled = st
+	}
+	function getMAC(mac_id, ip_id) {
+		ip = document.getElementById(ip_id).value
+		window.open("get_mac.cgi?id=" + mac_id + "?ip=" + ip, "GetMAC", "width=300,height=100");
+		return false
 	}
 	</script>
 
@@ -57,9 +70,9 @@ while read mac nm ip lease rest; do
     if test "$nm" = "$hostnm"; then continue; fi
 
     echo "<tr><td><input size=12 type=text name=nm_$cnt value=$nm></td>
-	<td><input size=12 type=text name=ip_$cnt value=$ip></td>
-	<td><input type=submit name=_$cnt value="Get"></td>
-	<td><input size=18 type=text name=mac_$cnt value=$mac></td>
+	<td><input size=12 type=text id=ip_$cnt name=ip_$cnt value=$ip></td>
+	<td><input type=submit name=_$cnt value="Get" onclick=\"return getMAC('mac_$cnt','ip_$cnt')\"></td>
+	<td><input size=18 type=text id=mac_$cnt name=mac_$cnt value=$mac></td>
 	<td><input size=4 type=text name=lease_$cnt value=$lease></td></tr>"
     cnt=$((cnt+1))
 done < $CONF_H
@@ -67,80 +80,87 @@ done < $CONF_H
 IFS=$oifs
 for i in $(seq $cnt $((cnt+2))); do
 	echo "<tr><td><input size=12 type=text name=nm_$i></td>
-		<td><input size=12 type=text name=ip_$i></td>
-		<td><input type=submit name=_$i value="Get"></td>
-		<td><input size=17 type=text name=mac_$i></td>
+		<td><input size=12 type=text id=ip_$i name=ip_$i></td>
+		<td><input type=submit name=_$i value="Get" onclick=\"return getMAC('mac_$i','ip_$i')\"></td>
+		<td><input size=17 type=text id=mac_$i name=mac_$i></td>
 		<td><input size=4 type=text name=lease_$i></td></tr>"
 done
 
-cat <<-EOF
+cat<<-EOF
 	</table></fieldset><br>
 	<input type=hidden name=cnt_din value="$i">
 
-	<fieldset><legend> <strong> Local hosts with fixed IP </strong> </legend><table>
-	<tr align=center><td> <strong> Name </strong> </td><td> <strong> IP </strong> </td></tr>
+	<fieldset><legend> <strong> Current Leases </strong> </legend><table>
 EOF
 
-cnt=0
-while read ip fname nm; do
-	if test -z "$ip" -o ${ip#\#} != $ip -o \
-		"$fname" = "localhost" -o "$nm" = "localhost" ; then continue; fi
-	#if $(grep -q ",${nm}," $CONF_H); then continue; fi
-	
-	mac=""; lease=""
-	echo "<tr><td><input size=12 type=text name=knm_$cnt value=$nm></td>
-		<td><input size=12 type=text name=kip_$cnt value=$ip></td></tr>"
-	cnt=$((cnt+1))
-done < $HOSTS
-
-for i in $(seq $cnt $((cnt+2))); do
-	echo "<tr><td><input size=12 type=text name=knm_$i></td>
-		<td><input size=12 type=text name=kip_$i></td></tr>"
-done
+	if ! test -f /tmp/dnsmasq.leases; then
+		echo "None"
+	else
+		echo "<table><tr><th width=100px>Name</th><th width=100px>IP</th><th width=130px>MAC</th><th>Expiry date</th></tr>"
+		while read exp mac ip name b; do
+			dexp="$(awk 'BEGIN{print strftime("%b %d, %R",'$exp')}')"
+			echo "<tr><td>$name</td><td>$ip</td><td>$mac</td><td>$dexp</td></tr>"
+		done < /tmp/dnsmasq.leases
+	fi
 
 cat <<EOF
 	</table></fieldset>
 	<input type=hidden name=cnt_know value="$i">
 EOF
 
-echo "<br><fieldset><legend> <strong> Forward DNS Servers </strong> </legend>"
+if false; then
+	echo "<br><fieldset><legend> <strong> Forward DNS Servers </strong> </legend>"
 
-FLG_MSG="#!in use by dnsmasq, don't change"
-if $(grep -q "$FLG_MSG" $RESOLV); then
-	stk="#!nameserver"
-else
-	stk="nameserver"
-fi
-i=0
-while read tk ns; do
-	if test -z "$tk"; then continue; fi
-	if test "$tk" != $stk -o -z "$ns"; then continue; fi
-	echo "Server $((i+1)) <input type=text readonly size=12 name=ns_$i value=$ns><br>"
-	i=$((i+1))
-done  < $RESOLV
-
-if test -x /etc/init.d/S??ntp; then
-	chklntp="checked"
-	chkntp="disabled"
+	FLG_MSG="#!in use by dnsmasq, don't change"
+	if $(grep -q "$FLG_MSG" $RESOLV); then
+		stk="#!nameserver"
+	else
+		stk="nameserver"
+	fi
+	i=0
+	while read tk ns; do
+		if test -z "$tk"; then continue; fi
+		if test "$tk" != $stk -o -z "$ns"; then continue; fi
+		echo "Server $((i+1)) <input type=text readonly size=12 name=ns_$i value=$ns><br>"
+		i=$((i+1))
+	done  < $RESOLV
+	echo "</fieldset>"
 fi
 
-cat<<-EOF
-	</fieldset><br><fieldset><legend> <strong> Time Servers </strong> </legend><table>
-	<tr><td>Local NTP</td>
-	<td><input type=checkbox $chklntp value=yes name=lntp onchange="toogle(dnsmasq)"></td></tr>
-EOF
-
-i=0
-if test -e $CONFNTP; then
-	while read server host; do
-		if test "$server" = "server" -a "$host" != "127.127.1.0"; then
-			echo "<tr><td>Server $((i+1))</td><td><input id=ntp_id type=text $chkntp readonly size=12 name=ntp_$i value=$host></td></tr>"
-			i=$((i+1))
+if test -e $CONFNTP; then 
+	while read ntp_srv host; do
+		if test "$ntp_srv" = "server" -a "$host" != "127.127.1.0"; then
+			break
 		fi
 	done < $CONFNTP
 fi
 
-echo "<tr><td><input type=hidden name=cnt_ntp value="$i"></td><td></td></tr></table></fieldset><br>"
+ntp_advert="$(grep '^option:ntp-server' $CONF_O | tr ',\t' ' ' | cut -f2 -d' ')"
+
+chkentp="disabled"
+if test -z "$ntp_advert"; then
+	chknntp="checked"
+elif test "$ntp_advert" = "0.0.0.0"; then
+	chklntp="checked"
+else
+	chksntp="checked"
+	chkentp=""
+fi
+
+cat<<-EOF
+	<br><fieldset><legend> <strong> Time Servers </strong> </legend><table>
+	<tr>
+		<td><input type=radio $chknntp name=ntp value=no onchange="toogle_ntp('true')"></td>
+		<td>Don't advertise any server</td></tr>
+	<tr>
+		<td><input type=radio $chklntp $dislntp name=ntp value=local onchange="toogle_ntp('true')"></td>
+		<td>Advertise local NTP server</td></tr>
+	<tr>
+		<td><input type=radio $chksntp name=ntp value=server onchange="toogle_ntp('false')"></td>
+		<td>Advertise NTP server</td>
+		<td><input type=text $chkentp name=ntp_entry size=12 value=$host></td></tr>
+	</table></fieldset><br>
+EOF
 
 eval $(awk -F= '/enable-tftp/{print "tftp=checked"} \
 		/tftp-root/{printf "tftproot=%s", $2}' $CONF_F)

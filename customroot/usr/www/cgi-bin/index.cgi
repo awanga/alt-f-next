@@ -29,6 +29,7 @@ if test "$pg" = "setup"; then
 	&emsp;<a href="/cgi-bin/time.cgi" target="content">Time</a><br>
 	&emsp;<a href="/cgi-bin/mail.cgi" target="content">Mail</a><br>
 	&emsp;<a href="/cgi-bin/proxy.cgi" target="content">Proxy</a><br>
+	&emsp;<a href="/cgi-bin/hosts.cgi" target="content">Hosts</a><br>
 	&emsp;<a href="/cgi-bin/usersgroups.cgi" target="content">Users</a><br>
 	EOF
 fi
