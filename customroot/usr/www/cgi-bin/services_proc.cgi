@@ -10,10 +10,10 @@ start_stop() {
 	if test -n "$sscript"; then    
 		if test "$act" = "enable"; then
 			chmod +x $sscript
-			#$sscript start >/dev/null 2>&1
+			touch $sscript
 		elif test "$act" = "disable"; then
-			#$sscript stop >/dev/null 2>&1
 			chmod -x $sscript
+			touch $sscript
 		fi
 
 		if test "$act" = "start" -o "$act" = "enable"; then

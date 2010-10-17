@@ -42,12 +42,12 @@ fi
 cat<<-EOF
 	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<table><tr>
-	<td> <strong> Service $es </td>
-	<td> <strong> Boot Enabled $es </td>
-	<td align=center> <strong> Status $es </td>
-	<td align=center> <strong> Action $es </td>
-	<td></td>
-	<td align=center> <strong> Description $es </td></tr>
+	<th>Service</th>
+	<th align=center>Boot Enabled</th>
+	<th align=center>Status</th>
+	<th align=center>Action</th>
+	<th></th>
+	<th align=left>Description</th></tr>
 EOF
 
 for i in $srv; do
@@ -59,7 +59,7 @@ for i in $srv; do
 	fi
 
 	if rc$i status >/dev/null ; then
-		st="<strong> Running $es"
+		st="<strong> Running</strong>"
 		act="StopNow"
 	else
 		st="Stopped"
@@ -67,8 +67,8 @@ for i in $srv; do
 	fi
 
 	if test -f $PWD/${i}.cgi; then
-                conf="<td><input type="submit" name=$i value="Configure"></td>"
-        else
+		conf="<td><input type="submit" name=$i value="Configure"></td>"
+	else
 		conf="<td></td>"
 	fi
 
