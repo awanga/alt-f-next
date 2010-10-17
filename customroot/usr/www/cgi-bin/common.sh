@@ -81,6 +81,18 @@ has_disks() {
 	fi
 }
 
+disk_name() {
+	res=$(smartctl -i /dev/$1)
+	if test $? = 0; then
+		eval $(echo "$res" | awk '
+			/^Model Family/ {printf "mod=\"%s\";", substr($0, index($0,$3))}
+			/^Device:/ {printf "mod=\"%s\";", $2}')
+	else
+		mod=$(cat /sys/block/$1/device/model)
+	fi
+	echo "$mod"
+}
+
 # $1=part (sda2, eg)
 isdirty() {
 	res="$(tune2fs -l /dev/$1 2> /dev/null)"
@@ -142,6 +154,14 @@ gotopage() {
 	exit 0
 }
 
+js_gotopage() {
+	cat<<-EOF
+		<script type="text/javascript">
+			window.location.assign("http://" + location.hostname + "$1")
+		</script>
+	EOF
+}
+
 check_cookie() {
 	eval $HTTP_COOKIE >& /dev/null
 	if test "$(cat /tmp/cookie 2> /dev/null)" = "${ALTFID}"; then
@@ -150,9 +170,59 @@ check_cookie() {
 	gotopage /cgi-bin/login.cgi?$REQUEST_URI
 }
 
+busy_cursor_start() {
+	cat<<-EOF
+		<style>	body { height : 100%;} </style>
+		<script type="text/javascript">
+			document.body.style.cursor = 'wait';
+		</script>
+	EOF
+}
+
+busy_cursor_end() {
+	cat<<-EOF
+		<script type="text/javascript">
+			document.body.style.cursor = '';
+		</script>
+	EOF
+}
+
+# wait_count $1=msg
+wait_count_start() {
+	tmp_id=$(mktemp)
+	cat<<-EOF
+		<h4>$1: <span id="$tmp_id">0</span></h4>
+		<style>	body { height : 100%;} </style>
+		<script type="text/javascript">
+			function wait_count_update(id) {
+				obj = document.getElementById(id);
+				obj.innerHTML = parseInt(obj.innerHTML) + 1;
+			}
+			var waittimerID;
+			waittimerID = setInterval("wait_count_update('$tmp_id')",1000);
+			document.body.style.cursor = 'wait';
+		</script>
+	EOF
+}
+
+wait_count_stop() {
+	rm $tmp_id
+	cat<<-EOF	
+		<script type="text/javascript">
+			clearInterval(waittimerID);
+			document.body.style.cursor = '';
+		</script>
+	EOF
+}
+
+# usage: mktt tt_id "tooltip msg" 
+mktt () {
+	echo "<div id=\"$1\" class=\"ttip\">$2</div>"
+}
+
 # usage:
-# <div id="tt1" class="ttip">This is a <br>three line<br>Javascript Tooltip</div>
-# <input ... $(ttip tt1)>
+# mktt tt_id "tooltip message"
+# <input ... $(ttip tt_id)>
 ttip() {
 	echo "onmouseover=\"popUp(event,'$1')\" onmouseout=\"popDown('$1')\""
 }
@@ -298,6 +368,7 @@ cat<<EOF
 		<a class="Menu" href="/cgi-bin/time.cgi" target="content">Time</a>
 		<a class="Menu" href="/cgi-bin/mail.cgi" target="content">Mail</a>
 		<a class="Menu" href="/cgi-bin/proxy.cgi" target="content">Proxy</a>
+		<a class="Menu" href="/cgi-bin/hosts.cgi" target="content">Hosts</a>
 		<a class="Menu" href="/cgi-bin/usersgroups.cgi" target="content">Users</a>
 	</div>
 	<script type="text/javascript">
@@ -353,7 +424,13 @@ write_header() {
 	EOF
 
 	if ! loadsave_settings -st >/dev/null; then
-		warn="<center><h5><font color=red>When done you should save settings</font></h5></center>"
+		warn_tt="The following files have changed since the last save:<br>$(loadsave_settings -lc | sed -n 's/ /<br>/gp')"
+		warn="<center><h5>
+			<a href=\"javascript:void(0)\" $(ttip tt_settings)
+			style=\"text-decoration: none; color: red\">
+			When done you should save settings
+			<img src=\"../help.png\" width=11 height=11 alt=\"help\" border=0>
+			</a></h5></center>"
 	fi
 
 	if test "$#" = 2 -o \( $# = 3 -a -n "$2" \); then
@@ -365,11 +442,9 @@ write_header() {
 
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
-		hlp="http://$HTTP_HOST/$hf"
-	else
-		hlp="http://$HTTP_HOST/nohelp.html"
+		hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
-
+	
 	cat<<-EOF
 		<title>$1</title>
 		$(menu_setup)
@@ -377,8 +452,9 @@ write_header() {
 		</head>
 		<body $act>
 		$(menu_setup2)
-		<div id=tt_help class="ttip">Click to get a descriptive help</div>
-		<center><h2>$1 <a href="$hlp" $(ttip tt_help)><img src="../help.png" alt="help" border=0></a></h2></center>
+		$(mktt tt_help "Get a descriptive help")
+		$(mktt tt_settings "$warn_tt")
+		<center><h2>$1 $hlp</h2></center>
 		$warn
 	EOF
 }
