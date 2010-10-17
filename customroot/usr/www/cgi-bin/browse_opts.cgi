@@ -29,7 +29,9 @@ case $kind in
 		;;
 esac
 
-write_header "$title"
+#write_header "$title"
+html_header
+echo "<h2><center>$title</center></h2>"
 
 cat <<-EOF
 	<script type="text/javascript">

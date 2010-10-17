@@ -2,16 +2,16 @@
 
 . common.sh
 check_cookie
-write_header "NFS Browse"
 
-#echo "<pre>$(set)</pre>"
+html_header
+echo "<h2><center>NFS Browse</center></h2>"
 
 if test -n "$QUERY_STRING"; then		
 	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
 		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 			printf "%s=%c%s%c\n",$1,39,$2,39}')
 else
-	echo "<script type="text/javascript"> window.close() </script></body></html>"
+	echo "<h3>No arguments given.</h3></body></html>"
 	exit 0
 fi
 
@@ -25,8 +25,12 @@ cat <<-EOF
 	</script>
 EOF
 
-echo "Browsing the network for NFS servers, it takes 20 sec...<br>
-	<form><strong>Host:Directory</strong><br>"
+wait_count_start "Browsing the network for NFS servers, it takes 20 seconds"
+
+# this seems to be needed to keep the window updated...
+for i in $(seq 1 20); do sleep 1; echo; done &
+
+echo "<strong>Host:Directory</strong><br>"
 
 rpcinfo -b 100005 3 | sort -u  | while read hip hnm; do
 	if test $hnm = "(unknown)"; then
@@ -39,7 +43,9 @@ rpcinfo -b 100005 3 | sort -u  | while read hip hnm; do
 	done
 done
 
-echo "<input type=submit onclick=window.close() value=Cancel>
+wait_count_stop
+
+echo "<form><input type=submit onclick=window.close() value=Cancel>
 		</form></body></html>"
 
 exit 0

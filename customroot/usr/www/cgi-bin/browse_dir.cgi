@@ -2,7 +2,9 @@
 
 . common.sh
 check_cookie
-write_header "Directory Browse Window"
+
+html_header
+echo "<h2><center>Directory Browse</center></h2>"
 
 #echo "<pre>$(set)</pre>"
 #echo QUERY_STRING=$QUERY_STRING
@@ -53,7 +55,7 @@ if test -n "$QUERY_STRING"; then
 
 	# FIXME spaces in file name
 	# a=$(find "$browse" -maxdepth 1 -type d -a ! -name '.*' -a ! -name "$bn")
-	a=$(find "$browse" -maxdepth 1 -type d -a ! -name '.*' |  tr '\n' ':')
+	a=$(find "$browse" -maxdepth 1 -type d -a ! -name '.*' 2> /dev/null |  tr '\n' ':')
 	IFS=':'
 	for i in $a; do
 		echo "<li><a href=\"/cgi-bin/browse_dir.cgi?id=$id?browse=$i\">$i</a></li>"
