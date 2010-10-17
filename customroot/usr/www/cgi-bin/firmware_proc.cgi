@@ -32,6 +32,8 @@ done
 cat > $file
 
 . common.sh
+check_cookie
+
 html_header
 echo "<pre>"
 
@@ -44,12 +46,7 @@ mv $tfile $file
 
 if ! test -s $file; then
 	rm $file
-	cat<<-EOF
-		</pre><center><br>
-		<form action="/cgi-bin/firmware.cgi" method="post">
-		File is empty <input type="submit" value="Retry">
-		</form></center></body></html>
-	EOF
+	msg "File is empty."
 	exit 0
 fi
 
@@ -60,13 +57,8 @@ st=$?
 rm $file >/dev/null 2>&1
 
 if test $st = "1"; then
-	rm kernel initramfs defaults >/dev/null 2>&1
-	cat<<-EOF
-		</pre><center>
-		<form action="/cgi-bin/firmware.cgi" method="post">
-		Does not seems to be a legitime firmware file
-		<input type="submit" value="Retry"></form></center></body></html>
-	EOF
+	rm -f kernel initramfs defaults
+	msg "Does not seems to be a legitime firmware file."
 	exit 0
 fi
 
@@ -74,17 +66,35 @@ echo -e "$fw_version\n\n<strong>Everything looks OK</strong>\n"
 
 ls -l kernel initramfs defaults
 
-ckflh="CHECKED"
-if ! test -s defaults; then
-	ckflh=""
+if test -s defaults; then
+	flashdef="checked"
+else
+	flashdef="disabled"
 fi
 
 cat<<-EOF
 	</pre>
 	<form action="/cgi-bin/firmware2_proc.cgi" method="post">
-	<p>Erase saved settings and flash new defaults file<br>(factory settings, the box IP might change)
-	<input type="checkbox" $ckflh name=flash_defaults value=yes></p>
-	<input type="submit" name=flash value="FlashIt">
+
+	<input type="checkbox" name=erase_defaults value=yes>
+	Erase all flashed settings (the box IP might change)</p>
+
+	<input type="checkbox" $flashdef name=flash_defaults value=yes>
+	Erase all flashed settings and flash new settings from defaults file (factory settings, the box IP might change)</p>
+
+	<input type="submit" name=flash value="FlashIt" onclick="return confirm('\
+THIS IS A NO RETURN POINT.\n\n\
+If you continue, the current firmware will be erased and replaced by this new one.\n\
+There exists the remote possibility that this operation fails, turning your box useless.\n\n\
+YOUR HAVE BEEN WARNED.\n\n\
+Continue?')">
+
+	<input type="submit" name=flash value="TryIt" onclick="return confirm('\
+This action only executes the new firmware, it will not flash or change anything else.\n\n\
+While testing the new firmware YOU SHOULD NOT SAVE ANY SETTINGS,\n\
+because they might not be recognized by the current firmwarem when it runs again.\n\n\
+Continue?')">
+
 	<input type="submit" name=flash value="Abort">
 	</form></body></html>
 EOF
