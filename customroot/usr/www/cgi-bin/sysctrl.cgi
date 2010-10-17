@@ -5,28 +5,39 @@ check_cookie
 write_header "Temperature, Fan and Buttons Setup"
 
 CONFF=/etc/sysctrl.conf
+CONFM=/etc/msmtprc
 
 if test -f $CONFF; then
-	# why the hell did I do this this way???
-	# while read  line; do
-	#  eval $(echo $line | awk -F"=" '!/#/{if (NF == 2) printf "%s=%s\n",
-	#  gensub(/ */,"","g", $1), gensub(/ */,"","g", $2)}')
-	# done < $CONFF
 	. $CONFF
-else
+else # keep in sync with sysctrl.c, args_t args, line ~84
 	lo_fan=2000
 	hi_fan=5000
 	lo_temp=40
 	hi_temp=50
-	fan_off_temp=40
-	max_fan_speed=5000
+	mail=1
+	recovery=1
+	fan_off_temp=38
+	max_fan_speed=5500
 	warn_temp=52
-	warn_temp_command=
 	crit_temp=54
+	warn_temp_command=
 	crit_temp_command="/sbin/poweroff"
 	front_button_command1=
 	front_button_command2=
 	back_button_command=
+fi
+
+if test "$recovery" = "1"; then
+	recovchk=checked
+fi
+
+if test "$mail" = "1"; then
+	mailchk=checked
+fi
+
+if test -e $CONFM; then
+	SENDTO=$(awk '/^from/{ print $2}' $CONFM)
+	if test -z "$SENDTO"; then NOMAILF=disabled; fi
 fi
 
 cat<<-EOF
@@ -68,6 +79,12 @@ cat<<-EOF
 				<td>Command to execute:</td>
 				<td><input type=text name=crit_temp_command value="$crit_temp_command"></td>
 			</tr>
+			<tr><td>Send email</td>
+				<td><input type=checkbox $mailchk name=mail value="1"></td>
+				<td>Send mail to </td>
+				<td><input type=text readonly name=sendto value="$SENDTO"></td>
+				<td>Use "Mail Setting" to change</td>
+			</tr>
 		</table></fieldset><br>
 
 	<fieldset><Legend><strong>Action to execute on Button press</strong>
@@ -80,6 +97,9 @@ cat<<-EOF
 			</tr>
 			<tr><td>Back button cmd:</td>
 				<td colspan=3><input type=text name=back_button_command value="$back_button_command"></td>
+			</tr>
+			<tr><td>Enable Recovery</td>
+				<td><input type=checkbox $recovchk name=recovery value="1"></td>
 			</tr>
 		</table></fieldset><br>
 

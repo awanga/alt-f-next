@@ -9,8 +9,8 @@ read_args
 CONFF=/etc/sysctrl.conf
 
 cmd="hi_fan hi_temp lo_fan lo_temp fan_off_temp max_fan_speed
-	warn_temp warn_temp_command crit_temp crit_temp_command
-	back_button_command front_button_command1 front_button_command2"
+	warn_temp warn_temp_command crit_temp crit_temp_command mail
+	back_button_command front_button_command1 front_button_command2 recovery"
 
 if test -f $CONFF; then
 	rm $CONFF
@@ -22,10 +22,8 @@ for i in $cmd; do
 	echo "$i=\"$val\"" >> $CONFF
 done
 
-if test -n "$(pidof sysctrl)"; then
-	kill -HUP $(pidof sysctrl)
-else
-	/bin/sysctrl
+if ! test rcsysctrl status >& /dev/null; then
+	rcsysctrl reload >& /dev/null
 fi
 
 #enddebug
