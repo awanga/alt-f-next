@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include <libgen.h>
 #include <math.h>
+#include <time.h>
 
 /* busybox reboot/poweroff executes shutdown action /etc/init.d/rcE
  * from inittab, which does a clean reboot/poweroff
@@ -40,13 +41,13 @@
 #define NOT_NEEDED_ANYMORE
 
 typedef struct {
-	int lo_fan, hi_fan,
-	    lo_temp, hi_temp, fan_off_temp, max_fan_speed, warn_temp, crit_temp;
+	int lo_fan, hi_fan, lo_temp, hi_temp, mail, recovery, fan_off_temp,
+		max_fan_speed, warn_temp, crit_temp;
 	char *warn_temp_command, *crit_temp_command,
-	    *front_button_command1, *front_button_command2,
-	    *back_button_command;
+		*front_button_command1, *front_button_command2, *back_button_command;
 } args_t;
 
+void check_board();
 void fanctl(void);
 void hdd_powercheck(int noleds);
 int check_powermode(char *dev);
@@ -69,7 +70,7 @@ void mainloop();
 void logger(char *cmd);
 char *checkfile(char *fname);
 void check_other_daemon();
-void exec_userscript(char *script, int timeout);
+void exec_userscript(char *script, int timeout, char *script_arg);
 void read_config();
 void print_config();
 
@@ -80,7 +81,7 @@ char *leds[] = { "", "/sys/class/leds/right:amber/",
 
 // configuration default values, overriden by configuration files
 args_t args =
-    { 2500, 4500, 40, 50, 38, 5500, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
+    { 2000, 5000, 40, 50, 1, 1, 38, 5500, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
 
 // hack! blink_leds() use it to signal() hdd_powercheck()
@@ -106,6 +107,8 @@ void alarm_handler()
 int main(int argc, char *argv[])
 {
 
+	check_board();
+	
 	/* daemonize: fork, cd /, setsid, close io */
 	daemon(0, 0);
 	check_other_daemon();
@@ -219,29 +222,41 @@ void mainloop()
 	return;
 }
 
+// FIXME: misname
 void backup()
 {
+	time_t count = time(NULL);
 	syslog(LOG_INFO, "Backup");
 
 	blink_leds(right_led | left_led);
-	exec_userscript(args.back_button_command, 1);
-	while (debounce() == BACK_BT)
+	
+	while (debounce() == BACK_BT) {
 		usleep(200000);
+	}
 
+	count = time(NULL) - count;
+
+	if (args.recovery && count > 20) // twenty seconds
+		exec_userscript("/usr/sbin/recover", 3, "f"); // clear flash, reboot
+	else if (args.recovery && count > 10) 	// ten seconds
+		exec_userscript("/usr/sbin/recover", 3, "t"); // telnet port 26
+	else
+		exec_userscript(args.back_button_command, 1, NULL);
+	
 	blink_leds(0);
 }
 
 void reboot()
 {
 	syslog(LOG_INFO, "Rebooting NOW");
-	exec_userscript(args.front_button_command1, SCRIPT_TIMEOUT);
+	exec_userscript(args.front_button_command1, SCRIPT_TIMEOUT, NULL);
 	execl("/bin/busybox", "reboot", NULL);
 }
 
 void poweroff()
 {
 	syslog(LOG_INFO, "Poweroff NOW");
-	exec_userscript(args.front_button_command2, SCRIPT_TIMEOUT);
+	exec_userscript(args.front_button_command2, SCRIPT_TIMEOUT, NULL);
 	execl("/bin/busybox", "poweroff", NULL);	// this doesn't work without kernel patch
 }
 
@@ -269,7 +284,45 @@ char *checkfile(char *fname)
 	return fname;
 }
 
-void exec_userscript(char *script, int timeout)
+char *pop_sys(char *cmd, char *res) {
+	
+	FILE *f = popen(cmd, "r");
+	if (f == NULL) {
+		syslog(LOG_ERR, "error popen: %s", cmd);
+		return NULL;
+	}
+	char *ret = fgets(res, 80, f);
+	pclose(f);
+	return ret;
+}
+
+#define WARNT "warning"
+#define CRITT "CRITICAL"
+void smail(char *type, int fan, float temp, int limit) {
+
+	char host[80];
+	pop_sys("/bin/hostname -f", host);
+	
+	char to[80];
+	if (pop_sys("grep '^from' /etc/msmtprc | cut -f2", to) == NULL) {
+		syslog(LOG_ERR, "mail not configured");
+		return;
+	}
+	
+	FILE *fo = popen("/usr/bin/msmtp --read-recipients", "w");
+	if (fo == NULL) {
+		syslog(LOG_ERR, "error sending mail");
+		return;
+	}
+	fprintf(fo, "To: %s"
+		"Subject: Alt-F System Control %s message\n\n"
+		"This is a %s message from %s\n"
+		"Fan speed=%d\nSystem Temperature=%.1f\nLimit Temperature=%d\n\n"
+		"This message will not be sent again unless the situation normalizes and reappears afterwards.", to, type, type, host, fan, temp, limit);
+	fclose(fo);
+}
+
+void exec_userscript(char *script, int timeout, char *arg)
 {
 	if (script == NULL || strlen(script) == 0)
 		return;
@@ -278,7 +331,7 @@ void exec_userscript(char *script, int timeout)
 
 	pid_t pid = fork();
 	if (pid == 0) {
-		execl(script, script, NULL);
+		execl(script, script, arg, NULL);
 		syslog(LOG_ERR, "exec of user script \"%s\" failed", script);
 		// exit(1);
 	} else if (pid > 0) {
@@ -321,8 +374,7 @@ void check_other_daemon()
 			exit(1);
 		}
 		if (kill(opid, 0) == 0) {
-			syslog(LOG_ERR,
-			       "Another instance with pid=%d, exists, exiting.",
+			syslog(LOG_ERR, "Another instance with pid=%d, exists, exiting.",
 			       opid);
 			exit(1);
 		}
@@ -429,6 +481,18 @@ int write_int_to_file(const char *filename, int u)
 	return 0;
 }
 
+void check_board() {
+	char res[80];
+	if (read_str_from_file("/tmp/board", res)) {
+		syslog(LOG_CRIT, "sysctrl: Couldn't read /tmp/board, exiting");
+		exit(1);
+	}
+	if (strcmp("B1", res) != 0) {
+		syslog(LOG_CRIT, "sysctrl: Hardware board %s not supported, exiting", res);
+		exit (1);
+	}
+}
+
 int read_fan(void)
 {
 	int u = 0;
@@ -451,6 +515,7 @@ int read_temp(void)
 void fanctl(void)
 {
 	static float last_temp = 40.;
+	static int warn = 0, crit = 0;
 	int pwm;
 
 	float m =
@@ -480,19 +545,32 @@ void fanctl(void)
 		syslog(LOG_INFO, "temp=%.1f	 fan=%d", temp, fan);
 	}
 
-	if (temp >= args.warn_temp && temp < args.crit_temp) {
+	if (temp >= args.warn_temp && temp < args.crit_temp && warn == 0) {
 		syslog(LOG_CRIT,
-		       "WARNING TEMP: fan=%d temp=%.1f exceeded warn=%d",
-		       read_fan(), temp, args.warn_temp);
-		exec_userscript(args.warn_temp_command, 20);
+			"WARNING TEMP: fan=%d temp=%.1f exceeded warn=%d",
+			fan, temp, args.warn_temp);
+		if (args.mail)
+			smail(WARNT, fan, temp, args.warn_temp);
+		exec_userscript(args.warn_temp_command, 20, NULL);
+		warn = 1;
 	}
-
-	if (temp >= args.crit_temp) {
+	
+	if (temp < args.warn_temp && warn == 1)
+		warn = 0;
+	
+	if (temp >= args.crit_temp && crit == 0) {
+		if (args.mail)
+		smail(CRITT, fan, temp, args.crit_temp);
 		syslog(LOG_CRIT,
 		       "OVERHEAT: fan=%d temp=%.1f exceeded critical=%d",
-		       read_fan(), temp, args.crit_temp);
-		exec_userscript(args.crit_temp_command, 20);
+		       fan, temp, args.crit_temp);
+		exec_userscript(args.crit_temp_command, 20, NULL);
+		crit = 1;
 	}
+
+	if (temp < args.crit_temp && crit == 1)
+		crit = 0;
+
 }
 
 /* determine which md disk failed. not very usefull..
@@ -544,6 +622,10 @@ int check_powermode(char *dev)
 }
 
 // FIXME to support more than one USB disk (although none I have supports this)
+// this is a mess, because bink_leds() and md_stat(), that also manipulate leds
+// if noleds == 0, use leds and syslog
+// if noleds == 1, don't use leds, logs to syslog
+// if noleds == 2, don't use leds, don't log
 void hdd_powercheck(int noleds)
 {
 
@@ -558,7 +640,7 @@ void hdd_powercheck(int noleds)
 	struct stat sb;
 
 	if (stat("/etc/bay", &sb)) {
-		syslog(LOG_CRIT, "open /etc/bay: %m");
+		syslog(LOG_CRIT, "sysctrl: open /etc/bay: %m");
 		return;
 	}
 
@@ -571,7 +653,7 @@ void hdd_powercheck(int noleds)
 
 	FILE *fpb = fopen("/etc/bay", "r");
 	if (fpb == NULL) {
-		syslog(LOG_CRIT, "open /etc/bay: %m");
+		syslog(LOG_CRIT, "sysctrl: open /etc/bay: %m");
 		return;
 	}
 
@@ -614,14 +696,16 @@ void hdd_powercheck(int noleds)
 				wled = 0;
 
 			if (st == 0) {	// standby
-				if (!noleds)
+				if (noleds == 0)
 					led(wled, "1", "timer", "50", "2000");
-				syslog(LOG_INFO, "%s disk (%s) standby",
+				if (noleds == 2)	
+					syslog(LOG_INFO, "%s disk (%s) standby",
 						bay, dev);
 			} else if (st == 1) {	// active
-				if (!noleds)
+				if (noleds == 0)
 					led(wled, "0", "none", NULL, NULL);
-				syslog(LOG_INFO, "%s disk (%s) wakeup",
+				if (noleds == 2)
+					syslog(LOG_INFO, "%s disk (%s) wakeup",
 						bay, dev);
 			}
 		}
@@ -629,7 +713,7 @@ void hdd_powercheck(int noleds)
 
 	FILE *fpp = fopen("/tmp/power_mode", "w");
 	if (fpp == NULL) {
-		syslog(LOG_CRIT, "open /tmp/power_mode: %m");
+		syslog(LOG_CRIT, "sysctrl: open /tmp/power_mode: %m");
 		return;
 	} else {
 		fwrite(fbuf, strlen(fbuf), 1, fpp);
@@ -683,11 +767,13 @@ int md_stat()
 						    NULL, NULL);
 						led(left_led, "1", "none", NULL,
 						    NULL);
-					} else
+						ret = 1;
+					} else {
 						blink_leds(right_led | left_led);
+						ret = 2;
+					}
 					if (recover == 0)
 						syslog(LOG_INFO, msg);
-					ret = 1;
 					recover = 1;
 				}
 			}
@@ -860,6 +946,10 @@ void config(char *n, char *v)
 		args.crit_temp = atoi(v);
 	} else if (strcmp(n, "warn_temp") == 0) {
 		args.warn_temp = atoi(v);
+	} else if (strcmp(n, "mail") == 0) {
+		args.mail = atoi(v);
+	} else if (strcmp(n, "recovery") == 0) {
+		args.recovery = atoi(v);			
 	} else if (strcmp(n, "crit_temp_command") == 0) {
 		args.crit_temp_command = checkfile(strdup(v));
 	} else if (strcmp(n, "warn_temp_command") == 0) {
@@ -941,11 +1031,13 @@ void print_config()
 	syslog(LOG_INFO, "args.hi_fan=%d", args.hi_fan);
 	syslog(LOG_INFO, "args.lo_temp=%d", args.lo_temp);
 	syslog(LOG_INFO, "args.hi_temp=%d", args.hi_temp);
+	syslog(LOG_INFO, "args.mail=%d", args.mail);
+	syslog(LOG_INFO, "args.recovery=%d", args.recovery);
 	syslog(LOG_INFO, "args.fan_off_temp=%d", args.fan_off_temp);
 	syslog(LOG_INFO, "args.max_fan_speed=%d", args.max_fan_speed);
 	syslog(LOG_INFO, "args.crit_temp=%d", args.crit_temp);
 	syslog(LOG_INFO, "args.warn_temp=%d", args.warn_temp);
-	syslog(LOG_INFO, "args.crit_temp_command=\"%s\"\n",
+	syslog(LOG_INFO, "args.crit_temp_command=\"%s\"",
 	       args.crit_temp_command);
 	syslog(LOG_INFO, "args.warn_temp_command=\"%s\"",
 	       args.warn_temp_command);

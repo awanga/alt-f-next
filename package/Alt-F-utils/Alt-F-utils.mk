@@ -3,7 +3,7 @@
 # ALT_F_UTILS
 #
 #############################################################
-ALT_F_UTILS_VERSION = 0.1.1
+ALT_F_UTILS_VERSION = 0.1.2
 ALT_F_UTILS_SOURCE = Alt-F-utils-$(ALT_F_UTILS_VERSION).tar.gz
 ALT_F_UTILS_SITE = http://localhost/~jcard
 ALT_F_UTILS_DIR:=$(BUILD_DIR)/Alt-F-utils-$(ALT_F_UTILS_VERSION)
