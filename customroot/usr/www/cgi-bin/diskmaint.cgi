@@ -125,13 +125,17 @@ else
 	fi
 	
 	blk=$(blkid -c /dev/null -s LABEL -s TYPE)
+	ppart=$(cat /proc/partitions)
 	i=1
 	for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 		part=$(basename $j)
-		if test ${part%%[0-9]} = "md"; then
-			if test "$(cat /sys/block/$part/md/array_state)" = "inactive"; then
-				continue
-			fi
+
+		if test ${part:0:2} = "md"; then
+			if ! test -f /sys/block/$part/md/array_state; then continue; fi
+			if test "$(cat /sys/block/$part/md/array_state)" = "inactive"; then continue; fi
+		else
+			# is an extended partition?
+			if test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then continue; fi
 		fi
 	
 		LABEL=""; TYPE="none"
@@ -151,8 +155,11 @@ else
 		conv_en="disabled"
 		if test "$TYPE" = "ext2" -o "$TYPE" = "ext3"; then conv_en=""; fi
 	
-		clean_en=""
-		if test "$TYPE" = "ntfs" -a -z "$mk_ntfs"; then clean_en="disabled"; fi
+		clean_en=""; label_en=""
+		if test "$TYPE" = "ntfs" -a -n "$ntfs_dis"; then
+			clean_en="disabled"
+			label_en="disabled"
+		fi
 	
 		resize_en=""
 		if test "$TYPE" = "vfat" -o "$TYPE" = "ntfs"; then
@@ -199,7 +206,7 @@ else
 					<option>Operation</option>
 					$mtd
 					<option $clean_en>Clean</option>
-					<option value=setLabel>Set Label</option>
+					<option $label_en value=setLabel>Set Label</option>
 					<option $resize_en>Shrink</option>
 					<option $resize_en>Enlarge</option>
 					<option>Wipe</option>
@@ -264,8 +271,9 @@ else
 	EOF
 
 	raid_devs="<option value=none>Partition</option>"
-#	raidp="$(blkid -c /dev/null | awk '/mdraid/{print substr($1, 6, 4)}')"
-	raidp="$(fdisk -l | awk '$5 == "da" || $5 == "fd" { print substr($1, 6)}')"
+# dont know which of these to use...
+	raidp="$(blkid -c /dev/null | awk '/mdraid/{print substr($1, 6, 4)}')"
+#	raidp="$(fdisk -l | awk '$5 == "da" || $5 == "fd" { print substr($1, 6)}')"
 
 	for j in $raidp; do
 		cap="$(awk '{printf "%.0f", $0*512/1e9}' /sys/block/${j:0:3}/$j/size)"
@@ -277,6 +285,8 @@ else
 		for i in /dev/md[0-9]*; do
 			mdev=$(basename $i)
 	
+			if ! test -f /sys/block/$mdev/md/array_state; then continue; fi
+
 			state=$(cat /sys/block/$mdev/md/array_state)
 			type=$(cat /sys/block/$mdev/md/level)
 			pcap=$(awk '/'$mdev'/{printf "%.1f GB", $3/1048576}' /proc/partitions)
