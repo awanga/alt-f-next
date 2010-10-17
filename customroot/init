@@ -7,6 +7,7 @@ mount -t proc proc /proc
 # enter iterative shell if cmdline has "initdbg"
 # use with a plain gzip/lzma compressed initramfs
 # and/or a non aufs/squashfs patched kernel
+# also tries to run inetd, to, at least, have telnet
 if grep -q "initdbg" /proc/cmdline; then
 	echo "pre-init: initdbg"
 	/bin/mount -t sysfs sysfs /sys
@@ -14,7 +15,13 @@ if grep -q "initdbg" /proc/cmdline; then
 	/bin/mount -t devpts devpts /dev/pts
 	/sbin/mdev -s				# create device nodes
 	mkdir -p /var/run/vsftpd	# ftp needs it
-	/usr/sbin/inetd				# telnet or ftp to the box
+	/usr/sbin/inetd				# telnet or ftp the box
+	for i in left right; do		# signal the user
+		echo timer > /sys/class/leds/$i\:amber/trigger
+		echo 2000 > /sys/class/leds/$i\:amber/delay_on
+		echo 2000 > /sys/class/leds/$i\:amber/delay_off
+	done
+
 	exec /bin/sh				# enter iterative shell on serial line
 
 # don't create aufs union branches -- can't install or use packages!
@@ -40,7 +47,7 @@ else
 	mount -t tmpfs tmpfs /tmproot
 	mkdir /tmproot/root
 	umount /proc # /proc must not be mounted during the next "cp -a"
-	cp -a / /tmproot/root 
+	cp -a / /tmproot/root >& /dev/null
 	mount -t proc proc /proc
 	mkdir /newroot
 	mount -t aufs -o dirs=/tmproot/root aufs /newroot
