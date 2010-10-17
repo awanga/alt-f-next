@@ -38,7 +38,7 @@ if ! test -d tmp; then
 fi
 
 if test "$1" = "gz"; then
-	mount -o loop rootfs.arm.ext2 tmp
+	mount -o ro,loop rootfs.arm.ext2 tmp
 	cd tmp
 	find . | cpio --quiet -o -H newc | gzip -9 > ../rootfs.arm.cpio.gz
 	cd ..
@@ -46,7 +46,7 @@ if test "$1" = "gz"; then
 	chown $ME:$MG rootfs.arm.cpio.gz
 
 elif test "$1" = "lzma"; then
-	mount -o loop rootfs.arm.ext2 tmp
+	mount -o ro,loop rootfs.arm.ext2 tmp
 	cd tmp
 	find . | cpio --quiet -o -H newc | lzma e -si -so > ../rootfs.arm.cpio.lzma
 	cd ..
