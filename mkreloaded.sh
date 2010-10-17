@@ -40,8 +40,10 @@ ver=$(cut -f2 -d" " customroot/etc/Alt-F)
 cd reloaded
 
 if ! test -f alt-f/README.INSTALL -a -f alt-f/README.USE; then
-	mkdir alt-f
-	cp ../README.INSTALL ../README.USE ../LICENCE ../COPYING alt-f
+	mkdir -p alt-f
+	if ! cp ../../wiki/HowToUse.wiki alt-f/README.USE; then exit 1; fi
+	if ! cp ../../wiki/HowToInstall.wiki alt-f/README.INSTALL; then exit 1; fi
+	cp ../LICENCE ../COPYING alt-f
 fi
 
 if ! test -f alt-f/reloaded-2.6.12.6-arm1.ko; then
@@ -54,7 +56,7 @@ if ! test -f alt-f/reloaded-2.6.12.6-arm1.ko; then
 fi
 
 if test -e $DESTD/zImage -a -e $DESTD/$rootfs; then
-	rm alt-f/rootfs.arm.cpio*
+	rm -f alt-f/rootfs.arm.cpio*
 	cp $DESTD/zImage $DESTD/$rootfs alt-f
 else
 	echo "${DESTD}/zImage or ${DESTD}/$rootfs not found, exiting"
