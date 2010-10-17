@@ -26,6 +26,7 @@ else
 # and touchs the autotools dir as if a target install had been run.
 # dont touch the dependency, otherwise a full install occurs.
 $(OPENSSH_HOOK_POST_BUILD):
+	mkdir -p $(TARGET_DIR)/usr/libexec
 	$(INSTALL) -m 0755 $(OPENSSH_DIR)/sftp-server $(TARGET_DIR)/usr/libexec
 	touch $(PROJECT_BUILD_DIR)/autotools-stamps/openssh_target_installed
 #	touch $@ # dont! and don't remove me!
