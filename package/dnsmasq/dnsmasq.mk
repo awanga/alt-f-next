@@ -56,7 +56,7 @@ $(TARGET_DIR)/$(DNSMASQ_TARGET_BINARY): $(DNSMASQ_DIR)/src/$(DNSMASQ_BINARY)
 	$(STRIPCMD) $(TARGET_DIR)/$(DNSMASQ_TARGET_BINARY)
 	mkdir -p $(TARGET_DIR)/var/lib/misc
 	# Isn't this vulnerable to symlink attacks?
-	ln -sf /tmp/dnsmasq.leases $(TARGET_DIR)/var/lib/misc/dnsmasq.leases
+	# ln -sf /tmp/dnsmasq.leases $(TARGET_DIR)/var/lib/misc/dnsmasq.leases
 ifneq ($(BR2_HAVE_MANPAGES),y)
 	rm -rf $(TARGET_DIR)/usr/share/man
 endif
