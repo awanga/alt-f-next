@@ -11,10 +11,10 @@ exports_row() {
 
 	exdir=${edir#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${edir%%[!#]*}	# get possible comment char FIXME more than one and space
-	if test -n "$cmtd"; then sel=CHECKED; else sel=""; fi
+	if test -n "$cmtd"; then sel=checked; else sel=""; fi
 
 	cat<<EOF
-		<tr><td><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
+		<tr><td align=center><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
 		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value=$exdir></td>
 		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
 		<td><input type=text size=10 name=ip_$cnt value=$aip></td>
@@ -34,15 +34,25 @@ fstab_row() {
 
 	rrhost=${rhost#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${rhost%%[!#]*}	# get possible comment char FIXME more than one and space
-	if test -n "$cmtd"; then sel=CHECKED; else sel=""; fi
+	if test -n "$cmtd"; then sel=checked; else sel=""; fi
+
+	mntfld="<td></td>"
+	if test -n "$mdir"; then
+		op="Mount"
+		if mount -t nfs | grep -q "$mdir"; then
+			op="unMount"
+		fi
+		mntfld="<td><input type=submit value=\"$op\" name=\"$mdir\" onclick=\"return check_dis('$sel','$op')\"></td>"
+	fi
 
 	cat<<EOF
 		<tr>
-		<td><input type=checkbox $sel name=fcmtd_$cnt value="#"></td>
+		<td align=center><input type=checkbox $sel id=fcmtd_$cnt name=fcmtd_$cnt value="#" onclick="return check_mount('$op','fcmtd_$cnt')"></td>
+		$mntfld
 		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value=$rrhost></td>
 		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value=$rdir></td>
 		<td><input type=button value=Browse onclick="browse_nfs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
-		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value=$mdir></td>
+		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$mdir"></td>
 		<td><input type=button value=Browse onclick="browse_dir_popup('mdir_$cnt')"></td>
 		<td><input type=text size=20 id=mntopts_$cnt name=mopts_$cnt value="$opts" onclick="def_opts('mnt', 'mntopts_$cnt')"></td>
 		<td><input type=button value=Browse onclick="opts_popup('mntopts_$cnt', 'nfs_mnt_opt')"></td>
@@ -87,6 +97,20 @@ cat<<-EOF
 			else if (kind == "mnt")
 				opts.value = "rw,hard,intr,proto=tcp"; // keep in sync with nfs_proc.cgi
 		}
+		function check_mount(op, id) {
+			if (op == "unMount" && document.getElementById(id).checked == true) {
+				alert("To disable an entry you must first unmount it.")
+				return false
+			}
+			return true
+		}
+		function check_dis(sel, op) {
+			if (sel == "checked" && op == "Mount") {
+				alert("To mount an entry you must first enable it and Submit")
+				return false
+			}
+			return true
+		}
 	</script>
 
 	<form name=expdir action=nfs_proc.cgi method="post" >
@@ -123,6 +147,7 @@ cat<<-EOF
 	<table>
 	<tr align=center>
 	<th>Disable</th>
+	<th></th>
 	<th>Host</th>
 	<th>Directory</th>
 	<th>Discover</th>
@@ -168,7 +193,7 @@ echo "<ul> $res </ul>"
 fi
 
 cat<<-EOF
-	<br><input type="submit" value="Submit">
+	<br><input type="submit" name="submit" value="Submit">
 	$(back_button)
 	</form></body></html>
 EOF

@@ -9,6 +9,23 @@ read_args
 CONFX=/etc/exports
 CONFT=/etc/fstab
 
+if test -n "$unMount"; then
+	mp=$(httpd -d "$unMount")
+	res="$(umount -f $mp 2>&1)"
+	st=$?
+	if test $st != 0; then
+        msg "Error $st: $res"  
+    fi
+
+elif test -n "$Mount"; then
+	mp=$(httpd -d "$Mount")
+	res="$(mount $mp 2>&1)"
+	st=$?
+	if test $st != 0; then
+        msg "Error $st: $res"  
+    fi
+
+elif test -n "$Submit"; then
 for i in $(seq 1 $((n_exports+3))); do 
 	if test -n "$(eval echo \$exp_$i)"; then
 		if test -z "$(eval echo \$xopts_$i)"; then
@@ -24,7 +41,12 @@ for i in $(seq 1 $((n_exports+3))); do
 		echo
 	fi
 done  > $CONFX
-exportfs -r
+
+res="$(exportfs -r 2>&1 )"
+#if test $? != 0; then # exportfs always return 0!
+if test -n "$res"; then
+	msg "$res"
+fi
 
 sed -i '/\(\t\| \)nfs\(\t\| \)/d' $CONFT
 
@@ -38,8 +60,9 @@ for i in $(seq 1 $((n_fstab+3))); do
 		echo
 	fi
 done >> $CONFT
+fi
 
 #enddebug
-gotopage /cgi-bin/net_services.cgi
+gotopage /cgi-bin/nfs.cgi
 
 
