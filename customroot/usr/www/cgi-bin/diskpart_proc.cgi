@@ -4,6 +4,8 @@
 check_cookie
 read_args
 
+CONFT=/etc/fstab
+
 #debug
 
 # $1=-r to load
@@ -18,7 +20,7 @@ ejectall() {
 if test -n "$cp_from"; then
 	eval cp_to=$(echo \$cp_$cp_from)
 	#echo copy from $cp_from to $cp_to
-	
+
 	rcall stop >& /dev/null
 	ejectall
 
@@ -31,11 +33,38 @@ if test -n "$cp_from"; then
 	blkid -c /dev/null >& /dev/null
 
 elif test -n "$Erase"; then
-	dsk=$Erase
+	dsk=${Erase#op_}
+	#echo erase=$dsk
 
 	rcall stop >& /dev/null
 	ejectall
-	dd if=/dev/zero of=/dev/$dsk bs=512 count=1 >& /dev/null
+
+	dd if=/dev/zero of=/dev/$dsk bs=1 count=64 seek=446 >& /dev/null
+	sfdisk -R /dev/$dsk >& /dev/null
+	sleep 5
+	blkid -c /dev/null >& /dev/null
+
+elif test -n "$Save"; then
+	dsk=${Save#op_}
+	#echo Save=$dsk
+	sfdisk -d /dev/$dsk > /tmp/saved_${dsk}_part 2> /dev/null
+
+elif test -n "$Load"; then
+	dsk=${Load#op_}
+	#echo load=$dsk
+
+	if ! test -f /tmp/saved_${dsk}_part; then
+		msg "File /tmp/saved_${dsk}_part does not exists.\n\n\
+In order to Load, you have to first save the disk partition."
+	fi
+
+	rcall stop >& /dev/null
+	ejectall
+
+	res="$(sfdisk /dev/$dsk < /tmp/saved_${dsk}_part 2>&1)"
+	if test $? != 0; then
+		msg "$res"
+	fi
 	sfdisk -R /dev/$dsk >& /dev/null
 	sleep 5
 	blkid -c /dev/null >& /dev/null
@@ -245,7 +274,7 @@ elif test -n "$Partition"; then
 		for i in $pair1 $rspare; do
 			if grep -q $i /proc/mounts; then
 				umount $i
-				sed -i '\|^'$i'|d' /etc/fstab
+				sed -i '\|^'$i'|d' $CONFT
 			fi
 		done
 

@@ -2,12 +2,46 @@
 
 . common.sh
 check_cookie
-write_header "Disk Partitioning"
+write_header "Disk Partitioning" "" "document.diskp.reset()"
 
 has_disks
 
+mktt keep_id "If checked, no changes will be made to this partition."
+
 cat<<-EOF
 	<script type="text/javascript">
+	function opsubmit(disk, bay, cap) {
+		obj = document.getElementById("op_" + disk)
+		idx = obj.selectedIndex
+		op = obj.options[idx].value
+
+		ret = false
+		if (op == "Operation") {
+			alert("Select an operation to perform on the disk.")
+		}
+		else if (op == "Erase") {
+			ret = confirm('The ' + cap + ' GB ' + bay + ' disk partition table will be erased,\n\
+and all disk data will become inacessible.\n\nContinue?')
+		}
+		else if (op == "Save") {
+			alert('The ' + cap + ' GB ' + bay + ' disk partition table will be saved as /tmp/saved_' + disk + '_part.\n\
+It will disappear after a reboot or powerdown.')
+			ret = true
+		}
+		else if (op == "Load") {
+			ret = confirm('You are going to write the ' + cap + ' GB ' + bay + ' disk\n\
+ partition table  with a previously saved one.\n\nContinue?') 
+		}
+
+		if (ret == false) {
+			obj.selectedIndex = 0
+			return false
+		}
+
+		obj.value = op
+		document.diskp.submit()
+		return ret
+	}
 	function msubmit(frompart, frombay, fromsz) {
 		obj = document.getElementById("cp_" + frompart)
 		idx = obj.selectedIndex
@@ -131,7 +165,8 @@ opt_disks="<option>CopyTo</option> $opt_disks"
 for i in $disks; do
 	disk=$(basename $i)
 
-	mod=$(cat /sys/block/$disk/device/model)
+	#mod=$(cat /sys/block/$disk/device/model)
+	mod=$(disk_name $disk)
 	cap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$disk/size)
 	bay=$(awk '/'$disk'/{print toupper($1)}' /etc/bay)
 
@@ -145,8 +180,14 @@ for i in $disks; do
 		<td align=center>$disk</td>
 		<td align=right>$cap GB</td>
 		<td>$mod</td>
-		<td><input type="submit" name="$disk" value="Erase" onClick="return confirm('The $cap GB $bay disk partition table will be erased,\n\
-and all disk data will become inacessible.\n\nContinue?')"></td>
+		<!--td><input type="submit" name="$disk" value="Erase" onClick="return confirm('The $cap GB $bay disk partition table will be erased,\n\
+and all disk data will become inacessible.\n\nContinue?')"></td-->
+		<td><select id=op_$disk name=op_$disk onChange="opsubmit('$disk','$bay','$cap')">
+			<option>Operation</option>
+			<option>Erase</option>
+			<option>Save</option>
+			<option>Load</option>
+		</select></td>
 		<td><select id=cp_$disk name=cp_$disk onChange="msubmit('$disk','$bay', '$cap')">$opt_disks</select></td>
 		</tr>
 	EOF
@@ -203,11 +244,12 @@ for pl in 1 2 3 4; do
 
 	emptys=""; swaps=""; linuxs=""; raids=""; vfats=""; ntfss=""
 	nones=""; raid0s=""; raid1s=""; raid5s=""; jbds=""; rlevel=""
-	xpair1=""; xpair2=""
+	xpair1=""; xpair2=""; extendeds=""
 	case $id in
 		0) emptys="selected" ;;
 		82) swaps="selected" ;;
 		83) linuxs="selected" ;;
+		5|f|85) extendeds="selected" ;;
 		fd|da) raids="selected"
 			eval $(mdadm --examine $part 2> /dev/null | awk -v part=$ppart '
 				BEGIN { excl = part }
@@ -239,8 +281,8 @@ for pl in 1 2 3 4; do
 
 	cat<<-EOF
 	<tr>
-	<td align=center><input type=checkbox $keepchk id=keep_$ppart name=keep_$ppart value=yes 
-		onclick="keeppart('$ppart')"</td>
+	<td align=center><input type="checkbox" $extendeddis $keepchk id="keep_$ppart" name="keep_$ppart" value="yes" 
+		onclick="keeppart('$ppart')" $(ttip keep_id)></td>
 	<td>$ppart</td>
 	<td>$type</td>
 	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
@@ -253,6 +295,7 @@ for pl in 1 2 3 4; do
 	<option $linuxs>linux</option>
 	<option $vfats>vfat</option>
 	<option $ntfss $ntfsopt>ntfs</option>
+	<option $extendeds disabled>extended</option>
 	</select></td>
 
 	<td><select disabled id=raid_$ppart name=raid_$ppart 
