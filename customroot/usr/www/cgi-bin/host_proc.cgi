@@ -23,6 +23,9 @@ if test "$iptype" = "static"; then
 	fi
 fi
 
+html_header
+busy_cursor_start
+
 hostdesc=$(httpd -d $hostdesc)
 workgp=$(httpd -d "$workgp")
 
@@ -70,11 +73,6 @@ if test "$iptype" = "static"; then
 
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
-# FIXME: this and some other setting above should be done by the rcnetwork
-
-	#if pidof udhcpc >& /dev/null; then
-	#	kill $(pidof udhcpc) >& /dev/null
-	#fi
 
 	start-stop-daemon -K -x udhcpc >& /dev/null
 
@@ -101,7 +99,8 @@ if test "$iptype" = "static"; then
 	  $igw
 	EOF
 
-else # FIXME: not enought, the udhcpc script should do updates
+else
+
 	cat<<-EOF > $CONFINT
 	auto lo
 	  iface lo inet loopback
@@ -112,16 +111,19 @@ else # FIXME: not enought, the udhcpc script should do updates
 	EOF
 fi
 
-# the dhcp client script /usr/share/udhcpc/default.script must configure what is missing
 ifdown eth0 >& /dev/null
 sleep 1
 ifup eth0 >& /dev/null
 sleep 3
 
+busy_cursor_end
+
 #enddebug
 
 if test "$(cat /etc/TZ)" = "NONE-0" -a -f /tmp/firstboot; then
-	gotopage /cgi-bin/time.cgi
+	js_gotopage /cgi-bin/time.cgi
 else
-	gotopage /cgi-bin/host.cgi
+	js_gotopage /cgi-bin/host.cgi
 fi
+
+echo "</body></html>"
