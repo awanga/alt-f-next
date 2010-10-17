@@ -33,6 +33,7 @@ if test -n "$ddns" -a -n "host"; then
 		verbose 0
 		update_period_sec 60
 	EOF
+	chmod og-rw $CONFF
 fi
 
 #enddebug
