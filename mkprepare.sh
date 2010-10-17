@@ -58,8 +58,10 @@ mkdir -p bin
 
 cd host-tools
 
+AFV=0.1.2 # Alt-F-utils version
+
 # just to be sure
-rm -rf Alt-F-utils-0.1 squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage 7z465 ipkg-utils-050831
+rm -rf Alt-F-utils-$AFV squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage 7z465 ipkg-utils-050831
 
 if ! test -e devio-1.2.tar.gz; then
 	wget http://sourceforge.net/projects/devio/files/devio/devio-1.2/devio-1.2.tar.gz/download
@@ -102,7 +104,6 @@ make
 cp mksquashfs ../../../bin/
 cd ../../
 
-AFV=0.1.1 # Alt-F-utils version
 if ! test -e Alt-F-utils-$AFV/dns323-fw.c; then
 	mkdir Alt-F-utils-$AFV
 	cp ../package/Alt-F-utils/Alt-F-utils-$AFV/dns323-fw.c \
