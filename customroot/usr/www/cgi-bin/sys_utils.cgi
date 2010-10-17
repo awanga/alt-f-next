@@ -29,7 +29,9 @@ cat<<-EOF
 	<input type="submit" name=action value="ChangePassword")>
 	</fieldset><br>
 
-	<input type=submit name=action value=ClearPrintQueues><br><br>
+	<fieldset><legend><strong>Printers</strong></legend>
+	<input type=submit name=action value=ClearPrintQueues>
+	</fieldset><br>
 
 	</form></body></html>
 EOF

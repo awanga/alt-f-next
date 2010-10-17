@@ -4,6 +4,8 @@
 check_cookie
 read_args
 
+CONFM=/etc/misc.conf
+    
 #debug
 
 # the user can hit the enter key instead of pressing the button
@@ -19,16 +21,17 @@ fi
 
 case $action in
 	Reboot)
-		/sbin/reboot
 		html_header
 		cat<<-EOF
-			<style>	body { height : 100%;} </style>
-			<script type="text/javascript">
-				document.body.style.cursor = 'wait'
-				close()
-				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 45000);
+			<br><br><fieldset><legend><strong>The box is rebooting</strong></legend>
+			<center><h4>
+			$(wait_count_start "Waiting 45 seconds")
+			</h4></center></fieldset>
+			<script type=text/javascript>
+				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 10000)
 			</script></body></html>
 		EOF
+		/sbin/reboot
 		exit 0
 		;;
 	
@@ -107,10 +110,6 @@ case $action in
 		gotopage /cgi-bin/login.cgi
 		exit 0
 		;;
-
-	*)
-		echo Hu? ;;
-
 esac
 
 #enddebug
