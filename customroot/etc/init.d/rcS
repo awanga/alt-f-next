@@ -21,13 +21,7 @@ mkdir -p /mnt /var/lib /var/spool/lpd
 echo > /etc/bay
 
 # what board revision? (Should be available in /proc/cpuinfo!)
-dmesg | awk '/Orion ID:/ {
-	if (match($3, "MV88F5181")) print "A1";
-	else if (match($3, "MV88F5182") &&
-		system("ls /sys/bus/i2c/drivers/g760a >/dev/null") == 0) print "B1";
-	else if (match($3, "MV88F5182")) print "C1";
-	else print "??";
-	}' > /tmp/board
+dmesg | awk '/Identified HW revision/{print $5}' > /tmp/board
 
 # stop blinking power-led
 echo "none" > /sys/class/leds/power\:blue/trigger
