@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 echo -e "\nCC = $CC_FOR_TARGET\nSTRIP = $STRIP\n" >> Makefile
 
 true
