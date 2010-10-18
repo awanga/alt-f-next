@@ -15,9 +15,9 @@ if ! test -e $CONF_H; then touch $CONF_H; fi
 
 if test -f $CONFM; then
 	. $CONFM
-	if test "$NTPD_DAEMON" = "no"; then
-		dislntp=disabled
-	fi
+fi
+if test -z "$NTPD_DAEMON" -o "$NTPD_DAEMON" = "no"; then
+	dislntp=disabled
 fi
 
 hostip=$(hostname -i)
@@ -93,7 +93,7 @@ cat<<-EOF
 	<fieldset><legend> <strong> Current Leases </strong> </legend><table>
 EOF
 
-	if ! test -f /tmp/dnsmasq.leases; then
+	if ! test -s /tmp/dnsmasq.leases; then
 		echo "None"
 	else
 		echo "<table><tr><th width=100px>Name</th><th width=100px>IP</th><th width=130px>MAC</th><th>Expiry date</th></tr>"

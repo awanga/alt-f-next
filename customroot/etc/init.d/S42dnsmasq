@@ -29,12 +29,12 @@ case "$1" in
 			. $CONF_M
 		fi
 		if test "$(grep 'option:ntp-server' $CONF_DO | tr ',\t' ' ' | cut -f2 -d' ')" = "0.0.0.0"; then # advertise local ntp server
-			if test "$NTPD_DAEMON" = "no"; then # but ntpd is not a daemon
-				sed -i '/^option:ntp-server/d' $CONF_DO # don't advertise
-			elif test "$NTPD_DAEMON" = "yes"; then
+			if test "$NTPD_DAEMON" = "yes"; then
 				if ! rcntp status >& /dev/null; then
 					rcntp start
 				fi
+			else # but ntpd is not a daemon
+				sed -i '/^option:ntp-server/d' $CONF_DO # don't advertise
 			fi
 		fi
 		start $NAME
