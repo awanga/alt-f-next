@@ -2,15 +2,14 @@
 
 prog() {
 	local dsk tmout
-	dsk=/dev/"$1"
+	dsk=$(grep -i ${1#*_} /etc/bay | cut -d" " -f2)
 	tmout="$2"
 
-	if ! test -b $dsk; then
+	if ! test -b /dev/$dsk; then
 		return
 	fi
 
-	#res=$(hdparm -C $dsk | awk '/drive/{print $4}') >/dev/null 2>&1
-	res="$(eval echo \$power_mode_$1)"
+	res="$(eval echo \$power_mode_$dsk)"
 	if test "$res" != "standby"; then	
 		if test "$tmout" -eq "0"; then
 			val=0;
@@ -20,7 +19,7 @@ prog() {
 			val=$((240 + tmout / 30));
 		fi
 
-		/sbin/hdparm -S $val $dsk >/dev/null 2>&1
+		/sbin/hdparm -S $val /dev/$dsk >/dev/null 2>&1
 	fi 	
 }
 
@@ -99,6 +98,7 @@ if test "$Submit" = "standby"; then
 		if test -n "$(eval echo \$$i)"; then
 			sed -i '/^'$i'/d' $CONFT >& /dev/null
 			echo "$i=$(eval echo \$$i)" >> $CONFT
+			prog $i $(eval echo \$$i)
 		fi
 	done
   
