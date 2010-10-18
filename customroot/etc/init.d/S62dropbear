@@ -16,13 +16,13 @@ sinit() {
 
 	# Check for the Dropbear RSA key
 	if [ ! -f /etc/dropbear/dropbear_rsa_host_key ] ; then
-		echo -n "generating rsa key... "
+		echo "$NAME: generating rsa key... "
 		/usr/bin/dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
 	fi
 
 	# Check for the Dropbear DSS key
 	if [ ! -f /etc/dropbear/dropbear_dss_host_key ] ; then
-		echo -n "generating dsa key... "
+		echo "$NAME: generating dsa key... "
 		/usr/bin/dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
 	fi
 
@@ -31,7 +31,7 @@ sinit() {
 }
 
 case "$1" in
-	start) start $NAME ;;
+	start) sinit; start $NAME ;;
 	stop) stop $NAME ;;
 	status)	status $NAME ;;
 	restart) restart $NAME ;;
