@@ -82,7 +82,7 @@ has_disks() {
 }
 
 disk_name() {
-	res=$(smartctl -i /dev/$1)
+	res=$(smartctl -n standby -i /dev/$1)
 	if test $? = 0; then
 		eval $(echo "$res" | awk '
 			/^Model Family/ {printf "mod=\"%s\";", substr($0, index($0,$3))}
