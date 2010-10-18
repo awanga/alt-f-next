@@ -25,11 +25,11 @@ config BR2_KERNEL_CURRENT_VERSION
 
 config BR2_KERNEL_LATEST_2_6_35
 	string
-	default "4"
+	default "7"
 	
 config BR2_KERNEL_LATEST_2_6_34
 	string
-	default "6"
+	default "7"
 
 config BR2_KERNEL_LATEST_2_6_33
 	string
