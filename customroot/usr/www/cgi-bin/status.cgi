@@ -355,7 +355,7 @@ if test "$fswork" = "true"; then
 			fi
 		done
 	done
-	echo "</table></fieldset>"
+	echo "</table></fieldset></br>"
 fi
 
 echo "<fieldset><Legend> <strong> Printers </strong> </legend><table>"
