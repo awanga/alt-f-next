@@ -35,18 +35,6 @@
 #include <math.h>
 #include <time.h>
 
-/* busybox reboot/poweroff executes shutdown action /etc/init.d/rcE
- * from inittab, which does a clean reboot/poweroff
- */
-#define NOT_NEEDED_ANYMORE
-
-typedef struct {
-	int lo_fan, hi_fan, lo_temp, hi_temp, mail, recovery, fan_off_temp,
-		max_fan_speed, warn_temp, crit_temp;
-	char *warn_temp_command, *crit_temp_command,
-		*front_button_command1, *front_button_command2, *back_button_command;
-} args_t;
-
 void check_board();
 void fanctl(void);
 void hdd_powercheck(int noleds);
@@ -74,15 +62,51 @@ void exec_userscript(char *script, int timeout, char *script_arg);
 void read_config();
 void print_config();
 
-enum { right_led = 1, left_led = 2 };
-char *leds[] = { "", "/sys/class/leds/right:amber/",
-	"/sys/class/leds/left:amber/"
-};
+typedef struct {
+	int lo_fan, hi_fan, lo_temp, hi_temp, mail, recovery, fan_off_temp,
+		max_fan_speed, warn_temp, crit_temp;
+	char *warn_temp_command, *crit_temp_command,
+		*front_button_command1, *front_button_command2, *back_button_command;
+} args_t;
 
 // configuration default values, overriden by configuration files
 args_t args =
     { 2000, 5000, 40, 50, 1, 1, 38, 5500, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
+
+enum { A1, B1, C1};
+enum { right_led = 1, left_led = 2 };
+char *leds[] = { "", "/sys/class/leds/right:amber/",
+	"/sys/class/leds/left:amber/"
+};
+
+/*
+char *sys_fan_input = "/sys/class/i2c-adapter/i2c-0/0-003e/fan1_input";
+char *sys_pwm = "/sys/class/i2c-adapter/i2c-0/0-003e/pwm1";
+char *sys_temp_input = "/sys/class/i2c-adapter/i2c-0/0-0048/temp1_input";
+*/
+
+/*
+char *sys_fan_input =
+	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-003e/fan1_input";
+char *sys_pwm =
+	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-003e/pwm1";
+char *sys_temp_input =
+	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-0048/temp1_input";
+
+// A1, B1
+char *sys_pwm =	"/sys/class/hwmon/hwmon0/device/pwm1";
+char *sys_fan_input = "/sys/class/hwmon/hwmon0/device/fan1_input";
+char *sys_temp_input = "/sys/class/hwmon/hwmon1/device/temp1_input";
+// C1
+char *sys_pwm =	"/sys/class/hwmon/hwmon1/device/pwm1";
+char *sys_fan_input = "/sys/class/hwmon/hwmon1/device/fan1_input";
+char *sys_temp_input = "/sys/class/hwmon/hwmon0/device/temp1_input";
+*/
+
+char sys_pwm[64], sys_fan_input[64], sys_temp_input[64];
+
+int board;
 
 // hack! blink_leds() use it to signal() hdd_powercheck()
 int leds_changed = 0;
@@ -408,19 +432,6 @@ float poly(float pwm, float coef[])
 	return ret;
 }
 
-/*
-char *sys_fan_input = "/sys/class/i2c-adapter/i2c-0/0-003e/fan1_input";
-char *sys_pwm = "/sys/class/i2c-adapter/i2c-0/0-003e/pwm1";
-char *sys_temp_input = "/sys/class/i2c-adapter/i2c-0/0-0048/temp1_input";
-*/
-
-char *sys_fan_input =
-	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-003e/fan1_input";
-char *sys_pwm =
-	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-003e/pwm1";
-char *sys_temp_input =
-	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-0048/temp1_input";
-
 int read_str_from_file(const char *filename, char *str)
 {
 	int fd;
@@ -487,10 +498,25 @@ void check_board() {
 		syslog(LOG_CRIT, "sysctrl: Couldn't read /tmp/board, exiting");
 		exit(1);
 	}
-	if (strcmp("B1", res) != 0) {
+	if (strncmp("A1", res, 2) == 0)
+		board = A1;
+	else if (strncmp("B1", res, 2) == 0)
+		board = B1;
+	else if (strncmp("C1", res, 2) == 0)
+		board = C1;
+	else {
 		syslog(LOG_CRIT, "sysctrl: Hardware board %s not supported, exiting", res);
-		exit (1);
+		exit(1);
 	}
+	
+	// hope that enumeration don't change, else we have to read /sys/.../device/name
+	int dev = 0;
+	if (board == A1 || board == B1)
+		dev = 1; 
+		
+	sprintf(sys_pwm, "/sys/class/hwmon/hwmon%d/device/pwm1", 1-dev);
+	sprintf(sys_fan_input, "/sys/class/hwmon/hwmon%d/device/fan1_input", 1-dev);
+	sprintf(sys_temp_input, "/sys/class/hwmon/hwmon%d/device/temp1_input", dev);
 }
 
 int read_fan(void)
