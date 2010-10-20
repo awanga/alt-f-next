@@ -74,35 +74,12 @@ args_t args =
     { 2000, 5000, 40, 50, 1, 1, 38, 5500, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum { A1, B1, C1};
-enum { right_led = 1, left_led = 2 };
+enum Boards { A1, B1, C1};
+enum FanSpeed { FAN_OFF = 0, FAN_LOW =  127, FAN_FAST = 255 };
+enum Leds { right_led = 1, left_led = 2 };
 char *leds[] = { "", "/sys/class/leds/right:amber/",
 	"/sys/class/leds/left:amber/"
 };
-
-/*
-char *sys_fan_input = "/sys/class/i2c-adapter/i2c-0/0-003e/fan1_input";
-char *sys_pwm = "/sys/class/i2c-adapter/i2c-0/0-003e/pwm1";
-char *sys_temp_input = "/sys/class/i2c-adapter/i2c-0/0-0048/temp1_input";
-*/
-
-/*
-char *sys_fan_input =
-	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-003e/fan1_input";
-char *sys_pwm =
-	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-003e/pwm1";
-char *sys_temp_input =
-	"/sys/devices/platform/mv64xxx_i2c.0/i2c-0/0-0048/temp1_input";
-
-// A1, B1
-char *sys_pwm =	"/sys/class/hwmon/hwmon0/device/pwm1";
-char *sys_fan_input = "/sys/class/hwmon/hwmon0/device/fan1_input";
-char *sys_temp_input = "/sys/class/hwmon/hwmon1/device/temp1_input";
-// C1
-char *sys_pwm =	"/sys/class/hwmon/hwmon1/device/pwm1";
-char *sys_fan_input = "/sys/class/hwmon/hwmon1/device/fan1_input";
-char *sys_temp_input = "/sys/class/hwmon/hwmon0/device/temp1_input";
-*/
 
 char sys_pwm[64], sys_fan_input[64], sys_temp_input[64];
 
@@ -413,7 +390,52 @@ void check_other_daemon()
 	fclose(fp);
 }
 
-/* fan = 0.00111642 * x^3 - 0.148356 * x^2 + 16.3374 * x + 1839.55
+/* rev-B1
+for i in $(seq 5 5 180); do
+	echo $i > /sys/class/hwmon/hwmon0/device/pwm1
+	sleep 10
+	echo -n "pwd=$i fan="
+	cat /sys/class/hwmon/hwmon0/device/fan1_input
+done
+
+pwd=5 fan=1958
+pwd=10 fan=1998
+pwd=15 fan=2056
+pwd=20 fan=2082
+pwd=25 fan=2137
+pwd=30 fan=2184
+pwd=35 fan=2224
+pwd=40 fan=2286
+pwd=45 fan=2329
+pwd=50 fan=2397
+pwd=55 fan=2457
+pwd=60 fan=2495
+pwd=65 fan=2600
+pwd=70 fan=2642
+pwd=75 fan=2715
+pwd=80 fan=2792
+pwd=85 fan=2891
+pwd=90 fan=2978
+pwd=95 fan=3052
+pwd=100 fan=3171
+pwd=105 fan=3255
+pwd=110 fan=3366
+pwd=115 fan=3485
+pwd=120 fan=3614
+pwd=125 fan=3780
+pwd=130 fan=3932
+pwd=135 fan=4096
+pwd=140 fan=4237
+pwd=145 fan=4551
+pwd=150 fan=4593
+pwd=155 fan=4915
+pwd=160 fan=5228
+pwd=165 fan=5585
+pwd=170 fan=5851
+pwd=175 fan=5649
+pwd=180 fan=6467
+
+ * fan = 0.00111642 * x^3 - 0.148356 * x^2 + 16.3374 * x + 1839.55
  * x = pwm (5..180)
  *
  * pwm = 2.66029e-9 * x^3 - 4.28952e-5 * x^2 + 0.244737 * x - 328.233
@@ -502,8 +524,10 @@ void check_board() {
 		board = A1;
 	else if (strncmp("B1", res, 2) == 0)
 		board = B1;
-	else if (strncmp("C1", res, 2) == 0)
+	else if (strncmp("C1", res, 2) == 0) {
 		board = C1;
+		args.lo_temp = 45;	// redefine defaults for C1. At temp > lo_temp, fan goes fast 
+	}
 	else {
 		syslog(LOG_CRIT, "sysctrl: Hardware board %s not supported, exiting", res);
 		exit(1);
@@ -550,14 +574,23 @@ void fanctl(void)
 
 	float temp = (read_temp() / 1000. + last_temp) / 2;
 	int fan = read_fan();
-
-	if (temp <= args.fan_off_temp)
-		pwm = 0;
-	else if (fan >= args.max_fan_speed)
-		pwm = (int)poly(args.max_fan_speed, f2p);
-	else
-		pwm = (int)poly(temp * m + b, f2p);
-
+	
+	if (board != C1) {
+		if (temp <= args.fan_off_temp)
+			pwm = 0;
+		else if (fan >= args.max_fan_speed)
+			pwm = (int)poly(args.max_fan_speed, f2p);
+		else
+			pwm = (int)poly(temp * m + b, f2p);
+	} else {
+		if (temp <= args.fan_off_temp)
+			pwm = FAN_OFF;
+		else if (fan < args.lo_fan)
+			pwm = FAN_LOW;
+		else
+			pwm = FAN_FAST;
+	}
+	
 	write_pwm(pwm);
 
 	if (fabsf(temp - last_temp) >= 0.2) {
