@@ -106,7 +106,7 @@ elif test -n "$StandbyNow"; then
 	sleepnow $StandbyNow
 
 elif test -n "$WakeupNow"; then
-	blkid -c /dev/null /dev/$WakeupNow >& /dev/null
+	blkid -c /dev/null /dev/${WakeupNow}* >& /dev/null
 	
 elif test -n "$Eject"; then
 	bay_eject $Eject
