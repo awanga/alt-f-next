@@ -3,7 +3,7 @@ FIXED -fix OABI compatibility mode for the kernel.
 	local/dns323/linux- is processed by buildroot, and CONFIG_OABI_COMPAT
 	is disabled!
 
--compile for speed.
+DONE -compile for speed.
 	The default buildroot configuration is now -O2.
 	As a result, available flash space is not enough anymore and some
 	apps (ushare and transmission) were removed from the base system and
@@ -84,16 +84,15 @@ FIXED -status.cgi, handle comments and cups additions in /etc/printcap
 	Why are they not used?! ld (/lib/ld-uClibc-0.9.30.3.so) problem?
 
 	The problem is not the app, it seems to be in libm. It happens
-	after the second make, as it seems to not make libraries in /lib
+	after removing the "project_build_arm/dns323/root" directory and
+	doing a make again. The second make don't make libraries in /lib
 	correctly.
-
 
 	******** FOR A RELEASE, ALWAYS DO A FRESH BUILD! ***************
 
 
 -add -o owner:group option to "mkpkg.sh" so ipkg-build can use it to
 	create the package files with another ownership
-
 
 DONE -Add a don't cache passwd in the login/again page, as is done in the
 	System Utilities->Change password
@@ -137,7 +136,7 @@ DONE -add some feedback when downloading ipkg packages
 DONE -show error status if ipkg fails for some reason
 
 -read aufsutils carefully, to see if they are needed.
-	Alt-F has already used them, but currently not
+	Alt-F has already used them, but currently don't
 
 -The disk maker name does not appear in Disc Utilities (but appears in Status)
 
@@ -156,8 +155,9 @@ FIXED -host.cgi/host_proc.cgi: there is a bug when changing workgroup. The
 
 DONE -ipkg:	web manager only supports one feed!
 
--nfs not working: MTU must be the same on both hosts! or else the msg
+DIAGNOSED -nfs not working: MTU must be the same on both hosts! or else the msg
 	received packet spanning multiple descriptors
+	It was using udp as transport medium, which cause that problem in Gbps networks
 	
 -big MTU (>3712) generate lots of "page allocation failure", which impair the
 	performance
@@ -166,16 +166,13 @@ FIXED -web login does not work if date is incorrect and timezone has been set
 	If the box time is ahead of the real time, the web cookie expiration
 	date is always expired... better to remove the cookie expiration date
 
--when RAID is recovering/syncing, sysctrl is continuously reporting
-	a disk wakeup.
-
 DONE -The "eject" script should have a status output, indicating if the device is
 	or is not ejected.
 	This would be used by the "Disk Maintenance" web page to change the
 	"Eject" to a "Load" button.
 	-now has the "-s" option
 
--"Disk Maintenance" web page should have a StandbyNow/WakeupNow button,
+DONE -"Disk Maintenance" web page should have a StandbyNow/WakeupNow button,
 	(and removing the power status label?)
 
 DONE -create tmpfs with more space; some packages are too big to fit the
@@ -200,11 +197,65 @@ DONE -Add start short/long smart disk test to disk utils
 
 DONE -merge /etc/tune.conf and /etc/hdsleep.conf into /etc/misc.conf
 
--check --spare-devices usage in diskpart and diskwizard with raid1, raid5
+CHECKED -check --spare-devices usage in diskpart and diskwizard with raid1, raid5
 
 DONE -do a mdadm --scan at diskpart/diskwiz end to regenerate /etc/mdadm.comf
 
--set disk sleep timeout in rcS, as settings are not yet loaded at start when
+DONE -set disk sleep timeout in rcS, as settings are not yet loaded at start when
  hotplugging disks.
 
--fix sysctrl to not show "xx disk wakeup" messages when mdadm is rebuilding raid 
+-when RAID is recovering/syncing, sysctrl is continuously reporting
+	a disk wakeup.
+
+-sysctrl: add mail sent on warning/critical temperature
+
+DONE -sysctrl: add restore (start telnetd, clear settings?) option through box back button
+
+-partition erase on usb disk gave a "not space on disk" dd error!?
+
+DONE -partition erase dd output appears on output, direct it to /dev/null
+
+FIXED -portmap does not work in B4:
+	# portmap 
+	Can't modify application's text section; use the GCC option -fPIE for
+	position-independent executables.
+
+DONE -the login through the serial line should have no password!!! For recovery reasons.
+
+DONE -diskpart: add the possibility of Save/Load the partition table to/from the
+	users desktop PC.
+	for now, only on the box volatile /tmp
+
+-diskpart: enable Save/Load the partition table to/from the users desktop PC. See above
+
+-diskpart: needs feedback on lenghly operations! (as diskwizard does)
+
+-ntpd: /etc/ntpd.drif should be in /var/lib/ntp, not in flash, as it is likely to change
+	during operation; the disadvantage is that it is lost after a reboot.
+	However, when a package is installed and Alt-F aufs is working,
+	the drift file is keept in disk surviving reboots.
+	On the other side his has the disadvantage of waking-up the disk when
+	the drift file needs to be written -- use the "driftfile driftfile [
+	minutes  [ tolerance ] ]" configuration options (see ntp-4.2.4p5/html/miscopt.html)
+
+-when in DHCP mode, supply -h <hostname> to udhcpc,
+	is builtin in the udhcp code, to fix need to edit sources... not for now
+
+DONE -firmware web page:
+	DONE -update flash time from 90 sec to 100 sec
+	-change clear/flash settings. 
+
+DONE -diskpart web page: don't allow changing an extended partition!
+	implemented so that one can change it, one can't is create one
+
+DONE -dnsmasq: time server: offer no advertise, advertise local, advertise server-name
+
+-spaces in filenames/paths are problematic for NFS. Use octal for spaces? '\040'
+
+FIXED -fix /var/xx links. At least /var/spool is wrong, should point to disk
+
+DONE -make dnsmasq leases file in /tmp/ instead of /var/lib/misc/ ?
+	reason: this makes the disks spinup, when aufs is active.
+	no problem even on reboot, as dnsmasq verifies an IP is assigned before leasing it
+
+-firmare2: add a tryIt button, that only kexec the kernel/initramfs
