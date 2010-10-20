@@ -28,7 +28,7 @@ case $action in
 			$(wait_count_start "Waiting 45 seconds")
 			</h4></center></fieldset>
 			<script type=text/javascript>
-				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 10000)
+				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 45000)
 			</script></body></html>
 		EOF
 		/sbin/reboot
