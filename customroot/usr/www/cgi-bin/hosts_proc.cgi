@@ -30,6 +30,10 @@ if test -n "$Submit"; then
 
 		echo "$ip	$nm.$net	$nm" >> $CONF_HOSTS
 	done
+
+	if rcdnsmasq status >& /dev/null; then
+		rcdnsmasq reload >& /dev/null
+	fi
 fi
 
 #enddebug
