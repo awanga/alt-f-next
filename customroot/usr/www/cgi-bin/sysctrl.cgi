@@ -7,24 +7,31 @@ write_header "Temperature, Fan and Buttons Setup"
 CONFF=/etc/sysctrl.conf
 CONFM=/etc/msmtprc
 
+board="$(cat /tmp/board)"
+
+# keep in sync with sysctrl.c, args_t args, line ~84
+lo_fan=2000
+hi_fan=5000
+if test "$board" = "C1"; then 
+	lo_temp=45
+else
+	lo_temp=40
+fi
+hi_temp=50
+mail=1
+recovery=1
+fan_off_temp=38
+max_fan_speed=5500
+warn_temp=52
+crit_temp=54
+warn_temp_command=
+crit_temp_command="/sbin/poweroff"
+front_button_command1=
+front_button_command2=
+back_button_command=
+
 if test -f $CONFF; then
 	. $CONFF
-else # keep in sync with sysctrl.c, args_t args, line ~84
-	lo_fan=2000
-	hi_fan=5000
-	lo_temp=40
-	hi_temp=50
-	mail=1
-	recovery=1
-	fan_off_temp=38
-	max_fan_speed=5500
-	warn_temp=52
-	crit_temp=54
-	warn_temp_command=
-	crit_temp_command="/sbin/poweroff"
-	front_button_command1=
-	front_button_command2=
-	back_button_command=
 fi
 
 if test "$recovery" = "1"; then
@@ -45,6 +52,24 @@ cat<<-EOF
 
 	<fieldset><Legend><strong>System Temperature / Fan Speed relationship</strong>
 		</legend><table>
+EOF
+
+
+mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
+
+if test "$board" = "C1"; then
+	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
+	cat<<-EOF
+			<tr><td>Fan Off Temp. (C):</td>
+				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>
+				</td></tr>
+
+			<tr><td>Low Fan Speed Temp. (C):</td>
+				<td><input type=text size=4 name=lo_temp value="$lo_temp" $(ttip lofan_tt)></td>
+		</table></fieldset><br>
+	EOF
+else 
+	cat<<-EOF
 			<tr><td>Low Temp. (C):</td>
 				<td><input type=text size=4 name=lo_temp value="$lo_temp"></td>
 				<td>Low Fan Speed (RPM):</td>
@@ -60,13 +85,16 @@ cat<<-EOF
 	<fieldset><Legend><strong>Maximum ratings</strong>
 		</legend><table>
 			<tr><td>Fan Off Temp. (C):</td>
-				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp">
+				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp"  $(ttip fanoff_tt)>
 				</td></tr>
 			<tr><td>Max Fan Speed (RPM)</td>
 				<td><input type=text size=4 name=max_fan_speed value="$max_fan_speed"></td>
 			</tr>
 		</table></fieldset><br>
+	EOF
+fi
 
+cat<<-EOF
 	<fieldset><Legend><strong>System Safety</strong>
 		</legend><table>
 			<tr><td>Warn Temp. (C):</td>

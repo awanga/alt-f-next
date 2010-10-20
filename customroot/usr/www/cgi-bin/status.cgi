@@ -109,12 +109,17 @@ filesys() {
 main() {
 
 . common.sh
-#check_cookie # status don't need passwd
 ver=$(cat /etc/Alt-F)
 write_header "Alt-F $ver Status Page" 15
 
-fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
-temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
+board="$(cat /tmp/board)"
+if test $board != "C1"; then 
+	fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
+	temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
+else
+	fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
+	temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
+fi
 
 p="<p>"
 ep="</p>"

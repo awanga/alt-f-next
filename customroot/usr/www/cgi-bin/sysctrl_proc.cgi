@@ -18,11 +18,12 @@ fi
 
 for i in $cmd; do
 	arg="$(eval echo \$$i)"
+	if test -z "$arg"; then continue; fi
 	val=$(httpd -d "$arg")
 	echo "$i=\"$val\"" >> $CONFF
 done
 
-if ! test rcsysctrl status >& /dev/null; then
+if rcsysctrl status >& /dev/null; then
 	rcsysctrl reload >& /dev/null
 fi
 
