@@ -17,13 +17,25 @@ too noisy. </p>
 establish how fast the fan turns, depending on the box current
 temperature.<br>
 
-For that, you must specify at what speed the fan must turn at two
-temperatures, the <strong>Low Temp</strong> and the <strong>High
-Temp</strong>. In temperatures between these two, the fan will turn
-proportionally.<br>
+<ul>
+<li><h4>Rev-A1 and rev-B1 hardware boards:</h4>
+
+For the A1 and B1 hardware boards, the fan speed can
+varies continuously between 2000 and 6500 RPM.<br>
+
+To calibrate the fan speed with the system temperature, you must specify
+a <strong>Low</strong> and a <strong>High</strong> reference point.<br>
+
+The <strong>Low Fan Speed</strong> entry specify the desired fan speed when the
+system is at the <strong>Low Temp</strong> temperature, while
+the <strong>High Fan Speed</strong> entry specify the the desired fan speed when the
+system is at the <strong>High Temp</strong> temperature.<br>
 
 The low and high temperatures are not the maximum and minimum values
 that you which for you box, are only reference points. </p>
+
+For example, with the default settings, the fan speed is 300RPM/ºC.
+If the system temperature is 42 degrees, the fan will rotate at 2600 RPM.<br>
 
 <p> In the <strong>Maximum ratings</strong>, in the <strong>Fan Off
 Temp</strong> entry, you can specify at what temperature  should the fan
@@ -33,6 +45,20 @@ In the <strong>Max Fan Speed</strong>, you specify the maximum fan speed
 that the fan must turn at. The value depends on the characteristics of
 the fan, and the manufacturer specifies between 6000 and 7000 RPM. You
 should not exceed this value. </p>
+
+<li><h4>Rev-C1 hardware boards:</h4>
+
+The C1 hardware board fan can only have three fan settings: off,
+low speed and fast speed.<br>
+
+In the <strong>Fan Off Temp</strong> entry, you can specify at what temperature
+should the fan stop.<br>
+
+In the <strong>Low Temp</strong> entry you specify the threshold temperature
+between the low and fast fan speed: at lower temperatures the fan turns at low
+speed, while at higher temperatures it turns at the fast speed.
+
+</ul>
 
 <p> In <strong>System Safety</strong>, you can specify a warning and
 critical temperature limits of the box, as well as the full path name
