@@ -755,17 +755,27 @@ void hdd_powercheck(int noleds)
 				wled = 0;
 
 			if (st == 0) {	// standby
-				if (noleds == 0)
-					led(wled, "1", "timer", "50", "2000");
-				if (noleds == 2)	
-					syslog(LOG_INFO, "%s disk (%s) standby",
-						bay, dev);
+				switch (noleds) {
+					case 0:
+						led(wled, "1", "timer", "50", "2000");
+						/* fall through */
+					case 1:	
+						syslog(LOG_INFO, "%s disk (%s) standby", bay, dev);
+						break;
+					case 2:
+						break;
+				}
 			} else if (st == 1) {	// active
-				if (noleds == 0)
-					led(wled, "0", "none", NULL, NULL);
-				if (noleds == 2)
-					syslog(LOG_INFO, "%s disk (%s) wakeup",
-						bay, dev);
+				switch (noleds) {
+					case 0:
+						led(wled, "0", "none", NULL, NULL);
+						/* fall through */
+					case 1:
+						syslog(LOG_INFO, "%s disk (%s) wakeup", bay, dev);
+						break;
+					case 2:
+						break;
+				}
 			}
 		}
 	}
@@ -782,6 +792,10 @@ void hdd_powercheck(int noleds)
 	fclose(fpb);
 }
 
+/* returns 0 if not degraded nor rebuilding
+ * returns 1 if degraded but not rebuilding
+ * returns 2 if degraded and rebuilding
+ */
 int md_stat()
 {
 	struct stat st;
