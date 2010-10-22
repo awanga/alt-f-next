@@ -8,6 +8,7 @@ check_cookie
 
 # $1=error message
 err() {
+	busy_cursor_end
 	cat<<-EOF
 		failed </p>
 		<pre>$1</pre>
@@ -151,7 +152,7 @@ create_swap() {
 
 # $1=dev
 create_fs() {
-		echo "<p>Creating $wish_fs filesystem on disk $(basename $1)..."
+		echo "<p>Creating $wish_fs filesystem on $(basename $1) (this will take some minutes)..."
 		res="$(mke2fs -T $wish_fs ${1} 2>&1)"
 		if test $? != 0; then
 			err "$res"
@@ -258,6 +259,8 @@ if test "$advise" != "Abracadabra"; then
 fi
 
 html_header
+echo "<center><h2>Disk Wizard</h2></center>"
+busy_cursor_start
 
 has_disks
 nusb="$(cat /etc/bay | grep usb | wc -l)"
@@ -284,12 +287,13 @@ else
 	pg=diskmaint.cgi
 fi
 
+busy_cursor_end
 cat<<-EOF
-	</pre><p> <strong> Success </strong> </p>
+	</pre><br><p><strong>Success!</strong></p>
 	<script type="text/javascript">
 		url = document.referrer
 		url = url.substr(0,url.lastIndexOf("/")) + "/$pg"
-		setTimeout("window.location.assign(url)", 2000);
+		setTimeout("window.location.assign(url)", 3000);
 	</script></body></html>
 EOF
 
