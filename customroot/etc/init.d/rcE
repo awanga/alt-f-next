@@ -1,9 +1,13 @@
 #!/bin/sh
 
-logger "rcE: Starting reboot/shutdown"
+exec >& /dev/console
+
+echo "rcE: Starting reboot/shutdown"
+
+echo "rcE: stopping all services"
 # Stop all executable init scripts in /etc/init.d
 # executing them in reverse numerical order.
-/etc/init.d/rcall rstop
+rcall stop
 
 # wait for services to stop
 sleep 5
@@ -13,20 +17,48 @@ killall5 -KILL
 
 sleep 1
 
+echo "rcE: unmounting aufs "
+# unmount aufs
+if aufs.sh -s >& /dev/null ; then
+	aufs.sh -u
+fi
+
+echo "rcE: unmounting all mounted filesystems"
+# unmount all mounted filesystems (umount -a also unmounts /proc, /sys,...!)
+for i in nfs cifs iso9660 ext2 ext3 ext4 vfat ntfs; do
+	for j in $(mount -t $i | cut -d" " -f3); do
+		umount -rf $j
+	done
+done
+
+echo "rcE: stopping all RAID"
+# stop raid
+for i in /dev/md[0-9]; do
+  if test -b $i; then
+	mdadm --stop $i
+  fi
+done
+
+echo "rcE: ejecting all drives"
+# FIXME: this already does unmount, swapoff and raid stop, but raid
+# is incrementaly stoped (one component is failed/removed at a time)
+# which can lead to lengly recovery at startup (if no intent-bitmap exists)
+#
 # umount attached disks/partitions, simulating kernel hotplug events
 # hot.sh removes branch from aufs (if dir /Alt-F belongs to device)
-
 for i in /dev/sd[a-z]; do
   if test -b $i; then
 	eject $(basename $i)
   fi
 done
 
+echo "rcE: saving date and time to RTC"
 # write system time to RTC, waiting for second change
 i=0; o="$(date +%s)"
 while test "$o" = "$(date +%s)" -a "$i" -lt 200; do i=$((i+1)); done
 hwclock -wu
 
+echo "rcE: bringing network down"
 ifconfig eth0 down
 
 mount / -o remount,ro
@@ -37,7 +69,10 @@ if test -f /root/zImage; then
 
 	initrfs=$(ls rootfs.arm.cpio*)
 	if test -f "$initrfs"; then 	# make sure that only one exists
+		echo "rcE: starting a new kernel and initramfs"
 		kexec -l zImage --command-line="console=ttyS0,115200" \
 			--initrd="$initrfs" && kexec -e
 	fi
 fi
+
+echo "rcE: Poweroff! "
