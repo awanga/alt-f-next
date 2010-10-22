@@ -11,17 +11,17 @@ PORTMAP_FLAG=-v
 
 . $(dirname $0)/common
 
+# The /var/lib/nfs directory is actually on a tmpfs filesystem.
+# except when Alt-F is aufs mounted (just install ipkg for this to take effect)
+
+mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
+
+touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
+	/var/lib/nfs/state /var/lib/nfs/xtab
+
+chown -R daemon /var/lib/nfs /var/lib/nfs
+
 istart() {
-	# The /var/lib/nfs directory is actually on a tmpfs filesystem.
-	# except when Alt-F is aufs mounted (just install ipkg for this to take effect)
-
-	mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
-
-	touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
-		/var/lib/nfs/state /var/lib/nfs/xtab
-
-	chown -R daemon /var/lib/nfs /var/lib/nfs
-
 	# Don't fail if /etc/exports doesn't exist;
 	# create a bare-bones version and continue.
 
@@ -77,11 +77,10 @@ istop() {
 
 	if test -f /proc/fs/nfsd/exports; then
 		umount /proc/fs/nfsd
+		# blocks, as sunrpc modules has refcont = 2, although not in use
+		# modprobe -r nfsd 
+		rmmod -f nfsd lockd exportfs
 	fi
-
-	# blocks, as sunrpc modules has refcont = 2, although not in use
-	# modprobe -r nfsd 
-	rmmod -f nfsd lockd exportfs
 }
 
 case "$1" in
