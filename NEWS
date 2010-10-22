@@ -1,3 +1,23 @@
+October 22, 2010: Alt-F-0.1B5 released
+
+What's new:
+
+	-finally works with 100Mbps and 1Gbps switches or routers
+	-support for rev-C1 boards through backported 2.6.36 patch
+	-fan support for rev-C1 board, using a post by Benjamin Herrenschmidt
+	 (Thanks to Alexey Boyko for collaboration with all rev-C1 testing)
+	-squashfs-lzma is back, thanks to openwrt.org forward patch
+	-kernel 2.6.35.7, nfs-utils 1.2.3, kexec to 2.0.2, 
+	-No job is finished until the paperwork is done:
+	 	-descriptive help support with some help pages already written
+		-tooltip support with demos in some pages
+	-disaster recovery:
+		-no password asked when connecting through the serial port
+		-back button opens telnetd without password on port 26, or clears flash
+	-DHCP/DNS web page splited and Hosts page created
+	-simplified samba configuration web page (swat is still there)
+	-several improvements and bug fixes
+
 September 22, 2010: Alt-F-0.1B4 released
 
 What's new:
