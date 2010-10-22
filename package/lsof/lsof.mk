@@ -4,6 +4,7 @@
 #
 #############################################################
 LSOF_VERSION:=4.81
+#LSOF_VERSION:=4.84 # patches have LSOF_VERSION hardcoded
 LSOF_SOURCE:=lsof_$(LSOF_VERSION).tar.bz2
 LSOF_SITE:=ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
 LSOF_CAT:=$(BZCAT)
@@ -29,7 +30,7 @@ lsof-unpacked: $(LSOF_DIR)/.unpacked
 
 $(LSOF_DIR)/.unpacked: $(DL_DIR)/$(LSOF_SOURCE)
 	$(LSOF_CAT) $(DL_DIR)/$(LSOF_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	(cd $(LSOF_DIR);tar xf lsof_$(LSOF_VERSION)_src.tar;rm -f lsof_$(LSOF_VERSION)_src.tar)
+	(cd $(LSOF_DIR);tar xf lsof_$(LSOF_VERSION)_src.tar;rm -f lsof_$(LSOF_VERSION)_src.tar; chmod -R +w lsof_$(LSOF_VERSION)_src )
 	toolchain/patch-kernel.sh $(LSOF_DIR) package/lsof/ \*.patch
 	touch $(LSOF_DIR)/.unpacked
 
