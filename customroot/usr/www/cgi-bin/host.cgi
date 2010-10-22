@@ -52,6 +52,8 @@ if test $? = 0; then
 	mtu=$(ifconfig eth0 | awk '/MTU/{print substr($0, match($a,"MTU")+4,5)}')
 fi
 
+mktt mtu_tt "Also called jumbo frames"
+
 cat<<-EOF
 	<script type="text/javascript">
 	function edisable(state) {
@@ -80,9 +82,13 @@ cat<<-EOF
 			 '\n' + "the new IP and redirect your browser it.");
 		return ret;
 	}
+	function mtu_warn() {
+		if (document.sipf.mtu.value > 4000)
+			alert("Values higher than 4000 can effectively diminish performance")
+	}
 	</script>
 
-	<form id="sipf" action="/cgi-bin/host_proc.cgi" method="post">
+	<form id="sipf" name=sipf action="/cgi-bin/host_proc.cgi" method="post">
 	<fieldset><legend><strong>Host details</strong></legend><table>
 	<tr><td>Host name:</td>
 		<td><input type=text name=hostname value=$hostname></td></tr>
@@ -104,7 +110,7 @@ cat<<-EOF
 	<tr><td>Gateway:</td><td><input type=text id=sip name="gateway" value=$gateway></td></tr>
 	<tr><td>Name server 1:</td><td><input type=text id=sip name="ns1" value=$ns1></td></tr>
 	<tr><td>Name server 2:</td><td><input type=text id=sip name="ns2" value=$ns2></tr>
-	<tr><td>Frame size:</td><td><input type=text id=sip name="mtu" value=$mtu></td></tr>
+	<tr><td>Frame size:</td><td><input type=text id=sip name="mtu" value=$mtu onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
 	</table></fieldset><br>
 
 	<input type=hidden name=cflg value="$cflg">
