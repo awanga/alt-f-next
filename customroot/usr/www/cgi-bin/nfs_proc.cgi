@@ -9,6 +9,10 @@ read_args
 CONFX=/etc/exports
 CONFT=/etc/fstab
 
+if ! rcnfs status >& /dev/null; then
+	rcnfs start >& /dev/null
+fi
+
 if test -n "$unMount"; then
 	mp=$(httpd -d "$unMount")
 	res="$(umount -f $mp 2>&1)"
