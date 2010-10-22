@@ -14,7 +14,8 @@ case "$1" in
 			 # dont ignore non executable files, in case user has started them manually
 			if test ! -f "$i"; then continue; fi
 			bn=$(basename $i)
-			if test "${bn:3}" = "inetd" -o "${bn:3}" = "sysctrl"; then continue; fi
+			nm=${bn:3}
+			if test "$nm" = "inetd" -o "$nm" = "sysctrl" -o "$nm" = "syslog"; then continue; fi
 			logger -s "$(/bin/sh $i stop)"
 		done
 		;;
