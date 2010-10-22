@@ -258,4 +258,32 @@ DONE -make dnsmasq leases file in /tmp/ instead of /var/lib/misc/ ?
 	reason: this makes the disks spinup, when aufs is active.
 	no problem even on reboot, as dnsmasq verifies an IP is assigned before leasing it
 
--firmare2: add a tryIt button, that only kexec the kernel/initramfs
+DONE -firmare2: add a tryIt button, that only kexec the kernel/initramfs
+
+FIXED -new user setup: when entered directly, e.g. though firstboot, the proposed user id
+	is 99, not 1000!
+
+HALF-DONE -investigate the RAID incremental problem when using dlink formated raid.
+	/usr/sbin/hot.sh does not deliberately mount RAID
+
+FIXED -the sysctrl "left/right disk (sdb) wakeup" (only, not standby) message continue to appear
+	while the raid is: State : clean, degraded, recovering, spare rebuilding 
+	degraded=1, sync_action=recover, array_state=clean
+
+-diskpart: when creating a new raid array, when one already exists, does not takes
+	into account the already allocated minor. As result, one of the two raid
+	is not assembled.
+	FIX: examine prefered minor on already existing raid partitions
+
+DONE -diskpart/diskwizard: all services are first stopped -- should they be restarted
+	afterwards? Not all, partitions have changed, some needed fs may not even exists.
+	But some services, those not dependind on fs, syslog and inetd e.g.
+	should be restarted.
+
+DONE -remote filesys: the mountpoint, tipically /mnt/xxx, is volatile. It needs to be
+	persistent, so one can "mount -a" on startup (rcS). Should rcS parse
+	/etc/fstab and create the mountpoints?
+	After starting services, rcS can do a "mount -t cifs/nfs"
+
+-remote filesys: at rcE time, they must be unmounted after killing processes
+	but before stopping the services -- at least nfs!
