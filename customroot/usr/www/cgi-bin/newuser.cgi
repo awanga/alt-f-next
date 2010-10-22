@@ -54,7 +54,9 @@ EOF
 eval $(awk -F: '{if ($3 > uid) uid=$3} END{ 
 	printf "uid=%d", uid}' $CONFP)
 
-if test -n "$QUERY_STRING"; then
+if test -z "$QUERY_STRING"; then
+	if test "$uid" -lt 1000; then uid=1000; fi
+else
 	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
 		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 		printf "%s=%c%s%c\n",$1,39,$2,39}')
