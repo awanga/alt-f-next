@@ -232,8 +232,8 @@
  	fi
  
  install:	install-cups
---- gs-8.71/configure.ac.orig	2009-11-24 08:36:27.000000000 +0000
-+++ gs-8.71/configure.ac	2010-06-17 21:07:13.000000000 +0100
+--- gs-8.71/base/configure.ac.orig	2009-11-24 08:36:27.000000000 +0000
++++ gs-8.71/base/configure.ac	2010-06-17 21:07:13.000000000 +0100
 @@ -548,7 +548,7 @@
  AC_SUBST(CUPSSERVERROOT)
  AC_SUBST(CUPSDATA)
@@ -243,8 +243,8 @@
  
  dnl look for IJS implementation
  AC_ARG_WITH([ijs], AC_HELP_STRING([--without-ijs],
---- gs-8.71/Makefile.in.orig	2010-06-17 21:17:44.000000000 +0100
-+++ gs-8.71/Makefile.in	2010-06-17 21:18:45.000000000 +0100
+--- gs-8.71/base/Makefile.in.orig	2010-06-17 21:17:44.000000000 +0100
++++ gs-8.71/base/Makefile.in	2010-06-17 21:18:45.000000000 +0100
 @@ -83,6 +83,7 @@
  CUPSSERVERROOT=@CUPSSERVERROOT@
  CUPSDATA=@CUPSDATA@
