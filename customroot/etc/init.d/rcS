@@ -231,3 +231,12 @@ start-stop-daemon -K -q -n syslogd
 # executing them in numerical order.
 rcall start
 
+# create mountpoints and mount remote filesystems
+while read dev mp fs rest; do
+	if test "$fs" = "nfs" -o "$fs" = "cifs"; then 
+		if ! test -d $mp; then
+			mkdir -p $mp
+			mount -t $fs $mp
+		fi
+	 fi
+done < /etc/fstab
