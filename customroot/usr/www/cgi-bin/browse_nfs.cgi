@@ -27,8 +27,9 @@ EOF
 
 wait_count_start "Browsing the network for NFS servers, it takes 20 seconds"
 
-# this seems to be needed to keep the window updated...
-for i in $(seq 1 20); do sleep 1; echo; done &
+# this seems to be needed to start the window drawn...
+echo "                                                  "
+#for i in $(seq 1 20); do sleep 1; echo; done &
 
 echo "<strong>Host:Directory</strong><br>"
 
@@ -45,7 +46,7 @@ done
 
 wait_count_stop
 
-echo "<form><input type=submit onclick=window.close() value=Cancel>
+echo "<br><form><input type=submit onclick=window.close() value=Cancel>
 		</form></body></html>"
 
 exit 0

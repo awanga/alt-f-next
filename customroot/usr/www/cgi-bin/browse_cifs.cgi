@@ -27,8 +27,11 @@ EOF
 
 wait_count_start "Browsing the network for Samba servers, it takes 10 seconds"
 
-if false; then
+# this seems to be needed to start the window drawn...
+echo "                                                  "
+#for i in $(seq 1 20); do sleep 1; echo; done &
 
+if false; then
 F1=domain
 F2=host
 F3=//host/share
