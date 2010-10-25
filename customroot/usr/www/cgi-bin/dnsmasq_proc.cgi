@@ -100,7 +100,7 @@ if test -n "$Submit"; then
 		echo "log-dhcp" >> $CONF_F
 	fi
 
-	if rcdnsmasq status >& /dev/null
+	if rcdnsmasq status >& /dev/null; then
 		rcdnsmasq reload >& /dev/null
 	fi
 fi
