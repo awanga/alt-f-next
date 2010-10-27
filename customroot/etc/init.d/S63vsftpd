@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 DESC="vsftpd"
 NAME=vsftpd
 
@@ -12,7 +10,7 @@ CONF=/etc/vsftpd.conf
 sinit() {
 	if test -f $CONF; then
 		. $CONF
-		if ! test -n "$secure_chroot_dir" -a -d "$secure_chroot_dir"; then
+		if test -n "$secure_chroot_dir" -a ! -d "$secure_chroot_dir"; then
 			mkdir -p "$secure_chroot_dir"
 		fi
  		if test "$ssl_enable" = "YES" -a -n "$rsa_cert_file" -a ! -f  "$rsa_cert_file"; then
