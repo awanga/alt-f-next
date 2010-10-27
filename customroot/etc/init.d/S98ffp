@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 DESC="Run ffp initialization script"
 TYPE=sys
 NAME=ffp
@@ -29,19 +27,7 @@ case "$1" in
 			exit 1
 		fi		
 		;;
-	status)
-		if ! test -x /ffp/etc/rc; then
-			exit 1
-		fi
-		;;
-	restart)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		sleep 1
-		sh $0 start
-		echo ""
-		;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
 esac
-
-exit 0
