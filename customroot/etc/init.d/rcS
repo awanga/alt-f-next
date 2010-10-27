@@ -27,7 +27,7 @@ dmesg | awk '/Identified HW revision/{print $5}' > /tmp/board
 echo "none" > /sys/class/leds/power\:blue/trigger
 
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
-start-stop-daemon -S -q -x syslogd -- -D -m 0 -O /var/log/fsckboot.log
+start-stop-daemon -S -q -x syslogd -- -D -m 0 -O /var/log/boot.log
 
 # there is a problem here.
 # the kernel does not generate/buffer hot plug events before init starts,
@@ -116,7 +116,7 @@ fi
 # 4th, try to use a dhcp server
 # 5th, find and use a non-used ip address from 192.168.1.245 to 240 range
 if grep -q "ip=" /proc/cmdline; then
-	echo "IP from kernel cmdline, kernel brings eth0 up"
+	logger -s "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
 	eval $(cat /proc/cmdline)
 	#domain=$(echo $ip | awk -F: '{ print substr($5, index($5,".") + 1, length($5))}')
@@ -127,13 +127,13 @@ if grep -q "ip=" /proc/cmdline; then
 	fi
 	ifconfig eth0 up
 elif test $no_defaults = "0"; then
-	echo "IP from flash-defaults"
+	logger -s "IP from flash-defaults"
 	cip="def"
 	ifup eth0
 else
 	res=$(loadsave_settings -rs)
 	if test $? = 0; then
-		echo "IP from sib.conf"
+		logger -s "IP from sib.conf"
 		cip="sib"
 		eval $res
 		ifconfig eth0 up $ip netmask $mask
@@ -148,17 +148,17 @@ else
 		sleep 3
 		udhcpc -fqns /dev/null
 		if test $? = 0; then
-			echo "IP from dhcp server"
+			logger -s "IP from dhcp server"
 			cip="dhcp"
 		else
-			echo "Fixed IP"
+			logger -s "Fixed IP"
 			ifconfig eth0 0.0.0.0
 			sleep 3
 			for i in $(seq 254 -1 240); do
 				arping -Dw 2 192.168.1.$i
 				if test $? = 0; then break; fi
 			done
-			echo "using 192.168.1.$i"
+			logger -s "using 192.168.1.$i"
 			ifconfig eth0 192.168.1.$i
 			cip="fip"
 		fi
