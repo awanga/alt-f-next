@@ -34,8 +34,18 @@ case "$1" in
 		done
 		;;
 
+	status)
+		for i in $(ls -r /etc/init.d/S*) ;do
+			 # dont ignore non executable files, in case user has started them manually
+			if test ! -f "$i"; then continue; fi
+			bn=$(basename $i)
+			nm=${bn:3}
+			logger -s "$(/bin/sh $i status)"
+		done
+		;;
+
 	*)
-		echo "Usage: $0 {start|stop|restart}" >&2
+		echo "Usage: $0 {start|stop|restart|status}" >&2
 		exit 1
 		;;
 esac

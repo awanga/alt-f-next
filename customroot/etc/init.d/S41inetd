@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 DESC="Internet Services Daemon (<strong>Don't disable unless you have a serial port!</strong>!)"
 TYPE=net
 NAME=inetd

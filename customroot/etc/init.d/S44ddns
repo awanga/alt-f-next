@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 DESC="Dynamic DNS update daemon"
 TYPE=net
 NAME=inadyn

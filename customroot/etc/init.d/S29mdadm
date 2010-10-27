@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 DESC="Monitor MD devices (Linux Software RAID)"
 NAME=mdadm
 TYPE=sys
@@ -13,8 +11,6 @@ CONFM=/etc/msmtprc
 
 case "$1" in
 	start)
-		echo -n "Starting $NAME: "
-
 		if test -e $CONFF; then
 			. $CONFF
 		fi
@@ -29,10 +25,7 @@ case "$1" in
 			echo "Mail not configured, exiting."
 			exit 1
 		fi
-#		start-stop-daemon -S -q -b -x $NAME -- --monitor --scan \
-#			--daemonise --mail $SENDTO --delay $MDADM_INTERVAL \
-#			$MDADM_EMAIL_TEST --syslog --pid-file $PIDFILE
-#		omsg $?
+
 		start $NAME -- --monitor --scan \
 			--daemonise --mail $SENDTO --delay $MDADM_INTERVAL \
 			$MDADM_EMAIL_TEST --syslog --pid-file $PIDFILE
