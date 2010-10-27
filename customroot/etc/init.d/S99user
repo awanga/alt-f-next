@@ -1,7 +1,5 @@
 #! /bin/sh
 
-set -e
-
 DESC="Run user script"
 TYPE=user
 NAME=user
@@ -15,6 +13,8 @@ SEP="======================"
 
 bootlog() {
 	if test -n "$BOOTLOG"; then
+		logger "Services status:"
+		rcall status
 		for i in /mnt/*; do
 			if mountpoint $i >& /dev/null; then
 				writelog
@@ -71,7 +71,7 @@ case "$1" in
 	start)
 		echo -n "Starting $NAME: "
 		# to apply your own settings, create an external script and add
-		# source/call it here; this will it will survive firmware upgrades.
+		# source/call it here; this way it will survive firmware upgrades.
 		bootlog
 		echo "OK."
 		;;
@@ -82,16 +82,11 @@ case "$1" in
 		;;
 
 	status)
-		echo "$NAME is stopped."
+		echo "$NAME stopped."
 		exit 1
 		;;
 
 	restart) restart $NAME
-#		echo "Restarting $NAME: "
-#		sh $0 stop
-#		sleep 1
-#		sh $0 start
-#		echo ""
 		;;
 
 	*) usage $0 "start|stop|status|restart" ;;
