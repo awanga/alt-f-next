@@ -26,7 +26,7 @@ case "$1" in
 		;;
 		
 	stop)
-		echo -n "Starting $NAME: "
+		echo -n "Stopping $NAME: "
 		# Carry a random seed from shut-down to start-up;
 		# see documentation in linux/drivers/char/random.c
 		# Saving random seed
@@ -34,6 +34,10 @@ case "$1" in
 		chmod og-rwx $RFILE
 		echo "OK."
 		;;
+
+	status)
+		status $NAME
+		;;
 		
-	*)  usage $0 "start|stop" ;;
+	*)  usage $0 "start|stop|status" ;;
 esac
