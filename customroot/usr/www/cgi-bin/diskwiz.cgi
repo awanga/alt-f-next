@@ -29,7 +29,7 @@ cat<<-EOF
 		}
 
 		if (ndisks == 1 && (ptype == "raid0" || ptype == "jbd")) {
-			alert("You need two disks to create a " + ptype + " RAID array")
+			alert("You need at least two disks to create a " + ptype + " RAID array")
 			return false
 		}
 		if (ndisks == 1 && ptype == "raid5") {
@@ -99,21 +99,21 @@ cat<<-EOF
 		<td>Don't touch my disks in any way!</td></tr>
 	<tr><td align=center>
 		<input type=radio checked name=wish_part value=standard></td>
-		<td>One big standard partition per disk, for easy management</td></tr>
+		<td>One big standard partition per disk, for easy management (standard)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=jbd></td>
-		<td>Merge the two disks in one big partition, low data security (JDB)</td></tr>
+		<td>Merge all disks in one big partition, low data security (JDB)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=raid0></td>
-		<td>Maximum performance with both disks and low data security (raid0)</td></tr>
+		<td>Maximum performance and space with two disks, but low data security (raid0)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=raid1></td>
-		<td>Duplicate everything on both disks (raid1)</td></tr>
+		<td>Data security, duplicate everything on both disks (raid1)</td></tr>
 	<tr><td align=center>
 		<input type=radio $threedisks name=wish_part value=raid5></td>
-		<td>Space and security, with two disks plus an external USB disk (raid5)</td></tr>
+		<td>Data security and more space, with two disks plus an external USB disk (raid5)</td></tr>
 
-	<tr><td colspan=2><br>and I want the filesystems to be:<br></td></tr>
+	<tr><td colspan=2><br>And I want the filesystems to be:<br></td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_fs value=ext2></td>
 		<td>older, stable and faster (ext2)</td></tr>

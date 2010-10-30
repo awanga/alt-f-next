@@ -33,7 +33,7 @@ ejectall() {
 	for i in $disks; do
 		dsk=$(basename $i)
 		if ! eject $1 $dsk > /dev/null; then
-			lmsg "Couldn't stop disk $dsk"
+			err "Couldn't stop disk $dsk ..."
 		fi
 	done
 }
@@ -56,9 +56,31 @@ minsize() {
 # remove raid superblock to avoid auto rebuild on partially created arrays
 # if by hazard the new partition table fits a previous one
 cleanraid() {
-	for i in $(sfdisk -l | awk '$6 == da || $a == fd {print $1}'); do
-		mdadm -zero-superblock $i >& /dev/null
+	for i in $(sfdisk -l | awk '$6 == "da" || $6 == "fd" {printf "%s ", $1}'); do
+		mdadm --zero-superblock $i >& /dev/null
 	done
+}
+
+# 4k align: $1=pos, $2=nsect, $4=maxsect
+align() {
+	local nsect pos rem naxsec
+	pos=$1
+	nsect=$2
+	maxsect=$3
+
+# dont honour cylinder boundary alignement, its obsolete and unnecessary
+#	rem=$(expr \( $pos + $nsect \) % $sectcyl) # number of sectors past end of cylinder
+#	nsect=$(expr $nsect - $rem)		# make partition ends on cylinder boundary
+
+	if test $(expr $pos + $nsect) -gt $maxsect; then
+		nsect=$(expr $maxsect - $pos)
+	fi
+
+	rem=$(expr $nsect % 8)
+	if test $rem -ne 0; then
+		nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
+	fi
+	echo $nsect
 }
 
 # partition all disks
@@ -68,15 +90,14 @@ partition() {
 
 	cleanraid
 
-	maxsect=""
+	ptype="83"
 	if test "$1" = "raid"; then
 		ptype="da"
-	else
-		ptype="83"
 	fi
 
+	commonsect=""
 	if test "$2" = "equal"; then
-		maxsect=$(minsize)
+		commonsect=$(minsize)
 	fi
 
 	for i in $disks; do
@@ -86,21 +107,27 @@ partition() {
 			/cylinders/ {printf "cylinders=%d; heads=%d; sectors=%d", $3, $5, $7}')
 
 		sect_cyl=$(expr $heads \* $sectors) # number of sectors per cylinder
+		maxsect=$(expr $cylinders \* $sect_cyl)
+		if test "$2" != "equal"; then
+			commonsect=$maxsect
+		fi
 
-		pos=$sectors # keep first track empty.
+		pos=64 # 4k aligned
 		nsect=1048576 # 512MB for swap
-		rem=$(expr \( $pos + $nsect \) % $sect_cyl) # number of sectors past end of cylinder
-		nsect=$((nsect - rem)) # make partition ends on cylinder boundary
+		nsect=$(align $pos $nsect $maxsect)
 
-		pos2=$((pos+nsect))
-		nsect2=""
+		pos2=$(expr $pos + $nsect)
+		nsect2=$(expr $commonsect - $pos2)
+		nsect2=$(align $pos2 $nsect2 $maxsect)
+
 		par3=""
-		if test -n "$maxsect"; then
-			nsect2=$((maxsect - pos2))
-			rem2=$(expr \( $pos2 + $nsect2 \) % $sect_cyl)
-			nsect2=$((nsect2 - rem2))
-			pos3=$((pos2+nsect2))
-			par3="$pos3,,L"
+		if test "$maxsect" != "$commonsect"; then
+			pos3=$(expr $pos2 + $nsect2)
+			nsect3=$(expr $maxsect - $pos3)
+			nsect3=$(align $pos3 $nsect3 $maxsect)
+			if test "$nsect3" -gt 0; then
+				par3="$pos3,$nsect3,83"
+			fi
 		fi
 
 		FMTFILE=$(mktemp -t sfdisk-XXXXXX)
@@ -113,7 +140,7 @@ partition() {
 		# unmount/stop raid
 		ejectall
 
-		res=$(sfdisk -uS $i < $FMTFILE 2>&1)
+		res=$(sfdisk --force -uS $i < $FMTFILE 2>&1)
 		if test $? != 0; then
 			rm -f $FMTFILE
 			err "$res"
@@ -152,30 +179,42 @@ create_swap() {
 
 # $1=dev
 create_fs() {
-		echo "<p>Creating $wish_fs filesystem on $(basename $1) (this will take some minutes)..."
+		local dev sec sf
+		dev=$(basename $1)
+		if test "${dev%%[0-9]}" = "md"; then
+			sf=/sys/block/${dev}/size
+		else
+			sf=/sys/block/${dev:0:3}/${dev}/size
+		fi
+		eval $(awk '{ printf "min=%d", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
+		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
+		wait_count_start "$min minute(s)"
 		res="$(mke2fs -T $wish_fs ${1} 2>&1)"
-		if test $? != 0; then
+		st=$?
+		wait_count_stop
+		if test $st != 0; then
 			err "$res"
 		else
-			echo " done.</p>"
+			echo ". Done.</p>"
 		fi
 }
 
 # $1=linear|raid0|raid1|raid5
 create_raid() {
-	for j in $(seq 0 9); do
-		if ! test -b /dev/md$j; then
-			MD=md$j
-			break
-		fi
+	curdev=$(mdadm --examine --scan | awk '{ print substr($2, match($2, "md"))}')
+	for dev in $(seq 0 9); do
+		if ! echo $curdev | grep -q md$dev; then MD=md$dev break; fi
 	done
 
 	eval $(cat /etc/bay | sed -n 's/ /=/p')
 
 	opts=""; pair1=/dev/${left}2; pair2=/dev/${right}2; spare=""
 	case "$1" in
-		linear)	;;
-		raid0)	;;
+		linear|raid0)
+				if test $ndisks = 3; then
+					spare="/dev/${usb}2"
+				fi
+				;;
 		raid1)  opts="--bitmap=internal"
 				if test $ndisks = 1; then
 					pair2="missing"
@@ -210,7 +249,9 @@ standard() {
 	partition
 	create_swap
 	for i in $disks; do
+		eject $(basename $i) >& /dev/null
 		create_fs ${i}2
+		sleep 3
 	done
 }
 
@@ -265,7 +306,9 @@ busy_cursor_start
 has_disks
 nusb="$(cat /etc/bay | grep usb | wc -l)"
 
+echo "<p>Stopping all services and disks..."
 rcall stop >& /dev/null
+echo " done.</p>"
 
 case $wish_part in
 	notouch) ;;
@@ -288,12 +331,12 @@ else
 fi
 
 busy_cursor_end
+
 cat<<-EOF
-	</pre><br><p><strong>Success!</strong></p>
+	</pre><p><strong>Success!</strong></p>
 	<script type="text/javascript">
 		url = document.referrer
 		url = url.substr(0,url.lastIndexOf("/")) + "/$pg"
 		setTimeout("window.location.assign(url)", 3000);
 	</script></body></html>
 EOF
-
