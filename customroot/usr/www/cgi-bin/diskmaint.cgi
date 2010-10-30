@@ -5,7 +5,7 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 . common.sh
 
 check_cookie
-write_header "Disk Maintenance" "" "document.diskm.reset()"
+write_header "Filesystem Maintenance" "" "document.diskm.reset()"
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -17,7 +17,7 @@ cat<<-EOF
 		res = false
 		if (opi == 0)
 			return false;
-//  FS ops:
+
 		else if (op == "Format" || op == "Convert") {
 			if (document.getElementById("fsfs_" + part).selectedIndex == 0) {
 				alert("Select a FS first.")
@@ -54,39 +54,6 @@ The filesystem will occupy the whole partition (or RAID device).\n\nProceed?")
 			res = confirm("Wiping a filesystem fills it with zeros, destroing all its data.\n\
 The data can only be recovered at specialized data recovery centers.\n\
 It runs at about 1GB/min.\n\nProceed?")
-// raid ops:
-
-		else if (op == "Remove_bitmap") // write intent bitmap
-			res = confirm("Removing the Write Intent Bitmap makes resyncing much slower.\n\n\
-Continue?")	
-		else if (op == "Create_bitmap") // write intent bitmap
-			res = confirm("Creating a Write Intent Bitmap makes resyncing much faster.\n\n\
-Continue?")	
-		else if (op == "Verify") // raid consistency
-			res = true
-		else if (op == "Repair") // raid inconsistency
-			res = true
-		else if (op == "Enlarge_raid") // raid to accomodate bigger partitions
-			res = confirm("A RAID device should be enlarged only when all its partition\n\
-components are bigger that the RAID size.\n\
-The RAID device will have the size of its smaller partition component.\n\
-You should afterwards Enlarge the filesystem laying on it.\n\nContinue? ")
-		else if (op == "Shrink_raid") // raid to accomodate bigger partitions
-			res = confirm("A RAID device should be shrinked only after the filesystem it contains\n\
-has already been shrinked.\n\
-The RAID device will have the same size as the filesystem it contains.\n\n\
-Continue? ")
-		else if (op == "Add_part" || op == "Remove_part") {
-			if (document.getElementById("rdev_" + part).selectedIndex == 0) {
-				alert("Select a Partition first.")
-				obj.selectedIndex = 0
-				return false
-			}
-			if (op == "Add_part")
-				res = confirm("Add partition to " + part) // partition to raid
-			else if (op == "Remove_part")
-				res = confirm("Remove partition from " + part) // partition to raid
-		}
 
 		if (res == true)
 			document.getElementById("diskm").submit();
@@ -250,149 +217,6 @@ cat<<-EOF
 	<input type=text size=4 name=TUNE_MOUNTS value=$TUNE_MOUNTS> mounts
 	or every <input type=text size=4 name=TUNE_DAYS value=$TUNE_DAYS> days
 	<input type=submit name=tune value=Submit>
-	</fieldset><br>
-
-	<fieldset><Legend> <strong> RAID </strong> </legend><table>
-EOF
-
-if ! blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
-	echo "None<br>"
-else
-	cat<<-EOF
-		<tr align=center>
-		<th align=left>Dev.</th> 
-		<th>Capacity</th>
-		<th>Level</th>
-		<th>Components</th>
-		<th>Array</th>
-		<th>RAID Operations</th>
-		<th colspan=2>Partition Operations</th>
- 		</tr>
-	EOF
-
-	raid_devs="<option value=none>Partition</option>"
-# dont know which of these to use...
-	raidp="$(blkid -c /dev/null | awk '/mdraid/{print substr($1, 6, 4)}')"
-#	raidp="$(fdisk -l | awk '$5 == "da" || $5 == "fd" { print substr($1, 6)}')"
-
-	for j in $raidp; do
-		cap="$(awk '{printf "%.0f", $0*512/1e9}' /sys/block/${j:0:3}/$j/size)"
-		raid_devs="$raid_devs<option value=$j>$j ${cap}GB</option>"
-	done
-
-#	alldevs=""	
-	if ls /dev/md? >& /dev/null; then
-		for i in /dev/md[0-9]*; do
-			mdev=$(basename $i)
-	
-			if ! test -f /sys/block/$mdev/md/array_state; then continue; fi
-
-			state=$(cat /sys/block/$mdev/md/array_state)
-			type=$(cat /sys/block/$mdev/md/level)
-			pcap=$(awk '/'$mdev'/{printf "%.1f GB", $3/1048576}' /proc/partitions)
-	
-			devs=""
-			for i in $(ls /sys/block/$mdev/slaves); do
-				if test $(cat /sys/block/$mdev/md/dev-$i/state) = "faulty"; then
-					devs="$devs <font color=RED>$i</font>"
-				elif test $(cat /sys/block/$mdev/md/dev-$i/state) = "spare"; then
-					devs="$devs <font color=GREEN>$i</font>"
-				else
-					devs="$devs $i"
-				fi
-#				alldevs="$alldevs $i"
-			done
-	
-			otype=$type
-			if test "$(cat /sys/block/$mdev/md/degraded 2>/dev/null )" = 1; then
-				otype="<font color=RED>$type</font>"
-			fi
-	
-			cat<<-EOF
-				<tr align=center>
-				<td align=left>$mdev</td> 
-				<td>$pcap</td>
-				<td>$otype</td>
-				<td>$devs</td>
-			EOF
-	
-			if ! test "$type" = "raid1" -o "$type" = "raid5"; then
-				echo "<td><input type=submit name=$mdev value=\"Stop\"</td></tr>"
-				continue
-			fi
-	
-			bitmap="Remove"
-			if test "$(cat /sys/block/$mdev/md/bitmap/location)" = "none"; then
-				bitmap="Create"
-			fi
-	
-			action="idle"
-			if test -f /sys/block/$mdev/md/sync_action; then
-				action=$(cat /sys/block/$mdev/md/sync_action)
-			fi
-	
-			if test "$action" != "idle"; then
-				cat<<-EOF
-					<td><font color=RED> ${action}ing </font>
-					<input type=submit name=$mdev value="Abort"></td>
-					</tr>
-				EOF
-			else
-				cat<<-EOF
-					<td><input type=submit name=$mdev value="Stop"</td>		
-					<td><select id="raidop_$mdev" name="$mdev" onChange="msubmit('raidop_$mdev', '$mdev')">
-						<option>Operation</option>
-						<option value=${bitmap}_bitmap>$bitmap Bitmap</option>
-						<option>Verify</option>
-						<option>Repair</option>
-						<option value="Enlarge_raid">Enlarge</option>
-						<option value="Shrink_raid">Shrink</option>
-					</select</td>
-					<td><select id=rdev_$mdev name=rdev_$mdev>$raid_devs</select></td>
-					<td><select id=rops_$mdev name=$mdev onChange="msubmit('rops_$mdev', '$mdev')">
-						<option value=none>Operation</option>
-						<option value=Add_part>Add</option>
-						<option value=Remove_part>Remove</option>"
-					</select></td>
-					</tr>
-				EOF
-			fi
-		done
-	fi
-
-# "Preferred Minor" is for 0.9 metadata
-# minor can be extracted from "name" with 1.x metadata
-# create with 0.9 metadata? for compatibility with the vendor's firmware?
-
-	ex=""
-	for i in $raidp; do
-		eval $(mdadm --examine /dev/$i 2> /dev/null | awk '
-			/Raid Level/ { printf "level=%s; ", $4}
-			/Preferred Minor/ { printf "rdev=\"md%d\"; ", $4}
-			/this/ { getline; while (getline) {
-				if (substr($NF, 1,5) == "/dev/") {
-					devs = substr($NF, 6, 4) " " devs;}}
-				printf "devs=\"%s\";", devs}')
-		if test -b /dev/$rdev; then continue; fi
-		if echo "$ex" | grep -q "$rdev" ; then continue; fi
-		ex="$rdev $ex"
-#if echo "$alldevs" | grep -q $i; then continue; fi
-#alldevs="$alldevs $devs"
-#echo "<p>$alldevs</p>"
-
-		cat<<-EOF
-			<tr align=center>
-			<td>$rdev</td>
-			<td></td>
-			<td>$level</td>
-			<td>$devs</td>
-			<td><input type=submit name=$rdev value="Start"</td>
-			</tr>
-		EOF
-	done
-fi
-
-cat<<-EOF
-	</table></fieldset><br>
+	</fieldset>
 	</form></body></html>
 EOF

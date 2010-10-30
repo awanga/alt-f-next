@@ -38,8 +38,9 @@ echo "<a href=\"/cgi-bin/index.cgi?pg=disk\">Disk</a><br>"
 if test "$pg" = "disk"; then
 	cat<<-EOF
 	&emsp;<a href="/cgi-bin/diskutil.cgi" target="content">Utilities</a><br>
-	&emsp;<a href="/cgi-bin/diskpart.cgi" target="content">Partition</a><br>
-	&emsp;<a href="/cgi-bin/diskmaint.cgi" target="content">Maintenance</a><br>
+	&emsp;<a href="/cgi-bin/diskmaint.cgi" target="content">Filesystems</a><br>
+	&emsp;<a href="/cgi-bin/raid.cgi" target="content">RAID</a><br>
+	&emsp;<a href="/cgi-bin/diskpart.cgi" target="content">Partitioner</a><br>
 	&emsp;<a href="/cgi-bin/diskwiz.cgi" target="content">Wizard</a><br>
 	EOF
 fi

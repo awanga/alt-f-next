@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "Disk Partitioning" "" "document.diskp.reset()"
+write_header "Disk Partitioner" "" "document.diskp.reset()"
 
 has_disks
 
@@ -42,6 +42,7 @@ It will disappear after a reboot or powerdown.')
 		document.diskp.submit()
 		return ret
 	}
+
 	function msubmit(frompart, frombay, fromsz) {
 		obj = document.getElementById("cp_" + frompart)
 		idx = obj.selectedIndex
@@ -67,43 +68,13 @@ It will disappear after a reboot or powerdown.')
 		document.diskp.cp_from.value = frompart
 		document.diskp.submit()
 	}
+
 	function keeppart(ipart) {
 		st = document.getElementById("keep_" + ipart).checked;
 		document.getElementById("cap_" + ipart).disabled = st;
 		document.getElementById("type_" + ipart).disabled = st;
-		raidsel(ipart);
 	}
-	function raidsel(ipart) {
-		dis = document.getElementById("type_" + ipart).disabled;
-		type = document.getElementById("type_" + ipart).selectedIndex;
 
-		stat = false;
-		if (type != 1) // 0-empty 1-raid, 2-swap, 3-linux, 4-vfat, 5-ntfs
-			stat = true;
-
-		document.getElementById("raid_" + ipart).disabled = stat || dis;
-		raidtype(ipart)
-
-	}
-	function raidtype(ipart) {
-		dis = document.getElementById("raid_" + ipart).disabled;
-		document.getElementById("pair1_" + ipart).disabled = dis;
-		document.getElementById("pair2_" + ipart).disabled = dis;
-		if (dis == true)
-			return;
-
-		type = document.getElementById("raid_" + ipart).selectedIndex;
-
-		stat = false;
-		if (type == 0)
-			stat = true;
-		document.getElementById("pair1_" + ipart).disabled = stat;
-
-		stat = false;
-		if (type < 3) // 0-none, 1-jbd, 2-raid0, 3-raid1, 4-raid5
-			stat = true;
-		document.getElementById("pair2_" + ipart).disabled = stat;
-	}
 	function updatefree(dcap, dsk, part) {
 		free = dcap;
 		for (i=1; i<=4; i++)
@@ -113,6 +84,17 @@ It will disappear after a reboot or powerdown.')
 		if (document.getElementById("cap_" + part).value == 0)
 			document.getElementById("type_" + part).selectedIndex = 0;
 	}
+
+	function psubmit(diskcap, bay, free) {
+		if (document.getElementById("free_id").value < 0 ) {
+			alert("The sum of the partitions size is greater than the disk capacity.\n\
+Decrease the size of some partitions and retry.")
+			return false
+		}
+		
+		return confirm("Partitioning the " + diskcap + " GB " + bay + " disk can make all its data inacessible.\n\nContinue?")
+	}
+
 	function reopen(dsk) {
 		url=window.location + "?disk=" + dsk;
 		window.location.assign(url)
@@ -142,10 +124,6 @@ if test -f /usr/sbin/mkntfs; then
 	ntfsopt=""
 fi
 
-pairs="$(fdisk -l | awk 'substr($1,1,8) != "'$dsk'" && ($5 == "da" || $5 == "fd") {
-		nm = substr($1, 6); 
-		printf ("<option value=%s>%s %.0fGB</option>", nm, nm, $4/1048576)}')"
-
 cat<<-EOF
 	<fieldset>
 	<legend><strong>Select the disk you want to partition</strong></legend>
@@ -165,7 +143,6 @@ opt_disks="<option>CopyTo</option> $opt_disks"
 for i in $disks; do
 	disk=$(basename $i)
 
-	#mod=$(cat /sys/block/$disk/device/model)
 	mod=$(disk_name $disk)
 	cap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$disk/size)
 	bay=$(awk '/'$disk'/{print toupper($1)}' /etc/bay)
@@ -180,8 +157,6 @@ for i in $disks; do
 		<td align=center>$disk</td>
 		<td align=right>$cap GB</td>
 		<td>$mod</td>
-		<!--td><input type="submit" name="$disk" value="Erase" onClick="return confirm('The $cap GB $bay disk partition table will be erased,\n\
-and all disk data will become inacessible.\n\nContinue?')"></td-->
 		<td><select id=op_$disk name=op_$disk onChange="opsubmit('$disk','$bay','$cap')">
 			<option>Operation</option>
 			<option>Erase</option>
@@ -192,13 +167,14 @@ and all disk data will become inacessible.\n\nContinue?')"></td-->
 		</tr>
 	EOF
 done
+
 echo "<input type=hidden name=cp_from>"
 echo "</table></fieldset><br>"	
 
 ddsk=$(basename $dsk)
 rawcap=$(expr $(sfdisk -s $dsk) \* 1024 / 1000000)
 
-mod=$(cat /sys/block/$ddsk/device/model)
+mod=$(disk_name $ddsk)
 diskcap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$ddsk/size)
 bay=$(awk '/'$ddsk'/{print toupper($1)}' /etc/bay)
 
@@ -212,9 +188,6 @@ cat<<-EOF
 	<th> Type </th>
 	<th> Size (GB) </th>
 	<th> Type </th>
-	<th> RAID </th>
-	<th> Pair with </th>
-	<th> Pair/Spare </th>
 	</tr>
 EOF
 
@@ -242,39 +215,13 @@ for pl in 1 2 3 4; do
 
 	used=$((used + rcap))
 
-	emptys=""; swaps=""; linuxs=""; raids=""; vfats=""; ntfss=""
-	nones=""; raid0s=""; raid1s=""; raid5s=""; jbds=""; rlevel=""
-	xpair1=""; xpair2=""; extendeds=""
+	emptys=""; swaps=""; linuxs=""; raids=""; vfats=""; ntfss=""; extendeds=""
 	case $id in
 		0) emptys="selected" ;;
 		82) swaps="selected" ;;
 		83) linuxs="selected" ;;
 		5|f|85) extendeds="selected" ;;
-		fd|da) raids="selected"
-			eval $(mdadm --examine $part 2> /dev/null | awk -v part=$ppart '
-				BEGIN { excl = part }
-				/Raid Level/ { printf "rlevel=%s; ", $4 }
-				/this/ { getline; while (getline) {
-					if (substr($NF, 1,5) == "/dev/") { 
-						dev = substr($NF, 6, 4);
-						if (dev != excl)
-							devs[i++] = dev }}}
-				END {printf "p1=%s; p2=%s", devs[0], devs[1]}')
-
-			case "$rlevel" in
-				raid0) raid0s="selected" ;;
-				raid1) raid1s="selected" ;;
-				raid5) raid5s="selected" ;;
-				linear) jbds="selected" ;;
-				*) nones="selected" ;;
-			esac
-			if test -n "$p1"; then
-				xpair1="<option selected value=$p1>$p1 *</option>"
-			fi
-			if test -n "$p2"; then
-				xpair2="<option selected value=$p2>$p2 *</option>"
-			fi
-			;;
+		fd|da) raids="selected"	;;
 		b|c) vfats="selected" ;;
 		7) ntfss="selected" ;;
 	esac
@@ -287,8 +234,7 @@ for pl in 1 2 3 4; do
 	<td>$type</td>
 	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
 		value=$cap onchange="updatefree('$rawcap', '$ddsk', '$ppart')"></td>
-	<td><select $keepdis id=type_$ppart name=type_$ppart 
-		onclick="raidsel('$ppart')">
+	<td><select $keepdis id=type_$ppart name=type_$ppart>
 	<option $emptys>empty</option>
 	<option $raids>RAID</option>
 	<option $swaps>swap</option>
@@ -297,28 +243,6 @@ for pl in 1 2 3 4; do
 	<option $ntfss $ntfsopt>ntfs</option>
 	<option $extendeds disabled>extended</option>
 	</select></td>
-
-	<td><select disabled id=raid_$ppart name=raid_$ppart 
-		onclick="raidtype('$ppart')">
-	<option $nones>none</option>
-	<option $jbds>JBD</option>
-	<option $raid0s>raid0</option>
-	<option $raid1s>raid1</option>
-	<option $raid5s>raid5</option>
-	</select></td>
-
-	<td><select disabled id=pair1_$ppart name=pair1_$ppart>
-	<option>none</option>
-	$pairs
-	$xpair1
-	</select></td>
-
-	<td><select disabled id=pair2_$ppart name=pair2_$ppart>
-	<option>none</option>
-	$pairs
-	$xpair2
-	</select></td>
-
 	</tr>
 	EOF
 
@@ -333,7 +257,7 @@ cat<<-EOF
 	<td><input type=text readonly id="free_id" size=6 value="$free"></td>
 	</tr>
 	<tr><td align=center colspan=2><input type=submit name=$ddsk value=Partition
-		onclick="return confirm('Partitioning the $diskcap GB $bay disk can make all its data inacessible.\n\nContinue?')"></td>
+		onclick="return psubmit('$diskcap', '$bay', '$free')"></td>
 	</tr>
 	</table></fieldset><br>
 	</form></body></html>
