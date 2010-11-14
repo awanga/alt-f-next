@@ -1,7 +1,7 @@
 #!/bin/sh
 
 debug=true
-maxsize=50000 # bytes
+maxsize=32768 # bytes
 
 if test -n "$debug"; then
 	if test "$(stat -t /var/log/hot.log 2>/dev/null | cut -d" " -f2)" -gt $maxsize; then
@@ -133,15 +133,13 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
 	# md disk
 	if test -d /sys/block/$MDEV/md; then
-		echo $MDEV: NO PARTITION BASED MD, neither dlink created raid.
+		echo $MDEV: NO PARTITION BASED MD
 
 	# "normal" disk (not md)
 	#elif test -d /sys/block/$MDEV/device; then 
 	else
 
-		# which bay?
-		sed -i '\|'$MDEV'|d' /etc/bay
-	
+		# which bay?	
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
 		PHYSD=$(readlink /sys/block/$MDEV/device) 
 		if $(echo $PHYSD | grep -q /host0/); then
@@ -149,12 +147,32 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 		elif $(echo $PHYSD | grep -q /host1/); then
 			bay="left"
 		elif $(echo $PHYSD | grep -q /usb1/); then
-			bay="usb"
+			bay="usb"${MDEV:2}
 		fi
 	
 		if test -n "$bay"; then
-			echo "$bay $MDEV" >> /etc/bay
-	
+			#echo "$bay $MDEV" >> /etc/bay
+
+			sed -i '/^'$bay'_/d' /etc/bay
+			sed -i '/^'$MDEV'/d' /etc/bay
+
+
+			eval $(smartctl -i $PWD/$MDEV | awk '
+				/^Model Family/ {printf "fam=\"%s\";", substr($0, index($0,$3))}
+				/^Device Model/ {printf "mod=\"%s\";", substr($0, index($0,$3))}
+				/^SMART support is:.*Enabled/ {print "smart=yes;"}')
+
+			if test -z "$smart"; then
+				fam="$(cat /sys/block/$MDEV/device/vendor)"
+				mod="$(cat /sys/block/$MDEV/device/model)"
+			fi
+			cap="$(awk '{printf "%.1f GB", $0 * 512 / 1e9}' /sys/block/$MDEV/size)"
+			echo ${bay}_dev=$MDEV >> /etc/bay
+			echo $MDEV=${bay} >> /etc/bay
+			echo ${bay}_cap=\"$cap\" >> /etc/bay
+			echo ${bay}_fam=\"$fam\" >> /etc/bay
+			echo ${bay}_mod=\"$mod\" >> /etc/bay
+
 			# set disk spin down
 			#tm=$(awk '/'$bay'/{print $2}' /etc/hdsleep.conf)
 			if test -f /etc/misc.conf; then
@@ -180,22 +198,26 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 		echo 0 > /sys/block/$MDEV/queue/iosched/low_latency
 	
 		# for now use only disk partition-based md
-		fdisk -l $PWD/$MDEV | awk '/^\/dev\// && $5 == "fd" { exit 1 }'   
-		if test $? = 1; then
-			#if ! test -f /etc/mdadm.conf; then
-				mdadm --examine --scan > /etc/mdadm.conf
-				#echo "DEVICE /dev/sd*" >> /etc/mdadm.conf
-			#fi                                                            
+		#sfdisk -l $PWD/$MDEV | awk '$6 == "da" || $6 == "fd" { exit 1 }'
+		if ! sfdisk -l /dev/sdb | awk '$6 == "da" || $6 == "fd" { exit 1 }'; then
+			mdadm --examine --scan > /etc/mdadm.conf
 		fi
 	fi
 
 elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 
+	mdadm --examine --scan > /etc/mdadm.conf
+	blkid -g
+
 	# remove some modules (repeat it while there are some?)
 	lsmod | awk '{if ($3 == 0) system("modprobe -r " $1)}'
 
 	PHYSD=$PHYSDEVPATH
-	sed -i '\|'$MDEV'$|d' /etc/bay
+	. /etc/bay
+	bay=$(eval echo \$$MDEV)
+	sed -i '/^'$bay'_/d' /etc/bay
+	sed -i '/^'$MDEV'/d' /etc/bay
+
 
 	# which bay?
 	# PHYSD=$(readlink /sys/block/$MDEV/device) 
@@ -207,6 +229,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 
 	ret=0
+	mdadm --examine --scan > /etc/mdadm.conf
 
 	#lbl=$(blkid -s LABEL -o value -w /dev/null -c /dev/null $PWD/$MDEV | tr ' ' '_')
 	#if test -z "$lbl"; then lbl=$MDEV; fi
