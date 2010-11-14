@@ -268,7 +268,7 @@ files="
 /etc/TZ		/etc/timezone
 /etc/hosts		/etc/resolv.conf	/etc/hostname
 /etc/samba/smbpasswd	/etc/samba/smbusers	/etc/samba/smb.conf
-/etc/samba/credentials.*
+/etc/samba/credentials.*	/etc/exports
 /etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
 /etc/dnsmasq-resolv	/etc/rsyncd.conf	/etc/rsyncd.secrets
 /etc/inetd.conf		/etc/vsftpd.conf	/etc/httpd.conf
