@@ -23,12 +23,15 @@ if aufs.sh -s >& /dev/null ; then
 	aufs.sh -u
 fi
 
+echo "rcE: stopping swap"
+for i in "$(cat /proc/swaps | grep -o '/dev/.* ')"; do
+	swapoff $i
+done
+
 echo "rcE: unmounting all mounted filesystems"
-# unmount all mounted filesystems (umount -a also unmounts /proc, /sys,...!)
+# unmount all mounted filesystems
 for i in nfs cifs iso9660 ext2 ext3 ext4 vfat ntfs; do
-	for j in $(mount -t $i | cut -d" " -f3); do
-		umount -rf $j
-	done
+		umount -t $i -rf -a 
 done
 
 echo "rcE: stopping all RAID"
