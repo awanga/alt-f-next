@@ -594,13 +594,8 @@ void fanctl(void)
 	write_pwm(pwm);
 
 	if (fabsf(temp - last_temp) >= 0.2) {
-		char buf[16];
 		last_temp = temp;
 		fan = read_fan();
-		sprintf(buf, "%d", fan);
-		write_str_to_file("/tmp/fan_speed", buf);
-		sprintf(buf, "%.1f", temp);
-		write_str_to_file("/tmp/system_temp", buf);
 		syslog(LOG_INFO, "temp=%.1f	 fan=%d", temp, fan);
 	}
 
@@ -690,7 +685,7 @@ void hdd_powercheck(int noleds)
 
 	static int power_st[16] =
 	    { -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, };
-	char buf[BUFSZ], fbuf[BUFSZ] = { 0 };
+	char buf[BUFSZ];
 
 	char *dev, *bay;
 	int st, idx, wled, refresh = 0;
@@ -722,34 +717,23 @@ void hdd_powercheck(int noleds)
 	}
 
 	while (fgets(buf, BUFSZ, fpb) != NULL) {
-		bay = strtok(buf, " ");
-		dev = strtok(NULL, "\n");
+		bay = strtok(buf, "=");
+		dev = strtok(NULL, "\n");		
 		if (bay == NULL || dev == NULL || strlen(bay) == 0
 		    || strlen(dev) == 0)
 			continue;
+		
+		char *p = strchr(bay,'_');
+		if (p == NULL || (p != NULL && strcmp(p, "_dev") != 0))
+			continue;
 
 		st = check_powermode(dev);
-		switch (st) {
-		case 0:
-			sprintf(fbuf + strlen(fbuf), "power_mode_%s=standby\n",
-				dev);
-			break;
-		case 1:
-			sprintf(fbuf + strlen(fbuf), "power_mode_%s=active\n",
-				dev);
-			break;
-		default:
-			sprintf(fbuf + strlen(fbuf), "power_mode_%s=unknown\n",
-				dev);
-			break;
-		}
-
 		idx = dev[2] - 'a';
 		if (refresh || st != power_st[idx]) {
 			power_st[idx] = st;
-			if (strcmp(bay, "right") == 0)
+			if (strcmp(bay, "right_dev") == 0)
 				wled = right_led;
-			else if (strcmp(bay, "left") == 0)
+			else if (strcmp(bay, "left_dev") == 0)
 				wled = left_led;
 			else
 				wled = 0;
@@ -779,16 +763,6 @@ void hdd_powercheck(int noleds)
 			}
 		}
 	}
-
-	FILE *fpp = fopen("/tmp/power_mode", "w");
-	if (fpp == NULL) {
-		syslog(LOG_CRIT, "sysctrl: open /tmp/power_mode: %m");
-		return;
-	} else {
-		fwrite(fbuf, strlen(fbuf), 1, fpp);
-		fclose(fpp);
-	}
-
 	fclose(fpb);
 }
 
@@ -1067,7 +1041,7 @@ void read_config()
 	fp = fopen("/etc/sysctrl.conf", "r");
 	if (fp == NULL) {
 		syslog(LOG_INFO,
-		       "cant open /dev/sysctrl.conf: %m\nUsing defaults");
+		       "cant open /etc/sysctrl.conf: %m\nUsing defaults");
 		return;
 	}
 
