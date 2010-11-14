@@ -1,6 +1,6 @@
 #! /bin/sh
 
-DESC="Internet Services Daemon (<strong>Don't disable unless you have a serial port!</strong>!)"
+DESC="Internet Services Daemon <br><strong>Don't disable unless you have a serial port!</strong>"
 TYPE=net
 NAME=inetd
 
@@ -10,9 +10,6 @@ case "$1" in
 	start)
 		rcdropbear init
 		rcvsftpd init
-
-#		start-stop-daemon -S -q -b -x $NAME
-#		omsg $?
 		start $NAME
 		;;
 	stop) stop $NAME ;;
