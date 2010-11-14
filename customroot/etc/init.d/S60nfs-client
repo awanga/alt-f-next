@@ -3,9 +3,8 @@
 # nfs           This shell script takes care of starting and stopping
 #               the NFS services. Stolen from RedHat FC5.
 
-DESC="Network File System Server (unix)"
-TYPE=net
-NAME=nfsd
+DESC="NFS Client"
+NAME=rpc.statd
 
 PORTMAP_FLAG="" #-v
 
@@ -22,27 +21,6 @@ touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
 chown -R daemon /var/lib/nfs /var/lib/nfs
 
 istart() {
-	# Don't fail if /etc/exports doesn't exist;
-	# create a bare-bones version and continue.
-
-	if test ! -f /etc/exports; then
-		touch /etc/exports
-		chmod u+rw,g+r,o+r /etc/exports
-		echo "Creating default NFS exports file."
-		ip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
-		cnet=$(echo $ip | cut -d. -f1-3).0/24
-		options="rw,no_root_squash,no_subtree_check,anonuid=99,anongid=98"
-
-		for f in /mnt/*; do
-			if mountpoint -q $f; then
-				echo "$f $cnet($options)" >> /etc/exports
-			fi
-		done
-	fi
-
-	if ! test -f /proc/fs/nfsd/exports; then
-		mount -t nfsd nfsd /proc/fs/nfsd
-	fi
 
 	# portmap fails when starting/stopping it in fast succession.
 	# Port 111 stays open in CLOSE_WAIT for 1 minute. Why?
@@ -59,27 +37,22 @@ istart() {
 	done
 	echo "OK."
 
-	exportfs -r
-	start rpc.mountd -- --no-nfs-version 4
-	start rpc.statd -- --no-notify
-	start rpc.nfsd -- --no-nfs-version 4 -s 2
 	start sm-notify
+	start rpc.statd -- --no-notify
 }
 
 istop() {
-	stop nfsd 9 # should be 2.
-	if ! rcnfs-client status >& /dev/null; then
+	if test -n "$(mount -t nfs)"; then
+		if umount -rfl -t nfs -a >& /dev/null; then
+			echo "Couldn't unmount NFS filesystems and stop nfs-client."
+			return 1
+		fi
+	fi
+
+	if ! rcnfs status >& /dev/null; then
 		stop rpc.statd
 		rm -f /var/run/portmap_mapping /var/run/sm-notify.pid
-	fi
-	stop rpc.mountd
-	exportfs -au
-	
-	if test -f /proc/fs/nfsd/exports; then
-		umount /proc/fs/nfsd
-		# blocks, as sunrpc modules has refcont = 2, although not in use
-		# modprobe -r nfsd 
-		rmmod -f nfsd exportfs
+		rmmod -f nfs lockd
 	fi
 }
 
@@ -88,6 +61,5 @@ case "$1" in
 	stop) istop ;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
-	reload) /usr/sbin/exportfs -r ;;
-	*) usage $0 "start|stop|status|restart|reload" ;;
+	*) usage $0 "start|stop|status|restart" ;;
 esac
