@@ -54,11 +54,13 @@ echo -e "\nBuilding needed host tools and copying then to the bin dir.\n\nNo che
 
 # just to be sure
 mkdir -p bin
-(cd bin; rm *)
+(cd bin; rm -f *)
 
 cd host-tools
 
-AFV=0.1.2 # Alt-F-utils version
+# Alt-F-utils version
+eval $(cat package/Alt-F-utils/Alt-F-utils.mk | grep ^ALT_F_UTILS_VERSION | tr -d ' ')
+AFV=$ALT_F_UTILS_VERSION
 
 # just to be sure
 rm -rf Alt-F-utils-$AFV squashfs4.0-lzma-snapshot devio-1.2 uboot-mkimage 7z465 ipkg-utils-050831
@@ -124,3 +126,18 @@ cp ipkg-utils-050831/ipkg-build \
 	../bin
 sed -i 's|*control|./control|' ../bin/ipkg.py
 sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
+
+
+if ! test -e mklibs_0.1.30.tar.gz; then
+	wget http://ftp.de.debian.org/debian/pool/main/m/mklibs/mklibs_0.1.30.tar.gz
+fi
+tar xzf mklibs_0.1.30.tar.gz
+mv mklibs mklibs_0.1.30
+cd mklibs_0.1.30
+./configure
+make
+cp src/mklibs-readelf/mklibs-readelf src/mklibs-copy src/mklibs ../../bin
+# there things installed in usr/lib/mklibs, see if they are needed.
+# test with "make install DESTDIR=<some tmp dir>"
+cd ..
+ 
