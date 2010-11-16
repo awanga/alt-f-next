@@ -238,7 +238,7 @@ from_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
-			rm /Alt-F/$i /$i
+			mv /Alt-F/$i /$i
 		fi
 	done
 }
