@@ -23,9 +23,13 @@ config BR2_KERNEL_CURRENT_VERSION
 	help
 	  This is the latest stable kernel (including minor version)
 
+config BR2_KERNEL_LATEST_2_6_36
+	string
+	default "1"
+
 config BR2_KERNEL_LATEST_2_6_35
 	string
-	default "7"
+	default "9"
 	
 config BR2_KERNEL_LATEST_2_6_34
 	string
