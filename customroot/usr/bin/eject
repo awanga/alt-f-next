@@ -1,42 +1,182 @@
 #!/bin/sh
 
+#set -x
+
 # mount/swapon or unmount/swapoff partitions in bay
 # calls /usr/sbin/hot.sh, simulating kernel events
 
 usage() {
-	echo "eject: unmount partitions/swap/disk"
-	echo "eject [-r | -l | -f | -s] <left | right | usb | sd?>"
+	echo "eject: unmount partitions/swap, stop raid."
+	echo -e "eject [ -l (list) | -h (help) | -a (all) ] | \n\
+	[ [-r (reload) | -f (force)  | -s (status)] <left | right | usb | sd?>]"
 	exit 1
 }
 
-#if test $# = 0; then
-#	usage
-#fi
+# $1=sda
+disk_details() {
+	dbay=$(eval echo \$$1)
+	dcap="$(eval echo \$${dbay}_cap)"
+	dfam="$(eval echo \$${dbay}_fam)"
+	dmod="$(eval echo \$${dbay}_mod)"
+	if echo $dbay | grep -q '^usb' 2> /dev/null; then
+		dbay=${dbay:0:3}
+	fi
+}
 
-if test $# = 0 -o "$1" = "-l"; then
-	while read ln; do
-		if test -z "$ln"; then continue; fi
-		eval $(echo $ln | awk '{printf "bay=%s;dsk=%s", $1, $2}')
-		mod=$(cat /sys/block/$dsk/device/model)
-		size=$(awk '{printf "%.1f", $0 * 512 / 1000000000}' /sys/block/$dsk/size)
-		echo -e "$bay\t $dsk\t $mod ($size GB)"
-	done < /etc/bay
+eject_all() {
+	# stop all services
+	rcall stop
+
+	# unmount aufs
+	if aufs.sh -s >& /dev/null ; then
+		aufs.sh -u
+	fi
+
+	rm -f /Alt-F
+
+	# unmount all mounted filesystems (umount -a also unmounts /proc, /sys,...!)
+	for i in iso9660 ext2 ext3 ext4 vfat ntfs fuseblk; do
+		umount -t $i -a
+		sed -i '/'$i'/d' /etc/fstab
+	done
+
+	rm -f /home
+
+	# stop swap
+	for i in "$(cat /proc/swaps | grep -o '/dev/.* ')"; do
+		swapoff $i
+		sed -i '\|'$i'|d' /etc/fstab
+	done
+
+	# stop raid
+	for i in /dev/md[0-9]; do
+		if test -b $i; then
+			mdadm --stop $i
+		fi
+	done
+
+	ret=0
+	for i in /dev/sd[a-z][1-9]; do
+    	(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh >& /dev/null)
+	    ret=$(($ret + $?))
+	done
+	return $ret
+}
+
+list() {
+	for i in /dev/sd?; do
+		dsk=$(basename $i)
+		disk_details $dsk
+		echo -e "$dbay\t $dsk\t $dmod\t $dcap"
+	done
 	exit 0
-fi
+}
 
-if test $# = 2 -a "$1" = "-s"; then
-	dsk=$(awk '/'$2'/{print $2}' /etc/bay)
-	if test -z "$(grep /dev/$dsk /proc/mounts)" -a \
-		-z "$(grep /dev/$dsk /proc/swaps)" -a \
-		-z "$(grep $dsk /proc/mdstat 2> /dev/null)"; then
-			echo "Disk $dsk is not in use"
-			exit 0
-	else
-		echo "Disk $dsk is in use"
+# $1=bay
+isbay() {
+	if test "$1" = "right" -o "$1" = "left" -o "$1" = "usb"; then
+		return 0
+	fi
+	return 1
+}
+
+# $1=dsk
+isdisk() {
+	if test ${1:0:2} = "sd" -a -b /dev/$1; then
+		return 0
+	fi
+	return 1
+}
+
+# $1=bay
+bay2disk() {
+	local lbay
+	lbay=$1
+	if test "${lbay:0:3}" = "usb"; then
+		nusb="$(grep '=usb' /etc/bay 2> /dev/null | wc -l)"
+		if test "$nusb" -eq 0; then
+			echo "No disk in $lbay bay."
+			exit 1
+		elif test "$nusb" -gt 1; then
+			echo "More than one usb disk, use device name instead."
+			exit 1
+		else
+			lbay="$(grep '=usb' /etc/bay 2> /dev/null | cut -d"=" -f2)"
+		fi
+	fi
+
+	dsk="$(eval echo \$${lbay}_dev)"
+
+	if test -z "$dsk"; then
+		echo "No disk in $lbay bay."
 		exit 1
 	fi
+	if ! test -b /dev/$dsk; then
+		echo "Disk $dsk in $lbay bay does not exists."
+		exit 1
+	fi
+
+	return 0
+}
+
+# $1=dsk, not in use ret=0
+notinuse() {
+	if test -z "$(grep /dev/$1 /proc/mounts 2> /dev/null)" -a \
+		-z "$(grep /dev/$1 /proc/swaps 2> /dev/null)" -a \
+		-z "$(grep $1 /proc/mdstat 2> /dev/null)"; then
+			return 0
+	fi
+	return 1
+}
+
+# $1=dsk
+disk2bay() {
+	bay=$(eval echo \$$1)
+}
+
+if test -f /etc/bay; then 
+	. /etc/bay
+else
+	echo "eject: error, /etc/bay not found!"
+	exit 1
 fi
 
+if test "$1" = "-h"; then
+	usage
+
+elif test "$1" = "-l" -o $# = 0; then
+	list
+
+elif test "$1" = "-s"; then
+	if test $# != 2; then
+		usage
+	fi
+
+	if isbay $2; then
+		bay2disk $2
+		bay=$2
+	elif isdisk $2; then
+		disk2bay $2
+		dsk=$2
+	else
+		echo "eject: $2 is not valid disk or bay."
+		usage
+	fi
+
+	if notinuse $dsk; then
+		echo "Disk $dsk in $bay bay is not in use"
+		exit 0
+	else
+		echo "Disk $dsk in $bay bay is in use"
+		exit 1
+	fi
+
+elif test "$1" = "-a"; then
+	eject_all >& /dev/null
+	exit $?
+fi
+
+# now, the true eject options
 
 if test "$1" = "-f"; then
 	force=yes
@@ -52,35 +192,24 @@ else
 	msg="Ejecting"
 fi
 
-if test "$1" = "left" -o "$1" = "right" -o "$1" = "usb"; then
+if isbay $1; then
 	bay=$1
-	dsk=$(awk '/'$1'/{print $2}' /etc/bay)
-	if test ${#dsk} = 0; then
-		echo "No disk on $bay bay, use \"eject -l\" to see inserted disks"
-		exit 0
-	elif test ${#dsk} != 3; then
-		echo "More than one disk on $bay bay, use \"eject -l\" and give device name"
-		exit 1
-	fi
+	bay2disk $1
+elif isdisk $1; then
+	dsk=$1
+	disk2bay $1
 else
-	dsk=${1%[0-9]}
-	if ! test -n "$dsk" -a -b /dev/$dsk; then
-		echo "Not a valid disk,  use \"eject -l\" and give a device name"
-		exit 1
-	fi
-	bay=$(awk '/'$dsk'/{print $1}' /etc/bay)
+	usage
 fi
 
 if test $action = "remove" -a "$force" != "yes"; then
-	if test -z "$(grep /dev/$dsk /proc/mounts)" -a \
-		-z "$(grep /dev/$dsk /proc/swaps)" -a \
-		-z "$(grep $dsk /proc/mdstat 2> /dev/null)"; then
-			echo "Disk $dsk in $bay bay is not in use"
-			exit 0
+	if notinuse $dsk; then
+		echo "No need to eject, disk $dsk in $bay bay is not in use."
+		exit 0
 	fi
 fi
 
-echo -n "$msg ${dsk}... "
+echo -n "$msg disk ${dsk} in $bay bay... "
 
 cd /dev
 
@@ -91,9 +220,9 @@ for i in /dev/${dsk}?; do
 done
 
 if test $ret = 0; then
-	echo done
+	echo "done"
 else
-	echo fail, some programs are using the device
+	echo "fail, some programs are using the device"
 fi
 
 return $ret
