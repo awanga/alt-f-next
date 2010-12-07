@@ -10,6 +10,7 @@ at:x:8:
 utmp:x:43:
 netdev:x:82:
 sshd:x:67
+#avahi 68
 #multimedia 80
 #network	81
 nobody:x:98:
