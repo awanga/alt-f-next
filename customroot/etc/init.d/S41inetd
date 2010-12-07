@@ -1,6 +1,6 @@
 #! /bin/sh
 
-DESC="Internet Services Daemon <br><strong>Don't disable unless you have a serial port!</strong>"
+DESC="telnet, ftp, ssh, rsync, http, swat, lpd...<br><strong>Don't disable unless you have a serial port!</strong>"
 TYPE=net
 NAME=inetd
 
