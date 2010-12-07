@@ -57,8 +57,14 @@ avoiding further serious problems.<br>
 After trying you can flash it.
 
 <p>When you choose to flash the new firmware you should take into attention
-how to deal with the settings already saved in flash, and the settings
-file eventually contained in the firmware file: <br>
+how to deal with the settings already saved in flash, the settings
+file eventually contained in the firmware file, and the backup of the vendors settings. <br>
+
+<li><strong>Don't Erase flashed settings</strong>: the flash saved settings are
+not changed.<br>
+
+This option is the default when flashing a firmware file without a defaults section, 
+like Alt-F. You should use it if you want to keep yours Alt-F flash saved settings.<br><br>
 
 <li><strong>Erase all flashed settings</strong>: all saved settings are
 erased from flash, and all yours previous setting are lost.<br>
@@ -78,13 +84,25 @@ that are flashed if you check this option. This option is only available
 is there exists a non-empty defaults section -- Alt-F firmware don't
 have a defaults section.<br>
 
-This option should be chosen when flashing the vendors firmware.
+This option should be chosen when flashing the vendors firmware.<br><br>
 
+<li><strong>Erase all flashed settings and recover the last flash settings
+from vendors backup</strong> Selecting this options erases all flashed settings,
+and flashes the last vendor's made backup of flashed settings.
+<br>
+
+The vendor's firmware saves a backup of the flashed settings in a a special area
+of the flash chip. Selecting this option recovers those backup settings, and in principle
+after reflashing a vendors firmware the box will have the same settings as it had before
+you flashed Alt-F.<br>
+
+This option is only available is there exists a non-empty defaults section,
+meaning that it is a vendors file. Alt-F firmware don't have a defaults section.
 </ul>
 
 <p>In any case, saving default settings or clearing the saved settings,
 makes your box loose its IP, and it will not certainly be accessible
-using the old IP address.<br>
+using the old IP address.<br><br>
 
 <input type=button value="Back" onclick="history.back()"> </body>
 
