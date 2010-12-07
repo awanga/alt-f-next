@@ -1,0 +1,23 @@
+--- mdadm-3.1.4/Makefile-orig	2010-10-29 16:15:39.754227485 +0100
++++ mdadm-3.1.4/Makefile	2010-10-29 16:17:21.244228498 +0100
+@@ -167,7 +167,7 @@
+ 
+ # use '-z now' to guarantee no dynamic linker interactions with the monitor thread
+ mdmon : $(MON_OBJS)
+-	$(CC) $(LDFLAGS) $(MON_LDFLAGS) -z now -o mdmon $(MON_OBJS) $(LDLIBS)
++	$(CC) $(LDFLAGS) $(MON_LDFLAGS) -Wl,-z,now -o mdmon $(MON_OBJS) $(LDLIBS)
+ msg.o: msg.c msg.h
+ 
+ test_stripe : restripe.c mdadm.h
+--- mdadm-3.1.4/platform-intel.c.orig	2010-10-29 16:15:52.885104264 +0100
++++ mdadm-3.1.4/platform-intel.c	2010-10-29 16:16:42.141229744 +0100
+@@ -29,6 +29,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ 
++// jc: uClibc doesnt have canonicalize_file_name
++#define canonicalize_file_name(foo) realpath(foo, NULL) 
++
+ void free_sys_dev(struct sys_dev **list)
+ {
+ 	while (*list) {

@@ -1,0 +1,12 @@
+--- mdadm-3.1.1/platform-intel.c-orig	2009-11-16 22:55:41.000000000 +0000
++++ mdadm-3.1.1/platform-intel.c	2009-12-03 16:04:11.457667190 +0000
+@@ -29,6 +29,9 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ 
++// jc: uClibc doesnt have canonicalize_file_name
++#define canonicalize_file_name(foo) realpath(foo, NULL) 
++
+ void free_sys_dev(struct sys_dev **list)
+ {
+ 	while (*list) {

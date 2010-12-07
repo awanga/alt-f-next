@@ -5,7 +5,10 @@
 #############################################################
 #MDADM_VERSION:=2.6.7.1
 # jc: uclibc must be compiled with UCLIBC_HAS_ADVANCED_REALTIME, else posix_memalign() is missing
-MDADM_VERSION:=3.1.1
+# 3.1.4 blocks sometimes, 3.1.1 don't allow to create a raid where previously existed
+# another raid, or if a fs exists in one of the component partitions. Yes, using --run
+#MDADM_VERSION:=3.1.1
+MDADM_VERSION:=3.1.4
 MDADM_SOURCE:=mdadm-$(MDADM_VERSION).tar.gz
 # jc: MDADM_SOURCE:=mdadm_$(MDADM_VERSION).orig.tar.gz
 # jc: MDADM_PATCH:=mdadm_$(MDADM_VERSION)-1.diff.gz
@@ -34,9 +37,7 @@ ifneq ($(MDADM_PATCH),)
 	  toolchain/patch-kernel.sh $(MDADM_DIR) $(MDADM_DIR)/debian/patches \*patch; \
 	fi
 endif
-	#toolchain/patch-kernel.sh $(MDADM_DIR) package/mdadm #mdadm-$(MDADM_VERSION)\*.patch
-	#toolchain/patch-kernel.sh $(MDADM_DIR) package/mdadm mdadm-\*.patch
-	cat patches/mdadm-3.1.1.patch | patch -p0 -d $(MDADM_DIR)
+	toolchain/patch-kernel.sh $(MDADM_DIR) package/mdadm mdadm-$(MDADM_VERSION)\*.patch
 	touch $@
 
 $(MDADM_DIR)/$(MDADM_BINARY): $(MDADM_DIR)/.unpacked
