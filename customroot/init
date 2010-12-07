@@ -1,33 +1,7 @@
 #!/bin/sh
 
-echo "pre-init started, pid=$$"
-
-mount -t proc proc /proc
-
-# enter iterative shell if cmdline has "initdbg"
-# use with a plain gzip/lzma compressed initramfs
-# and/or a non aufs/squashfs patched kernel
-# also tries to run inetd, to, at least, have telnet
-if grep -q "initdbg" /proc/cmdline; then
-	echo "pre-init: initdbg"
-	/bin/mount -t sysfs sysfs /sys
-	/bin/mount -t tmpfs tmpfs /tmp
-	/bin/mount -t devpts devpts /dev/pts
-	/sbin/mdev -s				# create device nodes
-	mkdir -p /var/run/vsftpd	# ftp needs it
-	/usr/sbin/inetd				# telnet or ftp the box
-	for i in left right; do		# signal the user
-		echo timer > /sys/class/leds/$i\:amber/trigger
-		echo 2000 > /sys/class/leds/$i\:amber/delay_on
-		echo 2000 > /sys/class/leds/$i\:amber/delay_off
-	done
-
-	exec /bin/sh				# enter iterative shell on serial line
-
-# don't create aufs union branches -- can't install or use packages!
-elif test -n "$(grep noaufs /proc/cmdline)" -o -z "$(grep aufs /proc/filesystems)"; then
-	echo "pre-init: noaufs"
-	if test -f /usr.squashfs -a -n "$(grep squashfs /proc/filesystems)"; then
+mount_squashfs() {
+ 	if test -f /usr.squashfs -a -n "$(grep squashfs /proc/filesystems)"; then
 		echo "pre-init: squashfs"
 		mknod /dev/loop0 b 7 0
 		mkdir -p /tmp/tmpusr
@@ -36,12 +10,49 @@ elif test -n "$(grep noaufs /proc/cmdline)" -o -z "$(grep aufs /proc/filesystems
 		umount /tmp/tmpusr
 		rmdir /tmp/tmpusr
 	fi
+}
+
+echo "pre-init started, pid=$$"
+
+mount -t proc proc /proc
+
+# enter iterative shell if cmdline has "initdbg"
+# -use with a plain gzip/lzma or a squashfs compressed initramfs
+# -use with or without a aufs capable kernel
+# -runs inetd to telnet the box if networking is up (ip=... in the kernel cmd line)
+if grep -q "initdbg" /proc/cmdline; then
+	echo "pre-init: initdbg"
+	/bin/mount -t sysfs sysfs /sys
+	/bin/mount -t tmpfs tmpfs /tmp
+	/bin/mount -t devpts devpts /dev/pts
+	mount_squashfs
+	/sbin/mdev -s				# create device nodes
+
+	if ifconfig eth0 | grep -q UP; then
+		mkdir -p /var/run/vsftpd	# ftp needs it
+		/usr/sbin/inetd				# telnet or ftp the box
+		cmd="sleep 2" 
+	fi
+
+	for i in left right; do		# signal the user
+		echo timer > /sys/class/leds/$i\:amber/trigger
+		echo 2000 > /sys/class/leds/$i\:amber/delay_on
+		echo 2000 > /sys/class/leds/$i\:amber/delay_off
+		eval $cmd
+	done
+
+	exec /bin/sh				# enter iterative shell on serial line
+
+# don't create aufs union branches -- can't install or use packages!
+elif test -n "$(grep noaufs /proc/cmdline)" -o -z "$(grep aufs /proc/filesystems)"; then
+	echo "pre-init: no-aufs"
+	mount_squashfs
 	umount /proc	
 	exec /bin/busybox chroot / /sbin/init
 
 # normal boot, create aufs union branches
 else
-	echo "pre-init: normal"
+	echo "pre-init: aufs"
 	# don't overlay, enable access to the union branches 
 	mkdir /tmproot
 	mount -t tmpfs tmpfs /tmproot
