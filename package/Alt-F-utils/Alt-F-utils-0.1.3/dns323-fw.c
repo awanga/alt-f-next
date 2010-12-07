@@ -48,11 +48,9 @@ typedef struct {
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 
-// odd, the \xhh sequence also takes the 3d digit in consideration,
-// .eg. in "\x12F" the F is considered part of the hexadecimal. gcc-4.3.2 bug?
-char *signatures[] = { "\x55\xAA\FrodoII\x00\x55\xAA", 
-					   "\x55\xAA\Chopper\x00\x55\xAA",
-					   "\x55\xAAGandolf\x00\x55\xAA"};
+unsigned char *signatures[] = { "\x55\xAA" "FrodoII" "\x00\x55\xAA", 
+					   "\x55\xAA" "Chopper" "\x00\x55\xAA",
+					   "\x55\xAA" "Gandolf" "\x00\x55\xAA"};
 
 #define BLOCK_SIZE	0x10000
 
