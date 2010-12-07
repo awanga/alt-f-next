@@ -1,4 +1,8 @@
 export TERM=linux
-resize
-stty stop ^Q
+export HOME=/root
+
 alias his="cat ~/.ash_history | grep "
+alias l="ls -l"
+
+stty stop ^Q
+resize
