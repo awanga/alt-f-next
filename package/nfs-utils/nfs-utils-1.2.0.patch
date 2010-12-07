@@ -1,5 +1,5 @@
---- support/nfs/nfs_mntent.c	2009-06-02 15:43:05.000000000 +0100
-+++ support/nfs/nfs_mntent.c	2009-10-15 03:44:27.000000000 +0100
+--- nfs-utils-1.2.0-orig/support/nfs/nfs_mntent.c	2009-06-02 15:43:05.000000000 +0100
++++ nfs-utils-1.2.0/support/nfs/nfs_mntent.c	2009-10-15 03:44:27.000000000 +0100
 @@ -1,7 +1,7 @@
  /* Private version of the libc *mntent() routines. */
  /* Note slightly different prototypes. */
@@ -29,8 +29,8 @@
  			} else {
  				mfp->mntent_errs = 1;
  				goto err;
---- utils/mount/error.c	2009-06-02 15:43:05.000000000 +0100
-+++ utils/mount/error.c	2009-10-15 03:39:21.000000000 +0100
+--- nfs-utils-1.2.0-orig/utils/mount/error.c	2009-06-02 15:43:05.000000000 +0100
++++ nfs-utils-1.2.0/utils/mount/error.c	2009-10-15 03:39:21.000000000 +0100
 @@ -62,7 +62,8 @@
  	char *tmp;
  
@@ -41,8 +41,8 @@
  			estr = ++ptr;
  
  		tmp = &errbuf[spos];
---- utils/mountd/fsloc.c	2009-06-02 15:43:05.000000000 +0100
-+++ utils/mountd/fsloc.c	2009-10-15 03:37:12.000000000 +0100
+--- nfs-utils-1.2.0-orig/utils/mountd/fsloc.c	2009-06-02 15:43:05.000000000 +0100
++++ nfs-utils-1.2.0/utils/mountd/fsloc.c	2009-10-15 03:37:12.000000000 +0100
 @@ -126,7 +126,8 @@
  	struct servers *rv=NULL;
  
@@ -53,8 +53,8 @@
  		ptr++;
  	list = malloc(listsize * sizeof(char *));
  	copy = strdup(data);
---- utils/mount/Makefile.in	2009-06-02 16:23:25.000000000 +0100
-+++ utils/mount/Makefile.in	2009-10-15 04:15:26.000000000 +0100
+--- nfs-utils-1.2.0-orig/utils/mount/Makefile.in	2009-06-02 16:23:25.000000000 +0100
++++ nfs-utils-1.2.0/utils/mount/Makefile.in	2009-10-15 04:15:26.000000000 +0100
 @@ -14,6 +14,10 @@
  
  @SET_MAKE@
