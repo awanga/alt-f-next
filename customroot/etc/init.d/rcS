@@ -26,8 +26,9 @@ dmesg | awk '/Identified HW revision/{print $5}' > /tmp/board
 # stop blinking power-led
 echo "none" > /sys/class/leds/power\:blue/trigger
 
+TSYSLOG=/var/log/boot.log
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
-start-stop-daemon -S -q -x syslogd -- -D -m 0 -O /var/log/boot.log
+start-stop-daemon -S -q -x syslogd -- -D -m 0 -O $TSYSLOG
 
 # there is a problem here.
 # the kernel does not generate/buffer hot plug events before init starts,
@@ -98,6 +99,7 @@ hostname -F /etc/hostname
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! grep -q "nodef" /proc/cmdline; then
+	loadsave_settings -ck
 	loadsave_settings -lf
 	no_defaults=$?
 
@@ -114,7 +116,7 @@ fi
 # 2nd, use defaults stored in flash
 # 3d, try to read vendor sib.conf
 # 4th, try to use a dhcp server
-# 5th, find and use a non-used ip address from 192.168.1.245 to 240 range
+# 5th, find and use a non-used ip address from 192.168.1.245 to 230 range
 if grep -q "ip=" /proc/cmdline; then
 	logger -s "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
@@ -146,7 +148,7 @@ else
 	else
 		ifconfig eth0 up
 		sleep 3
-		udhcpc -fqns /dev/null
+		udhcpc -Sfqns /dev/null
 		if test $? = 0; then
 			logger -s "IP from dhcp server"
 			cip="dhcp"
@@ -154,8 +156,10 @@ else
 			logger -s "Fixed IP"
 			ifconfig eth0 0.0.0.0
 			sleep 3
-			for i in $(seq 254 -1 240); do
-				arping -Dw 2 192.168.1.$i
+			for i in $(seq 254 -1 230); do
+				res=$(arping -Dw 2 192.168.1.$i)
+				st = $?
+				logger -s "$res"
 				if test $? = 0; then break; fi
 			done
 			logger -s "using 192.168.1.$i"
@@ -170,8 +174,8 @@ case $cip in
 	"kip" | "fip" | "sib")
 		# set hostname/hostip	
 		hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
-		network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
 		netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+		eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
 		gateway=$(route -n | awk '$1 == "0.0.0.0" { print $2 }')
 		broadcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
 		mtu=$(ifconfig eth0 | awk '/MTU/{print substr($5,5)}')
@@ -186,10 +190,10 @@ case $cip in
 		echo "$hostip $(hostname).$domain $(hostname)" >> /etc/hosts
 		
 		# set httpd hosts allow/deny
-		echo A:$network >> /etc/httpd.conf
+		sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" /etc/httpd.conf
 
 		# set smb.conf hosts allow and workgroup
-		sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
+		sed -i "s|hosts allow =.*$|hosts allow = 127. $NETWORK/$netmask|" /etc/samba/smb.conf
 		sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
 
 		cat<<-EOF > /etc/network/interfaces
@@ -224,14 +228,21 @@ case $cip in
 		;;
 esac
 		
-# bootlog. stop temporary syslog.
+# stop temporary syslog to /var/log/boot.log
 start-stop-daemon -K -q -n syslogd
 
 # Start all executable init scripts in /etc/init.d
 # executing them in numerical order.
 rcall start
 
-# create mountpoints and mount remote filesystems
+# append boot.log to syslog:
+logger "****** Boot Log start ******"
+while read ln; do
+	logger "$ln"
+done < $TSYSLOG
+logger "****** Boot Log end ******"
+
+# create mountpoints, but don't mount remote filesystems
 while read dev mp fs rest; do
 	if test "$fs" = "nfs" -o "$fs" = "cifs"; then 
 		if ! test -d $mp; then
@@ -239,6 +250,3 @@ while read dev mp fs rest; do
 		fi
 	 fi
 done < /etc/fstab
-
-mount -t nfs -O auto -a
-mount -t cifs -O auto -a
