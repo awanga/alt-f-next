@@ -1,0 +1,22 @@
+#!/bin/sh -e
+
+NAME=afpd
+DESC="AppleTalk Filing Protocol daemon."
+TYPE=net
+
+AFPD_OPTS=""
+
+. $(dirname $0)/common
+
+case "$1" in
+	start) start $NAME -- $AFPD_OPTS ;;
+	stop) stop $NAME ;;
+	restart) restart $NAME ;;
+	reload) reload $NAME ;;
+	status) status $NAME ;;
+
+	*)
+		echo "Usage: $0 {start|stop|status|restart|reload}"
+		exit 1
+		;;
+esac
