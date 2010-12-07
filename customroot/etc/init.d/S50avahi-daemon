@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# avahi-daemon init script, no support for avahi-autpip or avahi-dnsconfd
+
+DESC="The Avahi mDNS/DNS-SD daemon"
+NAME=avahi-daemon
+TYPE=net
+
+umask 077
+
+. $(dirname $0)/common
+
+case "$1" in
+	start) start $NAME -- -D ;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	reload) reload $NAME ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart|reload" ;;
+esac
