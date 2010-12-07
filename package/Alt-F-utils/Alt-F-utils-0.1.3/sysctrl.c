@@ -6,12 +6,17 @@
  *
  * To be used with Alt-F
  * 
- * Provides fan control, hdd sleep detection, MD status, power and resete button detection
- * Reboots when power button pressed between 3 and 6 seconds (right led flashing)
- * poweroff when power button pressed between 6 and 9 seconds (left led flashing)
- * runs user suplied scripts on any of those events or when reset button
- *  momentary pressed (both left flashing)
- * configurable through /etc/sysctrl.conf
+ * -Provides fan control, hdd sleep detection, MD status,
+ *  power and resete button handling:
+ * -Reboots when power button pressed between 3 and 6 seconds (right led flashing)
+ * -poweroff when power button pressed between 6 and 9 seconds (left led flashing)
+ *  runs user suplied scripts on any of those events
+ *  or when reset button momentary pressed (both left flashing)
+ * -Starts telnet on port 26, no password, is back button is pressed
+ *  more than 10 but less than 20  seconds
+ * -clears flash-saved settings and performs a reboot if back button is pressed
+ *   more than 20 seconds.
+ * -configurable through /etc/sysctrl.conf
  */
 
 #include <stdio.h>
@@ -168,10 +173,8 @@ void mainloop()
 		bt = debounce();
 		count++;
 
-		if ((++powercheck_count % powercheck_interval) == 0
-		    && bt == NO_BT) {
+		if ((++powercheck_count % powercheck_interval) == 0 && bt == NO_BT)
 			hdd_powercheck(md_stat());
-		}
 
 		if (bt && state == IDLE)
 			blink_leds(0);
@@ -187,6 +190,7 @@ void mainloop()
 				count = 0;
 			} else if (count == REBOOT) {
 				state = REBOOT;
+				// syslog(LOG_INFO, "iddle->reboot");
 				blink_leds(right_led);
 			}
 			break;
@@ -199,6 +203,7 @@ void mainloop()
 				reboot();
 			} else if (count == HALT) {
 				state = HALT;
+				// syslog(LOG_INFO, "reboot->halt");
 				blink_leds(left_led);
 			}
 			break;
@@ -211,6 +216,7 @@ void mainloop()
 				poweroff();
 			} else if (count == ABORT) {
 				state = IDLE;
+				// syslog(LOG_INFO, "halt->iddle");
 				count = 0;
 				blink_leds(0);
 			}
@@ -227,7 +233,7 @@ void mainloop()
 void backup()
 {
 	time_t count = time(NULL);
-	syslog(LOG_INFO, "Backup");
+	syslog(LOG_INFO, "Entering Backup");
 
 	blink_leds(right_led | left_led);
 	
@@ -258,7 +264,7 @@ void poweroff()
 {
 	syslog(LOG_INFO, "Poweroff NOW");
 	exec_userscript(args.front_button_command2, SCRIPT_TIMEOUT, NULL);
-	execl("/bin/busybox", "poweroff", NULL);	// this doesn't work without kernel patch
+	execl("/bin/busybox", "poweroff", NULL);
 }
 
 char *checkfile(char *fname)
@@ -627,22 +633,6 @@ void fanctl(void)
 
 }
 
-/* determine which md disk failed. not very usefull..
-char * get_dir(char *dirn, char *dev) {
-  struct dirent *entry;
-  DIR *d = opendir(dirn);
-  if (d == NULL)
-	return NULL;
-  while((entry = readdir(d)) != NULL) {
-	if (strncmp(entry->d_name, "dev-sd", 6) == 0) {
-	  sprintf(buf, "%s/%s/state", dirn, entry->d_name);
-	  read_str_from_file(buf, res);
-	}
-  }
-  closedir(d);
-}
-*/
-
 #define WIN_CHECKPOWERMODE1 0xE5
 #define WIN_CHECKPOWERMODE2 0x98
 
@@ -861,70 +851,88 @@ int md_stat()
 	198 BACK_BUTTON
 
 	};
-
 */
 
 #define GPIO_INPUT_DEVICE "/dev/event0"
-#define FRONT_BUTTON	0x74
-#define BACK_BUTTON	0x198
+#define FRONT_BUTTON	0x74	// front button event
+#define BACK_BUTTON	0x198		// back button event
 
-/*
-	-1: error
-	0: no button
-	1: front button
-	2: reset button
-	3: both buttons
-*/
+#define PRESSED 0x01	// bit 0 - pressed: 1, released 0
+#define FRONT 0x02		// bit 1 - front button
+#define BACK 0x04		// bit 2 - back button
 
 int button()
 {
-	static int back = 0, front = 0, fd = 0;	// odd, if fd is not static read() *always* return EAGAIN
-
+	static int fd = 0;	// odd, if fd is not static read() *always* return EAGAIN
 	struct input_event ev;
-	int n;
+	int n, but = 0;
 
 	if (fd == 0) {
 		fd = open(GPIO_INPUT_DEVICE, O_RDONLY | O_NONBLOCK);
 		if (fd == -1) {
 			syslog(LOG_CRIT, "open %s: %m", GPIO_INPUT_DEVICE);
+			fd = 0;
 			return -1;
 		}
 	}
 
 	n = read(fd, &ev, sizeof(struct input_event));
-
-	if (n > 0 && ev.type == EV_KEY) {
+	
+	if (n == sizeof(struct input_event) && ev.type == EV_KEY) {
 		if (ev.code == FRONT_BUTTON)
-			front = ev.value;
+			but = FRONT | ev.value;
 		else if (ev.code == BACK_BUTTON)
-			back = ev.value;
+			but = BACK | ev.value;
 
-		//syslog(LOG_INFO, "usec=%d type=%x code=%x value=%x\n",
-		//               (int) ev.time.tv_usec, ev.type, ev.code, ev.value);
+		// syslog(LOG_INFO, "sec=%d usec=%d type=%x code=%x value=%x\n",
+		//	(int) ev.time.tv_sec, (int) ev.time.tv_usec, ev.type, ev.code, ev.value);
 
-		// wait for EV_SYN
+		// wait for EV_SYN, from 3 ro 17 usec
 		do {
 			usleep(10);
-		} while (read(fd, &ev, sizeof(struct input_event)) <= 0);
+		} while ((n = read(fd, &ev, sizeof(struct input_event))) == 0);
+		if (n != sizeof(struct input_event))
+			syslog(LOG_CRIT, "couldn't read EV_SYN key event");
+		
 	} else if (n < 0 && errno != EAGAIN) {
 		syslog(LOG_CRIT, "read from %s: %m", GPIO_INPUT_DEVICE);
-		//close(fd);
 		return -1;
 	}
-	//close(fd);
-	return back << 1 | front;
+
+	return but;
 }
 
 int debounce()
-{				// or kind-of
-	int i, bt;
-	bt = button();
-	if (bt) {
-		for (i = 0; i < 10; i++) {
-			bt = button();
-			usleep(50);
+{
+	static int bt = NO_BT;
+	int count, tbt;
+	
+	tbt = button();
+	if (tbt == -1 || tbt == 0)	// no new event, return last button
+		return bt;
+
+	bt = tbt;	// events don't repeat, store this one
+
+	// after 50 msec of no changes (end of bounce) return the last key pressed or released
+	count = 50;
+	while (count--) {
+		if ((tbt = button()) != 0) { // new bounce event, re-arm iddle period 
+			bt = tbt;
+			count = 50;
 		}
+		usleep(1000);
 	}
+
+	if (bt & PRESSED) {
+		if (bt & FRONT)
+			bt = FRONT_BT;
+		else if (bt & BACK)
+			bt = BACK_BT;
+	} else
+		bt = NO_BT;
+
+	//syslog(LOG_INFO, "button %d ", bt);
+
 	return bt;
 }
 
@@ -968,7 +976,7 @@ void blink_leds(int leds)
 	int i;
 	for (i = 0; i < 3; i++) {
 		if (leds & 1 << i)
-			led(1 << i, "0", "timer", "100", "100");
+			led(1 << i, "0", "timer", "250", "250"); // each blink is 0.5 sec, good for counting seconds in recover mode.
 		else
 			led(1 << i, "0", "none", NULL, NULL);
 	}
