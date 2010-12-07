@@ -144,6 +144,28 @@ clearflashdef() {
 	rmdir $save_dir
 }
 
+# copy from mtd1 to mtd0
+# The vendors settings are saved in mtd0 and mtd1, one being the backup of the other
+# As Alt-F only uses mtd0, the original settings are still in mtd1 
+recover() {
+	mtd0=${save_dir}0
+	mtd1=${save_dir}1
+
+	mkdir -p $mtd0
+	mkdir -p $mtd1
+	mount /dev/mtdblock0 $mtd0
+	mount -r /dev/mtdblock1 $mtd1
+
+	rm -f $mtd0/*
+	cp -a $mtd1/* $mtd0 	
+
+	umount $mtd0
+	umount $mtd1
+	rmdir $mtd0
+	rmdir $mtd1
+	rm -f $stamp
+}
+
 listflashdef() {
 	mkdir -p $save_dir
 	mount /dev/mtdblock0 $save_dir
@@ -158,6 +180,10 @@ llistflashdef() {
 	(cd $save_dir; ls -l set_* 2>/dev/null)
 	umount $save_dir
 	rmdir $save_dir
+}
+
+check() {
+	fsck -av /dev/mtdblock0
 }
 
 # from http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=30;filename=oldsys-preseed.patch;att=1;bug=502821
@@ -225,8 +251,8 @@ to_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e $i -a -e /Alt-F/$i; then
-			cp -a $i /Alt-F/$i
-		elif test -e /Alt-F/$i; then
+#			cp -a $i /Alt-F/$i
+#		elif test -e /Alt-F/$i; then
 			rm -f /Alt-F/$i
 		fi 
 	done
@@ -245,10 +271,11 @@ from_AltF() {
 
 usage() {
 	echo -e "usage: loadsave_settings \n\
-	-lf [file] (load flash) | -sf (save flash) | -cf (clear flash) |\n\
+	-lf [file] (load flash) | -sf (save flash) |\n\
+	-cf (clear flash) | -rc (recover from mtd1) |\n\
 	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
-	-rs (read sib ip) | -st (status)"
+	-rs (read sib ip) | -st (status) | -ck (check)"
 	exit 1;
 }
 
@@ -295,9 +322,11 @@ case $1 in
 		loadflashdef $arg
 		;;
 	"-cf")	clearflashdef ;;
+	"-rc")	recover ;;
 	"-ta")	to_AltF ;;
 	"-fa")	from_AltF ;;
 	"-rs")	read_sib ;;
 	"-st")	status ;;
+	"-ck")	check ;;
 	*)	usage ;;
 esac
