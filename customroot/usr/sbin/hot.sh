@@ -60,15 +60,9 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	fstype=$(blkid -s TYPE -o value -w /dev/null -c /dev/null $PWD/$MDEV)
 	fsckcmd="fsck"
 	case $fstype in
-		ext2|ext3|ext4)
-			fsopt="-p"
-			;;
-		iso9660)
-			fsckcmd="echo";
-			;;
-		vfat)
-			fsopt="-a"
-			;;			
+		ext2|ext3|ext4)	fsopt="-p" ;;
+		iso9660) fsckcmd="echo" ;;
+		vfat) fsopt="-a" ;;			
 		ntfs)
 			if ! test -f /usr/bin/ntfsfix; then fsckcmd="echo "; fi
 			fstype="ntfs-3g"
@@ -92,7 +86,6 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	if test -z "$lbl"; then lbl=$MDEV; fi
 	/bin/mkdir /mnt/$lbl
 	if mountpoint /mnt/$lbl; then exit 0; fi
-#	if test $? = 1; then exit 1; fi
 
 	echo heartbeat > "/sys/class/leds/power:blue/trigger"
 	res="$($fsckcmd $fsopt $PWD/$MDEV 2>&1)"
@@ -102,11 +95,19 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	/bin/mount -t $fstype $fsflg $PWD/$MDEV /mnt/$lbl
 	sed -i '\|^'$PWD/$MDEV'|d' /etc/fstab
 	echo "$PWD/$MDEV /mnt/$lbl $fstype defaults 0 0" >> /etc/fstab
+
 	if test -d "/mnt/$lbl/Users"; then
 		if ! test -h /home -a -d "$(readlink -f /home)" ; then
 			ln -s "/mnt/$lbl/Users" /home
 		fi
 	fi
+
+	if test -d "/mnt/$lbl/Public"; then
+		if ! test -h /Public -a -d "$(readlink -f /Public)" ; then
+			ln -s "/mnt/$lbl/Public" /Public
+		fi
+	fi
+
 	if test -d "/mnt/$lbl/ffp"; then
 		if ! test -h /ffp -a -d "$(readlink -f /ffp)" ; then
 			ln -s "/mnt/$lbl/ffp" /ffp
@@ -115,10 +116,13 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			fi
 		fi
 	fi
+
 	if test -d /mnt/$lbl/Alt-F; then
 		if ! test -h /Alt-F -a -d "$(readlink -f /Alt-F)"; then
 			rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
 			ln -s /mnt/$lbl/Alt-F /Alt-F
+			echo "DONT'T ADD, REMOVE OR CHANGE ANY FILE ON THIS DIRECTORY
+OR IN ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG." > /Alt-F/README.txt
 			for i in /Alt-F/etc/init.d/S??*; do
 				f=$(basename $i)
 				ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
@@ -131,13 +135,10 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 
 elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
-	# md disk
-	if test -d /sys/block/$MDEV/md; then
+	if test -d /sys/block/$MDEV/md; then # md disk
 		echo $MDEV: NO PARTITION BASED MD
 
-	# "normal" disk (not md)
-	#elif test -d /sys/block/$MDEV/device; then 
-	else
+	else # "normal" disk (not md)
 
 		# which bay?	
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
@@ -151,11 +152,8 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 		fi
 	
 		if test -n "$bay"; then
-			#echo "$bay $MDEV" >> /etc/bay
-
 			sed -i '/^'$bay'_/d' /etc/bay
 			sed -i '/^'$MDEV'/d' /etc/bay
-
 
 			eval $(smartctl -i $PWD/$MDEV | awk '
 				/^Model Family/ {printf "fam=\"%s\";", substr($0, index($0,$3))}
@@ -198,7 +196,6 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 		echo 0 > /sys/block/$MDEV/queue/iosched/low_latency
 	
 		# for now use only disk partition-based md
-		#sfdisk -l $PWD/$MDEV | awk '$6 == "da" || $6 == "fd" { exit 1 }'
 		if ! sfdisk -l /dev/sdb | awk '$6 == "da" || $6 == "fd" { exit 1 }'; then
 			mdadm --examine --scan > /etc/mdadm.conf
 		fi
@@ -212,17 +209,14 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 	# remove some modules (repeat it while there are some?)
 	lsmod | awk '{if ($3 == 0) system("modprobe -r " $1)}'
 
-	PHYSD=$PHYSDEVPATH
 	. /etc/bay
 	bay=$(eval echo \$$MDEV)
-	sed -i '/^'$bay'_/d' /etc/bay
-	sed -i '/^'$MDEV'/d' /etc/bay
+	if test -n "$bay"; then
+		sed -i '/^'$bay'_/d' /etc/bay
+		sed -i '/^'$MDEV'/d' /etc/bay
+	fi
 
-
-	# which bay?
-	# PHYSD=$(readlink /sys/block/$MDEV/device) 
-
-	if rcsmart status; then
+	if rcsmart status >& /dev/null; then
 		rcsmart reload
 	fi
 
@@ -231,8 +225,6 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	ret=0
 	mdadm --examine --scan > /etc/mdadm.conf
 
-	#lbl=$(blkid -s LABEL -o value -w /dev/null -c /dev/null $PWD/$MDEV | tr ' ' '_')
-	#if test -z "$lbl"; then lbl=$MDEV; fi
 	mpt=$(awk '/'$MDEV'/{print $2}' /proc/mounts )
 	if $(grep -q -e ^$PWD/$MDEV /proc/swaps); then
 		swapoff $PWD/$MDEV
@@ -247,14 +239,21 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 			fi
 			rm -f /ffp
 		fi
+
 		if test "$(readlink -f /home)" = "$mpt/Users"; then
 			rm -f /home
 		fi
+
+		if test "$(readlink -f /Public)" = "$mpt/Public"; then
+			rm -f /Public
+		fi
+
  		if test "$(readlink -f /Alt-F)" = "$mpt/Alt-F"; then
  			mount -t aufs -o remount,del:$mpt/Alt-F /
 			if test $? = "0"; then
 				loadsave_settings -fa
 				rm -f /Alt-F
+				rm -f /$mpt/Alt-F//README.txt
 			else
 				exit 1	# busy?
 			fi
@@ -289,7 +288,6 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 				mdadm $PWD/$md --fail $PWD/$MDEV --remove $PWD/$MDEV
 				return $ret
 			elif $(grep -q ^$PWD/$md /proc/mounts); then
-				#echo "remove" > /sys/block/$md/uevent
 				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$md /usr/sbin/hot.sh)
 				mdadm --stop $PWD/$md
 				mdadm --incremental --run $PWD/$other
@@ -325,7 +323,6 @@ elif test "$ACTION" = "add" -a "$PHYSDEVDRIVER" = "usblp"; then
 	fi
 
 elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
-
 	rmdir /var/spool/lpd/$MDEV
 	PCAP=/etc/printcap
 	if test -e /etc/printcap-safe; then
