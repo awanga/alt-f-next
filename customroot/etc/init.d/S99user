@@ -36,6 +36,9 @@ writelog() {
 	echo -e "\n\n$SEP SYSLOG $SEP\n" >> $i/$LOGF
 	logread >> $i/$LOGF
 
+	echo -e "\n\n$SEP BOOTLOG $SEP\n" >> $i/$LOGF
+	cat /var/log/boot.log >> $i/$LOGF
+
 	echo -e "\n\n$SEP ETHTOOL $SEP\n" >> $i/$LOGF
 	ethtool eth0 >> $i/$LOGF
 
