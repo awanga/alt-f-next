@@ -116,7 +116,7 @@ fi
 # 2nd, use defaults stored in flash
 # 3d, try to read vendor sib.conf
 # 4th, try to use a dhcp server
-# 5th, find and use a non-used ip address from 192.168.1.245 to 230 range
+# 5th, find and use a non-used ip address from 192.168.1.254 to 230 range
 if grep -q "ip=" /proc/cmdline; then
 	logger -s "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
