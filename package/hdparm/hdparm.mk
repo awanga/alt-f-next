@@ -3,7 +3,8 @@
 # hdparm
 #
 #############################################################
-HDPARM_VERSION:=7.7
+#HDPARM_VERSION:=7.7
+HDPARM_VERSION:=9.35
 HDPARM_SOURCE:=hdparm-$(HDPARM_VERSION).tar.gz
 HDPARM_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/hdparm
 HDPARM_CAT:=$(ZCAT)
@@ -35,6 +36,8 @@ endif
 	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
 
 hdparm: uclibc $(TARGET_DIR)/$(HDPARM_TARGET_BINARY)
+
+hdparm-build: $(HDPARM_DIR)/$(HDPARM_BINARY)
 
 hdparm-clean:
 	-$(MAKE) -C $(HDPARM_DIR) clean
