@@ -16,7 +16,7 @@ inits() {
 }
 
 case "$1" in
-	start) start $NAME ;;
+	start) inits; start $NAME ;;
 	stop)	stop $NAME ;;
 	status)	status $NAME ;;
 	restart) restart $NAME ;;
