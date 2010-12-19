@@ -4,8 +4,6 @@
 check_cookie
 read_args
 
-CONFT=/etc/fstab
-
 #debug
 
 # FIXME: deal with errors
@@ -14,29 +12,56 @@ pre() {
 	echo "<center><h2>Disk Partitioner</h2></center>"
 	busy_cursor_start
 
-	echo "<p>Stopping all services...</p>"
-	rcall stop >& /dev/null
-	echo "<p>Stopping all disks...</p>"
-	ejectall
+	echo "<p>Stopping all services and disks..."
+	eject -a
+
+	# stop hotplug
+	echo > /proc/sys/kernel/hotplug
+
+	echo " done.</p>"
 }
 
-# $1=-r to load
-ejectall() {
-	for i in $(ls /dev/sd? 2>/dev/null); do
-		if ! eject $1 $(basename $i) > /dev/null; then
-			echo "<p>Couldn't stop disk $(basename $i)</p>"
-			fail=true
-			return 1
-		fi
+# $1=error message
+err() {
+	busy_cursor_end
+	cat<<-EOF
+		failed </p>
+		<pre>$1</pre>
+		<p><strong>Error</strong>
+		<input type="button" value="Back" onclick="window.location.assign(document.referrer)"></p>
+		</body></html>
+	EOF
+	# restart hotplug
+	echo /sbin/mdev > /proc/sys/kernel/hotplug
+	exit 1
+}
+
+# load all disk
+loadall() {
+	for i in $disks; do
+		dsk=$(basename $i)
+		eject -r $dsk >& /dev/null
 	done
 }
 
-fail=""
+# $1=dsk
+reread_part() {
+	sfdisk -R /dev/$1 >& /dev/null
+	sleep 3
+
+	# somehow, in this scenario, mdev does not remove device, only creates them
+	rm -f /dev/${1}[0-9]
+	mdev -s
+}
+
+has_disks
+
 if test -n "$cp_from"; then
 	eval cp_to=$(echo \$cp_$cp_from)
+	dsk=$cp_to
 
 	pre
-	echo "<p>Copying partition table from $cp_from to ${cp_to}...</p>"
+	echo "<p>Copying partition table from $cp_from to ${cp_to}..."
 
 	TFILE=$(mktemp -t sfdisk-XXXXXX)
 	sfdisk -d /dev/$cp_from > $TFILE
@@ -44,29 +69,25 @@ if test -n "$cp_from"; then
 	st=$?
 	rm -f $TFILE
 	if test $st != 0; then
-		echo "<p>Copying failed:</p><pre>$res</pre>"
-		fail=true
+		err "$res"
 	fi
-	sfdisk -R /dev/$cp_to >& /dev/null
-	sleep 5
-	blkid -c /dev/null >& /dev/null
-	dsk=$cp_to
+
+	reread_part $dsk
 
 elif test -n "$Erase"; then
 	dsk=${Erase#op_}
 	
 	pre
-	echo "<p>Erasing partition table from ${dsk}...</p>"
+	echo "<p>Erasing partition table from ${dsk}..."
 
 	# erase also the MBR id (sector last 2 bytes, otherwise would be count=64)
 	dd if=/dev/zero of=/dev/$dsk bs=1 count=66 seek=446 >& /dev/null
-	sfdisk -R /dev/$dsk >& /dev/null
-	sleep 5
-	blkid -c /dev/null >& /dev/null
+
+	reread_part $dsk
 
 elif test -n "$Save"; then
 	dsk=${Save#op_}
-	#echo Save=$dsk
+
 	sfdisk -d /dev/$dsk > /tmp/saved_${dsk}_part 2> /dev/null
 	gotopage /cgi-bin/diskpart.cgi?disk=$dsk
 
@@ -83,17 +104,14 @@ In order to Load, you have to first save the disk partition."
 	fi
 
 	pre
-	echo "<p>Loading partition table to ${dsk}...</p>"
+	echo "<p>Loading partition table to ${dsk}..."
 
-	res="$(sfdisk /dev/$dsk < /tmp/saved_${dsk}_part 2>&1)"
+	res="$(sfdisk -f /dev/$dsk < /tmp/saved_${dsk}_part 2>&1)"
 	if test $? != 0; then
-		echo "<p>Loading partition table failed:</p><pre>$res</pre>"
-		fail=true
+		err "$res"
 	fi
 
-	sfdisk -R /dev/$dsk >& /dev/null
-	sleep 5
-	blkid -c /dev/null >& /dev/null
+	reread_part $dsk
 	
 elif test -n "$Partition"; then
 	dsk="$Partition"
@@ -105,7 +123,6 @@ elif test -n "$Partition"; then
 	eval $(echo "$fout" | awk '
 		/cylinders/ {printf "cylinders=%d; heads=%d; sectors=%d", $3, $5, $7}')
 
-	#pos=$sectors # keep first track empty.
 	pos=64 # 4k aligned, assuming offset=1. sfdisk will complain, use -f
 	sect_cyl=$(expr $heads \* $sectors) # number of sectors per cylinder
 	maxsect=$(expr $cylinders \* $sect_cyl)
@@ -147,8 +164,9 @@ elif test -n "$Partition"; then
 				RAID) id=da  ;;
 			esac
 
-			if test $(expr $pos % 8) -ne 0; then
-				pos=$(expr $pos + 8 - $pos % 8)	# ceil to next 4k alignement
+			rem=$(expr $pos % 8)
+			if test $rem -ne 0; then
+				pos=$(expr $pos + 8 - $rem)	# ceil to next 4k alignement
 			fi
 
 			nsect=$(eval echo \$cap_$ppart | awk '{printf "%d", $0 * 1e9/512}')
@@ -156,9 +174,6 @@ elif test -n "$Partition"; then
 			if test "$id" = 0 -a "$nsect" = 0; then
 				echo "0,0,0" >> $FMTFILE
 			else
-# dont honour cylinder boundary alignement, its obsolete and unnecessary
-#				rem=$(expr \( $pos + $nsect \) % $sect_cyl) # number of sectors past end of cylinder
-#				nsect=$(expr $nsect - $rem) # make partition ends on cylinder boundary
 				if test $(expr $pos + $nsect) -gt $maxsect; then
 					nsect=$(expr $maxsect - $pos)
 				fi
@@ -167,43 +182,29 @@ elif test -n "$Partition"; then
 					nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
 				fi
 				echo "$pos,$nsect,$id" >> $FMTFILE
-				pos=$((pos + nsect))
+				pos=$(expr $pos + $nsect)
 			fi
 		fi
 		last=$ppart
 	done
 
 	pre
-
-	echo "<p>Partitioning disk $dsk...</p>"
+	echo "<p>Partitioning disk $dsk..."
 
 	res=$(sfdisk --force -uS /dev/$dsk < $FMTFILE 2>&1) # sfdisk don't like 4k aligned partitions
 	st=$?
 	rm -f $FMTFILE
 	if test $st != 0; then
-		echo "<p>Partitioning $dsk failed:<p><pre>$res</pre>"
-		fail=true
+		err "$res"
 	fi
 
-	# eject again, sfdisk -R needs it
-	echo "<p>Stopping all disks again...</p>"
-	sleep 5
-	ejectall
-
-	# make kernel reread part table
-	echo "<p>Make kernel re-read partition table...</p>"
-	sfdisk -R /dev/$dsk >& /dev/null
-
-	# eject again, as hotplugging is enabled and we want no raid/swap/mount  
-	echo "<p>Stopping all disks again...</p>"
-	sleep 5
-	ejectall
+	reread_part $dsk
 
 	allst=0
 	allres="Partitioning succeeded but some RAID operations failed:"
 
 	# now setup some filesystem and raid on created partitions
-	echo "<p>Setting up partitions details... </p>"
+	echo " done</p><p>Setting up partitions details..."
 	for pl in 1 2 3 4; do
 
 		part=/dev/${dsk}${pl}
@@ -213,9 +214,9 @@ elif test -n "$Partition"; then
 
 		type=$(eval echo \$type_$ppart)
 
-# in order to clean any traces of the previous filesystem on a given partition,
-# that blkid will find regardeless of the partition ID,
-# shall we clear the beginning/end of the partition with dd?
+		# clean traces of previous filesystems...
+		# NO, user might want to enlarge/shrink the filesystem
+		# dd if=/dev/zero of=$part count=100 >& /dev/null
 
 		case "$type" in				
 			swap)
@@ -235,29 +236,30 @@ elif test -n "$Partition"; then
 				;;
 		esac
 	done
-
-	# reload disks
-	echo "<p>Reloading all disks...</p>"
-	blkid -c /dev/null >& /dev/null
-	ejectall -r
 fi
-	
+
+# reload disks
+echo " done</p><p>Reloading all disks..."
+blkid -c /dev/null >& /dev/null
+
+loadall
+
+echo " done</p>"
+
+# restart hotplug
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+
 busy_cursor_end
 
-if test -z "$fail"; then
-	cat<<-EOF
-		<p><strong>Success</strong></p>
-		<script type="text/javascript">
-			function err() {
-				window.location.assign(document.referrer)
-			}
-			setTimeout("err()", 2000);
-		</script>
-		</body></html>
+cat<<-EOF
+	<p><strong>Success</strong></p>
+	<script type="text/javascript">
+		function err() {
+			window.location.assign(document.referrer)
+		}
+		setTimeout("err()", 3000);
+	</script>
+	</body></html>
 EOF
-#	js_gotopage /cgi-bin/diskpart.cgi?disk=$dsk
-else
-	back_button
-fi
 
 #enddebug
