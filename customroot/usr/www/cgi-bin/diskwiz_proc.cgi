@@ -12,29 +12,20 @@ err() {
 	cat<<-EOF
 		failed </p>
 		<pre>$1</pre>
-		<p> <strong> Error </strong> </p>
+		<p><strong>Error</strong></p>
 		<input type="button" value="Back" onclick="window.location.assign(document.referrer)"></p>
 		</body></html>
 	EOF
+	# restart hotplug
+	echo /sbin/mdev > /proc/sys/kernel/hotplug
 	exit 1
 }
 
-lmsg() {
-	echo "<script type=text/javascript>
-		alert(\"$1\")
-		window.location.assign(document.referrer)
-		</script></body></html>"
-	exit 1
-}
-
-# $1=-r to load disk
-ejectall() {
-	local i dsk
+# load all disk
+loadall() {
 	for i in $disks; do
 		dsk=$(basename $i)
-		if ! eject $1 $dsk > /dev/null; then
-			err "Couldn't stop disk $dsk ..."
-		fi
+		eject -r $dsk >& /dev/null
 	done
 }
 
@@ -68,10 +59,6 @@ align() {
 	nsect=$2
 	maxsect=$3
 
-# dont honour cylinder boundary alignement, its obsolete and unnecessary
-#	rem=$(expr \( $pos + $nsect \) % $sectcyl) # number of sectors past end of cylinder
-#	nsect=$(expr $nsect - $rem)		# make partition ends on cylinder boundary
-
 	if test $(expr $pos + $nsect) -gt $maxsect; then
 		nsect=$(expr $maxsect - $pos)
 	fi
@@ -88,8 +75,6 @@ align() {
 partition() {
 	local i 
 
-	cleanraid
-
 	ptype="83"
 	if test "$1" = "raid"; then
 		ptype="da"
@@ -102,6 +87,11 @@ partition() {
 
 	for i in $disks; do
 		echo "<p>Partitioning disk $(basename $i)..."
+
+		# clean traces of previous filesystems...
+		for j in ${i}?; do
+			dd if=/dev/zero of=$j count=100 >& /dev/null
+		done
 
 		eval $(sfdisk -l -uS $i | tr '*' ' ' | awk '
 			/cylinders/ {printf "cylinders=%d; heads=%d; sectors=%d", $3, $5, $7}')
@@ -137,9 +127,7 @@ partition() {
 			$par3
 		EOF
 
-		# unmount/stop raid
-		ejectall
-
+		# do it!
 		res=$(sfdisk --force -uS $i < $FMTFILE 2>&1)
 		if test $? != 0; then
 			rm -f $FMTFILE
@@ -147,16 +135,16 @@ partition() {
 		fi
 		rm -f $FMTFILE
 
-		# eject again, sfdisk -R needs it
-		sleep 5
-		ejectall
+		sfdisk -R /dev/$1 >& /dev/null
+		sleep 3
 
-		# make kernel reread part table
-		sfdisk -R $i
-		sleep 5
-		ejectall
+		# somehow, in this scenario, mdev does not remove device, only creates them
+		rm -f ${i}[0-9]
+		mdev -s
+
 		echo " done.</p>"
 	done
+	cleanraid
 }
 
 create_swap() {
@@ -206,9 +194,10 @@ create_raid() {
 		if ! echo $curdev | grep -q md$dev; then MD=md$dev break; fi
 	done
 
-	eval $(cat /etc/bay | sed -n 's/ /=/p')
+	. /etc/bay
+	usb=$(sed -n '/^usb/s/\(.*_dev=\)\(.*\)/\2/p' /etc/bay) # assume only one usb disk!
 
-	opts=""; pair1=/dev/${left}2; pair2=/dev/${right}2; spare=""
+	opts=""; pair1=/dev/${left_dev}2; pair2=/dev/${right_dev}2; spare=""
 	case "$1" in
 		linear|raid0)
 				if test $ndisks = 3; then
@@ -233,9 +222,8 @@ create_raid() {
 	esac
 
 	echo "<p>Creating $1..."
-	res="$(mdadm --create /dev/$MD --run \
-		--level=$1 --metadata=0.9 $opts \
-		--raid-devices=$ndisks $pair1 $pair2 $spare 2>&1)"
+	res="$(mdadm --create --run --level=$1 --metadata=0.9 $opts --raid-devices=$ndisks \
+		/dev/$MD $pair1 $pair2 $spare 2>&1)"
 	if test $? != 0; then
 		err "$res"
 	else
@@ -249,9 +237,7 @@ standard() {
 	partition
 	create_swap
 	for i in $disks; do
-		eject $(basename $i) >& /dev/null
 		create_fs ${i}2
-		sleep 3
 	done
 }
 
@@ -275,7 +261,6 @@ raid1() {
 	create_raid raid1
 	create_fs /dev/$MD
 }
-
 
 raid5() {
 	partition raid equal
@@ -304,10 +289,13 @@ echo "<center><h2>Disk Wizard</h2></center>"
 busy_cursor_start
 
 has_disks
-nusb="$(cat /etc/bay | grep usb | wc -l)"
 
 echo "<p>Stopping all services and disks..."
-rcall stop >& /dev/null
+eject -a
+
+# stop hotplug
+echo > /proc/sys/kernel/hotplug
+
 echo " done.</p>"
 
 case $wish_part in
@@ -319,8 +307,10 @@ case $wish_part in
 	raid5) raid5 ;;
 esac
 
-if test -f /etc/mdadm.conf; then rm -f /etc/mdadm.conf; fi
-ejectall -r
+loadall
+
+# restart hotplug
+echo /sbin/mdev > /proc/sys/kernel/hotplug
 
 #enddebug
 

@@ -62,26 +62,23 @@ EOF
 for i in $disks; do
 	disk=$(basename $i)
 
-	mod=$(disk_name $disk)
-	#mod=$(cat /sys/block/$disk/device/model)
-	cap=$(awk '{printf "%.1f", $1*512/1e9}' /sys/block/$disk/size)
-	bay=$(awk '/'$disk'/{print toupper($1)}' /etc/bay)
+	disk_details $disk
 
 	chkd=""	
 	if test "$i" = "$dsk"; then chkd="checked"; fi
 
 	cat<<-EOF
 		<tr>
-		<td>$bay</td>
+		<td>$dbay</td>
 		<td align=center>$disk</td>
-		<td align=right>$cap GB</td>
-		<td>$mod</td>
+		<td align=right>$dcap</td>
+		<td>$dmod</td>
 		</tr>
 	EOF
 done
 echo "</table></fieldset><br>"	
 
-nusb="$(cat /etc/bay | grep usb | wc -l)"
+nusb="$(cat /etc/bay | grep =usb | wc -l)"
 if test  "$nusb" -ge 2; then
 	echo "<center><h4>For performance reasons you should have no more than one external USB disk.<br>
 If you have plugged a usb pen, eject and remove it and retry again.</h4></center></form</body></html>"
