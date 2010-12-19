@@ -40,7 +40,7 @@ done
 cat<<-EOF
 	</select><input type=submit name=action value=LoadSettings><br><br>
 	<input type=submit name=action value=ClearSettings onclick="return ask()">
-		<strong>Don't clear if the box still has the vendor firmware!</strong><br>
+		<strong>Don't clear if you have not flashed Alt-F!</strong><br>
 	</form></body></html>
 EOF
 
