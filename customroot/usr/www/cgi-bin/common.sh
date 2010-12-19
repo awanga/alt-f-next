@@ -18,10 +18,8 @@ read_args() {
 			printf "%s=%c%s%c\n",$2,39,$1,39}' )                
 }
 
-# return n+1 argument. If called as "lsh 2 one two three" returns "two"
-lsh () {
-	shift $1
-	echo $1
+isnumber() {
+	echo "$1" | grep -qE '^[0-9]+$'
 }
 
 checkip() {
@@ -45,6 +43,35 @@ checkname() {
 
 eatspaces() {
 	echo "$*" | tr -d ' \t'
+}
+
+path_escape() {
+	echo $(echo "$1" | sed 's/ /\\040/g')
+}
+
+path_unescape() {
+	echo $(echo "$1" | sed 's/\\040/ /g')
+}
+
+# $1-share "[Public (Read Write)]"
+make_available() {
+
+	share="$1"
+
+	awk '{
+		while ($0 != "'"$share"'") { print $0; if (! getline) exit }
+		print $0; getline
+		while ($1 != "available" && substr($0,1,1) != "[") { print $0; 	getline	}
+		if ($1 == "available") print "available = yes"
+		else print $0
+		while(getline) print $0
+	}' /etc/samba/smb.conf > /etc/samba/smb.conf-new
+
+#	mv /etc/samba/smb.conf /etc/samba/smb.conf-
+	mv /etc/samba/smb.conf-new /etc/samba/smb.conf
+	if rcsmb status >& /dev/null; then
+		rcsmb reload >& /dev/null
+	fi
 }
 
 html_header() {
@@ -81,16 +108,25 @@ has_disks() {
 	fi
 }
 
-disk_name() {
-	res=$(smartctl -n standby -i /dev/$1)
-	if test $? = 0; then
-		eval $(echo "$res" | awk '
-			/^Model Family/ {printf "mod=\"%s\";", substr($0, index($0,$3))}
-			/^Device:/ {printf "mod=\"%s\";", $2}')
-	else
-		mod=$(cat /sys/block/$1/device/model)
+# $1=sda
+disk_details() {
+	. /etc/bay
+	dbay=$(eval echo \$$1)
+	dcap="$(eval echo \$${dbay}_cap)"
+	dfam="$(eval echo \$${dbay}_fam)"
+	dmod="$(eval echo \$${dbay}_mod)"
+	if echo $dbay | grep -q ^usb; then
+		dbay=${dbay:0:3}
 	fi
-	echo "$mod"
+}
+
+# $1=sda
+disk_power() {
+	if test -b /dev/$1; then
+		echo $(hdparm -C /dev/$1 2> /dev/null | awk '/drive/{print $4}')
+	else
+		echo "None"
+	fi
 }
 
 # $1=part (sda2, eg)
@@ -109,6 +145,32 @@ ismount() {
 	grep -q ^/dev/$1 /proc/mounts
 }
 
+# $1=sda global: ln 
+fs_progress() {
+	part=$1
+	ln=""
+	for k in clean format convert shrink enlarg wip; do
+		if test -f /tmp/${k}-${part}; then
+			if kill -1 $(cat /tmp/${k}-${part}.pid) 2> /dev/null; then
+				if test -f /tmp/${k}-${part}.log; then
+					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
+				fi
+				if test $k != "wip"; then
+					ln=$(echo $ln | grep -oE ' [0-9]+.[0-9]+%|X|[0-9]+/[0-9]+')
+					if echo $ln | grep -q X; then
+						ln=" step 2: $(expr $(echo "$ln" | wc -l) \* 100 / 40)%"
+					elif echo $ln | grep -q '[0-9]+/[0-9]+/'; then
+						ln="$(expr $(echo $ln | cut -d"/" -f1) \* 100 / $(echo $ln | cut -d"/" -f2))%"
+					fi 
+				fi
+				ln="${k}ing...$ln"
+			else
+				rm /tmp/${k}-${part}*
+			fi
+		fi
+	done
+}
+
 back_button() {
 	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
@@ -118,16 +180,16 @@ select_part() {
 	echo "<option value=none>Select a filesystem</option>"
 
 	df -h | while read ln; do
+		part=""
+		eval $(echo $ln | awk '/^\/dev\/(sd|md)/{printf "part=%s; pcap=%s; avai=%s", \
+			$1, $2, $4}')
+		if test -z $part; then continue; fi
+		part=$(basename $part)
+		partl=$(plabel $part)
+		partb=$(sed -n "s/${part%[0-9]}=\(.*\)/, \1 disk/p" /etc/bay)
+		if test -z "$partl"; then partl=$part; fi
 
-	part=""
-	eval $(echo $ln | awk '/^\/dev\/(sd|md)/{printf "part=%s; pcap=%s; avai=%s", \
-		$1, $2, $4}')
-	if test -z $part; then continue; fi
-	part=$(basename $part)
-	partl=$(plabel $part)
-	if test -z "$partl"; then partl=$part; fi
-
-	echo "<option value=$part> $partl ($part, ${pcap}B, ${avai}B free)</option>"
+		echo "<option value=$part> $partl ($part, ${pcap}B, ${avai}B free${partb})</option>"
 	done
 	echo "</select>"
 }
@@ -164,8 +226,10 @@ js_gotopage() {
 
 check_cookie() {
 	eval $HTTP_COOKIE >& /dev/null
-	if test "$(cat /tmp/cookie 2> /dev/null)" = "${ALTFID}"; then
-		return
+	if test -n "$HTTP_COOKIE" -a -f /tmp/cookie; then
+		if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
+			return
+		fi
 	fi
 	gotopage /cgi-bin/login.cgi?$REQUEST_URI
 }
@@ -191,7 +255,7 @@ busy_cursor_end() {
 wait_count_start() {
 	tmp_id=$(mktemp)
 	cat<<-EOF
-		<h4>$1: <span id="$tmp_id">0</span></h4>
+		$1: <span id="$tmp_id">0</span>
 		<style>	body { height : 100%;} </style>
 		<script type="text/javascript">
 			function wait_count_update(id) {
@@ -370,6 +434,7 @@ cat<<EOF
 		<a class="Menu" href="/cgi-bin/proxy.cgi" target="content">Proxy</a>
 		<a class="Menu" href="/cgi-bin/hosts.cgi" target="content">Hosts</a>
 		<a class="Menu" href="/cgi-bin/usersgroups.cgi" target="content">Users</a>
+		<a class="Menu" href="/cgi-bin/browse_dir.cgi?wind=no?browse=/mnt" target="content">Directories</a>
 	</div>
 	<script type="text/javascript">
 		MenuEntry("Setup");
@@ -377,8 +442,9 @@ cat<<EOF
 
 	<div id="Disk_sub">
 		<a class="Menu" href="/cgi-bin/diskutil.cgi" target="content">Utilities</a>	
-		<a class="Menu" href="/cgi-bin/diskpart.cgi" target="content">Partition</a>
-		<a class="Menu" href="/cgi-bin/diskmaint.cgi" target="content">Maintenance</a>
+		<a class="Menu" href="/cgi-bin/diskmaint.cgi" target="content">Filesystems</a>
+		<a class="Menu" href="/cgi-bin/raid.cgi" target="content">RAID</a>
+		<a class="Menu" href="/cgi-bin/diskpart.cgi" target="content">Partitioner</a>
 		<a class="Menu" href="/cgi-bin/diskwiz.cgi" target="content">Wizard</a>
 	</div>
 	<script type="text/javascript">
@@ -458,4 +524,3 @@ write_header() {
 		$warn
 	EOF
 }
-
