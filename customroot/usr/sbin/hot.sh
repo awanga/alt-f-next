@@ -108,6 +108,12 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 		fi
 	fi
 
+	if test -d "/mnt/$lbl/Backup"; then
+		if ! test -h /Backup -a -d "$(readlink -f /Backup)" ; then
+			ln -s "/mnt/$lbl/Backup" /Backup
+		fi
+	fi
+
 	if test -d "/mnt/$lbl/ffp"; then
 		if ! test -h /ffp -a -d "$(readlink -f /ffp)" ; then
 			ln -s "/mnt/$lbl/ffp" /ffp
@@ -171,27 +177,33 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 			echo ${bay}_fam=\"$fam\" >> /etc/bay
 			echo ${bay}_mod=\"$mod\" >> /etc/bay
 
-			# set disk spin down
-			#tm=$(awk '/'$bay'/{print $2}' /etc/hdsleep.conf)
 			if test -f /etc/misc.conf; then
 				. /etc/misc.conf
+
+				# set advanced power management
+				eval pm=$(echo \$HDPOWER_$bay | tr 'a-z' 'A-Z' )
+				if test -n "$pm"; then
+					hdparm -B $pm $PWD/$MDEV
+				fi
+
+				# set disk spin down
 				eval tm=$(echo \$HDSLEEP_$bay | tr 'a-z' 'A-Z' )
-			fi
+				if test -n "$tm"; then
 		
-			if test "$tm" -le "20"; then
-				val=$((tm * 60 / 5))
-			elif test "$tm" -le "300"; then
-				val=$((240 + tm / 30))
-			fi
-	
-			if test -n "$tm"; then
-				hdparm -S $val $PWD/$MDEV
-			fi
-			if rcsmart status; then
-				rcsmart reload
+					if test "$tm" -le "20"; then
+						val=$((tm * 60 / 5))
+					elif test "$tm" -le "300"; then
+						val=$((240 + tm / 30))
+					fi
+					hdparm -S $val $PWD/$MDEV
+				fi
+
+				if rcsmart status; then
+					rcsmart reload
+				fi
 			fi
 		fi
-	
+
 		# no low latency (server, not desktop)
 		echo 0 > /sys/block/$MDEV/queue/iosched/low_latency
 	
@@ -246,6 +258,10 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 
 		if test "$(readlink -f /Public)" = "$mpt/Public"; then
 			rm -f /Public
+		fi
+
+		if test "$(readlink -f /Backup)" = "$mpt/Backup"; then
+			rm -f /Backup
 		fi
 
  		if test "$(readlink -f /Alt-F)" = "$mpt/Alt-F"; then
