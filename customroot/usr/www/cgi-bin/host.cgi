@@ -83,8 +83,8 @@ cat<<-EOF
 		return ret;
 	}
 	function mtu_warn() {
-		if (document.sipf.mtu.value > 4000)
-			alert("Values higher than 4000 can effectively diminish performance")
+		if (document.sipf.mtu.value > 3700)
+			alert("Values higher than 3700 can effectively diminish performance")
 	}
 	</script>
 

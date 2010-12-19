@@ -38,14 +38,13 @@ sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
 echo "$oldip $hostname.$workgp $hostname" >> $CONFH
 
-sed -i '/^A:.*\.$/d' $CONFHTTP
+#sed -i '/^A:.*\.$/d' $CONFHTTP
 sed -i "s/^workgroup =.*$/workgroup = $workgp/" $CONFS
 sed -i "s/^server string =.*$/server string = $hostdesc/" $CONFS
 
 if test "$iptype" = "static"; then
-	network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
-	eval $(ipcalc -b "$hostip" "$netmask")
-	broadcast=$BROADCAST
+	eval $(ipcalc -n "$hostip" "$netmask") # evaluate NETWORK
+	eval $(ipcalc -b "$hostip" "$netmask") # evaluate  BROADCAST
 
 	sed -i '/^domain=/d' $DNSMASQ_F
 	echo "domain=$workgp" >> $DNSMASQ_F
@@ -67,9 +66,9 @@ if test "$iptype" = "static"; then
 	sed -i "/ $hostname$/d" $CONFH
 	sed -i "/^$hostip/d" $CONFH
 	echo "$hostip $hostname.$workgp $hostname" >> $CONFH
-	
-	echo  "A:$network" >> $CONFHTTP
-	sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" $CONFS
+
+	sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" $CONFHTTP
+	sed -i "s|hosts allow =.*$|hosts allow = 127. $NETWORK/$netmask|" $CONFS
 
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
@@ -94,7 +93,7 @@ if test "$iptype" = "static"; then
 	iface eth0 inet static
 	  address $hostip
 	  netmask $netmask
-	  broadcast $broadcast
+	  broadcast $BROADCAST
 	  mtu $mtu
 	  $igw
 	EOF
