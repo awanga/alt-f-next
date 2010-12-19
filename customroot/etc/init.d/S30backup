@@ -1,0 +1,82 @@
+#! /bin/sh
+
+DESC="Backup Service"
+TYPE=sys
+NAME=backup
+CONF=/etc/backup.conf
+
+. $(dirname $0)/common
+
+if ! test -f $CONF; then
+	echo "$0: no configuration file, exiting"
+	return 1
+fi
+
+istatus() {
+	if ! rccron status >& /dev/null; then
+		echo "$1 stopped"
+		return 1
+	fi
+	
+	if crontab -l 2>/dev/null | grep -q /usr/bin/backup; then
+		echo "$1 running"
+		return 0
+	else
+		echo "$1 stopped"
+		return 1
+	fi
+}
+
+# clean cron backup entries, even if cron is currently stopped
+istop() {
+	echo -n "Stopping $1: "
+
+	if ! rccron status >& /dev/null; then
+		stop_cron="yes"
+		rccron start
+	fi
+
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/bin/backup|d' $TF
+	crontab $TF
+
+	if test -n "$stop_cron"; then
+		rccron stop
+	fi
+	rm -f $TF
+	echo "OK."
+}
+
+istart() {
+	echo -n "Starting $1: "
+
+	if ! rccron status >& /dev/null; then
+		rccron start
+    fi
+
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/bin/backup|d' $TF
+
+	IFS=";"
+	while read id type runas srcpath dstpath when at log rest; do
+		if test -z "$id" -o -z "$type" -o -z "$runas" -o -z "$srcpath" \
+			-o -z "$dstpath" -o -z "$when" -o -z "$at" -o -z "$log"; then continue; fi
+		if test "${id:0:1}" = "#"; then continue; fi
+		echo "0 $at * * $when /usr/bin/backup $id" >> $TF
+	done < $CONF
+
+	crontab $TF
+	rm -f $TF
+
+	echo "OK."
+}
+
+case "$1" in
+	start) istart $NAME ;;
+	stop) istop $NAME;;
+	restart|reload) restart $NAME ;;
+	status) istatus $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
+esac
