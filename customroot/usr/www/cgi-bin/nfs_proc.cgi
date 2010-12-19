@@ -9,11 +9,14 @@ read_args
 CONFX=/etc/exports
 CONFT=/etc/fstab
 
-if ! rcnfs status >& /dev/null; then
-	rcnfs start >& /dev/null
-fi
+start_client() {
+	if ! rcnfs-client status >& /dev/null; then
+		rcnfs-client start >& /dev/null
+	fi
+}
 
 if test -n "$unMount"; then
+	start_client
 	mp=$(httpd -d "$unMount")
 	res="$(umount -f $mp 2>&1)"
 	st=$?
@@ -22,6 +25,7 @@ if test -n "$unMount"; then
     fi
 
 elif test -n "$Mount"; then
+	start_client
 	mp=$(httpd -d "$Mount")
 	res="$(mount $mp 2>&1)"
 	st=$?
@@ -35,19 +39,20 @@ for i in $(seq 1 $((n_exports+3))); do
 		if test -z "$(eval echo \$xopts_$i)"; then
 			# keep in sync with nfs.cgi
 			eval xopts_$i="rw,no_root_squash,no_subtree_check,anonuid=99,anongid=98"
-			
 		fi
 		if test -z "$(eval echo \$ip_$i)"; then
 			eval ip_$i='*'
 		fi
 
-		httpd -d "$(eval echo \$xcmtd_$i)$(eval echo \$exp_$i) $(eval echo \"\$ip_$i\")($(eval echo \$xopts_$i))"
+		expd=$(path_escape "$(httpd -d $(eval echo \$exp_$i))")
+
+		httpd -d "$(eval echo \$xcmtd_$i)$expd $(eval echo \"\$ip_$i\")($(eval echo \$xopts_$i))"
 		echo
 	fi
 done  > $CONFX
 
-res="$(exportfs -r 2>&1 )"
 #if test $? != 0; then # exportfs always return 0!
+res="$(exportfs -r 2>&1 )"
 if test -n "$res"; then
 	msg "$res"
 fi
@@ -60,7 +65,10 @@ for i in $(seq 1 $((n_fstab+3))); do
 		# keep in sync with nfs.cgi
 			mopts_$i= "rw,hard,intr,proto=tcp" # keep in sync with nfs.cgi
 		fi
-		httpd -d "$(eval echo \$fcmtd_$i)$(eval echo \$rhost_$i):$(eval echo \$rdir_$i) $(eval echo \$mdir_$i) nfs $(eval echo \$mopts_$i) 0 0"
+		rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
+		mdir=$(path_escape "$(httpd -d $(eval echo \$mdir_$i))")
+
+		httpd -d "$(eval echo \$fcmtd_$i)$(eval echo \$rhost_$i):$rdir $mdir nfs $(eval echo \$mopts_$i) 0 0"
 		echo
 	fi
 done >> $CONFT

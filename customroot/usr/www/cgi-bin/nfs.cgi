@@ -11,11 +11,13 @@ exports_row() {
 
 	exdir=${edir#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${edir%%[!#]*}	# get possible comment char FIXME more than one and space
+	exdir="$(path_unescape $exdir)"
+
 	if test -n "$cmtd"; then sel=checked; else sel=""; fi
 
 	cat<<EOF
 		<tr><td align=center><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
-		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value=$exdir></td>
+		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value="$exdir"></td>
 		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
 		<td><input type=text size=10 name=ip_$cnt value=$aip></td>
 		<td><input type=text size=40 id=expopts_$cnt name=xopts_$cnt value="$opts" onclick="def_opts('xpt', 'expopts_$cnt')"></td>
@@ -29,8 +31,11 @@ fstab_row() {
 	local ln cnt hostdir mdir rhost rdir opts nfs
 	ln=$1; cnt=$2
 
-	eval $(echo $ln | awk '$3 == "nfs" {printf "nfs=1; hostdir=%s; mdir=%s; opts=%s", $1, $2, $4}')
-	eval $(echo $hostdir | awk -F":" '{printf "rhost=%s; rdir=%s", $1, $2}')
+	eval $(echo $ln | awk '$3 == "nfs" {printf "nfs=1; hostdir=\"%s\"; mdir=\"%s\"; opts=%s", $1, $2, $4}')
+	eval $(echo "$hostdir" | awk -F":" '{printf "rhost=\"%s\"; rdir=\"%s\"", $1, $2}')
+
+	rdir="$(path_unescape $rdir)"
+	mdir="$(path_unescape $mdir)"
 
 	rrhost=${rhost#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${rhost%%[!#]*}	# get possible comment char FIXME more than one and space
@@ -49,8 +54,8 @@ fstab_row() {
 		<tr>
 		<td align=center><input type=checkbox $sel id=fcmtd_$cnt name=fcmtd_$cnt value="#" onclick="return check_mount('$op','fcmtd_$cnt')"></td>
 		$mntfld
-		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value=$rrhost></td>
-		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value=$rdir></td>
+		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value="$rrhost"></td>
+		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value="$rdir"></td>
 		<td><input type=button value=Browse onclick="browse_nfs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
 		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$mdir"></td>
 		<td><input type=button value=Browse onclick="browse_dir_popup('mdir_$cnt')"></td>
@@ -129,7 +134,7 @@ EOF
 
 cnt=1
 if test -e $CONFX; then
-  while read edir ln; do
+  while read -r edir ln; do
     exports_row $edir $ln $cnt	# edir ln cnt
     cnt=$((cnt+1))
   done < $CONFX
@@ -159,7 +164,7 @@ cat<<-EOF
 EOF
 
 cnt=1
-while read ln; do
+while read -r ln; do
 	if $(echo "$ln" | grep -q nfs); then
 		fstab_row "$ln" $cnt
 		cnt=$((cnt+1))
