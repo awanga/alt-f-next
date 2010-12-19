@@ -50,7 +50,7 @@ Continue? ")
 			res = confirm("Destroying a RAID will erase all data it contains\n\
 and will make its components available to other RAID arrays.\n\nContinue?")
 
-		else if (op == "Add_part" || op == "Remove_part") {
+		else if (op == "Add_part" || op == "Remove_part" || op == "Fail_part") {
 			if (document.getElementById("rdev_" + part).selectedIndex == 0) {
 				alert("Select a Partition first.")
 				obj.selectedIndex = 0
@@ -62,6 +62,9 @@ or are replacing a faulty and already removed component.\n\nContinue?")
 			else if (op == "Remove_part")
 				res = confirm("Removing a partition from " + part + " makes it loose its redundancy,\n\
 unless it is a spare or has already failed.\n\nContinue?")
+			else if (op == "Fail_part")
+				res = confirm("Marking a partition as failed from " + part + " makes it loose its redundancy,\n\
+or even stop the array.\n\nContinue?")
 		}
 
 		if (res == true)
@@ -134,7 +137,11 @@ Add a component as soon as possible.\n\nContinue?")
 		return true
 	}
 	</script>
+EOF
 
+has_disks
+
+cat<<-EOF
 	<form id="diskr" name="diskr" action="/cgi-bin/raid_proc.cgi" method="post">
 
 	<fieldset>
@@ -149,7 +156,7 @@ Add a component as soon as possible.\n\nContinue?")
 	</tr>
 EOF
 
-has_disks
+
 
 # THIS IS RIGHT!
 p1=$(fdisk -l | awk 'substr($1,1,8) != "'$dsk'" && ($5 == "da" || $5 == "fd") {
@@ -182,14 +189,11 @@ cat<<-EOF
 	<td><select name="comp3">$pairs</select></td>
 	<td><input type=submit name=md$dev value=Create onclick="return csubmit('submit')"></td>
 	</tr></table></fieldset><br>
-
-	<fieldset><Legend><strong>RAID Maintenance</strong></legend><table>
 EOF
 
-if ! blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
-	echo "None<br>"
-else
+if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 	cat<<-EOF
+		<fieldset><Legend><strong>RAID Maintenance</strong></legend><table>
 		<tr align=center>
 		<th align=left>Dev.</th> 
 		<th>Capacity</th>

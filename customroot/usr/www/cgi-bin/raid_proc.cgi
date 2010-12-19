@@ -106,8 +106,6 @@ read_args
 		    
 #debug
 
-CONFB=/etc/bay
-CONFTB=/etc/fstab
 CONFT=/etc/misc.conf
 
 if test -n "$Create_bitmap"; then
