@@ -9,6 +9,18 @@ CONFG=/etc/group
 
 BRD=0
 
+if ! test -h /home -a -d "$(readlink -f /home)"; then
+	cat<<-EOF
+		<h4>No users directory found, create it in:</h4>
+		<form action="/cgi-bin/newuser_proc.cgi" method=post>
+	EOF
+	# FIXME offer possibility of creation of Public directories
+	select_part
+	echo "</select><input type=submit name=create_dir value=CreateDir>
+		</form></body></html>"
+	exit 0
+fi
+
 cat <<EOF
 	<script type="text/javascript">
 	var users = new Array();
@@ -70,7 +82,6 @@ num_users=$cnt
 
 cat<<-EOF
 	<tr><td>User name</td><td><input type=text size=12 name=uname></td></tr>
-<!--	<tr><td>Nick name<td><input type=text size=12 name=nick></td></tr> -->
 	<input type=hidden size=12 name=nick>
 	<tr><td>Groups this user belongs to:</td>
 		<td><textarea cols=12 name=groupsInUser READONLY></textarea></td></tr>

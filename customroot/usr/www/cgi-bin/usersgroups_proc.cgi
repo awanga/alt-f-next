@@ -30,8 +30,18 @@ elif test -n "$DelUser"; then
 	sed -i "/^$nick = /d" $CONFS >& /dev/null
 	sed -i "/^$nick:/d" $CONFRS  >& /dev/null
 	sed -i "/^\[$nick\]/,/^$/d" $CONFR
-	
+
+	# busybox bug: says that can't remove user from its main group (when what is asked is supplementary)
+	mgrp=$(id -gn $nick)
+	for i in $(id -Gn $nick); do
+		if test "$i" != "$mgrp"; then
+			#delgroup $nick $i
+			sed -ir '/^'$i':/s/'$nick',?//' /etc/group
+			sed -i 's/\(.*\), *$/\1/' /etc/group
+		fi
+	done
 	deluser $nick
+
 	if test -d "$udir"; then
 		rmdir "$udir" >& /dev/null
 		if test $? = 1; then
