@@ -5,9 +5,10 @@ check_cookie
 
 CONFF=/etc/vsftpd.conf
 
-vars="anonymous_enable anon_upload_enable ssl_enable force_local_logins_ssl force_local_data_ssl"
+vars="chroot_local_user anonymous_enable anon_upload_enable ssl_enable \
+force_local_logins_ssl force_local_data_ssl"
 
-for i in $vars; do eval $i=NO; done
+for i in $vars; do eval $i=no; done
 
 read_args
 
@@ -16,7 +17,7 @@ read_args
 if test -n "$anon_root"; then
 	anon_root="$(httpd -d $anon_root)"
 	sed -i '/^anon_root=/d' $CONFF
-	echo "anon_root=$anon_root" >> $CONFF
+	echo "anon_root=\"$anon_root\"" >> $CONFF
 fi
 
 for i in $vars; do
