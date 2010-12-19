@@ -1,0 +1,41 @@
+--- uClibc-0.9.30.3/libc/misc/mntent/mntent.c-orig	2010-12-11 04:47:40.535334523 +0000
++++ uClibc-0.9.30.3/libc/misc/mntent/mntent.c	2010-12-11 04:48:41.019459260 +0000
+@@ -26,6 +26,25 @@
+ libc_hidden_proto(abort)
+ libc_hidden_proto(fprintf)
+ 
++#define	isoctdigit(c)	((c) >= '0' && (c) < '8')
++#define	octdigit(c)	((c) - '0')
++
++static void unescape(char *buf)
++{
++	for (; *buf; buf++)
++		if (buf[0] == '\\') {
++			int i, x;
++			for (x = 0, i = 1; i <= 3 && isoctdigit(buf[i]); i++)
++				x = (x << 3) | octdigit(buf[i]);
++			if (i == 4) {
++				buf[0] = x;
++				strcpy(buf + 1, buf + 4);
++			} else if (buf[1] == '\\') {
++				strcpy(buf + 1, buf + 2);
++			}
++		}
++}
++
+ /* Reentrant version of getmntent.  */
+ struct mntent *getmntent_r (FILE *filep,
+ 	struct mntent *mnt, char *buff, int bufsize)
+@@ -54,10 +73,12 @@
+ 	mnt->mnt_fsname = strtok_r(buff, sep, &ptrptr);
+ 	if (mnt->mnt_fsname == NULL)
+ 		return NULL;
++	unescape(mnt->mnt_fsname);
+ 
+ 	mnt->mnt_dir = strtok_r(NULL, sep, &ptrptr);
+ 	if (mnt->mnt_dir == NULL)
+ 		return NULL;
++	unescape(mnt->mnt_dir);
+ 
+ 	mnt->mnt_type = strtok_r(NULL, sep, &ptrptr);
+ 	if (mnt->mnt_type == NULL)
