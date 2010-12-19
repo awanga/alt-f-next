@@ -59,7 +59,7 @@ mkdir -p bin
 cd host-tools
 
 # Alt-F-utils version
-eval $(cat package/Alt-F-utils/Alt-F-utils.mk | grep ^ALT_F_UTILS_VERSION | tr -d ' ')
+eval $(cat ../package/Alt-F-utils/Alt-F-utils.mk | grep ^ALT_F_UTILS_VERSION | tr -d ' ')
 AFV=$ALT_F_UTILS_VERSION
 
 # just to be sure
@@ -127,10 +127,10 @@ cp ipkg-utils-050831/ipkg-build \
 sed -i 's|*control|./control|' ../bin/ipkg.py
 sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
 
-
 if ! test -e mklibs_0.1.30.tar.gz; then
 	wget http://ftp.de.debian.org/debian/pool/main/m/mklibs/mklibs_0.1.30.tar.gz
 fi
+rm -rf mklibs_0.1.30
 tar xzf mklibs_0.1.30.tar.gz
 mv mklibs mklibs_0.1.30
 cd mklibs_0.1.30
