@@ -17,8 +17,8 @@ start_stop() {
 		fi
 
 		if test "$act" = "start" -o "$act" = "enable"; then
-			res=$(sh $sscript start)
-			if test $? = 1; then
+			res=$(sh $sscript start 2>&1)
+			if test $? != 0; then
 				scp=$(basename $sscript)
 				msg "${scp:3}: $res"
 			fi
