@@ -302,7 +302,8 @@ files="
 /etc/misc.conf		/etc/inadyn.conf	/etc/ipkg.conf
 /etc/ntp.conf		/etc/ntp.drift		/etc/adjtime.conf
 /etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf
-/etc/wgetrc			/etc/ssl/certs/vsftpd.pem
+/etc/wgetrc			/etc/ssl/certs/vsftpd.pem	/etc/backup.conf
+/etc/syslog.conf	/etc/sysctl.conf
 "
 
 # those are also used only when mounting/unmounting the aufs branch
