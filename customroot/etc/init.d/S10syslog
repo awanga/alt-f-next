@@ -7,14 +7,34 @@ DESC="System and Kernel log Daemon"
 NAME=syslogd
 NAME1=klogd
 TYPE=sys
+CONFF=/etc/syslog.conf
 
 umask 077
 
 . $(dirname $0)/common
 
+PARAMS="-C -m 0"
+
 case "$1" in
 	start)
-		start $NAME -- -C -D -m 0
+		if test -e $CONFF; then
+			. $CONFF
+		else
+			PARAMS="$PARAMS -D"
+		fi
+		if test -n "$log_remote"; then
+			if test -n "$log_internal"; then
+				PARAMS="$PARAMS -L"
+			fi
+			PARAMS="$PARAMS -R $log_remote_host:$log_remote_port"
+		fi
+		if test -n "$log_drop_dups"; then
+			PARAMS="$PARAMS -D"
+		fi
+		if test -n "$log_smaller_output"; then
+			PARAMS="$PARAMS -S"
+		fi
+		start $NAME -- $PARAMS
 		start $NAME1
 		;;
 	stop)
