@@ -30,7 +30,7 @@ when() {
 	echo "$days)"
 }
 
-opt="DEVICESCAN -a -d sat -S on -o on "
+opt="DEVICESCAN -a -d sat -S on"
 
 if test -n "$longtest"; then
 	if test -z "$longhour"; then
@@ -58,6 +58,10 @@ fi
 if test -n "$mailtest"; then
 	mailto
 	opt="$opt -M test"
+fi
+
+if test -n "$offlineauto"; then
+	opt="$opt -o on"
 fi
 
 if test -n "$wakeup"; then

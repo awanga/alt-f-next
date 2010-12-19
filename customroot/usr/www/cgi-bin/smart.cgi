@@ -37,11 +37,12 @@ if test -e $CONFF; then
 	for i; do
 		case $i in
 		-a|--) shift;;
-		-d|-S|-o) shift; shift;;
+		-d|-S) shift; shift;;
 		-m) MAILF=checked; shift; shift;;
 		-M) MAILTF=checked; shift; shift;;
 		-n) shift; if test "$1" = "never"; then WAKEF=checked; fi; shift;;
 		-s) shift; tests="$1"; shift;;
+		-o) AUTOF=checked; shift; offlineauto=$1; shift ;;
 		esac		
 	done
 
@@ -103,6 +104,9 @@ cat<<-EOF
 
 	<tr><td><input type=checkbox $WAKEF name="wakeup" value="yes">
 	Wake up disk to perform test</td></tr>
+
+	<tr><td><input type=checkbox $AUTOF name="offlineauto" value="yes">
+	Scans the drive every four hours for disk defects</td></tr>
 
 	<tr><td><br>Send mail to <input type=text readonly name=sendto value="$SENDTO">
 	Use "Mail Setting" to change</td></tr>
