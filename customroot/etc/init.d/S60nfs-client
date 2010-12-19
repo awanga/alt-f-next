@@ -5,6 +5,7 @@
 
 DESC="NFS Client"
 NAME=rpc.statd
+NAME2=sm-notify
 
 PORTMAP_FLAG="" #-v
 
@@ -37,20 +38,20 @@ istart() {
 	done
 	echo "OK."
 
-	start sm-notify
-	start rpc.statd -- --no-notify
+	start $NAME2
+	start $NAME -- --no-notify
 }
 
 istop() {
 	if test -n "$(mount -t nfs)"; then
-		if umount -rfl -t nfs -a >& /dev/null; then
+		if umount -f -t nfs -a >& /dev/null; then
 			echo "Couldn't unmount NFS filesystems and stop nfs-client."
 			return 1
 		fi
 	fi
 
 	if ! rcnfs status >& /dev/null; then
-		stop rpc.statd
+		stop $NAME
 		rm -f /var/run/portmap_mapping /var/run/sm-notify.pid
 		rmmod -f nfs lockd
 	fi
