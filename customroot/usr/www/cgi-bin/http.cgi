@@ -7,18 +7,10 @@ write_header "HTTP server Setup"
 CONFF=/etc/httpd.conf
 
 hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
-network=$(echo $hostip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
+netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
 
-OIFS="$IFS"
-IFS=:
-while read tk ip; do
-	if test "$tk" = "A"; then
-		remip="$(eatspaces $ip | cut -d "#" -f 1)"
-		if test "$remip" != "127.0.0.1" -a "$remip" != "$network"; then break; fi
-		remip=""
-	fi
-done < $CONFF
-IFS="$OIFS"
+remip=$(sed -n "s|^A:\(.*\)#!# Allow remote.*$|\1|p" $CONFF)
 
 cat<<-EOF
 	<form id="httpf" action="/cgi-bin/http_proc.cgi" method="post">
