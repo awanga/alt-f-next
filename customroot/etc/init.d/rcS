@@ -111,6 +111,9 @@ if ! grep -q "nodef" /proc/cmdline; then
 	done
 fi
 
+# configure kernel parameters
+sysctl -p
+
 # get an ip using the following priority:
 # 1st, use kernel cmd line ip= (kexec or fonz reloaded)
 # 2nd, use defaults stored in flash
