@@ -1,0 +1,50 @@
+#!/bin/sh  
+        
+# There are a few identified incompatibilities between B5 and B6. The script bellow fixes them.
+#
+# The script assumes that you have not hand tuned the affected configuration files, if you have
+# then you should be able to understand what it does, and decide how to do it manually.
+#
+# Before using or flashing Alt-F-0.1B6, telnet/ssh the box, and execute it.
+# After doing it don't save settings until start using B6
+# B5 will not work OK after the script is executed, as in its final step it saves settings
+
+# Don't restrict to class C networks, use the fully qualified network  
+netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
+eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
+net="$(hostname -i | cut -d. -f1-3)."
+
+# /etc/httpd.conf and /etc/samba/smb.conf are affected.
+sed -i "s|hosts allow =.*$|hosts allow = 127. $NETWORK/$netmask|" /etc/samba/smb.conf
+
+# in addiction, /etc/httpd.conf now tags specific entries with #!# comments
+sed -i "s|^A:$net|A:$NETWORK/$netmask #!# Allow local net|" /etc/httpd.conf
+
+# The Public directory is not anymore under Users, but at the filesystem root, move it
+if test -d /home/Public; then
+	mv /home/Public $(readlink -f /home/Public | cut -d/ -f-3)/Public
+fi
+
+for i in /etc/samba/smb.conf /etc/vsftpd.conf /etc/rsyncd.conf; do
+  sed -i 's|/home/Public|/Public|' $i
+done
+
+# use lower case in vsftpd.conf and quote public dir
+sed -i -e 's/=YES/=yes/' -e 's/=NO/=no/' -e 's/anon_root=\(.*\)/anon_root="\1"/' /etc/vsftpd.conf
+
+# create backup group
+addgroup -g 34 backup
+
+# and add users to group
+IFS=":"
+while read nick x uid rest; do
+	if test "${nick:0:1}" = "#"; then continue; fi
+	if ! id $nick > /dev/null 2>&1; then continue; fi
+	if test "$uid" -ge 100; then
+		addgroup $nick backup
+	fi
+done < /etc/passwd
+
+# save settings in flash
+loadsave_settings -sf
