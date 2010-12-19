@@ -37,7 +37,10 @@ elif test "$submit" = "Submit"; then
 		if test -z "$(eval echo \$rhost_$i)" -o -z "$(eval echo \$rdir_$i)" -o \
 			-z "$(eval echo \$mdir_$i)" -o -z "$(eval echo \$mopts_$i)"; then continue; fi
 
-		httpd -d "$(eval echo \$fstab_en_${i}//\$rhost_${i}/\$rdir_$i \$mdir_$i cifs \$mopts_$i 0 0)"
+		rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
+		mdir=$(path_escape "$(httpd -d $(eval echo \$mdir_$i))")
+
+		httpd -d "$(eval echo \$fstab_en_${i}//\$rhost_${i}\"$rdir $mdir\" cifs \$mopts_$i 0 0)"
 		echo
 	done  >> $CONF_FSTAB
 

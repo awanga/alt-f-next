@@ -13,10 +13,13 @@ fstab_row() {
 	ln=$1; cnt=$2
 
 	eval $(echo $ln | awk '$3 == "cifs" {
-		printf "hostdir=%s; mdir=%s; opts=%s", $1, $2, $4}')
+		printf "hostdir=\"%s\"; mdir=\"%s\"; opts=%s", $1, $2, $4}')
 
 	eval $(echo $hostdir | awk -F"/" '{
-		printf "rhost=%s; rdir=%s", $3, $4}')
+		printf "rhost=\"%s\"; rdir=\"%s\"", $3, substr($0, index($0,$4)-1)}')
+
+	rdir="$(path_unescape $rdir)"
+	mdir="$(path_unescape $mdir)"
 
 	cmtd=${hostdir%%[!#]*}	# get possible comment char
 	if test -n "$cmtd"; then dis_chk=checked; else dis_chk=""; fi
@@ -35,7 +38,7 @@ fstab_row() {
 		<td align=center><input type=checkbox $dis_chk id="fstab_en_$cnt" name="fstab_en_$cnt" value="#" onclick="return check_mount('$op','fstab_en_$cnt')"></td>
 		$mntfld
 		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value=$rhost></td>
-		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value=$rdir></td>
+		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value="$rdir"></td>
 		<td><input type=button value=Browse onclick="browse_cifs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
 		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$mdir"></td>
 		<td><input type=button value=Browse onclick="browse_dir_popup('mdir_$cnt')"></td>
@@ -61,7 +64,7 @@ cat<<EOF
 			var opts = document.getElementById(id);
 			if (opts.value != "")
 				return;
-			opts.value = "rw,nounix,noserverino,credentials=/etc/samba/credentials.root"
+			opts.value = "uid=root,gid=users,credentials=/etc/samba/credentials.root,rw,iocharset=utf8,nounix,noserverino"
 		}
 		function check_mount(op, id) {
 			if (op == "unMount" && document.getElementById(id).checked == true) {
@@ -117,7 +120,7 @@ function pshare(line) {
 
 function spit(cnt, opts) {
 
-	browse_chk = public_chk = rdonly_chk = dis_chk = ""
+	rdir = browse_chk = public_chk = rdonly_chk = dis_chk = ""
 	if (opts["browseable"] == "yes")
 		browse_chk = "checked"
 	if (opts["public"] == "yes")
@@ -127,10 +130,9 @@ function spit(cnt, opts) {
 	if (opts["available"] == "no")
 		dis_chk = "checked"
 
-	if (opts["path"] == "")
-		rdir=""
-	else
-		"readlink -f " opts["path"] | getline rdir
+	if (opts["path"] != "") {
+		sprintf("readlink -f \"%s\" ", opts["path"]) | getline rdir
+	}
 
 	printf "<tr><td align=center><input type=checkbox %s name=avail_%d value=no></td>", dis_chk, cnt
 	printf "<td><input type=text id=ldir_%d name=ldir_%d value=\"%s\"></td>\n", cnt, cnt, rdir
@@ -189,7 +191,7 @@ cat<<-EOF
 EOF
 
 cnt=1
-while read ln; do
+while read -r ln; do
 	if echo "$ln" | grep -q cifs; then
 		fstab_row "$ln" $cnt
 		cnt=$((cnt+1))
