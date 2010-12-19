@@ -31,6 +31,7 @@ if test "$pg" = "setup"; then
 	&emsp;<a href="/cgi-bin/proxy.cgi" target="content">Proxy</a><br>
 	&emsp;<a href="/cgi-bin/hosts.cgi" target="content">Hosts</a><br>
 	&emsp;<a href="/cgi-bin/usersgroups.cgi" target="content">Users</a><br>
+	&emsp;<a href="/cgi-bin/browse_dir.cgi?wind=no?browse=/mnt" target="content">Directories</a><br>
 	EOF
 fi
 
