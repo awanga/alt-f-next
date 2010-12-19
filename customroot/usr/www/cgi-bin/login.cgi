@@ -6,7 +6,7 @@ write_header "Alt-F Login"
 SECR=/etc/web-secret
 
 mktt tt_login "Enter your web administration password."
-mktt tt_again "Type your password again."
+mktt tt_again "Type your password again. It will be your \"root\" password."
 
 cat<<-EOF
     <center>

@@ -9,7 +9,9 @@ read_args
 #debug
 
 if ! test -e $SECR; then
-	if test "$passwd" != "$passwd_again"; then
+	if test -z "$passwd"; then
+		msg "Password can't be empty."
+	elif test "$passwd" != "$passwd_again"; then
 		msg "The two passwords don't match."
 	fi
 
@@ -19,6 +21,7 @@ if ! test -e $SECR; then
 
 	echo -n $passwd > $SECR
 	chmod og-r $SECR
+# FIXME: if root already has a password, don't change it?
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
     echo -e "username=admin\npassword=$passwd" > /etc/samba/credentials.root
     chmod og-rw /etc/samba/credentials.root
@@ -44,15 +47,14 @@ if test "$passwd" = "$(cat $SECR)"; then
     
 	if test $(cat $TZF) = "NONE-0"; then
 		expl=""
-	else
+	else # expire cookie (login) one hour after login
 		eval $(TZ=GMT awk 'END{printf "exp=%s", \
 			strftime("\"%a, %d-%b-%Y %T GMT\"", systime()+3600)}' /dev/null)
 		expl="expires=$exp"
 	fi
     
-	# if the local time is ahead of real time the cookie will always
-	# be expired and login always fails. Don't use 
-	expl="" 
+	# only tested on GMT, if login fails because of an expired cookie, uncomment next line
+	# expl="" 
 
 	cat<<-EOF
 		HTTP/1.1 303
