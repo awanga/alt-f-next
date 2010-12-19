@@ -1,0 +1,9 @@
+Package: uemacs
+Description: A small emacs.	  
+Version: 4.0.15-lt
+Depends: ncurses 
+Architecture: arm
+Priority: optional
+Section: admin
+Source: ftp://ftp.kernel.org/pub/software/editors/uemacs/
+Maintainer: jcard
