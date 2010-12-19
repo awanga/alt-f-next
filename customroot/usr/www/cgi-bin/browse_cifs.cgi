@@ -28,8 +28,7 @@ EOF
 wait_count_start "Browsing the network for Samba servers, it takes 10 seconds"
 
 # this seems to be needed to start the window drawn...
-echo "                                                  "
-#for i in $(seq 1 20); do sleep 1; echo; done &
+for i in $(seq 1 20); do sleep 1; echo; done & 
 
 if false; then
 F1=domain
@@ -42,7 +41,7 @@ host: F2 not empty
 share: F2 empty && F3 not empty
 fi
 
-echo "<table><tr><th>Share</th><th>Comment</th></tr>"
+echo "<br><br><table></tr><tr><th>Share</th><th>Comment</th></tr>"
 
 smbtree -N | tr '\t' ':' | awk -F : '{
 	if ($2 != "")
