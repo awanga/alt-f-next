@@ -78,4 +78,12 @@ if test -f /root/zImage; then
 	fi
 fi
 
+# kernel already does it. This was only for C1 boards
+#echo "rcE: flushing disks and spin them down"
+#for i in /dev/sd[a-z]; do
+#  if test -b $i; then
+#	hdparm -fY $i
+#  fi
+#done
+
 echo "rcE: Poweroff! "
