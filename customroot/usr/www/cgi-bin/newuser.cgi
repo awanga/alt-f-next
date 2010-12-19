@@ -30,6 +30,13 @@ if ! test -h /home -a -d "$(readlink -f /home)"; then
 	exit 0
 fi
 
+mktt ttuname "Full user name. Used as login name on MS"
+mktt ttnick	"User nick name. Used as login name on linux"
+mktt ttuid	"User id. Change only if revelant for NFS"
+mktt ttgid "Main users group id. Change only if revelant for NFS"
+mktt ttpass "User password. Used as password on linux and MS"
+mktt ttpassa "Repeat the entered password above."
+
 cat <<EOF
 	<script type="text/javascript">
 	function upnick() {
@@ -51,11 +58,14 @@ cat <<EOF
 	</script>
 EOF
 
-eval $(awk -F: '{if ($3 > uid) uid=$3} END{ 
-	printf "uid=%d", uid}' $CONFP)
+eval $(awk -F: '{if ($3 > uid) uid=$3}
+		{if ($4 > gid) gid=$4
+		} END{ 
+	printf "uid=%d; gid=%d", uid, gid}' $CONFP)
 
 if test -z "$QUERY_STRING"; then
 	if test "$uid" -lt 1000; then uid=1000; fi
+	gid=100
 else
 	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
 		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
@@ -74,20 +84,17 @@ else
 	fi
 fi
 
-# FIXME add gid support!
-gid="not_yet"
-
 cat <<EOF
 	<!--form name=frm action="/cgi-bin/newuser_proc.cgi" method="post" onSubmit="pcheck()"-->
 	<form name=frm action="/cgi-bin/newuser_proc.cgi" method="post">
 	<fieldset><legend><strong>User Details</strong></legend>
 	<table>
-	<tr><td>Full name</td><td><input type=text $chpass name=uname value="$uname" onChange="upnick()"></td></tr>
-	<tr><td>Nick name<td><input type=text $chpass name=nick value=$nick></td></tr>
-	<tr><td>User id<td><input type=text $chpass name=uid value=$uid></td></tr>
-<!--	<tr><td>Group id<td><input type=text $chpass name=gid value=$gid></td></tr> -->
-	<tr><td>Password<td><input type=password name=pass></td></tr>
-	<tr><td>Again<td><input type=password name=passa></td></tr>
+	<tr><td>Full name</td><td><input type=text $chpass name=uname value="$uname" onChange="upnick()" $(ttip ttuname)></td></tr>
+	<tr><td>Nick name<td><input type=text $chpass name=nick value=$nick $(ttip ttnick)></td></tr>
+	<tr><td>User id<td><input style="background-color: #dddddd" type=text $chpass name=uid value=$uid $(ttip ttuid)></td></tr>
+	<tr><td>Group id<td><input style="background-color: #dddddd" type=text $chpass name=gid value=$gid $(ttip ttgid)></td></tr>
+	<tr><td>Password<td><input type=password name=pass $(ttip ttpass)></td></tr>
+	<tr><td>Again<td><input type=password name=passa $(ttip ttpassa)></td></tr>
 	<tr><td></td>
 EOF
 if test -z "$chpass"; then

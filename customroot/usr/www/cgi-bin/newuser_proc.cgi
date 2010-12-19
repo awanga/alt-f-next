@@ -15,8 +15,6 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	uname="$(httpd -d "$uname")"
 	nick="$(httpd -d "$nick")"
 
-# FIXME add gid support!
-
 	if test "$submit" = "Submit"; then
 		ouname="$(awk -F: -v ouname="$uname" '$5 == ouname {print $5}' $CONFP)"
 		onick="$(awk -F: -v onick="$nick" '$1 == onick {print $1}' $CONFP)"
@@ -33,8 +31,15 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		fi
 		#uname=$(echo "$uname" | tr ' ' '_')
 		#adduser -D -G users -u $uid -g "$uname" -h "/home/$nick" $nick > /dev/null 2>&1
-		adduser -D -G users -u $uid -g "$uname" -h "/home/$uname" $nick > /dev/null 2>&1
+		if test "$gid" != 100; then
+			addgroup -g $gid $nick >& /dev/null
+			grp="-G $nick"
+		else
+			grp="-G users"
+		fi
+		adduser -D $grp -u $uid -g "$uname" -h "/home/$uname" $nick > /dev/null 2>&1
 		chmod og-rw "/home/$uname"
+		addgroup $nick backup
 
 		# why doesn't rsync uses unix authorization mechanisms?!
 		echo -e "\n[$nick]\npath = /home/$uname\ncomment = $uname home directory\n\
@@ -49,7 +54,7 @@ read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> $CONFR
 	echo -e "$pass\n$pass" | smbpasswd -s -a $nick >& /dev/null
 	sed -i "/^$nick = /d" $CONFS  >& /dev/null
 	echo "$nick = \"$uname\"" >> $CONFS
-	echo -e "username=$nick\npassword=$pass" > /etc/samba/credentials.$nick
+	echo -e "username=$uname\npassword=$pass" > /etc/samba/credentials.$nick
 	chmod og-rw /etc/samba/credentials.$nick
 	sed -i "/^$nick:/d" $CONFRS >& /dev/null
 	echo "$nick:$pass" >> $CONFRS
@@ -74,15 +79,29 @@ elif test "$create_dir" = "CreateDir"; then
 	mkdir -p "$mp"/Users
 	ln -sf "$mp"/Users /home
 
-	mkdir -p "$mp"/Users/Public
+	mkdir -p "$mp"/Public
+	ln -s "$mp"/Public /Public
 
-	mkdir -p "$mp"/Users/Public/RO
+	mkdir -p "$mp"/Public/RO
+	mkdir -p "$mp"/Public/RW
+	chown nobody:nobody "$mp"/Public/RW
+	chmod a+rwx "$mp"/Public/RW
 
-	mkdir -p "$mp"/Users/Public/RW
-	chown nobody:nobody "$mp"/Users/Public/RW
-	chmod a+rwx "$mp"/Users/Public/RW
+	make_available "[Users]"
+	make_available "[Public (Read Write)]"
+	make_available "[Public (Read Only)]"
 
-	gotopage /cgi-bin/newuser.cgi
+	IFS=":"
+	while read  nick x uid gid name hdir rest; do
+		if test "$uid" -ge 1000; then
+			if ! test -d "$hdir"; then
+				mkdir "$hdir"
+				chown $nick:$gid "$hdir"
+			fi
+		fi
+	done < $CONFP
+
+	gotopage /cgi-bin/$(basename "$HTTP_REFERER")
 fi
 
 #enddebug
