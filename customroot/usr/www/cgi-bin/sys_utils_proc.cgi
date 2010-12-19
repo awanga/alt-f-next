@@ -17,6 +17,8 @@ elif test "$kernel" = "Refresh"; then
 
 elif test "$syslog" = "Refresh"; then
 	action="SystemLog"
+elif test "$processes" = "Refresh"; then
+	action="Processes"
 fi
 
 case $action in
@@ -89,6 +91,21 @@ case $action in
 		exit 0
 		;;
 
+	Processes)
+		write_header "Running Processes"
+		echo "<pre><small>"
+		top -bn1
+		echo "</small></pre>"
+
+		cat<<-EOF
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
+			<input type=submit name=processes value="Refresh">
+			$(back_button)
+			</form></body></html>
+		EOF
+		exit 0
+		;;
+
 	StartAll)
 		rcall start >& /dev/null
 		;;
@@ -103,9 +120,11 @@ case $action in
 
 	ChangePassword)
 		SECR=/etc/web-secret
-		if test "$passwd" = $(cat $SECR); then
+		if test -n "$passwd" -a "$passwd" = $(cat $SECR); then
 			rm -f $SECR
 			rm -f /tmp/cookie
+		else
+			msg "Password doesn't match."
 		fi
 		gotopage /cgi-bin/login.cgi
 		exit 0

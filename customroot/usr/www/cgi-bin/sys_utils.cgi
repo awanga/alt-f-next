@@ -16,6 +16,7 @@ cat<<-EOF
 	<fieldset><legend><strong>View Logs</strong></legend>
 	<input type=submit name=action value=KernelLog>
 	<input type=submit name=action value=SystemLog>
+	<input type=submit name=action value=Processes>
 	</fieldset><br>
 	
 	<fieldset><legend><strong>Services</strong></legend>
@@ -25,7 +26,7 @@ cat<<-EOF
 	</fieldset><br>
 
 	<fieldset><legend><strong>Administering password</strong></legend>
-	Current Password:<input type="password" autocomplete="off" name="passwd" value="">
+	Current Password:<input type="password" autocomplete="off" name="passwd" value="" onkeypress="return event.keyCode != 13">
 	<input type="submit" name=action value="ChangePassword")>
 	</fieldset><br>
 
