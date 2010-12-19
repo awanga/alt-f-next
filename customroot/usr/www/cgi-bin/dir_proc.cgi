@@ -7,7 +7,7 @@ read_args
 #debug
 
 wdir="$(httpd -d $newdir)"
-bdir="$(dirname "$wdir")"
+bdir=$(dirname "$wdir")
 
 if test -n "$srcdir"; then
 	srcdir="$(httpd -d $srcdir)"
@@ -31,14 +31,15 @@ elif test -n "$DeleteDir"; then
 		if test $? != 0; then
 			msg "$res"
 		fi
-		HTTP_REFERER="$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='$bdir'|p')"
+		HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$bdir"'|p')
 	else
 		msg "Can't delete, directory $wdir does not exist."
 	fi
 
 elif test -n "$Copy" -o -n "$Move"; then
-	if test -d "$wdir/$(basename $srcdir)"; then
-		msg "$wdir already contains a directory named $(basename $srcdir)"
+	sbn=$(basename "$srcdir")
+	if test -d "${wdir}/${sbn}"; then
+		msg "$wdir already contains a directory named $sbn"
 	fi
 	html_header
 	wait_count_start "$op from $srcdir to $wdir"
@@ -54,11 +55,16 @@ elif test -n "$Copy" -o -n "$Move"; then
 	st=$?
 	wait_count_stop
 	if test $st != 0; then
-		msg $res
-	else
-		echo "<p>Success</p> $(back_button) </body></html>"
-		exit 0
+		msg "$res"
 	fi
+	
+	HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$bdir"'|p')
+	cat<<-EOF
+		<script type="text/javascript">
+			window.location.assign('$HTTP_REFERER')
+		</script></body></html>
+	EOF
+	exit 0
 
 elif test -n "$Permissions"; then
 	nuser="$(httpd -d $nuser)"
@@ -85,4 +91,3 @@ fi
 #enddebug
 gotopage $HTTP_REFERER
 
-exit 0
