@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>ALT-F Help Page</title>
+</head>
+<body>
+
+<h2><center>Status Page Help</center></h2>
+
+<p>This page is self-explanatory. It will refresh itself every 15 seconds, and leaving
+it alone will avoid the disks to spin down. If however the disks are already spindown
+they will not spinup when the page is displayed.<p>
+
+<p>Items deserving an explanation:
+
+<ul>
+
+<li><strong>Temperature</strong>: is the box internal temperature. It will be affected by ambient temperature
+and by disks temperature.
+
+<li><strong>Fan speed</strong>: the current fan speed (for A1 and B1 boards, fake to C1 boards).
+The fan speed is automaticaly adjusted according to the box temperature.
+
+<li><strong>Load</strong>: The number of processes trying to execute simultaneously on the CPU.
+
+<li><strong>Swap</strong>: amount of disk space used as memory; when the system needs more memory than physical
+memory is available, a special disk partition called swap is used ans some less frequently
+used applications and data are moved to the disk.
+
+<li><strong>MTU</strong>: also called "jumbo frames"; they can improve network throughtput when transfering
+large files, but both sides of the transfer must support it.<br>
+Try to use values lower than 3700 bytes and/or 7500 bytes.<bt>
+Changing it right after powerup is fine, but changing it when the system has already beeing
+active for a some time can actually degrade network performance.
+
+<li><strong>Health</strong>: the disk health, as reported by SMART.<br>
+If you see a message in red, replace the disk as soon as possible, as the disk is likely
+to fail in the next hours or days.<br>
+If the message appears in blue it means that some disk parameter has failed in the past.
+
+<li><strong>Dirty</strong>: the filesystem is in an inconsistent state, you should go to
+ Disk->Filesystem->FS Operation and selecte "clean". "ext2" filesystems are marked as dirty
+as soon as they are mounted.
+
+<li><strong>Mode</strong>: can be RW or RO. If the system finds a filesystem dirty at powerup or hotplugging,
+and can't clean it, the filesystem will be mounted in Read Only mode, otherwise it will
+be mounted as Read Write.
+
+<li><strong>Automatic FSCK in</strong>: the number of mounts or days left until an automatic
+ filesystem check will be done at powerup or mount time.<br>
+To avoid an inoportune lenghly check, that will certainly happen when you most need your files,
+you should manualy start a filesystem check using<br>
+Disk->Filesystems->Operation->Clean
+
+</ul>
+
+<input type=button value="Back" onclick="history.back()">
+</body>
+
