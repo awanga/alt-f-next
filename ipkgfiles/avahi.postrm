@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser avahi
+delgroup avahi
+rm -f /sbin/rcavahi
