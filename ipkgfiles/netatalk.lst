@@ -70,6 +70,7 @@
 ./usr/libexec/tfwmpaprev
 ./usr/libexec/tfwpap
 ./usr/libexec/tfwpaprev
+./usr/sbin/afpd
 ./usr/sbin/atalkd
 ./usr/sbin/cnid_dbd
 ./usr/sbin/cnid_metad
