@@ -14,6 +14,7 @@ if test "$flash" = "Abort"; then
 fi
 
 html_header
+echo "<h2><center>Firmware Updater</center></h2>"
 
 if ! test -f $kernel_file -a -f $initramfs_file; then
 	rm -f $kernel_file $initramfs_file $defaults_file
@@ -26,7 +27,7 @@ if ! test -f $kernel_file -a -f $initramfs_file; then
 	exit 0
 fi
 
-if test "$flash_defaults" = "yes" -a ! -s $defaults_file; then
+if test "$flash_defaults" = "flash" -a ! -s $defaults_file; then
 	rm -f $kernel_file $initramfs_file $defaults_file
 	cat<<-EOF
 		<br>
@@ -51,51 +52,51 @@ elif test "$flash" = "FlashIt"; then
 	echo 50 > "/sys/class/leds/power:blue/delay_off" 
 	echo 50 > "/sys/class/leds/power:blue/delay_on"
 
-	wait_count_start "Flashing the kernel, it takes about 25 seconds"
+	wait_count_start "<p>Flashing the kernel, it takes about 25 seconds"
 	cat $kernel_file > /dev/mtdblock2 
+	sleep 3
 	wait_count_stop
 
-	wait_count_start "Flashing the ramdisk, it takes about 110 seconds"
+	wait_count_start "<p>Flashing the ramdisk, it takes about 110 seconds"
 	cat $initramfs_file > /dev/mtdblock3 
+	sleep 3
 	wait_count_stop
 
-	if test "$flash_defaults" = "yes" -o "$erase_defaults" = "yes"; then
-		echo "<h4>Erasing settings, it takes some 5 seconds...</h4>"
+	case "$flash_defaults" in
+		"none")
+			;;
 
-		mkdir /tmp/mtd
-		mount /dev/mtdblock0 /tmp/mtd
-		rm -f /tmp/mtd/*
-		if test "$flash_defaults" = "yes"; then
-			echo "<h4>Flashing new settings, it takes some 5 seconds...</h4>"
+		"clear")
+			echo "<p>Erasing flashed settings, it takes some 5 seconds..."
+			loadsave_settings -cf
+			;;
+
+		"flashfile")
+			echo "<p>Flashing new settings, it takes some 5 seconds..."
+			mkdir /tmp/mtd
+			mount /dev/mtdblock0 /tmp/mtd
+			rm -f /tmp/mtd/*
 			tar -C /tmp -xzf $defaults_file
 			cp -f /tmp/default/* /tmp/mtd/
-		fi
-		umount /tmp/mtd
+			umount /tmp/mtd
+			rmdir /tmp/mtd
+			rm -rf /tmp/default
+			;;
 
-# dont clear mtdblock1, we don't use it
-#
-#		mount /dev/mtdblock1 /tmp/mtd
-#		rm -f /tmp/mtd/*
-#		if test "$flash_defaults" = "yes"; then
-#			cp -f /tmp/default/* /tmp/mtd/
-#		fi
-#		umount /tmp/mtd
-		rmdir /tmp/mtd
-		rm -rf /tmp/default
-	fi
-
-# FIXME handle mtd2. vendor bootlog: MTDC: Backup files from MTD1 to MTD2.
+		"recover")
+			echo "<p>Recovering vendors settings from backup, it takes some 5 seconds..."
+			loadsave_settings -rc
+			;;
+	esac
 
 	rm -f $kernel_file $initramfs_file $defaults_file
 	echo none > "/sys/class/leds/power:blue/trigger"
 fi
 
 cat<<-EOF
-	<center>
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-	</p><input type=submit name=action value=Reboot onClick="return confirm('The box will reboot now.\nYou will be connected again in 45 seconds.\n\nProceed?')">
+	The new firmware will only be active after a reboot.
+	<input type=submit name=action value=Reboot onClick="return confirm('The box will reboot now.\nYou will be connected again in 45 seconds.\n\nProceed?')">
 	</body></html>
 EOF
-	exit 0
-
 

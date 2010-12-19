@@ -66,21 +66,32 @@ echo -e "$fw_version\n\n<strong>Everything looks OK</strong>\n"
 
 ls -l kernel initramfs defaults
 
-if test -s defaults; then
-	flashdef="checked"
+if ! test -s defaults; then
+	flashvendor="disabled"
+	flashnone="checked"
+	flashfile=""
 else
-	flashdef="disabled"
+	flashvendor=""
+	flashnone=""
+	flashfile="checked"
 fi
 
 cat<<-EOF
 	</pre>
 	<form action="/cgi-bin/firmware2_proc.cgi" method="post">
 
-	<input type="checkbox" name=erase_defaults value=yes>
+	<strong>Flash settings handling:</strong>
+	<p><input type="radio" $flashnone name=flash_defaults value="none">
+	Don't erase flashed settings</p>
+
+	<p><input type="radio" name=flash_defaults value="clear">
 	Erase all flashed settings (the box IP might change)</p>
 
-	<input type="checkbox" $flashdef name=flash_defaults value=yes>
+	<p><input type="radio" $flashfile $flashvendor name=flash_defaults value="flashfile">
 	Erase all flashed settings and flash new settings from defaults file (factory settings, the box IP might change)</p>
+
+	<p><input type="radio" $flashvendor name=flash_defaults value="recover">
+	Erase all flashed settings and recover the last flash settings from vendors backup (the box IP might change)</p>
 
 	<input type="submit" name=flash value="FlashIt" onclick="return confirm('\
 THIS IS A NO RETURN POINT.\n\n\
