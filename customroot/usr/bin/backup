@@ -1,0 +1,149 @@
+#!/bin/sh
+
+# backup.conf
+# structure for type=dir, when/at should be crontab compatible, at least for now
+#id;type;runas;srcdir;dstdir;when;at;log;nlogs
+
+CONF_BACKUP=/etc/backup.conf
+
+lockfile=/var/lock/backup.lockdir
+
+trap "" USR1
+
+lock() {
+	while ! mkdir $lockfile >& /dev/null; do
+		sleep 5
+	done
+}
+
+unlock() {
+	rmdir $lockfile >& /dev/null
+}
+
+exclusive() {
+	lock
+	while test -e /var/run/backup.pid; do
+		if kill -USR1 $(cat /var/run/backup.pid) >& /dev/null; then
+			logger -st backup "backup $id waiting a minute, other backup is occurring."
+			unlock
+			sleep 60
+			lock
+		else
+			break
+		fi
+	done
+
+	echo $$ > /var/run/backup.pid
+	unlock
+}
+
+# $1=id
+details() {
+
+	IFS=";"
+	while read id type runas srcpath dstpath when at log nlogs rest; do
+		if test -z "$id" -o -z "$type" -o -z "$runas" -o -z "$srcpath" -o -z "$dstpath" \
+			-o -z "$when" -o -z "$at" -o -z "$log" -o -z "$nlogs"; then continue; fi
+		if test "${id:0:1}" = "#"; then continue; fi
+		if test "$1" = "$id"; then return 0; fi
+	done < $CONF_BACKUP 
+
+	return 1
+}
+
+do_log() {
+	TF=$(mktemp -t)
+	diff -rq "$old" "$date" > $TF
+	if test -s $TF; then
+		awk '
+			/^Only in '$date'/{printf "Added:   %s\n", $4}
+			/^Only in '$old'/ {printf "Deleted: %s\n", $4}
+			/(^Binary files.*differ$|^Files.*differ$)/ {
+				start = index($0, "'$date'") + 20
+				ln = length($0) - length("differ") - start
+				printf "Changed: %s\n", substr($0, start, ln)
+		}' $TF | sort > ${date}.log
+	else #diff didn't find any differences, save disk space
+		nodiff="true"
+		rm -rf "$date"
+	fi
+	rm $TF
+}
+
+clean_logs() {
+	clogs=$(find $ddname -maxdepth 1 -type d | wc -l)
+	if test "$((clogs - 1))" -gt "$nlogs"; then
+		last=$(ls -t $ddname | grep '^....-..-.._..-..-..$' | head -1)
+		logger -st backup "backup $id with more than $nlogs backups, removing oldest $last"
+		rm -rf "$last"
+	fi
+}
+
+dir_backup() {
+
+	dname=$(echo "${srcpath:1}" | tr "/ " "_")
+	date=$(date "+%Y-%m-%d_%H-%M-%S")
+	ddname="$dstpath/$dname"
+
+	gid=$(id -gn $runas)
+
+	mkdir -p $ddname/$date
+	chown ${runas}:${gid} $ddname
+	chown ${runas}:${gid} $ddname/$date
+
+	if test -e "$ddname/current"; then
+		opt="--link-dest=$ddname/current"
+	fi
+
+	# the '/' in "$srcpath" is to copy directory contents, not directory
+	res=$(start-stop-daemon -S --chuid ${runas}:${gid} --exec rsync -- \
+		-ax $opt "$srcpath/" "$ddname/$date" 2>&1 )
+
+	if test "$?" != 0; then
+		logger -st backup "Backup $id failed, reason: $res"
+		return 1
+	fi
+
+	cd $ddname
+	nodiff=""
+	if test -e current; then
+		old=$(readlink current)
+		if test "$log" = "yes"; then 		# this is nice, but the diff takes too long.
+			do_log
+		fi
+		if test -z "$nodiff"; then 
+			rm current
+		fi
+	fi
+
+	if test -z "$nodiff"; then
+		ln -s "$date" current
+		logger -st backup "Backup $id finished"
+		if test $nlogs -gt 0; then
+			clean_logs
+		fi
+	else
+		logger -st backup "No changes found on backup $id, no backup generated"
+	fi
+}
+
+if test "$#" = 0; then return 1; fi
+
+if ! details "$1"; then
+	logger -st backup "Can't find backup $1 in the configuration file."
+	return 1
+fi
+
+exclusive
+
+logger -st backup "Doing backup: id=$id type=$type runas=$runas srcpath=$srcpath \
+ dstpath=$dstpath when=$when at=$at log=$log nlogs=$nlogs"
+
+case $type in
+	Dir) dir_backup ;;
+	*) logger -st backup "type=$type not yet supported" ;;
+esac
+
+lock
+rm /var/run/backup.pid
+unlock
