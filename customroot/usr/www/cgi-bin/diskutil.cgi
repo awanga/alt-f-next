@@ -3,35 +3,29 @@
 . common.sh
 
 check_cookie
-write_header "Disk Utilities"
+write_header "Disk Utilities" "" "document.disku.reset()"
 
 CONFT=/etc/misc.conf
-CONFB=/etc/bay
 
-dstatus() {
-	local res dsk
-	dsk=$1
-	
-	if test -b /dev/$dsk; then
-		res=$(hdparm -C /dev/$dsk | awk '/drive/{print $4}') >/dev/null 2>&1
-	else
-		res="None"
-	fi
-	echo $res
-}
+mktt power_tt "Higher power savings, lower performance, can spindow<br>
+Medium power savings and performance, can spindow<br>
+Low power saving, higher performance, can't spindown.<br>
+If disabled, the disk does not support Adv. Power Mode."
+
+mktt spindown_tt "After this minutes of inactivity the disk will spin down,<br>
+depending on the Power Saving Settings"
 
 has_disks
-
-. /tmp/power_mode
 
 if test -f $CONFT; then
 	. $CONFT
 fi
-for i in HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
+for i in HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB HDPOWER_LEFT HDPOWER_RIGHT; do
 	if test -z "$(eval echo \$$i)"; then
-		eval $(echo $i=20)
+		eval $(echo $i=0)
 	fi
 done
+
 
 cat<<EOF
 	<script type="text/javascript">
@@ -40,62 +34,76 @@ cat<<EOF
 	}
 	</script>
 
-	<form id=diskf action="/cgi-bin/diskutil_proc.cgi" method="post">
+	<form id=disku name=disku action="/cgi-bin/diskutil_proc.cgi" method="post">
 	<fieldset><Legend><strong> Disks </strong></legend>
 	<table>
 	<tr align=center><th>Bay</th>
 	<th>Dev.</th>
+	<th>Capacity</th>
 	<th>Disk Model</th>
 	<th></th>
 	<th>Health</th>
 	<th>Power Mode</th>
-	<th columnspan=2>Set Standby</th> 
+	<th>Power Sav.</th>
+	<th columnspan=2>Spindow</th> 
 EOF
 
-while read ln; do
-	if test -z "$ln"; then continue; fi
-	eval $(echo $ln | awk '{
-		printf "bay=%s;dsk=%s;hdtimeout=HDSLEEP_%s", $1, $2, toupper($1)}')
-	stat=$(dstatus $dsk)
+for disk in $disks; do
+	dsk=$(basename $disk)
+	disk_details $dsk
+
+	power_dis="disabled"
+	if hdparm -I $disk | grep -q "Adv. Power Management"; then
+		power_dis=""
+	fi
+
+	stat=$(disk_power $dsk)
 	paction="StandbyNow"
-	if test "$stat" != "active/idle"; then
+	paction_dis=""
+	if test "$stat" = "standby"; then
 		paction="WakeupNow"
+	elif test "$stat" = "unknown"; then
+		paction="Unknown"
+		paction_dis="disabled"
 	fi
-	#mod=$(cat /sys/block/$dsk/device/model)
-	mod=$(disk_name $dsk)
-	val=$(eval echo \$$hdtimeout)
- 
-	echo "<tr><td>$bay</td><td>$dsk</td><td> $mod </td>"
 
-	if ! test -b "/dev/$dsk"; then
-		echo "<td></td><td></td><td></td><td></td>"
-	else
-		if eject -s $dsk > /dev/null; then
-			ejectop="Load"
-		else
-			ejectop="Eject"
-		fi
-		cat<<-EOF	 
-			<td> <input type="submit" name="$dsk" value="$ejectop"> </td>
-			<td><select name="$dsk" onChange=submit()>
-				<option value="">Select Action</option>
-				<option value="hstatus">Show Status</option>
-				<option value="shorttest">Start short test</option>
-				<option value="longtest">Start long test</option>
+	ejectop="Eject"
+	if eject -s $dsk > /dev/null; then
+		ejectop="Load"
+	fi
+
+	eval $(echo $dbay | awk '{
+		printf "hdtimeout=HDSLEEP_%s; hdtimeout_val=$HDSLEEP_%s; power=HDPOWER_%s; power_val=$HDPOWER_%s", toupper($1), toupper($1), toupper($1), toupper($1)}')
+
+	medpower_sel=""; highpower_sel=""; lowpower_sel=""
+	case $power_val in
+		1) highpower_sel="selected" ;;
+		127) medpower_sel="selected" ;;
+		254) lowpower_sel="selected" ;;
+	esac
+	
+	cat<<-EOF	 
+		<tr><td>$dbay</td><td>$dsk</td><td>$dcap</td><td>$dmod</td>
+		<td> <input type="submit" name="$dsk" value="$ejectop"></td>
+		<td><select name="$dsk" onChange=submit()>
+			<option value="">Select Action</option>
+			<option value="hstatus">Show Status</option>
+			<option value="shorttest">Start short test</option>
+			<option value="longtest">Start long test</option>
 			</select></td>
-			<td> <input type="submit" name="$dsk" value="$paction"> </td>
-		EOF
-	fi
-
-	echo "<td><input type="text" size=2 name="$hdtimeout" value="$val"> min.</td></tr>"
-done < $CONFB
+		<td> <input type="submit" $paction_dis name="$dsk" value="$paction"> </td>
+		<td><select $power_dis name=$power $(ttip power_tt)>
+			<option $highpower_sel value=1>High</option>
+			<option $medpower_sel value=127>Medium</option>
+			<option $lowpower_sel value=254>Low</option>
+			</select></td>
+		<td><input type="text" size=2 name="$hdtimeout" value="$hdtimeout_val" $(ttip spindown_tt)> min.</td></tr>
+	EOF
+done
 
 cat<<-EOF
-	<tr>
-	<td colspan=6></td>
-	<td><input type="submit" name="standby" value="Submit"> </td>
-	</tr>        
-	</table>
-	</fieldset><br>
+	<tr><td colspan=7></td>
+	<td colspan=2 align=center><input type="submit" name="standby" value="        Submit        "></td></tr>        
+	</table></fieldset><br>
 	</form></body></html>
 EOF

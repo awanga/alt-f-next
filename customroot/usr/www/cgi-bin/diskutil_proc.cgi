@@ -1,26 +1,31 @@
 #!/bin/sh
 
+# $1=HDSLEEP_* | HDPOWER_* $2=val
 prog() {
 	local dsk tmout
-	dsk=$(grep -i ${1#*_} /etc/bay | cut -d" " -f2)
-	tmout="$2"
+	dsk=$(grep -i ${1#*_}_dev /etc/bay | cut -d"=" -f2)
+	act=${1%_*}
+	op="$2"
 
-	if ! test -b /dev/$dsk; then
+	if test -z "$dsk" -o ! -b /dev/$dsk; then
 		return
 	fi
 
-	res="$(eval echo \$power_mode_$dsk)"
-	if test "$res" != "standby"; then	
-		if test "$tmout" -eq "0"; then
-			val=0;
-		elif test "$tmout" -le "20"; then
-			val=$((tmout * 60 / 5));
-		elif test "$tmout" -le "300"; then
-			val=$((240 + tmout / 30));
-		fi
-
-		/sbin/hdparm -S $val /dev/$dsk >/dev/null 2>&1
-	fi 	
+	case $act in
+		HDSLEEP)
+			if test "$op" -eq "0"; then
+				tmout=0;
+			elif test "$op" -le "20"; then
+				tmout=$((op * 60 / 5));
+			elif test "$op" -le "300"; then
+				tmout=$((240 + op / 30));
+			fi
+			hdparm -S $tmout /dev/$dsk >& /dev/null
+			;;
+		HDPOWER)
+			hdparm -B $op /dev/$dsk >& /dev/null
+			;;
+	esac
 }
 
 sleepnow() {
@@ -31,9 +36,7 @@ sleepnow() {
 		return
 	fi
 
-	#res=$(hdparm -C $dsk | awk '/drive/{print $4}') >/dev/null 2>&1
-	res="$(eval echo \$power_mode_$1)"
-	if test "$res" != "standby"; then	
+	if test "$(disk_power $1)" != "standby"; then	
 		/sbin/hdparm -y $dsk >/dev/null 2>&1
 	fi
 }
@@ -54,7 +57,7 @@ health() {
 	echo  "</small></pre>$(back_button)</html></body>"
 }
 
-# dsk op
+# $1=dsk $2=op
 bay_eject() {
 	local bay dsk eop
 	dsk=$1
@@ -62,21 +65,15 @@ bay_eject() {
 		eop=$2
 	fi
 
-	bay=$(awk '/'$dsk'/{print $1}' $CONFB)
+	disk_details $1
 
-	if ! test -b "/dev/$dsk"; then
-		msg "No valid $dsk disk in $bay bay"
-#	elif eject -s $dsk; then 
-#		msg "Disk $dsk in $bay bay is not in use, you can safely remove or eject it"
+	eject $eop $dsk >/dev/null
+	if test -z "$eop" -a $? = 0; then
+		msg "You can now remove or eject the $dbay device"
+	elif test -z "$eop" -a $? != 0; then
+		msg "Eject fail, some programs are using the $dbay device"
 	else
-		eject $eop $dsk >/dev/null
-		if test -z "$eop" -a $? = 0; then
-			msg "You can now remove or eject the $bay device"
-		elif test -z "$eop" -a $? = 0; then
-			msg "Eject fail, some programs are using the $bay device"
-		else
-			msg "Filesystems on $bay disk mounted"
-		fi
+		msg "Filesystems on $dbay disk mounted"
 	fi
 }
 
@@ -88,13 +85,9 @@ read_args
 #debug
 
 CONFT=/etc/misc.conf
-CONFB=/etc/bay
-CONFTB=/etc/fstab
 
-. /tmp/power_mode
-
-if test "$Submit" = "standby"; then
-	for i in HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
+if test -n "$standby"; then
+	for i in HDPOWER_LEFT HDPOWER_RIGHT HDPOWER_USB HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
 		if test -n "$(eval echo \$$i)"; then
 			sed -i '/^'$i'/d' $CONFT >& /dev/null
 			echo "$i=$(eval echo \$$i)" >> $CONFT
