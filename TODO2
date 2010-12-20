@@ -25,11 +25,6 @@ FIXED -Fix User services web page when there are no services available
 DONT -Fix the /sbin/rc* shortcuts. They live in /Alt-F after a reboot.
 	Remove before installing new ones. Is harmless.
 
--Fix the pkg-config and host-pkgconfig mess
-	Read the package/pkg-config.mk comments
-	Merge pkg-config and host-pkgconfig, with an option to create
-	only on the host
-
 HACKED -The start/stop services button should wait a little before returning, as
 	some services takes some time to settle (transmission, e.g.)
 	added a one second delay... too much for most services,
@@ -40,20 +35,6 @@ FIXED -Remount /Alt-F with inotify during installing, etc, ipkg
 	-create instead a ipkg wrapper? yes... ipkg calls ipkg-cl
 	-but not for web page, sloow.
 
--Change Alt-F directory name to .Alt-F, to make it "invisible" to most users
-	-or use the bind technique explained in aufs page?:
-
-		hide=/tmp/.aufs.hide
-		mkdir $hide
-		mount -n --bind $hide /Alt-F
-
-		When you unmount the aufs, delete/modify the branch by
-		remount, or you want to show the hidden branches again,
-		unmount the bound /tmp/.aufs.hide.
-
-		umount -n /Alt-F
-	-just call it .Alt-F
-
 FIXED -Fix package_ipkg.cgi
 	-is slooow
 	-pkg names with a '-' are wrongly parsed (- is also the field separator)
@@ -61,7 +42,7 @@ FIXED -Fix package_ipkg.cgi
 -FIXED Fix package_ipkg_proc.cgi.
 	-when installing ipkg, output is generated that makes a error page appear.
 
--fix "configfs" to handle the new packages files
+FIXED fix "configfs" to handle the new packages files
 
 -CUPS:
 	DONE create user/group cups:lpadmin
@@ -70,62 +51,15 @@ FIXED -Fix package_ipkg.cgi
 
 FIXED -status.cgi, handle comments and cups additions in /etc/printcap
 
--long standing issue: sntp/ntpd will issue the following error with the first built:
-	# sntp pt.pool.ntp.org
-	sntp: can't resolve symbol '__aeabi_d2iz'
-	
-	this happens either with the stripped or non stripped binary.
-	one must remove the binaries from the rootfs and source and rebuild
-	the package. After that it works fine... build problem?
-
-	-this also happens with package nano.
-
-	The missing symbols are defined in /lib/libgcc_s.so.
-	Why are they not used?! ld (/lib/ld-uClibc-0.9.30.3.so) problem?
-
-	The problem is not the app, it seems to be in libm. It happens
-	after removing the "project_build_arm/dns323/root" directory and
-	doing a make again. The second make don't make libraries in /lib
-	correctly.
-
-	******** FOR A RELEASE, ALWAYS DO A FRESH BUILD! ***************
-
-
--add -o owner:group option to "mkpkg.sh" so ipkg-build can use it to
-	create the package files with another ownership
-
 DONE -Add a don't cache passwd in the login/again page, as is done in the
 	System Utilities->Change password
 
 FIXED -After changing the host IP in the host setup page, it will not change
 
 DONE -Sort the packages by name in ipkg web manager
-	
--The DHCP udhcpc script /usr/share/udhcpc/default.script should do more
-	configuration files and daemons signaling updates.
-	It is already done in rcS, use it.
-	FIXED -The script, at first boot, does not has a hostname.
-	DONE -The host setup web page in DHCP mode also.
-
-
--iconv.h is removed from the stagging dir by buildroot! it says something
-	like "removing iconv.h as locale is not defined".
-	It comes from uClibc
-	$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3/Makefile.in
-	as UCLIBC_HAS_XLOCALE is not defined, iconv.h is removed, even if
-	it is not from uClibc.
-	Note that this happens on the *second* initial build, not the first!
-	(this is do a "make -O=...", followed for a second one)
-	No solution? Patch this? hmmm
-	Created a uClibc-0.9.30.3-iconv-h.patch, put in toolchain/uClibc lets see...
 
 DONE -Add a configure button for each inetd service
 	(dropped when splited inetd from network services)
-
--fix disk-proc.cgi:
-	-if changing filesystem type from/to ext to vfat/ntfs or
-	 vice-versa, the partition type must be changed too
-	-also, fstab must be flushed, as labels/partition might have changed
 
 FIXED -lpstat: Connection refused in web status page, when cups is not running
 
@@ -135,32 +69,15 @@ DONE -add some feedback when downloading ipkg packages
 
 DONE -show error status if ipkg fails for some reason
 
--read aufsutils carefully, to see if they are needed.
-	Alt-F has already used them, but currently don't
-
--The disk maker name does not appear in Disc Utilities (but appears in Status)
-
--ipkg frontend, aufs.sh, packages_ipkg_proc.cgi and hot.sh needs to be
-	fixed. Each one of them mounts/create /Alt-F in its own way!
-	-aufs.sh install should be called by ipkg -install
-	-aufs.sh inotify/reval be called before/afters ipkg calls ipkg-cl
-	-aufs.sh mount/umount be called by hot.sh
-	-ipkg -install be called by packages_ipkg_proc.cgi install
-	-aufs.sh be called by packages_ipkg_proc.cgi
-
 FIXED -host.cgi/host_proc.cgi: there is a bug when changing workgroup. The
 	new workgroup becomes "oldwk" which is the name of a hidden
 	input form... it seems to only hapens the *first* time it is changed
 	
-
-DONE -ipkg:	web manager only supports one feed!
+DONE -ipkg: web manager only supports one feed!
 
 DIAGNOSED -nfs not working: MTU must be the same on both hosts! or else the msg
 	received packet spanning multiple descriptors
 	It was using udp as transport medium, which cause that problem in Gbps networks
-	
--big MTU (>3712) generate lots of "page allocation failure", which impair the
-	performance
 
 FIXED -web login does not work if date is incorrect and timezone has been set
 	If the box time is ahead of the real time, the web cookie expiration
@@ -201,17 +118,15 @@ CHECKED -check --spare-devices usage in diskpart and diskwizard with raid1, raid
 
 DONE -do a mdadm --scan at diskpart/diskwiz end to regenerate /etc/mdadm.comf
 
-DONE -set disk sleep timeout in rcS, as settings are not yet loaded at start when
- hotplugging disks.
+DONE -set disk sleep timeout in rcS, as settings are not yet loaded at start
+	when hotplugging disks.
 
--when RAID is recovering/syncing, sysctrl is continuously reporting
+FIXED -when RAID is recovering/syncing, sysctrl is continuously reporting
 	a disk wakeup.
 
--sysctrl: add mail sent on warning/critical temperature
+DONE -sysctrl: add mail sent on warning/critical temperature
 
 DONE -sysctrl: add restore (start telnetd, clear settings?) option through box back button
-
--partition erase on usb disk gave a "not space on disk" dd error!?
 
 DONE -partition erase dd output appears on output, direct it to /dev/null
 
@@ -226,21 +141,6 @@ DONE -diskpart: add the possibility of Save/Load the partition table to/from the
 	users desktop PC.
 	for now, only on the box volatile /tmp
 
--diskpart: enable Save/Load the partition table to/from the users desktop PC. See above
-
--diskpart: needs feedback on lenghly operations! (as diskwizard does)
-
--ntpd: /etc/ntpd.drif should be in /var/lib/ntp, not in flash, as it is likely to change
-	during operation; the disadvantage is that it is lost after a reboot.
-	However, when a package is installed and Alt-F aufs is working,
-	the drift file is keept in disk surviving reboots.
-	On the other side his has the disadvantage of waking-up the disk when
-	the drift file needs to be written -- use the "driftfile driftfile [
-	minutes  [ tolerance ] ]" configuration options (see ntp-4.2.4p5/html/miscopt.html)
-
--when in DHCP mode, supply -h <hostname> to udhcpc,
-	is builtin in the udhcp code, to fix need to edit sources... not for now
-
 DONE -firmware web page:
 	DONE -update flash time from 90 sec to 100 sec
 	-change clear/flash settings. 
@@ -249,8 +149,6 @@ DONE -diskpart web page: don't allow changing an extended partition!
 	implemented so that one can change it, one can't is create one
 
 DONE -dnsmasq: time server: offer no advertise, advertise local, advertise server-name
-
--spaces in filenames/paths are problematic for NFS. Use octal for spaces? '\040'
 
 FIXED -fix /var/xx links. At least /var/spool is wrong, should point to disk
 
@@ -270,11 +168,6 @@ FIXED -the sysctrl "left/right disk (sdb) wakeup" (only, not standby) message co
 	while the raid is: State : clean, degraded, recovering, spare rebuilding 
 	degraded=1, sync_action=recover, array_state=clean
 
--diskpart: when creating a new raid array, when one already exists, does not takes
-	into account the already allocated minor. As result, one of the two raid
-	is not assembled.
-	FIX: examine prefered minor on already existing raid partitions
-
 DONE -diskpart/diskwizard: all services are first stopped -- should they be restarted
 	afterwards? Not all, partitions have changed, some needed fs may not even exists.
 	But some services, those not dependind on fs, syslog and inetd e.g.
@@ -285,5 +178,250 @@ DONE -remote filesys: the mountpoint, tipically /mnt/xxx, is volatile. It needs 
 	/etc/fstab and create the mountpoints?
 	After starting services, rcS can do a "mount -t cifs/nfs"
 
--remote filesys: at rcE time, they must be unmounted after killing processes
-	but before stopping the services -- at least nfs!
+DONE -raid page: can't destroy linear/raid0.	raid0/linear has to have some operations available
+
+HALF DONE -eject: think of a possibility of stopping arrays.
+	currently, eject (through hot.sh) removes the partitions of the disk to be
+	ejected from a raid array that contains it. This means that it will undergo
+	a lenghly rebuild when latter loaded (eject -r)
+	For some operations, however, the array should be stoped (disk part, e.g)
+	- eject now supports a "-a" option to "eject" all disks
+
+DONE -nfs: create a nfs-client init script, for mounting remote filesystems, without
+	the need to start the nfs server just for this.
+
+DONE -disk details such as name, family, capacity, SN, etc, should be collected by hot.sh
+	and put at /etc/bay:
+	left_dev=sda
+	left_cap="320 GB"
+	left_fam="SAMSUNG SpinPoint T166 series"
+	left_mod="SAMSUNG HD321KJ"
+	left_sn="S0MQJ1QP506705"
+
+FIXED -Partitioning: /usr/bin/eject: .: line 132: can't open '/etc/bay' 
+	/etc/bay, inetd.conf, rsyncd.conf, passwd !! (at least) disappears
+	-seems to be related with having Alt-F aufs mounted during the partitioning
+	-it was a typo, "rm" instead of a "mv" in loadsave_settings
+
+DONE -create a directory creation/edition web page:
+	-create the directory, assign it to a group, and set permissions
+	-show all dirs to modify it? No, browse for it!
+
+DONE -offer the possibility of recovering the original firmware settings from mtdblock1 when
+	flashing a vendor's firmware and in the settings web page
+	-only on the Firmware Updater
+
+FIXED -login: when the login page opens, if one ignore it and goto other page, it is accepted!!!
+	NO /etc/web-secret, no /tmp/cookie, do logout and instead of supplying a password
+	or submiting empty password, just navigate to a page that *should* need
+	authentication. check_cookie() seems to fail, as you can go to any page!
+
+FIXED -uhdcpc update script keeps appending Allow directives to /etc/httpd.conf
+
+FIXED -httpd services->network->inetd->httpd: currently only the first Allowed host appears to
+	be edited.
+	only one host/net allowed, use a #!# comment to distinguish from local net,
+	which also #!# commented
+
+DONE perms: add a apply recursively to all subdirs, and apply owner:group recursively to all files
+
+FIXED rcatd start: Cannot change to /var/lib/atjobs: Permission denied
+	# l /var/lib
+	drwxrwx--T    2 root     root         4096 Nov 20 05:50 atjobs
+	drwxrwx--T    2 root     root         4096 Nov 20 05:50 atspool
+
+
+HALF FIXED spaces in fstab: patch applied to uclibc, now fix all scripts and web page...
+	DONE: nfs*.cgi and smb*.cgi
+	TODO: mountpoints still get spaces replaced by underscores.
+	      But first check it possible!!!
+
+FIXED -samba credentials: the username must be the the windows one, no commas if space, do as in:
+	username=Manuela Lima
+	The problem is if one user has both windows and unix accounts... how to do it?
+
+DONE backup:
+	DONE -add users to backup group at user creation time? yes. Make backup group visible? no
+	DONE -the backup script should be run by the user who ownes the origin directory.
+	 For nfs this makes a difference, if the original files don't have permissions
+	 for others or group and nfs is root_squashed
+	 A nice side effect is that the backup files also belong to the same user.
+	DONE: hot.sh: create a link /Backup to point to the backup dir
+	FIXED: -there are problems with spaces in fstab! 040 or \040 or \ does not seems to work
+		(but filesystems mounted by label still replace spaces in labels/mp with underscore)
+
+	-an example of cifs mount: see the above "samba credentials" entry
+	 mount -t cifs -o rw,nounix,noserverino,iocharset=utf8,uid=mlima,gid=users,credentials=/etc/samba/credentials.mlima \
+		"//mono/Users/Manuela Lima" /mnt/smb
+
+FIXED package/config/mconf-qconf are binaries in SVN
+
+FIXED vsftp*.cgi assumes capital YES/NO in vsftpd.conf, anon_root not quoted
+
+FIXED browse_dir doesn't transverse directories with spaces in its name
+
+HALF DONE, see below
+	-remote filesys: at rcE time, they must be unmounted after killing processes
+	but before stopping the services -- at least nfs! Keep reading
+
+rcnfs-client stop: unmount first filesystem! keep reading
+
+DONE rcE: services are stopped first to unmount filesystem, as they can be using the filesystems.
+	problem is that one of those services is nfs*; when latter one tries to unmount
+	nfs filesystem, nfs is already dead.
+	So, stopping nfs should be conditional on the existence of nfs mounted filesystems,
+	 or should it unmount filesystems? 
+	there ar now nfs-client, that umounts mounted nfs filesys
+	rcE calls "rcall stop" that stops nfs-client and then nfs, then "eject -a"
+	
+FIXMED -mkreloaded.sh tries to access ../wiki!
+
+-login expires after 1 hour: on each new check_cookie, send a new cookie, valid for 10mins
+
+-eject -a: does not return error when a filesystem can't be unmounted
+
+DONE -usersgroups should detect that home diretories are  missing, even if there
+	exists users
+
+-create a applyfix script to be executed by hot.sh. If a file named Alt-F-*.fix is
+	found in the root directory of any mounted filesystem, apply it as a patch.
+	The script shall also be directly invoked.
+
+-Fix the pkg-config and host-pkgconfig mess
+	Read the package/pkg-config.mk comments
+	Merge pkg-config and host-pkgconfig, with an option to create
+	only on the host
+
+-Change Alt-F directory name to .Alt-F, to make it "invisible" to most users
+	-or use the bind technique explained in aufs page?:
+
+		hide=/tmp/.aufs.hide
+		mkdir $hide
+		mount -n --bind $hide /Alt-F
+
+		When you unmount the aufs, delete/modify the branch by
+		remount, or you want to show the hidden branches again,
+		unmount the bound /tmp/.aufs.hide.
+
+		umount -n /Alt-F
+	-just call it .Alt-F
+
+-long standing issue: sntp/ntpd will issue the following error with the first built:
+	# sntp pt.pool.ntp.org
+	sntp: can't resolve symbol '__aeabi_d2iz'
+	
+	this happens either with the stripped or non stripped binary.
+	one must remove the binaries from the rootfs and source and rebuild
+	the package. After that it works fine... build problem?
+
+	-this also happens with package nano.
+
+	The missing symbols are defined in /lib/libgcc_s.so.
+	Why are they not used?! ld (/lib/ld-uClibc-0.9.30.3.so) problem?
+
+	The problem is not the app, it seems to be in libm. It happens
+	after removing the "project_build_arm/dns323/root" directory and
+	doing a make again. The second make don't make libraries in /lib
+	correctly.
+
+	******** FOR A RELEASE, ALWAYS DO A FRESH BUILD! ***************
+
+
+-add -o owner:group option to "mkpkg.sh" so ipkg-build can use it to
+	create the package files with another ownership
+	
+DONE -The DHCP udhcpc script /usr/share/udhcpc/default.script should do more
+	configuration files and daemons signaling updates.
+	It is already done in rcS, use it.
+	FIXED -The script, at first boot, does not has a hostname.
+	DONE -The host setup web page in DHCP mode also.
+
+-iconv.h is removed from the stagging dir by buildroot! it says something
+	like "removing iconv.h as locale is not defined".
+	It comes from uClibc
+	$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3/Makefile.in
+	as UCLIBC_HAS_XLOCALE is not defined, iconv.h is removed, even if
+	it is not from uClibc.
+	Note that this happens on the *second* initial build, not the first!
+	(this is do a "make -O=...", followed for a second one)
+	No solution? Patch this? hmmm
+	Created a uClibc-0.9.30.3-iconv-h.patch, put in toolchain/uClibc lets see...
+
+FIXED -fix diskmaint_proc.cgi:
+	-if changing filesystem type from/to ext to vfat/ntfs or
+	 vice-versa, the partition type must be changed too
+	-also, fstab must be flushed, as labels/partition might have changed
+
+-read aufsutils carefully, to see if they are needed.
+	Alt-F has already used them, but currently don't
+
+CHANGED -The disk maker name does not appear in Disc Utilities (but appears in Status)
+
+DONE -ipkg frontend, aufs.sh, packages_ipkg_proc.cgi and hot.sh needs to be
+	fixed. Each one of them mounts/create /Alt-F in its own way!
+	-aufs.sh install should be called by ipkg -install
+	-aufs.sh inotify/reval be called before/afters ipkg calls ipkg-cl
+	-aufs.sh mount/umount be called by hot.sh
+	-ipkg -install be called by packages_ipkg_proc.cgi install
+	-aufs.sh be called by packages_ipkg_proc.cgi
+	
+UNCOVERED -big MTU (>3712) generate lots of "page allocation failure", which impair the
+	performance
+	mem alloc is done by slab; slab uses 4096 bytes pages; one frame seems to use
+	MTU+384 bytes; with a greater MTU, slab has to allocate 2 memory-contiguos pages
+	from the "buddy" allocator. At power up, that is not problem, but after memory
+	being fragmented it can be.
+	the network driver allocated space for ~130 frames when "ifconf eth0 mtu NN"
+	is performed. See network driver memory usage by alternatimg "ifconfig ... MTU NN" 
+	with "cat /proc/slabinfo | grep size-"
+
+-partition erase on usb disk gave a "not space on disk" dd error!?
+
+-diskpart: enable Save/Load the partition table to/from the users desktop PC. See above
+
+DONE -diskpart: needs feedback on lenghly operations! (as diskwizard does)
+
+-ntpd: /etc/ntpd.drif should be in /var/lib/ntp, not in flash, as it is likely to change
+	during operation; the disadvantage is that it is lost after a reboot.
+	However, when a package is installed and Alt-F aufs is working,
+	the drift file is keept in disk surviving reboots.
+	On the other side his has the disadvantage of waking-up the disk when
+	the drift file needs to be written -- use the "driftfile driftfile [
+	minutes  [ tolerance ] ]" configuration options (see ntp-4.2.4p5/html/miscopt.html)
+
+-when in DHCP mode, supply -h <hostname> to udhcpc,
+	is builtin in the udhcp code, to fix need to edit sources... not for now
+
+FIXED -spaces in filenames/paths are problematic for NFS. Use octal for spaces? '\040'
+
+-diskpart: when creating a new raid array, when one already exists, does not takes
+	into account the already allocated minor. As result, one of the two raid
+	is not assembled.
+	FIX: examine prefered minor on already existing raid partitions
+	NO: use mdadm --examine --scan -v
+
+-networking: add a test button that tests internet connectivity
+	-ping the gateway and nslookup a well know host
+
+FIXED -diskpart: the free space is only calculated when one clicks another size input field.
+	-recalculate on mouseout
+
+FIXED status page: smbstatus is badly parsed when share names have spaces on it
+	status.cgi show wrongs in "Remotely Mounted Filesystems" CIFS
+
+dir_proc.cgi has some issues with spaces in paths in the parent directory of the current
+	directory
+
+create a spindown package, based on spindown.sh
+
+offer possibility of uninstalling Alt-F, by removing the fun_plug and alt-f, Alt-F directories.
+	or at least change its ownership to nobody.
+	The problem is that they are owned by root, and can't be deleted using samba.
+	does ftp works?
+
+disk wizard: Still has one weak point: "eject -a" does not returns in/sucess,
+	so the wizard continues even if some filesystems were not unmounted!
+	fix eject -a!
+
+
+check if dnsmasq.cgi fully qualifies the network, or if it restricts to class C
