@@ -43,10 +43,8 @@ if ! test -f alt-f/README.INSTALL -a -f alt-f/README.USE; then
 	mkdir -p alt-f
 	if test -d ../../wiki; then
 		(cd ../../wiki; svn update)
-		cp ../../wiki/HowToUse.wiki ../README.USE
 		cp ../../wiki/HowToInstall.wiki ../README.INSTALL
 	fi
-	if ! cp ../README.USE alt-f/README.USE; then exit 1; fi
 	if ! cp ../README.INSTALL alt-f/README.INSTALL; then exit 1; fi
 	cp ../LICENCE ../COPYING alt-f
 fi
