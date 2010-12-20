@@ -1,3 +1,43 @@
+DEcenber 20, 2010: Alt-F-0.1B6 Released
+
+What's new:
+	-kernel 2.6.36.2, nfs-utils back to version 1.2.1
+	-terse report from vaughnd12 confirms that rev-A1 boards are now working.
+	 (tanks to Philster76 and KRH for initial testing)
+	-partitioning and filesystem web pages spliced and RAID web page created
+	-Filesystems, RAID, and Partitioner web pages are now simpler
+	-Disk Partitioner and Wizard now unconditionally aligns partitions on 4K boundaries
+	-Disk Partitioner now has an advanced mode
+	-Directory Browser web page with enhanced (but slow) browsing and
+	 with directory copy/cut/move/create/delete capabilities
+	-Directory Ownership and Access Permissions web page
+	-backup support and Backup Manager administering web pages (preliminary)
+	 backups local directories and directories mounted by NFS/CIFS
+	-Remote syslog support and administering web pages (contribution from Augusto Bott)
+	-Firmware updater web page now enables recovering original vendor's settings from backup
+	 (untested if effective, there are some differences between backup and original)
+	-Status web page only shows what exists
+	-Spaces allowed in paths in /etc/fstab and /etc/exports (use\040as\040space)
+	 and processed by smb and nfs web pages. NFS complains but works.
+	 mounts by filesystem labels still replace spaces with underscores.
+	-Speed improvement in web pages that deals with disk
+	-Countless improvements and bug fixes.
+
+-Users with an Alt-F flashed box should use the *TryIt* option in the Firmware Updater
+ web page before actually flashing it, as incompatibilities might happen. Its Beta!
+
+-There are a few identified incompatibilities between B5 and B6. If you have only slightly
+ changed settings, the recomended procedure is to clear settings before starting using.
+ If you dont' want to clean settings, the file Alt-F_B5_to_B6.fix script tryies to fixes them.
+ Before using or flashing Alt-F-01.B6, telnet/ssh the box, and execute the script.
+ After doing it don't save settings until start using B6. Other incompatibilities might arise.
+
+I will now start updating disk-instalable packages and fix 0.1B6 reported bugs.
+No more features are expected in the base firmware, but (micro)emacs and ncurses
+will be removed and turned into packages.
+
+Hopefully the next release will be 0.1
+
 October 22, 2010: Alt-F-0.1B5 released
 
 What's new:
@@ -13,8 +53,8 @@ What's new:
 		-tooltip support with demos in some pages
 	-disaster recovery:
 		-no password asked when connecting through the serial port
-		-back button opens telnetd without password on port 26, or clears flash
-	-DHCP/DNS web page splited and Hosts page created
+		-back button opens telnet without password on port 26, or clears flash
+	-DHCP/DNS web page spliced and Hosts page created
 	-simplified samba configuration web page (swat is still there)
 	-several improvements and bug fixes
 
@@ -47,9 +87,9 @@ Known Issues:
 	 or network cards. 100/10Mbps switch or routers won't work.
 
 	-ghostscrip/hplip can fail with an "Unable to get scanline 0/1" error,
-	 and cups does not noticies it, sending the print job to the printer,
+	 and cups does not notices it, sending the print job to the printer,
 	 which prints a black page, wasting all your cartridge ink.
-	 After configure the printer in cups, DISCONECT THE PRINTER and print
+	 After configure the printer in cups, DISCONNECT THE PRINTER and print
 	 a test page. If in the State column of cups jobs web page, or using
 	 "lpstat -p" you see a  "Unable to get scanline 0/1" message,
 	 CANCEL THE PRINT JOB AND DON'T USE THAT PRINT CONFIGURATION.
@@ -94,9 +134,9 @@ Known Issues:
 	 or network cards. 100/10Mbps switch or routers won't work.
 
 	-ghostscrip/hplip can fail with an "Unable to get scanline 0/1" error,
-	 and cups does not noticies it, sending the print job to the printer,
+	 and cups does not notices it, sending the print job to the printer,
 	 which prints a black page, wasting all your cartridge ink.
-	 After configure the printer in cups, DISCONECT THE PRINTER and print
+	 After configure the printer in cups, DISCONNECT THE PRINTER and print
 	 a test page. If in the State column of cups jobs web page, or using
 	 "lpstat -p" you see a  "Unable to get scanline 0/1" message,
 	 CANCEL THE PRINT JOB AND DON'T USE THAT PRINT CONFIGURATION.
@@ -134,4 +174,4 @@ available (some of them were not even tested)
 -Fixed fun_plug 
 
 
-xxxx, xx, 2010: Alt-F-0.1B1 released
+March, 26, 2010: Alt-F-0.1B1 released
