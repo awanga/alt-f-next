@@ -14,9 +14,12 @@ if test -n "$BackupNow"; then
 
 elif test -n "$Submit"; then
 
+	rm -f $CONF
+
 	dstpath="/Backup"
 
 	for i in $(seq 0 $cnt_know); do
+		cmtd=""; type=""; runas=""; srcpath=""; when="";  at=""; log=""; nlogs=""
 		id=$i
 		cmtd="$(eval echo \$cmtd_$i)"
 		type="$(eval echo \$bck_type_$i)"
@@ -36,7 +39,7 @@ elif test -n "$Submit"; then
 	done
 
 	if rcbackup status >& /dev/null; then
-		rcdbackup reload >& /dev/null
+		rcbackup reload >& /dev/null
 	fi
 
 elif test -n "$CreateDir"; then
