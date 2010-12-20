@@ -69,134 +69,119 @@ cat<<-EOF
 	<form id="diskm" name="diskm" action="/cgi-bin/diskmaint_proc.cgi" method="post">
 	<fieldset><Legend> <strong> Filesystems </strong> </legend>
 EOF
+	
+cat<<-EOF
+	<table><tr align=center><th>Dev.</th><th>Size</th>
+	<th>FS</th>
+	<th>Label</th>
+	<th>FS Operations</th>
+	<th colspan=2>New FS Operations</th>
+	</tr>
+EOF
 
-#if ! blkid -c /dev/null -s TYPE -o value | 
-#	grep -q '\(ext2\|ext3\|ext4\|vfat\|ntfs\)'; then
-if false; then
-	echo "None"
-else
-	
-	cat<<-EOF
-		<table><tr align=center><th>Dev.</th><th>Size</th>
-		<th>FS</th>
-		<th>Label</th>
-		<th>FS Operations</th>
-		<th colspan=2>New FS Operations</th>
-		</tr>
-	EOF
-	
-	# is ntfsprogs pkg installed?
-	ntfs_dis="disabled"
-	if test -f /usr/sbin/mkntfs; then
-		ntfs_dis=""
+# is ntfsprogs pkg installed?
+ntfs_dis="disabled"
+if test -f /usr/sbin/mkntfs; then
+	ntfs_dis=""
+fi
+
+blk=$(blkid -c /dev/null -s LABEL -s TYPE)
+ppart=$(cat /proc/partitions)
+i=1
+for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
+	part=$(basename $j)
+
+	if test ${part:0:2} = "md"; then
+		if ! test -f /sys/block/$part/md/array_state; then continue; fi
+		if test "$(cat /sys/block/$part/md/array_state)" = "inactive"; then continue; fi
+	else # is an extended partition?
+		if test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then continue; fi
 	fi
-	
-	blk=$(blkid -c /dev/null -s LABEL -s TYPE)
-	ppart=$(cat /proc/partitions)
-	i=1
-	for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
-		part=$(basename $j)
 
-		if test ${part:0:2} = "md"; then
-			if ! test -f /sys/block/$part/md/array_state; then continue; fi
-			if test "$(cat /sys/block/$part/md/array_state)" = "inactive"; then continue; fi
-		else
-			# is an extended partition?
-			if test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then continue; fi
-		fi
-	
-		LABEL=""; TYPE="none"
-		eval $(echo "$blk" | sed -n '\|^'$j':|s|.*:||p');
-	
-		# partitions that where once a component raid can appear as mdraid
-		if test "$TYPE" = "swap" -o "$TYPE" = "mdraid"; then continue; fi
-	
-		otype=$TYPE
-	
-		all_dis=""
-		if test "$TYPE" = "none"; then
-			all_dis="disabled"
-			otype="<font color=red>$TYPE</font>"
-		fi
-	
-		conv_en="disabled"
-		if test "$TYPE" = "ext2" -o "$TYPE" = "ext3"; then conv_en=""; fi
-	
-		clean_en=""; label_en=""
-		if test "$TYPE" = "ntfs" -a -n "$ntfs_dis"; then
-			clean_en="disabled"
-			label_en="disabled"
-		fi
-	
-		resize_en=""
-		if test "$TYPE" = "vfat" -o "$TYPE" = "ntfs"; then
-			resize_en="disabled"
-			otype="<font color=blue>$TYPE</font>"
-		fi
-	
-		if isdirty $part; then otype="<font color=red>$TYPE</font>"; fi
+	LABEL=""; TYPE="none"
+	eval $(echo "$blk" | sed -n '\|^'$j':|s|.*:||p');
 
-		if ismount $part; then
-			# only works for mounted partitions
-			pcap=$(df -h /dev/$part | awk '/'$part'/{printf "%sB", $2}')
-			mtd="<option value=unMount>Unmount</option>"
-		else
-			# filesystem does not have to fill the partiton, signal it
-			pcap=$(awk '/'$part'/{printf "<font color=blue>%.1fGB</font>", $3/1048576}' /proc/partitions)
-			mtd="<option>Mount</option"
-		fi
-	
+	# partitions that where once a component raid can appear as mdraid
+	if test "$TYPE" = "swap" -o "$TYPE" = "mdraid"; then continue; fi
+
+	otype=$TYPE
+
+	all_dis=""
+	if test "$TYPE" = "none"; then
+		all_dis="disabled"
+		otype="<font color=red>$TYPE</font>"
+	fi
+
+	conv_en="disabled"
+	if test "$TYPE" = "ext2" -o "$TYPE" = "ext3"; then conv_en=""; fi
+
+	clean_en=""; label_en=""
+	if test "$TYPE" = "ntfs" -a -n "$ntfs_dis"; then
+		clean_en="disabled"
+		label_en="disabled"
+	fi
+
+	resize_en=""
+	if test "$TYPE" = "vfat" -o "$TYPE" = "ntfs"; then
+		resize_en="disabled"
+		otype="<font color=blue>$TYPE</font>"
+	fi
+
+	if isdirty $part; then otype="<font color=red>$TYPE</font>"; fi
+
+	if ismount $part; then
+		# only works for mounted partitions
+		pcap=$(df -h /dev/$part | awk '/'$part'/{printf "%sB", $2}')
+		mtd="<option value=unMount>Unmount</option>"
+	else
+		# filesystem does not have to fill the partiton, signal it
+		pcap=$(awk '/'$part'/{printf "<font color=blue>%.1fGB</font>", $3/1048576}' /proc/partitions)
+		mtd="<option>Mount</option"
+	fi
+
+	cat<<-EOF
+		<tr>
+		<td>$part</td>
+		<td align=right>$pcap</td>
+	EOF
+
+	fs_progress $part # ln is global
+	if test -n "$ln"; then
 		cat<<-EOF
-			<tr>
-			<td>$part</td>
-			<td align=right>$pcap</td>
+			<td><font color=RED>$ln</font></td>
 		EOF
-	
-		working=""
-		for k in clean format convert shrink enlarg wip; do
-			if test -f /tmp/$k-$part; then
-				#if test -d /proc/$(cat /tmp/$k-$part.pid); then
-				if kill -1 $(cat /tmp/$k-$part.pid) 2> /dev/null; then
-					working="yes"
-					echo "<td><font color=RED>${k}ing</font></td></tr>"
-				else
-					rm -f /tmp/$k-$part*
-				fi
-			fi
-		done
-	
-		if test -z "$working"; then
-			cat<<-EOF
-				<td align=center>$otype</td>
-				<td><input $all_dis type=text size=10 name=lab_$part value="$LABEL"></td>
-				<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part')">
-					<option>Operation</option>
-					$mtd
-					<option $clean_en>Clean</option>
-					<option $label_en value=setLabel>Set Label</option>
-					<option $resize_en>Shrink</option>
-					<option $resize_en>Enlarge</option>
-					<option>Wipe</option>
-				</select</td>
-				<td><select id=fsfs_$part name="type_$part">
-					<option>New FS</option>
-					<option>ext2</option>
-					<option>ext3</option>
-					<option>ext4</option>
-					<option>vfat</option>
-					<option $ntfs_dis>ntfs</option>
-				</select></td>
-				<td><select id="fs_$part" name="$part" onChange="msubmit('fs_$part', '$part')">
-					<option>Operation</option>
-					<option >Format</option>
-					<option $all_dis $conv_en >Convert</option>
-				</select></td></tr>
-			EOF
-		fi
-		i=$((i+1))
-	done
+	fi
 
-fi # no filesystems
+	if test -z "$ln"; then
+		cat<<-EOF
+			<td align=center>$otype</td>
+			<td><input $all_dis type=text size=10 name=lab_$part value="$LABEL"></td>
+			<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part')">
+				<option>Operation</option>
+				$mtd
+				<option $clean_en>Clean</option>
+				<option $label_en value=setLabel>Set Label</option>
+				<option $resize_en>Shrink</option>
+				<option $resize_en>Enlarge</option>
+				<option>Wipe</option>
+			</select</td>
+			<td><select id=fsfs_$part name="type_$part">
+				<option>New FS</option>
+				<option>ext2</option>
+				<option>ext3</option>
+				<option>ext4</option>
+				<option>vfat</option>
+				<option $ntfs_dis>ntfs</option>
+			</select></td>
+			<td><select id="fs_$part" name="$part" onChange="msubmit('fs_$part', '$part')">
+				<option>Operation</option>
+				<option >Format</option>
+				<option $all_dis $conv_en >Convert</option>
+			</select></td></tr>
+		EOF
+	fi
+	i=$((i+1))
+done
 
 CONFT=/etc/misc.conf
 

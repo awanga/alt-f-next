@@ -41,7 +41,7 @@ lmount() {
 	fi
 }
 
-# clean %1=part %2=type $3=name
+# clean $1=part $2=type $3=name
 clean() {
 
 	case $2 in
@@ -50,12 +50,13 @@ clean() {
 		ntfs) opts="" ;;
 		*) 	opts="" ;;
 	esac
+	logf=/tmp/${3}-${1}.log
 
 	cat<<-EOF > /tmp/$3-$1
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		res="\$(fsck $opts /dev/$1 2>&1)"
+		fsck $opts -C /dev/$1 > $logf 2>&1
 		st=\$?
 		if test "\$st" = 0 -o "\$st" = 1; then
 			logger "Cleaned /dev/$1 OK"
@@ -63,7 +64,7 @@ clean() {
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
 			exit 0
 		fi
-		logger "Cleaning /dev/$1 failed with error code \$st. \$res"
+		logger "Cleaning /dev/$1 failed with error code \$st. \$(cat $logf)"
 	EOF
 
 	chmod +x /tmp/$3-$1
@@ -79,15 +80,16 @@ format() {
 		ntfs) opts="-f"; id=7 ;; # 7 HPFS/NTFS
 		*) msg "Wrong filesystem type." ;;
 	esac
+	logf=/tmp/format-${1}.log
 
 	cat<<-EOF > /tmp/format-$1
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		res="\$(eval mkfs.$2 $opts /dev/$1 2>&1)"
+		mkfs.$2 $opts -v /dev/$1 > $logf 2>&1
 		st=\$?
 		if test \$st != 0; then
-			logger "Formating /dev/$1 with $2 failed with code \$st: \$res"
+			logger "Formating /dev/$1 with $2 failed with code \$st: \$(cat $logf)"
 			exit 1
 		fi
 		logger "Formated /dev/$1 with $2 OK"
@@ -130,21 +132,23 @@ resize() {
 		lumount $1 "${2}ing"
 	fi
 
+	logf=/tmp/${2}-${1}.log
+
 	cat<<-EOF > /tmp/$2-$1
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		res="\$(fsck -fy /dev/$1 2>&1)"
+		fsck -fy -C /dev/$1 > $logf 2>&1
 		st=\$?
 		if ! test "\$st" = 0 -o "\$st" = 1; then
-			logger "Cleaning /dev/$1 failed with error code \$st: \$res"
+			logger "Cleaning /dev/$1 failed with error code \$st: \$(cat $logf)"
 			exit 1
 		fi
 		logger "Cleaned /dev/$1 OK"
 		
-		res="\$(resize2fs /dev/$1 $nsz 2>&1)"
+		resize2fs -p /dev/$1 $nsz > $logf 2>&1
 		if test $? != 0; then
-			logger "${2}ing /dev/$1 failed: $res"
+			logger "${2}ing /dev/$1 failed: \$(cat $logf)"
 			exit 1
 		fi
 		logger "${2}ing /dev/$1 succeeded"
@@ -182,8 +186,6 @@ read_args
 		    
 #debug
 
-CONFB=/etc/bay
-CONFTB=/etc/fstab
 CONFT=/etc/misc.conf
 
 if test "$Submit" = "tune"; then
