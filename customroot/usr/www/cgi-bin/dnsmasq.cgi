@@ -24,8 +24,8 @@ hostip=$(hostname -i)
 netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 hostnm=$(hostname -s)
 hostfnm=$(hostname -f)
-eval $(ipcalc -ns $hostip $netmask)
-net=$(echo $NETWORK | cut -d. -f1-3)
+#eval $(ipcalc -ns $hostip $netmask)
+#net=$(echo $NETWORK | cut -d. -f1-3)
 
 eval $(awk -F"," '/dhcp-range=/{printf "lrg=%s; hrg=%s; lease=%s",
 	 substr($1,12), $2, $3}' $CONF_F)
