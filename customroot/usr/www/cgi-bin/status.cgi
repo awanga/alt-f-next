@@ -314,22 +314,13 @@ if test -n "$smbm" -o -n "$nfsm"; then
 	EOF
 
 	if test -n "$smbm"; then
-		echo "$smbm" | while read ln; do
-			eval $(echo "$ln" | awk '{ 
+		echo "$smbm" | awk '{ 
 				srv = NF - 7
 				pos = index($0, $(srv + 1))
 				share = substr($0, 1, pos-1)
 				host = $(srv+2)
-				printf "share=\"%s\"; host=\"%s\"", share, host 
-			}')
-
-			if checkip "$host"; then
-				if ! th=$(awk '/^'$host'/{print $3; exit 1}' /etc/hosts); then
-					host=$th
-				fi
-			fi
-			echo "<tr><td>$host</td><td>$share</td><td>cifs</td></tr>"
-		done
+				printf "<tr><td>%s</td><td>%s</td><td>cifs</td></tr>\n", host, share
+			}' | sort -u
 	fi
 
 	if test -n "$nfsm"; then
@@ -371,7 +362,7 @@ if test -n "$pso"; then
 		fi
 		echo "<tr><td>$i</td><td>$bdir</td><td align=center>$st</td></tr>"
 	done
-	echo "<table></fieldset>"
+	echo "</table></fieldset><br>"
 fi
 
 if test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
