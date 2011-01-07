@@ -136,7 +136,7 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 	else
 		# filesystem does not have to fill the partiton, signal it
 		pcap=$(awk '/'$part'/{printf "<font color=blue>%.1fGB</font>", $3/1048576}' /proc/partitions)
-		mtd="<option>Mount</option"
+		mtd="<option>Mount</option>"
 	fi
 
 	cat<<-EOF
@@ -164,7 +164,7 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 				<option $resize_en>Shrink</option>
 				<option $resize_en>Enlarge</option>
 				<option>Wipe</option>
-			</select</td>
+			</select></td>
 			<td><select id=fsfs_$part name="type_$part">
 				<option>New FS</option>
 				<option>ext2</option>

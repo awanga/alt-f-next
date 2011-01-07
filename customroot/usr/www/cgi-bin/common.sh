@@ -352,7 +352,7 @@ cat<<EOF
 		position: absolute;
 		visibility: hidden;
 	}
-	</style
+	</style>
 EOF
 }
 

@@ -59,7 +59,7 @@ cat<<-EOF
 			<option $zoneedit> zoneedit.com
 			<option $noip> no-ip.com
 		</select></td></tr>
-	<tr><td><div id=host_id>hostname:</div</td>
+	<tr><td><div id=host_id>hostname:</div></td>
 		<td><input type="text" value="$alias" name="host" $(ttip tt_host)></td></tr>
 	<tr><td>username:</td>
 		<td><input type="text" $updis value="$username" name="user"></td></tr>

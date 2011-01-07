@@ -125,6 +125,6 @@ cat<<-EOF
 		<input type=submit name=advise value=Abracadabra onclick="return validate('$ndisks')"></td></tr>
 
 	</table></fieldset>
-	</form</body></html>
+	</form></body></html>
 EOF
 

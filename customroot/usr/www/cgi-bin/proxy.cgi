@@ -78,8 +78,8 @@ cat<<-EOF
 		<td>Port:</td><td><input type=text $PRXEN id="prx" name="ftp_port" value="$ftp_port"></td></tr>
 	<tr><td><br></td></tr>
 	<tr><td>Anonymous Proxy</td><td><input type=checkbox $APRXCHK id="anonproxy" name="useproxy" value="yes" onclick="atoogle()"></td></tr>
-	<tr><td>Proxy Username:</td><td><input type=text $APRXEN $PRXEN id="aprx" name="proxy_user" value=$proxy_user></td></tr>
-	<tr><td>Proxy Password:</td><td><input type=password $APRXEN $PRXEN id="aprx" name="proxy_password" value=$proxy_password></td></tr>
+	<tr><td>Proxy Username:</td><td><input type=text $APRXEN $PRXEN id="aprx" name="proxy_user" value="$proxy_user"></td></tr>
+	<tr><td>Proxy Password:</td><td><input type=password $APRXEN $PRXEN id="aprx" name="proxy_password" value="$proxy_password"></td></tr>
 
 	<tr><td></td><td><input type="submit" value="Submit"></td></tr>
 	</table>

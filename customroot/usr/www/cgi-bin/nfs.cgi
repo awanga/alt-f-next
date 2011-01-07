@@ -19,7 +19,7 @@ exports_row() {
 		<tr><td align=center><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
 		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value="$exdir"></td>
 		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
-		<td><input type=text size=10 name=ip_$cnt value=$aip></td>
+		<td><input type=text size=10 name=ip_$cnt value="$aip"></td>
 		<td><input type=text size=40 id=expopts_$cnt name=xopts_$cnt value="$opts" onclick="def_opts('xpt', 'expopts_$cnt')"></td>
 		<td><input type=button value=Browse onclick="opts_popup('expopts_$cnt', 'nfs_exp_opt')"></td>
 		</tr>

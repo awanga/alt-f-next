@@ -37,7 +37,7 @@ fstab_row() {
 		<tr>
 		<td align=center><input type=checkbox $dis_chk id="fstab_en_$cnt" name="fstab_en_$cnt" value="#" onclick="return check_mount('$op','fstab_en_$cnt')"></td>
 		$mntfld
-		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value=$rhost></td>
+		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value="$rhost"></td>
 		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value="$rdir"></td>
 		<td><input type=button value=Browse onclick="browse_cifs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
 		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$mdir"></td>

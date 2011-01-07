@@ -184,7 +184,7 @@ cat<<-EOF
 		<option selected value="raid1">Raid 1</option>
 		<option value="raid5">Raid 5</option>
 		</select></td>
-	<td><select name="comp1">$pairs</selecte></td>
+	<td><select name="comp1">$pairs</select></td>
 	<td><select name="comp2">$pairs</select></td>
 	<td><select name="comp3">$pairs</select></td>
 	<td><input type=submit name=md$dev value=Create onclick="return csubmit('submit')"></td>
@@ -276,7 +276,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 			else
 				cat<<-EOF
 					<td></td>
-					<td><input type=submit name=$mdev value="Stop"</td>		
+					<td><input type=submit name=$mdev value="Stop"></td>		
 					<td><select id="raidop_$mdev" name="$mdev" onChange="msubmit('raidop_$mdev', '$mdev')">
 						<option>Operation</option>
 						<option $remops value=${bitmap}_bitmap>$bitmap Bitmap</option>
@@ -285,7 +285,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 						<option $remops value="Enlarge_raid">Enlarge</option>
 						<option $remops value="Shrink_raid">Shrink</option>
 						<option value="Destroy_raid">Destroy</option>
-					</select</td>
+					</select></td>
 				EOF
 
 				if test -n "$remops"; then continue; fi
