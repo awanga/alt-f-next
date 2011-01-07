@@ -44,6 +44,7 @@ void check_board();
 void fanctl(void);
 void hdd_powercheck(int noleds);
 int check_powermode(char *dev);
+unsigned long dstat(char *dsk);
 int md_stat();
 int debounce();
 int button(void);
@@ -460,7 +461,7 @@ float poly(float pwm, float coef[])
 	return ret;
 }
 
-int read_str_from_file(const char *filename, char *str)
+int read_str_from_file(const char *filename, char *str, int sz)
 {
 	int fd;
 	int len;
@@ -470,7 +471,7 @@ int read_str_from_file(const char *filename, char *str)
 		syslog(LOG_CRIT, "open %s: %m", filename);
 		return -1;
 	}
-	len = read(fd, str, 64);
+	len = read(fd, str, sz);
 	close(fd);
 
 	if (len < 1)
@@ -498,7 +499,7 @@ int write_str_to_file(const char *filename, char *str)
 int read_int_from_file(const char *filename, int *u)
 {
 	char buf[64];
-	if (read_str_from_file(filename, buf))
+	if (read_str_from_file(filename, buf, 64))
 		return -1;
 	*u = atoi(buf);
 	return 0;
@@ -521,8 +522,8 @@ int write_int_to_file(const char *filename, int u)
 }
 
 void check_board() {
-	char res[80];
-	if (read_str_from_file("/tmp/board", res)) {
+	char res[64];
+	if (read_str_from_file("/tmp/board", res, 64)) {
 		syslog(LOG_CRIT, "sysctrl: Couldn't read /tmp/board, exiting");
 		exit(1);
 	}
@@ -591,7 +592,7 @@ void fanctl(void)
 	} else {
 		if (temp <= args.fan_off_temp)
 			pwm = FAN_OFF;
-		else if (fan < args.lo_fan)
+		else if (temp < args.lo_temp)
 			pwm = FAN_LOW;
 		else
 			pwm = FAN_FAST;
@@ -665,6 +666,25 @@ int check_powermode(char *dev)
 	return state;
 }
 
+unsigned long dstat(char *dsk) {
+	char buf[128], fname[32] = "/sys/block/";
+	unsigned long rd, wr;
+	
+	sprintf(fname, "/sys/block/%s/stat", dsk);
+	
+	if (read_str_from_file(fname, buf, 128))
+		return 0;
+	
+	if (sscanf(buf, "%lu %*d %*d %*d %lu", &rd, &wr) != 2)
+		return 0;
+	//syslog(LOG_INFO, "%s: %lu %lu", dsk, rd, wr);
+	return rd + wr;
+}
+
+// THIS NEEDS A REWRITE! 
+// use notify for /etc/bay and /etc/misc.conf changes,
+// and read the configuration only on changes
+
 // FIXME to support more than one USB disk (although none I have supports this)
 // this is a mess, because bink_leds() and md_stat(), that also manipulate leds
 // if noleds == 0, use leds and syslog
@@ -675,6 +695,11 @@ void hdd_powercheck(int noleds)
 
 	static int power_st[16] =
 	    { -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, };
+		
+	static unsigned long old_rdwr[16];
+	static int stmo[16];
+	unsigned long rdwr;
+	
 	char buf[BUFSZ];
 
 	char *dev, *bay;
@@ -682,12 +707,13 @@ void hdd_powercheck(int noleds)
 
 	static time_t baytime;
 	struct stat sb;
+	FILE *fpb, *fpm;
 
 	if (stat("/etc/bay", &sb)) {
 		syslog(LOG_CRIT, "sysctrl: open /etc/bay: %m");
 		return;
 	}
-
+	
 	if (sb.st_mtime != baytime) {
 		baytime = sb.st_mtime;
 		led(left_led, "0", "none", NULL, NULL);
@@ -695,7 +721,7 @@ void hdd_powercheck(int noleds)
 		refresh = 1;
 	}
 
-	FILE *fpb = fopen("/etc/bay", "r");
+	fpb = fopen("/etc/bay", "r");
 	if (fpb == NULL) {
 		syslog(LOG_CRIT, "sysctrl: open /etc/bay: %m");
 		return;
@@ -704,6 +730,11 @@ void hdd_powercheck(int noleds)
 	if (leds_changed) {
 		leds_changed = 0;
 		refresh = 1;
+	}
+
+	fpm = fopen("/etc/misc.conf", "r");
+	if (fpm == NULL) {
+			syslog(LOG_INFO, "sysctrl: open /etc/misc.conf: %m");
 	}
 
 	while (fgets(buf, BUFSZ, fpb) != NULL) {
@@ -717,8 +748,44 @@ void hdd_powercheck(int noleds)
 		if (p == NULL || (p != NULL && strcmp(p, "_dev") != 0))
 			continue;
 
-		st = check_powermode(dev);
 		idx = dev[2] - 'a';
+		
+		st = check_powermode(dev);
+		
+		if (fpm != NULL) {
+			char ubay[16], cmd[32], ln[32];
+			int n, tmo, i=0;
+			
+			while(bay[i] != '_')
+				ubay[i] = toupper(bay[i++]);
+			ubay[i]='\0';
+			
+			sprintf(cmd,"HDSLEEP_%s=%%d", ubay);			
+			while (fgets(ln, BUFSZ, fpm) != NULL) {
+				if ((n = sscanf(ln, cmd, &tmo)) == 1) {
+					tmo = tmo * 60 / 5; // minutes to sec, sysctrl loop is 5 sec
+					break;
+				}
+			}
+			rewind(fpm);
+						
+			if (n == 1) {
+				rdwr = dstat(dev);
+				if (rdwr != old_rdwr[idx]) {
+					old_rdwr[idx] = rdwr;
+					stmo[idx] = 0;
+				
+				} else {
+					stmo[idx]++;
+					if (stmo[idx] > tmo && st == 1) {
+						syslog(LOG_INFO, "Putting %s disk (%s) into sleep", bay, dev);
+						sprintf(cmd, "/sbin/hdparm -y /dev/%s", dev);
+						system(cmd);
+					}
+				}
+			}
+		}
+
 		if (refresh || st != power_st[idx]) {
 			power_st[idx] = st;
 			if (strcmp(bay, "right_dev") == 0)
@@ -754,6 +821,8 @@ void hdd_powercheck(int noleds)
 		}
 	}
 	fclose(fpb);
+	if (fpm != NULL)
+		fclose(fpm);
 }
 
 /* returns 0 if not degraded nor rebuilding
@@ -777,12 +846,12 @@ int md_stat()
 			continue;
 
 		sprintf(buf, "/sys/block/md%d/md/array_state", dev);
-		read_str_from_file(buf, state);
+		read_str_from_file(buf, state, 64);
 		sprintf(msg, "md%d: state=%s ", dev, state);
 
 		if (strcmp(state, "inactive") != 0) {
 			sprintf(buf, "/sys/block/md%d/md/level", dev);
-			read_str_from_file(buf, level);
+			read_str_from_file(buf, level, 64);
 			sprintf(msg + strlen(msg), "level=%s ", level);
 
 			if (strcmp(level, "raid1") == 0 || strcmp(level, "raid5") == 0) {
@@ -796,7 +865,7 @@ int md_stat()
 					sprintf(buf,
 						"/sys/block/md%d/md/sync_action",
 						dev);
-					read_str_from_file(buf, action);
+					read_str_from_file(buf, action, 64);
 					sprintf(msg + strlen(msg), "action=%s",
 						action);
 					if (strcmp(action, "idle") == 0) {
