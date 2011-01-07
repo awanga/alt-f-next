@@ -122,11 +122,27 @@ EOF
 
 board="$(cat /tmp/board)"
 
-fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
-temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
-if test $board = "C1"; then 
-	fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
+if test $board != "C1"; then 
+	temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
+	fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
+else
 	temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
+	fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
+fi
+
+eval $(cat $temp_dev | awk '{printf "temp=\"%.1f\"", $1 / 1000 }')
+fan=$(cat $fan_dev)
+
+if test $board != "C1"; then
+	fan="$fan RPM"
+else
+	if test "$fan" -eq 0; then
+		fan="Off"
+	elif test "$fan" -le 400; then
+		fan="Low"
+	else
+		fan="High"
+	fi
 fi
 
 eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
@@ -140,15 +156,13 @@ eval $(ifconfig eth0 | awk \
 		/MTU/{printf "MTU=%s;", substr($0, match($a,"MTU")+4,5)} \
 		/HWaddr/{printf "MAC=\"%s\";", $5}' | tr "()" "  ")
 
-eval $(cat $temp_dev | awk '{printf "temp=\"%.1f\"", $1 / 1000 }')
-
 eval $(free | awk '/Swap/{printf "swap=\"%.1f/%d MB\"", $3/1024, $4/1024}')
 
 cat <<-EOF
 	<fieldset><Legend><strong> System </strong></legend><table>
 	<tr>
 		<td><strong>Temperature:</strong> $temp</td>
-		<td><strong>Fan speed:</strong> $(cat $fan_dev) RPM</td>
+		<td><strong>Fan speed:</strong> $fan </td>
 		<td><strong> Load:</strong> $load</td>
 	</tr><tr>
 		<td><strong>Swap:</strong> $swap</td>
