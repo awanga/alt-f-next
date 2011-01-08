@@ -1,0 +1,153 @@
+diff -ruN minidlna-1.0.18-orig/configure minidlna-1.0.18/configure
+--- minidlna-1.0.18-orig/configure	1970-01-01 01:00:00.000000000 +0100
++++ minidlna-1.0.18/configure	2010-04-28 15:43:54.017240662 +0100
+@@ -0,0 +1,9 @@
++#!/bin/sh
++
++echo >> Makefile
++echo "CC = $CC_FOR_TARGET" >> Makefile
++echo "CFLAGS =  $CFLAGS -I ${STAGING_DIR}/usr/include/ffmpeg" >> Makefile
++echo "STRIP = $STRIP" >> Makefile
++echo "STAGING_DIR = $STAGING_DIR" >> Makefile
++
++true
+--- minidlna-1.0.18-orig/Makefile	2010-07-16 22:25:54.000000000 +0100
++++ minidlna-1.0.18/Makefile	2010-12-21 04:50:19.852759333 +0000
+@@ -12,12 +12,12 @@
+ #
+ #CFLAGS = -Wall -O -D_GNU_SOURCE -g -DDEBUG
+ #CFLAGS = -Wall -g -Os -D_GNU_SOURCE
+-CFLAGS = -Wall -g -O3 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 \
+-	 -I/usr/include/ffmpeg \
+-	 -I/usr/include/libavutil -I/usr/include/libavcodec -I/usr/include/libavformat \
+-	 -I/usr/include/ffmpeg/libavutil -I/usr/include/ffmpeg/libavcodec -I/usr/include/ffmpeg/libavformat
++#CFLAGS = -Wall -g -O3 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 \
++#	 -I/usr/include/ffmpeg \
++#	 -I/usr/include/libavutil -I/usr/include/libavcodec -I/usr/include/libavformat \
++#	 -I/usr/include/ffmpeg/libavutil -I/usr/include/ffmpeg/libavcodec -I/usr/include/ffmpeg/libavformat
+ #STATIC_LINKING: LDFLAGS = -static
+-CC = gcc
++#CC = gcc
+ RM = rm -f
+ INSTALL = install
+ 
+@@ -36,7 +36,7 @@
+ 
+ ALLOBJS = $(BASEOBJS) $(LNXOBJS)
+ 
+-LIBS = -lpthread -lexif -ljpeg -lsqlite3 -lavformat -lid3tag -lFLAC -lvorbis
++LIBS = -lpthread -lexif -ljpeg -lsqlite3 -lavformat -lid3tag -lFLAC -lvorbis -liconv
+ #STATIC_LINKING: LIBS = -lvorbis -logg -lm -lsqlite3 -lpthread -lexif -ljpeg -lFLAC -lm -lid3tag -lz -lavformat -lavutil -lavcodec -lm
+ 
+ TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
+@@ -53,12 +53,15 @@
+ 	$(RM) testupnpdescgen.o
+ 
+ install:	minidlna
+-	$(INSTALL) -d $(SBININSTALLDIR)
+-	$(INSTALL) minidlna $(SBININSTALLDIR)
+-	$(INSTALL) -d $(ETCINSTALLDIR)
+-	$(INSTALL) --mode=0644 minidlna.conf $(ETCINSTALLDIR)
++	$(INSTALL) -d $(DESTDIR)/$(SBININSTALLDIR)
++	$(INSTALL) minidlna $(DESTDIR)/$(SBININSTALLDIR)
++	$(INSTALL) -d $(DESTDIR)/$(ETCINSTALLDIR)
++	$(INSTALL) --mode=0644 minidlna.conf $(DESTDIR)/$(ETCINSTALLDIR)
+ 
+-minidlna:	$(BASEOBJS) $(LNXOBJS) $(LIBS)
++install-strip: install
++	$(STRIP) -s $(DESTDIR)/$(SBININSTALLDIR)/minidlna
++
++minidlna:	$(BASEOBJS) $(LNXOBJS)
+ 	@echo Linking $@
+ 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(BASEOBJS) $(LNXOBJS) $(LIBS)
+ 
+@@ -68,7 +71,7 @@
+ 	@$(CC) $(CFLAGS) -o $@ $(TESTUPNPDESCGENOBJS)
+ 
+ config.h:	genconfig.sh
+-	./genconfig.sh
++	STAGING_DIR=$(STAGING_DIR) ./genconfig.sh
+ 
+ depend:	config.h
+ 	makedepend -f$(MAKEFILE_LIST) -Y \
+@@ -122,8 +125,15 @@
+ .SUFFIXES: .c .o
+ 
+ .c.o:
+-	@echo Compiling $*.c
+-	@$(CC) $(CFLAGS) -o $@ -c $< && exit 0;\
+-		echo "The following command failed:" 1>&2;\
+-		echo "$(CC) $(CFLAGS) -o $@ -c $<";\
+-		$(CC) $(CFLAGS) -o $@ -c $< &>/dev/null
++	$(CC) $(CFLAGS) -o $@ -c $<
++
++#.c.o:
++#	@echo Compiling $*.c
++#	@$(CC) $(CFLAGS) -o $@ -c $< && exit 0;\
++#		echo "The following command failed:" 1>&2;\
++#		echo "$(CC) $(CFLAGS) -o $@ -c $<";\
++#		$(CC) $(CFLAGS) -o $@ -c $< &>/dev/null
++CC = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-gcc
++CFLAGS =  -pipe -O2 -O2  -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/include --sysroot=/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/ -isysroot /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir -mtune=arm926ej-s -march=armv5te -mabi=aapcs-linux -msoft-float -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include/ffmpeg
++STRIP = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-strip
++STAGING_DIR = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir
+--- minidlna-1.0.18-orig/genconfig.sh	2010-07-21 00:26:36.000000000 +0100
++++ minidlna-1.0.18/genconfig.sh	2010-12-21 04:43:55.851759721 +0000
+@@ -24,22 +24,22 @@
+ 
+ # Detect if there are missing headers
+ # NOTE: This check only works with a normal distro
+-[ ! -e "/usr/include/sqlite3.h" ] && MISSING="libsqlite3 $MISSING"
+-[ ! -e "/usr/include/jpeglib.h" ] && MISSING="libjpeg $MISSING"
+-[ ! -e "/usr/include/libexif/exif-loader.h" ] && MISSING="libexif $MISSING"
+-[ ! -e "/usr/include/id3tag.h" ] && MISSING="libid3tag $MISSING"
+-[ ! -e "/usr/include/ogg/ogg.h" ] && MISSING="libogg $MISSING"
+-[ ! -e "/usr/include/vorbis/codec.h" ] && MISSING="libvorbis $MISSING"
+-[ ! -e "/usr/include/FLAC/metadata.h" ] && MISSING="libflac $MISSING"
+-[ ! -e "/usr/include/ffmpeg/avutil.h" -a \
+-  ! -e "/usr/include/libavutil/avutil.h" -a \
+-  ! -e "/usr/include/ffmpeg/libavutil/avutil.h" ] && MISSING="libavutil $MISSING"
+-[ ! -e "/usr/include/ffmpeg/avformat.h" -a \
+-  ! -e "/usr/include/libavformat/avformat.h" -a \
+-  ! -e "/usr/include/ffmpeg/libavformat/avformat.h" ] && MISSING="libavformat $MISSING"
+-[ ! -e "/usr/include/ffmpeg/avcodec.h" -a \
+-  ! -e "/usr/include/libavcodec/avcodec.h" -a \
+-  ! -e "/usr/include/ffmpeg/libavcodec/avcodec.h" ] && MISSING="libavcodec $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/sqlite3.h" ] && MISSING="libsqlite3 $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/jpeglib.h" ] && MISSING="libjpeg $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/libexif/exif-loader.h" ] && MISSING="libexif $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/id3tag.h" ] && MISSING="libid3tag $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/ogg/ogg.h" ] && MISSING="libogg $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/vorbis/codec.h" ] && MISSING="libvorbis $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/FLAC/metadata.h" ] && MISSING="libflac $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/ffmpeg/avutil.h" -a \
++  ! -e "$STAGING_DIR/usr/include/libavutil/avutil.h" -a \
++  ! -e "$STAGING_DIR/usr/include/ffmpeg/libavutil/avutil.h" ] && MISSING="libavutil $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/ffmpeg/avformat.h" -a \
++  ! -e "$STAGING_DIR/usr/include/libavformat/avformat.h" -a \
++  ! -e "$STAGING_DIR/usr/include/ffmpeg/libavformat/avformat.h" ] && MISSING="libavformat $MISSING"
++[ ! -e "$STAGING_DIR/usr/include/ffmpeg/avcodec.h" -a \
++  ! -e "$STAGING_DIR/usr/include/libavcodec/avcodec.h" -a \
++  ! -e "$STAGING_DIR/usr/include/ffmpeg/libavcodec/avcodec.h" ] && MISSING="libavcodec $MISSING"
+ if [ -n "$MISSING" ]; then
+ 	echo -e "\nERROR!  Cannot continue."
+ 	echo -e "The following required libraries are either missing, or are missing development headers:\n"
+@@ -169,7 +169,7 @@
+ echo "" >> ${CONFIGFILE}
+ 
+ echo "/* Enable if the system libintl.h exists for NLS support. */" >> ${CONFIGFILE}
+-if [ -f /usr/include/libintl.h ]; then
++if [ -n "" -f /usr/include/libintl.h ]; then
+ echo "#define ENABLE_NLS" >> ${CONFIGFILE}
+ else
+ echo "/*#define ENABLE_NLS*/" >> ${CONFIGFILE}
+--- minidlna-1.0.18-orig/minidlna.c     2010-07-21 00:26:36.000000000 +0100
++++ minidlna-1.0.18/minidlna.c  2010-12-21 05:14:20.015763845 +0000
+@@ -14,6 +14,7 @@
+ #include <stdio.h>
+ #include <ctype.h>
+ #include <sys/types.h>
++#include <sys/stat.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
