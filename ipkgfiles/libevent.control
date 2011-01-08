@@ -1,0 +1,8 @@
+Package: libevent
+Description: Userspace library for handling asynchronous notifications
+Version: 1.4.13
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://monkey.org/~provos/
+Maintainer: jcard
