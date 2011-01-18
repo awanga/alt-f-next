@@ -8,10 +8,13 @@ CONFF=/var/lib/transmission
 JSON=settings.json
 TYPE=user
 
-OPTS="--logfile /var/log/transmission.log --config-dir=$CONFF"
+OPTS="--logfile /var/log/transmission.log --config-dir=$CONFF -x /var/run/transmission.pid"
 
 TRANSMISSION_USER=transmission
 TRANSMISSION_GROUP=network
+
+# special flag to start-stop-daemon
+START_STOP=-x
 
 . $(dirname $0)/common
 
@@ -31,16 +34,12 @@ case "$1" in
 		fi
 
 		network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
-
 		sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
 			"$CONFF/$JSON"
-
 		chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
-		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -b -p /var/run/transmission.pid -m \
-			--chuid $TRANSMISSION_USER:$TRANSMISSION_GROUP -x $NAME -- $OPTS
-		omsg $?
+		start $NAME -- $OPTS
+
 		;;
 
 	stop) stop $NAME ;;
