@@ -3,7 +3,8 @@
 # vsftpd
 #
 #############################################################
-VSFTPD_VERSION:=2.0.7
+#VSFTPD_VERSION:=2.0.7
+VSFTPD_VERSION:=2.3.2
 VSFTPD_SOURCE:=vsftpd-$(VSFTPD_VERSION).tar.gz
 VSFTPD_SITE:=ftp://vsftpd.beasts.org/users/cevans
 VSFTPD_DIR:=$(BUILD_DIR)/vsftpd-$(VSFTPD_VERSION)
@@ -24,7 +25,7 @@ vsftpd-source: $(DL_DIR)/$(VSFTPD_SOURCE)
 
 $(VSFTPD_DIR)/.unpacked: $(DL_DIR)/$(VSFTPD_SOURCE)
 	$(VSFTPD_CAT) $(DL_DIR)/$(VSFTPD_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(VSFTPD_DIR) package/vsftpd/ vsftpd\*.patch
+	toolchain/patch-kernel.sh $(VSFTPD_DIR) package/vsftpd/ vsftpd-$(VSFTPD_VERSION)\*.patch
 	touch $@
 
 $(VSFTPD_DIR)/.configured: $(VSFTPD_DIR)/.unpacked
@@ -43,7 +44,6 @@ else # not uclibc
 	$(SED) 's,.*__UCLIBC_.*,,g' $(VSFTPD_DIR)/builddefs.h
 endif
 
-
 $(VSFTPD_DIR)/$(VSFTPD_BINARY): $(VSFTPD_DIR)/.configured
 	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" LIBS="$(VSFTPD_LIBS)" -C $(VSFTPD_DIR)
 
@@ -56,6 +56,10 @@ vsftpd: uclibc openssl $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY)
 else
 vsftpd: uclibc $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY)
 endif
+
+vsftpd-configure: $(VSFTPD_DIR)/.configured
+
+vsftpd-build: $(VSFTPD_DIR)/$(VSFTPD_BINARY)
 
 vsftpd-clean:
 	-$(MAKE) -C $(VSFTPD_DIR) clean
