@@ -53,7 +53,7 @@ for disk in $disks; do
 	disk_details $dsk
 
 	power_dis="disabled"
-	if hdparm -I $disk | grep -q "Adv. Power Management"; then
+	if hdparm -I $disk 2> /dev/null | grep -q "Adv. Power Management"; then
 		power_dis=""
 	fi
 
