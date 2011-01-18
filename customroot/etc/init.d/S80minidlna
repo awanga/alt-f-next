@@ -4,11 +4,9 @@ NAME=minidlna
 DESC="MiniDLNA is a DLNA/UPnP-AV server."
 TYPE=user
 
-PIDFILE=/var/run/$NAME.pid
 CONFF=/etc/$NAME.conf
 MINIDLNA_USER=$NAME
 MINIDLNA_GROUP=multimedia
-#MINIDLNA_ARGS="-d -P $PIDFILE"
 MINIDLNA_ARGS=""
 
 . $(dirname $0)/common
@@ -18,9 +16,8 @@ check_shares() {
 		MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONFF)"
 		OIFS="$IFS"; IFS=";"
 		for i in $MDLNA_DIR; do
-			#eval "$i"
 			if test ! -d "$i"; then
-				echo "Share $i does not exist."
+				echo "$NAME: Share $i does not exist."
 				exit 1
 			else
 				conf_ok=1
@@ -28,37 +25,27 @@ check_shares() {
 		done
 		IFS="$OIFS"
 		if test -z "$conf_ok"; then
-			echo "No shares configured."
+			echo "$NAME: No shares configured."
 			exit 1
 		fi
 		return 0
 	fi
-	echo "Configuration file does not exist."
+	echo "$NAME: Configuration file does not exist."
 	exit 1
 }
 
 case "$1" in
 
 	start)
-		echo -n "Starting $NAME: "
 		check_shares
-
-		#touch $PIDFILE
-		#chown $MINIDLNA_USER:$MINIDLNA_GROUP $PIDFILE
-		start-stop-daemon --start --quiet --background --oknodo \
-			--chuid $MINIDLNA_USER:$MINIDLNA_GROUP \
-			--exec $NAME -- $MINIDLNA_ARGS
-		omsg $?
+		start $NAME -- $MINIDLNA_ARGS 
 		;;
 
-	stop)
-		echo -n "Stopping $NAME: "
-		# it should do a clean shutdown on SIGTERM or SIGINT, but hangs
-		start-stop-daemon --stop --quiet --oknodo --signal 1 --exec $NAME
-		omsg $?
-		;;
-
+	stop) stop $NAME;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
-	*) usage $0 "start|stop|status|restart" ;;
+	*)
+		echo "Usage: $0 {start|stop|status|restart}"
+		exit 1
+		;;
 esac
