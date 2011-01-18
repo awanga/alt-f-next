@@ -8,6 +8,21 @@ read_args
 
 CONFF=/etc/minidlna.conf
 
+if test -n "$enable_tivo"; then
+	enable_tivo=yes
+else
+	enable_tivo=no
+fi
+
+if test -n "$strict_dlna"; then
+	strict_dlna=yes
+else
+	strict_dlna=no
+fi
+
+sed -i 's/^enable_tivo=.*$/enable_tivo='$enable_tivo'/' $CONFF
+sed -i 's/^strict_dlna=.*$/strict_dlna='$strict_dlna'/' $CONFF
+
 # save old, in case of errors
 sed -i 's/^media_dir=.*$/#!#&/' $CONFF
 
@@ -28,9 +43,8 @@ done
 # sucess, delete old, update new
 sed -i -e '/^#!#media_dir=.*$/d' -e 's/^!#!\(media_dir=.*$\)/\1/' $CONFF
 
-rcminidlna status >& /dev/null
-if test $? = 0; then
-	rcushare force-reload >& /dev/null
+if rcminidlna status >& /dev/null; then
+	rcminidlna restart >& /dev/null
 fi
 
 #enddebug

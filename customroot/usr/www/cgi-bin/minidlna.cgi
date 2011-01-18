@@ -8,9 +8,18 @@ write_header "miniDLNA Setup"
 CONFF=/etc/minidlna.conf
 
 if test -e $CONFF; then
+	. $CONFF >& /dev/null
 	MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONFF)" 
 fi
 
+if test "$enable_tivo" = "yes"; then
+	TV_CHK=checked
+fi
+
+if test "$strict_dlna" = "yes"; then
+	STRICT_CHK=checked
+fi
+ 
 cat<<-EOF
 	<script type="text/javascript">
 		function browse_dir_popup(input_id) {
@@ -48,6 +57,8 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	<tr><td>Strict DLNA</td><td><input type=checkbox $STRICT_CHK name=strict_dlna value=yes></td></tr>
+	<tr><td>TiVo Support</td><td><input type=checkbox $TV_CHK name=enable_tivo value=yes></td></tr>
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
