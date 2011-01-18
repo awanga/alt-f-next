@@ -239,7 +239,8 @@ echo "<input type=hidden name=cp_from>"
 echo "</table></fieldset><br>"	
 
 ddsk=$(basename $dsk)
-rawcap=$(expr $(sfdisk -s $dsk) \* 2) # sectors
+#rawcap=$(expr $(sfdisk -s $dsk) \* 2) # sectors
+rawcap=$(cat /sys/block/$dsk/size)
 
 disk_details $ddsk
 

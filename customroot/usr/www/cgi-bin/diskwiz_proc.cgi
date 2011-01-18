@@ -35,13 +35,15 @@ minsize() {
 	msz=9999999999
 
 	for i in $disks; do
-		sz=$(sfdisk -s $i)
+#		sz=$(sfdisk -s $i)
+		sz=$(cat /sys/block/$(basename $i)/size)
 		if test "$sz" -lt "$msz"; then
 			msz=$sz
 		fi
 	done
 
-	echo $(expr $msz \* 2) 
+#	echo $(expr $msz \* 2) 
+	echo $msz
 }
 
 # remove raid superblock to avoid auto rebuild on partially created arrays
@@ -54,7 +56,7 @@ cleanraid() {
 
 # 4k align: $1=pos, $2=nsect, $4=maxsect
 align() {
-	local nsect pos rem naxsec
+	local nsect pos rem maxsect
 	pos=$1
 	nsect=$2
 	maxsect=$3
