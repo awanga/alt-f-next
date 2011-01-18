@@ -1,6 +1,11 @@
- 
+
+# for process match, some processes need -n, the default, others -x
+if test -z "$START_STOP"; then
+	START_STOP=-n
+fi
+
 status() {
-	if start-stop-daemon -K -t -q -n $1; then
+	if start-stop-daemon -K -t -q $START_STOP $1; then
 		echo "$1 running"
 		return 0
 	else
@@ -30,14 +35,14 @@ stop() {
 	if test -n "$2"; then
 		sig="-s $2"
 	fi	
-	start-stop-daemon -K -q -o $sig -n $1
+	start-stop-daemon -K -q -o $sig $START_STOP $1
 	omsg $?
 }
 
 restart() {
 	echo "Restarting $1: "
 	sh $0 stop
-	while start-stop-daemon -K -t -q -n $1; do usleep 200000; done
+	while start-stop-daemon -K -t -q $START_STOP $1; do usleep 200000; done
 	sh $0 start
 }
 
@@ -48,7 +53,7 @@ reload() {
 	else
 		sig=$2
 	fi
-	start-stop-daemon -K -q -s $sig -n $1
+	start-stop-daemon -K -q -s $sig $START_STOP $1
 	omsg $?
 }
 
