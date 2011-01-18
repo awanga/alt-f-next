@@ -28,7 +28,7 @@ echo "none" > /sys/class/leds/power\:blue/trigger
 
 TSYSLOG=/var/log/boot.log
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
-start-stop-daemon -S -q -x syslogd -- -D -m 0 -O $TSYSLOG
+start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
 
 # there is a problem here.
 # the kernel does not generate/buffer hot plug events before init starts,
