@@ -1,6 +1,7 @@
 Package: readline
 Version: 5.2
 Description: The GNU readline librarie
+Depends: ncurses
 Architecture: arm
 Priority: optional
 Section: admin
