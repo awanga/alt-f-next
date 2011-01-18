@@ -65,7 +65,7 @@ writelog() {
 	cat /proc/mounts >> $i/$LOGF
 
 	echo -e "\n\n$SEP TOP $SEP\n" >> $i/$LOGF
-	top -n1 >> $i/$LOGF
+	top -bn1 >> $i/$LOGF
 
 	chmod a+rw $i/$LOGF
 }
