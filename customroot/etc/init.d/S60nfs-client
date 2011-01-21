@@ -53,7 +53,7 @@ istop() {
 	if ! rcnfs status >& /dev/null; then
 		stop $NAME
 		rm -f /var/run/portmap_mapping /var/run/sm-notify.pid
-		rmmod -f nfs lockd
+		rmmod -f nfs lockd >& /dev/null
 	fi
 }
 
