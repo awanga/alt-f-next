@@ -29,7 +29,6 @@ case $kind in
 		;;
 esac
 
-#write_header "$title"
 html_header
 echo "<h2><center>$title</center></h2>"
 
