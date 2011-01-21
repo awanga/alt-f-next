@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "Disk Partitioner" "" "document.diskp.reset()"
+write_header "Disk Partitioner" "document.diskp.reset()"
 
 has_disks
 
@@ -11,6 +11,15 @@ mktt tt_psize "Partition size. Rounding can occur."
 mktt tt_pstart "Partition start sector."
 mktt tt_plen "Partition lenght, in sectors."
 mktt tt_free "Free disk space. Rounding can occur."
+
+if ! isflashed; then
+	cat<<-EOF
+		<script type="text/javascript">
+			alert("Your box is not flashed, make sure that you partition" + '\n' +
+				"your disks in a way compatible with the stock firmware.")
+		</script>
+	EOF
+fi
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -240,7 +249,7 @@ echo "</table></fieldset><br>"
 
 ddsk=$(basename $dsk)
 #rawcap=$(expr $(sfdisk -s $dsk) \* 2) # sectors
-rawcap=$(cat /sys/block/$dsk/size)
+rawcap=$(cat /sys/block/$ddsk/size)
 
 disk_details $ddsk
 
