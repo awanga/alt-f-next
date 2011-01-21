@@ -5,15 +5,43 @@
 DESC="The Avahi mDNS/DNS-SD daemon"
 NAME=avahi-daemon
 TYPE=net
+AVAHI_OPTS="-D"
 
 umask 077
 
 . $(dirname $0)/common
 
+# register all running services
+# when a new service is start its own initscript registers itself
+istart() {
+	ntout=$(netstat -ln)
+
+	for i in /etc/avahi/services/*; do
+		pt=$(sed -n 's|.*<port>\(.*\)</port>|\1|p' $i)
+		srv=$(basename $i)
+		if echo "$ntout" | grep -q ":$pt "; then
+			avahi add ${srv%.*} 
+		else
+			avahi remove ${srv%.*}
+		fi
+	done
+	start $NAME -- $AVAHI_OPTS
+}
+
+# de-register all running services
+# when a service is stoped its own initscript de-registers itself
+istop() {
+	for i in /etc/avahi/services/*.service; do
+		srv=$(basename $i)
+		avahi remove ${srv%.*}
+	done
+	stop $NAME
+}
+
 case "$1" in
-	start) start $NAME -- -D ;;
-	stop)	stop $NAME ;;
-	status)	status $NAME ;;
+	start) istart ;; 
+	stop) istop ;;
+	status) status $NAME ;;
 	reload) reload $NAME ;;
 	restart) restart $NAME ;;
 	*)  usage $0 "start|stop|status|restart|reload" ;;
