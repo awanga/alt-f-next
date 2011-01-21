@@ -6,7 +6,7 @@
 . common.sh
 check_cookie
 
-write_header "System and Kernel log daemon setup" "" "toggle_remote()"
+write_header "System and Kernel log daemon setup" "toggle_remote()"
 
 CONFF=/etc/syslog.conf
 
