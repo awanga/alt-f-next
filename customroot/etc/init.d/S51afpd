@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
 NAME=afpd
+NAME2=cnid_metad
 DESC="AppleTalk Filing Protocol daemon."
 TYPE=net
 
@@ -8,9 +9,24 @@ AFPD_OPTS=""
 
 . $(dirname $0)/common
 
+istart() {
+	if ! rcavahi-daemon status > /dev/null; then
+		rcavahi-daemon start > /dev/null
+	fi
+	start $NAME2
+	start $NAME -- $AFPD_OPTS
+	avahi add afpovertcp
+}
+
+istop() {
+	avahi remove afpovertcp
+	stop $NAME
+	stop $NAME2
+}
+
 case "$1" in
-	start) start $NAME -- $AFPD_OPTS ;;
-	stop) stop $NAME ;;
+	start) istart ;;
+	stop) istop ;;
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
 	status) status $NAME ;;
