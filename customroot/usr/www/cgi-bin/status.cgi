@@ -97,6 +97,14 @@ filesys() {
 
 . common.sh
 
+arefresh="no"
+
+if test -n "$QUERY_STRING"; then
+	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
+		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
+		printf "%s=%c%s%c\n",$1,39,$2,39}')
+fi
+
 # do this early, to avoid affecting the load value		
 load=$(cut -f1 -d" " /proc/loadavg)
 
@@ -106,8 +114,11 @@ for i in /dev/sd?; do
 	smartctl -n standby -iAH $i 2>&1 1> /tmp/smt_$(basename $i) &
 done
 
-ver=$(cat /etc/Alt-F)
-write_header "Alt-F $ver Status Page" 15
+if isflashed; then
+	flash="Flashed"
+fi
+ver="$(cat /etc/Alt-F)"
+write_header "$flash Alt-F $ver Status Page"
 
 cat<<EOF
 	<script type="text/javascript">
@@ -452,7 +463,32 @@ for i in /dev/sd?; do
 	j=$((j+1))
 done
 
-cat<<-EOF
+if test "$arefresh" = "yes"; then
+	refr_chk=checked
+	cat<<-EOF
+		<script type="text/javascript">
+			var tmo_id = setTimeout('window.location.assign("http://" + location.hostname + \
+				"/cgi-bin/status.cgi?arefresh=yes")', 15000)
+		</script>
+	EOF
+fi
+
+cat<<EOF
+	Autorefresh <input type=checkbox $refr_chk name=refresh value="yes" onclick="frefresh(this)">
+	<script type="text/javascript">
+		var tmo_id
+		function frefresh(obj) {
+			arg = obj.checked == true ? "yes" : "no"
+			obj.value = arg
+
+			if (arg == "yes") {
+				url = "http://" + location.hostname + "/cgi-bin/status.cgi?arefresh=yes"
+				tmo_id = setTimeout('window.location.assign(url)', 15000)
+			} else {
+				clearTimeout(tmo_id)
+			}
+		}
+	</script>
 	</form></body></html>
 EOF
 
