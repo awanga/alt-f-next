@@ -1,4 +1,21 @@
 
+AVAHI_SRV_DIR=/etc/avahi/services
+
+# $1-add/remove $2-service name
+avahi() {
+	if ! test -d $AVAHI_SRV_DIR; then return 0; fi
+ 
+	if test "$1" = "add"; then
+		if test -f $AVAHI_SRV_DIR/$2.service-; then
+			mv $AVAHI_SRV_DIR/$2.service- $AVAHI_SRV_DIR/$2.service
+		fi
+	elif test "$1" = "remove"; then
+		if test -f $AVAHI_SRV_DIR/$2.service; then
+			mv $AVAHI_SRV_DIR/$2.service $AVAHI_SRV_DIR/$2.service-
+		fi
+	fi
+}
+
 # for process match, some processes need -n, the default, others -x
 if test -z "$START_STOP"; then
 	START_STOP=-n
