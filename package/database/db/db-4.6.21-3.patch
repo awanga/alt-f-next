@@ -1,0 +1,75 @@
+*** db-4.6.21/sequence/sequence.c
+--- db-4.6.21/sequence/sequence.c
+***************
+*** 196,202 ****
+  	if ((ret = __db_get_flags(dbp, &tflags)) != 0)
+  		goto err;
+  
+! 	if (DB_IS_READONLY(dbp)) {
+  		ret = __db_rdonly(dbp->dbenv, "DB_SEQUENCE->open");
+  		goto err;
+  	}
+--- 196,206 ----
+  	if ((ret = __db_get_flags(dbp, &tflags)) != 0)
+  		goto err;
+  
+! 	/*
+! 	 * We can let replication clients open sequences, but must
+! 	 * check later that they do not update them.
+! 	 */
+! 	if (F_ISSET(dbp, DB_AM_RDONLY)) {
+  		ret = __db_rdonly(dbp->dbenv, "DB_SEQUENCE->open");
+  		goto err;
+  	}
+***************
+*** 252,257 ****
+--- 256,266 ----
+  		if ((ret != DB_NOTFOUND && ret != DB_KEYEMPTY) ||
+  		    !LF_ISSET(DB_CREATE))
+  			goto err;
++ 		if (IS_REP_CLIENT(dbenv) &&
++ 		    !F_ISSET(dbp, DB_AM_NOT_DURABLE)) {
++ 			ret = __db_rdonly(dbenv, "DB_SEQUENCE->open");
++ 			goto err;
++ 		}
+  		ret = 0;
+  
+  		rp = &seq->seq_record;
+***************
+*** 304,310 ****
+  	 */
+  	rp = seq->seq_data.data;
+  	if (rp->seq_version == DB_SEQUENCE_OLDVER) {
+! oldver:		rp->seq_version = DB_SEQUENCE_VERSION;
+  		if (__db_isbigendian()) {
+  			if (IS_DB_AUTO_COMMIT(dbp, txn)) {
+  				if ((ret =
+--- 313,324 ----
+  	 */
+  	rp = seq->seq_data.data;
+  	if (rp->seq_version == DB_SEQUENCE_OLDVER) {
+! oldver:		if (IS_REP_CLIENT(dbenv) &&
+! 		    !F_ISSET(dbp, DB_AM_NOT_DURABLE)) {
+! 			ret = __db_rdonly(dbenv, "DB_SEQUENCE->open");
+! 			goto err;
+! 		}
+! 		rp->seq_version = DB_SEQUENCE_VERSION;
+  		if (__db_isbigendian()) {
+  			if (IS_DB_AUTO_COMMIT(dbp, txn)) {
+  				if ((ret =
+***************
+*** 713,718 ****
+--- 727,738 ----
+  
+  	MUTEX_LOCK(dbenv, seq->mtx_seq);
+  
++ 	if (handle_check && IS_REP_CLIENT(dbenv) &&
++ 	    !F_ISSET(dbp, DB_AM_NOT_DURABLE)) {
++ 		ret = __db_rdonly(dbenv, "DB_SEQUENCE->get");
++ 		goto err;
++ 	}
++ 
+  	if (rp->seq_min + delta > rp->seq_max) {
+  		__db_errx(dbenv, "Sequence overflow");
+  		ret = EINVAL;
+ 
