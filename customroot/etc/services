@@ -279,6 +279,8 @@ postgres	5432/tcp			# POSTGRES
 postgres	5432/udp			# POSTGRES
 fax		4557/tcp			# FAX transmission service        (old)
 hylafax		4559/tcp			# HylaFAX client-server protocol  (new)
+mdns		5353/tcp		# Multicast DNS
+mdns		5353/udp		# Multicast DNS
 noclog		5354/tcp			# noclogd with TCP (nocol)
 noclog		5354/udp			# noclogd with UDP (nocol)
 hostmon		5355/tcp			# hostmon uses TCP (nocol)
@@ -308,3 +310,4 @@ fido            60179/udp			# Ifmail
 
 # Local services
 mediatomb	50500/tcp
+
