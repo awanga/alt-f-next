@@ -4,7 +4,8 @@
 #
 #############################################################
 
-DB_VERSION = 4.6.21
+#DB_VERSION = 4.6.21
+DB_VERSION = 4.8.30
 DB_SOURCE = db-$(DB_VERSION).tar.gz
 DB_SITE = http://download.oracle.com/berkeley-db
 DB_LIBTOOL_PATCH = NO
@@ -20,6 +21,8 @@ $(DL_DIR)/$(DB_SOURCE):
 
 $(DB_DIR)/.unpacked: $(DL_DIR)/$(DB_SOURCE)
 	$(DB_CAT) $(DL_DIR)/$(DB_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	find $(DB_DIR) -type f -exec chmod u+w {} \;
+	toolchain/patch-kernel.sh $(DB_DIR) package/database/db/ db-$(DB_VERSION)-?.patch
 	touch $@
 
 $(DB_DIR)/.configured: $(DB_DIR)/.unpacked
@@ -33,7 +36,9 @@ $(DB_DIR)/.configured: $(DB_DIR)/.unpacked
 		--prefix=/usr \
 		--enable-shared \
 		--disable-static \
-		--enable-smallbuild \
+		--disable-posixmutexes \
+		--disable-uimutexes \
+		--with-mutex=ARM/gcc-assembly \
 	)
 	touch $@
 
