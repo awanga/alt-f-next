@@ -64,6 +64,7 @@ istart() {
 	start rpc.statd -- --no-notify
 	start rpc.nfsd -- --no-nfs-version 4 -s 2
 	start sm-notify
+	avahi add nfs
 }
 
 istop() {
@@ -81,6 +82,7 @@ istop() {
 		# modprobe -r nfsd 
 		rmmod -f nfsd exportfs
 	fi
+	avahi remove nfs
 }
 
 case "$1" in

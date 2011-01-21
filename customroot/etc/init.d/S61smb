@@ -32,6 +32,8 @@ start() {
 	RETVAL=$?
 	echo "OK."
 
+	avahi add smb
+
 	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && touch /var/lock/subsys/smb || \
 	   RETVAL=1
 	return $RETVAL
@@ -48,6 +50,8 @@ stop() {
 	start-stop-daemon -K -q -n nmbd
 	RETVAL2=$?
 	rm -f /var/run/nmbd.pid
+
+	avahi remove smb
 
 	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && rm -f /var/lock/subsys/smb
 	echo "OK."
