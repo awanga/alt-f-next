@@ -5,11 +5,11 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 . common.sh
 
 check_cookie
-write_header "Filesystem Maintenance" "" "document.diskm.reset()"
+write_header "Filesystem Maintenance" "document.diskm.reset()"
 
 cat<<-EOF
 	<script type="text/javascript">
-	function msubmit(id, part) {
+	function msubmit(id, part, notflashed) {
 		obj = document.getElementById(id)
 		opi = obj.selectedIndex
 		op = obj.options[opi].value
@@ -23,6 +23,12 @@ cat<<-EOF
 				alert("Select a FS first.")
 				obj.selectedIndex = 0
 				return false
+			}
+			if (document.getElementById("fsfs_" + part).selectedIndex == 3 && notflashed == 1) {
+				if (! confirm("Your box is not flashed and the ext4 filesystem is not recognized by the stock firmware." + '\n' + "Proceed anyway?")) {
+					obj.selectedIndex = 0
+					return false
+				}
 			}
 			if (op == "Format")
 				res = confirm("Formating will destroy all data in the partition " + part + "\n\n\
@@ -84,6 +90,9 @@ ntfs_dis="disabled"
 if test -f /usr/sbin/mkntfs; then
 	ntfs_dis=""
 fi
+
+isflashed
+flashed=$?
 
 blk=$(blkid -c /dev/null -s LABEL -s TYPE)
 ppart=$(cat /proc/partitions)
@@ -156,7 +165,7 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 		cat<<-EOF
 			<td align=center>$otype</td>
 			<td><input $all_dis type=text size=10 name=lab_$part value="$LABEL"></td>
-			<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part')">
+			<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part', '$flashed')">
 				<option>Operation</option>
 				$mtd
 				<option $clean_en>Clean</option>
@@ -173,7 +182,7 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 				<option>vfat</option>
 				<option $ntfs_dis>ntfs</option>
 			</select></td>
-			<td><select id="fs_$part" name="$part" onChange="msubmit('fs_$part', '$part')">
+			<td><select id="fs_$part" name="$part" onChange="msubmit('fs_$part', '$part', '$flashed')">
 				<option>Operation</option>
 				<option >Format</option>
 				<option $all_dis $conv_en >Convert</option>
