@@ -129,6 +129,17 @@ disk_power() {
 	fi
 }
 
+# returns true if Alt-F is flashed
+isflashed() {
+	TF=$(mktemp -t)
+	dd if=/dev/mtdblock2 of=$TF count=1 >& /dev/null
+	strings $TF | grep -q Alt-F
+#	strings $TF | grep -q xpto
+	st=$?
+	rm $TF
+	return $st
+}
+
 # $1=part (sda2, eg)
 isdirty() {
 	res="$(tune2fs -l /dev/$1 2> /dev/null)"
@@ -479,7 +490,7 @@ cat<<EOF
 EOF
 }
 
-# args: title [refresh time] [onload action]
+# args: title [onload action]
 write_header() {
 	cat<<-EOF
 		Content-Type: text/html; charset=UTF-8
@@ -499,11 +510,8 @@ write_header() {
 			</a></h5></center>"
 	fi
 
-	if test "$#" = 2 -o \( $# = 3 -a -n "$2" \); then
-		echo "<meta http-equiv=\"refresh\" content=\"$2\">"
-	fi
-	if test "$#" = 3; then
-		act="onLoad=\"$3\""
+	if test "$#" = 2; then
+		act="onLoad=\"$2\""
 	fi
 
 	hf=${0%.cgi}_hlp.html
