@@ -19,25 +19,16 @@ if test -n "$Configure"; then
 
 elif test -n "$Submit"; then
 
-ssrvs="$(httpd -d $Submit)"
+	ssrvs="$(httpd -d $Submit)"
 
-for i in $ssrvs; do
-	serv=$(eval echo \$$i)
-	grep -q -e "^$i" /etc/inetd.conf
-	st=$?
-	if test -z "$serv" -a "$st" = "0"; then
-		inetd_change=1
-		sed -i s/$i/#$i/ /etc/inetd.conf
-	elif test "$serv" = "enable" -a "$st" != "0"; then
-		inetd_change=1
-		sed -i s/#$i/$i/ /etc/inetd.conf
-	fi
-done
-
-if test "$inetd_change" = 1; then
-	kill -HUP $(pidof inetd)
-fi
-
+	for i in $ssrvs; do
+		serv=$(eval echo \$$i)
+		if test "$serv" = "enable"; then
+			rcinetd enable $i >& /dev/null
+		else
+			rcinetd disable $i >& /dev/null
+		fi
+	done
 fi
 
 #enddebug
