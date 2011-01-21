@@ -3,14 +3,15 @@
 . common.sh
 
 check_cookie
-write_header "Disk Utilities" "" "document.disku.reset()"
+write_header "Disk Utilities" "document.disku.reset()"
 
 CONFT=/etc/misc.conf
 
 mktt power_tt "Higher power savings, lower performance, can spindow<br>
 Medium power savings and performance, can spindow<br>
 Low power saving, higher performance, can't spindown.<br>
-If disabled, the disk does not support Adv. Power Mode."
+Disable Advanced Power Management.<br>
+If grayed, the disk does not support Adv. Power Mode."
 
 mktt spindown_tt "After this minutes of inactivity the disk will spin down,<br>
 depending on the Power Saving Settings"
@@ -75,11 +76,12 @@ for disk in $disks; do
 	eval $(echo $dbay | awk '{
 		printf "hdtimeout=HDSLEEP_%s; hdtimeout_val=$HDSLEEP_%s; power=HDPOWER_%s; power_val=$HDPOWER_%s", toupper($1), toupper($1), toupper($1), toupper($1)}')
 
-	medpower_sel=""; highpower_sel=""; lowpower_sel=""
+	medpower_sel=""; highpower_sel=""; lowpower_sel=""; dispower_sel=""
 	case $power_val in
 		1) highpower_sel="selected" ;;
 		127) medpower_sel="selected" ;;
 		254) lowpower_sel="selected" ;;
+		255) dispower_sel="selected" ;;
 	esac
 	
 	cat<<-EOF	 
@@ -93,6 +95,7 @@ for disk in $disks; do
 			</select></td>
 		<td> <input type="submit" $paction_dis name="$dsk" value="$paction"> </td>
 		<td><select $power_dis name=$power $(ttip power_tt)>
+			<option $dispower_sel value=255>Disable</option>
 			<option $highpower_sel value=1>High</option>
 			<option $medpower_sel value=127>Medium</option>
 			<option $lowpower_sel value=254>Low</option>
