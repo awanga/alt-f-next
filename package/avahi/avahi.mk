@@ -10,11 +10,13 @@
 # either version 2.1 of the License, or (at your option) any
 # later version.
 
-AVAHI_VERSION = 0.6.23
+#AVAHI_VERSION = 0.6.23
+AVAHI_VERSION = 0.6.28
 AVAHI_SOURCE = avahi-$(AVAHI_VERSION).tar.gz
 AVAHI_SITE = http://www.avahi.org/download/
 AVAHI_INSTALL_STAGING = YES
 AVAHI_INSTALL_TARGET = YES
+AVAHI_LIBTOOL_PATCH = NO
 
 AVAHI_CONF_ENV = ac_cv_func_strtod=yes \
 		ac_fsusage_space=yes \
@@ -83,10 +85,10 @@ AVAHI_CONF_OPT = --localstatedir=/var \
 		--with-distro=none \
 		$(if $(BR2_HAVE_MANPAGES),--enable,--disable)-manpages \
 		$(if $(BR2_PACKAGE_AVAHI_AUTOIPD),--enable,--disable)-autoipd \
-		--with-avahi-user=default \
-		--with-avahi-group=default \
-		--with-autoipd-user=default \
-		--with-autoipd-group=default
+		--with-avahi-user=avahi \
+		--with-avahi-group=avahi \
+		--with-autoipd-user=avahi \
+		--with-autoipd-group=avahi
 
 AVAHI_DEPENDENCIES = $(if $(BR2_PACKAGE_GETTEXT),gettext)
 
@@ -118,7 +120,7 @@ endif
 ifeq ($(BR2_PACKAGE_LIBGLADE),y)
 AVAHI_DEPENDENCIES += libglade
 else
-AVAHI_CONF_OPT += --disable-gtk
+AVAHI_CONF_OPT += --disable-gtk --disable-gtk3
 endif
 
 ifeq ($(BR2_PACKAGE_PYTHON),y)
@@ -145,14 +147,16 @@ $(eval $(call AUTOTARGETS,package,avahi))
 
 $(AVAHI_HOOK_POST_INSTALL):
 	rm -rf $(TARGET_DIR)/etc/init.d/avahi-*
+	rm $(TARGET_DIR)/etc/avahi/services/sftp-ssh.service
+	rm $(TARGET_DIR)/etc/avahi/services/ssh.service
 ifeq ($(BR2_PACKAGE_AVAHI_AUTOIPD),y)
-	rm -rf $(TARGET_DIR)/etc/dhcp3/
-	$(INSTALL) -D -m 0755 package/avahi/busybox-udhcpc-default.script $(TARGET_DIR)/usr/share/udhcpc/default.script
-	$(INSTALL) -m 0755 package/avahi/S05avahi-setup.sh $(TARGET_DIR)/etc/init.d/
-	rm -f $(TARGET_DIR)/var/lib/avahi-autoipd
-	ln -sf /tmp/avahi-autoipd $(TARGET_DIR)/var/lib/avahi-autoipd
+	# jc: rm -rf $(TARGET_DIR)/etc/dhcp3/
+	# jc: $(INSTALL) -D -m 0755 package/avahi/busybox-udhcpc-default.script $(TARGET_DIR)/usr/share/udhcpc/default.script
+	# jc: $(INSTALL) -m 0755 package/avahi/S05avahi-setup.sh $(TARGET_DIR)/etc/init.d/
+	# jc: rm -f $(TARGET_DIR)/var/lib/avahi-autoipd
+	# jc: ln -sf /tmp/avahi-autoipd $(TARGET_DIR)/var/lib/avahi-autoipd
 endif
 ifeq ($(BR2_PACKAGE_AVAHI_DAEMON),y)
-	$(INSTALL) -m 0755 package/avahi/S50avahi-daemon $(TARGET_DIR)/etc/init.d/
+	# jc: $(INSTALL) -m 0755 package/avahi/S50avahi-daemon $(TARGET_DIR)/etc/init.d/
 endif
 	touch $@
