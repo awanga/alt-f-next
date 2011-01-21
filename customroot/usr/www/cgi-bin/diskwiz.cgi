@@ -85,17 +85,36 @@ If you have plugged a usb pen, eject and remove it and retry again.</h4></center
 	exit 1
 fi
 
+if isflashed; then
+	std_chk="checked"
+	ext4_chk="checked"
+else
+	notouch_chk="checked"
+	ext3_chk="checked"
+	ext4_dis="disabled"
+	raid5_dis="disabled"
+	cat<<-EOF
+		<script type="text/javascript">
+			alert("Your box is not flashed, some options not recognized " +
+			"by the stock firmware are not available." + '\n' +
+			"The stock firmware might not even recognize the new disks setup, " +
+			"so keep the selected defaults.")
+		</script>
+	EOF
+fi
+
 cat<<-EOF
 	<form name=wizf action="/cgi-bin/diskwiz_proc.cgi" method="post">
 	<fieldset>
 	<legend><strong>Whirl your magic wand...</strong></legend>
+	$fmsg
 	<table>
 	<tr><td colspan=2>I want my disk as:</td></tr>
 	<tr><td align=center>
-		<input type=radio name=wish_part value=notouch></td>
+		<input type=radio $notouch_chk name=wish_part value=notouch></td>
 		<td>Don't touch my disks in any way!</td></tr>
 	<tr><td align=center>
-		<input type=radio checked name=wish_part value=standard></td>
+		<input type=radio $std_chk name=wish_part value=standard></td>
 		<td>One big standard partition per disk, for easy management (standard)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=jbd></td>
@@ -107,7 +126,7 @@ cat<<-EOF
 		<input type=radio name=wish_part value=raid1></td>
 		<td>Data security, duplicate everything on both disks (raid1)</td></tr>
 	<tr><td align=center>
-		<input type=radio $threedisks name=wish_part value=raid5></td>
+		<input type=radio $raid5_dis name=wish_part value=raid5></td>
 		<td>Data security and more space, with two disks plus an external USB disk (raid5)</td></tr>
 
 	<tr><td colspan=2><br>And I want the filesystems to be:<br></td></tr>
@@ -115,10 +134,10 @@ cat<<-EOF
 		<input type=radio name=wish_fs value=ext2></td>
 		<td>older, stable and faster (ext2)</td></tr>
 	<tr><td align=center>
-		<input type=radio name=wish_fs value=ext3></td>
+		<input type=radio $ext3_chk name=wish_fs value=ext3></td>
 		<td>fast cleaning time, improved reliability (ext3)</td></tr>
 	<tr><td align=center>
-		<input type=radio checked name=wish_fs value=ext4></td>
+		<input type=radio $ext4_dis $ext4_chk name=wish_fs value=ext4></td>
 		<td>recent, faster cleaning time, best reliability, low fragmentation, big files support (ext4)</td></tr>
 
 	<tr><td align=center>
