@@ -1,20 +1,71 @@
-#! /bin/sh
+#!/bin/sh
 
-DESC="telnet, ftp, ssh, rsync, http, swat, lpd...<br><strong>Don't disable unless you have a serial port!</strong>"
+DESC="ssh, telnet, rsync, ftp, http, swat, lpd...<br><strong>Don't disable unless you have a serial port!</strong>"
 TYPE=net
 NAME=inetd
+CONFF=/etc/inetd.conf
+SRV="rsync ssh telnet ftp http printer swat"
 
 . $(dirname $0)/common
 
-case "$1" in
-	start)
+check() {
+	if ! grep -q -e "\(^#$1\|^$1\)" $CONFF; then
+		echo "$NAME: service $1 does not exists"
+		exit 1
+	fi
+}
+
+# $1-service (rsync ssh telnet ftp http printer swat)
+enable() {
+	check $1
+	if grep -q -e "^#$1" $CONFF; then
+		sed -i s/^#$1/$1/ $CONFF
+		reload $NAME
+		avahi add $1
+	else
+		echo "$NAME: service $1 is already enabled"
+	fi
+}
+
+disable() {
+	check $1
+	if grep -q -e "^$1" $CONFF; then
+		sed -i s/^$1/#$1/ $CONFF
+		reload $NAME
+		avahi remove $1
+	else
+		echo "$NAME: service $1 already disabled"
+	fi
+}
+
+avahi_add() {
+	for i in $SRV; do
+		if grep -q -e "^$i" $CONFF; then
+			avahi add $i
+		fi
+	done
+}
+
+avahi_remove() {
+	for i in $SRV; do
+		avahi remove $i
+	done
+}
+
+istart() {
 		rcdropbear init
 		rcvsftpd init
+		avahi_add
 		start $NAME
-		;;
-	stop) stop $NAME ;;
+}
+
+case "$1" in
+	start) istart ;;
+	stop) stop $NAME; avahi_remove ;;
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
 	status) status $NAME ;;
-	*) usage $0 "start|stop|status|restart" ;;
+	enable) enable $2 ;;
+	disable) disable $2 ;;
+	*) usage $0 "start|stop|status|reload|restart|enable <srv>|disable <srv>" ;;
 esac
