@@ -5,7 +5,10 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 . common.sh
 
 check_cookie
-write_header "RAID Creation and Maintenance" "" "document.diskr.reset()"
+write_header "RAID Creation and Maintenance" "document.diskr.reset()"
+
+isflashed
+flashed=$?
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -73,7 +76,7 @@ or even stop the array.\n\nContinue?")
 			obj.selectedIndex=0
 	}
 
-	function csubmit(arg) {
+	function csubmit(arg, notflashed) {
 
 		obj = document.diskr.level
 		level = obj.options[obj.selectedIndex].value
@@ -97,6 +100,10 @@ If you continue, performance will be worse than that of a single disk.\n\nContin
 
 			ret = false
 			if (level == "raid5") {
+				if (notflashed == 1) {
+					if (! confirm("Your box is not flashed and RAID5 is not recognized by the stock firmware." + '\n' + "Proceed anyway?"))
+						return false
+				}
 				if (comp1 == comp2 || comp1 == comp3 || comp2 == comp3)
 					alert("All componentes must be different.");
 				else if (comp3 == "none")
@@ -187,7 +194,7 @@ cat<<-EOF
 	<td><select name="comp1">$pairs</select></td>
 	<td><select name="comp2">$pairs</select></td>
 	<td><select name="comp3">$pairs</select></td>
-	<td><input type=submit name=md$dev value=Create onclick="return csubmit('submit')"></td>
+	<td><input type=submit name=md$dev value=Create onclick="return csubmit('submit', '$flashed')"></td>
 	</tr></table></fieldset><br>
 EOF
 
