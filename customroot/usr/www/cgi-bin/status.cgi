@@ -115,10 +115,11 @@ for i in /dev/sd?; do
 done
 
 if isflashed; then
-	flash="Flashed"
+	flashed_firmware=$(echo $flashed_firmware | sed -n 's/\(Alt-F-.*\),.*/\1/p')
 fi
+
 ver="$(cat /etc/Alt-F)"
-write_header "$flash Alt-F $ver Status Page"
+write_header "Alt-F $ver Status Page"
 
 cat<<EOF
 	<script type="text/javascript">
@@ -179,6 +180,9 @@ cat <<-EOF
 		<td><strong>Swap:</strong> $swap</td>
 		<td><strong>Uptime:</strong> $up</td>
 		<td><strong>Date:</strong> $(date)</td>
+	<!--/tr><tr>
+		<td></td><td></td>
+		<td><strong>Flashed kernel:</strong> $flashed_firmware</td-->
 	</tr></table>
 	</fieldset><br>
 
