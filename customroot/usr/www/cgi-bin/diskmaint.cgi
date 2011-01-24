@@ -25,7 +25,7 @@ cat<<-EOF
 				return false
 			}
 			if (document.getElementById("fsfs_" + part).selectedIndex == 3 && notflashed == 1) {
-				if (! confirm("Your box is not flashed and the ext4 filesystem is not recognized by the stock firmware." + '\n' + "Proceed anyway?")) {
+				if (! confirm("Your box is not Alt-F flashed and the ext4 filesystem is not recognized by the stock firmware." + '\n' + "Proceed anyway?")) {
 					obj.selectedIndex = 0
 					return false
 				}
@@ -46,6 +46,8 @@ Proceed converting the " + part + " partition anyway?");
 		else if (op == "Clean")
 			res = true
 		else if (op == "setLabel")
+			res = true
+		else if (op == "setMountOpts")
 			res = true
 		else if (op == "Shrink")
 			res = confirm("Shrink a filesystem only if you intend to latter shrink\n\
@@ -80,6 +82,7 @@ cat<<-EOF
 	<table><tr align=center><th>Dev.</th><th>Size</th>
 	<th>FS</th>
 	<th>Label</th>
+	<th>Mount Options</th>
 	<th>FS Operations</th>
 	<th colspan=2>New FS Operations</th>
 	</tr>
@@ -94,7 +97,7 @@ fi
 isflashed
 flashed=$?
 
-blk=$(blkid -c /dev/null -s LABEL -s TYPE)
+blk=$(blkid -c /dev/null -s LABEL -s TYPE) # -s UUID)
 ppart=$(cat /proc/partitions)
 i=1
 for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
@@ -114,6 +117,9 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 	if test "$TYPE" = "swap" -o "$TYPE" = "mdraid"; then continue; fi
 
 	otype=$TYPE
+
+	mount_opts=""
+	eval $(awk '{if ($1 == "'$j'") printf "mount_opts=%s", $4}' /etc/fstab)
 
 	all_dis=""
 	if test "$TYPE" = "none"; then
@@ -165,11 +171,13 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 		cat<<-EOF
 			<td align=center>$otype</td>
 			<td><input $all_dis type=text size=10 name=lab_$part value="$LABEL"></td>
+			<td><input $all_dis type=text size=16 name=mopts_$part value="$mount_opts"></td>
 			<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part', '$flashed')">
 				<option>Operation</option>
 				$mtd
 				<option $clean_en>Clean</option>
 				<option $label_en value=setLabel>Set Label</option>
+				<option value=setMountOpts>Set Mnt Options</option>
 				<option $resize_en>Shrink</option>
 				<option $resize_en>Enlarge</option>
 				<option>Wipe</option>

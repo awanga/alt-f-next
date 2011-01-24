@@ -207,6 +207,36 @@ elif test -n "$setLabel"; then
 	plabel $part "$lab"
 	lmount $part
 
+elif test -n "$setMountOpts"; then
+	part=$setMountOpts
+	eval mopts=\$mopts_$part
+
+	if test -n "$mopts"; then
+		mopts=$(httpd -d $mopts)
+	fi
+
+	lumount $part
+
+	TF=$(mktemp -t) 
+	awk '{
+		if ($1 == "/dev/'$part'") {
+			$4 = "'$mopts'"
+			printf "%s\n", $0
+		} else {
+			print $0
+		}
+	}' /etc/fstab > $TF
+	mv $TF /etc/fstab
+
+	uuid=$(blkid -o value -c /dev/null -s UUID /dev/$part | tr '-' '_')
+	sed -i '/^mopts_'${uuid}'=/d' /etc/misc.conf
+
+	if test "$mopts" != "defaults"; then
+		echo "mopts_${uuid}=$mopts" >> /etc/misc.conf
+	fi
+	
+	lmount $part
+
 elif test -n "$Mount"; then
 	part=$Mount
 	lmount $part "mount"
