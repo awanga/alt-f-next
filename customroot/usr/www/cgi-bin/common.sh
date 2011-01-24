@@ -131,13 +131,8 @@ disk_power() {
 
 # returns true if Alt-F is flashed
 isflashed() {
-	TF=$(mktemp -t)
-	dd if=/dev/mtdblock2 of=$TF count=1 >& /dev/null
-	strings $TF | grep -q Alt-F
-#	strings $TF | grep -q xpto
-	st=$?
-	rm $TF
-	return $st
+	flashed_firmware=$(dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings)
+	echo $flashed_firmware | grep -q Alt-F
 }
 
 # $1=part (sda2, eg)
