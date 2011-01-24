@@ -57,7 +57,18 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 		return 0
 	fi
 
-	fstype=$(blkid -s TYPE -o value -w /dev/null -c /dev/null $PWD/$MDEV)
+	if test -f /etc/misc.conf; then
+		. /etc/misc.conf
+	fi
+
+#	fstype=$(blkid -s TYPE -o value -w /dev/null -c /dev/null $PWD/$MDEV)
+	eval $(blkid -w /dev/null -c /dev/null $PWD/$MDEV | cut -d " " -f2-5)
+
+	# mount options, sourced from /etc/misc.conf
+	eval mopts=$(echo \$mopts_$UUID | tr '-' '_')
+	if test -z "$mopts"; then mopts="defaults"; fi
+
+	fstype=$TYPE
 	fsckcmd="fsck"
 	case $fstype in
 		ext2|ext3|ext4)	fsopt="-p" ;;
@@ -81,20 +92,25 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			;;
 	esac
 
-	lbl=$(blkid -s LABEL -o value -w /dev/null -c /dev/null $PWD/$MDEV | tr ' ' '_')
+#	lbl=$(blkid -s LABEL -o value -w /dev/null -c /dev/null $PWD/$MDEV | tr ' ' '_')
+	lbl=$(echo $LABEL | tr ' ' '_')
 #	if test -z "$lbl" -o -d /mnt/$lbl; then lbl=$MDEV; fi # FIXME handle duplicate labels
+
 	if test -z "$lbl"; then lbl=$MDEV; fi
 	/bin/mkdir /mnt/$lbl
 	if mountpoint /mnt/$lbl; then exit 0; fi
 
 	echo heartbeat > "/sys/class/leds/power:blue/trigger"
 	res="$($fsckcmd $fsopt $PWD/$MDEV 2>&1)"
-	if test $? -ge 2; then fsflg="-o ro"; fi
+	if test $? -ge 2; then mopts="ro"; fi
 	logger "$res"
 	echo none > "/sys/class/leds/power:blue/trigger"
-	/bin/mount -t $fstype $fsflg $PWD/$MDEV /mnt/$lbl
+
 	sed -i '\|^'$PWD/$MDEV'|d' /etc/fstab
-	echo "$PWD/$MDEV /mnt/$lbl $fstype defaults 0 0" >> /etc/fstab
+	echo "$PWD/$MDEV /mnt/$lbl $fstype $mopts 0 0" >> /etc/fstab
+
+##	/bin/mount -t $fstype $fsflg $PWD/$MDEV /mnt/$lbl
+	mount $PWD/$MDEV
 
 	if test -d "/mnt/$lbl/Users"; then
 		if ! test -h /home -a -d "$(readlink -f /home)" ; then
