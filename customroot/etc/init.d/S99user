@@ -30,6 +30,9 @@ writelog() {
 	echo -e "\n\n$SEP BOARD $SEP\n" >> $i/$LOGF
 	cat /tmp/board >> $i/$LOGF
 
+	echo -e "\n\n$SEP Flashed Firmware $SEP\n" >> $i/$LOGF
+	dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings >> $i/$LOGF
+
 	echo -e "\n\n$SEP DMESG $SEP\n" >> $i/$LOGF
 	dmesg >> $i/$LOGF
 
