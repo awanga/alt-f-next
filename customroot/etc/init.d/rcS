@@ -42,6 +42,9 @@ sleep 3
 # populate /dev
 /sbin/mdev -s
 
+# the fan must be running, as the disks might have to be checked and might warm up a lot.
+sysctrl
+
 # mount already attached disks/partitions, simulating kernel hotplug events
 # This "blocks" if some partitions needs to be fsck
 for i in /dev/sd?; do
@@ -230,6 +233,9 @@ case $cip in
 		hostname -F /etc/hostname
 		;;
 esac
+
+# stop fan (just to restart it gain soon, with flashe-save user settings)
+rcsysctrl stop
 		
 # stop temporary syslog to /var/log/boot.log
 start-stop-daemon -K -q -n syslogd
