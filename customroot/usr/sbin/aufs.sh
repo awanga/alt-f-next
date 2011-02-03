@@ -96,7 +96,10 @@ case $1 in
 			echo "$mp is not a aufs branch."
 			exit 1
 		fi
-		mount -t aufs -o remount,del:$mp /
+		if ! mount -t aufs -o remount,del:$mp / ; then
+			echo "Unmounting $mp aufs branch failed, stop all services first."
+			exit 1
+		fi
 		loadsave_settings -fa
 		cp -a /Alt-F/var/* /var				
 		exit $?
