@@ -14,9 +14,12 @@ msg() {
 }
 
 clean() {
-	aufs.sh -u
-	rm -rf $(readlink -f /Alt-F)
-	rm -f /Alt-F
+	if aufs.sh -u; then
+		rm -rf $(readlink -f /Alt-F)
+		rm -f /Alt-F
+	else
+		exit 1
+	fi
 }
 
 install() {
