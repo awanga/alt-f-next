@@ -2,7 +2,13 @@
 
 . common.sh
 check_cookie
-read_args
+
+if test "${CONTENT_TYPE%;*}" = "multipart/form-data"; then
+	upfile=$(upload_file)
+	action="Upload"
+else
+	read_args
+fi
 
 #debug
 
@@ -32,9 +38,21 @@ case $action in
 		fi
 		;;
 
-	*)
-		echo Hu? ;;
+	Upload)
+		res=$(loadsave_settings -lf $upfile 2>&1 )
+		st=$?
+		rm -f $upfile
+		if test $st != 0; then
+			msg "$res"
+		fi
+		;;
 
+	Download)
+		downfile=$(loadsave_settings -cs)
+		download_file /tmp/$downfile
+		rm -f /tmp/$downfile
+		exit 0
+		;;
 esac
 
 #enddebug

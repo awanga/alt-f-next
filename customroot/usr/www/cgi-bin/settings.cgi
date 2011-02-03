@@ -5,6 +5,10 @@ check_cookie
 
 write_header "Settings Management"
 
+if ! isflashed; then
+	clear_dis="disabled"
+fi
+
 if test -f /tmp/firstboot; then
 	cat<<-EOF
 		<center>
@@ -27,6 +31,7 @@ cat<<-EOF
 		 "and if not successful will try to find a free IP in the 192.168.1.254-240 range."); 
 	}
 	</script>
+	<fieldset><legend><strong>Flash Memory</strong></legend>
 	<form name=frm action="/cgi-bin/settings_proc.cgi" method="post">
 	<input type=submit name=action value=SaveSettings><br><br>
 	<select name=settings>
@@ -39,8 +44,16 @@ done
 
 cat<<-EOF
 	</select><input type=submit name=action value=LoadSettings><br><br>
-	<input type=submit name=action value=ClearSettings onclick="return ask()">
-		<strong>Don't clear if you have not flashed Alt-F!</strong><br>
-	</form></body></html>
+	<input type=submit $clear_dis name=action value=ClearSettings onclick="return ask()">
+	</fieldset><br>
+	<fieldset><legend><strong>Computer Disk</strong></legend>
+	Save current settings to file: <input type=submit name=action value="Download">
+	</form>
+	<form action=/cgi-bin/settings_proc.cgi method=post enctype=multipart/form-data><br>
+	Load settings from file: <input type=file name=uploadedfile>
+	<input type=submit name=action value="Upload">
+	</form>
+	</fieldset>
+	</body></html>
 EOF
 
