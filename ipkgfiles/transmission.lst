@@ -1,4 +1,3 @@
-./etc/init.d/common
 ./etc/init.d/S81transmission
 ./usr/bin/transmission-daemon
 ./usr/bin/transmission-remote
