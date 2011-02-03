@@ -1,26 +1,25 @@
 #! /bin/sh
 
-DESC="Run user script"
+DESC="Create diagnostics file and run user script"
 TYPE=user
 NAME=user
 
+CONF_MISC=/etc/misc.conf
+
 # inspired by "nogi"
-BOOTLOG=yes
 LOGF="alt-f.log"
 SEP="======================"
 
 . $(dirname $0)/common
 
 bootlog() {
-	if test -n "$BOOTLOG"; then
-		logger "Services status:"
-		rcall status
-		for i in /mnt/*; do
-			if mountpoint $i >& /dev/null; then
-				writelog
-			fi
-		done
-	fi
+	logger "Services status:"
+	rcall status
+	for i in /mnt/*; do
+		if mountpoint $i >& /dev/null; then
+			writelog
+		fi
+	done
 }
 
 writelog() {
@@ -76,9 +75,20 @@ writelog() {
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		# to apply your own settings, create an external script and add
-		# source/call it here; this way it will survive firmware upgrades.
-		bootlog
+		if test -f "$CONF_MISC"; then
+			. $CONF_MISC
+		else
+			USER_LOGFILE="yes"
+		fi
+
+		if test "$USER_LOGFILE" = "yes"; then
+			bootlog
+		fi
+
+		if test -n "$USER_SCRIPT" -a -x "$USER_SCRIPT"; then
+			"$USER_SCRIPT"
+		fi
+
 		echo "OK."
 		;;
 
