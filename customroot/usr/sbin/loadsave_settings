@@ -44,11 +44,7 @@ status() {
 	return $save
 }
 
-saveflashdef() { 
-
-	if status; then
-		exit 1
-	fi
+createdef() {
 
 	for i in /etc/init.d/S*; do
 		if test -x $i; then
@@ -56,23 +52,31 @@ saveflashdef() {
 		fi
 	done > $initscript_perms
 
-	# special case, only save nfs and cifs mounts,
-	# as other entries are hotpluged?
+	# special case, only save nfs and cifs mounts, as other entries are hotpluged
 	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0}' /etc/fstab > /tmp/xfstab
 	files="$files /tmp/xfstab $initscript_perms"
 
-	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
-
-# provide some flash wear leveling by writing into a new flash "location"
-
-	cnt=5
 	dt=$(date +%F_%T)
 	nm=set_$dt.tgz
 	tar -czf /tmp/$nm $files > /dev/null 2>&1
 	rm /tmp/xfstab
+	echo $nm
+}
+
+saveflashdef() { 
+
+	if status; then
+		exit 1
+	fi
+
+	mkdir -p $save_dir
+	mount /dev/mtdblock0 $save_dir
+
+	nm=$(createdef)
 	cp /tmp/$nm $save_dir/ 2>/dev/null
 	res=$?
+
+	cnt=5
 	while test $res = 1 -a "$cnt" -gt 0; do
 		cnt=$((cnt-1))
 		rm $save_dir/$nm $(ls $save_dir/set_*.tgz | head -1) >& /dev/null
@@ -96,6 +100,26 @@ saveflashdef() {
 	exit 0
 }
 
+checkfile() {
+	TD=$(mktemp -td)
+	mkdir -p $TD
+
+	if ! tar -C $TD -xzf $1; then
+		ret=1
+	fi
+		
+	for i in $files tmp/initd_perms tmp/xfstab; do
+		rm -f $TD/$i
+	done
+
+	if test "$(find $TD -type f | wc -l)" != "0"; then
+		ret=1
+	fi
+
+	rm -rf $TD
+	return $ret
+}
+
 loadflashdef() {
 
 	mkdir -p $save_dir
@@ -104,11 +128,14 @@ loadflashdef() {
 	if test $# = 0; then
 		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1 
 	else
-		last=$save_dir/$1
+		last=$1
 	fi
 
-	if test -z "$last"; then
-		echo "No settings file found!"
+	if test -z "$last" -o ! -f "$last" -o ! -s "$last"; then
+		echo "Empty or no file $last found!"
+		res=1
+	elif ! checkfile $last; then
+		echo "Invalid settings $last file."
 		res=1
 	else
 		tar -C / -xzf $last
@@ -251,9 +278,9 @@ to_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e $i -a -e /Alt-F/$i; then
-#			cp -a $i /Alt-F/$i
+#			cp -a $i /Alt-F/$i	# no need to copy, they will be copied when changed/created
 #		elif test -e /Alt-F/$i; then
-			rm -f /Alt-F/$i
+			rm -f /Alt-F/$i	# remove old, probably outdated, files
 		fi 
 	done
 }
@@ -264,14 +291,14 @@ from_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
-			mv /Alt-F/$i /$i
+			cp /Alt-F/$i /$i	# dont remove, copy instead, in case of catastrophic failure
 		fi
 	done
 }
 
 usage() {
 	echo -e "usage: loadsave_settings \n\
-	-lf [file] (load flash) | -sf (save flash) |\n\
+	-lf [file] (load flash) | -sf (save flash) | -cs (create settings file) \n\
 	-cf (clear flash) | -rc (recover from mtd1) |\n\
 	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
@@ -322,6 +349,7 @@ case $1 in
 		if test $# = 2; then arg=$2; fi
 		loadflashdef $arg
 		;;
+	"-cs")	createdef ;;
 	"-cf")	clearflashdef ;;
 	"-rc")	recover ;;
 	"-ta")	to_AltF ;;
