@@ -1,4 +1,4 @@
 ./usr/bin/fusermount
 ./usr/lib/libfuse.so
 ./usr/lib/libfuse.so.2
-./usr/lib/libfuse.so.2.8.1
+./usr/lib/libfuse.so.2.8.5
