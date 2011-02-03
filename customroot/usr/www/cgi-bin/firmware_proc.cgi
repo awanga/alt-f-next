@@ -1,68 +1,32 @@
 #!/bin/sh
 
-# POST upload format:
-# -----------------------------29995809218093749221856446032^M
-# Content-Disposition: form-data; name="file1"; filename="..."^M
-# Content-Type: application/octet-stream^M
-# ^M    <--------- headers end with empty line
-# file contents
-# file contents
-# file contents
-# ^M    <--------- extra empty line
-# -----------------------------29995809218093749221856446032--^M
-
-# Beware: bashism $'\r' is used to handle ^M
-
-#file=/tmp/down-fw
-file=/tmp/$$-$RANDOM
-
-#printf '\r\n'
-
-IFS=$'\r'
-read -r delim_line
-
-IFS=''
-delim_line="${delim_line}--"$'\r'
-
-while read -r line; do
-	test "$line" = '' && break
-	test "$line" = $'\r' && break
-done
-
-cat > $file
-
 . common.sh
 check_cookie
 
-html_header
-echo "<pre>"
+upfile=$(upload_file)
 
-tfile=/tmp/$$-$RANDOM
-len=$(expr $(stat -t $file | cut -d" " -f2) - ${#delim_line} - 3 )
-#head -c $len $file > $tfile
-dd if=$file of=$tfile bs=$len count=1 >/dev/null 2>&1
-
-mv $tfile $file
-
-if ! test -s $file; then
-	rm $file
+if ! test -s $upfile; then
+	rm -f $upfile
 	msg "File is empty."
 	exit 0
 fi
 
 cd /tmp
-fw_version=$(dns323-fw -s $file)
+res=$(dns323-fw -s $upfile)
 st=$?
 
-rm $file >/dev/null 2>&1
+rm -f $upfile
 
-if test $st = "1"; then
+if test $st != "0"; then
 	rm -f kernel initramfs defaults
 	msg "Does not seems to be a legitime firmware file."
 	exit 0
 fi
 
-echo -e "$fw_version\n\n<strong>Everything looks OK</strong>\n"
+html_header
+echo "<pre>"
+
+echo -e "$res\n\n<strong>Everything looks OK</strong>\n"
 
 ls -l kernel initramfs defaults
 
