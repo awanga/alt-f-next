@@ -61,15 +61,19 @@ if test "$install" = "Install"; then
 	ipkg_cmd -install $mp 
 
 elif test -n "$RemoveAll"; then
-	for i in $(ipkg -V0 list_installed | cut -f1 -d" "); do
-		if test "$i" != "ipkg"; then
-			ipkg -force-depends remove $i >& /dev/null
-		fi
-	done
-	ipkg remove ipkg >& /dev/null
-	aufs.sh -u
-	rm -rf $(readlink -f /Alt-F)
-	rm -f /Alt-F
+#	for i in $(ipkg -V0 list_installed | cut -f1 -d" "); do
+#		if test "$i" != "ipkg"; then
+#			ipkg -force-depends remove $i >& /dev/null
+#		fi
+#	done
+#	ipkg remove ipkg >& /dev/null
+#	aufs.sh -u
+#	rm -rf $(readlink -f /Alt-F)
+#	rm -f /Alt-F
+	res=$(ipkg -clean 2>&1 )
+	if test $? != 0; then
+		msg "Removing all packages failed:\n\n$res"
+	fi
 	gotopage /cgi-bin/packages_ipkg.cgi
 fi
 
