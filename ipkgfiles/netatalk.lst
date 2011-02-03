@@ -1,3 +1,4 @@
+./etc/init.d/S51afpd
 ./etc/netatalk/afpd.conf
 ./etc/netatalk/AppleVolumes.default
 ./etc/netatalk/AppleVolumes.system
@@ -75,3 +76,5 @@
 ./usr/sbin/cnid_dbd
 ./usr/sbin/cnid_metad
 ./usr/share/netatalk/pagecount.ps
+./usr/www/cgi-bin/afpd.cgi
+./usr/www/cgi-bin/afpd_proc.cgi
