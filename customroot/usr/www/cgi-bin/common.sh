@@ -200,6 +200,60 @@ select_part() {
 	echo "</select>"
 }
 
+upload_file() {
+	# POST upload format:
+	# -----------------------------29995809218093749221856446032^M
+	# Content-Disposition: form-data; name="file1"; filename="..."^M
+	# Content-Type: application/octet-stream^M
+	# ^M    <--------- headers end with empty line
+	# file contents
+	# file contents
+	# file contents
+	# ^M    <--------- extra empty line
+	# -----------------------------29995809218093749221856446032--^M
+
+	# The form might contain other fields, all are delimited by the initial delimiter
+	# the file and other fields might appear mixed.
+	# It looks like the order is the one in the form
+	# -----------------------------9708682921188161811539875626^M
+	# Content-Disposition: form-data; name="xpto1"^M
+	# ^M
+	# contents
+	# ^M
+	# -----------------------------9708682921188161811539875626^M
+
+	upfile=$(mktemp -t)
+	TF=$(mktemp -t)
+
+	read -r delim_line
+	while read -r line; do
+		if test "${line%:*}" = "Content-Type"; then
+			read -r line
+			break
+		fi
+	done
+
+	cat > $upfile
+
+	# remove from first delimiter found until EOF
+	sed -i '/'$delim_line'/,$d' $upfile
+
+	# but miss to remove the cr nl before the delimiter, which is now at EOF
+	# pitty "head -c -2" doesn't work
+	len=$(expr $(stat -t $upfile | cut -d" " -f2) - 2)
+	dd if=$upfile of=$TF bs=$len count=1 >/dev/null 2>&1
+	rm -f $upfile
+	echo $TF
+}
+
+download_file() {
+	echo -e "HTTP/1.1 200 OK\r"
+	echo -e "Content-Disposition: attachment; filename=\"$(basename $1)\"\r"
+	echo -e "Content-Type: application/octet-stream\r"
+	echo -e "\r"
+	cat $1
+}
+
 firstboot() {
 	local curr next
 	curr=$(cat /tmp/firstboot 2> /dev/null)
