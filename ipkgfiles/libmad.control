@@ -1,4 +1,5 @@
 Package: libmad
+Depends: ipkg
 Version: 0.15.1b 
 Description: High-quality MPEG audio decoder. All computations are
  performed with fixed-point integer arithmetic, making it ideal for

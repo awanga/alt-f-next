@@ -1,4 +1,5 @@
 Package: libid3tag
+Depends: ipkg
 Version: 0.15.1b
 Description: ID3 tag reading library from the MAD project.
 Architecture: arm

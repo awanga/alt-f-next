@@ -1,4 +1,5 @@
 Package: jpeg
+Depends: ipkg
 Version: 6b
 Description: The ubiquitous C library for manipulating JPEG images.
 Architecture: arm

@@ -1,5 +1,6 @@
 Package: samba-doc
 Description: Samba Web Administration Tool (swat) online help
+Depends: ipkg
 Version: 3.3.9
 Architecture: arm
 Priority: optional

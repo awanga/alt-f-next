@@ -1,6 +1,6 @@
 Package: mediatomb
 Version: 0.11.0
-Depends: sqlite, expat, file, taglib, ffmpeg, libexif
+Depends: sqlite, expat, file, taglib, ffmpeg, libexif, ipkg
 Description: A UPnP MediaServer with a nice web user interface.
 Architecture: arm
 Priority: optional

@@ -1,4 +1,5 @@
 Package: strace
+Depends: ipkg
 Version: 4.5.18
 Description: A useful diagnostic, instructional, and debugging tool.
  Allows you to track what system calls a program makes while it is running.

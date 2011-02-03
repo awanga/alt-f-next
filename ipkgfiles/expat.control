@@ -1,4 +1,5 @@
 Package: expat
+Depends: ipkg
 Version: 2.0.1
 Description: The Expat XML Parser.
 Architecture: arm

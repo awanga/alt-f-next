@@ -1,4 +1,5 @@
 Package: libxml2
+Depends: ipkg
 Version: 2.7.3
 Description: XML C parser and toolkit of Gnome
 Architecture: arm
