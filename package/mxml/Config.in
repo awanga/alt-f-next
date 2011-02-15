@@ -1,0 +1,6 @@
+config BR2_PACKAGE_MXML
+	bool "mxml"
+	help
+	  Mini-XML is a small XML library that you can use to read and write XML and XML-like data files in your application
+
+	  http://www.minixml.org
