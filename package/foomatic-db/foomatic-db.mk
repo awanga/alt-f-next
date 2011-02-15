@@ -50,9 +50,14 @@ $(FOOMATIC_DB_ENGINE_DIR)/.build: $(FOOMATIC_DB_ENGINE_DIR)/.configured
 	$(MAKE) -C $(FOOMATIC_DB_ENGINE_DIR) inplace
 	touch $@
 
-$(FOOMATIC_DB_ENGINE_DIR)/.installed: $(FOOMATIC_DB_ENGINE_DIR)/.build
+$(FOOMATIC_DB_ENGINE_DIR)/.dbcompiled: $(FOOMATIC_DB_ENGINE_DIR)/.build
 	(cd $(FOOMATIC_DB_ENGINE_DIR); \
-		./foomatic-compiledb -t ppd -f; \
+		./foomatic-compiledb -t ppd -j 4 -f; \
+	)
+	touch $@
+
+$(FOOMATIC_DB_ENGINE_DIR)/.installed: $(FOOMATIC_DB_ENGINE_DIR)/.dbcompiled
+	(cd $(FOOMATIC_DB_ENGINE_DIR); \
 		mnf=$$(ls ppd | cut -d'-' -f1 | sort -u); \
 		for i in $$mnf; do \
 			mkdir -p $(TARGET_DIR)/$(TARGET_PPD_DIR)/$$i; \
