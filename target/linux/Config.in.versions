@@ -19,7 +19,7 @@ config LINUX26_LATEST_MM_VERSION
 
 config BR2_KERNEL_CURRENT_VERSION
 	string
-	default "2.6.xpto"
+	default "2.6.37"
 	help
 	  This is the latest stable kernel (including minor version)
 
@@ -27,10 +27,18 @@ config BR2_KERNEL_LATEST_2_6_36
 	string
 	default "3"
 
+config BR2_KERNEL_LONGTERM_2_6_35
+	string
+	default "11"
+
 config BR2_KERNEL_LATEST_2_6_35
 	string
-	default "10"
+	default "9"
 	
+config BR2_KERNEL_LONGTERM_2_6_34
+	string
+	default "8"
+
 config BR2_KERNEL_LATEST_2_6_34
 	string
 	default "7"
@@ -40,6 +48,10 @@ config BR2_KERNEL_LATEST_2_6_33
 	default "7"
 
 config BR2_KERNEL_LATEST_2_6_32
+	string
+	default "28"
+
+config BR2_KERNEL_LONGTERM_2_6_32
 	string
 	default "28"
 
