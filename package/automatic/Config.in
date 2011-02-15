@@ -1,0 +1,13 @@
+config BR2_PACKAGE_AUTOMATIC
+	bool "automatic"
+	select BR2_PACKAGE_LIBCURL
+	select BR2_PACKAGE_LIBXML2
+	select BR2_PACKAGE_PCRE
+	help
+	 Automatic is an RSS downloader for Linux based systems, that grabs your favorite
+	 torrents based on filters you specify.
+	 It was designed to integrate with the popular BitTorrent client Transmission.
+	 Any torrents grabbed by Automatic are directly added to Transmission, effectively
+	 making it an auto-downloader. 
+
+	 http://kylek.is-a-geek.org:31337/Automatic/
