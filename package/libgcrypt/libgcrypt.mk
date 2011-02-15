@@ -10,6 +10,7 @@ LIBGCRYPT_DIR:=$(BUILD_DIR)/libgcrypt-$(LIBGCRYPT_VERSION)
 LIBGCRYPT_LIBRARY:=src/libgcrypt.la
 LIBGCRYPT_DESTDIR:=usr/lib
 LIBGCRYPT_TARGET_LIBRARY=$(LIBGCRYPT_DESTDIR)/libgcrypt.so
+LIBGCRYPT_DEPENDENCIES = uclibc libgpg-error
 
 $(DL_DIR)/$(LIBGCRYPT_SOURCE):
 	$(call DOWNLOAD,$(LIBGCRYPT_SITE),$(LIBGCRYPT_SOURCE))
@@ -62,7 +63,7 @@ ifneq ($(BR2_HAVE_INFOPAGES),y)
 	rm -rf $(STAGING_DIR)/usr/share/info
 endif
 
-libgcrypt: uclibc libgpg-error $(TARGET_DIR)/$(LIBGCRYPT_TARGET_LIBRARY)
+libgcrypt: $(TARGET_DIR)/$(LIBGCRYPT_TARGET_LIBRARY)
 
 libgcrypt-source: $(DL_DIR)/$(LIBGCRYPT_SOURCE)
 
