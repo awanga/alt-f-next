@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBUNISTRING
+	bool "libunistring"
+	help
+	  This library implements Unicode strings, together with functions for Unicode charactets and functions for string processing.
+
+	  http://savannah.gnu.org/projects/libunistring
