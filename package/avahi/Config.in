@@ -31,3 +31,12 @@ config BR2_PACKAGE_AVAHI_DAEMON
 	  architecture (also known as "Rendezvous" or "Bonjour").
 	  The daemon registers local IP addresses and services using
 	  mDNS/DNS-SD.
+
+config BR2_PACKAGE_AVAHI_LIBCLIENT
+	bool "avahi-client libraries and utils"
+	depends on BR2_PACKAGE_AVAHI
+	select BR2_PACKAGE_LIBDAEMON
+	select BR2_PACKAGE_EXPAT
+	select BR2_PACKAGE_DBUS
+	help
+	  avahi libraries for clients and avahi utils

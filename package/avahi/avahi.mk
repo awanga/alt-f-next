@@ -10,7 +10,6 @@
 # either version 2.1 of the License, or (at your option) any
 # later version.
 
-#AVAHI_VERSION = 0.6.23
 AVAHI_VERSION = 0.6.28
 AVAHI_SOURCE = avahi-$(AVAHI_VERSION).tar.gz
 AVAHI_SITE = http://www.avahi.org/download/
@@ -77,8 +76,10 @@ AVAHI_CONF_OPT = --localstatedir=/var \
 		--disable-qt3 \
 		--disable-qt4 \
 		--disable-gdbm \
+		--disable-python \
 		--disable-python-dbus \
 		--disable-pygtk \
+		--disable-nls \
 		--disable-mono \
 		--disable-monodoc \
 		--disable-stack-protector \
@@ -123,20 +124,21 @@ else
 AVAHI_CONF_OPT += --disable-gtk --disable-gtk3
 endif
 
-ifeq ($(BR2_PACKAGE_PYTHON),y)
-AVAHI_CONF_ENV += am_cv_pathless_PYTHON=python \
-		am_cv_path_PYTHON=$(PYTHON_TARGET_BINARY) \
-		am_cv_python_version=$(PYTHON_VERSION) \
-		am_cv_python_platform=linux2 \
-		am_cv_python_pythondir=/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
-		am_cv_python_pyexecdir=/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
-		py_cv_mod_socket_=yes
-
-AVAHI_DEPENDENCIES += libpython
-AVAHI_CONF_OPT += --enable-python
-else
-AVAHI_CONF_OPT += --disable-python
-endif
+# jc:
+#ifeq ($(BR2_PACKAGE_PYTHON),y)
+#AVAHI_CONF_ENV += am_cv_pathless_PYTHON=python \
+#		am_cv_path_PYTHON=$(PYTHON_TARGET_BINARY) \
+#		am_cv_python_version=$(PYTHON_VERSION) \
+#		am_cv_python_platform=linux2 \
+#		am_cv_python_pythondir=/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
+#		am_cv_python_pyexecdir=/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
+#		py_cv_mod_socket_=yes
+#
+#AVAHI_DEPENDENCIES += libpython
+#AVAHI_CONF_OPT += --enable-python
+#else
+#AVAHI_CONF_OPT += --disable-python
+#endif
 
 ifeq ($(BR2_PACKAGE_LIBINTL),y)
 AVAHI_DEPENDENCIES += libintl
@@ -146,9 +148,9 @@ endif
 $(eval $(call AUTOTARGETS,package,avahi))
 
 $(AVAHI_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/etc/init.d/avahi-*
-	rm $(TARGET_DIR)/etc/avahi/services/sftp-ssh.service
-	rm $(TARGET_DIR)/etc/avahi/services/ssh.service
+	rm -rf $(TARGET_DIR)/etc/init.d/avahi-* \
+		$(TARGET_DIR)/etc/avahi/services/sftp-ssh.service \
+		$(TARGET_DIR)/etc/avahi/services/ssh.service
 ifeq ($(BR2_PACKAGE_AVAHI_AUTOIPD),y)
 	# jc: rm -rf $(TARGET_DIR)/etc/dhcp3/
 	# jc: $(INSTALL) -D -m 0755 package/avahi/busybox-udhcpc-default.script $(TARGET_DIR)/usr/share/udhcpc/default.script
