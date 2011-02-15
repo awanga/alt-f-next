@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBANTLR
+	bool "libantlr"
+	help
+	 A language tool that provides a framework for constructing recognizers,
+	 interpreters, compilers, and translators from grammatical descriptions  
+
+	  http://www.antlr.org
