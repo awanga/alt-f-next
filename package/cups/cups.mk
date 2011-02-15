@@ -3,7 +3,8 @@
 # cups
 #
 ################################################################################
-CUPS_VERSION = 1.4.3
+#CUPS_VERSION = 1.4.3
+CUPS_VERSION = 1.4.6
 CUPS_NAME = cups-$(CUPS_VERSION)
 CUPS_DIR = $(BUILD_DIR)/$(CUPS_NAME)
 CUPS_SITE = http://ftp.easysw.com/pub/cups/$(CUPS_VERSION)
@@ -11,7 +12,7 @@ CUPS_SOURCE:=$(CUPS_NAME)-source.tar.bz2
 CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
 CUPS_CAT:=$(BZCAT)
 CUPS_TARGET_BINARY:=usr/sbin/cupsd
-CUPS_DEPENDENCIES = openssl libusb libpng jpeg tiff
+CUPS_DEPENDENCIES = uclibc openssl libusb libpng jpeg tiff
 
 ifeq ($(BR2_PACKAGE_DBUS),y)
 	CUPS_CONF_OPT += --enable-dbus
@@ -77,8 +78,8 @@ $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 CUPS_CONF_OPT = --without-perl --without-java --without-php	--without-python \
 	--disable-pam --disable-dnssd --disable-ldap --disable-gnutls --disable-gssapi \
 	--with-cups-user=cups  --with-cups-group=lpadmin \
-	--enable-openssl --enable-libusb \
-	--with-pdftops=none --with-languages=none --with-docdir=/usr/share/cups/doc
+	--enable-openssl --enable-libusb --with-pdftops=/usr/bin/gs \
+	--with-languages=none --with-docdir=/usr/share/cups/doc
 
 $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked
 	cd $(CUPS_DIR) && $(AUTOCONF)
