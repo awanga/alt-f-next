@@ -14,8 +14,9 @@ ALSA_LIB_CFLAGS=$(TARGET_CFLAGS)
 ALSA_LIB_DEPENDENCIES = uclibc
 
 ALSA_LIB_CONF_OPT = --enable-shared \
-		    --enable-static \
-		    --without-versioned
+		    --disable-static \
+			--disable-alisp --disable-python --disable-aload \
+			--program-prefix="" --without-versioned
 
 ifeq ($(BR2_ENABLE_DEBUG),y)
 # install-exec doesn't install the config files
@@ -27,13 +28,13 @@ ifeq ($(BR2_avr32),y)
 ALSA_LIB_CFLAGS+=-DAVR32_INLINE_BUG
 endif
 
-ifeq ($(BR2_PACKAGE_ALSA_LIB_PYTHON),y)
-ALSA_LIB_CONF_OPT += --with-pythonlibs=-lpython$(PYTHON_VERSION_MAJOR)
-ALSA_LIB_CFLAGS+=-I$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR)
-ALSA_LIB_DEPENDENCIES += libpython
-else
-ALSA_LIB_CONF_OPT += --disable-python
-endif
+#ifeq ($(BR2_PACKAGE_ALSA_LIB_PYTHON),y)
+#ALSA_LIB_CONF_OPT += --with-pythonlibs=-lpython$(PYTHON_VERSION_MAJOR)
+#ALSA_LIB_CFLAGS+=-I$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR)
+#ALSA_LIB_DEPENDENCIES += libpython
+#else
+#ALSA_LIB_CONF_OPT += --disable-python
+#endif
 
 ifeq ($(BR2_SOFT_FLOAT),y)
 ALSA_LIB_CONF_OPT += --with-softfloat
@@ -44,3 +45,6 @@ ALSA_LIB_CONF_ENV = CFLAGS="$(ALSA_LIB_CFLAGS)" \
 
 $(eval $(call AUTOTARGETS,package/multimedia,alsa-lib))
 
+$(ALSA_LIB_HOOK_POST_INSTALL):
+	rm -rf $(TARGET_DIR)/usr/share/alsa $(TARGET_DIR)/usr/share/aclocal
+	touch $@
