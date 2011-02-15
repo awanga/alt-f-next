@@ -1,0 +1,48 @@
+--- forked-daapd-0.12/config.h.in-orig	2011-02-13 20:55:15.266555123 +0000
++++ forked-daapd-0.12/config.h.in	2011-02-13 22:27:17.519431959 +0000
+@@ -1,3 +1,19 @@
++
++/*  
++	uclibc does not has pipe2() neither inotify_init1(), use pipe() and inotify_init(). Might fail at runtime, because of the missing flags
++    The uclibc version in use also does not have fdtimer, a patch was applied, is it working?
++*/
++#define pipe2(a,b) pipe(a)
++#define inotify_init1(a) inotify_init()
++
++/* uclibc does not has htobexx, is this correct? */
++#define htobe32(a) htonl((a))
++#define htobe16(a) htons((a))
++
++/* Alt-F is compiled without IPV6, this is here just for forked-daapd to compile */
++#include <netinet/in.h>
++extern const struct in6_addr in6addr_any;
++
+ /* config.h.in.  Generated from configure.in by autoheader.  */
+ 
+ /* Define to 1 if you have the <dirent.h> header file. */
+--- forked-daapd-0.12/src/raop.c-orig	2011-02-13 20:06:03.554430332 +0000
++++ forked-daapd-0.12/src/raop.c	2011-02-13 22:24:55.411429396 +0000
+@@ -35,8 +35,12 @@
+ # include <config.h>
+ #endif
+ 
++/* see comments at top of config.h */
++const struct in6_addr in6addr_any = { { { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 } } };
++
+ #include <stdio.h>
+ #include <unistd.h>
++#include <stdlib.h>
+ #include <stdint.h>
+ #include <inttypes.h>
+ #include <math.h>
+--- forked-daapd-0.12/src/laudio_alsa.c-orig	2011-02-13 20:06:20.320435898 +0000
++++ forked-daapd-0.12/src/laudio_alsa.c	2011-02-13 20:07:37.058431711 +0000
+@@ -28,7 +28,7 @@
+ #include <stdint.h>
+ #include <inttypes.h>
+ 
+-#include <asoundlib.h>
++#include <alsa/asoundlib.h>
+ 
+ #include "conffile.h"
+ #include "logger.h"
