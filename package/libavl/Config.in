@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBAVL
+	bool "libavl"
+	help
+	  AVLTree is a small implementation of AVL trees for the C programming language.
+	  libavl is not the GNU libavl
+
+	  http://alioth.debian.org/~jblache/forked-daapd/
