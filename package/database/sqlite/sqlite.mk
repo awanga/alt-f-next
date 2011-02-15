@@ -14,12 +14,14 @@ SQLITE_LIBTOOL_PATCH = YES
 SQLITE_DEPENDENCIES = uclibc
 
 SQLITE_CONF_OPT =	--enable-shared \
-			--enable-static \
+			--disable-static \
 			--enable-tempstore=yes \
 			--enable-threadsafe \
 			--enable-releasemode \
 			--disable-tcl \
 			--localstatedir=/var
+
+SQLITE_CONF_ENV += CFLAGS+=" -DSQLITE_ENABLE_UNLOCK_NOTIFY"
 
 ifeq ($(BR2_PACKAGE_SQLITE_READLINE),y)
 SQLITE_DEPENDENCIES += ncurses readline
