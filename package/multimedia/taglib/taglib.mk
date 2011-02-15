@@ -3,7 +3,8 @@
 # taglib
 #
 #############################################################
-TAGLIB_VERSION = 1.5
+#TAGLIB_VERSION = 1.5
+TAGLIB_VERSION = 1.6.3
 TAGLIB_SOURCE = taglib-$(TAGLIB_VERSION).tar.gz
 TAGLIB_SITE = http://developer.kde.org/~wheeler/files/src
 TAGLIB_LIBTOOL_PATCH = NO
