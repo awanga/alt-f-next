@@ -3,7 +3,7 @@
 # dosfstools
 #
 #############################################################
-DOSFSTOOLS_VERSION:=3.0.3
+DOSFSTOOLS_VERSION:=3.0.11
 DOSFSTOOLS_SOURCE:=dosfstools-$(DOSFSTOOLS_VERSION).tar.gz
 DOSFSTOOLS_SITE:=http://www.daniel-baumann.ch/software/dosfstools
 DOSFSTOOLS_DIR:=$(BUILD_DIR)/dosfstools-$(DOSFSTOOLS_VERSION)
@@ -45,6 +45,8 @@ $(TARGET_DIR)/$(DOSFSLABEL_TARGET_BINARY): $(DOSFSTOOLS_DIR)/.built
 	touch -c $@
 
 dosfstools: uclibc $(TARGET_DIR)/$(DOSFSTOOLS_TARGET_BINARY) $(TARGET_DIR)/$(DOSFSCK_TARGET_BINARY)
+
+dosfstools-build: $(DOSFSTOOLS_DIR)/.built
 
 dosfstools-clean:
 	rm -f $(TARGET_DIR)/$(MKDOSFS_TARGET_BINARY)
