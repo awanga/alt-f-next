@@ -5,13 +5,11 @@ check_cookie
 
 write_header "uShare Setup"
 
-CONFF=/etc/ushare.conf
+CONF_USHARE=/etc/ushare.conf
 
-if test -e $CONFF; then
-	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONFF)" 
-	eval $(grep ^USHARE_PORT $CONFF)
-	webhost="$(hostname -i | tr -d ' '):$USHARE_PORT/web/ushare.html"
-	eval $(grep ^ENABLE_WEB $CONFF)
+if test -e $CONF_USHARE; then
+	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)" 
+	eval $(grep ^ENABLE_WEB $CONF_USHARE)
 	if test "$ENABLE_WEB" = "yes"; then
 		chkweb="checked"
 	fi
@@ -72,6 +70,7 @@ cat<<-EOF
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
-	<input type="button" id=webbut $webbut value="WebPage" onClick="document.location.href='http://$webhost';">
+	<!--input type="button" id=webbut $webbut value="WebPage" onClick="document.location.href='http://$webhost';"-->
+	<input type="submit" id=webbut $webbut name="webPage" value="WebPage">
 	</td></tr></table></form></body></html>
 EOF
