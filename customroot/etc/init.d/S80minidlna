@@ -4,7 +4,7 @@ NAME=minidlna
 DESC="MiniDLNA is a DLNA/UPnP-AV server."
 TYPE=user
 
-CONFF=/etc/$NAME.conf
+CONF_MINIDLNA=/etc/$NAME.conf
 MINIDLNA_USER=$NAME
 MINIDLNA_GROUP=multimedia
 MINIDLNA_ARGS=""
@@ -12,25 +12,25 @@ MINIDLNA_ARGS=""
 . $(dirname $0)/common
 
 check_shares() {
-	if test -r "$CONFF"; then
-		MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONFF)"
+	if test -r "$CONF_MINIDLNA"; then
+		MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONF_MINIDLNA)"
 		OIFS="$IFS"; IFS=";"
 		for i in $MDLNA_DIR; do
-			if test ! -d "$i"; then
-				echo "$NAME: Share $i does not exist."
-				exit 1
+			if ! test -d "$i"; then
+				echo "$NAME: Share $i does not exists, disabling it."
+				sed -i 's|^media_dir='$i'|#&|' $CONF_MINIDLNA
 			else
-				conf_ok=1
+				conf_ok="yes"
 			fi
 		done
 		IFS="$OIFS"
 		if test -z "$conf_ok"; then
-			echo "$NAME: No shares configured."
+			echo "$NAME: can't be started, no shares are configured." 
 			exit 1
 		fi
 		return 0
 	fi
-	echo "$NAME: Configuration file does not exist."
+	echo "$NAME: Configuration file does not exists."
 	exit 1
 }
 
