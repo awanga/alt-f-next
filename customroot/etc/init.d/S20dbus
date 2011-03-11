@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# messagebus:   The D-BUS systemwide message bus
+#
+# chkconfig: 345 97 03
+# description:  This is a daemon which broadcasts notifications of system events \
+#               and other messages. See http://www.freedesktop.org/software/dbus/
+#
+# processname: dbus-daemon
+# pidfile: /var/run/messagebus.pid
+#
+
+NAME=dbus-daemon
+NAME2=dbus-uuidgen
+
+REQUIREDBY="avahi_daemon"
+
+. $(dirname $0)/common
+
+# Sanity checks.
+[ -x /usr/bin/dbus-daemon ] || exit 0
+
+# Create needed directories.
+[ -d /var/run/dbus ] || mkdir -p /var/run/dbus
+[ -d /var/lock/subsys ] || mkdir -p /var/lock/subsys
+[ -d /tmp/dbus ] || mkdir -p /tmp/dbus
+[ -d /etc/dbus-1/system.d ] || mkdir -p /etc/dbus-1/system.d
+[ -d /etc/dbus-1/session.d ] || mkdir -p /etc/dbus-1/session.d
+[ -d /usr/libexec/dbus-1 ] || mkdir -p /usr/libexec/dbus-1
+[ -d /usr/share/dbus-1/services ] || mkdir -p /usr/share/dbus-1/services
+[ -d /usr/share/dbus-1/system-services ] || mkdir -p /usr/share/dbus-1/system-services
+
+RETVAL=0
+
+istart() {
+    start $NAME2 -- --ensure
+    start $NAME -- --system
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/dbus-daemon
+}
+
+istop() {
+    ## we don't want to kill all the per-user $processname, we want
+    ## to use the pid file *only*; because we use the fake nonexistent 
+    ## program name "$servicename" that should be safe-ish
+    stop $NAME
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+        rm -f /var/lock/subsys/dbus-daemon
+        rm -f /var/run/messagebus.pid
+    fi
+}
+
+# See how we were called.
+case "$1" in
+    start) istart ;;
+    stop) istop ;;
+    status) status $NAME; RETVAL=$? ;;
+    restart) restart $NAME; RETVAL=$? ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart}"
+        ;;
+esac
+exit $RETVAL
