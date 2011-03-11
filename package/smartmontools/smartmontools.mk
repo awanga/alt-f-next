@@ -3,7 +3,8 @@
 # smartmontools
 #
 #############################################################
-SMARTMONTOOLS_VERSION:=5.38
+#SMARTMONTOOLS_VERSION:=5.38
+SMARTMONTOOLS_VERSION:=5.40
 SMARTMONTOOLS_SOURCE:=smartmontools-$(SMARTMONTOOLS_VERSION).tar.gz
 SMARTMONTOOLS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/smartmontools
 SMARTMONTOOLS_DIR:=$(BUILD_DIR)/smartmontools-$(SMARTMONTOOLS_VERSION)
@@ -60,6 +61,10 @@ $(TARGET_DIR)/$(SMARTMONTOOLS_TARGET_BINARY2): $(SMARTMONTOOLS_DIR)/$(SMARTMONTO
 	cp $(SMARTMONTOOLS_DIR)/$(SMARTMONTOOLS_BINARY2) $(TARGET_DIR)/usr/sbin/
 
 smartmontools: uclibc $(TARGET_DIR)/$(SMARTMONTOOLS_TARGET_BINARY) $(TARGET_DIR)/$(SMARTMONTOOLS_TARGET_BINARY2)
+
+smartmontools-configure: $(SMARTMONTOOLS_DIR)/.configured
+
+smartmontools-patch: $(SMARTMONTOOLS_DIR)/.unpacked
 
 smartmontools-clean:
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(SMARTMONTOOLS_DIR) uninstall
