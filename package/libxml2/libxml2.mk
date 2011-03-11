@@ -8,17 +8,22 @@ LIBXML2_SOURCE = libxml2-sources-$(LIBXML2_VERSION).tar.gz
 LIBXML2_SITE = ftp://xmlsoft.org/libxml2
 LIBXML2_INSTALL_STAGING = YES
 LIBXML2_INSTALL_TARGET = YES
+LIBXML2_DEPENDENCIES = uclibc
+
+LIBXML2_CONF_OPT = --with-gnu-ld --enable-shared \
+		--enable-static \
+		--without-debugging --without-python \
+		--without-threads 
 
 ifneq ($(BR2_LARGEFILE),y)
 LIBXML2_CONF_ENV = CC="$(TARGET_CC) $(TARGET_CFLAGS) -DNO_LARGEFILE_SOURCE"
 endif
 
-LIBXML2_CONF_OPT = --with-gnu-ld --enable-shared \
-		--enable-static $(DISABLE_IPV6) \
-		--without-debugging --without-python \
-		--without-threads 
-
-LIBXML2_DEPENDENCIES = uclibc
+ifeq ($(BR2_INET_IPV6),y)
+LIBXML2_CONF_OPT += --enable-ipv6
+else
+LIBXML2_CONF_OPT += $(DISABLE_IPV6)
+endif
 
 $(eval $(call AUTOTARGETS,package,libxml2))
 
