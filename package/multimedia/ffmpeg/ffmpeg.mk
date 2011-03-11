@@ -3,7 +3,8 @@
 # ffmpef
 #
 #############################################################
-FFMPEG_VERSION = 0.5.1
+
+FFMPEG_VERSION = 0.6.1
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.bz2
 FFMPEG_SITE = http://ffmpeg.org/releases/
 FFMPEG_AUTORECONF = NO
@@ -13,15 +14,20 @@ FFMPEG_LIBTOOL_PATCH = NO
 FFMPEG_DIR:=$(BUILD_DIR)/ffmpeg-$(FFMPEG_VERSION)
 FFMPEG_CAT:=$(BZCAT)
 FFMPEG_BINARY = ffmpeg
-FFMPEG_BINARY2 = ffserver
+FFMPEG_BINARIES = ffmpeg ffserver ffprobe
 FFMPEG_TARGET_BINARY = usr/bin/$(FFMPEG_BINARY)
-FFMPEG_TARGET_BINARY2 = usr/bin/$(FFMPEG_BINARY2)
+
+FFMPEG_CONF_OPT = $(DISABLE_IPV6) --enable-libmp3lame
+# --enable-libtheora --enable-libvorbis 
+
+FFMPEG_DEPENDENCIES = uclibc lame
 
 $(DL_DIR)/$(FFMPEG_SOURCE):
 	$(call DOWNLOAD,$(FFMPEG_SITE),$(FFMPEG_SOURCE))
 	
 $(FFMPEG_DIR)/.unpacked: $(DL_DIR)/$(FFMPEG_SOURCE)
 	$(FFMPEG_CAT) $(DL_DIR)/$(FFMPEG_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	toolchain/patch-kernel.sh $(FFMPEG_DIR) package/multimedia/ffmpeg/ \*.patch
 	touch $@
 
 $(FFMPEG_DIR)/.configured: $(FFMPEG_DIR)/.unpacked
@@ -40,7 +46,8 @@ $(FFMPEG_DIR)/.configured: $(FFMPEG_DIR)/.unpacked
 		--disable-static \
 		--arch=arm \
 		--cpu=armv5te \
-		--disable-ipv6 \
+		--target-os=linux \
+		$(FFMPEG_CONF_OPT) \
 		--disable-devices \
 		--disable-debug \
 		--disable-stripping \
@@ -63,14 +70,11 @@ $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY): $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY)
 		$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/$$i.so*; \
 		cp $(STAGING_DIR)/usr/include/$$i/* $(STAGING_DIR)/usr/include/ffmpeg; \
 	done
-	cp -dpf $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY) $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY2) \
-		$(TARGET_DIR)/usr/bin
-	-$(STRIPCMD) $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY) $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY2)
+	(cd $(STAGING_DIR)/usr/bin; cp -dpf $(FFMPEG_BINARIES) $(TARGET_DIR)/usr/bin)
+	(cd $(TARGET_DIR)/usr/bin; $(STRIPCMD) $(FFMPEG_BINARIES) )
 	touch -c $@
 
-ffmpeg-po:
-
-ffmpeg: uclibc $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY)
+ffmpeg: $(FFMPEG_DEPENDENCIES) $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY)
 
 ffmpeg-source: $(DL_DIR)/$(FFMPEG_SOURCE)
 

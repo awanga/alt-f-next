@@ -1,0 +1,42 @@
+--- ffmpeg-0.6.1/libavformat/utils.c-orig	2011-02-21 21:02:22.218384674 +0000
++++ ffmpeg-0.6.1/libavformat/utils.c	2011-02-21 21:02:37.762256360 +0000
+@@ -282,39 +282,6 @@
+     return NULL;
+ }
+ 
+-#if LIBAVFORMAT_VERSION_MAJOR < 53 && CONFIG_SHARED && HAVE_SYMVER
+-FF_SYMVER(void, av_destruct_packet_nofree, (AVPacket *pkt), "LIBAVFORMAT_52")
+-{
+-    av_destruct_packet_nofree(pkt);
+-}
+-
+-FF_SYMVER(void, av_destruct_packet, (AVPacket *pkt), "LIBAVFORMAT_52")
+-{
+-    av_destruct_packet(pkt);
+-}
+-
+-FF_SYMVER(int, av_new_packet, (AVPacket *pkt, int size), "LIBAVFORMAT_52")
+-{
+-    return av_new_packet(pkt, size);
+-}
+-
+-FF_SYMVER(int, av_dup_packet, (AVPacket *pkt), "LIBAVFORMAT_52")
+-{
+-    return av_dup_packet(pkt);
+-}
+-
+-FF_SYMVER(void, av_free_packet, (AVPacket *pkt), "LIBAVFORMAT_52")
+-{
+-    av_free_packet(pkt);
+-}
+-
+-FF_SYMVER(void, av_init_packet, (AVPacket *pkt), "LIBAVFORMAT_52")
+-{
+-    av_log(NULL, AV_LOG_WARNING, "Diverting av_*_packet function calls to libavcodec. Recompile to improve performance\n");
+-    av_init_packet(pkt);
+-}
+-#endif
+-
+ int av_get_packet(ByteIOContext *s, AVPacket *pkt, int size)
+ {
+     int ret= av_new_packet(pkt, size);
