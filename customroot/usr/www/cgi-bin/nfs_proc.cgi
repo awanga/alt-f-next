@@ -10,8 +10,8 @@ CONFX=/etc/exports
 CONFT=/etc/fstab
 
 start_client() {
-	if ! rcnfs-client status >& /dev/null; then
-		rcnfs-client start >& /dev/null
+	if ! rcnfs_client status >& /dev/null; then
+		rcnfs_client start >& /dev/null
 	fi
 }
 
