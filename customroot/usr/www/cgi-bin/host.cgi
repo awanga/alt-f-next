@@ -7,6 +7,11 @@ write_header "Host Setup"
 RESOLV=/etc/resolv.conf
 CONFS=/etc/samba/smb.conf
 CONFINT=/etc/network/interfaces
+CONF_MODPROBE=/etc/modprobe.conf
+
+mktt tt_ipv6 "IPv6 is for the next generation internet.<br>
+Most users don't need it.<br>
+After enabled, only a reboot will disable it."
 
 if test -f /tmp/firstboot; then
 	cat<<-EOF
@@ -23,6 +28,16 @@ if $(grep -q "$FLG_MSG" $RESOLV); then
 	stk="#!nameserver"; cflg=1
 else
 	stk="nameserver"
+fi
+
+if test -f $CONF_MODPROBE; then
+	if ! grep -q 'blacklist.*ipv6' $CONF_MODPROBE; then
+		ipv6_chk="checked"
+	fi
+fi
+
+if ifconfig eth0 | grep -q inet6; then
+	ipv6_inuse="(currently in use)"
 fi
 
 if test -e $RESOLV; then
@@ -83,8 +98,12 @@ cat<<-EOF
 		return ret;
 	}
 	function mtu_warn() {
-		if (document.sipf.mtu.value > 3700)
-			alert("Values higher than 3700 can effectively diminish performance")
+		if (document.sipf.mtu.value >= 9000) {
+			alert("Values higher than 9000 bytes are forbidden.")
+			document.sipf.mtu.value = 9000
+		}
+		else if (document.sipf.mtu.value > 7500)
+			alert("Values higher than 7500 bytes waste memory" + '\n' + "and have a small impact on throughput.")
 	}
 	</script>
 
@@ -111,6 +130,7 @@ cat<<-EOF
 	<tr><td>Name server 1:</td><td><input type=text id=sip name="ns1" value=$ns1></td></tr>
 	<tr><td>Name server 2:</td><td><input type=text id=sip name="ns2" value=$ns2></tr>
 	<tr><td>Frame size:</td><td><input type=text id=sip name="mtu" value=$mtu onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
+	<tr><td>Enable IPv6</td><td><input type=checkbox $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
 	</table></fieldset><br>
 
 	<input type=hidden name=cflg value="$cflg">

@@ -13,8 +13,19 @@ CONFR=/etc/resolv.conf
 CONFS=/etc/samba/smb.conf
 CONFHTTP=/etc/httpd.conf
 CONFINT=/etc/network/interfaces
+CONF_MODPROBE=/etc/modprobe.conf
 
 #debug
+
+if test -f $CONF_MODPROBE; then
+	sed -i '/^blacklist.*ipv6/d' $CONF_MODPROBE
+fi
+
+if test -z "$ipv6"; then
+	echo "blacklist ipv6" >> $CONF_MODPROBE
+else
+	modprobe ipv6
+fi
 
 if test "$iptype" = "static"; then
 	arping -Dw 2 $hostip >& /dev/null
