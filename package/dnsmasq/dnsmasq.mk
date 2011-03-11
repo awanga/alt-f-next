@@ -5,7 +5,7 @@
 #############################################################
 
 DNSMASQ_SITE:=http://thekelleys.org.uk/dnsmasq
-DNSMASQ_UPVER:=2.47
+DNSMASQ_UPVER:=2.57
 DNSMASQ_SOURCE:=dnsmasq-$(DNSMASQ_UPVER).tar.gz
 DNSMASQ_DIR:=$(BUILD_DIR)/dnsmasq-$(DNSMASQ_UPVER)
 DNSMASQ_BINARY:=dnsmasq
@@ -63,6 +63,8 @@ endif
 	touch -c $@
 
 dnsmasq: uclibc $(TARGET_DIR)/$(DNSMASQ_TARGET_BINARY)
+
+dnsmasq-build: $(DNSMASQ_DIR)/src/$(DNSMASQ_BINARY)
 
 dnsmasq-source: $(DL_DIR)/$(DNSMASQ_SOURCE)
 
