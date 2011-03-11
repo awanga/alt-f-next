@@ -733,9 +733,6 @@ void hdd_powercheck(int noleds)
 	}
 
 	fpm = fopen("/etc/misc.conf", "r");
-	if (fpm == NULL) {
-			syslog(LOG_INFO, "sysctrl: open /etc/misc.conf: %m");
-	}
 
 	while (fgets(buf, BUFSZ, fpb) != NULL) {
 		bay = strtok(buf, "=");
