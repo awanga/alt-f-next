@@ -9,7 +9,6 @@ FOOMATIC_DB_VERSION = 4.0
 FOOMATIC_DB_SOURCE = foomatic-db-$(FOOMATIC_DB_VERSION)-current.tar.gz
 FOOMATIC_DB_SITE = http://www.openprinting.org/download/foomatic/
 FOOMATIC_DB_DIR = $(BUILD_DIR)/foomatic-db-$(FOOMATIC_DB_VERSION)-current
-FOOMATIC_DB_DEPENDENCIES = uclibc
 
 $(DL_DIR)/$(FOOMATIC_DB_SOURCE):
 	$(call DOWNLOAD,$(FOOMATIC_DB_SITE),$(FOOMATIC_DB_SOURCE))
@@ -76,7 +75,7 @@ foomatic-db-build: $(FOOMATIC_DB_ENGINE_DIR)/.build
 
 foomatic-db-install: $(FOOMATIC_DB_ENGINE_DIR)/.installed
 	
-foomatic-db: foomatic-db-install
+foomatic-db: uclibc foomatic-db-install
 
 ifeq ($(BR2_PACKAGE_FOOMATIC_DB),y)
 TARGETS+=foomatic-db
