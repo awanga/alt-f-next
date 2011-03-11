@@ -4,12 +4,10 @@
 #
 #############################################################
 
-#DB_VERSION = 4.6.21
 DB_VERSION = 4.8.30
 DB_SOURCE = db-$(DB_VERSION).tar.gz
 DB_SITE = http://download.oracle.com/berkeley-db
 DB_LIBTOOL_PATCH = NO
-DB_DEPENDENCIES = uclibc
 DB_DIR = $(BUILD_DIR)/db-$(DB_VERSION)
 DB_BUILD = $(BUILD_DIR)/db-$(DB_VERSION)/build_unix
 DB_CAT = $(ZCAT)
@@ -50,7 +48,7 @@ $(TARGET_DIR)/$(DB_TARGET_BINARY): $(DB_BUILD)/$(DB_BINARY)
 	rm -rf $(TARGET_DIR)/usr/docs
 	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(DB_BUILD) install_include install_lib 
 
-db: $(TARGET_DIR)/$(DB_TARGET_BINARY)
+db: uclibc $(TARGET_DIR)/$(DB_TARGET_BINARY)
 
 db-install: $(TARGET_DIR)/$(DB_TARGET_BINARY)
 
