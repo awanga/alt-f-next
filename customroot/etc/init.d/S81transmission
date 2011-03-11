@@ -2,11 +2,13 @@
 
 set -e
 
-DESC="Bittorrent client"
+DESC="A Fast, Easy and Free Bittorrent client"
 NAME=transmission-daemon
+TYPE=user
+REQUIREDBY="automatic"
+
 CONFF=/var/lib/transmission
 JSON=settings.json
-TYPE=user
 
 OPTS="--logfile /var/log/transmission.log --config-dir=$CONFF -x /var/run/transmission.pid"
 
@@ -29,7 +31,7 @@ case "$1" in
 			"$CONFF/$JSON")
 
 		if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
-			echo "Directories does not exist, you must configure transmission first. Exiting."
+			echo "$NAME: Directories does not exist, you must configure transmission first."
 			exit 1
 		fi
 
@@ -39,7 +41,6 @@ case "$1" in
 		chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
 		start $NAME -- $OPTS
-
 		;;
 
 	stop) stop $NAME ;;
