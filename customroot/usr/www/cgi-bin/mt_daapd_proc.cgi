@@ -9,6 +9,13 @@ read_args
 CONFF=/etc/mt-daapd.conf
 DEF_DIR=/var/lib/mt-daapd/mp3_dir
 
+if test -n "$webPage"; then
+	PORT=$(awk '/^port/{print $2}' $CONFF)
+	pass=$(awk '/^admin_pw/{print $2}' $CONFF)
+	webhost="$(hostname -i | tr -d ' '):$PORT"
+	embed_page "http://mt-daapd:${pass}@$webhost"
+fi
+
 if test "$def_dir" = "yes"; then
 	rm -f $DEF_DIR/*
 
@@ -28,9 +35,8 @@ else
 	sed -i 's|^mp3_dir.*$|mp3_dir '"$share"'|' $CONFF
 fi
 
-rcmt-daapd status >& /dev/null
-if test $? = 0; then
-	rcmt-daapd restart >& /dev/null
+if rcmt_daapd status >& /dev/null; then
+	rcmt_daapd restart >& /dev/null
 fi
 
 #enddebug

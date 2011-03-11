@@ -9,9 +9,6 @@ write_header "mt-daapd Setup"
 CONFF=/etc/mt-daapd.conf
 DEF_DIR=/var/lib/mt-daapd/mp3_dir
 
-PORT=$(awk '/^port/{print $2}' $CONFF)
-webhost="$(hostname -i | tr -d ' '):$PORT"
-
 MP3_DIR="$(awk '/^mp3_dir/{print substr($0, index($0,$2))}' $CONFF)"
 
 OIFS="$IFS"; IFS=";"
@@ -25,7 +22,7 @@ if test "$MP3_DIR" = "$DEF_DIR"; then
 fi
 IFS="$OIFS"
 
-rcmt-daapd status >& /dev/null
+rcmt_daapd status >& /dev/null
 if test $? != 0; then
 	webbut="disabled"
 fi
@@ -41,7 +38,7 @@ cat<<-EOF
 		}
 	</script>
 
-	<form name=transmission action=mt-daapd_proc.cgi method="post" >
+	<form name=transmission action=mt_daapd_proc.cgi method="post" >
 	<table><tr>
 EOF
 
@@ -73,8 +70,6 @@ cat<<-EOF
 	<input type=hidden name=cnt value=$j>
 	<input type=hidden name=def_dir value=$def_dir>
 	<input type=submit value=Submit> $(back_button)
-	<input type="button" id=webbut $webbut value="WebPage" onClick="document.location.href='http://$webhost';">
+	<input type="submit" id=webbut $webbut name="webPage" value="WebPage">
 	</td></tr></table></form></body></html>
 EOF
-
-
