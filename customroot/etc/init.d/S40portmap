@@ -1,0 +1,35 @@
+#!/bin/sh
+
+DESC="DARPA port to RPC program number mapper"
+NAME=portmap
+
+REQUIREDBY="nfs nfs_client"
+
+PORTMAP_FLAG="" #-v
+
+. $(dirname $0)/common
+
+istart() {
+	# portmap fails when starting/stopping it in fast succession.
+	# Port 111 stays open in CLOSE_WAIT for 1 minute. Why?
+	# portmap was not designed to be killed, so it does not close its open ports.
+	#
+	# portmap does returns 0 when failing, (it forks and is the parent who returns OK)
+	# so, check if it started successfuly using rpcinfo to check.
+	
+	echo -n "Starting portmap: "
+	while ! rpcinfo -p >& /dev/null ; do
+		portmap $PORTMAP_FLAG
+		echo -n .
+		sleep 2
+	done
+	echo "OK."
+}
+
+case "$1" in
+	start) istart ;;
+	stop) stop $NAME; rm -f /var/run/portmap_mapping ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
