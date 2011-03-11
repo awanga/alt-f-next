@@ -8,8 +8,7 @@ LIBCURL_SOURCE = curl-$(LIBCURL_VERSION).tar.bz2
 LIBCURL_SITE = http://curl.haxx.se/download/
 LIBCURL_INSTALL_STAGING = YES
 LIBCURL_LIBTOOL_PATCH = NO
-LIBCURL_CONF_OPT = --disable-verbose --disable-manual --enable-hidden-symbols \
-		   $(DISABLE_IPV6)
+LIBCURL_CONF_OPT = --disable-verbose --disable-manual --enable-hidden-symbols
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
 LIBCURL_DEPENDENCIES += openssl
@@ -22,6 +21,12 @@ LIBCURL_CONF_ENV += LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:/lib:/usr/lib
 LIBCURL_CONF_OPT += --with-ssl=$(STAGING_DIR)/usr --with-random=/dev/urandom --with-ca-bundle=/etc/ssl/ca-bundle.crt
 else
 LIBCURL_CONF_OPT += --without-ssl
+endif
+
+ifeq ($(BR2_INET_IPV6),y)
+LIBCURL_CONF_OPT += --enable-ipv6
+else
+LIBCURL_CONF_OPT += $(DISABLE_IPV6)
 endif
 
 $(eval $(call AUTOTARGETS,package,libcurl))
