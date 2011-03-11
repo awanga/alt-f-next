@@ -75,7 +75,7 @@ else
 
 		print "<script type=\"text/javascript\"> \
 				function ask() { \
-					return confirm(\"All files and configurations will be erased. You will have to reinstall ipkg on a disk partition.\"); \
+					return confirm(\"All files and configurations will be erased. You will have to reinstall ipkg.\"); \
 				} \
 			</script> \
 			<tr><td colspan=2><strong>Remove all installed</strong></td> \

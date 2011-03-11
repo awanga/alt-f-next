@@ -10,7 +10,13 @@ CONFF=/etc/ipkg.conf
 
 ipkg_cmd() {
 
-	html_header
+	if test $1 = "-install"; then
+		write_header "Installing Alt-F"
+	elif test $1 = "install"; then
+		write_header "Installing Alt-F package $2"
+	elif test $1 = "upgrade"; then
+		write_header "Upgrading Alt-F package $2"
+	fi
 
 	cat<<-EOF
 		<script type="text/javascript">
@@ -21,11 +27,8 @@ ipkg_cmd() {
 	EOF
 
 	echo "<pre>"
-	if test $1 != "-install"; then
-		verbose="-verbose_wget"
-	fi
-	verbose="" # changed my mind
-	ipkg $verbose $1 $2
+
+	ipkg $1 $2
 	if test $? = 0; then
 		cat<<-EOF
 			</pre>
@@ -52,7 +55,7 @@ ipkg_cmd() {
 if test "$install" = "Install"; then
 
 	if test "$part" = "none"; then
-		msg "You must select a partition"
+		msg "You must select a filesystem"
 	fi
 
 	part=$(httpd -d $part)
@@ -61,27 +64,45 @@ if test "$install" = "Install"; then
 	ipkg_cmd -install $mp 
 
 elif test -n "$RemoveAll"; then
-#	for i in $(ipkg -V0 list_installed | cut -f1 -d" "); do
-#		if test "$i" != "ipkg"; then
-#			ipkg -force-depends remove $i >& /dev/null
-#		fi
-#	done
-#	ipkg remove ipkg >& /dev/null
-#	aufs.sh -u
-#	rm -rf $(readlink -f /Alt-F)
-#	rm -f /Alt-F
-	res=$(ipkg -clean 2>&1 )
+
+	write_header "Removing Alt-F packages"
+
+	cat<<-EOF
+		<script type="text/javascript">
+			function err() {
+				window.location.assign(document.referrer)
+			}
+		</script>
+		<pre>
+	EOF
+
+	busy_cursor_start
+	ipkg -clean
 	if test $? != 0; then
-		msg "Removing all packages failed:\n\n$res"
+		cat<<-EOF
+			</pre>
+			<p><strong>Failed</strong>
+			<input type="button" value="Back" onclick="err()">
+		EOF
+	else
+		cat<<-EOF
+			</pre>
+			<p><strong>Success</strong>
+			<script type="text/javascript">
+				setTimeout("err()", 2000);
+			</script>
+		EOF
 	fi
-	gotopage /cgi-bin/packages_ipkg.cgi
+
+	busy_cursor_end
+
+	echo "</body></html>"
+	exit 0
 fi
 
 ipkg update >& /dev/null
 
 if test -n "$Remove"; then
-	#ipkg_cmd remove $Remove # returns 0 even when fails
-
 	res=$(ipkg remove $Remove | sed -n '/^Package/,/^$/p' | tr '\n' ' ')
 
 	if test -n "$res"; then
@@ -89,7 +110,7 @@ if test -n "$Remove"; then
 	fi
 
 elif test -n "$InstallAll"; then
-	html_header
+	Write_header "Installing all Alt-F packages"
 	echo "<pre>"
 	for i in $(ipkg -V0 list | cut -f1 -d" "); do
 		if ! ipkg -V0 list_installed | cut -f1 -d" " | grep -q $i; then
