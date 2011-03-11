@@ -19,7 +19,17 @@ read_args() {
 }
 
 isnumber() {
-	echo "$1" | grep -qE '^[0-9]+$'
+	echo "$1" | grep -qE '^[0-9.]+$'
+}
+
+# Celsius to Fahrenheit 
+celtofar() {
+	awk 'END{ print 9 * '$1' / 5 + 32}' </dev/null
+}
+
+# Fahrenheit to Celsius
+fartocel() {
+	awk 'END{ printf "%.1f", 5 / 9 * ( '$1' - 32)}' </dev/null
 }
 
 checkip() {
@@ -161,12 +171,15 @@ fs_progress() {
 				if test -f /tmp/${k}-${part}.log; then
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
 				fi
-				if test $k != "wip"; then
-					ln=$(echo $ln | grep -oE ' [0-9]+.[0-9]+%|X|[0-9]+/[0-9]+')
-					if echo $ln | grep -q X; then
+				if test $k = "clean"; then
+					ln=$(echo $ln | awk '{printf "step %d: %d%%", $1, $2*100/$3}')
+				elif test $k = "format"; then
+					ln=$(echo $ln | awk -F/ '/.*\/.*/{printf "%d%%", $1*100/$2}')
+				elif test $k = "shrink" -o $k = "enlarg"; then
+#					ln=$(echo $ln | grep -oE ' [0-9]+.[0-9]+%|X|[0-9]+/[0-9]+')
+					ln=$(echo $ln | grep -o X)
+					if test -n "$ln"; then
 						ln=" step 2: $(expr $(echo "$ln" | wc -l) \* 100 / 40)%"
-					elif echo $ln | grep -q '[0-9]+/[0-9]+/'; then
-						ln="$(expr $(echo $ln | cut -d"/" -f1) \* 100 / $(echo $ln | cut -d"/" -f2))%"
 					fi 
 				fi
 				ln="${k}ing...$ln"
@@ -181,7 +194,10 @@ back_button() {
 	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
 
+# $1=pre-select pard (eg: sda4)
 select_part() {
+	if test -n "$1"; then presel=$1; fi
+
 	echo "<select name=part>"
 	echo "<option value=none>Select a filesystem</option>"
 
@@ -194,8 +210,8 @@ select_part() {
 		partl=$(plabel $part)
 		partb=$(sed -n "s/${part%[0-9]}=\(.*\)/, \1 disk/p" /etc/bay)
 		if test -z "$partl"; then partl=$part; fi
-
-		echo "<option value=$part> $partl ($part, ${pcap}B, ${avai}B free${partb})</option>"
+		sel=""; if test "$presel" = "$part"; then sel="selected"; fi		
+		echo "<option $sel value=$part> $partl ($part, ${pcap}B, ${avai}B free${partb})</option>"
 	done
 	echo "</select>"
 }
@@ -339,6 +355,85 @@ wait_count_stop() {
 	EOF
 }
 
+# use an iframe to embed apps own webpages
+# FIXME, iframe height!
+# $1=url to open
+embed_page() {
+	write_header ""
+
+	cat<<-EOF
+		<!--style>
+			html, body, div, iframe { height : 100%;}
+			iframe { display:block; width:100%; border:none; } 
+		</style-->
+		<div>
+			<iframe src="$1" width="100%" height="1200px" frameborder=0 scrolling=auto></iframe>
+		</div>
+		</body></html>
+	EOF
+	exit 0
+}
+
+# Contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
+# Adapted by Joao Cardoso
+#
+# draws a bar graph, $1 is the percentage to display (1-100) and $2 is the text to display,
+# if $2 is not present $1 is displayed for the text.  Normally $2 is used when graphing data
+# that has a range other than 1-100.
+# Note since this graph uses a div it doesn't display inline
+drawbargraph() {
+
+	linewidth="$1"
+	if test $linewidth -gt 99; then
+		linewidth="99"
+	fi
+
+	if [ "$2" == "" ]; then
+		text="$1%"
+	else
+		text="$2"
+	fi
+
+	if test "$linewidth" -gt 90; then
+		bgcolor="#F66"
+		fgcolor="#FFF"
+	elif test "$linewidth" -gt 75; then
+		bgcolor="#FF5"
+		fgcolor="#000"
+	else
+		bgcolor="#6F6"
+		fgcolor="#000"
+	fi
+
+	cat <<-EOF
+	<style>
+		.meter-wrap{
+			position: relative;
+		}
+		.meter-wrap, .meter-value, .meter-text {
+			width: 100px; height: 1em;
+		}
+		.meter-wrap, .meter-value {
+			background: #bdbdbd top left no-repeat;
+		}		   
+		.meter-text {
+			position: absolute;
+			top:0; left:0;
+			text-align: center;
+			width: 100%;
+			font-size: .8em;
+		}
+	</style>
+	<div class="meter-wrap">
+		<div class="meter-value" style="background-color: $bgcolor; width: $linewidth%;">
+			<div class="meter-text" style="color: $fgcolor;">
+		   		$text
+			</div>
+		</div>
+	</div>
+	EOF
+}
+
 # usage: mktt tt_id "tooltip msg" 
 mktt () {
 	echo "<div id=\"$1\" class=\"ttip\">$2</div>"
@@ -479,7 +574,7 @@ menu_setup2() {
 cat<<EOF
 	<table><tr>
 		<td><a class="Menu" href="/cgi-bin/logout.cgi" target="content">Logout</a></td>
-		<td><a class="Menu" href="/cgi-bin/status.cgi" target="content">Status</a></div></td>
+		<td><a class="Menu" href="/cgi-bin/status.cgi" target="content">Status</a></td>
 		<td><div id="Setup" class="Menu">Setup</div></td>
 		<td><div id="Disk" class="Menu">Disk</div></td>
 		<td><div id="Services" class="Menu">Services</div></td>
@@ -494,6 +589,7 @@ cat<<EOF
 		<a class="Menu" href="/cgi-bin/proxy.cgi" target="content">Proxy</a>
 		<a class="Menu" href="/cgi-bin/hosts.cgi" target="content">Hosts</a>
 		<a class="Menu" href="/cgi-bin/usersgroups.cgi" target="content">Users</a>
+		<a class="Menu" href="/cgi-bin/debian.cgi" target="content">Debian</a>
 		<a class="Menu" href="/cgi-bin/browse_dir.cgi?wind=no?browse=/mnt" target="content">Directories</a>
 	</div>
 	<script type="text/javascript">
