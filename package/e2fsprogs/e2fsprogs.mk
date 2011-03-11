@@ -3,8 +3,8 @@
 # e2fsprogs
 #
 #############################################################
-#E2FSPROGS_VERSION:=1.41.3
-E2FSPROGS_VERSION:=1.41.12
+
+E2FSPROGS_VERSION:=1.41.14
 E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
 E2FSPROGS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/e2fsprogs
 E2FSPROGS_DIR=$(BUILD_DIR)/e2fsprogs-$(E2FSPROGS_VERSION)
@@ -144,6 +144,10 @@ $(TARGET_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY): $(STAGING_DIR)/lib
 
 libuuid: uclibc $(TARGET_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY)
 e2fsprogs: uclibc libuuid $(TARGET_DIR)/$(E2FSPROGS_TARGET_BINARY)
+
+e2fsprogs-build: $(E2FSPROGS_DIR)/$(E2FSPROGS_BINARY)
+
+e2fsprogs-configure: $(E2FSPROGS_DIR)/.configured
 
 e2fsprogs-clean:
 	$(MAKE1) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(E2FSPROGS_DIR) uninstall
