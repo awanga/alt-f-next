@@ -30,7 +30,7 @@ check_shares() {
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		if ! $(check_shares); then
+		if ! check_shares; then
 			echo "No shares available, exiting"
 			exit 1
 		else
@@ -39,7 +39,7 @@ case "$1" in
 				--chuid $USHARE_USER:$USHARE_GROUP \
 				--make-pidfile --pidfile $PIDFILE \
 				--exec $DAEMON -- $USHARE_OPTIONS
-			omsg $
+			omsg $?
 		fi
 		;;
 
@@ -49,14 +49,9 @@ case "$1" in
 		omsg $?
 		;;
 
-	status) status $NAME ;;
-	
-	reload) reload $NAME
-#	echo -n "Reloading $NAME: "
-#	start-stop-daemon --stop --signal 1 --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON
-#	omsg $?
-		;;
-
+	status) status $NAME ;;	
+	reload) reload $NAME ;;
 	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart|reload" ;;
 esac
+ 
