@@ -3,7 +3,8 @@
 # zlib
 #
 #############################################################
-ZLIB_VERSION:=1.2.3
+#ZLIB_VERSION:=1.2.3
+ZLIB_VERSION:=1.2.5
 ZLIB_SOURCE:=zlib-$(ZLIB_VERSION).tar.bz2
 ZLIB_CAT:=$(BZCAT)
 ZLIB_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/libpng
@@ -14,7 +15,7 @@ $(DL_DIR)/$(ZLIB_SOURCE):
 
 $(ZLIB_DIR)/.patched: $(DL_DIR)/$(ZLIB_SOURCE)
 	$(ZLIB_CAT) $(DL_DIR)/$(ZLIB_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(ZLIB_DIR) package/zlib/ zlib\*.patch
+	toolchain/patch-kernel.sh $(ZLIB_DIR) package/zlib/ zlib-$(ZLIB_VERSION)\*.patch
 	$(CONFIG_UPDATE) $(@D)
 	touch $@
 
@@ -36,7 +37,7 @@ $(ZLIB_DIR)/.configured: $(ZLIB_DIR)/.patched
 		./configure \
 		$(ZLIB_SHARED) \
 		--prefix=/usr \
-		--exec-prefix=$(STAGING_DIR)/usr/bin \
+		--eprefix=$(STAGING_DIR)/usr/bin \
 		--libdir=$(STAGING_DIR)/usr/lib \
 		--includedir=$(STAGING_DIR)/usr/include \
 	)
@@ -73,6 +74,12 @@ zlib-headers: $(TARGET_DIR)/usr/lib/libz.a
 zlib: uclibc $(ZLIB_TARGET)
 
 zlib-source: $(DL_DIR)/$(ZLIB_SOURCE)
+
+zlib-patched: $(ZLIB_DIR)/.patched
+
+zlib-configure:  $(ZLIB_DIR)/.configured
+
+zlib-build: $(ZLIB_DIR)/libz.a
 
 zlib-clean:
 	rm -f $(TARGET_DIR)/usr/lib/libz.* \
