@@ -7,6 +7,7 @@ start_stop() {
 	act=$2
 
 	sscript=/etc/init.d/S??$serv
+	rcscript=rc${serv}
 	if test -n "$sscript"; then    
 		if test "$act" = "enable"; then
 			chmod +x $sscript
@@ -17,19 +18,24 @@ start_stop() {
 		fi
 
 		if test "$act" = "start" -o "$act" = "enable"; then
-			res=$(sh $sscript start 2>&1)
+			res=$($rcscript start 2>&1)
 			if test $? != 0; then
-				scp=$(basename $sscript)
-				msg "${scp:3}: $res"
+				msg "$res"
 			fi
 		elif test "$act" = "stop" -o "$act" = "disable"; then
-			sh $sscript stop >& /dev/null
+			res=$($rcscript stop 2>&1)
+			if test $? != 0; then
+				msg "$res"
+			fi
 			for i in $(seq 1 50); do
-				if ! sh $sscript status >& /dev/null; then
+				if ! $rcscript status >& /dev/null; then
 					break
 				fi	
 				usleep 200000
 			done
+			if test "$i" -eq 50; then
+				msg "Service was successfully signaled to stop but is slow to finish."
+			fi
 		fi
 	fi
 }
@@ -59,15 +65,15 @@ elif test -n "$StopNow"; then
 	start_stop $StopNow stop
 
 elif test -n "$Configure"; then
-	if test -f $PWD/${Configure}.cgi; then
+#	if test -f $PWD/${Configure}.cgi; then
 		gotopage /cgi-bin/${Configure}.cgi
-	else
-		write_header "$Configure setup"
-		echo "<p>Write me</p>"
-		back_button
-		echo "</body></html>"
-		exit 0
-	fi
+#	else
+#		write_header "$Configure setup"
+#		echo "<p>Write me</p>"
+#		back_button
+#		echo "</body></html>"
+#		exit 0
+#	fi
 fi
 
 #enddebug
