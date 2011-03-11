@@ -78,8 +78,11 @@ fi
 
 #echo "<pre>$(set)</pre>"
 
-echo "$browse" | grep -q '^/mnt'
-if test "$?" = 1; then
+if test -h "$browse"; then
+	browse=$(readlink -f "$browse")
+fi
+
+if ! echo "$browse" | grep -q '^/mnt'; then
 	echo "<h3>Warning: Directory base must be /mnt</h3>"
 	browse="/mnt"
 elif ! test -d "$browse"; then
