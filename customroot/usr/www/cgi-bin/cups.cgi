@@ -4,11 +4,13 @@
 check_cookie
 read_args
 
-rccups status >& /dev/null
-if test $? != 0; then
-	msg "cups must be running in order to configure it."
+CONF_WSECRET=/etc/web-secret
+
+if ! rccups status >& /dev/null; then
+	rccups start >& /dev/null
 fi
+pass="$(cat $CONF_WSECRET)"
 
-gotopage http://$(hostname -i | sed 's/ //'):631
-
+#embed_page "https://root:${pass}@$(hostname -i | sed 's/ //'):631/admin"
+embed_page "https://$(hostname -i | sed 's/ //'):631/admin"
 
