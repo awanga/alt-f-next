@@ -31,7 +31,7 @@ OR ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG!" > $mp/Alt-F/README.txt
 	rm -f /Alt-F
 	ln -s $mp/Alt-F /Alt-F
 	mkdir -p /Alt-F/var
-	cp -a /var/lib /var/spool /Alt-F/var
+	cp -a /var/lib /var/spool /var/cache /Alt-F/var
 	loadsave_settings -ta
 	mount -t aufs -o remount,prepend:$mp/Alt-F=rw /
 	return $?
@@ -81,10 +81,10 @@ case $1 in
 		check
 		if isaufs $mp; then
 			echo "$mp is already a aufs branch."
-			exit 1
+			exit 0
 		fi
 		mkdir -p /Alt-F/var
-		cp -a /var/lib /var/spool /Alt-F/var
+		cp -a /var/lib /var/spool /var/cache /Alt-F/var
 		loadsave_settings -ta
 		mount -t aufs -o remount,prepend:${mp}=rw /
 		exit $?
