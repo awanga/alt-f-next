@@ -14,12 +14,49 @@ msg() {
 }
 
 clean() {
-	if aufs.sh -u; then
-		rm -rf $(readlink -f /Alt-F)
-		rm -f /Alt-F
-	else
-		exit 1
+	if ! aufs.sh -s >& /dev/null; then
+		return 0
 	fi
+
+	if test -f /usr/bin/ipkg-cl; then
+		for i in $(ipkg-cl -V0 list_installed | cut -f1 -d" "); do
+			if test "$i" != "ipkg"; then
+				ipkg-cl -force-depends remove $i # >& /dev/null
+			fi
+		done
+		ipkg-cl remove ipkg # >& /dev/null
+	fi
+
+	if ! aufs.sh -u >& /dev/null; then 
+		echo "ipkg: can't umount aufs branch, stopping services and retrying..."
+		rcall stop >& /dev/null
+		# check during 10 seconds that they are indeed stopped
+		# "rcall status" doesn't work cause of inetd, syslog and sysctrl 
+		cnt=10; st=1
+		while test "$st" = "1" -a "$cnt" != "0"; do
+			st=0
+			for i in $(ls -r /etc/init.d/S*) ;do
+				bn=$(basename $i)
+				nm=${bn:3}
+				if test "$nm" = "inetd" -o "$nm" = "sysctrl" -o "$nm" = "syslog"; then continue; fi
+				if rc$nm status >& /dev/null; then st=1; resilient=$nm; fi
+			done
+			usleep 200000
+			cnt=$((cnt-1))
+		done
+
+		if test "$st" = 1; then
+			echo "ipkg: at least service \"$resilient\" couldn'd be stopped"
+		fi
+
+		if ! aufs.sh -u >& /dev/null; then # no hope
+			echo "ipkg: can't umount aufs branch, exiting."
+			exit 1
+		fi
+	fi
+	
+	rm -rf $(readlink -f /Alt-F)
+	rm -f /Alt-F
 }
 
 install() {
