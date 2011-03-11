@@ -3,7 +3,9 @@
 # openssl
 #
 #############################################################
-OPENSSL_VERSION:=0.9.8k
+#OPENSSL_VERSION:=0.9.8k
+OPENSSL_VERSION:=0.9.8r
+
 OPENSSL_SITE:=http://www.openssl.org/source
 
 OPENSSL_TARGET_ARCH=generic32
