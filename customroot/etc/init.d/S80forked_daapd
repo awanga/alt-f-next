@@ -1,0 +1,27 @@
+#! /bin/sh
+
+DESC="DAAP and RSP media server (iTunes)"
+NAME=forked-daapd
+TYPE=user
+
+EXCLUDEDBY="mt_daapd"
+REQUIRE="avahi_daemon"
+
+FORKED_LOG=/var/log/forked-daapd.log
+FORKED_OVRW_LOG="yes" # overwrite log file on each start
+
+. $(dirname $0)/common
+
+case "$1" in
+	start)
+		if test "$FORKED_OVRW_LOG" = "yes"; then
+			rm  -f "$FORKED_LOG"
+		fi
+		start $NAME -- $OPTS 2> /dev/null
+		;;
+
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
