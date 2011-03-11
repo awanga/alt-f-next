@@ -4,7 +4,7 @@
 #
 #############################################################
 
-RSYNC_VERSION:=3.0.5
+RSYNC_VERSION:=3.0.7
 RSYNC_SOURCE:=rsync-$(RSYNC_VERSION).tar.gz
 RSYNC_SITE:=http://rsync.samba.org/ftp/rsync/src
 RSYNC_AUTORECONF:=no
@@ -18,7 +18,7 @@ else
 RSYNC_INSTALL_TARGET_OPT:=DESTDIR=$(TARGET_DIR) INSTALLCMD='./install-sh -c' \
 			  STRIPPROG="$(TARGET_STRIP)" install-strip
 endif
-RSYNC_CONF_OPT:=--with-included-popt
+RSYNC_CONF_OPT:=--with-included-popt $(DISABLE_IPV6)
 
 RSYNC_DEPENDENCIES:=uclibc
 
