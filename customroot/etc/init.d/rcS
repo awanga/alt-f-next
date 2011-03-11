@@ -2,7 +2,7 @@
 
 /bin/mount -t proc proc /proc
 /bin/mount -o remount,rw /
-/bin/mount -t usbfs usbfs /proc/bus/usb
+/bin/mount -t usbfs -o devgid=9,devmode=0664  usbfs /proc/bus/usb
 /bin/mount -t sysfs sysfs /sys
 /bin/mount -t tmpfs tmpfs /tmp
 #/bin/mount -t tmpfs -o size=64k,mode=0755 tmpfs /dev
@@ -12,16 +12,31 @@
 #/bin/mount -a
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
-for i in run log cache; do
-	mkdir /tmp/$i
+for i in run log; do
+	mkdir -p /tmp/$i
 	ln -sf /tmp/$i /var/$i
 done
 
-mkdir -p /mnt /var/lib /var/spool/lpd
+mkdir -p /mnt /var/lib /var/cache /var/spool/lpd
 echo > /etc/bay
+
+# create rc* shortcuts to /etc/init.d/S??*
+ln -f /etc/init.d/rcall /sbin/rcall
+for i in /etc/init.d/S??*; do
+	f=$(basename $i)
+	ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
+done
 
 # what board revision? (Should be available in /proc/cpuinfo!)
 dmesg | awk '/Identified HW revision/{print $5}' > /tmp/board
+
+# start fan because the disks might have to be fsck
+# and might warm up a lot in the process
+if test "$(cat /tmp/board)" = "C1"; then
+	echo 255 >> /sys/class/hwmon/hwmon1/device/pwm1
+else
+	echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
+fi
 
 # stop blinking power-led
 echo "none" > /sys/class/leds/power\:blue/trigger
@@ -30,67 +45,49 @@ TSYSLOG=/var/log/boot.log
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
 start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
 
-# there is a problem here.
-# the kernel does not generate/buffer hot plug events before init starts,
-# but when init starts not all devices are yet enumerated by the kernel.
-#
-# give slow block devices an oportunity to appear. 5 seconds is
-# enough for 2 internal hdd, 2 external usb pens, and 1 external usb disk
-# but is 5 more seconds in boot time...
-sleep 3	
-
-# populate /dev
-/sbin/mdev -s
-
-# the fan must be running, as the disks might have to be checked and might warm up a lot.
-sysctrl
-
-# mount already attached disks/partitions, simulating kernel hotplug events
-# This "blocks" if some partitions needs to be fsck
-for i in /dev/sd?; do
-	if test -b $i; then
-		(cd /dev && ACTION=add DEVTYPE=disk PWD=/dev \
-			MDEV=$(basename $i) /usr/sbin/hot.sh)
-		for j in ${i}?; do
-			if test -b $j; then
-				(cd /dev && ACTION=add DEVTYPE=partition PWD=/dev \
-				MDEV=$(basename $j) /usr/sbin/hot.sh)
-			fi
-		done
-	fi
-done
-
-# install already attached printers, simulating kernel hotplug events
-# kernel might have already generated the events before this script runs
-for i in /dev/lp?; do
-	if test -c $i; then
-		mdev=$(basename $i)
-		if ! $(grep -q $mdev /etc/printcap); then
-			(cd /dev && ACTION=add PHYSDEVDRIVER=usblp \
-			MDEV=$mdev PWD=/dev /usr/sbin/hot.sh)
-		fi
-	fi
-done
-
-# "hotplug", mdev.conf registers /usr/sbin/hot.sh, mdev.seq sequences events
-# why can't this be done earlier? we risk to have duplicated hot.sh calls
-echo > /dev/mdev.seq
-echo /sbin/mdev > /proc/sys/kernel/hotplug
-
 # set system clock from RTC, in UTC
-# kernel do it at boot time, but seems to not
-# wait for second change
+# kernel do it at boot time, but seems to not wait for second change
+if ! test -e /dev/rtc0; then
+	mknod /dev/rtc0 c 254 0	
+fi
 i=0; o="$(hwclock)"
 while test "$o" = "$(hwclock)" -a "$i" -lt 200; do i=$((i+1)); done
 hwclock -su
 
-# create rc* shortcuts to /etc/init.d/S??*
-ln -f /etc/init.d/rcall /sbin/rcall
-for i in /etc/init.d/S??*; do
-	f=$(basename $i)
-	#ln -sf /usr/sbin/rcscript /sbin/$(basename rc${f#S??})
-	ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
-done
+# don't load flash-saved defaults if "nodef" exists in kernel cmdline
+no_defaults=1
+if ! grep -q "nodef" /proc/cmdline; then
+	if ! test -e /dev/mtdblock0; then # mdev -s has not yet run
+		mknod /dev/mtdblock0 b 31 0
+	fi
+	loadsave_settings -ck
+	loadsave_settings -lf
+	no_defaults=$?
+
+	if test -f /etc/misc.conf; then
+		. /etc/misc.conf
+	fi
+fi
+
+# can't avoid this?
+logger "FIXME: Waiting 3 sec for kernel enumeration to finish..."
+sleep 3
+logger "FIXME: stop waiting."
+
+# sequences events
+echo > /dev/mdev.seq 
+
+# populate /dev
+/sbin/mdev -s
+
+# "hotplug", mdev.conf registers /usr/sbin/hot.sh, 
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+
+if test -f /etc/modprobe.conf; then
+	if ! grep -q 'blacklist.*ipv6' /etc/modprobe.conf; then
+		modprobe ipv6
+	fi
+fi
 
 # set a default hostname
 hostname -F /etc/hostname
@@ -98,24 +95,6 @@ hostname -F /etc/hostname
 # setup loopback interface
 /sbin/ifconfig lo 127.0.0.1 up
 /sbin/route add -net 127.0.0.0 netmask 255.0.0.0 lo
-
-# don't load flash-saved defaults if "nodef" exists in kernel cmdline
-no_defaults=1
-if ! grep -q "nodef" /proc/cmdline; then
-	loadsave_settings -ck
-	loadsave_settings -lf
-	no_defaults=$?
-
-	# set disks spindown timeout by simulating kernel disk events
-	# hotplug does it, but settings are not yet loaded at boot
-	for i in /dev/sd?; do
-		(cd /dev && ACTION=add DEVTYPE=disk PWD=/dev \
-			MDEV=$(basename $i) /usr/sbin/hot.sh)
-	done
-fi
-
-# configure kernel parameters
-sysctl -p
 
 # get an ip using the following priority:
 # 1st, use kernel cmd line ip= (kexec or fonz reloaded)
@@ -234,8 +213,17 @@ case $cip in
 		;;
 esac
 
-# stop fan (just to restart it gain soon, with flashe-save user settings)
-rcsysctrl stop
+# configure kernel parameters
+sysctl -p
+
+# create mountpoints for remote filesystems, but don't mount them
+while read dev mp fs rest; do
+	if test "$fs" = "nfs" -o "$fs" = "cifs"; then 
+		if ! test -d $mp; then
+			mkdir -p $mp
+		fi
+	 fi
+done < /etc/fstab
 		
 # stop temporary syslog to /var/log/boot.log
 start-stop-daemon -K -q -n syslogd
@@ -250,12 +238,3 @@ while read ln; do
 	logger "$ln"
 done < $TSYSLOG
 logger "****** Boot Log end ******"
-
-# create mountpoints, but don't mount remote filesystems
-while read dev mp fs rest; do
-	if test "$fs" = "nfs" -o "$fs" = "cifs"; then 
-		if ! test -d $mp; then
-			mkdir -p $mp
-		fi
-	 fi
-done < /etc/fstab
