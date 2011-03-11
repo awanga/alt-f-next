@@ -3,6 +3,7 @@
 DESC="Daemon to execute scheduled commands"
 NAME=crond
 TYPE=sys
+REQUIREDBY="backup ntp"
 
 . $(dirname $0)/common 
 
@@ -17,7 +18,7 @@ sinit() {
 
 case "$1" in
 	start) sinit; start $NAME ;;
-	stop)  stop $NAME ;;
+	stop) stop $NAME ;;
 	status)	status $NAME ;;
 	restart) restart $NAME ;;
 	init) sinit ;;

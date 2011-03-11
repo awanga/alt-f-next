@@ -3,6 +3,8 @@
 DESC="Backup Service"
 TYPE=sys
 NAME=backup
+#REQUIRE="cron" does not works here
+
 CONF=/etc/backup.conf
 
 . $(dirname $0)/common
@@ -30,31 +32,18 @@ istatus() {
 # clean cron backup entries, even if cron is currently stopped
 istop() {
 	echo -n "Stopping $1: "
-
-	if ! rccron status >& /dev/null; then
-		stop_cron="yes"
-		rccron start
-	fi
-
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/bin/backup|d' $TF
 	crontab $TF
 
-	if test -n "$stop_cron"; then
-		rccron stop
-	fi
 	rm -f $TF
 	echo "OK."
 }
 
 istart() {
+	require $NAME cron
 	echo -n "Starting $1: "
-
-	if ! rccron status >& /dev/null; then
-		rccron start
-	fi
-
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/bin/backup|d' $TF

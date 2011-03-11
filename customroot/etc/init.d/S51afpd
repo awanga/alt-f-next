@@ -4,6 +4,7 @@ NAME=afpd
 NAME2=cnid_metad
 DESC="AppleTalk Filing Protocol daemon."
 TYPE=net
+REQUIRE="avahi_daemon"
 
 AFPD_OPTS="-P /var/run/afpd.pid"
 CNID_OPTS="-l log_info"
@@ -11,9 +12,6 @@ CNID_OPTS="-l log_info"
 . $(dirname $0)/common
 
 istart() {
-	if ! rcavahi-daemon status > /dev/null; then
-		rcavahi-daemon start > /dev/null
-	fi
 	start $NAME2 -- $CNID_OPTS
 	start $NAME -- $AFPD_OPTS
 	avahi add afpovertcp

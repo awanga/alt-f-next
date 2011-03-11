@@ -6,6 +6,8 @@
 DESC="Network Time Protocol Daemon"
 TYPE=net
 NAME=ntpd
+#REQUIRE="cron" does not works here.
+
 CONF=/etc/ntp.conf
 CONFM=/etc/misc.conf
 NTPD_CRON=/tmp/ntpd.cron
@@ -32,12 +34,6 @@ istatus() {
 }
 
 update_cron() {
-	if test $# = 1; then
-		if ! rccron status >& /dev/null; then
-			rccron start
-		fi
-	fi
-
 	crontab -l > "$NTPD_CRON" 2> /dev/null
 	if test $? = 1 -a $# = 0 ; then return; fi
 
@@ -65,6 +61,7 @@ case "$1" in
 			adjtimex -f 0 >& /dev/null # if != 0 affects ntpd drift calculation 
 			start-stop-daemon -S -q -x $NAME
 		else
+			require $NAME cron
 			echo -n "$NAME: Setting up crontab... "
 			adjtime -restart >& /dev/null
 			update_cron "0 6 * * * /usr/sbin/adjtime -adjust"
