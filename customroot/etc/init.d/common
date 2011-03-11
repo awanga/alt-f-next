@@ -16,6 +16,56 @@ avahi() {
 	fi
 }
 
+# to use at start
+# start needed service if they are not running
+require() {
+	name=$1; shift
+	for i in $*; do
+		if ! rc$i status >& /dev/null; then
+			if ! rc$i start; then
+				echo \'$name\' can\'t be started, as \'$i\' is needed and can\'t be started.
+				exit 1
+			fi
+		fi
+	done
+}
+
+# to use at stop
+# don't stop if it is required by running services
+requiredby() {
+	name=$1; shift
+	for i in $*; do
+		if rc$i status >& /dev/null; then
+			echo \'$name\' can\'t be stopped, as it is needed by \'$i\' which is running.
+			exit 1
+		fi
+	done
+}
+
+# to use at stop, see if required services are running and try to stop them
+# if they are not required by other running service
+# $1 caller name, $* services to stop
+stoprequired() {
+	name=$1; shift
+	for i in $*; do
+		if rc$i status >& /dev/null; then
+			rc$i stop >& /dev/null 
+		fi
+	done
+}
+
+# to use at start, see if competing services are running
+# $1 caller name, $* services to check
+excludedby() {
+	name=$1; shift
+	for i in $*; do
+		if rc$i status >& /dev/null; then
+			echo \'$name\' cant be started, as it conflicts with \'$i\', which is running.
+			exit 1
+		fi
+	done
+}
+
 # for process match, some processes need -n, the default, others -x
 if test -z "$START_STOP"; then
 	START_STOP=-n
@@ -41,19 +91,38 @@ omsg() {
 }
 
 start() {
+	if test -n "$EXCLUDEDBY"; then
+		excludedby $1 $EXCLUDEDBY
+	fi
+
+	if test -n "$REQUIRE"; then
+		require $1 $REQUIRE
+	fi
+
  	echo -n "Starting $1: "
 	start-stop-daemon -S -q -o -x $*
 	omsg $?
 }
 
 stop() {
+	if test -n "$REQUIREDBY"; then
+		requiredby $1 $REQUIREDBY
+	fi
+
 	sig=""
 	echo -n "Stopping $1: "
 	if test -n "$2"; then
 		sig="-s $2"
 	fi	
 	start-stop-daemon -K -q -o $sig $START_STOP $1
-	omsg $?
+	st=$?
+
+	if test -n "$REQUIRE"; then
+		while status $1 >& /dev/null; do usleep 200000; done
+		stoprequired $1 $REQUIRE
+	fi
+
+	omsg $st
 }
 
 restart() {
