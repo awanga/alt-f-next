@@ -1,13 +1,9 @@
 #!/bin/sh
-#
-# nfs           This shell script takes care of starting and stopping
-#               the NFS services. Stolen from RedHat FC5.
 
 DESC="Network File System Server (unix)"
 TYPE=net
 NAME=nfsd
-
-PORTMAP_FLAG="" #-v
+REQUIRE="portmap"
 
 . $(dirname $0)/common
 
@@ -44,21 +40,6 @@ istart() {
 		mount -t nfsd nfsd /proc/fs/nfsd
 	fi
 
-	# portmap fails when starting/stopping it in fast succession.
-	# Port 111 stays open in CLOSE_WAIT for 1 minute. Why?
-	# portmap was not designed to be killed, so it does not close its open ports.
-	#
-	# portmap does returns 0 when failing, (it forks and is the parent who returns OK)
-	# so, check if it started successfuly using rpcinfo to check.
-	
-	echo -n "Starting portmap: "
-	while ! rpcinfo -p >& /dev/null ; do
-		portmap $PORTMAP_FLAG
-		echo -n .
-		sleep 2
-	done
-	echo "OK."
-
 	exportfs -r
 	start rpc.mountd -- --no-nfs-version 4
 	start rpc.statd -- --no-notify
@@ -69,10 +50,14 @@ istart() {
 
 istop() {
 	stop nfsd 9 # should be 2.
-	if ! rcnfs-client status >& /dev/null; then
+
+#	if ! rcnfs_client status >& /dev/null; then
+	if test -z "$(mount -t nfs)"; then
 		stop rpc.statd
-		rm -f /var/run/portmap_mapping /var/run/sm-notify.pid
+		rm -f /var/run/sm-notify.pid
+		rmmod -f lockd >& /dev/null
 	fi
+
 	stop rpc.mountd
 	exportfs -au
 	
@@ -80,8 +65,9 @@ istop() {
 		umount /proc/fs/nfsd
 		# blocks, as sunrpc modules has refcont = 2, although not in use
 		# modprobe -r nfsd 
-		rmmod -f nfsd exportfs
+		rmmod -f nfsd exportfs >& /dev/null
 	fi
+
 	avahi remove nfs
 }
 
