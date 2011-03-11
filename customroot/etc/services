@@ -275,6 +275,8 @@ afbackup	2988/tcp			# Afbackup system
 afbackup	2988/udp			# Afbackup system
 icp		3130/tcp			# Internet Cache Protocol (Squid)
 icp		3130/udp			# Internet Cache Protocol (Squid)
+daap            3689/tcp   # Digital Audio Access Protocol
+daap            3689/udp   # Digital Audio Access Protocol
 postgres	5432/tcp			# POSTGRES
 postgres	5432/udp			# POSTGRES
 fax		4557/tcp			# FAX transmission service        (old)
@@ -308,6 +310,8 @@ tfido           60177/udp			# Ifmail
 fido            60179/tcp			# Ifmail
 fido            60179/udp			# Ifmail
 
+sane-port       6566/tcp   # SANE Control Port
+sane-port       6566/udp   # SANE Control Port
 # Local services
 mediatomb	50500/tcp
 
