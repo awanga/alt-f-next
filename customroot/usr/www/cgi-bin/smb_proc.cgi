@@ -10,7 +10,8 @@ CONF_FSTAB=/etc/fstab
 CONF_SMB=/etc/samba/smb.conf
 
 if test "$submit" = "Advanced"; then
-	gotopage http://$(hostname -i | sed 's/ //'):901
+#	gotopage http://$(hostname -i | sed 's/ //'):901
+	embed_page "http://$(hostname -i | sed 's/ //'):901"
 
 elif test -n "$unMount"; then
 	mp=$(httpd -d "$unMount")
