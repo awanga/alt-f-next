@@ -163,8 +163,6 @@ cat<<-EOF
 	</tr>
 EOF
 
-
-
 # THIS IS RIGHT!
 p1=$(fdisk -l | awk 'substr($1,1,8) != "'$dsk'" && ($5 == "da" || $5 == "fd") {
 	print substr($1, 6)}')
@@ -200,7 +198,10 @@ EOF
 
 if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 	cat<<-EOF
-		<fieldset><Legend><strong>RAID Maintenance</strong></legend><table>
+		<fieldset><Legend><strong>RAID Maintenance</strong></legend>
+		<table style="border-collapse:collapse">
+		<colgroup span=7></colgroup>
+		<colgroup span=2 style="background:#ddd;"></colgroup>
 		<tr align=center>
 		<th align=left>Dev.</th> 
 		<th>Capacity</th>
