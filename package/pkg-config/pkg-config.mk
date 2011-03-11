@@ -11,11 +11,7 @@ ifeq ($(BR2_ENABLE_DEBUG),y) # install-exec doesn't install aclocal stuff
 PKG_CONFIG_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 endif
 
-PKG_CONFIG_DEPENDENCIES = uclibc
-
 PKG_CONFIG_CONF_OPT = --with-installed-glib
-
-#$(eval $(call AUTOTARGETS,package,pkg-config))
 
 # pkg-config for the host
 PKG_CONFIG_HOST_DIR:=$(BUILD_DIR)/pkg-config-$(PKG_CONFIG_VERSION)-host
