@@ -71,6 +71,7 @@ saveflashdef() {
 
 	mkdir -p $save_dir
 	mount /dev/mtdblock0 $save_dir
+	rm -f system.log
 
 	nm=$(createdef)
 	cp /tmp/$nm $save_dir/ 2>/dev/null
@@ -330,7 +331,7 @@ files="
 /etc/ntp.conf		/etc/ntp.drift		/etc/adjtime.conf
 /etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf
 /etc/wgetrc			/etc/ssl/certs/vsftpd.pem	/etc/backup.conf
-/etc/syslog.conf	/etc/sysctl.conf
+/etc/syslog.conf	/etc/sysctl.conf	/etc/modprobe.conf
 "
 
 # those are also used only when mounting/unmounting the aufs branch
