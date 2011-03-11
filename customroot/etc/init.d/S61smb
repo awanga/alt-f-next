@@ -1,11 +1,12 @@
 #!/bin/sh
-#
-# Stolen from RedHat FC5.
-#
 
 DESC="Samba Server (Windows)"
-NAME=smbd
 TYPE=net
+NAME=smbd
+SMB_OPTS=-D
+NAME2=nmbd
+NMB_OPTS=-D
+
 RETVAL=0
 
 # Check that smb.conf exists.
@@ -20,47 +21,38 @@ sinit() {
 	mkdir -p /var/lock/subsys
 }
 
-start() {
-	echo -n "Starting NMB services: "
+istart() {
 	sinit
-	nmbd -D
+	start $NAME2 -- $NMB_OPTS
 	RETVAL2=$?
-	echo "OK."
 
-	echo -n "Starting SMB services: "
-	smbd -D
+	start $NAME -- $SMB_OPTS
 	RETVAL=$?
-	echo "OK."
 
 	avahi add smb
 
-	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && touch /var/lock/subsys/smb || \
-	   RETVAL=1
+	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && touch /var/lock/subsys/smb || RETVAL=1
 	return $RETVAL
 }	
 
-stop() {
-	echo -n "Shutting down SMB services: "
-	start-stop-daemon -K -q -n smbd
+istop() {
+	stop $NAME
 	RETVAL=$?
 	rm -f /var/run/smbd.pid
-	echo "OK."
 
-	echo -n "Shutting down NMB services: "
-	start-stop-daemon -K -q -n nmbd
+	stop $NAME2
 	RETVAL2=$?
 	rm -f /var/run/nmbd.pid
 
 	avahi remove smb
 
-	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && rm -f /var/lock/subsys/smb
-	echo "OK."
+	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && rm -f /var/lock/subsys/smb || RETVAL=1
 	return $RETVAL
 }	
 
 case "$1" in
-	start) start ;;
-	stop) stop ;;
+	start) istart ;;
+	stop) istop ;;
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
 	status) status $NAME ;;
