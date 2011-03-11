@@ -12,7 +12,7 @@ CUPS_SOURCE:=$(CUPS_NAME)-source.tar.bz2
 CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
 CUPS_CAT:=$(BZCAT)
 CUPS_TARGET_BINARY:=usr/sbin/cupsd
-CUPS_DEPENDENCIES = uclibc openssl libusb libpng jpeg tiff
+CUPS_DEPENDENCIES = uclibc openssl libusb libpng jpeg tiff host-autoconf
 
 ifeq ($(BR2_PACKAGE_DBUS),y)
 	CUPS_CONF_OPT += --enable-dbus
@@ -75,8 +75,11 @@ $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 	$(CONFIG_UPDATE) $(CUPS_DIR)
 	touch $@
 
+# jc: dbus 1.2.16 not compiling, disabled, perhaps dbus-1.4 works?
+
 CUPS_CONF_OPT = --without-perl --without-java --without-php	--without-python \
-	--disable-pam --disable-dnssd --disable-ldap --disable-gnutls --disable-gssapi \
+	--disable-pam --disable-dnssd --disable-ldap \
+	--disable-gnutls --disable-dbus --disable-gssapi \
 	--with-cups-user=cups  --with-cups-group=lpadmin \
 	--enable-openssl --enable-libusb --with-pdftops=/usr/bin/gs \
 	--with-languages=none --with-docdir=/usr/share/cups/doc
@@ -120,15 +123,14 @@ $(TARGET_DIR)/$(CUPS_TARGET_BINARY): $(CUPS_DIR)/.compiled
 	$(SED) "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include\',g" $(STAGING_DIR)/usr/bin/cups-config
 	$(SED) "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" $(STAGING_DIR)/usr/bin/cups-config
 	(cd $(TARGET_DIR); \
-	rm -rf ./usr/share/applications \
-		./etc/dbus-1 ./etc/rc?.d ./etc/xinetd.d ./etc/cups/*.conf.* \
+	rm -rf 	./etc/rc?.d ./etc/xinetd.d ./etc/cups/*.conf.* \
 		./etc/init.d/cups; \
 	cp -f ./usr/share/cups/charmaps/iso-8859-1.txt \
 		./usr/share/cups/charmaps/us-ascii.txt; \
 	)
 	touch $@
 
-cups: uclibc host-autoconf $(CUPS_DEPENDENCIES) $(TARGET_DIR)/$(CUPS_TARGET_BINARY)
+cups: $(CUPS_DEPENDENCIES) $(TARGET_DIR)/$(CUPS_TARGET_BINARY)
 
 cups-install: $(TARGET_DIR)/$(CUPS_TARGET_BINARY)
 
