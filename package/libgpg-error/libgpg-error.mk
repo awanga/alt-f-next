@@ -18,7 +18,7 @@ $(LIBGPG_ERROR_DIR)/.source: $(DL_DIR)/$(LIBGPG_ERROR_SOURCE)
 	$(BZCAT) $(DL_DIR)/$(LIBGPG_ERROR_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	toolchain/patch-kernel.sh $(LIBGPG_ERROR_DIR) package/libgpg-error/ libgpg-error\*.patch
 	$(CONFIG_UPDATE) $(LIBGPG_ERROR_DIR)
-	touch $(LIBGPG_ERROR_DIR)/.source
+	touch $@
 
 $(LIBGPG_ERROR_DIR)/.configured: $(LIBGPG_ERROR_DIR)/.source
 	(cd $(LIBGPG_ERROR_DIR); rm -f config.cache; \
@@ -42,7 +42,7 @@ $(LIBGPG_ERROR_DIR)/.configured: $(LIBGPG_ERROR_DIR)/.source
 		--infodir=/usr/info \
 		$(DISABLE_NLS) \
 	)
-	touch $(LIBGPG_ERROR_DIR)/.configured
+	touch $@
 
 $(LIBGPG_ERROR_DIR)/$(LIBGPG_ERROR_LIBRARY): $(LIBGPG_ERROR_DIR)/.configured
 	$(MAKE) CC=$(TARGET_CC) -C $(LIBGPG_ERROR_DIR)
@@ -55,6 +55,7 @@ $(TARGET_DIR)/$(LIBGPG_ERROR_TARGET_LIBRARY): $(STAGING_DIR)/$(LIBGPG_ERROR_TARG
 	cp -dpf $<* $(TARGET_DIR)/$(LIBGPG_ERROR_DESTDIR)
 
 libgpg-error: uclibc $(TARGET_DIR)/$(LIBGPG_ERROR_TARGET_LIBRARY)
+	touch $@
 
 libgpg-error-source: $(DL_DIR)/$(LIBGPG_ERROR_SOURCE)
 
