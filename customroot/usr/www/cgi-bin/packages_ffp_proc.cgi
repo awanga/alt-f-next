@@ -62,7 +62,7 @@ PATH=$PATH:/ffp/bin:/ffp/sbin
 
 if test "$install" = "Install"; then
 	if test "$part" = "none"; then
-		msg "You must select a partition"
+		msg "You must select a filesystem"
 	fi
 
 	if ! nslookup www.inreto.de >& /dev/null; then
