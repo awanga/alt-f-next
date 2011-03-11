@@ -3,7 +3,8 @@
 # dbus
 #
 #############################################################
-DBUS_VERSION = 1.2.16
+#DBUS_VERSION = 1.2.16
+DBUS_VERSION = 1.2.26
 DBUS_SOURCE = dbus-$(DBUS_VERSION).tar.gz
 DBUS_SITE = http://dbus.freedesktop.org/releases/dbus/
 DBUS_LIBTOOL_PATCH = NO
@@ -53,7 +54,8 @@ $(eval $(call AUTOTARGETS,package,dbus))
 
 # fix rebuild if /var/lib is a symlink to /tmp
 $(DBUS_HOOK_POST_BUILD): $(DBUS_TARGET_BUILD)
-	rm -rf /tmp/dbus
+	rm -rf /tmp/dbus $(TARGET_DIR)/var/lib/dbus
+	mkdir -p $(TARGET_DIR)/etc/dbus-1
 	touch $@
 
 $(DBUS_HOOK_POST_INSTALL): $(DBUS_TARGET_INSTALL_TARGET)
