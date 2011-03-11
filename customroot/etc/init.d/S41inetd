@@ -19,6 +19,7 @@ check() {
 enable() {
 	check $1
 	if grep -q -e "^#$1" $CONFF; then
+		if test "$1" = "printer"; then modprobe usblp; fi
 		sed -i s/^#$1/$1/ $CONFF
 		reload $NAME
 		avahi add $1
@@ -30,6 +31,7 @@ enable() {
 disable() {
 	check $1
 	if grep -q -e "^$1" $CONFF; then
+		if test "$1" = "printer"; then modprobe -r usblp; fi
 		sed -i s/^$1/#$1/ $CONFF
 		reload $NAME
 		avahi remove $1
@@ -53,6 +55,7 @@ avahi_remove() {
 }
 
 istart() {
+		if grep -q "^printer" $CONFF; then modprobe usblp; fi
 		rcdropbear init
 		rcvsftpd init
 		avahi_add
