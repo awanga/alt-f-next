@@ -205,7 +205,10 @@ fi
 cat<<-EOF
 	<fieldset>
 	<legend><strong>Select the disk you want to partition</strong></legend>
-	<table><tr>
+	<table style="border-collapse:collapse">
+	<colgroup span=5></colgroup>
+	<colgroup span=2 style="background:#ddd;"></colgroup>
+	<tr>
 	<th>Partition</th>
 	<th>Bay</th>
 	<th>Device</th>

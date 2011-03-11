@@ -12,8 +12,13 @@ pre() {
 	echo "<center><h2>Disk Partitioner</h2></center>"
 	busy_cursor_start
 
-	echo "<p>Stopping all services and disks..."
-	eject -a
+	echo "<p>Stopping disk..."
+	if ! eject $dsk >& /dev/null ; then
+		echo " failed</p>.<p>Trying to stop all services and disks...""
+		if ! eject -a; then
+			err ""
+		fi
+	fi
 
 	# stop hotplug
 	echo > /proc/sys/kernel/hotplug
