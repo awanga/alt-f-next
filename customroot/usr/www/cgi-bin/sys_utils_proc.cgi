@@ -8,17 +8,50 @@ CONFM=/etc/misc.conf
     
 #debug
 
-# the user can hit the enter key instead of pressing the button
-if test -n "$passwd"; then
-	action="ChangePassword"
+# $1 log file, $2 kind, $3 header
+showlog() {
 
-elif test "$kernel" = "Refresh"; then
-	action="KernelLog"
+	if test -n "$Download"; then
+		if test "$(dirname $1)" = "/tmp"; then
+			mv $1 /tmp/$2.log
+			download_file /tmp/$2.log
+			rm /tmp/$2.log
+		else
+			download_file $1
+		fi
+		exit 0
+	fi
 
-elif test "$syslog" = "Refresh"; then
-	action="SystemLog"
-elif test "$processes" = "Refresh"; then
-	action="Processes"
+	write_header "$3"
+	mktt filter_tt "Enter a grep regular expression"
+
+	echo "<small><pre>"
+
+	if test -n "$filter"; then
+		pat=$(httpd -d $filter)
+		cat $1 | grep -i "$pat"
+	else
+		cat $1
+	fi
+
+	cat<<-EOF
+		</small></pre>
+		<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
+		$(back_button)
+		<input type=submit name=$1 value="Download">
+		Filter: <input type=text name=filter value="$pat" onkeypress="return event.keyCode != 13" $(ttip filter_tt)>
+		<input type=submit name=$2 value="Refresh">
+		<input type=hidden name=logfile value="$2">
+		</form></body></html>
+	EOF
+}
+
+if test -n "$Refresh"; then
+	action="$Refresh"
+elif test -n "$Download"; then
+	action="$logfile"
+elif test "$logaction" != "Select+one"; then
+	action="$logaction"
 fi
 
 case $action in
@@ -37,73 +70,29 @@ case $action in
 		exit 0
 		;;
 	
-	Poweroff) 
+	Poweroff)
+		html_header
+		echo "<br><br><strong><center>The box is being powered off.</center></strong></body></html>"
 		/sbin/poweroff
+		exit 0
 		;;
 
 	ClearPrintQueues)
 		#lpq -d doesnt work
 		for i in $(cut -f1 -d"|" /etc/printcap 2>/dev/null); do
 			if test -d /var/spool/lpd/$i; then
-				mkdir -p /var/spool/lpd/$i/.lockdir  # see /usr/bin/print
+				mkdir -p /var/spool/lpd/$i/.lockdir >& /dev/null  # see /usr/bin/print
 				if test -n "$(pidof print)"; then kill $(pidof print); fi
 				for j in $(ls /var/spool/lpd/$i); do
-					p=$(top -n1 | grep $j | grep -v grep | cut -f2 -d" ")
+					p=$(top -bn1 | grep $j | grep -v grep | cut -f2 -d" ")
 					if test -n "$p"; then kill $p; fi	
-					rm /var/spool/lpd/$i/$j
+					rm -f /var/spool/lpd/$i/$j >& /dev/null
 				done
-				rmdir /var/spool/lpd/$i/.lockdir
+				rmdir /var/spool/lpd/$i/.lockdir >& /dev/null
 			elif test -f /usr/bin/lprm; then
 				lprm -P $i - >& /dev/null
 			fi
 		done
-		;;
-
-	KernelLog)
-		write_header "Kernel Log"
-		echo "<small><pre>"
-		dmesg
-		cat<<-EOF
-			</small></pre>
-			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			<input type=submit name=kernel value="Refresh">
-			$(back_button)
-			</form></body></html>
-		EOF
-		exit 0
-		;;
-
-	SystemLog)
-		write_header "System Log"
-		if ! rcsyslog status >/dev/null; then
-			echo "Syslog is disabled, enable at \"System Services\""
-		else
-			echo "<pre><small>"
-			logread
-			echo "</small></pre>"
-		fi
-		cat<<-EOF
-			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			<input type=submit name=syslog value="Refresh">
-			$(back_button)
-			</form></body></html>
-		EOF
-		exit 0
-		;;
-
-	Processes)
-		write_header "Running Processes"
-		echo "<pre><small>"
-		top -bn1
-		echo "</small></pre>"
-
-		cat<<-EOF
-			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			<input type=submit name=processes value="Refresh">
-			$(back_button)
-			</form></body></html>
-		EOF
-		exit 0
 		;;
 
 	StartAll)
@@ -129,10 +118,42 @@ case $action in
 		gotopage /cgi-bin/login.cgi
 		exit 0
 		;;
+
+	KernelLog)
+		TF=$(mktemp -t)
+		dmesg > $TF
+		showlog $TF "KernelLog" "Kernel Log"
+		rm -f $TF
+		exit 0
+		;;
+
+	SystemLog)
+		if ! rcsyslog status >/dev/null; then
+			msg "Syslog is disabled, enable at 'System Services'"
+		fi
+
+		TF=$(mktemp -t)
+		logread > $TF
+		showlog $TF SystemLog "System Log"
+		rm -f $TF
+		exit 0
+		;;
+
+	Processes)
+		TF=$(mktemp -t)
+		top -bn1 > $TF
+		showlog $TF Processes "Running Processes"
+		rm -f $TF
+		exit 0
+		;;
+
+	*)
+		act=$(httpd -d $action)
+		if test -f "$act"; then
+			showlog $act $act "Contents of $act"
+			exit 0
+		fi
 esac
 
 #enddebug
-
 gotopage /cgi-bin/sys_utils.cgi
-
-
