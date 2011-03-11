@@ -13,7 +13,7 @@ GS_AUTORECONF = YES
 GS_LIBTOOL_PATCH = NO
 GS_INSTALL_STAGING = YES
 GS_INSTALL_TARGET = YES
-GS_DEPENDENCIES = uclibc cups tiff jpeg libpng
+GS_DEPENDENCIES = uclibc host-autoconf cups tiff jpeg libpng
 GS_TARGET_BINARY = /usr/bin/gs
 
 #GS_CONF_OPT = --without-x --disable-cairo --disable-gtk \
@@ -81,7 +81,7 @@ $(TARGET_DIR)/$(GS_TARGET_BINARY): $(GS_DIR)/.compiled
 	rm -rf $(TARGET_DIR)/usr/share/ghostscript/8.71/examples $(TARGET_DIR)/usr/share/ghostscript/8.71/doc
 	touch $@
 
-gs: uclibc host-autoconf $(GS_DEPENDENCIES) $(TARGET_DIR)/$(GS_TARGET_BINARY)
+gs: $(GS_DEPENDENCIES) $(TARGET_DIR)/$(GS_TARGET_BINARY)
 
 gs-install: $(TARGET_DIR)/$(GS_TARGET_BINARY)
 
