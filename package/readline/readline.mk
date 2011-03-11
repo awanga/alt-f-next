@@ -77,7 +77,7 @@ $(TARGET_DIR)/$(READLINE_TARGET_SHARED_BINARY): $(READLINE_DIR)/$(READLINE_BINAR
 	chmod 775 $(TARGET_DIR)/usr/lib/libreadline.so.$(READLINE_VERSION) $(TARGET_DIR)/usr/lib/libhistory.so.$(READLINE_VERSION)
 	$(STRIPCMD) $(TARGET_DIR)/usr/lib/libreadline.so.$(READLINE_VERSION) $(TARGET_DIR)/usr/lib/libhistory.so.$(READLINE_VERSION)
 
-readline: ncurses $(STAGING_DIR)/usr/include/readline/readline.h $(TARGET_DIR)/$(READLINE_TARGET_SHARED_BINARY)
+readline: $(READLINE_DEPENDENCIES) $(STAGING_DIR)/usr/include/readline/readline.h $(TARGET_DIR)/$(READLINE_TARGET_SHARED_BINARY)
 
 readline-clean:
 	-$(MAKE) -C $(READLINE_DIR) DESTDIR=$(STAGING_DIR) uninstall
