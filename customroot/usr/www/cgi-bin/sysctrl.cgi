@@ -60,35 +60,36 @@ mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
 if test "$board" = "C1"; then
 	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	cat<<-EOF
-			<tr><td>Fan Off Temp. (C):</td>
-				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>
-				</td></tr>
-
-			<tr><td>Low Fan Speed Temp. (C):</td>
-				<td><input type=text size=4 name=lo_temp value="$lo_temp" $(ttip lofan_tt)></td>
+		<tr><td>Fan Off Temp.</td>
+			<td><input type=text size=2 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
+			</td></tr>
+		<tr><td>Low Fan Speed Temp.</td>
+			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td>
 		</table></fieldset><br>
 	EOF
 else 
 	cat<<-EOF
-			<tr><td>Low Temp. (C):</td>
-				<td><input type=text size=4 name=lo_temp value="$lo_temp"></td>
-				<td>Low Fan Speed (RPM):</td>
-				<td><input type=text size=4 name=lo_fan value="$lo_fan"></td>
-			</tr>
-			<tr><td>High Temp. (C):</td>
-				<td><input type=text size=4 name=hi_temp value="$hi_temp"></td>
-				<td>High Fan Speed (RPM):</td>
-				<td><input type=text size=4 name=hi_fan value="$hi_fan"></td>
-			</tr>
+		<tr><td>Low Temp.</td>
+			<td><input type=text size=2 name=lo_temp value="$lo_temp">&deg;C</td>
+			<td width=20></td>
+			<td>Low Fan Speed</td>
+			<td><input type=text size=4 name=lo_fan value="$lo_fan">RPM</td>
+		</tr>
+		<tr><td>High Temp.</td>
+			<td><input type=text size=2 name=hi_temp value="$hi_temp">&deg;C</td>
+			<td></td>
+			<td>High Fan Speed </td>
+			<td><input type=text size=4 name=hi_fan value="$hi_fan">RPM</td>
+		</tr>
 		</table></fieldset><br>
 
 	<fieldset><Legend><strong>Maximum ratings</strong>
 		</legend><table>
-			<tr><td>Fan Off Temp. (C):</td>
-				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp"  $(ttip fanoff_tt)>
+			<tr><td>Fan Off Temp.</td>
+				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
 				</td></tr>
-			<tr><td>Max Fan Speed (RPM)</td>
-				<td><input type=text size=4 name=max_fan_speed value="$max_fan_speed"></td>
+			<tr><td>Max Fan Speed </td>
+				<td><input type=text size=4 name=max_fan_speed value="$max_fan_speed">RPM</td>
 			</tr>
 		</table></fieldset><br>
 	EOF
@@ -97,21 +98,24 @@ fi
 cat<<-EOF
 	<fieldset><Legend><strong>System Safety</strong>
 		</legend><table>
-			<tr><td>Warn Temp. (C):</td>
-				<td><input type=text size=4 name=warn_temp value="$warn_temp"></td>
+			<tr><td>Warn Temp. </td>
+				<td><input type=text size=4 name=warn_temp value="$warn_temp">&deg;C</td>
+				<td width=20></td>
 				<td>Command to execute:</td>
 				<td><input type=text name=warn_temp_command value="$warn_temp_command"></td>
 			</tr>
-			<tr><td>Critical Temp. (C):</td>
-				<td><input type=text size=4 name=crit_temp value="$crit_temp"></td>
+			<tr><td>Critical Temp.</td>
+				<td><input type=text size=4 name=crit_temp value="$crit_temp">&deg;C</td>
+				<td></td>	
 				<td>Command to execute:</td>
 				<td><input type=text name=crit_temp_command value="$crit_temp_command"></td>
 			</tr>
 			<tr><td>Send email</td>
 				<td><input type=checkbox $mailchk name=mail value="1"></td>
+				<td></td>
 				<td>Send mail to </td>
 				<td><input type=text readonly name=sendto value="$SENDTO"></td>
-				<td>Use "Mail Setting" to change</td>
+				<td>Use "Setup Mail" to change</td>
 			</tr>
 		</table></fieldset><br>
 
