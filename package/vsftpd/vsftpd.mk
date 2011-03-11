@@ -3,8 +3,8 @@
 # vsftpd
 #
 #############################################################
-#VSFTPD_VERSION:=2.0.7
-VSFTPD_VERSION:=2.3.2
+
+VSFTPD_VERSION:=2.3.4
 VSFTPD_SOURCE:=vsftpd-$(VSFTPD_VERSION).tar.gz
 VSFTPD_SITE:=ftp://vsftpd.beasts.org/users/cevans
 VSFTPD_DIR:=$(BUILD_DIR)/vsftpd-$(VSFTPD_VERSION)
@@ -56,6 +56,8 @@ vsftpd: uclibc openssl $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY)
 else
 vsftpd: uclibc $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY)
 endif
+
+vsftpd-patch: $(VSFTPD_DIR)/.unpacked
 
 vsftpd-configure: $(VSFTPD_DIR)/.configured
 
