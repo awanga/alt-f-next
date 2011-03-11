@@ -7,8 +7,7 @@ write_header "MediaTomb Setup"
 
 CONFF=/var/lib/mediatomb/config.xml
 
-webhost="$(hostname -i | tr -d ' '):50500"
-eval $(awk '/<ui enabled=/{print substr($2,1,length($2)-1)}' $CONFF)
+eval $(awk '/<ui enabled=/{print substr($2,1,length($2))}' $CONFF)
 if test "$enabled" = "yes"; then
 	chkweb="checked"
 fi
@@ -68,6 +67,6 @@ cat<<-EOF
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
-	<input type="button" id=webbut $webbut value="WebPage" onClick="document.location.href='http://$webhost';">
+	<input type="submit" id=webbut $webbut name="webPage" value="WebPage">
 	</td></tr></table></form></body></html>
 EOF

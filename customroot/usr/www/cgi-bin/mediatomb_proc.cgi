@@ -8,6 +8,10 @@ read_args
 
 CONFF=/var/lib/mediatomb/config.xml
 
+if test -n "$webPage"; then
+	embed_page "http://$(hostname -i | tr -d ' '):50500"
+fi
+
 # save old, in case of errors
 sed -i '/<directory .*$/s/^.*$/#!#&/' $CONFF
 
@@ -30,7 +34,7 @@ done
 sed -i -e '/^#!#.*<directory .*$/d' -e 's/^!#!\(.*<directory .*$\)/\1/' $CONFF
 
 if test -z "$ENABLE_WEB"; then ENABLE_WEB="no"; fi
-sed -i 's/<ui enabled=.*>/<ui enabled="'$ENABLE_WEB'">/' $CONFF
+sed -i 's/<ui enabled=.*>/<ui enabled="'$ENABLE_WEB'" show-tooltips="yes">/' $CONFF
 
 
 rcmediatomb status >& /dev/null
