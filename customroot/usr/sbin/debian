@@ -1,0 +1,109 @@
+#!/bin/sh
+
+activate_chroot() {
+
+	if grep -q $debdir/sys /proc/mounts && grep -q $debdir/proc /proc/mounts; then
+		return # already active
+	fi
+
+	grep -Ev ^rootfs\|^/dev/loop0\|/rootmnt\|aufs /proc/mounts > $debdir/etc/mtab
+
+	mount -o bind  /proc $debdir/proc
+	mount -t usbfs usbfs $debdir/proc/bus/usb
+	mount -o bind  /sys  $debdir/sys
+	mount -o bind  /dev  $debdir/dev
+	mount -t devpts none $debdir/dev/pts
+	mount -o bind  /tmp  $debdir/tmp
+
+	grep -E ^/dev/md[0-9]\|^/dev/sd[a-z][1-9] /proc/mounts | while read mpart mpt rest; do
+	mkdir -p $debdir/$mpt
+	mount -o bind $mpt $debdir/$mpt
+	done
+
+	cp /etc/hostname $debdir/etc/hostname
+	cp /etc/resolv.conf $debdir/etc/resolv.conf
+	cp /etc/hosts $debdir/etc/hosts
+}
+
+deactivate_chroot() {
+
+	# the 3 is because of grep
+	if test "$(ps | grep '/usr/sbin/debian chroot' | wc -l)" -ne 3; then
+		return # more than one chroot
+	fi
+
+	# sort -rk2: unmount subdirs first. The / after $debdir must be there.
+	grep $debdir/ /proc/mounts | sort -rk2 | while read dev mpt rest; do
+		umount $mpt
+	done
+}
+
+inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-orion5x)
+
+for i in $inst; do
+	dn=$(dirname $i)
+	debdir=$(dirname $dn)
+	if test -f ${dn}/vmlinuz-*-orion5x; then
+		break;
+	fi
+done
+
+if test -z "$debdir"; then
+	echo "No Debian installation found."
+	exit 1
+fi
+
+if test "$1" = "chroot"; then
+
+	activate_chroot
+	chroot $debdir /bin/bash
+	deactivate_chroot
+
+elif test "$1" = "kexec"; then
+
+	part=/dev/$(basename $debdir)
+
+	cp /etc/network/interfaces $debdir/etc/network/
+	cp /etc/hostname /etc/resolv.conf /etc/hosts $debdir/etc/
+
+	cat<<-EOF > $debdir/etc/fstab
+		proc	/proc	proc	defaults	0	0
+		sysfs	/sys	sysfs	defaults	0	0
+		$part	/	$(blkid -sTYPE -o value $part)	defaults	1	1
+	EOF
+
+	for i in $(blkid -t TYPE=swap -o device); do
+		echo "$i	swap	swap	defaults	0	0" >> $debdir/etc/fstab
+	done
+
+	echo "Now leaving Alt-F..."
+
+	rcall stop
+	eject -a
+
+	mkdir -p $debdir 
+	mount -o ro $part $debdir 
+
+	rcsysctrl stop
+	if test "$(cat /tmp/board)" = "C1"; then
+		echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
+	else
+		echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
+	fi
+
+	echo "Executing Debian now..."
+
+	kexec --load $debdir/vmlinuz --initrd=$debdir/initrd.img \
+		--command-line="console=ttyS0,115200 root=$part" && kexec -e
+
+	echo "Failed."
+	exit 1
+
+else
+	echo "usage: debian chroot | kexec"
+	if test -n "$debdir"; then
+		echo "   A $(cat $debdir/etc/issue.net) installation was found at $debdir"
+	else
+		echo "   No Debian installation found"
+	fi
+fi
