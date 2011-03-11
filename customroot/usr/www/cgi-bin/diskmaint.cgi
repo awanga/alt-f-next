@@ -79,7 +79,10 @@ cat<<-EOF
 EOF
 	
 cat<<-EOF
-	<table><tr align=center><th>Dev.</th><th>Size</th>
+	<table style="border-collapse:collapse">
+	<colgroup span=6></colgroup>
+	<colgroup span=2 style="background:#ddd;"></colgroup>
+	<tr align=center><th>Dev.</th><th>Size</th>
 	<th>FS</th>
 	<th>Label</th>
 	<th>Mount Options</th>

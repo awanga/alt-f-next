@@ -56,15 +56,14 @@ clean() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		fsck $opts -C /dev/$1 > $logf 2>&1
+		res=\$(fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
 		st=\$?
+		logger "Cleaning $1 finished with status code \$st: \$res"
 		if test "\$st" = 0 -o "\$st" = 1; then
-			logger "Cleaned /dev/$1 OK"
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
 			exit 0
 		fi
-		logger "Cleaning /dev/$1 failed with error code \$st. \$(cat $logf)"
 	EOF
 
 	chmod +x /tmp/$3-$1
