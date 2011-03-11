@@ -8,8 +8,6 @@ write_header "Transmission Setup"
 CONFF=/var/lib/transmission
 JSON=settings.json
 
-webhost=$(hostname -i | tr -d ' ')
-
 eval $(awk '/"download-dir"/ { \
 		gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2} \
 	/"watch-dir"/ { \
@@ -81,7 +79,7 @@ cat<<-EOF
 	<tr><td>Enable web page</td><td><input type=checkbox id="webcheck" $chkweb name="ENABLE_WEB" value="true" onclick="edisable('webcheck','webbut', '$webbutton')"></td></tr>
 	<tr><td></td><td><input type=submit value=Submit>
 		$(back_button)
-		<input type="button" id="webbut" $webbutton value="WebPage" onClick="document.location.href='http://$webhost:9091';">
+		<input type="submit" id="webbut" $webbutton name=webPage value="WebPage"> 
 	</td></tr>
 	</table></form></body></html>
 EOF

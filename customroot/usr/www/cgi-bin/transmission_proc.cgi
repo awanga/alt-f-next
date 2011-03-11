@@ -12,6 +12,10 @@ TRANSMISSION_GROUP=network
 
 #debug
 
+if test -n "$WebPage"; then
+	embed_page "http://$(hostname -i | tr -d ' '):9091"
+fi
+
 if test -z "$DOWNLOAD_DIR" -o -z "$WATCH_DIR" -o -z "$INCOMPLETE_DIR"; then
 	msg "You must specify all directories."
 fi
