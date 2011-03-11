@@ -1,32 +1,21 @@
 #! /bin/sh
 
-set -e
-
 DESC="Media server for the Roku SoundBridge and iTunes"
 TYPE=user
 NAME=mt-daapd
 
+EXCLUDEDBY="forked_daapd"
+
 MTDAAPD_USER=mt-daapd
 MTDAAPD_GROUP=multimedia
 
-MTDAAPD_ARGS="-d1 -y"
+MTDAAPD_ARGS="-y"
 
 . $(dirname $0)/common
 
 case "$1" in
-	start)
-		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -b -o \
-			--exec $NAME -- $MTDAAPD_ARGS
-		omsg $?
-		;;
-
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -o -s 2 -n $NAME
-		omsg $?
-		;;
-
+	start) start $NAME -b -- $MTDAAPD_ARGS ;;
+	stop) stop $NAME 2 ;;
 	restart) restart $NAME ;;
 	status) status $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
