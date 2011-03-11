@@ -11,9 +11,6 @@ if test -e $CONFF; then # damned spaces in file names!
 	sed -i '/<!--<dir>/d' $CONFF	
 	FUPPES_DIR="$(sed -n '/<shared_objects>/,/<\/shared_objects>/s/.*<dir>\(.*\)<\/dir>/\1:/p }' $CONFF)"
 
-	FUPPES_PORT=$(sed -n 's/.*<http_port>\(.*\)<\/http_port>/\1/p' $CONFF)
-	webhost="$(hostname -i | tr -d ' '):$FUPPES_PORT/presentation/config.html"
-
 	aip=$(sed -n '/<allowed_ips>/,/<\/allowed_ips>/p' $CONFF | awk ' \
 		/<ip>/ && ! /<!--/ { \
 		printf "%s", substr($1,5,length($1)-9)}')
@@ -77,6 +74,6 @@ cat<<-EOF
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
-		<input type="button" id=webbut $webbut value="WebPage" onClick="document.location.href='http://$webhost';">
+		<input type=submit id=webbut $webbut name=webPage value="WebPage">
 	</td></tr></table></form></body></html>
 EOF
