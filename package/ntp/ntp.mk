@@ -11,6 +11,12 @@ NTP_CAT:=$(ZCAT)
 NTP_BINARY:=ntpd/ntpd
 NTP_TARGET_BINARY:=usr/sbin/ntpd
 
+ifeq ($(BR2_INET_IPV6),y)
+NTP_CONF_OPT += --enable-ipv6
+else
+NTP_CONF_OPT += $(DISABLE_IPV6)
+endif
+
 $(DL_DIR)/$(NTP_SOURCE):
 	$(call DOWNLOAD,$(NTP_SITE),$(NTP_SOURCE))
 
@@ -49,7 +55,7 @@ $(NTP_DIR)/.configured: $(NTP_DIR)/.patched
 		--mandir=/usr/man \
 		--infodir=/usr/info \
 		$(DISABLE_NLS) \
-		$(DISABLE_IPV6) \
+		$(NTP_CONF_OPT) \
 		--with-shared \
 		--program-transform-name=s,,, \
 		--without-crypto \
