@@ -3,7 +3,8 @@
 # wget
 #
 #############################################################
-WGET_VERSION:=1.10.2
+
+WGET_VERSION:=1.11.4
 WGET_SOURCE:=wget-$(WGET_VERSION).tar.gz
 WGET_SITE:=$(BR2_GNU_MIRROR)/wget
 WGET_DIR:=$(BUILD_DIR)/wget-$(WGET_VERSION)
@@ -34,7 +35,7 @@ $(WGET_DIR)/.configured: $(WGET_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/ \
-		--disable-ipv6 \
+		$(DISABLE_IPV6) \
 		$(DISABLE_NLS) \
 		$(DISABLE_SSL) \
 	)
@@ -47,6 +48,10 @@ $(TARGET_DIR)/$(WGET_TARGET_BINARY): $(WGET_DIR)/$(WGET_BINARY)
 	install -D $(WGET_DIR)/$(WGET_BINARY) $(TARGET_DIR)/$(WGET_TARGET_BINARY)
 
 wget: uclibc $(TARGET_DIR)/$(WGET_TARGET_BINARY)
+
+wget-patch: $(WGET_DIR)/.unpacked
+
+wget-configure: $(WGET_DIR)/.configured
 
 wget-clean:
 	rm -f $(TARGET_DIR)/$(WGET_TARGET_BINARY)
