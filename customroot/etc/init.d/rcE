@@ -24,7 +24,7 @@ if aufs.sh -s >& /dev/null ; then
 fi
 
 echo "rcE: stopping swap"
-for i in "$(cat /proc/swaps | grep -o '/dev/.* ')"; do
+for i in $(cat /proc/swaps | grep -o '/dev/.* '); do
 	swapoff $i
 done
 
@@ -43,12 +43,9 @@ for i in /dev/md[0-9]; do
 done
 
 echo "rcE: ejecting all drives"
-# FIXME: this already does unmount, swapoff and raid stop, but raid
-# is incrementaly stoped (one component is failed/removed at a time)
-# which can lead to lengly recovery at startup (if no intent-bitmap exists)
-#
 # umount attached disks/partitions, simulating kernel hotplug events
 # hot.sh removes branch from aufs (if dir /Alt-F belongs to device)
+# just a last resort, as this is already done above
 for i in /dev/sd[a-z]; do
   if test -b $i; then
 	eject $(basename $i)
@@ -78,12 +75,4 @@ if test -f /root/zImage; then
 	fi
 fi
 
-# kernel already does it. This was only for C1 boards
-#echo "rcE: flushing disks and spin them down"
-#for i in /dev/sd[a-z]; do
-#  if test -b $i; then
-#	hdparm -fY $i
-#  fi
-#done
-
-echo "rcE: Poweroff! "
+echo "rcE: Poweroff NOW! "
