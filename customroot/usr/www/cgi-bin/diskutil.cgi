@@ -7,11 +7,11 @@ write_header "Disk Utilities" "document.disku.reset()"
 
 CONFT=/etc/misc.conf
 
-mktt power_tt "Higher power savings, lower performance, can spindow<br>
+mktt power_tt "Advanced Power Management<br>
+(If grayed disk does not supported APM)<br> 
+Higher power savings, lower performance, can spindow<br>
 Medium power savings and performance, can spindow<br>
-Low power saving, higher performance, can't spindown.<br>
-Disable Advanced Power Management.<br>
-If grayed, the disk does not support Adv. Power Mode."
+Low power saving, higher performance, can't spindown."
 
 mktt spindown_tt "After this minutes of inactivity the disk will spin down,<br>
 depending on the Power Saving Settings"
@@ -27,7 +27,6 @@ for i in HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB HDPOWER_LEFT HDPOWER_RIGHT; do
 	fi
 done
 
-
 cat<<EOF
 	<script type="text/javascript">
 	function submit() {
@@ -37,7 +36,9 @@ cat<<EOF
 
 	<form id=disku name=disku action="/cgi-bin/diskutil_proc.cgi" method="post">
 	<fieldset><Legend><strong> Disks </strong></legend>
-	<table>
+	<table style="border-collapse:collapse">
+	<colgroup span=8></colgroup>
+    <colgroup span=2 style="background:#ddd;"></colgroup>
 	<tr align=center><th>Bay</th>
 	<th>Dev.</th>
 	<th>Capacity</th>
@@ -53,9 +54,10 @@ for disk in $disks; do
 	dsk=$(basename $disk)
 	disk_details $dsk
 
-	power_dis="disabled"
+	power_dis="disabled"; hdtimeout_dis=""
 	if hdparm -I $disk 2> /dev/null | grep -q "Adv. Power Management"; then
 		power_dis=""
+		hdtimeout_dis="disabled"
 	fi
 
 	stat=$(disk_power $dsk)
@@ -81,32 +83,32 @@ for disk in $disks; do
 		1) highpower_sel="selected" ;;
 		127) medpower_sel="selected" ;;
 		254) lowpower_sel="selected" ;;
-		255) dispower_sel="selected" ;;
+		255) dispower_sel="selected"; hdtimeout_dis="" ;;
 	esac
 	
 	cat<<-EOF	 
 		<tr><td>$dbay</td><td>$dsk</td><td>$dcap</td><td>$dmod</td>
 		<td> <input type="submit" name="$dsk" value="$ejectop"></td>
-		<td><select name="$dsk" onChange=submit()>
+		<td><select name="$dsk" onChange="return submit()">
 			<option value="">Select Action</option>
 			<option value="hstatus">Show Status</option>
 			<option value="shorttest">Start short test</option>
 			<option value="longtest">Start long test</option>
 			</select></td>
 		<td> <input type="submit" $paction_dis name="$dsk" value="$paction"> </td>
-		<td><select $power_dis name=$power $(ttip power_tt)>
+		<td><select $power_dis name=$power onchange="return submit()" $(ttip power_tt)>
 			<option $dispower_sel value=255>Disable</option>
 			<option $highpower_sel value=1>High</option>
 			<option $medpower_sel value=127>Medium</option>
 			<option $lowpower_sel value=254>Low</option>
 			</select></td>
-		<td><input type="text" size=2 name="$hdtimeout" value="$hdtimeout_val" $(ttip spindown_tt)> min.</td></tr>
+		<td><input type="text" size=2 $hdtimeout_dis name="$hdtimeout" value="$hdtimeout_val" $(ttip spindown_tt)> min.</td></tr>
 	EOF
 done
 
 cat<<-EOF
-	<tr><td colspan=7></td>
-	<td colspan=2 align=center><input type="submit" name="standby" value="        Submit        "></td></tr>        
+	<tr><td colspan=8></td>
+	<td colspan=1 align=center><input type="submit" name="standby" value="Submit"></td></tr>        
 	</table></fieldset><br>
 	</form></body></html>
 EOF

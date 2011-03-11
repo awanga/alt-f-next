@@ -86,16 +86,7 @@ read_args
 
 CONFT=/etc/misc.conf
 
-if test -n "$standby"; then
-	for i in HDPOWER_LEFT HDPOWER_RIGHT HDPOWER_USB HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
-		if test -n "$(eval echo \$$i)"; then
-			sed -i '/^'$i'/d' $CONFT >& /dev/null
-			echo "$i=$(eval echo \$$i)" >> $CONFT
-			prog $i $(eval echo \$$i)
-		fi
-	done
-  
-elif test -n "$StandbyNow"; then
+if test -n "$StandbyNow"; then
 	sleepnow $StandbyNow
 
 elif test -n "$WakeupNow"; then
@@ -120,6 +111,16 @@ elif test -n "$longtest"; then
 	res="$(smartctl -t long /dev/$longtest)"
 	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
 	msg "$res\n\nYou can see the result using Health Status."
+
+# this must the last else. Currently HDPOWER_* is always visible
+elif test -n "$standby" -o -n "$HDPOWER_LEFT" -o -n "$HDPOWER_RIGHT" -o -n "$HDPOWER_USB"; then
+	for i in HDPOWER_LEFT HDPOWER_RIGHT HDPOWER_USB HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
+		if test -n "$(eval echo \$$i)"; then
+			sed -i '/^'$i'/d' $CONFT >& /dev/null
+			echo "$i=$(eval echo \$$i)" >> $CONFT
+			prog $i $(eval echo \$$i)
+		fi
+	done
 fi
 
 #enddebug
