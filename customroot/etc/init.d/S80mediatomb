@@ -8,7 +8,7 @@ MT_USER="mediatomb"
 MT_GROUP="multimedia"
 
 MT_PIDFILE="/var/run/mediatomb.pid"
-MT_LOGFILE="/var/log/mediatomb"
+MT_LOGFILE="/var/log/mediatomb.log"
 
 MT_HOME="/var/lib"
 MT_CFGDIR="mediatomb"
@@ -22,16 +22,12 @@ MT_ARGS="-d -u $MT_USER -g $MT_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
 
 case "$1" in
   start)
-	echo -n "Starting $NAME: "
 	# Applying multicast settings to eth0
 	route add -net 239.0.0.0 netmask 255.0.0.0 eth0 >& /dev/null
 	ifconfig eth0 allmulti
 	touch $MT_PIDFILE
 	chown mediatomb $MT_PIDFILE
-
-	start-stop-daemon --start --quiet --background --oknodo \
-		--exec $NAME -- $MT_ARGS
-	omsg $?
+	start $NAME -- $MT_ARGS
 	;;
 
   stop) stop $NAME ;;
