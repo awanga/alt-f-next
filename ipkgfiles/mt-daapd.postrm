@@ -2,4 +2,4 @@
 
 deluser mt-daapd
 delgroup multimedia
-rm -f /sbin/rcmt-daapd
+rm -f /sbin/rcmt_daapd
