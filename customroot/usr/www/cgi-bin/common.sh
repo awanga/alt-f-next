@@ -406,7 +406,19 @@ drawbargraph() {
 	fi
 
 	cat <<-EOF
-	<style>
+	<div class="meter-wrap">
+		<div class="meter-value" style="background-color: $bgcolor; width: $linewidth%;">
+			<div class="meter-text" style="color: $fgcolor;">
+		   		$text
+			</div>
+		</div>
+	</div>
+	EOF
+}
+
+drawbargraph_setup() {
+cat<<-EOF
+	<style type="text/css">
 		.meter-wrap{
 			position: relative;
 		}
@@ -424,14 +436,7 @@ drawbargraph() {
 			font-size: .8em;
 		}
 	</style>
-	<div class="meter-wrap">
-		<div class="meter-value" style="background-color: $bgcolor; width: $linewidth%;">
-			<div class="meter-text" style="color: $fgcolor;">
-		   		$text
-			</div>
-		</div>
-	</div>
-	EOF
+EOF
 }
 
 # usage: mktt tt_id "tooltip msg" 
@@ -668,6 +673,7 @@ write_header() {
 		<title>$1</title>
 		$(menu_setup)
 		$(tooltip_setup)
+		$(drawbargraph_setup)
 		</head>
 		<body $act>
 		$(menu_setup2)
