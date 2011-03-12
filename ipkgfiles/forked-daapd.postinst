@@ -1,0 +1,8 @@
+#!/bin/sh
+
+addgroup -S -g 80 multimedia
+adduser -S -g "forked-daapd user" -G multimedia -u 16 -h /var/lib/daapd daapd
+
+chown -R daapd:multimedia /etc/forked-daapd.conf
+
+ln -sf /usr/sbin/rcscript /sbin/rcforked_daapd

@@ -1,0 +1,5 @@
+./etc/forked-daapd.conf
+./etc/init.d/S80forked_daapd
+./usr/sbin/forked-daapd
+./usr/www/cgi-bin/forked_daapd.cgi
+./usr/www/cgi-bin/forked_daapd_proc.cgi

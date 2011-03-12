@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser daapd
+delgroup multimedia
+rm -rf /sbin/rcforked_daapd /var/lib/daapd
