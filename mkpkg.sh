@@ -47,6 +47,7 @@ usage() {
 	-force <package> (force create package. You must first create the .control file) |
 	-setroot (creates rootfs base file list) |
 	-cleanroot (remove all files not in rootfs base file list) |
+	-diffroot (show new files since last -setroot) |
 	-index (create ipkg package index) |
 	-all (recreates all packages in ipkfiles dir) |
 	-help"
@@ -130,7 +131,7 @@ case "$1" in
 		cd $ROOTFSDIR
 		find . | cat $TFILES - | sort | \
 			uniq -u | xargs rm >& $tf
-		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
+		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r | xargs rmdir
 		rm $tf
 		exit 0
 		;;
@@ -164,6 +165,16 @@ case "$1" in
 			uniq -u | xargs rm >& $tf
 		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
 		rm $tf
+		exit 0
+		;;
+
+	-diffroot)
+		cd $ROOTFSDIR
+		TF=$(mktemp)
+		#find . ! -type d | sort > $TF
+		find . | sort > $TF
+		diff $ROOTFSFILES $TF | sed -n 's\> ./\./\p'
+		rm $TF
 		exit 0
 		;;
 
@@ -241,6 +252,7 @@ if ! test -f $IPKGDIR/$pkg.control; then # first time build
 	# and corrected		
 
 	awk -v ver=$version -v pkg=$pkg '
+		BEGIN { deps = "ipkg" }
 		/(depends|select)/ && /BR2_PACKAGE/ {
 			for (i=1; i<=NF; i++) {
 				p = tolower(substr($i,13));
