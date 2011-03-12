@@ -1,0 +1,10 @@
+Package: libantlr
+Description: A language tool that provides a framework for constructing recognizers,
+ interpreters, compilers, and translators from grammatical descriptions  
+Version: 3.2
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.antlr.org
+Maintainer: jcard
