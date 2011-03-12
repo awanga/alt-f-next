@@ -1,22 +1,180 @@
 #!/bin/sh 
 
-# check if any disk in an MD array is in standby
-# blkid, used by plabel, wakes up a MD component disk if it has no filesys?
-md_standby() {
-	local mdev i
-	mdev=$1
-	for i in $(ls /sys/block/$mdev/slaves); do
-		if test "$(disk_power ${i:0:3})" = "standby"; then return 0; fi
-	done
-	return 1
+. common.sh
+
+# Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
+# Modified and adapted by Joao Cardoso
+launch() {
+	id=$(echo $1 | tr "A-Z " "a-z_")
+
+	if test -z "$arefresh"; then
+		eval ${id}_st
+		return 0;
+	fi
+
+	cat<<-EOF
+		<div id="$id"></div>
+		<script type="text/javascript">
+			requestfromserver('/cgi-bin/status.cgi?refresh=${id}', '$id', $2);
+		</script>
+	EOF
 }
 
-# $1=/dev/sda
-disk() {
-	dsk=$(basename $1)
-	if test -b /dev/$dsk; then
+# Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
+# Modified and adapted by Joao Cardoso
+jscripts() {
+	cat<<-EOF
+		<script type="text/javascript">
+			function requestfromserver(url, target, refresh) {
+				var req = new XMLHttpRequest();    			
+				if (req == null)
+					return;
+
+				req.onreadystatechange = function() {
+					if (req.readyState != 4) return; // only if req is "loaded"
+					if (req.status != 200) return; // only if "OK"
+						document.getElementById(target).innerHTML = req.responseText;
+					delete req;
+					if (refresh != 0)
+						setTimeout(	function() {requestfromserver(url, target, refresh);}, refresh * 1000);
+				}
+				req.open("GET", url, true);
+				req.send();
+			}
+		</script>
+	EOF
+}
+
+system_st() {
+	cpu="$(top -bn1 | awk '/^CPU:/ {printf "%d", 100 - $8}')"
+	loadv=$(cut -f1 -d" " /proc/loadavg)
+	load=$(awk '{printf "%d", 50 * $1 }' /proc/loadavg)
+	eval $(free | awk '/Swap/{printf "swap=\"%.1f/%d MB\"", $3/1024, $4/1024}')
+
+	board="$(cat /tmp/board)"
+
+	if test $board != "C1"; then 
+		temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
+		fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
+	else
+		temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
+		fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
+	fi
+
+	if test -f /etc/sysctrl.conf; then
+		. /etc/sysctrl.conf
+	else
+		max_fan_speed=5500
+		crit_temp=54
+	fi
+
+	eval $(awk '{printf "tempt=\"%.1f\"; temp=\"%d\"", $1 / 1000, $1 / 10 / '$crit_temp'}' $temp_dev)
+	tempv="${tempt}&deg;C/$(celtofar $tempt)&deg;F"
+
+	fan=$(cat $fan_dev)
+
+	if test $board != "C1"; then
+		fanv=$fan
+		fan=$(expr $fanv \* 100 / $max_fan_speed)
+	else
+		if test "$fan" -eq 0; then
+			fan=0
+			fanv="Off"
+		elif test "$fan" -le 400; then
+			fan=50
+			fanv="Low"
+		else
+			fan=100
+			fanv="High"
+		fi
+	fi
+
+	eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
+		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
+
+	cat<<-EOF
+		<fieldset><legend><strong>System</strong></legend>
+		<table><tr>
+			<td><strong>Temperature</strong> $(drawbargraph $temp $tempv )</td>
+			<td><strong>Fan speed</strong> $(drawbargraph $fan $fanv)</td>
+			<td><strong>Load</strong> $(drawbargraph $load $loadv)</td>
+			<td><strong>CPU</strong> $(drawbargraph $cpu)</td>
+		</tr><tr><td><br></td></tr><tr>
+			<td><strong>Swap:</strong> $swap</td>
+			<td><strong>Uptime:</strong> $up</td>
+			<td colspan=2><strong>Date:</strong> $(date)</td>
+		</tr></table></fieldset><br>
+	EOF
+}
+
+network_st() {
+	eval $(ethtool eth0 | awk '/Speed/{printf "Speed=%s", $2}')
+
+	eval $(ifconfig eth0 | awk \
+			'/RX bytes/ {printf "Rx=\"%s %s\";", $3, $4} \
+			/TX bytes/ {printf "Tx=\"%s %s\";", $7, $8} \
+			/MTU/ {printf "MTU=%s;", substr($0, match($a,"MTU")+4,5)} \
+			/inet6/ {printf "ipv6=%s;", $3} \
+			/HWaddr/{printf "MAC=\"%s\";", $5}' | tr "()" "  ")
+
+	if test -n "$ipv6"; then
+		IPV6="<strong> IPv6: </strong> $ipv6"
+	fi
+
+	cat<<-EOF
+		<fieldset><legend><strong>Network</strong></legend>
+		<strong> Speed: </strong> $Speed
+		<strong> MTU: </strong> $MTU
+		<strong> TX: </strong> $Tx
+		<strong> Rx: </strong> $Rx
+		<strong> MAC: </strong> $MAC
+		$IPV6
+		</fieldset><br>
+	EOF
+}
+
+disks_st() {
+	if ! has_disks; then
+		return 0
+	fi
+
+	cat<<-EOF
+		<fieldset><legend><strong>Disks</strong></legend>
+		<table><tr align=center><th align=left>Bay</th>
+		<th>Dev.</th>
+		<th>Model</th>
+		<th>Capacity</th>
+		<th>Power Status</th>
+		<th>Temp</th>
+		<th>Health</th>
+		</tr>
+	EOF
+
+	for i in /dev/sd?; do
+		dsk=$(basename $i)
+
 		temp="--"; fam=""; mod="None"; tcap=""; pstatus="--"; health_st="--"
 		disk_details $dsk
+
+		smartctl -n standby -iAH $i >& /tmp/smt_$dsk
+
+		eval $(awk -v st=$? '
+			/^194/ { printf "temp=\"%d\";", $10}
+			/not support SMART|Device is in/ {
+				print "health_st=\"unknown\";"
+				if (st == 2) print "pstatus=\"standby\";"}
+			/SMART overall-health/ {
+				if (st == 0) color="black"
+				else if  (st == 32) color="blue"
+				else color="red"
+				printf "health_st=\"<font color=%s>%s</font>\";", color, tolower($NF) }
+			/Power mode is:/ { printf "pstatus=\"%s\";", 
+				tolower(substr($0, index($0,":")+2))} ' /tmp/smt_$dsk)
+		rm -f /tmp/smt_$dsk
+
+		if isnumber $temp; then
+			temp="${temp}&deg;C/$(celtofar $temp)&deg;F"
+		fi
 
 		cat<<-EOF
 			<tr align=center>
@@ -29,7 +187,64 @@ disk() {
 			<td id=${dsk}_health_id> $health_st </td>
 			</tr>
 		EOF
+
+	done
+	echo "</table></fieldset><br>"
+}
+
+raid_st() {
+	if ! test -e /proc/mdstat -a -n "$(grep ^md /proc/mdstat 2> /dev/null)"; then
+		return 0
 	fi
+
+	cat<<-EOF
+		<fieldset><legend><strong>RAID</strong></legend>
+		<table><tr align=center>
+		<th align=left>Dev.</th> 
+		<th>Capacity</th>
+		<th>Level</th><th>State</th>
+		<th>Status</th><th>Action</th>
+		<th>Done</th><th>ETA</th>
+ 		</tr>
+	EOF
+
+	for i in /dev/md[0-9]*; do
+		mdev=$(basename $i)
+		state=$(cat /sys/block/$mdev/md/array_state)
+		type=$(cat /sys/block/$mdev/md/level)
+
+		sz=""; deg=""; act=""; compl=""; exp="";
+		if test "$state" != "inactive"; then
+			sz=$(awk '{ printf "%.1f GB", $1/2/1024/1024}' /sys/block/$mdev/size)
+			if test "$type" = "raid1" -o "$type" = "raid5"; then
+				if test "$(cat /sys/block/$mdev/md/degraded)" != 0; then
+					deg="<font color=RED> degraded </font>"
+				else
+					deg="OK"
+				fi
+				act=$(cat /sys/block/$mdev/md/sync_action)
+				if test "$act" != "idle"; then
+					act="<font color=RED> $act </font>"
+					compl=$(drawbargraph $(awk '{printf "%d", $1 * 100 / $3}' /sys/block/$mdev/md/sync_completed))
+					speed=$(cat /sys/block/$mdev/md/sync_speed)
+					exp=$(awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60}' /sys/block/$mdev/md/sync_completed 2> /dev/null)
+				fi
+			fi
+		fi
+		cat<<-EOF
+			<tr align=center>
+			<td align=left>$mdev</td> 
+			<td>$sz</td>
+			<td>$type</td>
+			<td>$state</td>
+			<td>$deg</td>
+			<td>$act</td>
+			<td align=left>$compl</td>
+			<td>$exp</td>
+			</tr>
+		EOF
+	done
+	echo "</table></fieldset><br>"
 }
 
 filesys() {
@@ -37,7 +252,7 @@ filesys() {
 	dev=$(basename $dsk)
 	
 	if test -b $dsk; then
-		eval $(df -h $dsk | awk '/'$dev'/{printf "cap=%s;free=%s", $2, $4}')
+		eval $(df -h $dsk | awk '/'$dev'/{printf "cap=%s;free=%s;perc=%d", $2, $4, $5}')
 		type=$(blkid -s TYPE -o value $dsk)
 		lbl="$(plabel $dsk)"
 
@@ -86,7 +301,7 @@ filesys() {
 		<td>$dev</td>
 		<td>$lbl</td>
 		<td align=right>${cap}B</td>
-		<td align=right>${free}B </td>
+		<td>$(drawbargraph $perc ${free}B)</td>
 		<td>$type</td>
 		<td>$MD</td>
 		<td><font color=RED>$dirty</font> </td>
@@ -95,182 +310,15 @@ filesys() {
 	EOF
 }
 
-. common.sh
+mounted_filesystems_st() {
 
-arefresh="no"
-
-if test -n "$QUERY_STRING"; then
-	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-		printf "%s=%c%s%c\n",$1,39,$2,39}')
-fi
-
-# do this early, to avoid affecting the load value		
-load=$(cut -f1 -d" " /proc/loadavg)
-
-# smartctl is too slow, launch it in background, wait for them all at the script end
-# launch a job for each disk, in parallel. As it is IO bound, CPU can be used meanwhyle
-for i in /dev/sd?; do
-	smartctl -n standby -iAH $i 2>&1 1> /tmp/smt_$(basename $i) &
-done
-
-if isflashed; then
-	flashed_firmware=$(echo $flashed_firmware | sed -n 's/\(Alt-F-.*\),.*/\1/p')
-fi
-
-ver="$(cat /etc/Alt-F)"
-write_header "Alt-F $ver Status Page"
-
-cat<<EOF
-	<script type="text/javascript">
-		function smart_fill(disk, health, temp, pstatus) {
-			document.getElementById(disk + "_pstatus_id").innerHTML = pstatus
-			document.getElementById(disk + "_temp_id").innerHTML = temp
-			document.getElementById(disk + "_health_id").innerHTML = health
-		}
-	</script>
-	<form name=statusf>
-EOF
-
-board="$(cat /tmp/board)"
-
-if test $board != "C1"; then 
-	temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
-	fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
-else
-	temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
-	fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
-fi
-
-eval $(cat $temp_dev | awk '{printf "temp=\"%.1f\"", $1 / 1000 }')
-fan=$(cat $fan_dev)
-
-if test $board != "C1"; then
-	fan="$fan RPM"
-else
-	if test "$fan" -eq 0; then
-		fan="Off"
-	elif test "$fan" -le 400; then
-		fan="Low"
-	else
-		fan="High"
+	if ! grep -q '^/dev/\(sd\|md\)' /proc/mounts; then
+		return 0
 	fi
-fi
 
-eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
-	printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
-
-eval $(ethtool eth0 | awk '/Speed/{printf "Speed=%s", $2}')
-
-eval $(ifconfig eth0 | awk \
-		'/RX bytes/{printf "Rx=\"%s %s\";", $3, $4} \
-		/TX bytes/{printf "Tx=\"%s %s\";", $7, $8} \
-		/MTU/{printf "MTU=%s;", substr($0, match($a,"MTU")+4,5)} \
-		/HWaddr/{printf "MAC=\"%s\";", $5}' | tr "()" "  ")
-
-eval $(free | awk '/Swap/{printf "swap=\"%.1f/%d MB\"", $3/1024, $4/1024}')
-
-cat <<-EOF
-	<fieldset><Legend><strong> System </strong></legend><table>
-	<tr>
-		<td><strong>Temperature:</strong> $temp</td>
-		<td><strong>Fan speed:</strong> $fan </td>
-		<td><strong> Load:</strong> $load</td>
-	</tr><tr>
-		<td><strong>Swap:</strong> $swap</td>
-		<td><strong>Uptime:</strong> $up</td>
-		<td><strong>Date:</strong> $(date)</td>
-	<!--/tr><tr>
-		<td></td><td></td>
-		<td><strong>Flashed kernel:</strong> $flashed_firmware</td-->
-	</tr></table>
-	</fieldset><br>
-
-	<fieldset><Legend><strong> Network </strong></legend>
-	<strong> Speed: </strong> $Speed
-	<strong> MTU: </strong> $MTU
-	<strong> TX: </strong> $Tx
-	<strong> Rx: </strong> $Rx
-	<strong> MAC: </strong> $MAC
-	</fieldset><br>
-EOF
-
-if has_disks; then
 	cat<<-EOF
-		<fieldset><Legend><strong> Disks </strong></legend><table>
-		<tr align=center><td align=left><strong> Bay </strong></td>
-		<th>Dev.</th>
-		<th>Model</th>
-		<th>Capacity</th>
-		<th>Power Status</th>
-		<th>Temp</th>
-		<th>Health</th>
-		</tr>
-	EOF
-
-	for i in /dev/sd?; do
-		disk $i
-	done
-
-	echo "</table></fieldset><br>"
-fi
-
-if test -e /proc/mdstat -a -n "$(grep ^md /proc/mdstat 2> /dev/null)"; then
-	cat<<-EOF
-		<fieldset><Legend><strong> RAID </strong></legend><table>
-		<tr align=center>
-		<th align=left>Dev.</th> 
-		<th>Capacity</th>
-		<th>Level</th><th>State</th>
-		<th>Status</th><th>Action</th>
-		<th>Done</th><th>ETA</th>
- 		</tr>
-	EOF
-
-	for i in /dev/md[0-9]*; do
-		mdev=$(basename $i)
-		state=$(cat /sys/block/$mdev/md/array_state)
-		type=$(cat /sys/block/$mdev/md/level)
-
-		sz=""; deg=""; act=""; compl=""; exp="";
-		if test "$state" != "inactive"; then
-			sz=$(awk '{ printf "%.1f GB", $1/2/1024/1024}' /sys/block/$mdev/size)
-			if test "$type" = "raid1" -o "$type" = "raid5"; then
-				if test "$(cat /sys/block/$mdev/md/degraded)" != 0; then
-					deg="<font color=RED> degraded </font>"
-				else
-					deg="OK"
-				fi
-				act=$(cat /sys/block/$mdev/md/sync_action)
-				if test "$act" != "idle"; then
-					act="<font color=RED> $act </font>"
-					compl=$(awk '{printf "%.1f%%", $1 * 100 / $3}' /sys/block/$mdev/md/sync_completed)
-					speed=$(cat /sys/block/$mdev/md/sync_speed)
-					exp=$(awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60}' /sys/block/$mdev/md/sync_completed 2> /dev/null)
-				fi
-			fi
-		fi
-		cat<<-EOF
-			<tr align=center>
-			<td align=left>$mdev</td> 
-			<td>$sz</td>
-			<td>$type</td>
-			<td>$state</td>
-			<td>$deg</td>
-			<td>$act</td>
-			<td>$compl</td>
-			<td>$exp</td>
-			</tr>
-		EOF
-	done
-	echo "</table></fieldset><br>"
-fi
-
-if grep -q '^/dev/\(sd\|md\)' /proc/mounts; then
-	cat<<-EOF
-		<fieldset><legend><strong> Mounted Filesystems </strong></legend>
-		<table>
-		<tr align=center>
+		<fieldset><legend><strong>Mounted Filesystems</strong></legend>
+		<table><tr align=center>
 		<th>Dev.</th>
 		<th>Label</th>
 		<th>Capacity</th><th>Available</th>
@@ -285,15 +333,17 @@ if grep -q '^/dev/\(sd\|md\)' /proc/mounts; then
 			filesys $dsk
 		fi
 	done < /proc/mounts
-
 	echo "</table></fieldset><br>"
-fi
+}
 
-if grep -q '\(nfs \|cifs\)' /proc/mounts; then
+mounted_remote_filesystems_st() {
+	if ! grep -q '\(nfs \|cifs\)' /proc/mounts; then
+		return 0
+	fi
+
 	cat<<-EOF
-		<fieldset><Legend><strong>Mounted Remote Filesystems </strong></legend><table>
-		<table>
-		<tr align=center>
+		<fieldset><legend><strong>Mounted Remote Filesystems</strong></legend>
+		<table><tr align=center>
 		<th>Host</th>
 		<th>Remote Dir/Share</th>
 		<th>Local Dir</th>
@@ -312,30 +362,30 @@ if grep -q '\(nfs \|cifs\)' /proc/mounts; then
 				rrdir=${rhost#*:/}
 			fi
 			# "df" breaks lines when are long nfs host:dir 
-			eval $(df -h "$mnt" | awk '{if (NF == 6) printf "sz=%sB; avai=%sB;", $2, $4
-				if (NF == 5) printf "sz=%sB; avai=%sB;", $1, $3}')
+			eval $(df -h "$mnt" | awk '{if (NF == 6) printf "sz=%sB; avai=%sB; perc=%d", $2, $4, $5
+				if (NF == 5) printf "sz=%sB; avai=%sB; perc=%d", $1, $3, $4}')
 			echo "<tr><td>$rrhost</td>
-				<td>$rrdir</td><td>$mnt</td>
-				<td>$sz</td><td>$avai</td>
+				<td>$rrdir</td>
+				<td>$mnt</td>
+				<td>$sz</td>
+				<td>$(drawbargraph $perc $avai)</td>
 				<td>$fs</td></tr>"
 		fi
 	done < /proc/mounts
 	echo "</table></fieldset><br>"
-fi
+}
 
-if rcsmb status >& /dev/null; then
+remotely_mounted_filesystems_st() {
 	smbm="$(smbstatus -S 2> /dev/null | tail -n +4)"
-fi
-
-if rcnfs status >& /dev/null; then
 	nfsm="$(showmount --no-headers --all 2> /dev/null)"
-fi
 
-if test -n "$smbm" -o -n "$nfsm"; then
+	if test -z "$smbm" -a -z "$nfsm"; then
+		return 0
+	fi
+
 	cat<<-EOF
-		<fieldset><Legend><strong>Remotely Mounted Filesystems </strong></legend><table>
-		<table>
-		<tr align=center>
+		<fieldset><legend><strong>Remotely Mounted Filesystems</strong></legend>
+		<table><tr align=center>
 		<th>Host</th>
 		<th>Dir/Share</th>
 		<th>FS</th>
@@ -365,10 +415,13 @@ if test -n "$smbm" -o -n "$nfsm"; then
 		IFS=" "
 	fi
 	echo "</table></fieldset><br>"
-fi
+}
 
-pso=$(ps | grep "backup *[0-9]")
-if test -n "$pso"; then
+backup_st() {
+	pso=$(ps | grep "backup *[0-9]")
+	if test -z "$pso"; then
+		return 0
+	fi
 
 	if test -e /var/run/backup.pid; then
 		bpid=$(cat /var/run/backup.pid)
@@ -378,7 +431,7 @@ if test -n "$pso"; then
 	fi
 
 	cat<<-EOF
-		<fieldset><Legend><strong> Backups </strong></legend>
+		<fieldset><legend><strong>Backup</strong></legend>
 		<table><tr><th>ID</th><th>Directory</th><th>State</th></tr>
 	EOF
 
@@ -392,12 +445,16 @@ if test -n "$pso"; then
 		echo "<tr><td>$i</td><td>$bdir</td><td align=center>$st</td></tr>"
 	done
 	echo "</table></fieldset><br>"
-fi
+}
 
-if test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
-				/tmp/enlarg-* /tmp/wip-* 2> /dev/null)"; then
+filesystem_maintenance_st() {
+	if ! test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
+		/tmp/enlarg-* /tmp/wip-* 2> /dev/null)"; then
+		return 0
+	fi
+
 	cat<<-EOF
-		<fieldset><Legend><strong> Filesystem Maintenance </strong></legend>
+		<fieldset><legend><strong>Filesystem Maintenance</strong></legend>
 		<table><tr><th>Part.</th><th>Label</th><th>Operation</th></tr>
 	EOF
 
@@ -412,12 +469,16 @@ if test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
 		fi
 	done
 	echo "</table></fieldset><br>"
-fi
+}
 
-if test -f /etc/printcap -a -n "$(grep '^[^#]' /etc/printcap 2> /dev/null)"; then
+printers_st() {
+	if ! test -f /etc/printcap -a -n "$(grep '^[^#]' /etc/printcap 2> /dev/null)"; then
+		return 0
+	fi
+
 	cat<<-EOF
-		<fieldset><Legend><strong> Printers </strong></legend><table>
-		<tr align=center><th>Name</th><th>Model</th><th>Jobs</th></tr>
+		<fieldset><legend><strong>Printers</strong></legend>
+		<table><tr align=center><th>Name</th><th>Model</th><th>Jobs</th></tr>
 	EOF
 
 	while read ln; do
@@ -437,62 +498,61 @@ if test -f /etc/printcap -a -n "$(grep '^[^#]' /etc/printcap 2> /dev/null)"; the
 		echo "<tr><td>$pr</td><td>$desc</td><td>$jb</td></tr>"
 		
 	done < /etc/printcap
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
+}
+
+if test -n "$QUERY_STRING"; then
+	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
+		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
+		printf "%s=%c%s%c\n",$1,39,$2,39}')
 fi
 
-# now collect smartctl jobs output 
-j=1
-for i in /dev/sd?; do
-	dsk=$(basename $i)
-	health_st="unknown"; temp="??"; pstatus="unknown"
-	wait %$j
-	eval $(awk -v st=$? '
-		/^194/ { printf "temp=\"%d\";", $10}
-		/not support SMART|Device is in/ {
-			print "health_st=\"unknown\";"
-			if (st == 2) print "pstatus=\"standby\";"}
-		/SMART overall-health/ {
-			if (st == 0) color="black"
-			else if  (st == 32) color="blue"
-			else color="red"
-			printf "health_st=\"<font color=%s>%s</font>\";", color, tolower($NF) }
-		/Power mode is:/ { printf "pstatus=\"%s\";", 
-			tolower(substr($0, index($0,":")+2))} ' /tmp/smt_$dsk)
-		cat<<-EOF
-			<script type="text/javascript">
-				smart_fill('$dsk', '$health_st', '$temp', '$pstatus')
-			</script>
-		EOF
-	rm -f /tmp/smt_$dsk
-	j=$((j+1))
-done
-
-if test "$arefresh" = "yes"; then
-	refr_chk=checked
-	cat<<-EOF
-		<script type="text/javascript">
-			var tmo_id = setTimeout('window.location.assign("http://" + location.hostname + \
-				"/cgi-bin/status.cgi?arefresh=yes")', 15000)
-		</script>
-	EOF
+if test -n "$refresh"; then
+	html_header
+	eval ${refresh}_st
+	echo "</body></html>"
+	exit 0
+elif test -n "$arefresh"; then
+	refr_chk="checked"
 fi
+
+ver="$(cat /etc/Alt-F)"
+write_header "Alt-F $ver Status Page"
+jscripts
+
+launch System 15
+usleep 100000
+launch Network 24
+usleep 100000
+launch Disks 16
+usleep 100000
+launch Raid 17
+usleep 100000
+launch "Mounted Filesystems" 21
+usleep 100000
+launch "Mounted Remote Filesystems" 22
+usleep 100000
+launch "Remotely Mounted Filesystems" 23
+usleep 100000
+launch Backup 18
+usleep 100000
+launch "Filesystem Maintenance" 19
+usleep 100000
+launch Printers 20
 
 cat<<EOF
-	Autorefresh <input type=checkbox $refr_chk name=refresh value="yes" onclick="frefresh(this)">
+	<form action="">
+Autorefresh <input type=checkbox $refr_chk name=arefresh value="yes" onclick="frefresh(this)">
 	<script type="text/javascript">
-		var tmo_id
 		function frefresh(obj) {
 			arg = obj.checked == true ? "yes" : "no"
-			obj.value = arg
 
-			if (arg == "yes") {
+			if (arg == "yes")
 				url = "http://" + location.hostname + "/cgi-bin/status.cgi?arefresh=yes"
-				tmo_id = setTimeout('window.location.assign(url)', 15000)
-			} else {
-				clearTimeout(tmo_id)
-			}
+			else
+				url = "http://" + location.hostname + "/cgi-bin/status.cgi"
+			window.location.assign(url)
 		}
 	</script>
 	</form></body></html>
 EOF
-
