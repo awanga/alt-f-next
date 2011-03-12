@@ -1,0 +1,10 @@
+Package: libunistring
+Description: This library implements Unicode strings, together with functions for Unicode
+ charactets and functions for string processing.
+Version: 0.9.3
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://savannah.gnu.org/projects/libunistring
+Maintainer: jcard
