@@ -1,0 +1,13 @@
+./etc/dbus-1/session.conf
+./etc/dbus-1/system.conf
+./etc/init.d/S20dbus
+./usr/bin/dbus-cleanup-sockets
+./usr/bin/dbus-daemon
+./usr/bin/dbus-launch
+./usr/bin/dbus-monitor
+./usr/bin/dbus-send
+./usr/bin/dbus-uuidgen
+./usr/libexec/dbus-daemon-launch-helper
+./usr/lib/libdbus-1.so
+./usr/lib/libdbus-1.so.3
+./usr/lib/libdbus-1.so.3.4.1

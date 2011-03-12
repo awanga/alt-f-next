@@ -1,0 +1,9 @@
+Package: dbus
+Description: The D-Bus message bus system.
+Version: 1.2.26
+Depends: expat, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.freedesktop.org/wiki/Software/dbus
+Maintainer: jcard

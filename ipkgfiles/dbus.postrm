@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser dbus
+rm -rf /sbin/rcdbus /var/lib/dbus
+
