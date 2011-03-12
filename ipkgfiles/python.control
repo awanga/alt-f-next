@@ -1,0 +1,9 @@
+Package: python
+Description: The python language interpreter.
+Version: 2.4.5
+Depends: ncurses, readline, expat
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.python.org/
+Maintainer: jcard
