@@ -47,6 +47,7 @@
 ./usr/lib/cups/filter/hpgltops
 ./usr/lib/cups/filter/imagetops
 ./usr/lib/cups/filter/imagetoraster
+./usr/lib/cups/filter/pdftops
 ./usr/lib/cups/filter/pstops
 ./usr/lib/cups/filter/rastertodymo
 ./usr/lib/cups/filter/rastertoepson
@@ -172,7 +173,6 @@
 ./usr/share/cups/doc/help/man-cups-polld.html
 ./usr/share/cups/doc/help/man-cupstestdsc.html
 ./usr/share/cups/doc/help/man-cupstestppd.html
-./usr/share/cups/doc/help/man-drv.html
 ./usr/share/cups/doc/help/man-filter.html
 ./usr/share/cups/doc/help/man-lpadmin.html
 ./usr/share/cups/doc/help/man-lpc.html
@@ -235,6 +235,7 @@
 ./usr/share/cups/doc/images/cups.png
 ./usr/share/cups/doc/images/cups-postscript-chain.png
 ./usr/share/cups/doc/images/cups-raster-chain.png
+./usr/share/cups/doc/images/generic.png
 ./usr/share/cups/doc/images/left.gif
 ./usr/share/cups/doc/images/raster.png
 ./usr/share/cups/doc/images/right.gif
