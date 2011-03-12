@@ -66,7 +66,7 @@ elif test "$1" = "sqfs"; then
 	COMP=lzma
 
 	# block sizes: 131072 262144 524288 1048576
-	mksquashfs tmp/usr/ usr.squashfs -comp $COMP -b 131072 \
+	mksquashfs tmp/usr/ usr.squashfs -comp $COMP -b 262144 \
 		-always-use-fragments -keep-as-directory
 	rm -rf tmp/usr/*
 	mv usr.squashfs tmp
