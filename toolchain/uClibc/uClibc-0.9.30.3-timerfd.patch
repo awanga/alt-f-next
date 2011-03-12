@@ -1,3 +1,5 @@
+http://www.mail-archive.com/uclibc@uclibc.org/msg04448.html
+
 diff -Naur uClibc-20090917/libc/sysdeps/linux/common/Makefile.in uClibc-20090917.patch/libc/sysdeps/linux/common/Makefile.in
 --- uClibc-20090917/libc/sysdeps/linux/common/Makefile.in	2009-09-16 10:00:56.000000000 +0200
 +++ uClibc-20090917.patch/libc/sysdeps/linux/common/Makefile.in	2009-09-18 02:05:04.000000000 +0200

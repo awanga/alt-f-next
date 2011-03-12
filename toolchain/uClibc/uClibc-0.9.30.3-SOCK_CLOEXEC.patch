@@ -1,3 +1,5 @@
+http://lists.uclibc.org/pipermail/uclibc/2010-June/044102.html
+
 This patch adds support for SOCK_CLOEXEC and SOCK_NONBLOCK socket
 descriptor flags, which are introduced since Linux 2.6.27
 
