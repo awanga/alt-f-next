@@ -1,6 +1,6 @@
 Package: avahi
 Version: 0.6.28
-Depends: libdaemon, expat , ipkg
+Depends: dbus, libdaemon, expat , ipkg
 Description: Avahi is a system which facilitates service discovery on a local network.
 Architecture: arm
 Priority: optional

@@ -2,4 +2,4 @@
 
 deluser avahi
 delgroup avahi
-rm -f /sbin/rcavahi /var/run/avahi-daemon
+rm -rf /sbin/rcavahi_daemon /var/run/avahi-daemon
