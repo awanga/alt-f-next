@@ -1,0 +1,5 @@
+./etc/init.d/S82automatic
+./etc/automatic.conf
+./usr/bin/automatic
+./usr/www/cgi-bin/automatic.cgi
+./usr/www/cgi-bin/automatic_proc.cgi

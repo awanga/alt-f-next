@@ -1,0 +1,6 @@
+#!/bin/sh 
+
+addgroup -S -g 81 network
+adduser -S -g "automatic daemon" -G network -u 17 -h /var/lib/automatic automatic
+
+ln -sf /usr/sbin/rcscript /sbin/rcautomatic
