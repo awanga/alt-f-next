@@ -3250,6 +3250,10 @@
 ./usr/share/ppd/Lexmark/E120-lj4dith.ppd.gz
 ./usr/share/ppd/Lexmark/E120-ljet4d.ppd.gz
 ./usr/share/ppd/Lexmark/E120-ljet4.ppd.gz
+./usr/share/ppd/Lexmark/E120n-hpijs-pcl5e.ppd.gz
+./usr/share/ppd/Lexmark/E120n-lj4dith.ppd.gz
+./usr/share/ppd/Lexmark/E120n-ljet4d.ppd.gz
+./usr/share/ppd/Lexmark/E120n-ljet4.ppd.gz
 ./usr/share/ppd/Lexmark/E120n-Postscript.ppd.gz
 ./usr/share/ppd/Lexmark/E120n-pxlmono.ppd.gz
 ./usr/share/ppd/Lexmark/E210-gdi.ppd.gz
@@ -3820,6 +3824,11 @@
 ./usr/share/ppd/Oki/14i-Postscript.ppd.gz
 ./usr/share/ppd/Oki/B2400-pxlmono.ppd.gz
 ./usr/share/ppd/Oki/B2540_MFP-Postscript.ppd.gz
+./usr/share/ppd/Oki/B410-hpijs-pcl5e.ppd.gz
+./usr/share/ppd/Oki/B410-lj4dith.ppd.gz
+./usr/share/ppd/Oki/B410-ljet4d.ppd.gz
+./usr/share/ppd/Oki/B410-ljet4.ppd.gz
+./usr/share/ppd/Oki/B410-pxlmono.ppd.gz
 ./usr/share/ppd/Oki/B4200-pxlmono.ppd.gz
 ./usr/share/ppd/Oki/B4250-pxlmono.ppd.gz
 ./usr/share/ppd/Oki/B4300-lj5gray.ppd.gz

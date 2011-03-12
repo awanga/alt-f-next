@@ -1,5 +1,5 @@
 Package: foomatic-db
-Description: Foomatic PPD (Postscript Printer Description) files.
+Description: Foomatic PPD files (non-HP printers)
 Depends: ipkg
 Version: 4.0
 Architecture: arm
