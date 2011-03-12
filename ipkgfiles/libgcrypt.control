@@ -1,0 +1,9 @@
+Package: libgcrypt
+Description: LibGCrypt is GNU's basic cryptographic library.
+Version: 1.2.4
+Depends: libgpg-error, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: ftp://gd.tuwien.ac.at/privacy/gnupg/libgcrypt/
+Maintainer: jcard
