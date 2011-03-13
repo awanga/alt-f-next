@@ -47,6 +47,7 @@ fi
 mktt curdir "The currently selected directory.<br>
 Can be edited to create a directory using the CreateDir button bellow."
 mktt cpdir "Mark the above selected directory for copying."
+mktt cpdircont "Mark the above selected directory contents (not the directory itself) for copying."
 mktt cutdir "Mark the above selected directory for moving."
 mktt pastedir "Paste the previously marked directory into the above selected directory."
 mktt mkdir "Create the directory whose name is in the above field."
@@ -132,6 +133,7 @@ wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 	<tr><td></td>
 	<td colspan=5>
 		<input type=button name=copyDir value=CopyDir $(ttip cpdir) onclick="ops('Copy','$browse','$url_id','$url_wind')">
+		<input type=button name=copyDirContent value=CopyDirContent $(ttip cpdircont) onclick="ops('CopyContent','$browse','$url_id','$url_wind')">
 		<input type=button name=cutDir value=CutDir  $(ttip cutdir) onclick="ops('Move','$browse','$url_id','$url_wind')">
 		<input type=hidden name=op value="$op">
 		<input type=hidden name=srcdir value="$srcdir">

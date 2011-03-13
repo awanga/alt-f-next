@@ -36,22 +36,28 @@ elif test -n "$DeleteDir"; then
 		msg "Can't delete, directory $wdir does not exist."
 	fi
 
-elif test -n "$Copy" -o -n "$Move"; then
+elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	sbn=$(basename "$srcdir")
 	if test -d "${wdir}/${sbn}"; then
 		msg "$wdir already contains a directory named $sbn"
 	fi
+
 	html_header
 	wait_count_start "$op from $srcdir to $wdir"
 	for i in $(seq 1 5); do sleep 1; echo; done & # why the hell is this needed?!
 
-	if test -n "$Copy"; then
+	if test -n "$Copy" -o -n "$CopyContent"; then
 		cmd="cp -a"
 	else
 		cmd="mv -f"
 	fi
 
-	res="$($cmd "$srcdir" "$wdir" 2>&1)"
+	cont=""
+	if test -n "$CopyContent"; then
+		cont="/*"
+	fi
+
+	res="$($cmd "$srcdir"$cont "$wdir" 2>&1)"
 	st=$?
 	wait_count_stop
 	if test $st != 0; then
