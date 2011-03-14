@@ -11,7 +11,8 @@ CONF_MODPROBE=/etc/modprobe.conf
 
 mktt tt_ipv6 "IPv6 is for the next generation internet.<br>
 Most users don't need it.<br>
-After enabled, only a reboot will disable it."
+When enabling, it takes effect immediately after submiting<br>
+When disabling, submiting will schedule it for disable at next reboot."
 
 if test -f /tmp/firstboot; then
 	cat<<-EOF
