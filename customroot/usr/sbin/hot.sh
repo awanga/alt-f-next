@@ -281,6 +281,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 				return $ret
 			elif $(grep -q ^$PWD/$md /proc/mounts); then
 				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$md /usr/sbin/hot.sh)
+				if test $? != 0; then return 1; fi
 				mdadm --stop $PWD/$md
 				mdadm --incremental --run $PWD/$other
 			else
