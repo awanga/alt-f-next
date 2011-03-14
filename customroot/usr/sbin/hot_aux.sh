@@ -13,7 +13,7 @@ check() {
 
 	while true; do
 		inuse=""
-		inclean=$(ls /tmp/clean-* | sed 's|/tmp/clean-||')
+		inclean=$(ls /tmp/clean-sd[a-z][1-9] /tmp/clean-md[0-9] 2> /dev/null | grep -oE '(sd[a-z].|md[0-1])')
 		for i in $inclean; do
 			if test ${i:0:2} = "md"; then
 				inuse="$inuse $(ls /sys/block/$i/slaves)"
@@ -23,7 +23,7 @@ check() {
 		done
 
 		if ! echo $inuse | grep -q -E "$we"; then
-			return 0
+			break
 		fi
 		logger -t hot "$MDEV waiting to be fscked"
 		sleep 10
@@ -56,13 +56,16 @@ if test "$fsckcmd" != "echo"; then
 		fsopt=""
 	fi
 
-	# echo heartbeat > "/sys/class/leds/power:blue/trigger"
+	echo heartbeat > "/sys/class/leds/power:blue/trigger"
 	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> $logf)"
 	if test $? -ge 2; then mopts="ro"; fi
-	logger -t hot "Stop fscking $MDEV: $res"
-	# echo none > "/sys/class/leds/power:blue/trigger"
-
+	logger -t hot "Finish fscking $MDEV: $res"
 	rm -f $xf $logf $pidf 
+
+	if test -z "$(ls /tmp/clean-* 2>/dev/null)"; then
+		echo none > "/sys/class/leds/power:blue/trigger"
+	fi
+
 else
 	logger -t hot "No fsck command for $fstype, $MDEV not fscked."
 fi
