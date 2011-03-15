@@ -3,9 +3,10 @@
 # forked-daapd
 #
 #############################################################
-FORKED_DAAPD_VERSION = 0.12
+
+FORKED_DAAPD_VERSION = 0.13
 FORKED_DAAPD_SOURCE = forked-daapd-$(FORKED_DAAPD_VERSION).tar.gz
-FORKED_DAAPD_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/mt-daapd/
+FORKED_DAAPD_SITE = http://alioth.debian.org/~jblache/forked-daapd/
 FORKED_DAAPD_AUTORECONF = NO
 FORKED_DAAPD_INSTALL_STAGING = NO
 FORKED_DAAPD_INSTALL_TARGET = YES
