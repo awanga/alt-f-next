@@ -3,8 +3,8 @@
 # libevent
 #
 #############################################################
-#LIBEVENT_VERSION:=1.2
-LIBEVENT_VERSION:=1.4.13
+
+LIBEVENT_VERSION:=2.0.10
 LIBEVENT_SOURCE:=libevent-$(LIBEVENT_VERSION)-stable.tar.gz
 LIBEVENT_SITE:=http://monkey.org/~provos/
 LIBEVENT_DIR:=$(BUILD_DIR)/libevent-$(LIBEVENT_VERSION)-stable
@@ -46,13 +46,15 @@ $(STAGING_DIR)/$(LIBEVENT_TARGET_BINARY): $(LIBEVENT_DIR)/$(LIBEVENT_BINARY)
 
 $(TARGET_DIR)/$(LIBEVENT_TARGET_BINARY): $(STAGING_DIR)/$(LIBEVENT_TARGET_BINARY)
 	$(MAKE) -C $(LIBEVENT_DIR) DESTDIR=$(TARGET_DIR) install
-	rm -f $(addprefix $(TARGET_DIR)/usr/,lib/libevent*.la \
+	rm -rf $(addprefix $(TARGET_DIR)/usr/,lib/libevent*.la \
 					     include/ev*)
 ifneq ($(BR2_HAVE_MANPAGES),y)
 	rm -fr $(TARGET_DIR)/usr/share/man
 endif
 
 libevent-configure: $(LIBEVENT_DIR)/.configured
+
+libevent-build: $(LIBEVENT_DIR)/$(LIBEVENT_BINARY)
 
 libevent: uclibc $(TARGET_DIR)/$(LIBEVENT_TARGET_BINARY)
 
