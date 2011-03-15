@@ -1,5 +1,6 @@
 ./etc/forked-daapd.conf
 ./etc/init.d/S80forked_daapd
+./usr/lib/forked-daapd/forked-daapd-sqlext.so
 ./usr/sbin/forked-daapd
 ./usr/www/cgi-bin/forked_daapd.cgi
 ./usr/www/cgi-bin/forked_daapd_proc.cgi
