@@ -1,6 +1,6 @@
 Package: libgpg-error
 Description: Libgpg-error is a small library with error codes and descriptions shared by most GnuPG related software.
-Version: 1.5
+Version: 1.6
 Depends: ipkg
 Architecture: arm
 Priority: optional
