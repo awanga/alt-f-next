@@ -1,0 +1,9 @@
+./usr/lib/libevent2.so
+./usr/lib/libevent-2.0.so.5
+./usr/lib/libevent-2.0.so.5.0.1
+./usr/lib/libevent2_core.so
+./usr/lib/libevent_core-2.0.so.5
+./usr/lib/libevent_core-2.0.so.5.0.1
+./usr/lib/libevent2_extra.so
+./usr/lib/libevent_extra-2.0.so.5
+./usr/lib/libevent_extra-2.0.so.5.0.1
