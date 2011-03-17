@@ -13,6 +13,9 @@ TRANSMISSION_INSTALL_TARGET = YES
 TRANSMISSION_LIBTOOL_PATCH = NO
 TRANSMISSION_CONF_OPT = --disable-nls --disable-gtk --disable-gconf2
 
-TRANSMISSION_DEPENDENCIES = uclibc libcurl openssl libevent pkg-config
+TRANSMISSION_DEPENDENCIES = uclibc libcurl openssl libevent2 pkg-config
+
+TRANSMISSION_CONF_ENV = LIBEVENT_CFLAGS="-I$(STAGING_DIR)/libevent2/include" \
+	LIBEVENT_LIBS="-L$(STAGING_DIR)/libevent2/lib -levent2"
 
 $(eval $(call AUTOTARGETS,package,transmission))
