@@ -23,7 +23,7 @@ showlog() {
 	fi
 
 	write_header "$3"
-	mktt filter_tt "Enter a grep regular expression"
+	mktt filter_tt "Enter a search string (or a grep regular expression)"
 
 	echo "<small><pre>"
 
