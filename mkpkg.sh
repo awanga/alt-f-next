@@ -50,8 +50,9 @@ usage() {
 	-diffroot (show new files since last -setroot) |
 	-index (create ipkg package index) |
 	-all (recreates all packages in ipkfiles dir) |
+	-rmall (remove from rootfs files from all packages) |
 	-help"
-	exit 1
+	exit 0
 }
 
 if test "$(dirname $0)" != "."; then
@@ -71,6 +72,8 @@ fi
 if test $# = 0; then
 	usage
 fi
+
+mkdir -p pkgs
 
 CDIR=$(pwd)
 PATH=$CDIR/bin:$PATH
@@ -191,6 +194,15 @@ case "$1" in
 			#if test $? = 1; then exit 1; fi
 		done
 		ipkg-make-index pkgs/ > pkgs/Packages
+		exit 0
+		;;
+
+	-rmall)
+		for i in $(ls $IPKGDIR/*.lst); do
+			p=$(basename $i .lst)
+			echo Removing files from package $p
+			./mkpkg.sh -rm $p
+		done
 		exit 0
 		;;
 
