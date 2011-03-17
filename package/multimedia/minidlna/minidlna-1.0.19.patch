@@ -1,20 +1,16 @@
-diff -ruN minidlna-1.0.18-orig/configure minidlna-1.0.18/configure
---- minidlna-1.0.18-orig/configure	1970-01-01 01:00:00.000000000 +0100
-+++ minidlna-1.0.18/configure	2011-01-16 15:16:29.531457291 +0000
-@@ -0,0 +1,9 @@
-+#!/bin/sh
-+
-+echo >> Makefile
-+echo "CC = $CC_FOR_TARGET" >> Makefile
-+echo "CFLAGS =  $CFLAGS -I ${STAGING_DIR}/usr/include/ffmpeg" >> Makefile
-+echo "STRIP = $STRIP" >> Makefile
-+echo "STAGING_DIR = $STAGING_DIR" >> Makefile
-+
-+true
-diff -ruN minidlna-1.0.18-orig/genconfig.sh minidlna-1.0.18/genconfig.sh
---- minidlna-1.0.18-orig/genconfig.sh	2010-07-21 00:26:36.000000000 +0100
-+++ minidlna-1.0.18/genconfig.sh	2011-01-17 12:21:38.165964615 +0000
-@@ -16,7 +16,7 @@
+--- minidlna-1.0.19/minidlna.c-orig	2011-03-16 21:55:44.564464457 +0000
++++ minidlna-1.0.19/minidlna.c	2011-03-16 21:56:15.063465694 +0000
+@@ -52,6 +52,7 @@
+ #include <stdio.h>
+ #include <ctype.h>
+ #include <sys/types.h>
++#include <sys/stat.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
+--- minidlna-1.0.19/genconfig.sh-orig	2011-03-16 21:26:31.397465536 +0000
++++ minidlna-1.0.19/genconfig.sh	2011-03-17 02:03:58.956340177 +0000
+@@ -32,7 +32,7 @@
  # detecting the OS name and version
  OS_NAME=`uname -s`
  OS_VERSION=`uname -r`
@@ -22,8 +18,8 @@ diff -ruN minidlna-1.0.18-orig/genconfig.sh minidlna-1.0.18/genconfig.sh
 +TIVO="#define TIVO_SUPPORT"
  NETGEAR="/*#define NETGEAR*/"
  READYNAS="/*#define READYNAS*/"
- 
-@@ -24,22 +24,22 @@
+ PNPX="#define PNPX 0"
+@@ -41,22 +41,22 @@
  
  # Detect if there are missing headers
  # NOTE: This check only works with a normal distro
@@ -62,28 +58,20 @@ diff -ruN minidlna-1.0.18-orig/genconfig.sh minidlna-1.0.18/genconfig.sh
  if [ -n "$MISSING" ]; then
  	echo -e "\nERROR!  Cannot continue."
  	echo -e "The following required libraries are either missing, or are missing development headers:\n"
-@@ -137,10 +137,16 @@
+@@ -157,9 +157,9 @@
  		;;
  esac
  
--echo "#define OS_NAME		\"$OS_NAME\"" >> ${CONFIGFILE}
--echo "#define OS_VERSION	\"$OS_NAME/$OS_VERSION\"" >> ${CONFIGFILE}
--echo "#define OS_URL		\"${OS_URL}\"" >> ${CONFIGFILE}
--echo "" >> ${CONFIGFILE}
-+#echo "#define OS_NAME		\"$OS_NAME\"" >> ${CONFIGFILE}
-+#echo "#define OS_VERSION	\"$OS_NAME/$OS_VERSION\"" >> ${CONFIGFILE}
-+#echo "#define OS_URL		\"${OS_URL}\"" >> ${CONFIGFILE}
-+#echo "" >> ${CONFIGFILE}
-+
-+cat<<EOF >> ${CONFIGFILE}
-+#define OS_NAME		"Alt-F"
-+#define OS_VERSION	"0.1B6"
-+#define OS_URL		"http://code.google.com/p/alt-f/"
-+EOF
+-echo "#define OS_NAME			\"$OS_NAME\"" >> ${CONFIGFILE}
+-echo "#define OS_VERSION		\"$OS_NAME/$OS_VERSION\"" >> ${CONFIGFILE}
+-echo "#define OS_URL			\"${OS_URL}\"" >> ${CONFIGFILE}
++echo "#define OS_NAME			\"Alt-F\"" >> ${CONFIGFILE}
++echo "#define OS_VERSION		\"0.1B7\"" >> ${CONFIGFILE}
++echo "#define OS_URL			\"http://code.google.com/p/alt-f/\"" >> ${CONFIGFILE}
+ echo "" >> ${CONFIGFILE}
  
  echo "/* full path of the file database */" >> ${CONFIGFILE}
- echo "#define DEFAULT_DB_PATH	\"${DB_PATH}\"" >> ${CONFIGFILE}
-@@ -148,7 +154,7 @@
+@@ -172,11 +172,11 @@
  
  echo "/* Comment the following line to use home made daemonize() func instead" >> ${CONFIGFILE}
  echo " * of BSD daemon() */" >> ${CONFIGFILE}
@@ -92,19 +80,32 @@ diff -ruN minidlna-1.0.18-orig/genconfig.sh minidlna-1.0.18/genconfig.sh
  echo "" >> ${CONFIGFILE}
  
  echo "/* Enable if the system inotify.h exists.  Otherwise our own inotify.h will be used. */" >> ${CONFIGFILE}
-@@ -169,7 +175,7 @@
+-if [ -f /usr/include/sys/inotify.h ]; then
++if [ -f $STAGING_DIR/usr/include/sys/inotify.h ]; then
+ echo "#define HAVE_INOTIFY_H" >> ${CONFIGFILE}
+ else
+ echo "/*#define HAVE_INOTIFY_H*/" >> ${CONFIGFILE}
+@@ -184,7 +184,7 @@
+ echo "" >> ${CONFIGFILE}
+ 
+ echo "/* Enable if the system iconv.h exists.  ID3 tag reading in various character sets will not work properly otherwise. */" >> ${CONFIGFILE}
+-if [ -f /usr/include/iconv.h ]; then
++if [ -f $STAGING_DIR/usr/include/iconv.h ]; then
+ echo "#define HAVE_ICONV_H" >> ${CONFIGFILE}
+ else
+ echo -e "\nWARNING!!  Iconv support not found.  ID3 tag reading may not work."
+@@ -193,7 +193,7 @@
  echo "" >> ${CONFIGFILE}
  
  echo "/* Enable if the system libintl.h exists for NLS support. */" >> ${CONFIGFILE}
 -if [ -f /usr/include/libintl.h ]; then
-+if [ -n "" -f /usr/include/libintl.h ]; then
++if [ -f $STAGING_DIR/usr/include/libintl.h ]; then
  echo "#define ENABLE_NLS" >> ${CONFIGFILE}
  else
  echo "/*#define ENABLE_NLS*/" >> ${CONFIGFILE}
-diff -ruN minidlna-1.0.18-orig/Makefile minidlna-1.0.18/Makefile
---- minidlna-1.0.18-orig/Makefile	2010-07-16 22:25:54.000000000 +0100
-+++ minidlna-1.0.18/Makefile	2011-01-16 15:16:29.576582635 +0000
-@@ -12,12 +12,12 @@
+--- minidlna-1.0.19/Makefile-orig	2011-03-16 21:19:24.897464282 +0000
++++ minidlna-1.0.19/Makefile	2011-03-17 01:16:35.649339589 +0000
+@@ -12,13 +12,14 @@
  #
  #CFLAGS = -Wall -O -D_GNU_SOURCE -g -DDEBUG
  #CFLAGS = -Wall -g -Os -D_GNU_SOURCE
@@ -115,45 +116,51 @@ diff -ruN minidlna-1.0.18-orig/Makefile minidlna-1.0.18/Makefile
 +#CFLAGS = -Wall -g -O3 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 \
 +#	 -I/usr/include/ffmpeg \
 +#	 -I/usr/include/libavutil -I/usr/include/libavcodec -I/usr/include/libavformat \
-+#	 -I/usr/include/ffmpeg/libavutil -I/usr/include/ffmpeg/libavcodec -I/usr/include/ffmpeg/libavformat
++#	 -I/usr/include/ffmpeg/libavutil -I/usr/include/ffmpeg/libavcodec \
++#	-I/usr/include/ffmpeg/libavformat
+ #STATIC_LINKING: CFLAGS += -DSTATIC
  #STATIC_LINKING: LDFLAGS = -static
 -CC = gcc
 +#CC = gcc
  RM = rm -f
  INSTALL = install
  
-@@ -36,7 +36,7 @@
+@@ -37,7 +38,7 @@
  
  ALLOBJS = $(BASEOBJS) $(LNXOBJS)
  
--LIBS = -lpthread -lexif -ljpeg -lsqlite3 -lavformat -lid3tag -lFLAC -lvorbis
-+LIBS = -lpthread -lexif -ljpeg -lsqlite3 -lavformat -lid3tag -lFLAC -lvorbis -liconv
+-LIBS = -lpthread -lexif -ljpeg -lsqlite3 -lavformat -lavutil -lavcodec -lid3tag -lFLAC -logg -lvorbis
++LIBS = -lpthread -lexif -ljpeg -lsqlite3 -lavformat -lavutil -lavcodec -lid3tag -lFLAC -logg -lvorbis -liconv
  #STATIC_LINKING: LIBS = -lvorbis -logg -lm -lsqlite3 -lpthread -lexif -ljpeg -lFLAC -lm -lid3tag -lz -lavformat -lavutil -lavcodec -lm
  
  TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
-@@ -53,12 +53,15 @@
- 	$(RM) testupnpdescgen.o
+@@ -46,7 +47,7 @@
  
- install:	minidlna
--	$(INSTALL) -d $(SBININSTALLDIR)
--	$(INSTALL) minidlna $(SBININSTALLDIR)
--	$(INSTALL) -d $(ETCINSTALLDIR)
--	$(INSTALL) --mode=0644 minidlna.conf $(ETCINSTALLDIR)
-+	$(INSTALL) -d $(DESTDIR)/$(SBININSTALLDIR)
-+	$(INSTALL) minidlna $(DESTDIR)/$(SBININSTALLDIR)
-+	$(INSTALL) -d $(DESTDIR)/$(ETCINSTALLDIR)
-+	$(INSTALL) --mode=0644 minidlna.conf $(DESTDIR)/$(ETCINSTALLDIR)
+ .PHONY:	all clean distclean install depend
+ 
+-all:	$(EXECUTABLES)
++all:	minidlna
+ 
+ clean:
+ 	$(RM) $(ALLOBJS)
+@@ -62,17 +63,18 @@
+ 	$(INSTALL) -d $(ETCINSTALLDIR)
+ 	$(INSTALL) --mode=0644 minidlna.conf $(ETCINSTALLDIR)
  
 -minidlna:	$(BASEOBJS) $(LNXOBJS) $(LIBS)
+-	@echo Linking $@
+-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(BASEOBJS) $(LNXOBJS) $(LIBS)
 +install-strip: install
-+	$(STRIP) -s $(DESTDIR)/$(SBININSTALLDIR)/minidlna
++	$(STRIP) -s $(SBININSTALLDIR)/minidlna
 +
 +minidlna:	$(BASEOBJS) $(LNXOBJS)
- 	@echo Linking $@
- 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(BASEOBJS) $(LNXOBJS) $(LIBS)
++	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(BASEOBJS) $(LNXOBJS) $(LIBS)
  
-@@ -68,7 +71,7 @@
- 	@$(CC) $(CFLAGS) -o $@ $(TESTUPNPDESCGENOBJS)
+ 
+ testupnpdescgen:	$(TESTUPNPDESCGENOBJS)
+-	@echo Linking $@
+-	@$(CC) $(CFLAGS) -o $@ $(TESTUPNPDESCGENOBJS)
++	$(CC) $(CFLAGS) -o $@ $(TESTUPNPDESCGENOBJS)
  
  config.h:	genconfig.sh
 -	./genconfig.sh
@@ -161,7 +168,7 @@ diff -ruN minidlna-1.0.18-orig/Makefile minidlna-1.0.18/Makefile
  
  depend:	config.h
  	makedepend -f$(MAKEFILE_LIST) -Y \
-@@ -122,8 +125,20 @@
+@@ -126,8 +128,10 @@
  .SUFFIXES: .c .o
  
  .c.o:
@@ -170,41 +177,22 @@ diff -ruN minidlna-1.0.18-orig/Makefile minidlna-1.0.18/Makefile
 -		echo "The following command failed:" 1>&2;\
 -		echo "$(CC) $(CFLAGS) -o $@ -c $<";\
 -		$(CC) $(CFLAGS) -o $@ -c $< &>/dev/null
-+	$(CC) $(CFLAGS) -o $@ -c $<
-+
-+#.c.o:
-+#	@echo Compiling $*.c
-+#	@$(CC) $(CFLAGS) -o $@ -c $< && exit 0;\
-+#		echo "The following command failed:" 1>&2;\
-+#		echo "$(CC) $(CFLAGS) -o $@ -c $<";\
-+#		$(CC) $(CFLAGS) -o $@ -c $< &>/dev/null
-+CC = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-gcc
-+CFLAGS =  -pipe -O2 -O2  -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/include --sysroot=/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/ -isysroot /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir -mtune=arm926ej-s -march=armv5te -mabi=aapcs-linux -msoft-float -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include/ffmpeg
-+STRIP = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-strip
-+STAGING_DIR = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir
++	$(CC) $(CFLAGS) -o $@ -c $< 
 +
 +CC = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-gcc
 +CFLAGS =  -pipe -O2 -O2  -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/include --sysroot=/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/ -isysroot /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir -mtune=arm926ej-s -march=armv5te -mabi=aapcs-linux -msoft-float -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include/ffmpeg
++LDFLAGS =  -L/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/lib -L/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/lib --sysroot=/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/
 +STRIP = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-strip
 +STAGING_DIR = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir
-diff -ruN minidlna-1.0.18-orig/minidlna.c minidlna-1.0.18/minidlna.c
---- minidlna-1.0.18-orig/minidlna.c	2010-07-21 00:26:36.000000000 +0100
-+++ minidlna-1.0.18/minidlna.c	2011-01-17 12:15:34.179965345 +0000
-@@ -14,6 +14,7 @@
- #include <stdio.h>
- #include <ctype.h>
- #include <sys/types.h>
-+#include <sys/stat.h>
- #include <sys/socket.h>
- #include <netinet/in.h>
- #include <arpa/inet.h>
-@@ -624,7 +625,8 @@
- 		#else
- 		if( access(db_path, F_OK) != 0 )
- 			make_dir(db_path, S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO);
--		sprintf(real_path, "%s/minidlna.log", db_path);
-+		//jc: sprintf(real_path, "%s/minidlna.log", db_path);
-+		sprintf(real_path, "/var/log/minidlna.log");
- 		log_init(real_path, "general,artwork,database,inotify,scanner,metadata,http,ssdp,tivo=warn");
- 		#endif
- 	}
+--- minidlna-1.0.19/configure-orig	2011-03-16 22:20:34.796464083 +0000
++++ minidlna-1.0.19/configure	2011-03-16 22:15:58.300340013 +0000
+@@ -0,0 +1,9 @@
++#!/bin/sh
++
++echo >> Makefile
++echo "CC = $CC_FOR_TARGET" >> Makefile
++echo "CFLAGS =  $CFLAGS -I ${STAGING_DIR}/usr/include/ffmpeg" >> Makefile
++echo "LDFLAGS =  $LDFLAGS" >> Makefile
++echo "STRIP = $STRIP" >> Makefile
++echo "STAGING_DIR = $STAGING_DIR" >> Makefile
++
