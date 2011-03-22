@@ -9,11 +9,6 @@ CONF=/etc/backup.conf
 
 . $(dirname $0)/common
 
-if ! test -f $CONF; then
-	echo "$0: no configuration file, exiting"
-	return 1
-fi
-
 istatus() {
 	if ! rccron status >& /dev/null; then
 		echo "$1 stopped"
@@ -42,6 +37,11 @@ istop() {
 }
 
 istart() {
+	if ! test -f $CONF; then
+		echo "$0: no configuration file, exiting"
+		return 1
+	fi
+
 	require $NAME cron
 	echo -n "Starting $1: "
 	TF=$(mktemp -t)
