@@ -857,7 +857,6 @@
 ./usr/include/gnu-versions.h
 ./usr/include/grp.h
 ./usr/include/hp-timing.h
-./usr/include/iconv.h
 ./usr/include/ieee754.h
 ./usr/include/ifaddrs.h
 ./usr/include/inttypes.h
@@ -1611,6 +1610,7 @@
 ./usr/include/sys/termios.h
 ./usr/include/sys/timeb.h
 ./usr/include/sys/time.h
+./usr/include/sys/timerfd.h
 ./usr/include/sys/times.h
 ./usr/include/sys/timex.h
 ./usr/include/sys/ttydefaults.h
@@ -1667,14 +1667,9 @@
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include/arm_neon.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/CLucene
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/CLucene/config
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/CLucene/config/CompilerGcc.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/limits.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/linux
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/linux/a.out.h
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/nss3
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/nss3/secport.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/openssl
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/openssl/bn.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/README
@@ -1682,9 +1677,6 @@
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/syslimits.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/X11
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/X11/Xw32defs.h
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/xulrunner-1.9.1.9
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/xulrunner-1.9.1.9/unstable
-./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/xulrunner-1.9.1.9/unstable/std_semaphore.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include-fixed/zutil.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include/float.h
 ./usr/lib/gcc/arm-linux-uclibcgnueabi/4.3.3/include/iso646.h
