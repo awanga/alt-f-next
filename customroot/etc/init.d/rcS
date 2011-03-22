@@ -12,12 +12,12 @@
 #/bin/mount -a
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
-for i in run log; do
+for i in run log cache; do
 	mkdir -p /tmp/$i
 	ln -sf /tmp/$i /var/$i
 done
 
-mkdir -p /mnt /var/lib /var/cache /var/spool/lpd
+mkdir -p /mnt /var/lib /var/spool/lpd
 echo > /etc/bay
 
 # create rc* shortcuts to /etc/init.d/S??*
@@ -106,7 +106,10 @@ if grep -q "ip=" /proc/cmdline; then
 	logger -s "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
 	eval $(cat /proc/cmdline)
-	#domain=$(echo $ip | awk -F: '{ print substr($5, index($5,".") + 1, length($5))}')
+	ns=$(echo $ip | awk -F: '{ print $3 }')
+	if test -n "$ns"; then
+		echo "nameserver $ns" >> /etc/resolv.conf
+	fi
 	hn="$(echo $ip | awk -F: '{ print $5 }')"
 	if test -n "$hn"; then
 		domain=$(echo $hn | cut -d"." -f2)
