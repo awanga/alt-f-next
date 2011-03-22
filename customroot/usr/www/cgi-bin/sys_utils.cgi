@@ -36,7 +36,7 @@ cat<<-EOF
 
 	<fieldset><legend><strong>Administering password</strong></legend>
 	Current Password:<input type="password" autocomplete="off" name="passwd" value="" onkeypress="return event.keyCode != 13">
-	<input type="submit" name="action" value="ChangePassword")>
+	<input type="submit" name="action" value="ChangePassword">
 	</fieldset><br>
 
 	<fieldset><legend><strong>Printers</strong></legend>

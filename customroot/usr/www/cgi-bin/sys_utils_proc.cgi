@@ -27,8 +27,8 @@ showlog() {
 
 	echo "<small><pre>"
 
-	if test -n "$filter"; then
-		pat=$(httpd -d $filter)
+	if test -n "$filter_str"; then
+		pat=$(httpd -d $filter_str)
 		cat $1 | grep -i "$pat"
 	else
 		cat $1
@@ -39,7 +39,7 @@ showlog() {
 		<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 		$(back_button)
 		<input type=submit name=$1 value="Download">
-		Filter: <input type=text name=filter value="$pat" onkeypress="return event.keyCode != 13" $(ttip filter_tt)>
+		Filter: <input type=text name=filter_str value="$pat" onkeypress="return event.keyCode != 13" $(ttip filter_tt)>
 		<input type=submit name=$2 value="Refresh">
 		<input type=hidden name=logfile value="$2">
 		</form></body></html>
@@ -50,11 +50,11 @@ if test -n "$Refresh"; then
 	action="$Refresh"
 elif test -n "$Download"; then
 	action="$logfile"
-elif test "$logaction" != "Select+one"; then
+elif test -n "$logaction" -a "$logaction" != "Select+one"; then
 	action="$logaction"
 fi
 
-case $action in
+case "$action" in
 	Reboot)
 		html_header
 		cat<<-EOF
