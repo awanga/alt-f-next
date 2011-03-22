@@ -96,7 +96,7 @@ fi
 cat<<-EOF
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 	The new firmware will only be active after a reboot.
-	<input type=submit name=action value=Reboot onClick="return confirm('The box will reboot now.\nYou will be connected again in 45 seconds.\n\nProceed?')">
-	</body></html>
+	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 45 seconds.\n\nProceed?')">
+	</form></body></html>
 EOF
 

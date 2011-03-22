@@ -24,7 +24,7 @@ if test $st != "0"; then
 fi
 
 html_header
-echo "<pre>"
+echo "<h2><center>Firmware Updater</center></h2><pre>"
 
 echo -e "$res\n\n<strong>Everything looks OK</strong>\n"
 
