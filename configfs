@@ -11,7 +11,7 @@
 
 RMF="etc/resolv.conf etc/default/ntpd etc/random-seed
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
-var/spool var/log var/run var/pcmcia var/lib/pcmcia
+var/spool var/log var/cache var/run var/pcmcia var/lib/pcmcia
 usr/doc usr/share/locale usr/swat/lang etc/init.d/S30dbus
 sbin/fsck.ext4dev sbin/mkfs.ext4dev
 usr/bin/ntpdate lib/udev"
