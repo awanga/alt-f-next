@@ -14,8 +14,9 @@ ipkg_cmd() {
 		write_header "Installing Alt-F"
 	elif test $1 = "install"; then
 		write_header "Installing Alt-F package $2"
+		opts="-force-defaults"
 	elif test $1 = "upgrade"; then
-		write_header "Upgrading Alt-F package $2"
+		write_header "Upgrading Alt-F packages"
 	fi
 
 	cat<<-EOF
@@ -28,7 +29,7 @@ ipkg_cmd() {
 
 	echo "<pre>"
 
-	ipkg $1 $2
+	ipkg $opts $1 $2
 	if test $? = 0; then
 		cat<<-EOF
 			</pre>
@@ -136,7 +137,7 @@ elif test -n "$Update"; then
 	ipkg_cmd install $Update
 
 elif test -n "$UpdateAll"; then
-	ipkg_cmd upgrade all
+	ipkg_cmd upgrade
 
 elif test -n "$ChangeFeed"; then
 	if ! grep -q '^#!#src Alt-F-' $CONFF; then

@@ -45,7 +45,7 @@ else
 			</fieldset><br> \
 			<fieldset><legend><strong> Installed Packages </strong></legend> \
 			<table><tr> \
-				<th>Name</th><th>Version</th><th></th><th></th><th>Description</th> \
+				<th>Name</th><th>Version</th><th></th><th></th><th></th><th>Description</th> \
 			</tr>"
 
 		update = 0;
@@ -54,11 +54,11 @@ else
 			if (nm in inst) {
 				if (nm in uinst) {	# new version available, old has missing info
 					j = uinst[nm]; v = ver[inst[nm]]; update++;
-					upd=sprintf("<td><input type=submit name=%s value=Update></td>", nm);
+					upd=sprintf("<td><input type=submit name=%s value=Update></td><td>to %s</td>", nm, ver[uinst[nm]]);
 					delete uinst[nm]; ucnt--; delete inst[nm];
 				} else {
 					j = i; v = ver[i];
-					upd="<td></td>";
+					upd="<td></td><td></td>";
 				}
 				printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
 					url[j], nm, v;
