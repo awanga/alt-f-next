@@ -295,8 +295,12 @@ if ! test -f $IPKGDIR/$pkg.control; then # first time build
 elif test "$force" != "y"; then 
 	cver=$(awk '/^Version/{print $2}' $IPKGDIR/$pkg.control)
  	if test "$cver" != "$version"; then
-		echo "ERROR: $pkg.control has version $cver and built package has version $version."
-		exit 1
+		if test "${cver%-[0-9]}" != "$version"; then
+			echo "ERROR: $pkg.control has version $cver and built package has version $version."
+			exit 1
+		else
+			version=$cver
+		fi
 	fi
 else
 	version=$(awk '/^Version/{print $2}' $IPKGDIR/$pkg.control)
