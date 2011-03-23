@@ -1,6 +1,6 @@
 Package: ushare
 Description: A free UPnP A/V & DLNA Media Server
-Version: 1.1a
+Version: 1.1a-1
 Depends: libupnp, libdlna, ipkg
 Architecture: arm
 Priority: optional
