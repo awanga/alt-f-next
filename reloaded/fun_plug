@@ -15,6 +15,7 @@ ALTF_PATH=$BASE_DIR/alt-f
 ALTF_TARBALL=$BASE_DIR/Alt-F-*.tar
 FFPRC=/ffp/etc/rc
 LOG_FILE=alt-f-reloaded.log
+FAILS=alt-f.fail
 
 exec > $TMP_DIR/$LOG_FILE
 
@@ -26,16 +27,24 @@ check() {
 	fi
 }
 
+if ! test -d $BASE_DIR; then
+	echo "No $BASE_DIR found, exiting"
+	exit 1
+fi
+
 # disable recurring reboots
-if test "$ONCE" = yes; then
+if test "$ONCE" = "yes"; then
 	if test "$(dirname $0)" = "."; then
 		chmod -x "$(basename $0)"
 	else 
 		chmod -x "$0"
 	fi
+elif test -f $BASE_DIR/$FAILS; then # failsafe -- last reloaded failed?
+	echo "Last reload failed, exiting. Remove $FAILS to try again."
+	mv $TMP_DIR/$LOG_FILE $BASE_DIR
+	exit 1
 fi
 
-check $BASE_DIR
 cd $BASE_DIR
 
 if test -r $ALTF_TARBALL; then
@@ -49,7 +58,7 @@ if test -r $ALTF_TARBALL; then
 		fi
 	done
 	rm $ALTF_TARBALL
-	chown -R nobody:nobody alt-f
+	chown -R nobody:501 alt-f
 fi
 
 check $ALTF_PATH
@@ -113,6 +122,11 @@ free
 
 mv $TMP_DIR/$LOG_FILE $BASE_DIR
 
+# Alt-F will remove it if boot succeeds, else next reboot will be aborted
+if test "$ONCE" != "yes"; then
+	touch ../$FAILS
+fi
+
 # umount filesystems
 swapoff -a
 sync
@@ -122,4 +136,6 @@ sleep 3
 # boot
 insmod reloaded-$KV.ko machtype=$machtype kernel=$kernel initrd=$initrd cmdline=\"$cmdline\"
 
-echo "Reload failed!"
+echo "Reload failed, rebooting"
+
+reboot
