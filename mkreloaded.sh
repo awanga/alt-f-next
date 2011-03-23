@@ -49,13 +49,79 @@ if ! test -f alt-f/README.INSTALL -a -f alt-f/README.USE; then
 	cp ../LICENCE ../COPYING alt-f
 fi
 
-if ! test -f alt-f/reloaded-2.6.12.6-arm1.ko; then
-	if ! test -f ffp-reloaded-0.5-2.tgz; then
-		wget http://www.inreto.de/dns323/ffp-reloaded/packages/ffp-reloaded-0.5-2.tgz
+# the plain fonz reloaded:
+if false; then
+	if ! test -f alt-f/reloaded-2.6.12.6-arm1.ko; then
+		if ! test -f ffp-reloaded-0.5-2.tgz; then
+			wget http://www.inreto.de/dns323/ffp-reloaded/packages/ffp-reloaded-0.5-2.tgz
+		fi
+		tar --wildcards -xzf ffp-reloaded-0.5-2.tgz ./ffp/boot/reloaded-\*
+		mv ffp/boot/reloaded-* alt-f
+		rm -rf ffp
 	fi
-	tar --wildcards -xzf ffp-reloaded-0.5-2.tgz ./ffp/boot/reloaded-\*
-	mv ffp/boot/reloaded-* alt-f
-	rm -rf ffp
+else # don't use panic() on fail, load initrd at 0x600000, putterboy
+
+	# Orion based SoCs
+	# DNS-321: 2.6.22.7
+	# DNS-323: 2.6.12.6
+	# DNS-343: 2.6.22.7
+
+	#	kvers="2.6.12.6 2.6.22.7" # leave 2.6.22.7 out for now
+	kvers="2.6.12.6"
+
+	karch_2_6_12_6="2.6.12.6-arm1"
+	vermagic_2_6_12_6="#define VERMAGIC_STRING \"$karch_2_6_12_6 ARMv5 gcc-3.3\""
+
+	if ! test $(which arm-linux-uclibcgnueabi-gcc); then
+		echo "arm-linux-uclibcgnueabi-gcc is not in PATH"
+		exit 1
+	fi
+
+	for i in $kvers; do
+		if ! test -f ../dl/linux-${i}.tar.bz2; then
+			echo "Downloading linux-$i"
+			wget -P ../dl http://www.kernel.org/pub/linux/kernel/v2.6/linux-${i}.tar.bz2
+		fi
+	done
+
+	for i in $kvers; do
+		if ! test -d linux-$i; then
+			kver_=$(echo $i | tr '.' '_')
+			echo "Extracting linux-$i"
+			tar xjf ../dl/linux-${i}.tar.bz2
+			cd linux-$i
+			echo "Configuring linux-$i"
+			# gross hack...
+			eval echo \$vermagic_$kver_ >> include/linux/vermagic.h
+			make CROSS_COMPILE=arm-linux-uclibcgnueabi- ARCH=arm defconfig modules_prepare
+			cd ..
+		fi
+	done
+
+	if ! test -f dns323-reloaded-0.7.167.tar.gz; then
+		wget http://www.inreto.de/dns323/reloaded/dns323-reloaded-0.7.167/dns323-reloaded-0.7.167.tar.gz
+	fi
+
+	if ! test -d dns323-reloaded-0.7.167; then
+		tar -xzf dns323-reloaded-0.7.167.tar.gz
+		patch -p0 < dns323-reloaded-0.7.167.patch
+	fi
+
+	cd dns323-reloaded-0.7.167
+	for i in $kvers; do
+		kver_=$(echo $i | tr '.' '_')
+		karch=$(eval echo \$karch_$kver_)
+		if ! test -f reloaded-${i}.ko; then
+			echo "Building reloaded for linux-$i"
+			rm linux
+			ln -sf ../linux-$i linux
+			make clean
+			FUN_TARGET=arm-linux-uclibcgnueabi make
+			mv reloaded.ko reloaded-${karch}.ko
+			cp reloaded-${karch}.ko ../alt-f/
+		fi
+	done
+	cd ..
 fi
 
 if test -e $DESTD/zImage -a -e $DESTD/$rootfs; then
