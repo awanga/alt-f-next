@@ -41,6 +41,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		samba_cv_HAVE_NATIVE_ICONV=no \
 		samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
 		samba_cv_fpie=no \
+		samba_cv_have_longlong=yes \
 		libreplace_cv_HAVE_IPV6=$(if $(BR2_INET_IPV6),yes,no) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
@@ -56,7 +57,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--with-libiconv=$(STAGING_DIR) \
 		--without-ldap \
 		--without-ads \
-		--without-acl \
+		--without-acl-support \
 		--with-included-popt \
 		--with-included-iniparser \
 		--disable-shared-libs \
