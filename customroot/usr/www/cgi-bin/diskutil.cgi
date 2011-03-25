@@ -83,7 +83,7 @@ for disk in $disks; do
 		1) highpower_sel="selected" ;;
 		127) medpower_sel="selected" ;;
 		254) lowpower_sel="selected" ;;
-		255) dispower_sel="selected"; hdtimeout_dis="" ;;
+		0|255) dispower_sel="selected"; hdtimeout_dis="" ;;
 	esac
 	
 	cat<<-EOF	 
