@@ -3,7 +3,7 @@
 DESC="Cleanup log files every hour"
 TYPE=sys
 NAME=cleanup
-REQUIRE="cron"
+#REQUIRE="cron" doesn't not work here
 
 . $(dirname $0)/common
 
@@ -34,6 +34,7 @@ istop() {
 }
 
 istart() {
+	require $NAME cron
 	echo -n "Starting $1: "
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
