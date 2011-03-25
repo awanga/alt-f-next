@@ -150,7 +150,12 @@ loadflashdef() {
 	umount $save_dir
 	rmdir $save_dir
 
+# Notice that essencial services that are boot-enabled by default,
+# such as inetd and sysctrl, can't be boot-disabled. This is deliberate!
 	if test -s $initscript_perms; then
+#		for i in /etc/init.d/S*; do
+#			chmod -x $i
+#		done
 		for i in $(cat $initscript_perms ); do
 			chmod +x $i
 		done
