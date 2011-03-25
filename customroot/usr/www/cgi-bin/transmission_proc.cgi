@@ -16,13 +16,13 @@ if test -n "$WebPage"; then
 	embed_page "http://$(hostname -i | tr -d ' '):9091"
 fi
 
-if test -z "$DOWNLOAD_DIR" -o -z "$WATCH_DIR" -o -z "$INCOMPLETE_DIR"; then
-	msg "You must specify all directories."
+if test -z "$WATCH_DIR"; then
+	msg "You must specify the directory where to Download."
 fi
 
-INCOMPLETE_DIR="$(httpd -d $INCOMPLETE_DIR)"
-DOWNLOAD_DIR="$(httpd -d $DOWNLOAD_DIR)"
 WATCH_DIR="$(httpd -d $WATCH_DIR)"
+INCOMPLETE_DIR="$WATCH_DIR/InProgress"
+DOWNLOAD_DIR="$WATCH_DIR/Finished"
 
 if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
 	mkdir -p "$DOWNLOAD_DIR" "$WATCH_DIR" "$INCOMPLETE_DIR"
@@ -37,6 +37,19 @@ fi
 
 if test -z "$SEED_RATIO_ENABLED"; then
 	SEED_RATIO_ENABLED=false
+	SEED_RATIO=2
+fi
+
+if test -z "$SEED_LIMIT_ENABLED"; then
+	SEED_LIMIT_ENABLED=false
+	SEED_LIMIT=30
+fi
+
+if test -z "$BLOCKLIST_ENABLED"; then
+	BLOCKLIST_ENABLED=false
+	BLOCKLIST_URL="http://www.bluetack.co.uk/config/level1.gz"
+else
+	BLOCKLIST_URL=$(httpd -d $BLOCKLIST_URL)
 fi
 
 sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
@@ -45,14 +58,16 @@ sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
 	-e 's|.*"rpc-enabled":.*|    "rpc-enabled": '$ENABLE_WEB',|' \
 	-e 's|.*"ratio-limit-enabled":.*|    "ratio-limit-enabled": '$SEED_RATIO_ENABLED',|' \
 	-e 's|.*"ratio-limit":.*|    "ratio-limit": '$SEED_RATIO',|' \
+	-e 's|.*"idle-seeding-limit-enabled":.*|    "idle-seeding-limit-enabled": '$SEED_LIMIT_ENABLED',|' \
+	-e 's|.*"idle-seeding-limit":.*|    "idle-seeding-limit": '$SEED_LIMIT',|' \
+	-e 's|.*"blocklist-enabled":.*|    "blocklist-enabled": '$BLOCKLIST_ENABLED',|' \
+	-e 's|.*"blocklist-url":.*|    "blocklist-url": "'$BLOCKLIST_URL'",|' \
 	"$CONFF/$JSON"
 
 chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
-#rctransmission status >& /dev/null
-#if test $? = 0; then
-	rctransmission reload >& /dev/null
-#fi
+rctransmission reload >& /dev/null
+make_available [Transmission] "$WATCH_DIR"
 
 #enddebug
 gotopage /cgi-bin/user_services.cgi
