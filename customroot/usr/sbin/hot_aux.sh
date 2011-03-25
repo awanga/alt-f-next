@@ -1,7 +1,13 @@
 #!/bin/sh
 
-exec >> /var/log/hot_aux.log 2>&1
-set -x
+debug=true
+
+if test -n "$debug"; then
+	exec >> /var/log/hot_aux.log 2>&1
+	set -x
+	echo "DATE=$(date)"
+	env	
+fi
 
 check() {
 	if test "${MDEV:0:2}" = "md"; then

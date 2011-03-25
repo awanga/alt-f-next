@@ -1,15 +1,8 @@
 #!/bin/sh
 
 debug=true
-maxsize=32768 # bytes
 
 if test -n "$debug"; then
-	if test "$(stat -t /var/log/hot.log 2>/dev/null | cut -d" " -f2)" -gt $maxsize; then
-		tf=$(mktemp -t)
-		mv /var/log/hot.log $tf
-		tail -n $(expr $maxsize / 26) $tf > /var/log/hot.log
-		rm $tf
-	fi
 	exec >> /var/log/hot.log 2>&1
 	set -x
 	echo "DATE=$(date)"
