@@ -63,25 +63,28 @@ path_unescape() {
 	echo $(echo "$1" | sed 's/\\040/ /g')
 }
 
-# $1-share "[Public (Read Write)]"
+# $1-share "[Public (Read Write)]" [$2-path]
 make_available() {
 
-	share="$1"
-
 	awk '{
-		while ($0 != "'"$share"'") { print $0; if (! getline) exit }
+		while ($0 != "'"$1"'") {
+			print $0
+			if (! getline) exit
+		}
 		print $0; getline
-		while ($1 != "available" && substr($0,1,1) != "[") { print $0; 	getline	}
-		if ($1 == "available") print "available = yes"
-		else print $0
+
+		while (substr($0,1,1) != "[") {
+			if ($1 == "available") 	print "available = yes"
+			else if ($1 == "path" && "'"$2"'" != "") print "path = \"'"$2"'\""
+			else print $0
+			if (! getline) exit
+		}
+		print $0
 		while(getline) print $0
 	}' /etc/samba/smb.conf > /etc/samba/smb.conf-new
 
-#	mv /etc/samba/smb.conf /etc/samba/smb.conf-
 	mv /etc/samba/smb.conf-new /etc/samba/smb.conf
-	if rcsmb status >& /dev/null; then
-		rcsmb reload >& /dev/null
-	fi
+	rcsmb reload >& /dev/null
 }
 
 html_header() {
