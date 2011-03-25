@@ -1,0 +1,22 @@
+#!/bin/sh
+# cleanup logs and other files
+
+# truncate logs:
+maxsize=32768 # bytes
+
+for i in $(find /var/log/ -name \*.log\* -o -name log.\* -o -name \*_log); do
+	if test "$(stat -t $i 2>/dev/null | cut -d" " -f2)" -gt $maxsize; then
+		tf=$(mktemp -t)
+		tail -c $(expr $maxsize \* 3 / 4) $i > $tf
+		mv $tf $i
+	fi
+done
+
+# delete cups temporary ppd data if not accessed for more than one hour
+
+CUPS_PPDT=/var/cache/cups/ppds.dat
+if test -f $CUPS_PPDT; then
+	if test "$(stat -t $CUPS_PPDT 2>/dev/null | cut -d" " -f12)" -lt $(expr $(date +%s) - 3600); then
+		rm $CUPS_PPDT
+	fi
+fi
