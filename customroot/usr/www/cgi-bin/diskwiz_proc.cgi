@@ -92,7 +92,9 @@ partition() {
 
 		# clean traces of previous filesystems...
 		for j in ${i}?; do
-			dd if=/dev/zero of=$j count=100 >& /dev/null
+			if test -b $j; then
+				dd if=/dev/zero of=$j count=100 >& /dev/null
+			fi
 		done
 
 		eval $(sfdisk -l -uS $i | tr '*' ' ' | awk '
@@ -137,12 +139,15 @@ partition() {
 		fi
 		rm -f $FMTFILE
 
-		sfdisk -R /dev/$1 >& /dev/null
+		sfdisk -R $i >& /dev/null
 		sleep 3
 
 		# somehow, in this scenario, mdev does not remove device, only creates them
+		# yes, but mdev -s calls hot.sh, temporarily disable it 
+		mv /etc/mdev.conf /etc/mdev.conf-
 		rm -f ${i}[0-9]
 		mdev -s
+		mv /etc/mdev.conf- /etc/mdev.conf
 
 		echo " done.</p>"
 	done
