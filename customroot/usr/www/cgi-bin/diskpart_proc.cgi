@@ -14,7 +14,7 @@ pre() {
 
 	echo "<p>Stopping disk..."
 	if ! eject $dsk >& /dev/null ; then
-		echo " failed</p>.<p>Trying to stop all services and disks...""
+		echo " failed</p>.<p>Trying to stop all services and disks..."
 		if ! eject -a; then
 			err ""
 		fi
