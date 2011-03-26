@@ -1,4 +1,66 @@
-December 20, 2010: Alt-F-0.1B6 Released
+=== March 26, 2011: Alt-F-0.1B7 is released on Alt-F first anniversary
+
+	In the previous 12 months Alt-F has seen 6 releases, which gives an average of
+	a new release every 2 months.
+
+	During the previous year, thanks to many user reports and suggestions,
+	and to many bug-fixes and improvements, Alt-F has evolved in a way that
+	means that it is now mature and ready to leave the Beta status, what
+	will hopefully happens in the next release.
+
+	Online documentation, Wiki entries, packages updates and bug fixes will be the priority
+	for the next release.
+
+	Alt-F is intended to be a serious and sustainable alternative to the vendor's firmware,
+	ready to be used by the average user through its administering web pages.
+
+	Enjoy
+	
+
+-What's new:
+	-kernel 2.6.35.11, as kernel 2.6.36.x had issues with A1 boards
+	-IPv6 support in kernel and packages that support it
+	-more robust reloading method, thanks to putterboy findings;
+	 also, when reloading fails, the box will most often be rebooted instead of freezing.
+
+	-filesystem check at boot now does not stops the boot process,
+	 as fsck is parallelized/serialized and runs in the background
+	-disk spindown now enforced be sysctrl
+	-new cleanup service to clean (truncate) log files
+
+	-Debian Installer page, to chroot or kexec Debian Squeeze
+	-Save/Load setting to/from desktop computer
+	-View/filter/download all existing log files
+	-Pages that show temperatures show them in Celsius and Fahrenheit
+	-Status page now uses bar graphs and an AJAX-like refresh mechanism,
+	 based on original idea and code contributed by Dwight Hubbard
+	-many improvements and bug fixes (about 280 changesets affecting 424 files since B6)
+
+-New Alt-F packages:
+	 automatic-0.6.4, forked-daapd-0.13, 
+	 alsa-lib-1.0.18, dbus-1.2.26, libantlr-3.2, libavl-0.3.5, libconfuse-2.6, 
+	 libevent-2.0.10, libgcrypt-1.2.4, libgpg-error-1.6, libunistring-0.9.3, mxml-2.6,
+	 libcurl-7.19.6, ncurses-5.6, python-2.45, uemacs-4.0.15
+
+-Updated Alt-F packages:
+	 transmission-2.22, minidlna-1.0.19, mediatomb-0.12.1, ffmpeg-0.6.1,
+	 avahi-0.6.28, netatalk-2.1.5, cups-1.4.6, hplip-3.11.1, 
+	 openssh-0.9.8.r, vsftpd-2.3.4, rsync-3.0.7, wget-1.11.4, dropbear-0.53, dnsmasq-2.57, 
+	 e2fsprogs-1.41.14, smartmontools-5.40, dosfstools-3.0.11, ntfs-3g-2010.10.2,
+	 ethtool-2.6.36, Berkeley-db-4.8.30, libiconv-1.13.1, libfuse-2.8.5, libdaemon-0.14, 
+	 tiff-3.9.4, jpeg-8c, taglib-1.6.3,  zlib-1.2.5
+
+User who have an already Alt-F flashed box should use the TryIt button 
+in the Firmware Upgrader web page before flashing this new version. 
+Users that are using a reloaded Alt-F can proceed as above, in order 
+to try the new version without messing up with the fun_plug 
+installation. 
+The unstable package feed was updated with new and recompiled 
+packages. Most if not all new packages will only work on 0.1B7. 
+The old feed is still available under the name unstable-old 
+The experimental feed was deleted. 
+
+=== December 20, 2010: Alt-F-0.1B6 Released
 
 What's new:
 	-kernel 2.6.36.2, nfs-utils back to version 1.2.1
@@ -23,22 +85,23 @@ What's new:
 	-Speed improvement in web pages that deals with disk
 	-Countless improvements and bug fixes.
 
--Users with an Alt-F flashed box should use the *TryIt* option in the Firmware Updater
- web page before actually flashing it, as incompatibilities might happen. Its Beta!
+	-Users with an Alt-F flashed box should use the *TryIt* option in the Firmware
+	 Updater web page before actually flashing it, as incompatibilities might happen.
+	 Its Beta!
 
--There are a few identified incompatibilities between B5 and B6. If you have only slightly
- changed settings, the recomended procedure is to clear settings before starting using.
- If you dont' want to clean settings, the file Alt-F_B5_to_B6.fix script tryies to fixes them.
- Before using or flashing Alt-F-01.B6, telnet/ssh the box, and execute the script.
- After doing it don't save settings until start using B6. Other incompatibilities might arise.
+	-There are a few identified incompatibilities between B5 and B6. If you have only slightly
+	changed settings, the recomended procedure is to clear settings before starting using.
+	If you dont' want to clean settings, the file Alt-F_B5_to_B6.fix script tryies to fixes them.
+	Before using or flashing Alt-F-01.B6, telnet/ssh the box, and execute the script.
+	After doing it don't save settings until start using B6. Other incompatibilities might arise.
 
-I will now start updating disk-instalable packages and fix 0.1B6 reported bugs.
-No more features are expected in the base firmware, but (micro)emacs and ncurses
-will be removed and turned into packages.
+	I will now start updating disk-instalable packages and fix 0.1B6 reported bugs.
+	No more features are expected in the base firmware, but (micro)emacs and ncurses
+	will be removed and turned into packages.
 
-Hopefully the next release will be 0.1
+	Hopefully the next release will be 0.1
 
-October 22, 2010: Alt-F-0.1B5 released
+=== October 22, 2010: Alt-F-0.1B5 released
 
 What's new:
 
@@ -58,7 +121,7 @@ What's new:
 	-simplified samba configuration web page (swat is still there)
 	-several improvements and bug fixes
 
-September 22, 2010: Alt-F-0.1B4 released
+=== September 22, 2010: Alt-F-0.1B4 released
 
 What's new:
 
@@ -94,19 +157,19 @@ Known Issues:
 	 "lpstat -p" you see a  "Unable to get scanline 0/1" message,
 	 CANCEL THE PRINT JOB AND DON'T USE THAT PRINT CONFIGURATION.
 
-July, 22, 2010: Alt-F-0.1B3 released
+=== July 22, 2010: Alt-F-0.1B3 released
 
-What's new:
+-What's new:
 
--Kernel, libraries and apps compiled for execution speed instead of
- space saving (as a result, and because of lack of flash memory space,
- uShare and Transmission are now packages)
--kernel 2.6.33.6
--Filesystem Maintenance web page
--Disk Partition/RAID creation web page
--improved DHCP support
--improved fun_plug for ffp users
--improved Alt-F packages installation and administration
+	-Kernel, libraries and apps compiled for execution speed instead of
+	space saving (as a result, and because of lack of flash memory space,
+	uShare and Transmission are now packages)
+	-kernel 2.6.33.6
+	-Filesystem Maintenance web page
+	-Disk Partition/RAID creation web page
+	-improved DHCP support
+	-improved fun_plug for ffp users
+	-improved Alt-F packages installation and administration
 
 -Available packages:
     -end-user packages with web administration page:
@@ -126,7 +189,7 @@ What's new:
 	libogg, libpng, libtheora, libupnp, libusb, libvorbis, libxml2,
 	readline, taglib, tiff, pcre
 
-Known Issues:
+-Known Issues:
 	-Rev-A1 and rev-C1 hardware boards not yet supported
 
 	-network link auto-negotiation doesn't work. As result Alt-F
@@ -163,15 +226,14 @@ Known Issues:
 	 middle of the disk unaltered. The solution is to re-partition the whole
 	 disk, loosing all it data.
 
-April, 23, 2010: Alt-F-0.1B2 released
+=== April 23 2010: Alt-F-0.1B2 released
 
 What's new:
 
--NFS setup web page done. 
--Native package manager based on ipkg, and administering web page. 
--Added a temporary and experimental package feed with some packages 
-available (some of them were not even tested) 
--Fixed fun_plug 
+	-NFS setup web page done. 
+	-Native package manager based on ipkg, and administering web page. 
+	-Added a temporary and experimental package feed with some packages 
+	 available (some of them were not even tested) 
+	-Fixed fun_plug 
 
-
-March, 26, 2010: Alt-F-0.1B1 released
+=== March 26, 2010: Alt-F-0.1B1 released
