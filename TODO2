@@ -96,8 +96,9 @@ DONE -create tmpfs with more space; some packages are too big to fit the
 	default 30MB while downloading.
 	-now uses 64MB, (assume that disk swap is active...)
 
--cups uses a huge amount of memory in /tmp/cache.
-	See how to make cups use the disk
+FIXED -cups uses a huge amount of memory in /tmp/cache.
+	See how to make cups use the disk.
+	/var/cache is not configurable, so put /var/cache on disk
 
 FIXED -when installing some packages /etc/passwd et all are changed.
 	If the user does not save settings in  flash afterwards, those
@@ -223,9 +224,9 @@ FIXED -httpd services->network->inetd->httpd: currently only the first Allowed h
 	only one host/net allowed, use a #!# comment to distinguish from local net,
 	which also #!# commented
 
-DONE perms: add a apply recursively to all subdirs, and apply owner:group recursively to all files
+DONE -perms: add a apply recursively to all subdirs, and apply owner:group recursively to all files
 
-FIXED rcatd start: Cannot change to /var/lib/atjobs: Permission denied
+FIXED -rcatd start: Cannot change to /var/lib/atjobs: Permission denied
 	# l /var/lib
 	drwxrwx--T    2 root     root         4096 Nov 20 05:50 atjobs
 	drwxrwx--T    2 root     root         4096 Nov 20 05:50 atspool
@@ -240,7 +241,7 @@ FIXED -samba credentials: the username must be the the windows one, no commas if
 	username=Manuela Lima
 	The problem is if one user has both windows and unix accounts... how to do it?
 
-DONE backup:
+DONE -backup:
 	DONE -add users to backup group at user creation time? yes. Make backup group visible? no
 	DONE -the backup script should be run by the user who ownes the origin directory.
 	 For nfs this makes a difference, if the original files don't have permissions
@@ -276,12 +277,163 @@ DONE rcE: services are stopped first to unmount filesystem, as they can be using
 	
 FIXMED -mkreloaded.sh tries to access ../wiki!
 
--login expires after 1 hour: on each new check_cookie, send a new cookie, valid for 10mins
-
--eject -a: does not return error when a filesystem can't be unmounted
+FIXED -eject -a: does not return error when a filesystem can't be unmounted
 
 DONE -usersgroups should detect that home diretories are  missing, even if there
 	exists users
+	
+DONE -The DHCP udhcpc script /usr/share/udhcpc/default.script should do more
+	configuration files and daemons signaling updates.
+	It is already done in rcS, use it.
+	FIXED -The script, at first boot, does not has a hostname.
+	DONE -The host setup web page in DHCP mode also.
+
+FIXED -fix diskmaint_proc.cgi:
+	-if changing filesystem type from/to ext to vfat/ntfs or
+	 vice-versa, the partition type must be changed too
+	-also, fstab must be flushed, as labels/partition might have changed
+
+CHANGED -The disk maker name does not appear in Disc Utilities (but appears in Status)
+
+DONE -ipkg frontend, aufs.sh, packages_ipkg_proc.cgi and hot.sh needs to be
+	fixed. Each one of them mounts/create /Alt-F in its own way!
+	-aufs.sh install should be called by ipkg -install
+	-aufs.sh inotify/reval be called before/afters ipkg calls ipkg-cl
+	-aufs.sh mount/umount be called by hot.sh
+	-ipkg -install be called by packages_ipkg_proc.cgi install
+	-aufs.sh be called by packages_ipkg_proc.cgi
+	
+UNCOVERED -big MTU (>3712) generate lots of "page allocation failure", which impair the
+	performance
+	mem alloc is done by slab; slab uses 4096 bytes pages; one frame seems to use
+	MTU+384 bytes; with a greater MTU, slab has to allocate 2 memory-contiguos pages
+	from the "buddy" allocator. At power up, that is not problem, but after memory
+	being fragmented it can be.
+	the network driver allocated space for ~130 frames when "ifconf eth0 mtu NN"
+	is performed. See network driver memory usage by alternatimg "ifconfig ... MTU NN" 
+	with "cat /proc/slabinfo | grep size-"
+
+DONE -diskpart: needs feedback on lenghly operations! (as diskwizard does)
+
+FIXED -spaces in filenames/paths are problematic for NFS. Use octal for spaces? '\040'
+
+FIXED -diskpart: the free space is only calculated when one clicks another size input field.
+	-recalculate on mouseout
+
+FIXED status page: smbstatus is badly parsed when share names have spaces on it
+	status.cgi show wrongs in "Remotely Mounted Filesystems" CIFS
+
+FIXED create a spindown package, based on spindown.sh
+	-sysctrl does the same as the spindown.sh script
+
+FIXED -transmission: rcscript not OK! same problem as minidlna, runas user:group
+
+FIXED ipkg on uinstall all packages, or "aufs -u"
+	The usual problem, aufs mount resource in use/busy
+	should do a "rcall stop" first!
+
+DON'T -put hardware board level in status web page.
+	done and undone. Its now in alt-f.log
+
+DONE -the longterm kernels are in another download directory,
+	http://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.35/patch-2.6.35.xx.bz2
+
+DONE -disk wizard: warn users that the created partitioning is not dlink compatible, or flash Alt-F
+DONE -disk partitioner: warn users to create a dlink compatible partitioning, or flash Alt-F
+DONE -disk filesystem: warn users that ext4 is not dlkink compatible, or flash Alt-F
+
+DONE -diskmain: add mount options input field, and save value, based on fs-uuid, in misc.conf
+
+-backup: i noticed that when you do a manual 
+	backup from the webinterface, you can find only the start of the 
+	process in the log, not when it is completed or if it has removed a 
+	old backup. Furthermore i find this in the log: 
+	Jan 27 02:00:01 DNS-323 cron.err crond[500]: USER root pid 447 cmd / 
+	usr/bin/backup 0 
+
+FIXED -disk wizard: Still has one weak point: "eject -a" does not returns in/sucess,
+	so the wizard continues even if some filesystems were not unmounted!
+	fix eject -a!
+
+DONE -add ipkg as a dependency of all packages, to disallow ipkg removing itself when there are
+	still other packages installed (and unmanagable after that)
+
+DONE -add <pkg>.prerm to stop daemons before removing the package (on all packages who need it)
+	DONE: avahi, netatalk, transmission, cups, automatic, minidlna, ushare, mt-daapd,
+		fuppes, mediatomb
+
+FIXED -"ipkg -clean" does not run the package uninstall script!
+	Issues: created users and files are not removed.
+
+DONE -add the possibility of seeings all possible logs to the System->utilities->Logs
+
+DONE -add yet another security measure to funplug:
+	at start it checks for an alt-f.fail file, and if it exists remove the funplug
+	execute permissions and stops, ignoring the ONCE settings.
+	If the alt-f.fail does not exists, create it and continue with the boot.
+	When Alt-F itself boots, it removes the alt-f.fail file, if it exists.
+
+DONE -add a filter input to the logs page in System->utilities->Logs
+
+-smb: add allowed users input field
+
+-fun_plug: change nobody:nobody to numeric dlink ids.
+	-change fun_plug ownership to nobody, or set write permissions
+
+-offer possibility of uninstalling Alt-F, by removing the fun_plug and alt-f, Alt-F directories.
+	or at least change its ownership to nobody.
+	The problem is that they are owned by root, and can't be deleted using samba.
+	does ftp works?
+
+-temperature in C/F
+
+-crypto web passwd (use busybox cryptpw -- Dwight Hubbard suggestion)
+
+-stop using the domain reported by DHCP, as not all DHCP servers allow customizing it
+
+-host setup web page: don't allow/warn for more than +/-7500 bytes for MTU in the host web page
+
+-dir_proc.cgi has some issues with spaces in paths in the parent directory of the current
+	directory
+
+-networking: add a test button that tests internet connectivity
+	-ping the gateway and nslookup a well know host
+
+-diskpart: when creating a new raid array, when one already exists, does not takes
+	into account the already allocated minor. As result, one of the two raid
+	is not assembled.
+	FIX: examine prefered minor on already existing raid partitions
+	NO: use mdadm --examine --scan -v
+
+-when in DHCP mode, supply -h <hostname> to udhcpc,
+	is builtin in the udhcp code, to fix need to edit sources... not for now
+
+-ntpd: /etc/ntpd.drif should be in /var/lib/ntp, not in flash, as it is likely to change
+	during operation; the disadvantage is that it is lost after a reboot.
+	However, when a package is installed and Alt-F aufs is working,
+	the drift file is keept in disk surviving reboots.
+	On the other side his has the disadvantage of waking-up the disk when
+	the drift file needs to be written -- use the "driftfile driftfile [
+	minutes  [ tolerance ] ]" configuration options (see ntp-4.2.4p5/html/miscopt.html)
+
+-iconv.h is removed from the stagging dir by buildroot! it says something
+	like "removing iconv.h as locale is not defined".
+	It comes from uClibc
+	$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3/Makefile.in
+	as UCLIBC_HAS_XLOCALE is not defined, iconv.h is removed, even if
+	it is not from uClibc.
+	Note that this happens on the *second* initial build, not the first!
+	(this is do a "make -O=...", followed for a second one)
+	No solution? Patch this? hmmm
+	Created a uClibc-0.9.30.3-iconv-h.patch, put in toolchain/uClibc lets see...
+
+-minidlna: iconv.h strikes again!, see above
+
+-add -o owner:group option to "mkpkg.sh" so ipkg-build can use it to
+	create the package files with another ownership
+
+-login expires after 1 hour. Restart the countdown on each new check_cookie,
+	sendind a new cookie, valid for more 10mins
 
 -create a applyfix script to be executed by hot.sh. If a file named Alt-F-*.fix is
 	found in the root directory of any mounted filesystem, apply it as a patch.
@@ -326,102 +478,198 @@ DONE -usersgroups should detect that home diretories are  missing, even if there
 
 	******** FOR A RELEASE, ALWAYS DO A FRESH BUILD! ***************
 
-
--add -o owner:group option to "mkpkg.sh" so ipkg-build can use it to
-	create the package files with another ownership
-	
-DONE -The DHCP udhcpc script /usr/share/udhcpc/default.script should do more
-	configuration files and daemons signaling updates.
-	It is already done in rcS, use it.
-	FIXED -The script, at first boot, does not has a hostname.
-	DONE -The host setup web page in DHCP mode also.
-
--iconv.h is removed from the stagging dir by buildroot! it says something
-	like "removing iconv.h as locale is not defined".
-	It comes from uClibc
-	$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3/Makefile.in
-	as UCLIBC_HAS_XLOCALE is not defined, iconv.h is removed, even if
-	it is not from uClibc.
-	Note that this happens on the *second* initial build, not the first!
-	(this is do a "make -O=...", followed for a second one)
-	No solution? Patch this? hmmm
-	Created a uClibc-0.9.30.3-iconv-h.patch, put in toolchain/uClibc lets see...
-
-FIXED -fix diskmaint_proc.cgi:
-	-if changing filesystem type from/to ext to vfat/ntfs or
-	 vice-versa, the partition type must be changed too
-	-also, fstab must be flushed, as labels/partition might have changed
-
--read aufsutils carefully, to see if they are needed.
+-read aufsutils carefully, to see if they are needed. Author says yes.
 	Alt-F has already used them, but currently don't
-
-CHANGED -The disk maker name does not appear in Disc Utilities (but appears in Status)
-
-DONE -ipkg frontend, aufs.sh, packages_ipkg_proc.cgi and hot.sh needs to be
-	fixed. Each one of them mounts/create /Alt-F in its own way!
-	-aufs.sh install should be called by ipkg -install
-	-aufs.sh inotify/reval be called before/afters ipkg calls ipkg-cl
-	-aufs.sh mount/umount be called by hot.sh
-	-ipkg -install be called by packages_ipkg_proc.cgi install
-	-aufs.sh be called by packages_ipkg_proc.cgi
-	
-UNCOVERED -big MTU (>3712) generate lots of "page allocation failure", which impair the
-	performance
-	mem alloc is done by slab; slab uses 4096 bytes pages; one frame seems to use
-	MTU+384 bytes; with a greater MTU, slab has to allocate 2 memory-contiguos pages
-	from the "buddy" allocator. At power up, that is not problem, but after memory
-	being fragmented it can be.
-	the network driver allocated space for ~130 frames when "ifconf eth0 mtu NN"
-	is performed. See network driver memory usage by alternatimg "ifconfig ... MTU NN" 
-	with "cat /proc/slabinfo | grep size-"
 
 -partition erase on usb disk gave a "not space on disk" dd error!?
 
 -diskpart: enable Save/Load the partition table to/from the users desktop PC. See above
 
-DONE -diskpart: needs feedback on lenghly operations! (as diskwizard does)
+-check if dnsmasq.cgi fully qualifies the network, or if it restricts to class C
+	
+-add a suggest button in the disk partitioner.
+	Users can't use the wizard if they buy a new disk!
+	-OR in the disk wizzard add checkboxes to each disk. This would enable applying the
+	wizard to only one disk, as when the user buys a new disk
 
--ntpd: /etc/ntpd.drif should be in /var/lib/ntp, not in flash, as it is likely to change
-	during operation; the disadvantage is that it is lost after a reboot.
-	However, when a package is installed and Alt-F aufs is working,
-	the drift file is keept in disk surviving reboots.
-	On the other side his has the disadvantage of waking-up the disk when
-	the drift file needs to be written -- use the "driftfile driftfile [
-	minutes  [ tolerance ] ]" configuration options (see ntp-4.2.4p5/html/miscopt.html)
+DONE -status web page: use Dwight Hubbard technique
 
--when in DHCP mode, supply -h <hostname> to udhcpc,
-	is builtin in the udhcp code, to fix need to edit sources... not for now
+FIXED -diskutil.cgi: sometimes the page wakeup disks; other, hitting StandbyNow does not work.
 
-FIXED -spaces in filenames/paths are problematic for NFS. Use octal for spaces? '\040'
+FIXED -nfs/nfs_client: the initscript does not remove module lockd
 
--diskpart: when creating a new raid array, when one already exists, does not takes
-	into account the already allocated minor. As result, one of the two raid
-	is not assembled.
-	FIX: examine prefered minor on already existing raid partitions
-	NO: use mdadm --examine --scan -v
+FIXED -libgcrypt depends on libgpg-error, but libgpg-error is not built first.
+	problem with hyphen `-'in libgpg-error name?
+	<pkg>_DEPENDENCIES seems to only work on buildroot autotargets. For "normal" makefile
+	fragments, the dependency must be explicit in the <pkg> rule
 
--networking: add a test button that tests internet connectivity
-	-ping the gateway and nslookup a well know host
+DONE -setup host, add "Enable IPV6" checkbutton. If yes, modprobe ipv6, and set USE_IPV6=yes in
+	/etc/misc.conf. Avahi, when started, will load ipv6 modules.
+	Will other ipv6-enabled apps do the same? Yes. At least "curl -6 <host>",
+	or forked-daapd does.
 
-FIXED -diskpart: the free space is only calculated when one clicks another size input field.
-	-recalculate on mouseout
+-create avahi configure page, at least with use-ipv6=yes/no.
 
-FIXED status page: smbstatus is badly parsed when share names have spaces on it
-	status.cgi show wrongs in "Remotely Mounted Filesystems" CIFS
+-mkpkg.sh: when creating a package, and a directory is in the list of files, the *contents*
+	of the directory goes to the tar file, which is not always the desired behavior, as
+	the directory, eventually empty, must exist for the daemon to start, but the
+	directory contents might belong to another package.
+	E.g.: /etc/dbus-1/system.d/avahi-dbus.conf belongs to avahi, but
+	/etc/dbus-1/system.d must exist for dbus to start (fixed in the initscript)
 
-dir_proc.cgi has some issues with spaces in paths in the parent directory of the current
-	directory
+DONE -cups: remove the root:password from the url, firefox is always asking for confirmation.
 
-create a spindown package, based on spindown.sh
+FIXED -sysutils, start all: seems to send data back to browser
 
-offer possibility of uninstalling Alt-F, by removing the fun_plug and alt-f, Alt-F directories.
-	or at least change its ownership to nobody.
-	The problem is that they are owned by root, and can't be deleted using samba.
-	does ftp works?
+FIXED -sysutils, view logs: reset select box on (re)load, when using the back button.
 
-disk wizard: Still has one weak point: "eject -a" does not returns in/sucess,
-	so the wizard continues even if some filesystems were not unmounted!
-	fix eject -a!
+-dnsmasq: supports dbus (at compile time) and ipv6 (at compile and runtime?).
+	-see if it deserves enabling ipv6 (or if it is automaticaly enabled at compile time)
+	-dbus does not seems to have any advantage.
 
+-mediatomb seems to use libdvdnav and libdvdread to scan and serve dvd iso files:
+	http://juliensimon.blogspot.com/2008/12/howto-compiling-mediatomb.html
 
-check if dnsmasq.cgi fully qualifies the network, or if it restricts to class C
+	These two libraries are used to browse DVD file structures: mediatomb
+	needs them to read and stream DVD ISO images.
+
+	You do need to build and install libdvdread before libdvdnav, or
+	the latter won't link.
+
+	ftp://ftp6.mplayerhq.hu/MPlayer/releases/dvdnav/libdvdread-4.1.3.tar.bz2
+	ftp://ftp6.mplayerhq.hu/MPlayer/releases/dvdnav/libdvdnav-4.1.3.tar.bz2
+
+-minidlna: apply patch for sansung? No, there are lots of patches, can't follow them.
+	http://sourceforge.net/tracker/?func=detail&aid=3058976&group_id=243163&atid=1121518
+
+HACKED -avahi-daemon initscript: if avahi is already running, "start" fails.
+	has to check avahi-status before starting it.
+
+FIXED -forked-daapd: when running the experimental feed on 0.1B6, there is a linking problem:
+	forked-daapd: can't resolve symbol 'in6addr_any
+	so the *full* initial patch is needed, retrieve it from svn.
+
+-aufs: stop overlaying the root directory, it degrades performance!
+	Without any packages installed, I got 15MB/s read transfer speeds.
+	Removing all packages, no aufs in /mnt, I got 20MB/s!
+	Study what directories to overlay.
+
+-vsftpd: add support for ipv6. vsftpd.conf:
+	# listens on IPv4 sockets. This directive cannot be used in conjunction
+	# with the listen_ipv6 directive.
+	listen=YES
+	#
+	# This directive enables listening on IPv6 sockets. To listen on IPv4 and IPv6
+	# sockets, you must run two copies of vsftpd with two configuration files.
+	# Make sure, that one of the listen options is commented !!
+	#listen_ipv6=YES
+
+	Commenting? Really? Then, listen=yes and listen_ipv6=no is not OK? 
+	Anyhow, can't start 2 servers on the same port, one with listen=yes
+	and the other with listen_ipv6=yes
+
+	This seems to indicate that for ipv6 a standalone vsftpd server has to be launched,
+	or will inetd do the job?
+
+-nfs: when starting nfs, the following error shows up in syslog:
+		daemon.notice rpc.statd[3062]: Unable to read state from
+		'/var/lib/nfs/state': errno 5 (Input/output error)
+	/var/lib/nfs/state is created by the nfs initscript. If the initscript does not creates
+	it, the error does not show up. But when nfs is stopped, the file appears.
+	/var/lib/nfs/state should be created by statd and updated by sm-notify,
+	see sm-notify and statd manpage.
+	The problem seems to be related to "rpc.statd --no-notify".
+	Occurs, at least, when no /Alt-F exists.
+
+-nfs/ipv6: when starting nfs with ipv6, at least, syslog:
+	svc: failed to register lockdv1 RPC service (errno 97)
+	seems to mean that nfs has not ipv6 support, the errno 97 seems to mean
+	"address family not supported". To build with ipv6 support the TI-RPC library is needed.
+	http://sourceforge.net/projects/libtirpc/ on a x86 the library has 164KB.
+	Also, rpcbind must replace portmap for ipv6 to work,
+	http://nfsv4.bullopensource.org/doc/tirpc_rpcbind.php
+
+DONE -ipv6/host setup: disable it by blacklisting it.
+
+DONE -debian: add an install/run debian using debootstrap-static
+
+FIXED -diskutils.cgi not working. No smart status/tests, spindown...
+
+hot.sh: usblp is removed when a usb pen is unpluged.
+	The kernel is generating the event! why? hot.sh is just doing its work.
+
+FIXED sysutils: Hitting "clear print queues" sends an empty file to the browser.
+
+diskmaint_proc, common.sh (fs_progress), hot_aux. Has to fix fsck to use a standard progress
+	log file, instead of duplicating stdout and stderr.
+	res=$(fsck -p -C4 /dev/... 2>&1  4<> outfile)
+	but resize2fs/mke2fs also produce logs
+	working on it and getting bored...
+
+FIXED status.cgi: /tmp/smt_sda is created in /tmp for smartctl, and should not be needed anymore.
+
+debian: the install/run is susceptible to device enumeration ordering, and if it is mounted
+	by label the install/run will fail.
+
+samba/backup: fix the available setting in /etc/samba/smb.conf
+	currently those settings are changed by the web interface when the Users/Backup directory
+	is created. If one fails to save settings, there is no other possibility of changing it
+
+-smb: duplicated, see above. See if the available key in /etc/samba/smb.conf is correctly setup.
+	It is, for users, when  a user is created, but if user does not save settings, there
+	is no other place where is ist set. Perhaps hot.sh could do it?
+
+-web server: every connection by a client browser, even for simple pages, seems to not be
+	properly closed, being left in a TIME_WAIT state.
+
+init.d/common: restart() has to have a timeout, as well as stop()
+
+forked: when changing config file using web page, the page does a "rcforked restart"
+	this deploy avahi/dbus stopping/restarting, with an error message appearing
+
+remove all packages using the web page: when a package to be removed is running, and other
+	depends on it, a message appears saying that the service can't be stopped at it
+	needed for another service that is running; the service is not stopped and the
+	package is removed... create a -force?
+
+INPROGRESS
+	REVERTED, /var/cache is now again on tempfs (using swap)
+	/var/cache can't be on disk, it avoids spindow! samba, e.g., stores data there,
+	even if not being accessed, as does nfs.
+	
+	The problem is cups, that also uses it when a new printer is added, and all ppd
+	files as parsed. The amount of data is huge, several tens of MB. Using only
+	hplip, 11MB are used, with both hplip and foomatic 47MB are used!
+	This was the only reason to move /var/cache out of tempfs, but has to be reversed.
+	This data is temporary, is only needed when a printer is added or modified.
+
+	TODO: Warn the user to reboot after a new printer is added? No!
+	Detect a new cups printer (difficult -- needs to keep state) and stop cups,
+	clean cache and restart cups? Who will do the printcap check?
+	Should status.cgi detect the situation and take the necessary actions? yes!
+
+FIXED Reboot: sys_utils_proc.cgi, when called from firmware2_proc.cgi, does nothing and goes to
+	sys_utils.cgi, that downloads a error message: "Usage httpd:..."
+
+FIXED Log files: the filter field appears with a non-filled string, "all", "downloading", or other.
+
+DONE RAID: disable RAID5 creation if not flashed
+	Already done, in a different way (asking for user confirmation)
+
+DONE Filesystems: disable ext4 creation if not flashed
+	Already done, in a different way (asking for user confirmation)
+
+DONE -cleanup: set to not enabled on boot, it might avoid disk spindow?
+
+FIXED -loadsave-settings: really disable boot-disabled services.
+
+FIXED -disk-utils: if no misc.conf settings, the spindown entry is disabled,
+	even is power saving is also disabled
+
+-rewrite INSTALL: login, host, time, wizard, user, net->services-smb
+
+-FAQ: can't login. telnet, "adjtime -adjust", or "echo NONE-O > /etc/TZ"
+-FAQ: swat, cups: ask credentials: root, pass
+-better first time wizard!
+
+-load setings: is it working?
