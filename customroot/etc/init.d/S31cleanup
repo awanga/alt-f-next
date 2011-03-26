@@ -1,6 +1,6 @@
 #! /bin/sh
 
-DESC="Cleanup log files every hour"
+DESC="Cleanup (truncate) log files every hour."
 TYPE=sys
 NAME=cleanup
 #REQUIRE="cron" doesn't not work here
@@ -39,7 +39,7 @@ istart() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/sbin/cleanup|d' $TF
-	echo "0 * * * * * /usr/sbin/cleanup" >> $TF
+	echo "0 * * * * /usr/sbin/cleanup" >> $TF
 	crontab $TF
 	rm -f $TF
 	echo "OK."
