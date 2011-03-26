@@ -90,7 +90,7 @@ cat <<EOF
 	<fieldset><legend><strong>User Details</strong></legend>
 	<table>
 	<tr><td>Full name</td><td><input type=text $chpass name=uname value="$uname" onChange="upnick()" $(ttip ttuname)></td></tr>
-	<tr><td>Nick name<td><input type=text $chpass name=nick value=$nick $(ttip ttnick)></td></tr>
+	<tr><td>Nick name<td><input type=text $chpass name=nick value="$nick" $(ttip ttnick)></td></tr>
 	<tr><td>User id<td><input style="background-color: #dddddd" type=text $chpass name=uid value=$uid $(ttip ttuid)></td></tr>
 	<tr><td>Group id<td><input style="background-color: #dddddd" type=text $chpass name=gid value=$gid $(ttip ttgid)></td></tr>
 	<tr><td>Password<td><input type=password name=pass $(ttip ttpass)></td></tr>
