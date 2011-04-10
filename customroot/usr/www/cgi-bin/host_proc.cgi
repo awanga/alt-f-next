@@ -79,7 +79,7 @@ if test "$iptype" = "static"; then
 	echo "$hostip $hostname.$workgp $hostname" >> $CONFH
 
 	sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" $CONFHTTP
-	sed -i "s|hosts allow =.*$|hosts allow = 127. $NETWORK/$netmask|" $CONFS
+	sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${netmask}\3|" $CONFS
 
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
@@ -118,6 +118,7 @@ else
 	auto eth0
 	iface eth0 inet dhcp
 	  client udhcpc
+	  mtu $mtu
 	EOF
 fi
 

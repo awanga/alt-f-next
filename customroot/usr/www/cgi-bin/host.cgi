@@ -99,7 +99,7 @@ cat<<-EOF
 		return ret;
 	}
 	function mtu_warn() {
-		if (document.sipf.mtu.value >= 9000) {
+		if (document.sipf.mtu.value > 9000) {
 			alert("Values higher than 9000 bytes are forbidden.")
 			document.sipf.mtu.value = 9000
 		}
@@ -128,9 +128,9 @@ cat<<-EOF
 	<tr><td>Host IP:</td><td><input type=text id=sip name="hostip" value=$hostip></td></tr>
 	<tr><td>Netmask:</td><td><input type=text id=sip name="netmask" value=$netmask></td></tr>
 	<tr><td>Gateway:</td><td><input type=text id=sip name="gateway" value=$gateway></td></tr>
-	<tr><td>Name server 1:</td><td><input type=text id=sip name="ns1" value=$ns1></td></tr>
-	<tr><td>Name server 2:</td><td><input type=text id=sip name="ns2" value=$ns2></tr>
-	<tr><td>Frame size:</td><td><input type=text id=sip name="mtu" value=$mtu onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
+	<tr><td>Name server 1:</td><td><input type=text name="ns1" value=$ns1></td></tr>
+	<tr><td>Name server 2:</td><td><input type=text name="ns2" value=$ns2></tr>
+	<tr><td>Frame size:</td><td><input type=text name="mtu" value=$mtu onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
 	<tr><td>Enable IPv6</td><td><input type=checkbox $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
 	</table></fieldset><br>
 
