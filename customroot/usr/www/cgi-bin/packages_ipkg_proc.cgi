@@ -16,7 +16,7 @@ ipkg_cmd() {
 		write_header "Installing Alt-F package $2"
 		opts="-force-defaults"
 	elif test $1 = "upgrade"; then
-		write_header "Upgrading Alt-F packages"
+		write_header "Upgrading all Alt-F packages"
 	fi
 
 	cat<<-EOF
@@ -39,7 +39,7 @@ ipkg_cmd() {
 			</script>
 		EOF
 	else
-		if test $1 == "-install"; then
+		if test $1 = "-install"; then
 			ipkg -clean
 		fi
 
@@ -66,7 +66,7 @@ if test "$install" = "Install"; then
 
 elif test -n "$RemoveAll"; then
 
-	write_header "Removing Alt-F packages"
+	write_header "Removing all Alt-F packages"
 
 	cat<<-EOF
 		<script type="text/javascript">
