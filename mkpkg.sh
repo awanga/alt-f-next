@@ -49,6 +49,7 @@ usage() {
 	-cleanroot (remove all files not in rootfs base file list) |
 	-diffroot (show new files since last -setroot) |
 	-index (create ipkg package index) |
+	-html (output packages info in html format)
 	-all (recreates all packages in ipkfiles dir) |
 	-rmall (remove from rootfs files from all packages) |
 	-help"
@@ -203,6 +204,30 @@ case "$1" in
 			echo Removing files from package $p
 			./mkpkg.sh -rm $p
 		done
+		exit 0
+		;;
+
+	-html)
+		cat<<-EOF
+			<table><tr><th>Package</th><th>Version</th><th>Description</th></tr>
+			<tr><td colspan=3><br><strong>uPNP A/V servers</strong></td></tr>
+			<tr><td colspan=3><br><strong>BitTorrent</strong></td></tr>
+			<tr><td colspan=3><br><strong>Printing/scanning</strong></td></tr>
+			<tr><td colspan=3><br><strong>Misc Tools</strong></td></tr>
+			<tr><td colspan=3><br><strong>Development/ CLI utilities</strong></td></tr>
+			<tr><td colspan=3><br><strong>Networking</strong></td></tr>
+			<tr><td colspan=3><br><strong>Databases</strong></td></tr>
+			<tr><td colspan=3><br><strong>Transcoding</strong></td></tr>
+			<tr><td colspan=3><br><strong>Libraries</strong></td></tr>
+
+		EOF
+		for i in  ipkgfiles/*.control ; do
+			awk '/Package:/ {pkg=$2} 
+				/Description:/ {desc=substr($0,index($0,":")+1)} 
+				/Version:/ {ver=$2} 
+				END {printf "<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n", pkg, ver, desc}' $i
+		done
+		echo "</table>"	
 		exit 0
 		;;
 
