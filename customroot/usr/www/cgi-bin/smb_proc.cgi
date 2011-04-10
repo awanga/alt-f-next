@@ -41,7 +41,7 @@ elif test "$submit" = "Submit"; then
 		rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
 		mdir=$(path_escape "$(httpd -d $(eval echo \$mdir_$i))")
 
-		httpd -d "$(eval echo \$fstab_en_${i}//\$rhost_${i}\"$rdir $mdir\" cifs \$mopts_$i 0 0)"
+		httpd -d "$(eval echo \$fstab_en_${i}//\$rhost_${i}/\"$rdir $mdir\" cifs \$mopts_$i 0 0)"
 		echo
 	done  >> $CONF_FSTAB
 
@@ -61,11 +61,9 @@ elif test "$submit" = "Submit"; then
 		fi
 		echo "available = $avail"
 
-		brow=yes
 		if test -z "$(eval echo \$browse_$i)"; then
-			brow=no
+			echo "browseable = no"
 		fi
-		echo "browseable = $brow"
 
 		pub=yes
 		if test -z "$(eval echo \$public_$i)"; then

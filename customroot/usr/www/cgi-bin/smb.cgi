@@ -16,7 +16,7 @@ fstab_row() {
 		printf "hostdir=\"%s\"; mdir=\"%s\"; opts=%s", $1, $2, $4}')
 
 	eval $(echo $hostdir | awk -F"/" '{
-		printf "rhost=\"%s\"; rdir=\"%s\"", $3, substr($0, index($0,$4)-1)}')
+		printf "rhost=\"%s\"; rdir=\"%s\"", $3, substr($0, index($0,$4))}')
 
 	rdir="$(path_unescape $rdir)"
 	mdir="$(path_unescape $mdir)"
@@ -97,7 +97,8 @@ cat<<EOF
 	</tr>
 EOF
 
-awk -F = '/#!#/ {
+#awk -F = '/#!#/ {
+awk -F = ' {
 		mark_found = 1
 	}
 	/\[.*\]/ {
@@ -120,18 +121,19 @@ function pshare(line) {
 
 function spit(cnt, opts) {
 
-	rdir = browse_chk = public_chk = rdonly_chk = dis_chk = ""
-	if (opts["browseable"] == "yes")
-		browse_chk = "checked"
-	if (opts["public"] == "yes")
-		public_chk = "checked"
-	if (opts["read only"] == "yes")
-		rdonly_chk = "checked"
-	if (opts["available"] == "no")
-		dis_chk = "checked"
-
 	if (opts["path"] != "") {
 		sprintf("readlink -f \"%s\" ", opts["path"]) | getline rdir
+		browse_chk = "checked"
+		if (opts["browseable"] == "no")
+			browse_chk = ""		
+		if (opts["public"] == "yes")
+			public_chk = "checked"
+		if (opts["read only"] == "yes")
+			rdonly_chk = "checked"
+		if (opts["available"] == "no")
+			dis_chk = "checked"
+	} else {
+		rdir = public_chk = rdonly_chk = dis_chk = browse_chk = ""
 	}
 
 	printf "<tr><td align=center><input type=checkbox %s name=avail_%d value=no></td>", dis_chk, cnt
