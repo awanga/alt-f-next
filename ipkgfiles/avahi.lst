@@ -34,7 +34,7 @@
 ./usr/lib/libavahi-common.so.3.5.2
 ./usr/lib/libavahi-core.so
 ./usr/lib/libavahi-core.so.7
-./usr/lib/libavahi-core.so.7.0.0
+./usr/lib/libavahi-core.so.7.0.1
 ./usr/lib/locale/bg/LC_MESSAGES
 ./usr/lib/locale/bg/LC_MESSAGES/avahi.mo
 ./usr/lib/locale/ca/LC_MESSAGES
