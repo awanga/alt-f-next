@@ -128,8 +128,10 @@ loadflashdef() {
 
 	if test $# = 0; then
 		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1 
+	elif ! test -f "$1"; then
+		last=$save_dir/$1
 	else
-		last=$1
+		last=""	
 	fi
 
 	if test -z "$last" -o ! -f "$last" -o ! -s "$last"; then
