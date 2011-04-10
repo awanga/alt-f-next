@@ -23,6 +23,8 @@ check() {
 	if ! test -r "$1"; then
 		echo "$1 not found, exiting"
 		mv $TMP_DIR/$LOG_FILE $BASE_DIR
+		#chown -R nobody:501 $BASE_DIR/alt-f*
+		chmod -R 666 $BASE_DIR/alt-f*
 		exit 1
 	fi
 }
@@ -42,23 +44,30 @@ if test "$ONCE" = "yes"; then
 elif test -f $BASE_DIR/$FAILS; then # failsafe -- last reloaded failed?
 	echo "Last reload failed, exiting. Remove $FAILS to try again."
 	mv $TMP_DIR/$LOG_FILE $BASE_DIR
+	#chown -R nobody:501 $BASE_DIR/alt-f*
+	chmod -R 666 $BASE_DIR/alt-f*
 	exit 1
 fi
 
 cd $BASE_DIR
 
-if test -r $ALTF_TARBALL; then
-	# tar xzf $ALTF_TARBALL
-	# what the heck?! -x doesn't work, but -v does, so extract to stdout!
-	mkdir -p $ALTF_PATH
-	check $ALTF_PATH
-	for i in $(tar -tf $ALTF_TARBALL); do
-		if ! test -d $i; then
-			tar -xOf $ALTF_TARBALL $i > $i
-		fi
-	done
+if test -r $ALTF_TARBALL; then 
+#	if busybox --help | grep -q 1.11; then # 1.10b6 has busybox 1.11.2, that accepts 'tar xf'
+#		tar xf $ALTF_TARBALL
+#	else
+		# what the heck?! -x doesn't work, but -v does, so extract to stdout!
+		mkdir -p $ALTF_PATH
+		check $ALTF_PATH
+		for i in $(tar -tf $ALTF_TARBALL); do
+			if ! test -d $i; then
+				tar -xOf $ALTF_TARBALL $i > $i
+			fi
+		done
+		
+#	fi
 	rm $ALTF_TARBALL
-	chown -R nobody:501 alt-f
+	chmod -R 666 alt-f
+	chmod 777 alt-f
 fi
 
 check $ALTF_PATH
@@ -88,27 +97,29 @@ fi
 
 # stop ffp services
 if test -f $FFPRC; then
+	echo "ffp present"
 	$FFPRC stop
 fi
 
 # stop processes
 smb stop
-proc="apkg atd crond wget smbclient pure-ftpd prescan upnp \
+proc="apkg atd crond wget smbclient pure-ftpd prescan upnp udhcpc \
 	mt-daapd lpd inotify_itune inotify_upnp btdog bt op_server \
-	inotifybt UpdateDB check_hotplug xmldb webs check_daemon mserver \
-	mDNSResponder"
+	inotifybt UpdateDB check_hotplug xmldb check_daemon mserver \
+	mDNSResponder openssl webs"
 
 for i in $proc; do
 	if test -n "$(pidof $i)"; then
 		kill -15 $(pidof $i)
 	fi
 done
-sleep 3
+#sleep 3
 for i in $proc; do
 	if test -n "$(pidof $i)"; then
 		kill -9 $(pidof $i)
 	fi
 done
+kill_running_process
 
 # try to solve network problems in rev-C1 boards
 ifconfig egiga0 down
@@ -117,8 +128,12 @@ ifconfig egiga0 down
 rmmod usblp
 
 sleep 3
-ps
-free
+echo -e "\ncwd:"; pwd
+echo -e "\nps:"; ps
+echo -e "\nfree:" ;free
+echo -e "\nmount:"; mount
+echo -e "\ndf:"; df -h
+echo -e "\nlsmod:"; lsmod
 
 mv $TMP_DIR/$LOG_FILE $BASE_DIR
 
@@ -126,6 +141,9 @@ mv $TMP_DIR/$LOG_FILE $BASE_DIR
 if test "$ONCE" != "yes"; then
 	touch ../$FAILS
 fi
+
+#chown -R nobody:501 $BASE_DIR/alt-f*
+chmod 777 $BASE_DIR/alt-f*
 
 # umount filesystems
 swapoff -a
