@@ -81,8 +81,6 @@ if test "$submit" = "Install"; then
 	echo "</pre><h4>Downloading and installing Alt-F in Debian...</h4><pre>"
 
 	ver=$(cat /etc/Alt-F)
-# TEMPORARY
-ver=0.1B6
 	wget --progress=dot:mega http://alt-f.googlecode.com/files/Alt-F-${ver}.tar 
 	if test $? != 0; then cleanup; fi
 	tar -xf Alt-F-${ver}.tar
@@ -94,7 +92,7 @@ ver=0.1B6
 	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
 		#!/bin/bash
 
-		if test "$(runlevel | cut -d" " -f2)" != "1"; then
+		if test "\$(runlevel | cut -d" " -f1)" != "1"; then
 			echo -e "Debian is not being cleanly shutdown.\n"\
 				"You should go to runlevel 1 by issuing the \"init 1\" command\n"\
 				"before executing this command, or help me fix this script."
@@ -136,7 +134,7 @@ ver=0.1B6
 
 	echo "<p>Setting root default password..."
 
-	chroot $DEBDIR /bin/bash -c "/bin/echo root:1234 | /usr/sbin/chpasswd"
+	chroot $DEBDIR /bin/bash -c "/bin/echo root:$(cat /etc/web-secret) | /usr/sbin/chpasswd"
 	if test $? != 0; then cleanup; fi
 
 	clean
