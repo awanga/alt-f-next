@@ -176,7 +176,9 @@ elif test -n "$Shrink_raid"; then
 	if ! ismount $mdev; then
 		lmount $mdev "RAID Shrinking"
 	fi
-	eval $(df -k /dev/$mdev | awk '/'$mdev'/{printf "nsz=%d", $2 + 128 + '$chunk' / 1024}')
+	eval $(df -k /dev/$mdev | awk '/'$mdev'/{
+		chk='$chunk' / 1024; nsz = int (($2 * 1.1 + 128) / chk) * chk 
+		printf "nsz=%d", nsz}')
 	if ismount $mdev; then
 		lumount $mdev "RAID Shrinking"
 	fi
@@ -231,6 +233,14 @@ elif test -n "$Fail_part"; then
 	res="$(mdadm /dev/$mdev --fail /dev/$rdev 2>&1)"
 	if test $? != 0; then
 		msg "Marking failed the $rdev partition of the $mdev RAID device failed:\n\n$res"
+	fi
+
+elif test -n "$Clear_part"; then
+	mdev="$Clear_part"
+	rdev=$(eval echo \$rdev_$mdev)
+	res="$(mdadm --zero-superblock /dev/$rdev 2>&1)"
+	if test -n "$res"; then # no error status
+		msg "Removing the superblock from the $rdev partition failed:\n\n$res"
 	fi
 
 elif test -n "$Create"; then

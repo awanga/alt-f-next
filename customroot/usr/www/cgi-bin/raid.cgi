@@ -53,7 +53,7 @@ Continue? ")
 			res = confirm("Destroying a RAID will erase all data it contains\n\
 and will make its components available to other RAID arrays.\n\nContinue?")
 
-		else if (op == "Add_part" || op == "Remove_part" || op == "Fail_part") {
+		else if (op == "Add_part" || op == "Remove_part" || op == "Fail_part" || op == "Clear_part") {
 			if (document.getElementById("rdev_" + part).selectedIndex == 0) {
 				alert("Select a Partition first.")
 				obj.selectedIndex = 0
@@ -63,11 +63,14 @@ and will make its components available to other RAID arrays.\n\nContinue?")
 				res = confirm("Add a partition to " + part + " if you want to add a spare component\n\
 or are replacing a faulty and already removed component.\n\nContinue?")
 			else if (op == "Remove_part")
-				res = confirm("Removing a partition from " + part + " makes it loose its redundancy,\n\
-unless it is a spare or has already failed.\n\nContinue?")
+				res = confirm("Removing a partition from " + part + " can only\n\
+be done if it is a spare or failed partition.\n\nContinue?")
 			else if (op == "Fail_part")
-				res = confirm("Marking a partition as failed from " + part + " makes it loose its redundancy,\n\
-or even stop the array.\n\nContinue?")
+				res = confirm("Marking a partition as failed from " + part + " makes it loose\n\
+its redundancy or even stop the array.\n\nContinue?")
+			else if (op == "Clear_part")
+				res = confirm("Clearing a RAID partition makes it loose its RAID information.\n\
+It must have already been removed from the array.\n\nContinue?")
 		}
 
 		if (res == true)
@@ -305,6 +308,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 						<option value=Fail_part>Fail</option>"
 						<option value=Remove_part>Remove</option>"
 						<option value=Add_part>Add</option>
+						<option value=Clear_part>Clear</option>
 					</select></td>
 					</tr>
 				EOF
