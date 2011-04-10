@@ -4,7 +4,7 @@
 #
 #############################################################
 
-RSYNC_VERSION:=3.0.7
+RSYNC_VERSION:=3.0.8
 RSYNC_SOURCE:=rsync-$(RSYNC_VERSION).tar.gz
 RSYNC_SITE:=http://rsync.samba.org/ftp/rsync/src
 RSYNC_AUTORECONF:=no
