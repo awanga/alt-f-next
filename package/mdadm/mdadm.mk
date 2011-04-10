@@ -3,27 +3,15 @@
 # mdadm
 #
 #############################################################
-#MDADM_VERSION:=2.6.7.1
-# jc: uclibc must be compiled with UCLIBC_HAS_ADVANCED_REALTIME, else posix_memalign() is missing
-# 3.1.4 blocks sometimes, 3.1.1 don't allow to create a raid where previously existed
-# another raid, or if a fs exists in one of the component partitions. Yes, using --run
-#MDADM_VERSION:=3.1.1
-MDADM_VERSION:=3.1.4
+
+#MDADM_VERSION:=3.1.4
+MDADM_VERSION:=3.1.5
 MDADM_SOURCE:=mdadm-$(MDADM_VERSION).tar.gz
-# jc: MDADM_SOURCE:=mdadm_$(MDADM_VERSION).orig.tar.gz
-# jc: MDADM_PATCH:=mdadm_$(MDADM_VERSION)-1.diff.gz
 MDADM_CAT:=$(ZCAT)
-# jc: MDADM_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/m/mdadm
 MDADM_SITE:=http://www.kernel.org/pub/linux/utils/raid/mdadm/
 MDADM_DIR:=$(BUILD_DIR)/mdadm-$(MDADM_VERSION)
 MDADM_BINARY:=mdadm
 MDADM_TARGET_BINARY:=sbin/mdadm
-
-ifneq ($(MDADM_PATCH),)
-MDADM_PATCH_FILE:=$(DL_DIR)/$(MDADM_PATCH)
-$(MDADM_PATCH_FILE):
-	$(call DOWNLOAD,$(MDADM_SITE),$(MDADM_PATCH))
-endif
 
 $(DL_DIR)/$(MDADM_SOURCE): $(MDADM_PATCH_FILE)
 	$(call DOWNLOAD,$(MDADM_SITE),$(MDADM_SOURCE))
@@ -31,12 +19,6 @@ $(DL_DIR)/$(MDADM_SOURCE): $(MDADM_PATCH_FILE)
 
 $(MDADM_DIR)/.unpacked: $(DL_DIR)/$(MDADM_SOURCE)
 	$(MDADM_CAT) $(DL_DIR)/$(MDADM_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-ifneq ($(MDADM_PATCH),)
-	(cd $(MDADM_DIR) && $(MDADM_CAT) $(MDADM_PATCH_FILE) | patch -p1)
-	if [ -d $(MDADM_DIR)/debian/patches ]; then \
-	  toolchain/patch-kernel.sh $(MDADM_DIR) $(MDADM_DIR)/debian/patches \*patch; \
-	fi
-endif
 	toolchain/patch-kernel.sh $(MDADM_DIR) package/mdadm mdadm-$(MDADM_VERSION)\*.patch
 	touch $@
 
@@ -47,6 +29,8 @@ $(TARGET_DIR)/$(MDADM_TARGET_BINARY): $(MDADM_DIR)/$(MDADM_BINARY)
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(MDADM_DIR) install
 	rm -Rf $(TARGET_DIR)/usr/share/man
 	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
+
+mdadm-build: $(MDADM_DIR)/$(MDADM_BINARY)
 
 mdadm-source: $(DL_DIR)/$(MDADM_SOURCE) $(MDADM_PATCH_FILE)
 
