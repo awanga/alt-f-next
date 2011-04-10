@@ -21,6 +21,7 @@ GS_TARGET_BINARY = /usr/bin/gs
 #		--without-jasper --disable-compile-inits
 
 GS_CONF_OPT = --with-system-libtiff --without-jasper
+GS_CONF_ENV = CUPSCONFIG=$(STAGING_DIR)/usr/bin/cups-config
 
 $(DL_DIR)/$(GS_SOURCE):
 	 $(call DOWNLOAD,$(GS_SITE),$(GS_SOURCE))
