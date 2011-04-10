@@ -5,19 +5,10 @@
 # Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
 # Modified and adapted by Joao Cardoso
 launch() {
-	id=$(echo $1 | tr "A-Z " "a-z_")
-
-	if test -z "$arefresh"; then
-		eval ${id}_st
-		return 0;
-	fi
-
-	cat<<-EOF
-		<div id="$id"></div>
-		<script type="text/javascript">
-			requestfromserver('/cgi-bin/status.cgi?refresh=${id}', '$id', $2);
-		</script>
-	EOF
+	echo "<div id=\"$1\">"
+	eval ${1}_st
+	echo "</div>"
+	return 0;
 }
 
 # Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
@@ -25,7 +16,8 @@ launch() {
 jscripts() {
 	cat<<-EOF
 		<script type="text/javascript">
-			function requestfromserver(url, target, refresh) {
+			arefresh = false
+			function requestfromserver(target, refresh) {
 				var req = new XMLHttpRequest();    			
 				if (req == null)
 					return;
@@ -35,11 +27,32 @@ jscripts() {
 					if (req.status != 200) return; // only if "OK"
 						document.getElementById(target).innerHTML = req.responseText;
 					delete req;
-					if (refresh != 0)
-						setTimeout(	function() {requestfromserver(url, target, refresh);}, refresh * 1000);
+					if (arefresh == true && refresh != 0)
+						setTimeout(	function() {requestfromserver(target, refresh);}, refresh * 1000);
 				}
+				url="/cgi-bin/status.cgi?refresh=" + target
 				req.open("GET", url, true);
 				req.send();
+			}
+
+			function frefresh(obj) {
+				arg = obj.checked == true ? "yes" : "no"
+	
+				if (arg == "yes") {
+					arefresh = true
+					requestfromserver('system', 11)
+					requestfromserver('network', 11)
+					requestfromserver('disks', 13)
+					requestfromserver('raid', 13)
+					requestfromserver('mounted_filesystems', 17)
+					requestfromserver('mounted_remote_filesystems', 17)
+					requestfromserver('remotely_mounted_filesystems', 19)
+					requestfromserver('backup', 19)
+					requestfromserver('filesystem_maintenance', 23)
+					requestfromserver('printers', 23)
+				}
+				else
+					arefresh = false
 			}
 		</script>
 	EOF
@@ -448,14 +461,14 @@ backup_st() {
 }
 
 filesystem_maintenance_st() {
-	if ! test -n "$(ls /tmp/clean-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
+	if ! test -n "$(ls /tmp/check-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
 		/tmp/enlarg-* /tmp/wip-* 2> /dev/null)"; then
 		return 0
 	fi
 
 	cat<<-EOF
 		<fieldset><legend><strong>Filesystem Maintenance</strong></legend>
-		<table><tr><th>Part.</th><th>Label</th><th>Operation</th></tr>
+		<table><tr><th>Dev.</th><th>Label</th><th>Operation</th></tr>
 	EOF
 
 	for j in /dev/sd[a-z][1-9] /dev/md[0-9]*; do
@@ -512,47 +525,29 @@ if test -n "$refresh"; then
 	eval ${refresh}_st
 	echo "</body></html>"
 	exit 0
-elif test -n "$arefresh"; then
-	refr_chk="checked"
 fi
 
 ver="$(cat /etc/Alt-F)"
 write_header "Alt-F $ver Status Page"
 jscripts
 
-launch System 15
-usleep 100000
-launch Network 24
-usleep 100000
-launch Disks 16
-usleep 100000
-launch Raid 17
-usleep 100000
-launch "Mounted Filesystems" 21
-usleep 100000
-launch "Mounted Remote Filesystems" 22
-usleep 100000
-launch "Remotely Mounted Filesystems" 23
-usleep 100000
-launch Backup 18
-usleep 100000
-launch "Filesystem Maintenance" 19
-usleep 100000
-launch Printers 20
+mktt st_tt "Checking this will refresh different sections in the page every 10 to 20 seconds.<br>
+This consumes CPU, so if you are waiting for something lengtly to accomplish<br>
+it will actually take more time if autorefresh is enabled."
+
+launch system
+launch network
+launch disks
+launch raid
+launch mounted_filesystems
+launch mounted_remote_filesystems
+launch remotely_mounted_filesystems
+launch backup
+launch filesystem_maintenance
+launch printers
 
 cat<<EOF
 	<form action="">
-Autorefresh <input type=checkbox $refr_chk name=arefresh value="yes" onclick="frefresh(this)">
-	<script type="text/javascript">
-		function frefresh(obj) {
-			arg = obj.checked == true ? "yes" : "no"
-
-			if (arg == "yes")
-				url = "http://" + location.hostname + "/cgi-bin/status.cgi?arefresh=yes"
-			else
-				url = "http://" + location.hostname + "/cgi-bin/status.cgi"
-			window.location.assign(url)
-		}
-	</script>
+Autorefresh <input type=checkbox name="arefresh" value="yes" onclick="frefresh(this)" $(ttip st_tt)>
 	</form></body></html>
 EOF
