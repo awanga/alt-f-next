@@ -30,7 +30,7 @@ lumount() {
 lmount() {
 	if ! ismount $1; then
 		if isdirty $part; then
-			msg "Filesystem $part is dirty, clean it before mounting."
+			msg "Filesystem $part is dirty, check it before mounting."
 		fi
 
 		cd /dev
@@ -41,8 +41,8 @@ lmount() {
 	fi
 }
 
-# clean $1=part $2=type $3=name
-clean() {
+# check $1=part $2=type $3=name
+check() {
 
 	case $2 in
 		ext2|ext3|ext4) opts="-fpD" ;;
@@ -58,7 +58,7 @@ clean() {
 		echo \$$ > \$0.pid
 		res=\$(fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
 		st=\$?
-		logger "Cleaning $1 finished with status code \$st: \$res"
+		logger "Cheking $1 finished with status code \$st: \$res"
 		if test "\$st" = 0 -o "\$st" = 1; then
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
@@ -140,10 +140,10 @@ resize() {
 		fsck -fy -C /dev/$1 > $logf 2>&1
 		st=\$?
 		if ! test "\$st" = 0 -o "\$st" = 1; then
-			logger "Cleaning /dev/$1 failed with error code \$st: \$(cat $logf)"
+			logger "Checking /dev/$1 failed with error code \$st: \$(cat $logf)"
 			exit 1
 		fi
-		logger "Cleaned /dev/$1 OK"
+		logger "Checking /dev/$1 OK"
 		
 		resize2fs -p /dev/$1 $nsz > $logf 2>&1
 		if test $? != 0; then
@@ -244,11 +244,11 @@ elif test -n "$unMount"; then
 	part=$unMount
 	lumount $part "unmount"
 
-elif test -n "$Clean"; then
-	part=$Clean
+elif test -n "$Check"; then
+	part=$Check
 	type=$(blkid -s TYPE -o value /dev/$part)
-	lumount $part "cleaning"
-	clean $part $type "clean"
+	lumount $part "checking"
+	check $part $type "check"
 		
 elif test -n "$Format"; then
 	part=$Format
@@ -281,7 +281,7 @@ elif test -n "$Convert"; then
 		fi
 	fi
 
-	clean $part $from "convert"
+	check $part $from "convert"
 
 elif test -n "$Shrink"; then
 	part=$Shrink

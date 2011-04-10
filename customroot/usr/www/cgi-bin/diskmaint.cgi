@@ -43,7 +43,7 @@ Proceed converting the " + part + " partition anyway?");
 			res = true
 		else if (op == "unMount")
 			res = true
-		else if (op == "Clean")
+		else if (op == "Check")
 			res = true
 		else if (op == "setLabel")
 			res = true
@@ -80,10 +80,11 @@ EOF
 	
 cat<<-EOF
 	<table style="border-collapse:collapse">
-	<colgroup span=6></colgroup>
+	<colgroup span=7></colgroup>
 	<colgroup span=2 style="background:#ddd;"></colgroup>
 	<tr align=center><th>Dev.</th><th>Size</th>
 	<th>FS</th>
+	<th>Mnt</th>
 	<th>Label</th>
 	<th>Mount Options</th>
 	<th>FS Operations</th>
@@ -147,10 +148,12 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 
 	if isdirty $part; then otype="<font color=red>$TYPE</font>"; fi
 
+	mtdf=""
 	if ismount $part; then
 		# only works for mounted partitions
 		pcap=$(df -h /dev/$part | awk '/'$part'/{printf "%sB", $2}')
 		mtd="<option value=unMount>Unmount</option>"
+		mtdf="*"
 	else
 		# filesystem does not have to fill the partiton, signal it
 		pcap=$(awk '/'$part'/{printf "<font color=blue>%.1fGB</font>", $3/1048576}' /proc/partitions)
@@ -173,12 +176,13 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 	if test -z "$ln"; then
 		cat<<-EOF
 			<td align=center>$otype</td>
+			<td align=center>$mtdf</td>
 			<td><input $all_dis type=text size=10 name=lab_$part value="$LABEL"></td>
 			<td><input $all_dis type=text size=16 name=mopts_$part value="$mount_opts"></td>
 			<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part', '$flashed')">
 				<option>Operation</option>
 				$mtd
-				<option $clean_en>Clean</option>
+				<option $clean_en>Check</option>
 				<option $label_en value=setLabel>Set Label</option>
 				<option value=setMountOpts>Set Mnt Options</option>
 				<option $resize_en>Shrink</option>
