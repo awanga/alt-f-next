@@ -62,6 +62,8 @@ if test "$1" = "chroot"; then
 elif test "$1" = "kexec"; then
 
 	part=/dev/$(basename $debdir)
+	mdadm --detail --test $part >& /dev/null
+	raid=$?
 
 	cp /etc/network/interfaces $debdir/etc/network/
 	cp /etc/hostname /etc/resolv.conf /etc/hosts $debdir/etc/
@@ -81,7 +83,11 @@ elif test "$1" = "kexec"; then
 	rcall stop
 	eject -a
 
-	mkdir -p $debdir 
+	mkdir -p $debdir
+	if test "$raid" == 0; then
+		mdadm --assemble $part
+        mdadm --readonly $part
+	fi
 	mount -o ro $part $debdir 
 
 	rcsysctrl stop
