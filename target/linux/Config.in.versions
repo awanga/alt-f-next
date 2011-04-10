@@ -29,7 +29,7 @@ config BR2_KERNEL_LATEST_2_6_36
 
 config BR2_KERNEL_LONGTERM_2_6_35
 	string
-	default "11"
+	default "12"
 
 config BR2_KERNEL_LATEST_2_6_35
 	string
