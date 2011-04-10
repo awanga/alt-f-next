@@ -1,6 +1,6 @@
 #!/bin/sh
 
-debug=true
+#debug=true
 
 if test -n "$debug"; then
 	exec >> /var/log/hot.log 2>&1

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-debug=true
+#debug=true
 
 if test -n "$debug"; then
 	exec >> /var/log/hot_aux.log 2>&1
@@ -19,16 +19,17 @@ check() {
 
 	while true; do
 		inuse=""
-		inclean=$(ls /tmp/clean-sd[a-z][1-9] /tmp/clean-md[0-9] 2> /dev/null | grep -oE '(sd[a-z].|md[0-1])')
-		for i in $inclean; do
-			if test ${i:0:2} = "md"; then
+		inclean=$(ls /tmp/check-sd[a-z][1-9] /tmp/check-md[0-9] 2> /dev/null | grep -oE '(sd[a-z].|md[0-1])')
+		if test -z "$inclean"; then break; fi
+		for i in "$inclean"; do
+			if test "${i:0:2}" = "md"; then
 				inuse="$inuse $(ls /sys/block/$i/slaves)"
 			else
 				inuse="$inuse $i"
 			fi
 		done
 
-		if ! echo $inuse | grep -q -E "$we"; then
+		if ! echo "$inuse" | grep -q -E "$we"; then
 			break
 		fi
 		logger -t hot "$MDEV waiting to be fscked"
@@ -51,7 +52,7 @@ if test "$fsckcmd" != "echo"; then
 	check
 	logger -t hot "Start fscking $MDEV"
 
-	xf=/tmp/clean-$MDEV
+	xf=/tmp/check-$MDEV
 	logf=${xf}.log
 	pidf=${xf}.pid
 
@@ -68,7 +69,7 @@ if test "$fsckcmd" != "echo"; then
 	logger -t hot "Finish fscking $MDEV: $res"
 	rm -f $xf $logf $pidf 
 
-	if test -z "$(ls /tmp/clean-* 2>/dev/null)"; then
+	if test -z "$(ls /tmp/check-* 2>/dev/null)"; then
 		echo none > "/sys/class/leds/power:blue/trigger"
 	fi
 
