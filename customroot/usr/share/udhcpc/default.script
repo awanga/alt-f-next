@@ -27,7 +27,12 @@ case "$1" in
 			domain=$(sed -n "s/workgroup = \(.*$\)/\1/p" /etc/samba/smb.conf)
 		fi
 
-		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
+		if test -n "$mtu"; then
+			MTU="mtu $mtu"
+		elif test -n "$IF_MTU"; then
+			MTU="mtu $IF_MTU"
+		fi
+		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK $MTU
 
 		logger -s -t udhcpc "Updating /etc/hosts"
 		fnm=$(hostname -f) >& /dev/null
@@ -39,15 +44,11 @@ case "$1" in
 		fi
 
 		logger -s -t udhcpc "Updating /etc/httpd.conf"
-		##network=$(echo $ip | awk -F. '{printf "%d.%d.%d.", $1,$2,$3}')
-		##echo  "A:$network" >> /etc/httpd.conf
-		##echo  "A:$NETWORK/$subnet #!#" >> /etc/httpd.conf
 		sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$subnet #!# Allow local net|" /etc/httpd.conf
 
 		logger -s -t udhcpc "Updating /etc/samba/smb.conf"
 		sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
-		##sed -i "s/hosts allow =.*$/hosts allow = 127. $network/" /etc/samba/smb.conf
-		sed -i "s|hosts allow =.*$|hosts allow = 127. $NETWORK/$subnet|" /etc/samba/smb.conf
+		sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${subnet}\3|" /etc/samba/smb.conf
 		
 		if test -n "$router"; then
 			logger -s -t udhcpc "Updating default route"
