@@ -3,11 +3,10 @@
 # file
 #
 #############################################################
-#FILE_VERSION:=4.26
+
 FILE_VERSION:=5.04
 FILE_SOURCE:=file-$(FILE_VERSION).tar.gz
 FILE_SITE:=ftp://ftp.astron.com/pub/file/
-#FILE_SOURCE_DIR:=$(BUILD_DIR)/file-$(FILE_VERSION)
 FILE_DIR:=$(BUILD_DIR)/file-$(FILE_VERSION)
 FILE_HOST:=$(BUILD_DIR)/file-$(FILE_VERSION)-host
 FILE_CAT:=$(ZCAT)
@@ -38,9 +37,10 @@ $(FILE_HOST)/.configured: $(FILE_HOST)/.unpacked
 	)
 	touch $@
 
-$(TOOL_BUILD_DIR)/$(FILE_TARGET_BINARY): $(FILE_HOST)/.configured
+$(TOOL_BUILD_DIR)/bin/file: $(FILE_HOST)/.configured
 	$(MAKE) -C $(FILE_HOST) install
 	#ln -sf $(TOOL_BUILD_DIR)/bin/file $(TOOL_BUILD_DIR)/bin/file
+	touch $@
 
 #host-file: $(TOOL_BUILD_DIR)/bin/file
 #
@@ -97,8 +97,9 @@ $(FILE_DIR)/$(FILE_BINARY): $(FILE_DIR)/.configured
 $(TARGET_DIR)/$(FILE_TARGET_BINARY): $(FILE_DIR)/$(FILE_BINARY)
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) DESTDIR=$(TARGET_DIR) -C $(FILE_DIR) install
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) DESTDIR=$(STAGING_DIR) -C $(FILE_DIR) install
+	touch $@
 
-file-host: $(TOOL_BUILD_DIR)/$(FILE_TARGET_BINARY)
+file-host: $(TOOL_BUILD_DIR)/bin/file
 
 file-target: $(TARGET_DIR)/$(FILE_TARGET_BINARY)
 
