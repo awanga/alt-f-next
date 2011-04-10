@@ -127,17 +127,17 @@ cp ipkg-utils-050831/ipkg-build \
 sed -i 's|*control|./control|' ../bin/ipkg.py
 sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
 
-if ! test -e mklibs_0.1.30.tar.gz; then
-	wget http://ftp.de.debian.org/debian/pool/main/m/mklibs/mklibs_0.1.30.tar.gz
+if ! test -e mklibs_0.1.31.tar.gz; then
+	wget http://ftp.de.debian.org/debian/pool/main/m/mklibs/mklibs_0.1.31.tar.gz
 fi
-rm -rf mklibs_0.1.30
-tar xzf mklibs_0.1.30.tar.gz
-mv mklibs mklibs_0.1.30
-cd mklibs_0.1.30
+rm -rf mklibs_0.1.31
+tar xzf mklibs_0.1.31.tar.gz
+mv mklibs mklibs_0.1.31
+cd mklibs_0.1.31
 ./configure
 make
 cp src/mklibs-readelf/mklibs-readelf src/mklibs-copy src/mklibs ../../bin
-# there things installed in usr/lib/mklibs, see if they are needed.
+# there are things installed in usr/lib/mklibs, see if they are needed.
 # test with "make install DESTDIR=<some tmp dir>"
 cd ..
  
