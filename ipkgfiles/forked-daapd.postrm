@@ -2,4 +2,4 @@
 
 deluser daapd
 delgroup multimedia
-rm -rf /sbin/rcforked_daapd /var/lib/daapd
+rm -rf /sbin/rcforked_daapd
