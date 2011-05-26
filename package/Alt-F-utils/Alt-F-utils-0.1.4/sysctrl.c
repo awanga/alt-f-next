@@ -81,7 +81,8 @@ args_t args =
   NULL };
 
 enum Boards { A1, B1, C1};
-enum FanSpeed { FAN_OFF = 0, FAN_LOW =  127, FAN_FAST = 255 };
+enum FanSpeed { FAN_OFF = 0, FAN_LOW = 127, FAN_FAST = 255 };
+enum RPMSpeed { RPM_OFF = 0, RPM_LOW = 400, RPM_FAST = 200 };
 enum Leds { right_led = 1, left_led = 2 };
 char *leds[] = { "", "/sys/class/leds/right:amber/",
 	"/sys/class/leds/left:amber/"
@@ -90,6 +91,9 @@ char *leds[] = { "", "/sys/class/leds/right:amber/",
 char sys_pwm[64], sys_fan_input[64], sys_temp_input[64];
 
 int board;
+
+// temperature hysteresis for fan control
+#define T_HIST 1
 
 // hack! blink_leds() use it to signal() hdd_powercheck()
 int leds_changed = 0;
@@ -575,14 +579,13 @@ void fanctl(void)
 	static int warn = 0, crit = 0;
 	int pwm;
 
-	float m =
-	    (args.hi_fan - args.lo_fan) * 1.0 / (args.hi_temp - args.lo_temp);
-	float b = args.lo_fan - m * args.lo_temp;
-
-	float temp = (read_temp() / 1000. + last_temp) / 2;
+	float temp = (read_temp() / 1000. + last_temp) / 2.;
 	int fan = read_fan();
 	
 	if (board != C1) {
+		float m = (args.hi_fan - args.lo_fan) * 1. / (args.hi_temp - args.lo_temp);
+		float b = args.lo_fan - m * args.lo_temp;
+		
 		if (temp <= args.fan_off_temp)
 			pwm = 0;
 		else if (fan >= args.max_fan_speed)
@@ -590,12 +593,16 @@ void fanctl(void)
 		else
 			pwm = (int)poly(temp * m + b, f2p);
 	} else {
-		if (temp <= args.fan_off_temp)
+		if (fan == RPM_LOW && temp < (args.fan_off_temp - T_HIST))
 			pwm = FAN_OFF;
-		else if (temp < args.lo_temp)
+		else if (fan == RPM_OFF && temp > (args.fan_off_temp + T_HIST))
 			pwm = FAN_LOW;
-		else
+		else if (fan == RPM_FAST && temp < (args.lo_temp - T_HIST))
+			pwm = FAN_LOW;
+		else if (fan == RPM_LOW && temp > (args.lo_temp + T_HIST))
 			pwm = FAN_FAST;
+		else
+			pwm = FAN_LOW; // should never happens
 	}
 	
 	write_pwm(pwm);
@@ -774,7 +781,7 @@ void hdd_powercheck(int noleds)
 				
 				} else {
 					stmo[idx]++;
-					if (stmo[idx] > tmo && st == 1) {
+					if (tmo > 0 && stmo[idx] > tmo && st == 1) {
 						syslog(LOG_INFO, "Putting %s disk (%s) into sleep", bay, dev);
 						sprintf(cmd, "/sbin/hdparm -y /dev/%s", dev);
 						system(cmd);
