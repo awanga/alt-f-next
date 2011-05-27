@@ -82,7 +82,7 @@ args_t args =
 
 enum Boards { A1, B1, C1};
 enum FanSpeed { FAN_OFF = 0, FAN_LOW = 127, FAN_FAST = 255 };
-enum RPMSpeed { RPM_OFF = 0, RPM_LOW = 400, RPM_FAST = 200 };
+enum RPMSpeed { RPM_OFF = 0, RPM_LOW = 400, RPM_FAST = 2000 };
 enum Leds { right_led = 1, left_led = 2 };
 char *leds[] = { "", "/sys/class/leds/right:amber/",
 	"/sys/class/leds/left:amber/"
@@ -566,6 +566,13 @@ void write_pwm(int u)
 	write_int_to_file(sys_pwm, u);
 }
 
+int read_pwm(void)
+{
+	int u = 0;
+	read_int_from_file(sys_pwm, &u);
+	return u;
+}
+
 int read_temp(void)
 {
 	int u = 0;
@@ -575,10 +582,13 @@ int read_temp(void)
 
 void fanctl(void)
 {
-	static float last_temp = 40.;
+	static float last_temp = 0.;
 	static int warn = 0, crit = 0;
 	int pwm;
 
+	if (last_temp == 0.) // zero has an exact float representation
+		last_temp = read_temp() / 1000.;
+	
 	float temp = (read_temp() / 1000. + last_temp) / 2.;
 	int fan = read_fan();
 	
@@ -586,30 +596,46 @@ void fanctl(void)
 		float m = (args.hi_fan - args.lo_fan) * 1. / (args.hi_temp - args.lo_temp);
 		float b = args.lo_fan - m * args.lo_temp;
 		
-		if (temp <= args.fan_off_temp)
+		if (temp <= args.fan_off_temp - T_HIST)
 			pwm = 0;
-		else if (fan >= args.max_fan_speed)
-			pwm = (int)poly(args.max_fan_speed, f2p);
-		else
+		else if (temp >= args.fan_off_temp + T_HIST)
 			pwm = (int)poly(temp * m + b, f2p);
-	} else {
-		if (fan == RPM_LOW && temp < (args.fan_off_temp - T_HIST))
-			pwm = FAN_OFF;
-		else if (fan == RPM_OFF && temp > (args.fan_off_temp + T_HIST))
-			pwm = FAN_LOW;
-		else if (fan == RPM_FAST && temp < (args.lo_temp - T_HIST))
-			pwm = FAN_LOW;
-		else if (fan == RPM_LOW && temp > (args.lo_temp + T_HIST))
-			pwm = FAN_FAST;
 		else
-			pwm = FAN_LOW; // should never happens
+			pwm = read_pwm();
+		
+		if (fan >= args.max_fan_speed) {
+			int tpwm = poly(args.max_fan_speed, f2p);
+			if ( tpwm < pwm)
+				pwm = tpwm;
+		}
+		
+	} else { // Augusto Bott code
+		switch (fan) {
+			case RPM_OFF:
+				pwm = FAN_OFF;
+				if (temp >= (args.fan_off_temp + T_HIST))
+					pwm = FAN_LOW;
+				break;
+			case RPM_LOW:
+				pwm = FAN_LOW;
+				if (temp <= (args.fan_off_temp - T_HIST))
+					pwm = FAN_OFF;
+				else if (temp >= (args.lo_temp + T_HIST))
+					pwm = FAN_FAST;
+				break;
+			case RPM_FAST:
+				pwm = FAN_FAST;
+				if (temp <= (args.lo_temp - T_HIST))
+					pwm = FAN_LOW;
+				break;
+		}
 	}
 	
 	write_pwm(pwm);
+	fan = read_fan();
 
 	if (fabsf(temp - last_temp) >= 0.2) {
 		last_temp = temp;
-		fan = read_fan();
 		syslog(LOG_INFO, "temp=%.1f	 fan=%d", temp, fan);
 	}
 
