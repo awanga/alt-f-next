@@ -8,7 +8,7 @@
 # "interface" option must be specified in the samba config.file
 # (or an "couln'd get interface address" (or similar) error happens at runtime 
 
-SAMBA_VERSION:=3.3.9
+SAMBA_VERSION:=3.3.15
 SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
 SAMBA_SITE:=http://samba.org/samba/ftp/stable/
 SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/source
@@ -58,20 +58,29 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--without-ldap \
 		--without-ads \
 		--without-acl-support \
-		--with-included-popt \
+		--without-included-popt \
 		--with-included-iniparser \
 		--disable-shared-libs \
 		--disable-static \
 		--disable-cups \
 		$(DISABLE_LARGEFILE) \
 	)
-	cat patches/samba-Makefile.patch | patch -p0 -b -d $(SAMBA_DIR) # jc
+	cat patches/samba-3.3.9-Makefile.patch | patch -p0 -b -d $(SAMBA_DIR)
 	touch $@
 
 $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
 	# make proto must be done before make to be parallel safe
 	$(MAKE) -C $(SAMBA_DIR) proto
 	$(MAKE) -C $(SAMBA_DIR)
+	(cd $(SAMBA_DIR)/bin; \
+	mkdir -p tmp; rm -f tmp/*; \
+	mklibs -v -D -d tmp/ \
+	--target arm-linux-uclibcgnueabi \
+	-L .:$(TARGET_DIR)/lib:$(TARGET_DIR)/usr/lib \
+	--ldlib $(TARGET_DIR)/lib/ld-uClibc.so.0 \
+	smbd nmbd smbtree smbstatus swat; \
+	cp tmp/libsmbcommon.so libsmbcommon.so; \
+	)
 
 SAMBA_TARGETS_ := usr/bin/sharesec
 SAMBA_TARGETS_y :=
@@ -131,6 +140,8 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 	rm -f $(TARGET_DIR)/usr/lib/libsmbclient*
 	rm -f $(TARGET_DIR)/usr/lib/libtalloc*
 	rm -f $(TARGET_DIR)/usr/lib/libtdb*
+	rm -f $(TARGET_DIR)/usr/lib/libwbclient*
+	rm -f $(TARGET_DIR)/usr/lib/libsmbsharemodes*
 	# Remove not wanted Samba binaries
 	for file in $(SAMBA_TARGETS_); do \
 		rm -f $(TARGET_DIR)/$$file; \
@@ -162,7 +173,9 @@ $(SAMBA_DOC_TARGET): $(SAMBA_DIR)/$(SAMBA_BINARY)
 		VARDIR="${TARGET_DIR}/var/log/samba" \
 		-C $(SAMBA_DIR) installswat
 
-samba: libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) $(SAMBA_DOC_TARGET)
+samba: popt libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) $(SAMBA_DOC_TARGET)
+
+samba-build: $(SAMBA_DIR)/$(SAMBA_BINARY)
 
 samba-configure: $(SAMBA_DIR)/.configured
 
