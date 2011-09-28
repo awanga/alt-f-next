@@ -168,7 +168,7 @@
  
  depend:	config.h
  	makedepend -f$(MAKEFILE_LIST) -Y \
-@@ -126,8 +128,10 @@
+@@ -126,8 +128,5 @@
  .SUFFIXES: .c .o
  
  .c.o:
@@ -179,16 +179,11 @@
 -		$(CC) $(CFLAGS) -o $@ -c $< &>/dev/null
 +	$(CC) $(CFLAGS) -o $@ -c $< 
 +
-+CC = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-gcc
-+CFLAGS =  -pipe -O2 -O2  -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include -I/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/include --sysroot=/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/ -isysroot /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir -mtune=arm926ej-s -march=armv5te -mabi=aapcs-linux -msoft-float -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -I /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/include/ffmpeg
-+LDFLAGS =  -L/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/lib -L/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/lib --sysroot=/home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/
-+STRIP = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir/usr/bin/arm-linux-uclibcgnueabi-strip
-+STAGING_DIR = /home/jcard/Alt-F/build-pkgs/build_arm/staging_dir
 --- minidlna-1.0.19/configure-orig	2011-03-16 22:20:34.796464083 +0000
 +++ minidlna-1.0.19/configure	2011-03-16 22:15:58.300340013 +0000
 @@ -0,0 +1,9 @@
 +#!/bin/sh
-+
++make depend
 +echo >> Makefile
 +echo "CC = $CC_FOR_TARGET" >> Makefile
 +echo "CFLAGS =  $CFLAGS -I ${STAGING_DIR}/usr/include/ffmpeg" >> Makefile
