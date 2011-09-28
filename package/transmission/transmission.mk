@@ -4,7 +4,7 @@
 #
 #############################################################
 
-TRANSMISSION_VERSION = 2.22
+TRANSMISSION_VERSION = 2.33
 TRANSMISSION_SOURCE = transmission-$(TRANSMISSION_VERSION).tar.bz2
 TRANSMISSION_SITE = http://download.m0k.org/transmission/files
 TRANSMISSION_AUTORECONF = NO
