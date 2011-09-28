@@ -3,11 +3,13 @@
 # libxml2
 #
 #############################################################
-LIBXML2_VERSION = 2.7.3
+#LIBXML2_VERSION = 2.7.3
+LIBXML2_VERSION = 2.7.8
 LIBXML2_SOURCE = libxml2-sources-$(LIBXML2_VERSION).tar.gz
 LIBXML2_SITE = ftp://xmlsoft.org/libxml2
 LIBXML2_INSTALL_STAGING = YES
 LIBXML2_INSTALL_TARGET = YES
+LIBXML2_LIBTOOL_PATCH = NO
 LIBXML2_DEPENDENCIES = uclibc
 
 LIBXML2_CONF_OPT = --with-gnu-ld --enable-shared \
