@@ -3,20 +3,20 @@
 # msmtp
 #
 #############################################################
-MSMTP_VERSION = 1.4.19
+
+MSMTP_VERSION = 1.4.24
 MSMTP_SOURCE = msmtp-$(MSMTP_VERSION).tar.bz2
-MSMTP_SITE = http://downloads.sourceforge.net/project/msmtp/msmtp/$(MSMTP_VERSION)
+#MSMTP_SITE = http://downloads.sourceforge.net/project/msmtp/msmtp/$(MSMTP_VERSION)
+MSMTP_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/msmtp
 #MSMTP_AUTORECONF = NO
 MSMTP_INSTALL_STAGING = NO
 MSMTP_INSTALL_TARGET = YES
 MSMTP_BINARY:=src/msmtp
 MSMTP_TARGET_BINARY:=usr/bin/msmtp
 
-# somehow "configure" tries to "link" against the system /usr/lib/libssl.so
-# --without-libssl-prefix makes it use -lssl, and buildroot adds the necessary -L
-# But "make install" creates arm-linux-msmtp!!! the --program-transform-name="echo" hacks it (the wrong way, but I'm sick!)
-MSMTP_CONF_OPT = --without-libssl-prefix --program-transform-name="echo"
+MSMTP_CONF_OPT = --program-prefix=""
+MSMTP_CONF_ENV = PKG_CONFIG=/usr/bin/pkg-config
 
-MSMTP_DEPENDENCIES = uclibc
+MSMTP_DEPENDENCIES = uclibc openssl
 
 $(eval $(call AUTOTARGETS,package,msmtp))
