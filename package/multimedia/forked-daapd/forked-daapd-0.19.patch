@@ -1,0 +1,93 @@
+--- forked-daapd-0.15/config.h.in-orig	2011-03-14 21:46:59.634888301 +0000
++++ forked-daapd-0.15/config.h.in	2011-03-14 21:48:45.257012263 +0000
+@@ -1,5 +1,20 @@
+ /* config.h.in.  Generated from configure.in by autoheader.  */
+ 
++/*  
++  uclibc does not has pipe2() neither inotify_init1()
++  The uclibc version in use also does not have fdtimer, a patch was applied
++*/
++#define IN_CLOEXEC O_CLOEXEC
++#define IN_NONBLOCK O_NONBLOCK
++
++int pipe2(int pipefd[2], int flags);
++int inotify_init1(int flags);
++
++/* uclibc does not has htobexx */
++#define htobe32(a) htonl((a))
++#define htobe16(a) htons((a))
++#define be16toh(a) ntohs((a))
++
+ /* Define to 1 if you have the <dirent.h> header file. */
+ #undef HAVE_DIRENT_H
+ 
+--- forked-daapd-0.15/src/raop.c-orig	2011-03-14 21:49:18.542011600 +0000
++++ forked-daapd-0.15/src/raop.c	2011-03-14 21:49:52.136888965 +0000
+@@ -37,6 +37,7 @@
+ 
+ #include <stdio.h>
+ #include <unistd.h>
++#include <stdlib.h>
+ #include <stdint.h>
+ #include <inttypes.h>
+ #include <math.h>
+--- forked-daapd-0.15/src/laudio_alsa.c-orig	2011-03-14 21:50:12.390011203 +0000
++++ forked-daapd-0.15/src/laudio_alsa.c	2011-03-14 21:50:53.102011868 +0000
+@@ -28,7 +28,7 @@
+ #include <stdint.h>
+ #include <inttypes.h>
+ 
+-#include <asoundlib.h>
++#include <alsa/asoundlib.h>
+ 
+ #include "conffile.h"
+ #include "logger.h"
+--- forked-daapd-0.15/src/main.c-orig	2011-04-25 16:56:02.925309289 +0100
++++ forked-daapd-0.15/src/main.c	2011-04-25 17:56:38.944420870 +0100
+@@ -444,6 +444,46 @@
+   return 1;
+ }
+ 
++int
++pipe2(int pipefd[2], int flags)
++{
++	int ret, nflags = 0;
++
++	ret = pipe(pipefd);
++
++	if (flags & O_NONBLOCK)
++		nflags = O_NONBLOCK;
++
++	if (flags & O_CLOEXEC)
++		nflags |= FD_CLOEXEC;
++
++	if (fcntl(pipefd[0], F_SETFD, fcntl(pipefd[0], F_GETFD) | nflags) == -1)
++		DPRINTF(E_WARN, L_MAIN, "pipe2 failed: %s\n", strerror(errno));
++
++	if (fcntl(pipefd[1], F_SETFD, fcntl(pipefd[1], F_GETFD) | nflags) == -1)
++		DPRINTF(E_WARN, L_MAIN, "pipe2 failed: %s\n", strerror(errno));
++
++	return ret;
++}
++
++int
++inotify_init1(int flags)
++{
++	int ret, nflags = 0;
++
++	ret = inotify_init();
++
++	if (flags & IN_NONBLOCK)
++		nflags = O_NONBLOCK;
++
++	if (flags & IN_CLOEXEC)
++		nflags |= FD_CLOEXEC;
++
++	if (fcntl(ret, F_SETFD, fcntl(ret, F_GETFD) | nflags) == -1)
++		DPRINTF(E_WARN, L_MAIN, "inotify_init1 failed: %s\n", strerror(errno));
++
++	return ret;
++}
+ 
+ int
+ main(int argc, char **argv)
