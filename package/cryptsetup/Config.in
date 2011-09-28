@@ -1,0 +1,11 @@
+config BR2_PACKAGE_CRYPTSETUP
+	bool "cryptsetup"
+	select BR2_PACKAGE_LVM2
+	select BR2_PACKAGE_LIBUUID
+	select BR2_PACKAGE_LIBGCRYPT
+	select BR2_PACKAGE_POPT
+	select BR2_PACKAGE_LIBICONV
+	help
+	 Setup cryptographic volumes for dm-crypt (including LUKS extension)
+	 
+	 http://code.google.com/p/cryptsetup
