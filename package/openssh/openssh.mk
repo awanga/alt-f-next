@@ -4,7 +4,8 @@
 #
 #############################################################
 
-OPENSSH_VERSION=5.8p1
+#OPENSSH_VERSION=5.8p1
+OPENSSH_VERSION=5.9p1
 OPENSSH_SITE=ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable
 OPENSSH_CONF_ENV = LD=$(TARGET_CC)
 OPENSSH_CONF_OPT = --libexecdir=/usr/lib --sysconfdir=/etc/ssh \
