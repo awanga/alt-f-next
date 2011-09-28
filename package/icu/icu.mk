@@ -4,9 +4,13 @@
 #
 #############################################################
 
-ICU_VERSION:=4c-3_8_1
+#ICU_VERSION:=4c-3_8_1
+
+ICU_VERSION:=4c-4_8
 ICU_SOURCE:=icu$(ICU_VERSION)-src.tgz
+#ICU_SITE:=http://download.icu-project.org/files/icu4c/4.8/
 ICU_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/icu
+
 ICU_CAT:=$(ZCAT)
 ICU_DIR:=$(BUILD_DIR)/icu/source
 ICU_HOST_DIR:=$(BUILD_DIR)/icu-host/source
@@ -28,7 +32,13 @@ $(ICU_HOST_DIR)/.configured: $(ICU_DIR)/.unpacked
 		--prefix=/usr;);
 	touch $(ICU_HOST_DIR)/.configured
 
-$(ICU_DIR)/.configured: $(ICU_HOST_DIR)/.configured
+$(ICU_HOST_DIR)/.done: $(ICU_HOST_DIR)/.configured
+	$(MAKE) -C $(ICU_HOST_DIR)
+	ln -s -f $(ICU_HOST_DIR)/bin $(ICU_DIR)/bin-host
+	ln -s -f $(ICU_HOST_DIR)/lib $(ICU_DIR)/lib-host
+	touch $(ICU_HOST_DIR)/.done
+
+$(ICU_DIR)/.configured: $(ICU_HOST_DIR)/.done
 	(cd $(ICU_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
@@ -40,17 +50,17 @@ $(ICU_DIR)/.configured: $(ICU_HOST_DIR)/.configured
 		--prefix=/usr \
 		--mandir=/usr/man \
 		--infodir=/usr/info \
-		--enable-samples \
+		--disable-layout \
+		--disable-samples \
+		--disable-extras \
+		--disable-tests \
+		--with-cross-build=$(ICU_HOST_DIR) \
 	);
 	touch $(ICU_DIR)/.configured
 
-$(ICU_HOST_DIR)/.done: $(ICU_DIR)/.configured
-	$(MAKE) -C $(ICU_HOST_DIR)
-	ln -s -f $(ICU_HOST_DIR)/bin $(ICU_DIR)/bin-host
-	ln -s -f $(ICU_HOST_DIR)/lib $(ICU_DIR)/lib-host
-	touch $(ICU_HOST_DIR)/.done
+# FIXME: libicudata.so.48.0 is not stripped
 
-$(ICU_DIR)/.done: $(ICU_HOST_DIR)/.done
+$(ICU_DIR)/.done: $(ICU_DIR)/.configured
 	$(MAKE) -C $(ICU_DIR)
 	$(MAKE) -C $(ICU_DIR) install DESTDIR=$(STAGING_DIR)
 	$(MAKE) -C $(ICU_DIR) install DESTDIR=$(TARGET_DIR)
