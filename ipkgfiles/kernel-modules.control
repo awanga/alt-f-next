@@ -1,0 +1,9 @@
+Package: kernel-modules
+Description: Aditional kernel modules
+Version: 0.1-1 
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard
