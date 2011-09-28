@@ -25,30 +25,50 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
-BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS"
+BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA35_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP"
 
-BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi"
-BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi"
-BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi"
-BR2_PACKAGE_MEDIATOMB="etc/init.d/S80mediatomb usr/www/cgi-bin/mediatomb.cgi usr/www/cgi-bin/mediatomb_proc.cgi"
-BR2_PACKAGE_FUPPES="etc/fuppes etc/init.d/S80fuppes usr/www/cgi-bin/fuppes.cgi usr/www/cgi-bin/fuppes_proc.cgi"
-BR2_PACKAGE_MINIDLNA="etc/minidlna.conf etc/init.d/S80minidlna usr/www/cgi-bin/minidlna.cgi usr/www/cgi-bin/minidlna_proc.cgi"
-BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt_daapd usr/www/cgi-bin/mt_daapd.cgi usr/www/cgi-bin/mt_daapd_proc.cgi"
-BR2_PACKAGE_FORKED_DAAPD="etc/forked-daapd.conf etc/init.d/S80forked_daapd usr/www/cgi-bin/forked_daapd.cgi usr/www/cgi-bin/forked_daapd_proc.cgi"
+BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
+BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
+BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi usr/www/ushare_hlp.html"
+BR2_PACKAGE_MEDIATOMB="etc/init.d/S80mediatomb usr/www/cgi-bin/mediatomb.cgi usr/www/cgi-bin/mediatomb_proc.cgi usr/www/mediatomb_hlp.html"
+BR2_PACKAGE_FUPPES="etc/fuppes etc/init.d/S80fuppes usr/www/cgi-bin/fuppes.cgi usr/www/cgi-bin/fuppes_proc.cgi usr/www/fuppes_hlp.html"
+BR2_PACKAGE_MINIDLNA="etc/minidlna.conf etc/init.d/S80minidlna usr/www/cgi-bin/minidlna.cgi usr/www/cgi-bin/minidlna_proc.cgi usr/www/minidlna_hlp.html"
+BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt_daapd usr/www/cgi-bin/mt_daapd.cgi usr/www/cgi-bin/mt_daapd_proc.cgi usr/www/mt_daapd_hlp.html"
+BR2_PACKAGE_FORKED_DAAPD="etc/forked-daapd.conf etc/init.d/S80forked_daapd usr/www/cgi-bin/forked_daapd.cgi usr/www/cgi-bin/forked_daapd_proc.cgi usr/www/forked_daapd_hlp.html"
 
 BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
-BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
+BR2_PACKAGE_SAMBA35_DOC="usr/swat/help/welcome.html"
 
-BR2_PACKAGE_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g sbin/mkfs.ntfs"
+BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs"
 
 BR2_PACKAGE_DBUS="etc/init.d/S20dbus"
 
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
-BR2_PACKAGE_NETATALK="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi"
+
+# FIXME: netatalk files are deleted, as they are the same in
+# BR2_PACKAGE_NETATALK and BR2_PACKAGE_NETATALK2,
+# which should not be configured simultaneously.
+# Perhaps creating a config netatalk suboption?
+# meanwhile this is tested bellow
+
+#BR2_PACKAGE_NETATALK="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
+BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
+
+BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
+BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
+BR2_PACKAGE_LVM2="etc/init.d/S14lvm"
+BR2_PACKAGE_CRYPTSETUP="etc/init.d/S14cryptsetup"
+
+# see above comment
+if test -n "$(grep ^BR2_PACKAGE_NETATALK2=y .config)" -a \
+	-n "$(grep ^BR2_PACKAGE_NETATALK=y .config)"; then
+	echo "Error: netatalk and netatalk2 packages can't be used at the same time"
+	exit 1
+fi
 
 RMF=""
 for i in $BR2_PACKAGES; do
-	if ! grep -q ^$i= .config; then
+	if ! grep -q ^${i}= .config; then
 		f="$(eval echo \$$i)"
 		RMF="$RMF $f"
 	fi
@@ -60,10 +80,6 @@ for i in $RMF; do rm -rf $1/$i; done
 #
 # as a matter of fact everything but busybox and libUclibc could be moved,
 # because we are using aufs (squashfs is read-only, but aufs does COW to a tmpfs)
-
-# oddly this frees less space...
-#mv $1/boot $1/usr/boot
-#ln -sf $1/usr/boot $1/boot
 
 for i in $1/sbin/*; do
 	if ! test -h $i; then
