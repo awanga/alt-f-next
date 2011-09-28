@@ -1,0 +1,6 @@
+#!/bin/sh 
+
+if $(ipkg status netatalk2 | grep -q installed); then
+	echo "Netatalk and Netatalk2 are incompatible, and Netatalk2 is installed, uninstall it first."
+	exit 1
+fi
