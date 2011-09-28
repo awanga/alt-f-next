@@ -1,0 +1,11 @@
+config BR2_PACKAGE_NUTS
+	bool "nuts"
+	select BR2_PACKAGE_NETSNMP
+	select BR2_PACKAGE_LIBUSB
+	select BR2_PACKAGE_OPENSSL
+
+	help
+	  Network UPS Tools is a collection of programs for monitoring and
+	  administering UPS, PDU and SCD hardware.
+
+	  http://www.networkupstools.org
