@@ -1,0 +1,7 @@
+config BR2_PACKAGE_NMAP
+	bool "nmap"
+	select BR2_PACKAGE_PCRE
+	help
+	  Nmap is a free and open source utility for network exploration or security auditing.
+
+	  http://nmap.org
