@@ -1,0 +1,5 @@
+./etc/init.d/S14cryptsetup
+./usr/lib/libcryptsetup.so
+./usr/lib/libcryptsetup.so.1
+./usr/lib/libcryptsetup.so.1.2.0
+./usr/sbin/cryptsetup
