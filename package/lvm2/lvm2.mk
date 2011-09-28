@@ -23,10 +23,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 
-LVM2_BASEVER=2.02
+#LVM2_BASEVER=2.02
 LVM2_DMVER=1.02
-LVM2_PATCH=50
-LVM2_VERSION=$(LVM2_BASEVER).$(LVM2_PATCH)
+#LVM2_PATCH=50
+#LVM2_PATCH=67
+#LVM2_VERSION=$(LVM2_BASEVER).$(LVM2_PATCH)
+LVM2_VERSION=2.02.67
 LVM2_SOURCE:=LVM2.$(LVM2_VERSION).tgz
 LVM2_SITE:=ftp://sources.redhat.com/pub/lvm2
 LVM2_CAT:=$(ZCAT)
@@ -34,7 +36,7 @@ LVM2_DIR:=$(BUILD_DIR)/LVM2.$(LVM2_VERSION)
 LVM2_SBIN:=lvchange lvcreate lvdisplay lvextend lvm lvmchange lvmdiskscan lvmsadc lvmsar lvreduce lvremove lvrename lvresize lvs lvscan pvchange pvcreate pvdisplay pvmove pvremove pvresize pvs pvscan vgcfgbackup vgcfgrestore vgchange vgck vgconvert vgcreate vgdisplay vgexport vgextend vgimport vgmerge vgmknodes vgreduce vgremove vgrename vgs vgscan vgsplit
 LVM2_DMSETUP_SBIN:=dmsetup
 LVM2_LIB:=libdevmapper.so.$(LVM2_DMVER)
-LVM2_TARGET_SBINS=$(foreach lvm2sbin, $(LVM2_SBIN), $(TARGET_DIR)/sbin/$(lvm2sbin))
+LVM2_TARGET_SBINS=$(foreach lvm2sbin, $(LVM2_SBIN), $(TARGET_DIR)/usr/sbin/$(lvm2sbin))
 LVM2_TARGET_DMSETUP_SBINS=$(foreach lvm2sbin, $(LVM2_DMSETUP_SBIN), $(TARGET_DIR)/sbin/$(lvm2sbin))
 LVM2_TARGET_LIBS=$(foreach lvm2lib, $(LVM2_LIB), $(TARGET_DIR)/lib/$(lvm2lib))
 
@@ -43,7 +45,6 @@ $(DL_DIR)/$(LVM2_SOURCE):
 
 lvm2-source: $(DL_DIR)/$(LVM2_SOURCE)
 
-
 ifeq ($(BR2_PACKAGE_READLINE),y)
 LVM2_DEPENDENCIES+=readline
 else
@@ -51,7 +52,6 @@ else
 # of "tgetent" (=> ncurses) even if it's not used..
 LVM2_CONF_OPT+=--disable-readline
 endif
-
 
 $(LVM2_DIR)/.unpacked: $(DL_DIR)/$(LVM2_SOURCE)
 	$(LVM2_CAT) $(DL_DIR)/$(LVM2_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
@@ -77,7 +77,6 @@ $(LVM2_DIR)/.configured: $(LVM2_DIR)/.unpacked
 	)
 	touch $(LVM2_DIR)/.configured
 
-
 $(LVM2_DIR)/.built: $(LVM2_DIR)/.configured
 	$(MAKE1) CC=$(TARGET_CC) RANLIB=$(TARGET_RANLIB) AR=$(TARGET_AR) -C $(LVM2_DIR) DESTDIR=$(STAGING_DIR)
 	$(MAKE1) -C $(LVM2_DIR) DESTDIR=$(STAGING_DIR) install
@@ -88,20 +87,22 @@ $(LVM2_DIR)/.built: $(LVM2_DIR)/.configured
 	chmod 644 $(STAGING_DIR)/lib/$(LVM2_LIB)
 	touch $(LVM2_DIR)/.built
 
-
 $(LVM2_TARGET_SBINS) $(LVM2_TARGET_DMSETUP_SBINS): $(LVM2_DIR)/.built
 	cp -a $(STAGING_DIR)/sbin/$(notdir $@) $@
+	cp -a $(STAGING_DIR)/etc/lvm $(TARGET_DIR)/etc
 
 $(LVM2_TARGET_LIBS): $(LVM2_DIR)/.built
 	cp -a $(STAGING_DIR)/lib/$(notdir $@) $@
 
+lvm2-configure: $(LVM2_DIR)/.configured
+
+lvm2-build: $(LVM2_DIR)/.built
 
 ifeq ($(BR2_PACKAGE_LVM2_DMSETUP_ONLY),y)
 lvm2: uclibc $(LVM2_TARGET_DMSETUP_SBINS) $(LVM2_TARGET_LIBS)
 else
 lvm2: uclibc $(LVM2_TARGET_SBINS) $(LVM2_TARGET_DMSETUP_SBINS) $(LVM2_TARGET_LIBS)
 endif
-
 
 lvm2-clean:
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(LVM2_DIR) uninstall
