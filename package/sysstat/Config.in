@@ -1,0 +1,6 @@
+config BR2_PACKAGE_SYSSTAT
+	bool "sysstat"
+	help
+	  The sysstat utilities are a collection of performance monitoring tools for Linux
+
+	  http://sebastien.godard.pagesperso-orange.fr/index.html
