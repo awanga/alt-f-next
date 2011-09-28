@@ -5,7 +5,7 @@ config BR2_PACKAGE_OPENVPN
 	bool "openvpn"
 	select BR2_PACKAGE_LZO
 	select BR2_PACKAGE_OPENSSL
- 	help
+	help
 	  OpenVPN is a full-featured SSL VPN solution which can
 	  accomodate a wide range of configurations, including road
 	  warrior access, home/office/campus telecommuting, WiFi
