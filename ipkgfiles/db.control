@@ -1,6 +1,6 @@
 Package: db
 Depends: ipkg
-Version: 4.8.30
+Version: 4.8.30-1
 Description: Berkeley DB
 Architecture: arm
 Priority: optional

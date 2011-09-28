@@ -1,8 +1,7 @@
 Package: ncurses
-Description: The Ncurses (new curses) library is a free software
- emulation of curses in System V Release 4.0, and more.
+Description: The Ncurses (new curses) library is a free software emulation of curses in System V Release 4.0, and more.
 Depends: ipkg
-Version: 5.6
+Version: 5.6-1
 Architecture: arm
 Priority: optional
 Section: admin

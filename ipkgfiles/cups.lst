@@ -237,8 +237,10 @@
 ./usr/share/cups/doc/images/cups-raster-chain.png
 ./usr/share/cups/doc/images/generic.png
 ./usr/share/cups/doc/images/left.gif
+./usr/share/cups/doc/images/raster-organization.png
 ./usr/share/cups/doc/images/raster.png
 ./usr/share/cups/doc/images/right.gif
+./usr/share/cups/doc/images/sample-image.png
 ./usr/share/cups/doc/images/sel.gif
 ./usr/share/cups/doc/images/smiley.jpg
 ./usr/share/cups/doc/images/unsel.gif

@@ -1,6 +1,6 @@
 Package: python
 Description: The python language interpreter.
-Version: 2.4.5
+Version: 2.4.5-1
 Depends: ncurses, readline, expat
 Architecture: arm
 Priority: optional

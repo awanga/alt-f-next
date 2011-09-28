@@ -1,6 +1,6 @@
 Package: libfuse
-Depends: ipkg
-Version: 2.8.5
+Depends: kernel-modules,ipkg
+Version: 2.8.5-1
 Description: FUSE (Filesystem in UserSpacE)
 Architecture: arm
 Priority: optional
