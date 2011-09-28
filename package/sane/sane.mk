@@ -16,3 +16,8 @@ SANE_DEPENDENCIES = uclibc libusb jpeg tiff
 SANE_CONF_OPT = --disable-latex --disable-translations $(DISABLE_IPV6) --disable-avahi --disable-rpath --with-pic --without-gphoto2
 
 $(eval $(call AUTOTARGETS,package,sane))
+
+$(SANE_HOOK_POST_INSTALL):
+	sed -i 's|^includedir=.*|includedir="$(STAGING_DIR)/usr/include"|'  $(STAGING_DIR)/usr/bin/sane-config
+	sed -i 's|^libdir=.*|libdir="$(STAGING_DIR)/usr/lib"|' $(STAGING_DIR)/usr/bin/sane-config
+	touch $@
