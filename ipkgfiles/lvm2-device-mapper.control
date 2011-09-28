@@ -1,0 +1,9 @@
+Package: lvm2-device-mapper
+Description: Device Mapper is the LVM implementation of a driver that handles volume management.
+Version: 2.02.67
+Depends: kernel-modules, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: ftp://sources.redhat.com/pub/lvm2
+Maintainer: jcard

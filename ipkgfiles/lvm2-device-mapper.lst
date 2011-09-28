@@ -1,0 +1,3 @@
+./etc/init.d/S12device_mapper
+./lib/libdevmapper.so.1.02
+./usr/sbin/dmsetup
