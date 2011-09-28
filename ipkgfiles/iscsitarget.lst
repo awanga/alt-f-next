@@ -1,0 +1,6 @@
+./etc/iet/ietd.conf
+./etc/iet/initiators.allow
+./etc/iet/targets.allow
+./etc/init.d/S64iscsitarget
+./usr/sbin/ietadm
+./usr/sbin/ietd
