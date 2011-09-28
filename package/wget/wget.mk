@@ -4,7 +4,8 @@
 #
 #############################################################
 
-WGET_VERSION:=1.12
+#WGET_VERSION:=1.12
+WGET_VERSION:=1.13.4
 WGET_SOURCE:=wget-$(WGET_VERSION).tar.gz
 WGET_SITE:=$(BR2_GNU_MIRROR)/wget
 WGET_DIR:=$(BUILD_DIR)/wget-$(WGET_VERSION)
@@ -14,6 +15,8 @@ WGET_TARGET_BINARY:=usr/bin/wget
 
 ifeq ($(BR2_PACKAGE_OPENSSL),n)
 	DISABLE_SSL += --without-ssl
+else
+	DISABLE_SSL += --with-ssl=openssl
 endif
 
 $(DL_DIR)/$(WGET_SOURCE):
@@ -30,6 +33,7 @@ $(WGET_DIR)/.configured: $(WGET_DIR)/.unpacked
 	(cd $(WGET_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
+		$(TARGET_CONFIGURE_ENV) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -52,6 +56,8 @@ wget: uclibc $(TARGET_DIR)/$(WGET_TARGET_BINARY)
 wget-patch: $(WGET_DIR)/.unpacked
 
 wget-configure: $(WGET_DIR)/.configured
+
+wget-build: $(WGET_DIR)/$(WGET_BINARY)
 
 wget-clean:
 	rm -f $(TARGET_DIR)/$(WGET_TARGET_BINARY)
