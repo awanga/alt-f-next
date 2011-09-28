@@ -1,0 +1,2 @@
+./usr/sbin/parted
+./usr/sbin/partprobe
