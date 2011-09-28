@@ -24,5 +24,7 @@ $(eval $(call AUTOTARGETS,package/multimedia,taglib))
 ifneq ($(BR2_HAVE_DEVFILES),y)
 $(TAGLIB_HOOK_POST_INSTALL):
 	rm -f $(TARGET_DIR)/usr/bin/taglib-config
+	sed -i 's|prefix=\(.*\)|prefix='$(STAGING_DIR)'\1|' $(STAGING_DIR)/usr/bin/taglib-config
+	sed -i 's|prefix=\(.*\)|prefix='$(STAGING_DIR)'\1|' $(STAGING_DIR)/usr/lib/pkgconfig//taglib.pc
 	touch $@
 endif
