@@ -1,0 +1,10 @@
+#!/bin/sh 
+
+addgroup -S -g 84 nut
+adduser -S -g "NUT daemon" -G nut -u 69 -h /var/lib/ups ups
+
+mkdir -p /var/state/ups
+chmod 0770 /var/state/ups
+chown root:nut /var/state/ups
+
+ln -sf /usr/sbin/rcscript /sbin/rcnut
