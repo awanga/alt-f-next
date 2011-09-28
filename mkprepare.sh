@@ -127,8 +127,27 @@ cp ipkg-utils-050831/ipkg-build \
 sed -i 's|*control|./control|' ../bin/ipkg.py
 sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
 
+
+# most old Makefiles (including the linux kernel source) are not accepted
+# by make version greater than 3.81, so install 3.81.
+# you have to put the Alt-F bin directory in your path *before* the standard path, as in
+# export PATH=<Alt-F bin directory>:$PATH
+if ! test -e make-3.81.tar.bz2; then
+	wget http://ftp.gnu.org/pub/gnu/make/make-3.81.tar.bz2
+fi
+rm -rf make-3.81
+tar xjf make-3.81.tar.bz2
+cd make-3.81
+./configure
+make
+cp make ../../bin
+cd ..
+
 if ! test -e mklibs_0.1.31.tar.gz; then
-	wget http://ftp.de.debian.org/debian/pool/main/m/mklibs/mklibs_0.1.31.tar.gz
+	# wget http://ftp.de.debian.org/debian/pool/main/m/mklibs/mklibs_0.1.31.tar.gz
+	# use snapshot.debian.org to get old packages
+	wget http://snapshot.debian.org/archive/debian/20101225T025119Z/pool/main/m/mklibs/mklibs_0.1.31.tar.gz
+
 fi
 rm -rf mklibs_0.1.31
 tar xzf mklibs_0.1.31.tar.gz
