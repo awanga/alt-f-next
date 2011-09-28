@@ -1,0 +1,14 @@
+./etc/sysstat
+./etc/sysstat/sysstat
+./etc/sysstat/sysstat.ioconf
+./usr/bin/cifsiostat
+./usr/bin/iostat
+./usr/bin/mpstat
+./usr/bin/nfsiostat
+./usr/bin/pidstat
+./usr/bin/sadf
+./usr/bin/sar
+./usr/lib/sa
+./usr/lib/sa/sa1
+./usr/lib/sa/sa2
+./usr/lib/sa/sadc

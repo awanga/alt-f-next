@@ -1,0 +1,9 @@
+Package: sysstat
+Description: The sysstat utilities are a collection of performance monitoring tools for Linux
+Version: 10.0.0-1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sebastien.godard.pagesperso-orange.fr
+Maintainer: jcard
