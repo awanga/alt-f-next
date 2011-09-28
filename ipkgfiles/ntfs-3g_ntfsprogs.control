@@ -1,0 +1,12 @@
+Package: ntfs-3g-ntfsprogs
+Description: NTFS-3G is a stable, full-featured, read-write NTFS driver for Linux,Android, Mac OS X,
+ FreeBSD, NetBSD, OpenSolaris, QNX, Haiku, and other operating systems. It provides safe
+ handling of the Windows XP, Windows Server 2003, Windows 2000, Windows Vista,
+ Windows Server 2008 and Windows 7 NTFS file systems. ntfsprogs is now merged in ntfs-3g.
+Version: 2011.4.12
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.tuxera.com/community/ntfs-3g-download/
+Maintainer: jcard
