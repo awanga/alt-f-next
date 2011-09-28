@@ -1,0 +1,10 @@
+Package: openssh
+Description: A free version of the SSH protocol suite of network connectivity tools.
+ The standard 'ssh', 'sshd', 'scp', and friends.
+Version: 5.9p1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.openssh.com/
+Maintainer: jcard
