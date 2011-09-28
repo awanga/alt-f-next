@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PARTED
+	bool "parted"
+	select BR2_PACKAGE_LIBUUID
+	help
+	  GNU Parted is a program for manipulating partition tables.
+	  http://www.gnu.org/software/parted
