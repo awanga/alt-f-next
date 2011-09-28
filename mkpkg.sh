@@ -92,6 +92,7 @@ case "$1" in
 		if test $# != 2 -o ! -f $IPKGDIR/$2.lst; then
 			usage
 		fi
+		rm -f $BLDDIR/project_build_arm/dns323/autotools-stamps/$2_*
 		cd $ROOTFSDIR
 		# remove files first
 		xargs --arg-file=$IPKGDIR/$2.lst rm -f >& /dev/null
@@ -384,7 +385,8 @@ done
 
 ipkg-build -o root -g root tmp
 
-mv ${pkg}_${version}_${ARCH}.ipk pkgs
+pname=$(awk '/^Package:/{print $2}' $IPKGDIR/$pkg.control) # underscores in pkg name
+mv ${pname}_${version}_${ARCH}.ipk pkgs
 rm -rf tmp
 
 # my own "sm" ipkg-build
