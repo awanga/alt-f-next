@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBGD
+	bool "libgd"
+	select BR2_PACKAGE_JPEG
+	select BR2_PACKAGE_LIBPNG
+	help
+	  A graphics library for fast image creation.
+
+	  https://bitbucket.org/pierrejoye/gd-libgd/
