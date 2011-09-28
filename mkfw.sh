@@ -37,7 +37,8 @@ MAXFS=6488000
 
 PATH=$(pwd)/bin:$PATH
 DESTD=$BLDDIR/binaries/dns323
-KVER=$(awk '/version:/{print $5}' $BLDDIR/project_build_arm/dns323/root/boot/linux*.config)
+#KVER=$(awk '/version:/{print $5}' $BLDDIR/project_build_arm/dns323/root/boot/linux*.config)
+KVER=$(cat $BLDDIR/project_build_arm/dns323/.linux-version)
 VER=$(cut -f2 -d" " customroot/etc/Alt-F)
 
 if ! test -f ${DESTD}/zImage -a -f ${DESTD}/$rootfs; then
@@ -70,8 +71,8 @@ mkimage -A arm -O linux -T ramdisk -C none \
 check "$?" "initramfs mkimage"
 
 # merge kernel and initramfs
-dns323-fw -m -k ${DESTD}/uImage -i ${DESTD}/urootfs \
-	${DESTD}/Alt-F-${VER}.bin
+dns323-fw -m -p 7  -c 1 -l 1 -u 1 -v 4 \
+	-k ${DESTD}/uImage -i ${DESTD}/urootfs ${DESTD}/Alt-F-${VER}.bin
 check "$?" merging
 
 # verification, check that splitint the created fw works fine
