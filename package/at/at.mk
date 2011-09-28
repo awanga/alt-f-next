@@ -25,6 +25,7 @@ $(AT_DIR)/.configured: $(AT_DIR)/.unpacked
 	(cd $(AT_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
+		$(TARGET_CONFIGURE_ENV) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
