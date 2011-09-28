@@ -1,0 +1,21 @@
+config BR2_PACKAGE_NTFS_3G_NTFSPROGS
+	bool "ntfs-3g_ntfsprogs"
+	depends on BR2_LARGEFILE
+	depends on BR2_USE_WCHAR
+	help
+	 NTFS-3G is a stable, full-featured, read-write NTFS driver for Linux, Android, Mac OS X,
+	 FreeBSD, NetBSD, OpenSolaris, QNX, Haiku, and other operating systems. It provides safe
+	 handling of the Windows XP, Windows Server 2003, Windows 2000, Windows Vista,
+	 Windows Server 2008 and Windows 7 NTFS file systems. ntfsprogs is now merged in ntfs-3g.
+
+	  http://www.tuxera.com/community/ntfs-3g-download/
+
+#comment "ntfs-3g_ntfsprogs requires a toolchain with LARGEFILE and WCHAR support"
+#	depends on !(BR2_LARGEFILE && BR2_USE_WCHAR)
+
+config BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS
+	bool "ntfsprogs"
+	depends on BR2_PACKAGE_NTFS_3G_NTFSPROGS
+	help
+	  Compile also the ntfsprogs utilities programs
+
