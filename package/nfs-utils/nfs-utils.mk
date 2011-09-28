@@ -4,9 +4,10 @@
 #
 #############################################################
 #NFS_UTILS_VERSION:=1.2.0
-NFS_UTILS_VERSION:=1.2.1
+# NFS_UTILS_VERSION:=1.2.1 current
 # NFS_UTILS_VERSION:=1.2.2 uses libcap (capabilities.h), not in uclibc
 # NFS_UTILS_VERSION:=1.2.3 rpc.mountd core dumps with showmount and +1 mount
+NFS_UTILS_VERSION:=1.2.4
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
 NFS_UTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/nfs/
 NFS_UTILS_CAT:=$(BZCAT)
@@ -25,11 +26,10 @@ BR2_NFS_UTILS_CFLAGS+=-DUTS_RELEASE='\"$(LINUX_HEADERS_VERSION)\"'
 $(DL_DIR)/$(NFS_UTILS_SOURCE):
 	 $(call DOWNLOAD,$(NFS_UTILS_SITE),$(NFS_UTILS_SOURCE))
 
-nfs-utils-source: $(DL_DIR)/$(NFS_UTILS_SOURCE)
-
 $(NFS_UTILS_DIR)/.unpacked: $(DL_DIR)/$(NFS_UTILS_SOURCE)
 	$(NFS_UTILS_CAT) $(DL_DIR)/$(NFS_UTILS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	toolchain/patch-kernel.sh $(NFS_UTILS_DIR) package/nfs-utils/ nfs-utils-$(NFS_UTILS_VERSION)\*.patch
+	(cd $(NFS_UTILS_DIR); autoconf)
 	$(CONFIG_UPDATE) $(NFS_UTILS_DIR)
 	touch $@
 
@@ -45,8 +45,10 @@ $(NFS_UTILS_DIR)/.configured: $(NFS_UTILS_DIR)/.unpacked
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
 		--without-tcp-wrappers \
+		--without-krb5 \
 		--disable-uuid \
 		--disable-nfsv4 \
+		--disable-nfsv41 \
 		--disable-gss \
 		--disable-tirpc \
 		--disable-static \
@@ -79,7 +81,13 @@ $(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
 
 $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY): $(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils
 	touch  $@
-	
+
+nfs-utils-source: $(DL_DIR)/$(NFS_UTILS_SOURCE)
+
+nfs-utils-configure: $(NFS_UTILS_DIR)/.configured
+
+nfs-utils-build: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
+
 nfs-utils: uclibc host-fakeroot $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY)
 
 nfs-utils-uninstall:
