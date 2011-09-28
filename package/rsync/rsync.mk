@@ -18,8 +18,9 @@ else
 RSYNC_INSTALL_TARGET_OPT:=DESTDIR=$(TARGET_DIR) INSTALLCMD='./install-sh -c' \
 			  STRIPPROG="$(TARGET_STRIP)" install-strip
 endif
-RSYNC_CONF_OPT:=--with-included-popt $(DISABLE_IPV6)
+#RSYNC_CONF_OPT:=--with-included-popt $(DISABLE_IPV6)
+RSYNC_CONF_OPT:=$(DISABLE_IPV6)
 
-RSYNC_DEPENDENCIES:=uclibc
+RSYNC_DEPENDENCIES:=uclibc popt
 
 $(eval $(call AUTOTARGETS,package,rsync))
