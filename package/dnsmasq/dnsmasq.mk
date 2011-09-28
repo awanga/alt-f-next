@@ -5,7 +5,7 @@
 #############################################################
 
 DNSMASQ_SITE:=http://thekelleys.org.uk/dnsmasq
-DNSMASQ_UPVER:=2.57
+DNSMASQ_UPVER:=2.58
 DNSMASQ_SOURCE:=dnsmasq-$(DNSMASQ_UPVER).tar.gz
 DNSMASQ_DIR:=$(BUILD_DIR)/dnsmasq-$(DNSMASQ_UPVER)
 DNSMASQ_BINARY:=dnsmasq
@@ -31,6 +31,9 @@ else
 DNSMASQ_DBUS:=
 endif
 
+# when compiling packages, dbus exists, but as the base package has no dbus, force no-dbus
+DNSMASQ_DBUS:=
+
 $(DL_DIR)/$(DNSMASQ_SOURCE):
 	$(call DOWNLOAD,$(DNSMASQ_SITE),$(DNSMASQ_SOURCE))
 
@@ -40,13 +43,14 @@ $(DNSMASQ_DIR)/.source: $(DL_DIR)/$(DNSMASQ_SOURCE)
 	touch $@
 
 $(DNSMASQ_DIR)/src/$(DNSMASQ_BINARY): $(DNSMASQ_DIR)/.source $(DNSMASQ_DBUS)
-ifeq ($(BR2_PACKAGE_DBUS),y)
-	$(SED) 's^.*#define HAVE_DBUS.*^#define HAVE_DBUS^' \
-		$(DNSMASQ_DIR)/src/config.h
-else
+# when compiling packages, dbus exists, but as the base package has no dbus, force no-dbus
+#ifeq ($(BR2_PACKAGE_DBUS),y)
+#	$(SED) 's^.*#define HAVE_DBUS.*^#define HAVE_DBUS^' \
+#		$(DNSMASQ_DIR)/src/config.h
+#else
 	$(SED) 's^.*#define HAVE_DBUS.*^/* #define HAVE_DBUS */^' \
 		$(DNSMASQ_DIR)/src/config.h
-endif
+#endif
 	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" AWK=awk \
 		COPTS='$(DNSMASQ_COPTS)' PREFIX=/usr -C $(DNSMASQ_DIR)
 	touch -c $@
