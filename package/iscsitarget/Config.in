@@ -1,0 +1,6 @@
+config BR2_PACKAGE_ISCSITARGET
+	bool "iscsitarget"
+	help
+	  iSCSI Enterprise Target is for building an iSCSI storage system on Linux.
+
+	  http://sourceforge.net/projects/iscsitarget
