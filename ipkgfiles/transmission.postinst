@@ -8,7 +8,7 @@ adduser -S -g "Transmission daemon" -G network -u 13 -h $THOME transmission
 
 if ! test -f $THOME/$JSON; then
 	transmission-daemon -d -c "" -w "" --incomplete-dir ""  >& $THOME/$JSON
-	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true,|' $THOME/$JSON
+	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' -e 's|.*"umask":.*|    "umask": 0, |' $THOME/$JSON
 fi
 
 chown transmission:network $THOME/$JSON
