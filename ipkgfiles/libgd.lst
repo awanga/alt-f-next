@@ -1,0 +1,15 @@
+./usr/bin/annotate
+./usr/bin/bdftogd
+./usr/bin/gd2copypal
+./usr/bin/gd2togif
+./usr/bin/gd2topng
+./usr/bin/gdcmpgif
+./usr/bin/gdparttopng
+./usr/bin/gdtopng
+./usr/bin/giftogd2
+./usr/bin/pngtogd
+./usr/bin/pngtogd2
+./usr/bin/webpng
+./usr/lib/libgd.so
+./usr/lib/libgd.so.2
+./usr/lib/libgd.so.2.0.0
