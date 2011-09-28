@@ -4,7 +4,7 @@
 #
 #############################################################
 
-HPLIP_VERSION = 3.11.1
+HPLIP_VERSION = 3.11.7
 HPLIP_SOURCE = hplip-$(HPLIP_VERSION).tar.gz
 HPLIP_SITE = http://prdownloads.sourceforge.net/hplip/
 HPLIP_AUTORECONF = NO
