@@ -3,7 +3,8 @@
 # libgcrypt
 #
 #############################################################
-LIBGCRYPT_VERSION:=1.2.4
+#LIBGCRYPT_VERSION:=1.2.4
+LIBGCRYPT_VERSION:=1.5.0
 LIBGCRYPT_SOURCE:=libgcrypt-$(LIBGCRYPT_VERSION).tar.bz2
 LIBGCRYPT_SITE:=ftp://gd.tuwien.ac.at/privacy/gnupg/libgcrypt/
 LIBGCRYPT_DIR:=$(BUILD_DIR)/libgcrypt-$(LIBGCRYPT_VERSION)
@@ -46,6 +47,8 @@ $(LIBGCRYPT_DIR)/.configured: $(LIBGCRYPT_DIR)/.source
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
 		--disable-optimization \
+		--program-prefix="" \
+		--with-gpg-error-prefix=$(STAGING_DIR)/usr \
 	)
 	touch $@
 
@@ -65,12 +68,16 @@ endif
 
 libgcrypt: $(LIBGCRYPT_DEPENDENCIES) $(TARGET_DIR)/$(LIBGCRYPT_TARGET_LIBRARY)
 
+libgcrypt-build: $(LIBGCRYPT_DIR)/$(LIBGCRYPT_LIBRARY)
+
+libgcrypt-configure: $(LIBGCRYPT_DIR)/.configured
+
 libgcrypt-source: $(DL_DIR)/$(LIBGCRYPT_SOURCE)
 
 libgcrypt-clean:
 	rm -f $(TARGET_DIR)/$(LIBGCRYPT_TARGET_LIBRARY)*
 	-$(MAKE) -C $(LIBGCRYPT_DIR) clean
-	rm -rf $(STAGING_DIR)/$(LIBGCRYPT_TARGET_LIBRARY)\*
+	rm -rf $(STAGING_DIR)/$(LIBGCRYPT_TARGET_LIBRARY)*
 
 libgcrypt-dirclean:
 	rm -rf $(LIBGCRYPT_DIR)
