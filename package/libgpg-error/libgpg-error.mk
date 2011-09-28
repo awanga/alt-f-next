@@ -3,8 +3,9 @@
 # libgpg-error
 #
 #############################################################
-#LIBGPG_ERROR_VERSION:=1.5
-LIBGPG_ERROR_VERSION:=1.6
+
+#LIBGPG_ERROR_VERSION:=1.6
+LIBGPG_ERROR_VERSION:=1.10
 LIBGPG_ERROR_SOURCE:=libgpg-error-$(LIBGPG_ERROR_VERSION).tar.bz2
 LIBGPG_ERROR_SITE:=ftp://gd.tuwien.ac.at/privacy/gnupg/libgpg-error
 LIBGPG_ERROR_DIR:=$(BUILD_DIR)/libgpg-error-$(LIBGPG_ERROR_VERSION)
@@ -25,6 +26,7 @@ $(LIBGPG_ERROR_DIR)/.configured: $(LIBGPG_ERROR_DIR)/.source
 	(cd $(LIBGPG_ERROR_DIR); rm -f config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
+		$(TARGET_CONFIGURE_ENV) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -50,13 +52,16 @@ $(LIBGPG_ERROR_DIR)/$(LIBGPG_ERROR_LIBRARY): $(LIBGPG_ERROR_DIR)/.configured
 
 $(STAGING_DIR)/$(LIBGPG_ERROR_TARGET_LIBRARY): $(LIBGPG_ERROR_DIR)/$(LIBGPG_ERROR_LIBRARY)
 	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(LIBGPG_ERROR_DIR) install
-	$(SED) "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" $(STAGING_DIR)/usr/lib/libgpg-error.la
+	$(SED) "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" $(STAGING_DIR)/usr/lib/libgpg-error.la	
+	sed -i 's|includedir=\(.*\)|includedir='$(STAGING_DIR)'\1|' $(STAGING_DIR)/usr/bin/gpg-error-config
+	sed -i 's|libdir=\(.*\)|libdir='$(STAGING_DIR)'\1|' $(STAGING_DIR)/usr/bin/gpg-error-config
 
 $(TARGET_DIR)/$(LIBGPG_ERROR_TARGET_LIBRARY): $(STAGING_DIR)/$(LIBGPG_ERROR_TARGET_LIBRARY)
 	cp -dpf $<* $(TARGET_DIR)/$(LIBGPG_ERROR_DESTDIR)
 
 libgpg-error: uclibc $(TARGET_DIR)/$(LIBGPG_ERROR_TARGET_LIBRARY)
-	touch $@
+
+libgpg-error-build: $(LIBGPG_ERROR_DIR)/$(LIBGPG_ERROR_LIBRARY)
 
 libgpg-error-configure: $(LIBGPG_ERROR_DIR)/.configured
 
