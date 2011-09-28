@@ -25,6 +25,9 @@ case $1 in
 		;;
 esac
 
+# *must* use make-3.81, build and installed by mkprepare.sh
+PATH=$(pwd)/bin:$PATH
+
 if ! test -f ${DESTD}/zImage -a -f ${DESTD}/$rootfs; then
 	echo "${DESTD}/zImage or ${DESTD}/$rootfs not found, exiting"
 	exit 1
@@ -66,8 +69,10 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	# DNS-323: 2.6.12.6
 	# DNS-343: 2.6.22.7
 
-	#	kvers="2.6.12.6 2.6.22.7" # leave 2.6.22.7 out for now
-	kvers="2.6.12.6"
+	# Kirkwood based SoCs
+	# DNS-320: 2.6.22.18, reloaded does not seems to work
+
+	kvers="2.6.12.6 2.6.15"
 
 	karch_2_6_12_6="2.6.12.6-arm1"
 	vermagic_2_6_12_6="#define VERMAGIC_STRING \"$karch_2_6_12_6 ARMv5 gcc-3.3\""
@@ -86,14 +91,18 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 
 	for i in $kvers; do
 		if ! test -d linux-$i; then
-			kver_=$(echo $i | tr '.' '_')
 			echo "Extracting linux-$i"
 			tar xjf ../dl/linux-${i}.tar.bz2
 			cd linux-$i
 			echo "Configuring linux-$i"
 			# gross hack...
-			eval echo \$vermagic_$kver_ >> include/linux/vermagic.h
+			kver_=$(echo $i | tr '.' '_')
+			kmagic=$(eval echo \$vermagic_$kver_)
+			if test -n "$kmagic"; then
+				echo "$kmagic" >> include/linux/vermagic.h
+			fi
 			make CROSS_COMPILE=arm-linux-uclibcgnueabi- ARCH=arm defconfig modules_prepare
+			if test $? != 0; then exit 1; fi
 			cd ..
 		fi
 	done
@@ -111,6 +120,9 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	for i in $kvers; do
 		kver_=$(echo $i | tr '.' '_')
 		karch=$(eval echo \$karch_$kver_)
+		if test -z "$karch"; then
+			karch=$i
+		fi
 		if ! test -f reloaded-${i}.ko; then
 			echo "Building reloaded for linux-$i"
 			rm linux
