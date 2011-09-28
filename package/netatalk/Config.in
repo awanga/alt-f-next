@@ -1,7 +1,8 @@
 config BR2_PACKAGE_NETATALK
 	bool "netatalk"
 	select BR2_PACKAGE_DB
+	select BR2_PACKAGE_LIBGCRYPT
 	help
-	 Apple Filling Protocol
+	 Apple Filling Protocol, netatalk version 2.1
 
 	  http://netatalk.sourceforge.net/

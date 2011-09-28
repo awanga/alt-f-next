@@ -3,7 +3,6 @@
 # netatalk
 #
 #############################################################
-#NETATALK_VERSION = 2.1
 NETATALK_VERSION = 2.1.5
 NETATALK_SOURCE = netatalk-$(NETATALK_VERSION).tar.gz
 NETATALK_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/netatalk
@@ -15,7 +14,7 @@ NETATALK_LIBTOOL_PATCH = YES
 NETATALK_CONF_OPT = --with-bdb=$(STAGING_DIR)/usr \
 		--with-ssl-dir=$(STAGING_DIR)/usr \
 		--with-libiconv=$(STAGING_DIR)/usr \
-		--without-libgcrypt-dir \
+		--with-libgcrypt-dir=$(STAGING_DIR)/usr \
 		--disable-cups \
 		--without-pam \
 		--without-gssapi \
@@ -23,7 +22,7 @@ NETATALK_CONF_OPT = --with-bdb=$(STAGING_DIR)/usr \
 		--disable-static \
 		--program-prefix=""
 
-NETATALK_DEPENDENCIES = uclibc db
+NETATALK_DEPENDENCIES = uclibc libgcrypt db avahi
 
 $(eval $(call AUTOTARGETS,package,netatalk))
 
