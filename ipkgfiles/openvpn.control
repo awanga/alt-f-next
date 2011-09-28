@@ -1,0 +1,9 @@
+Package: openvpn
+Description: OpenVPN is a full-featured SSL VPN solution
+Version: 2.2.1
+Depends: kernel-modules, lzo, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://openvpn.sourceforge.net/
+Maintainer: jcard
