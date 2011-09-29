@@ -1,0 +1,5 @@
+config BR2_PACKAGE_KERNEL_MODULES
+	bool "kernel-modules"
+	help
+	  Aditional kernel modules
+
