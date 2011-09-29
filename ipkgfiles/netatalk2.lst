@@ -6,17 +6,12 @@
 ./etc/netatalk/netatalk.conf
 ./etc/netatalk/papd.conf
 ./etc/netatalk/uams/uams_clrtxt.so
-./etc/netatalk/uams/uams_dhx2_passwd.la
 ./etc/netatalk/uams/uams_dhx2_passwd.so
 ./etc/netatalk/uams/uams_dhx2.so
-./etc/netatalk/uams/uams_dhx_passwd.la
 ./etc/netatalk/uams/uams_dhx_passwd.so
 ./etc/netatalk/uams/uams_dhx.so
-./etc/netatalk/uams/uams_guest.la
 ./etc/netatalk/uams/uams_guest.so
-./etc/netatalk/uams/uams_passwd.la
 ./etc/netatalk/uams/uams_passwd.so
-./etc/netatalk/uams/uams_randnum.la
 ./etc/netatalk/uams/uams_randnum.so
 ./usr/bin/ad
 ./usr/bin/add_netatalk_printer
