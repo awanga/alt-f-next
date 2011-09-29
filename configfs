@@ -25,7 +25,7 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
-BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA35_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP"
+BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP"
 
 BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
@@ -37,7 +37,7 @@ BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt_d
 BR2_PACKAGE_FORKED_DAAPD="etc/forked-daapd.conf etc/init.d/S80forked_daapd usr/www/cgi-bin/forked_daapd.cgi usr/www/cgi-bin/forked_daapd_proc.cgi usr/www/forked_daapd_hlp.html"
 
 BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
-BR2_PACKAGE_SAMBA35_DOC="usr/swat/help/welcome.html"
+BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
 
 BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs"
 
