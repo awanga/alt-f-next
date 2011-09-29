@@ -3,6 +3,7 @@ config BR2_PACKAGE_SAMBA
 	select BR2_PACKAGE_LIBICONV
 	select BR2_PACKAGE_POPT
 	help
+	  For samba version version 3.5.9
 	  Provides print services to all manner of SMB/CIFS clients,
 	  including the numerous versions of Microsoft Windows
 	  operating systems.

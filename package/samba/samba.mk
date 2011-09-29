@@ -8,10 +8,10 @@
 # "interface" option must be specified in the samba config.file
 # (or an "couln'd get interface address" (or similar) error happens at runtime 
 
-SAMBA_VERSION:=3.3.15
+SAMBA_VERSION:=3.5.9
 SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
 SAMBA_SITE:=http://samba.org/samba/ftp/stable/
-SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/source
+SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/source3
 SAMBA_CAT:=$(ZCAT)
 SAMBA_BINARY:=bin/smbd
 SAMBA_TARGET_BINARY:=usr/sbin/smbd
@@ -21,7 +21,7 @@ $(DL_DIR)/$(SAMBA_SOURCE):
 
 $(SAMBA_DIR)/.unpacked: $(DL_DIR)/$(SAMBA_SOURCE)
 	$(SAMBA_CAT) $(DL_DIR)/$(SAMBA_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh `dirname $(SAMBA_DIR)` package/samba/ samba\*.patch
+	toolchain/patch-kernel.sh `dirname $(SAMBA_DIR)` package/samba/ samba-$(SAMBA_VERSION)-\*.patch
 	$(CONFIG_UPDATE) $(SAMBA_DIR)
 	touch $@
 
@@ -30,15 +30,14 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		./autogen.sh; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
-		CFLAGS=-O2 \
+		$(TARGET_CONFIGURE_ENV) \
 		samba_cv_HAVE_GETTIMEOFDAY_TZ=yes \
 		samba_cv_USE_SETREUID=yes \
 		samba_cv_HAVE_KERNEL_OPLOCKS_LINUX=yes \
-		samba_cv_HAVE_IFACE_IFCONF=yes \
-		samba_cv_HAVE_MMAP=yes \
+		libreplace_cv_HAVE_IFACE_IFCONF=yes \
+		libreplace_cv_HAVE_MMAP=yes \
 		samba_cv_HAVE_FCNTL_LOCK=yes \
-		samba_cv_HAVE_SECURE_MKSTEMP=yes \
-		samba_cv_HAVE_NATIVE_ICONV=no \
+		libreplace_cv_HAVE_SECURE_MKSTEMP=yes \
 		samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
 		samba_cv_fpie=no \
 		samba_cv_have_longlong=yes \
@@ -54,18 +53,24 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--with-privatedir=/etc/samba \
 		--with-logfilebase=/var/log/samba \
 		--with-configdir=/etc/samba \
-		--with-libiconv=$(STAGING_DIR) \
+		--with-libiconv=$(STAGING_DIR)/usr \
+		--with-cifsumount \
 		--without-ldap \
 		--without-ads \
 		--without-acl-support \
+		--without-winbind \
 		--without-included-popt \
+		--without-cluster-support \
+		--without-dmapi \
+		--without-pam \
+		--disable-netapi \
 		--with-included-iniparser \
-		--disable-shared-libs \
-		--disable-static \
-		--disable-cups \
+		--enable-shared-libs \
+		--disable-cups --disable-avahi \
 		$(DISABLE_LARGEFILE) \
 	)
-	cat patches/samba-3.3.9-Makefile.patch | patch -p0 -b -d $(SAMBA_DIR)
+	cat patches/samba-3.5.9-Makefile.patch | patch -p0 -b -d $(SAMBA_DIR)
+	sed -i 's/-Wl,--as-needed//' $(SAMBA_DIR)/Makefile
 	touch $@
 
 $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
@@ -85,8 +90,7 @@ $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
 SAMBA_TARGETS_ := usr/bin/sharesec
 SAMBA_TARGETS_y :=
 
-SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_CIFS) += usr/sbin/mount.cifs \
-						   usr/sbin/umount.cifs
+SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_CIFS) += usr/sbin/mount.cifs usr/sbin/umount.cifs
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_EVENTLOGADM) += usr/bin/eventlogadm
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_FINDSMB) += usr/bin/findsmb
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_NET) += usr/bin/net
@@ -114,10 +118,10 @@ SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_TESTPARM) += usr/bin/testparm
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_WINBINDD) += usr/sbin/winbindd
 SAMBA_TARGETS_$(BR2_PACKAGE_SAMBA_WBINFO) += usr/bin/wbinfo
 
-INSTALL_TARGETS = installlibs installservers installbin installcifsmount installscripts
+SAMBA_INSTALL_TARGETS = installlibs installservers installbin installcifsmount installcifsumount installscripts
 
 ifeq ($(BR2_PACKAGE_SAMBA_DOC),y)
-	SAMBA_DOC_TARGET = $(TARGET_DIR)/usr/swat/using_samba/toc.html
+SAMBA_INSTALL_TARGETS += installswat
 endif
 
 $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
@@ -129,7 +133,7 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 		PRIVATEDIR="${TARGET_DIR}/etc/samba" \
 		CONFIGDIR="${TARGET_DIR}/etc/samba" \
 		VARDIR="${TARGET_DIR}/var/log/samba" \
-		-C $(SAMBA_DIR) $(INSTALL_TARGETS)
+		-C $(SAMBA_DIR) $(SAMBA_INSTALL_TARGETS)
 	# jc: 	
 	-cp $(SAMBA_DIR)/bin/libsmbcommon.so $(TARGET_DIR)/usr/lib/
 	-chmod +w $(TARGET_DIR)/usr/lib/libsmbcommon.so
@@ -154,26 +158,15 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 ifeq ($(BR2_PACKAGE_SAMBA_SWAT),y)
 	cp -dpfr $(SAMBA_DIR)/../swat $(TARGET_DIR)/usr/
 endif
-	$(INSTALL) -m 0755 package/samba/S91smb $(TARGET_DIR)/etc/init.d
-	@if [ ! -f $(TARGET_DIR)/etc/samba/smb.conf ]; then \
-		$(INSTALL) -m 0755 -D package/samba/simple.conf $(TARGET_DIR)/etc/samba/smb.conf; \
-	fi
+	#$(INSTALL) -m 0755 package/samba/S91smb $(TARGET_DIR)/etc/init.d
+	#@if [ ! -f $(TARGET_DIR)/etc/samba/smb.conf ]; then \
+	#	$(INSTALL) -m 0755 -D package/samba/simple.conf $(TARGET_DIR)/etc/samba/smb.conf; \
+	#fi
 	rm -rf $(TARGET_DIR)/var/cache/samba
 	rm -rf $(TARGET_DIR)/var/lib/samba
 	find $(TARGET_DIR) -name \*.old -delete # jc:
 
-$(SAMBA_DOC_TARGET): $(SAMBA_DIR)/$(SAMBA_BINARY)
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) \
-		prefix="${TARGET_DIR}/usr" \
-		BASEDIR="${TARGET_DIR}/usr" \
-		SBINDIR="${TARGET_DIR}/usr/sbin" \
-		LOCKDIR="${TARGET_DIR}/var/cache/samba" \
-		PRIVATEDIR="${TARGET_DIR}/etc/samba" \
-		CONFIGDIR="${TARGET_DIR}/etc/samba" \
-		VARDIR="${TARGET_DIR}/var/log/samba" \
-		-C $(SAMBA_DIR) installswat
-
-samba: popt libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) $(SAMBA_DOC_TARGET)
+samba: popt libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) 
 
 samba-build: $(SAMBA_DIR)/$(SAMBA_BINARY)
 
