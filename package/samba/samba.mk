@@ -69,7 +69,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--disable-cups --disable-avahi \
 		$(DISABLE_LARGEFILE) \
 	)
-	cat patches/samba-3.5.9-Makefile.patch | patch -p0 -b -d $(SAMBA_DIR)
+	patch -p0 -b -d $(SAMBA_DIR) < package/samba/samba-$(SAMBA_VERSION)-Makefile.patch2
 	sed -i 's/-Wl,--as-needed//' $(SAMBA_DIR)/Makefile
 	touch $@
 
