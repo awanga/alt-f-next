@@ -128,10 +128,12 @@ sed -i 's|*control|./control|' ../bin/ipkg.py
 sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
 
 
-# most old Makefiles (including the linux kernel source) are not accepted
+# some old Makefiles (including some linux kernel sources) are not accepted
 # by make version greater than 3.81, so install 3.81.
 # you have to put the Alt-F bin directory in your path *before* the standard path, as in
 # export PATH=<Alt-F bin directory>:$PATH
+# NEWS: busybox has a patch to deal with the issue, kernel 2.6.15 is not used by default,
+# so this might not be needed. Anyway copy it to the tools bin with a clear name
 if ! test -e make-3.81.tar.bz2; then
 	wget http://ftp.gnu.org/pub/gnu/make/make-3.81.tar.bz2
 fi
@@ -140,7 +142,7 @@ tar xjf make-3.81.tar.bz2
 cd make-3.81
 ./configure
 make
-cp make ../../bin
+cp make ../../bin/make-3.81
 cd ..
 
 if ! test -e mklibs_0.1.31.tar.gz; then
