@@ -72,7 +72,8 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	# Kirkwood based SoCs
 	# DNS-320: 2.6.22.18, reloaded does not seems to work
 
-	kvers="2.6.12.6 2.6.15"
+	#kvers="2.6.12.6 2.6.15"
+	kvers="2.6.12.6"
 
 	karch_2_6_12_6="2.6.12.6-arm1"
 	vermagic_2_6_12_6="#define VERMAGIC_STRING \"$karch_2_6_12_6 ARMv5 gcc-3.3\""
