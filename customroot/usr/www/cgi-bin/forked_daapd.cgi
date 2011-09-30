@@ -22,7 +22,7 @@ cat<<-EOF
 	</script>
 
 	<form name=forked action=forked_daapd_proc.cgi method="post" >
-	<table><tr>
+	<table>
 EOF
 
 OIFS="$IFS"; IFS=','; k=1
@@ -40,7 +40,7 @@ IFS="$OIFS"
 for j in $(seq $k $((k+2))); do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id=conf_dir_$j name=sdir_$j value=""></td>
+		<td><input type=text size=32 id="conf_dir_$j" name="sdir_$j" value=""></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$j')" value=Browse></td>
 		</tr>
 	EOF
@@ -48,7 +48,8 @@ done
 
 cat<<-EOF
 	<tr><td></td><td>
-	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
-	</td></tr></table></form></body></html>
+	</td></tr></table>
+	<input type=hidden name=cnt value=$j>
+	</form></body></html>
 EOF

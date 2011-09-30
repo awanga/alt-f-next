@@ -47,7 +47,7 @@ cat<<EOF
 	<th>Health</th>
 	<th>Power Mode</th>
 	<th>Power Sav.</th>
-	<th columnspan=2>Spindow</th> 
+	<th colspan=2>Spindow</th> 
 EOF
 
 for disk in $disks; do

@@ -145,8 +145,8 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 cat<<-EOF
-	<input type=hidden name="n_exports" value="$cnt">
-	</table></fieldset><br>
+	</table><input type=hidden name="n_exports" value="$cnt">
+	</fieldset><br>
 	<fieldset>
 	<legend><strong>Directories to import from other hosts</strong></legend>
 	<table>
@@ -177,8 +177,8 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 	
 cat<<-EOF
-	<input type=hidden name="n_fstab" value="$cnt">
 	</table>
+	<input type=hidden name="n_fstab" value="$cnt">
 	</fieldset>	
 EOF
 

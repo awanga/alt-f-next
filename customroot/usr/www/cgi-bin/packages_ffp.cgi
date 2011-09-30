@@ -54,7 +54,7 @@ else
 		#pkg_ver=$(echo $i | grep -o -e '-[-0-9.]*')
 		base_name=${i%-*-*}
 		echo "<tr><td><a href=\"http://www.inreto.de/dns323/fun-plug/0.5/PACKAGES.html#$base_name\">$i</a></td>"
-		echo "<td><input type=submit name=$i value=Remove></td>"
+		echo "<td><input type=submit name=\"$i\" value=Remove></td>"
 		echo "$avail_pkg" | grep -q $i
 		if test $? = "0"; then
 			echo "<td><td>"
@@ -62,7 +62,7 @@ else
 			update_name=$(echo "$avail_pkg" | grep $base_name)
 			if test -n "$update_name"; then
 				to_update="$to_update $update_name"
-				echo "<td><input type=submit name="$update_name" value=Update ></td>"
+				echo "<td><input type=submit name=\"$update_name\" value=Update ></td>"
 			fi
 		fi
 #		if test -f "/ffp/etc/www/${base_name}.html"; then
@@ -88,7 +88,7 @@ else
 			if test -z "$(echo $to_update | grep $base_name)"; then
 				pkg_ver=$(echo $i | grep -o -e '-[-0-9.]*')
 				echo "<tr><td><a href=\"http://www.inreto.de/dns323/fun-plug/0.5/PACKAGES.html#$base_name\">$i</a></td>"
-				echo "<td><input type=submit name=$i value=Install></td><tr>"
+				echo "<td><input type=submit name=\"$i\" value=Install></td></tr>"
 			fi
 		fi
 	done

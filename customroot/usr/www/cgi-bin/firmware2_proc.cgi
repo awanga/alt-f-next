@@ -14,7 +14,7 @@ if test "$flash" = "Abort"; then
 fi
 
 html_header
-echo "<h2><center>Firmware Updater</center></h2>"
+echo "<center><h2>Firmware Updater</h2></center>"
 
 if ! test -f $kernel_file -a -f $initramfs_file; then
 	rm -f $kernel_file $initramfs_file $defaults_file

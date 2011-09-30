@@ -3,8 +3,8 @@
 . common.sh
 check_cookie
 
-html_header
-echo "<h2><center>NFS Browse</center></h2>"
+html_header "NFS Browse"
+echo "<center><h2>NFS Browse</h2></center>"
 
 if test -n "$QUERY_STRING"; then		
 	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
@@ -45,7 +45,5 @@ done
 
 wait_count_stop
 
-echo "<br><form><input type=submit onclick=window.close() value=Cancel>
+echo "<br><form action=\"\"><input type=submit onclick=\"window.close()\" value=Cancel>
 		</form></body></html>"
-
-exit 0

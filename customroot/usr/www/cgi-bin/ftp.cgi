@@ -4,7 +4,7 @@
 check_cookie
 write_header "vsftpd server Setup"
 
-mktt jail "If checked, the user will be restricted to use only its own directories"
+mktt tt_jail "If checked, the user will be restricted to use only its own directories"
 
 CONFF=/etc/vsftpd.conf
 
@@ -67,7 +67,7 @@ cat<<-EOF
 	<form name="ftpf" action="/cgi-bin/ftp_proc.cgi" method="post">
 	<table>
 
-	<tr><td>Restrict directories:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes"" $(ttip jail)></td></tr>
+	<tr><td>Restrict directories:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" $(ttip tt_jail)></td></tr>
 	<tr><td><br></td></tr>
 
 	<tr><td>Enable Anonymous:</td><td><input type=checkbox $anon_en_chk id=anon name=anonymous_enable value="yes" onchange="toogle('anon')"></td></tr>
@@ -82,6 +82,6 @@ cat<<-EOF
 
 	<tr><td><br></td></tr>
 	<tr><td></td><td><input type="submit" value="Submit">$(back_button)</td></tr>
-	</form>
+	</table></form>
 	</body></html>
 EOF

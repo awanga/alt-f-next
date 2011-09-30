@@ -30,14 +30,14 @@ fi
 
 awk '/^:DEFAULT:/ {
 		def_found = 1
-		printf "Default options: <input type=text name=\"def_opts\" value=\"%s\"><br>\n", substr($0, index($0, $2))
+		printf "Default options: <input type=text size=30 name=\"def_opts\" value=\"%s\"><br>\n", substr($0, index($0, $2))
 	}
 	/^~/ {
 		user_chk = "checked"
 	}
 	END {
 		if (! def_found)
-			print "Default options: <input type=text name=\"def_opts\" value=\"options:upriv,usedots\"><br>\n"
+			print "Default options: <input type=text size=30 name=\"def_opts\" value=\"options:upriv,usedots ea:ad\"><br>\n"
 		printf "Export users home directory: <input type=checkbox %s name=\"user_en\" value=\"yes\"><br><br>\n", user_chk
 	}' $CONF_AVOL
 
@@ -53,15 +53,15 @@ EOF
 
 awk -v ttip="$(ttip ttopts)" '/(^\/|^"\/)/ {
 	FS = "\t"
-	opts = "defaults"
-	if (NF > 2)
+	opts = ""
+	if (index($0, ":"))
 		opts = substr($0, index($0, $3))
 	spit(cnt, strip($1), strip($2), opts) 
 	cnt++
 	}
 	END { for (i=cnt; i<cnt+3; i++)
 			spit(i, "", "", "")
-			printf "<input type=hidden name=afpd_cnt value=\"%d\">\n", i
+		printf "</table><input type=hidden name=afpd_cnt value=\"%d\">\n", i
 	}
 	function strip(var) {
 		return gensub("\"", "", "g", var)
@@ -74,7 +74,7 @@ awk -v ttip="$(ttip ttopts)" '/(^\/|^"\/)/ {
 }' $CONF_AVOL
 
 cat<<EOF
-	</table></fieldset><br>
+	</fieldset><br>
 	$(back_button)<input type=submit name=submit value="Submit">
 	</form></body></html>
 EOF

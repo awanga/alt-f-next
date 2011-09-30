@@ -38,14 +38,14 @@ cat<<-EOF
 	</script>
 
 	<form name=mediatomb action=mediatomb_proc.cgi method="post" >
-	<table><tr>
+	<table>
 EOF
 
 OIFS=$IFS; IFS=: ; k=1
 for i in $(awk -F\" '/<directory /{printf "%s:", $2}' $CONFF); do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id=conf_dir_$k name=sdir_$k value="$i"></td>
+		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$i"></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$k')" value=Browse></td>
 		</tr>
 	EOF
@@ -56,7 +56,7 @@ IFS=$OIFS
 for j in $(seq $k $((k+2))); do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id=conf_dir_$j name=sdir_$j value=""></td>
+		<td><input type=text size=32 id="conf_dir_$j" name="sdir_$j" value=""></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$j')" value=Browse></td>
 		</tr>
 	EOF

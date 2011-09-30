@@ -24,6 +24,11 @@ else
 	ipkg-cl -V0 info | awk -v confeeds="$feed" '
 	BEGIN {
 		nfeeds = split(confeeds, feeds);
+		print "<script type=\"text/javascript\"> \
+				function ask() { \
+					return confirm(\"All files and configurations will be erased. You will have to reinstall ipkg.\"); \
+				} \
+			</script>"
 	}
 	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field 
 	/Version:/ { ver[i] = $2 } 
@@ -34,11 +39,11 @@ else
 		else { uinst[nm] = i; ucnt++;}
 	}  
 	END {
-		printf "<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=post> \
+		printf "<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=\"post\"> \
 			<fieldset><legend><strong> Configure Feeds </strong></legend> \
-			<input type=hidden name=nfeeds value=%d><table>", nfeeds
+			<input type=hidden name=nfeeds value=\"%d\"><table>", nfeeds
 		for (i=1; i<=nfeeds; i++) 
-			printf "<tr><td>Feed %d:</td><td><input type=text size=50 name=feed_%d value=%s></td></tr>", i, i, feeds[i];
+			printf "<tr><td>Feed %d:</td><td><input type=text size=50 name=feed_%d value=\"%s\"></td></tr>", i, i, feeds[i];
 		print "<tr><td></td><td><input type=submit name=changeFeed value=ChangeFeed> \
 			<input type=submit name=defaultFeed value=DefaultFeed></td></tr></table><br> \
 			<strong>Update package list:</strong><input type=submit name=updatelist value=UpdateList> \
@@ -73,12 +78,7 @@ else
 			print "<tr><td colspan=2><strong>UpdateAll</strong></td> \
 				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
-		print "<script type=\"text/javascript\"> \
-				function ask() { \
-					return confirm(\"All files and configurations will be erased. You will have to reinstall ipkg.\"); \
-				} \
-			</script> \
-			<tr><td colspan=2><strong>Remove all installed</strong></td> \
+		print "<tr><td colspan=2><strong>Remove all installed</strong></td> \
 				<td><input type=submit name=removeall value=RemoveAll onclick=\"return ask()\"></td></tr> \
 			</table></fieldset> \
 			<br><fieldset><legend><strong> Available Packages </strong></legend><table>"

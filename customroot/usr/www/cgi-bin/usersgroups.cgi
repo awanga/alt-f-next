@@ -57,52 +57,50 @@ cat <<EOF
 			return false
 	}
 	</script>
-	<form name=frm action=/cgi-bin/usersgroups_proc.cgi method="post">
+	<form name=frm action="/cgi-bin/usersgroups_proc.cgi" method="post">
 	<table border=$BRD><tr><td>
 	
 	<fieldset><legend><strong>Users</strong></legend>
 	<table border=$BRD>
 EOF
 
-
 IFS=":" # WARNING: for all the script
 #account:password:UID:GID:GECOS:directory:shell
-cnt=0
-echo "<tr><td colspan=2><SELECT MULTIPLE style='width:40ex' SIZE=8 NAME=users onChange=update_users()>"
+cnt=0; jstr=""
+echo "<tr><td colspan=2><select multiple style=\"width:40ex\" size=\"8\" name=\"users\" onChange=\"update_users()\">"
 while read user upass uid ugid uname dir shell;do
 	if test "${user:0:1}" = "#" -o -z "$user" -o -z "$uid" -o -z "$uname"; then continue; fi
 	if test $shell = "/bin/false"; then continue; fi
 	if test $uid -lt 100; then continue; fi
-	echo "<OPTION>$uname</OPTION>"
-	echo "<script type=text/javascript>users[$cnt]=\"$user\"; groupsInUser[$cnt]=\"$(id -Gn $user)\";</script>"
+	echo "<option>$uname</option>"
+jstr="$jstr; users[$cnt]=\"$user\"; groupsInUser[$cnt]=\"$(id -Gn $user)\";"
 	cnt=$((cnt+1))
 done < $CONFP
-echo "</SELECT></td></tr>"
+echo "</select></td></tr>"
 num_users=$cnt
 
 cat<<-EOF
 	<tr><td>User name</td><td><input type=text size=12 name=uname></td></tr>
-	<input type=hidden size=12 name=nick>
 	<tr><td>Groups this user belongs to:</td>
-		<td><textarea cols=12 name=groupsInUser READONLY></textarea></td></tr>
+		<td><textarea cols=12 rows=2 name=groupsInUser readonly></textarea></td></tr>
 	<tr><td><input type=submit name=new_user value=NewUser>
 		<input type=submit name=change_pass value=ChangePass onclick="return check_user()">
 		<td><input type=submit name=del_user value=DelUser onclick="return check_user()"></td>
 	</tr></table></fieldset>
-	
+	<input type=hidden size=12 name=nick>
 	</td><td>
-	
+<script type="text/javascript"> $jstr </script>
 	<fieldset><legend><strong>Groups</strong></legend>
 	<table border=$BRD>
 EOF
 
 #group_name:passwd:GID:user_list
-cnt=0
-echo "<td colspan=2><SELECT MULTIPLE style='width:40ex' SIZE=8 NAME=groups onChange=update_groups()>"
+cnt=0; jstr=""
+echo "<tr><td colspan=2><select multiple style=\"width:40ex\" size=\"8\" name=\"groups\" onChange=\"update_groups()\">"
 while read group gpass ggid userl;do
 	if test "${group:0:1}" = "#" -o "$gpass" = "!"; then continue; fi
 	if test $ggid -lt 100; then continue; fi
-	echo "<OPTION>$group</OPTION>"
+	echo "<option>$group</option>"
 	# primary group
 	uu=$(awk -F: '{if ($4 == '$ggid') printf "%s, ", $5}' $CONFP)
 	# suplementary groups
@@ -111,23 +109,21 @@ while read group gpass ggid userl;do
 			uu="$uu, $(awk -F: '/'$i'/{print $5}' $CONFP)"
 		done
 	fi
-	echo "<script type=text/javascript>groups[$cnt]=\"$group\";usersInGroup[$cnt]=\"$uu\"</script>"
+jstr="$jstr; groups[$cnt]=\"$group\"; usersInGroup[$cnt]=\"$uu\";"
 	cnt=$((cnt+1))
 done < $CONFG
-echo "</SELECT></td></tr>"
+echo "</select></td></tr>"
 num_groups=$cnt
 
 cat <<-EOF
 	<tr><td>Group name</td><td><input type=text size=12 name=gname></td></tr>
-<!--	<tr><td colspam=2><br></td></tr> -->
 	<tr><td>Users belonging to this group:</td>
-		<td><textarea cols=12 name=usersInGroup READONLY></textarea></td></tr>
+		<td><textarea cols=12 rows=2 name=usersInGroup readonly></textarea></td></tr>
 	<tr><td><input type=submit name=new_group value=NewGroup onclick="return check_group()"></td>
 	    <td><input type=submit name=del_group value=DelGroup onclick="return check_group()"></td></tr>
 	</table></fieldset>
-	
 	</td></tr></table><br>
-	
+<script type="text/javascript"> $jstr </script>	
 	<fieldset><legend><strong>Users and Groups</strong></legend><table border=$BRD>
 		<tr><td>Add selected user to selected group</td>
 			<td><input type=submit name=addToGroup value=AddToGroup onclick="return check_usergroup()"></td></tr>

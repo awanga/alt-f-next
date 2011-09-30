@@ -16,10 +16,14 @@ if test -n "$def_opts"; then
 fi
 
 for i in $(seq 0 $afpd_cnt); do
-	if test -z "$(eval echo \$ldir_$i)" -o -z "$(eval echo \$shname_$i)"; then continue; fi
+	if test -z "$(eval echo \$ldir_$i)" -o -z "$(eval echo \$shname_$i)"; then
+		continue
+	fi
 
 	opts=$(httpd -d "$(eval echo \$opts_$i)")
-	if test "$opts" = "defaults"; then opts=""; fi
+	if test -z "$opts"; then
+		opts=""
+	fi
 
 	ldir=$(httpd -d "$(eval echo \$ldir_$i)")
 	shname=$(httpd -d "$(eval echo \$shname_$i)")

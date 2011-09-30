@@ -13,7 +13,7 @@ when() {
 wday=""
 	j=1
 	for i in Mon Tue Wed Thu Fri Sat Sun; do
-		wday="$wday $i <input type=checkbox $(eval echo \$$1_$j) value=$j name=$1_$j>"
+		wday="$wday $i <input type=checkbox $(eval echo \$$1_$j) value=\"$j\" name=\"$1_$j\">"
 		j=$((j+1))
 	done
 	echo $wday
@@ -95,11 +95,11 @@ cat<<-EOF
 	<table>
 	<tr><td><input type=checkbox $STF name="shorttest" value="yes">
 		Do a short disk test every: $(when s) 
-		at <input type=text size=2 name=shorthour value=$shour>:00</td>
+		at <input type=text size=2 name=shorthour value="$shour">:00</td>
 	</tr> 
 	<tr><td><input type=checkbox $LTF name="longtest" value="yes">
 		Do a long disk test every:&nbsp; $(when l)
-		at <input type=text size=2 name=longhour value=$lhour>:00</td>
+		at <input type=text size=2 name=longhour value="$lhour">:00</td>
 	</tr>
 
 	<tr><td><input type=checkbox $WAKEF name="wakeup" value="yes">

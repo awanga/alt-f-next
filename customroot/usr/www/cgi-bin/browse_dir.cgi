@@ -12,7 +12,7 @@ transverse() {
 
 #	echo "1=$1 2=$2 start=$start dir=$dir end=$end"
 
-	a="$(find $start -maxdepth 1 -type d | sort -d | tr '\n' ';')"
+	a="$(find $start -maxdepth 1 -type d 2>/dev/null | sort -d | tr '\n' ';')"
 
 	IFS=";"
 	for i in $a; do
@@ -37,11 +37,11 @@ if test -n "$(echo "$QUERY_STRING" | grep 'wind=no')"; then
 	ok_sel="disabled"
 	write_header "$hdr"
 else
-	html_header
+	html_header "$hdr"
 	mktt() { # no tooltips...
 		true
 	}
-	echo "<h2><center>$hdr</center></h2>"
+	echo "<center><h2>$hdr</h2></center>"
 fi
 
 mktt curdir "The currently selected directory.<br>
@@ -58,7 +58,9 @@ eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
 	awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 		printf "%s=%c%s%c\n",$1,39,$2,39}')
 
-browse="$(httpd -d $browse)"
+if test -n "$browse"; then
+	browse="$(httpd -d $browse)"
+fi
 
 if test -n "$wind"; then
 	url_wind="wind=${wind}?"
@@ -121,7 +123,7 @@ wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 		}
 	</script>
 
-	<form action=/cgi-bin/dir_proc.cgi method=post>
+	<form action="/cgi-bin/dir_proc.cgi" method="post">
 	<table><tr>
 	<td>Selected: </td>
 	<td><input type=text name=newdir value="$browse" $(ttip curdir)></td>
@@ -143,7 +145,7 @@ wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 	</td>
 	</tr></table></form>
 
-	<table><br><tr><td>
+	<br><table><tr><td>
 		<strong>$browse</strong></td>
 		<td><strong>Owner</strong></td>
 		<td><strong>Group</strong></td>

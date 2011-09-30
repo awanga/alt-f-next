@@ -13,8 +13,10 @@ board="$(cat /tmp/board)"
 lo_fan=2000
 hi_fan=5000
 if test "$board" = "C1"; then 
+	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	lo_temp=45
 else
+	mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
 	lo_temp=40
 fi
 hi_temp=50
@@ -54,17 +56,13 @@ cat<<-EOF
 		</legend><table>
 EOF
 
-
-mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
-
 if test "$board" = "C1"; then
-	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	cat<<-EOF
 		<tr><td>Fan Off Temp.</td>
 			<td><input type=text size=2 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
 			</td></tr>
 		<tr><td>Low Fan Speed Temp.</td>
-			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td>
+			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
 		</table></fieldset><br>
 	EOF
 else 

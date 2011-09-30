@@ -51,11 +51,11 @@ cat <<-EOF
 	}
 	</script>
 
-	<form name=dnsmasq action=dnsmasq_proc.cgi method=post>
-	<fieldset><Legend> <strong> Dynamically serve IPs </strong></legend><table>
-	<tr><td> From IP</td><td><input type=text size=12 name=low_rg value=$lrg></td><tr>
-	<tr><td>To IP</td><td><input type=text size=12 name=high_rg value=$hrg></td><tr>
-	<tr><td>Lease Time: </td><td><input type=text size=4 name=lease value=$lease></td><tr>
+	<form name=dnsmasq action="/cgi-bin/dnsmasq_proc.cgi" method="post">
+	<fieldset><Legend><strong> Dynamically serve IPs </strong></legend><table>
+	<tr><td> From IP</td><td><input type=text size=12 name=low_rg value="$lrg"></td></tr>
+	<tr><td>To IP</td><td><input type=text size=12 name=high_rg value="$hrg"></td></tr>
+	<tr><td>Lease Time: </td><td><input type=text size=4 name=lease value="$lease"></td></tr>
 	</table></fieldset><br>
 
 	<fieldset><Legend> <strong> Serve fixed IPs based on MAC </strong></legend>
@@ -69,28 +69,32 @@ while read mac nm ip lease rest; do
     if test -z "$mac" -o ${mac#\#} != $mac; then continue; fi
     if test "$nm" = "$hostnm"; then continue; fi
 
-    echo "<tr><td><input size=12 type=text name=nm_$cnt value=$nm></td>
-	<td><input size=12 type=text id=ip_$cnt name=ip_$cnt value=$ip></td>
-	<td><input type=submit name=_$cnt value="Get" onclick=\"return getMAC('mac_$cnt','ip_$cnt')\"></td>
-	<td><input size=18 type=text id=mac_$cnt name=mac_$cnt value=$mac></td>
-	<td><input size=4 type=text name=lease_$cnt value=$lease></td></tr>"
+	cat<<-EOF
+    	<tr><td><input size=12 type=text name="nm_$cnt" value="$nm"></td>
+		<td><input size=12 type=text id="ip_$cnt" name="ip_$cnt" value="$ip"></td>
+		<td><input type=submit name="_$cnt" value="Get" onclick="return getMAC('mac_$cnt','ip_$cnt')"></td>
+		<td><input size=18 type=text id="mac_$cnt" name="mac_$cnt" value="$mac"></td>
+		<td><input size=4 type=text name="lease_$cnt" value="$lease"></td></tr>
+	EOF
     cnt=$((cnt+1))
 done < $CONF_H
 
 IFS=$oifs
 for i in $(seq $cnt $((cnt+2))); do
-	echo "<tr><td><input size=12 type=text name=nm_$i></td>
-		<td><input size=12 type=text id=ip_$i name=ip_$i></td>
-		<td><input type=submit name=_$i value="Get" onclick=\"return getMAC('mac_$i','ip_$i')\"></td>
-		<td><input size=17 type=text id=mac_$i name=mac_$i></td>
-		<td><input size=4 type=text name=lease_$i></td></tr>"
+	cat<<-EOF
+		<tr><td><input size=12 type=text name="nm_$i"></td>
+		<td><input size=12 type=text id="ip_$i" name="ip_$i"></td>
+		<td><input type=submit name="_$i" value="Get" onclick="return getMAC('mac_$i','ip_$i')"></td>
+		<td><input size=17 type=text id="mac_$i" name="mac_$i"></td>
+		<td><input size=4 type=text name="lease_$i"></td></tr>
+	EOF
 done
 
 cat<<-EOF
 	</table></fieldset><br>
 	<input type=hidden name=cnt_din value="$i">
 
-	<fieldset><legend> <strong> Current Leases </strong> </legend><table>
+	<fieldset><legend><strong> Current Leases </strong></legend>
 EOF
 
 	if ! test -s /tmp/dnsmasq.leases; then
@@ -101,10 +105,11 @@ EOF
 			dexp="$(awk 'BEGIN{print strftime("%b %d, %R",'$exp')}')"
 			echo "<tr><td>$name</td><td>$ip</td><td>$mac</td><td>$dexp</td></tr>"
 		done < /tmp/dnsmasq.leases
+		echo "</table>"
 	fi
 
 cat <<EOF
-	</table></fieldset>
+	</fieldset>
 	<input type=hidden name=cnt_know value="$i">
 EOF
 
@@ -148,7 +153,7 @@ else
 fi
 
 cat<<-EOF
-	<br><fieldset><legend> <strong> Time Servers </strong> </legend><table>
+	<br><fieldset><legend><strong> Time Servers </strong></legend><table>
 	<tr>
 		<td><input type=radio $chknntp name=ntp value=no onchange="toogle_ntp('true')"></td>
 		<td>Don't advertise any server</td></tr>
@@ -158,7 +163,7 @@ cat<<-EOF
 	<tr>
 		<td><input type=radio $chksntp name=ntp value=server onchange="toogle_ntp('false')"></td>
 		<td>Advertise NTP server</td>
-		<td><input type=text $chkentp name=ntp_entry size=12 value=$host></td></tr>
+		<td><input type=text $chkentp name=ntp_entry size=12 value="$host"></td></tr>
 	</table></fieldset><br>
 EOF
 
@@ -180,7 +185,7 @@ cat<<-EOF
 	</script>
 	<fieldset><legend> <strong> TFTP server </strong> </legend>
 	<table>
-	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp onchange="toogle_tftp()"></td><tr>
+	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp onchange="toogle_tftp()"></td></tr>
 	<tr><td>Root Directory</td>
 		<td><input id=tftproot $tftpdis type=text size=20 name=tftproot value="$tftproot">
 		<input type=button $tftpdis name=ftpbrowse onclick="browse_dir_popup('tftproot')" value=Browse>
@@ -192,7 +197,7 @@ eval $(awk '/log-queries/{print "dnslog=CHECKED"} \
 		/log-dhcp/{print "dhcplog=CHECKED"}' $CONF_F)
 
 cat<<EOF	
-	<fieldset><legend> <strong> Logging </strong> </legend><table>
+	<fieldset><legend><strong> Logging </strong></legend><table>
 	<tr><td>Log DNS queries</td>
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>
 	<tr><td>Log DHCP queries</td>

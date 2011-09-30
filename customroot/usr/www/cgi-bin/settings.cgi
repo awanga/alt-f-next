@@ -32,7 +32,7 @@ cat<<-EOF
 	}
 	</script>
 	<fieldset><legend><strong>Flash Memory</strong></legend>
-	<form name=frm action="/cgi-bin/settings_proc.cgi" method="post">
+	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	<input type=submit name=action value=SaveSettings><br><br>
 	<select name=settings>
 	<option value="">Select one</option>
@@ -43,13 +43,18 @@ for i in $res; do
 done	
 
 cat<<-EOF
-	</select><input type=submit name=action value=LoadSettings><br><br>
+	</select>
+	<input type=submit name=action value=LoadSettings><br><br>
 	<input type=submit $clear_dis name=action value=ClearSettings onclick="return ask()">
+	</form>
 	</fieldset><br>
+
 	<fieldset><legend><strong>Computer Disk</strong></legend>
+	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	Save current settings to file: <input type=submit name=action value="Download">
 	</form>
-	<form action=/cgi-bin/settings_proc.cgi method=post enctype=multipart/form-data><br>
+
+	<form action="/cgi-bin/settings_proc.cgi" method="post" enctype="multipart/form-data"><br>
 	Load settings from file: <input type=file name=uploadedfile>
 	<input type=submit name=action value="Upload">
 	</form>

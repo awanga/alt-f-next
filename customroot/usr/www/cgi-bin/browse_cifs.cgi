@@ -3,8 +3,8 @@
 . common.sh
 check_cookie
 
-html_header
-echo "<h2><center>Samba Browse</center></h2>"
+html_header "Samba Browse"
+echo "<center><h2>Samba Browse</h2></center>"
 
 if test -n "$QUERY_STRING"; then		
 	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
@@ -30,18 +30,16 @@ wait_count_start "Browsing the network for Samba servers, it takes 10 seconds"
 # this seems to be needed to start the window drawn...
 for i in $(seq 1 20); do sleep 1; echo; done & 
 
-if false; then
-F1=domain
-F2=host
-F3=//host/share
-F4=comment
+#F1=domain
+#F2=host
+#F3=//host/share
+#F4=comment
 
-domain: F1 not empty
-host: F2 not empty
-share: F2 empty && F3 not empty
-fi
+#domain: F1 not empty
+#host: F2 not empty
+#share: F2 empty && F3 not empty
 
-echo "<br><br><table></tr><tr><th>Share</th><th>Comment</th></tr>"
+echo "<br><br><table><tr><th>Share</th><th>Comment</th></tr>"
 
 smbtree -N | tr '\t' ':' | awk -F : '{
 	if ($2 != "")
@@ -55,11 +53,9 @@ smbtree -N | tr '\t' ':' | awk -F : '{
 		rhost=a[3];  rdir=a[4];
 		printf "<tr><td><a href=\"\" onclick=\"ret_val(%c'$id1'%c, %c%s%c, %c'$id2'%c, %c%s%c)\">%s</a></td><td>%s</td></tr>\n", \
 		047, 047, 047, rhost, 047, 047, 047, 047, rdir, 047, $3, $4
-	} 
+	}
 }'
 
+echo "</table>"
 wait_count_stop
-
-echo "</table><br><form><input type=submit onclick=\"window.close()\" value=Cancel></form></body></html>"
-
-exit 0
+echo "<br><form action=\"\"><input type=submit onclick=\"window.close()\" value=Cancel></form></body></html>"

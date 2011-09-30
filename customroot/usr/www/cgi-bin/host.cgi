@@ -9,9 +9,8 @@ CONFS=/etc/samba/smb.conf
 CONFINT=/etc/network/interfaces
 CONF_MODPROBE=/etc/modprobe.conf
 
-mktt tt_ipv6 "IPv6 is for the next generation internet.<br>
-Most users don't need it.<br>
-When enabling, it takes effect immediately after submiting<br>
+mktt tt_ipv6 "IPv6 is for the next generation internet, most users don't need it.<br>
+When enabling, after submiting it takes effect immediately<br>
 When disabling, submiting will schedule it for disable at next reboot."
 
 if test -f /tmp/firstboot; then
@@ -65,7 +64,7 @@ if test $? = 0; then
 	netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 	bcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
 	gateway=$(route -n | awk '$1 == "0.0.0.0" { print $2 }')
-	mtu=$(ifconfig eth0 | awk '/MTU/{print substr($0, match($a,"MTU")+4,5)}')
+	mtu=$(ifconfig eth0 | awk '/MTU/{print substr($0, match($a,"MTU")+4,4)}')
 fi
 
 mktt mtu_tt "Also called jumbo frames"
@@ -73,18 +72,11 @@ mktt mtu_tt "Also called jumbo frames"
 cat<<-EOF
 	<script type="text/javascript">
 	function edisable(state) {
-		sipf=document.getElementById("sipf");
-		if (state == true) {
-			document.getElementById("dhcp").checked = true;
-			document.getElementById("static").checked = false;
-		} else {
-			document.getElementById("dhcp").checked = false;
-			document.getElementById("static").checked = true;
-		}
-		for (var i = 0; i < sipf.length; i++) {
-			if (sipf.elements[i].id == "sip")
-				sipf.elements[i].disabled = state;
-		}
+		document.getElementById("static").checked = !state
+		document.getElementById("dhcp").checked = state;
+
+		for (var i = 1; i < 4; i++)
+			document.getElementById("sip" + i).disabled = state
 	}
 	function ipchange(oip) {
 		ret = true;
@@ -111,7 +103,7 @@ cat<<-EOF
 	<form id="sipf" name=sipf action="/cgi-bin/host_proc.cgi" method="post">
 	<fieldset><legend><strong>Host details</strong></legend><table>
 	<tr><td>Host name:</td>
-		<td><input type=text name=hostname value=$hostname></td></tr>
+		<td><input type=text name=hostname value="$hostname"></td></tr>
 	<tr><td>Host description:</td>
 		<td><input type=text name=hostdesc value="$hostdesc"></td></tr>
 	<tr><td>Workgroup:</td>
@@ -125,12 +117,12 @@ cat<<-EOF
 	<td>DHCP <input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td>
 	</tr>
 
-	<tr><td>Host IP:</td><td><input type=text id=sip name="hostip" value=$hostip></td></tr>
-	<tr><td>Netmask:</td><td><input type=text id=sip name="netmask" value=$netmask></td></tr>
-	<tr><td>Gateway:</td><td><input type=text id=sip name="gateway" value=$gateway></td></tr>
-	<tr><td>Name server 1:</td><td><input type=text name="ns1" value=$ns1></td></tr>
-	<tr><td>Name server 2:</td><td><input type=text name="ns2" value=$ns2></tr>
-	<tr><td>Frame size:</td><td><input type=text name="mtu" value=$mtu onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
+	<tr><td>Host IP:</td><td><input type=text id=sip1 name="hostip" value="$hostip"></td></tr>
+	<tr><td>Netmask:</td><td><input type=text id=sip2 name="netmask" value="$netmask"></td></tr>
+	<tr><td>Gateway:</td><td><input type=text id=sip3 name="gateway" value="$gateway"></td></tr>
+	<tr><td>Name server 1:</td><td><input type=text name="ns1" value="$ns1"></td></tr>
+	<tr><td>Name server 2:</td><td><input type=text name="ns2" value="$ns2"></tr>
+	<tr><td>Frame size:</td><td><input type=text name="mtu" value="$mtu" onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
 	<tr><td>Enable IPv6</td><td><input type=checkbox $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
 	</table></fieldset><br>
 
@@ -143,7 +135,7 @@ cat<<-EOF
 EOF
 
 ipdisable="false"
-if $(grep -q '^ *iface.*eth0.*dhcp' $CONFINT); then
+if $(grep -q '^[^#].*face.*eth0.*dhcp' $CONFINT); then
 	ipdisable="true"
 fi
 

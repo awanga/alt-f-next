@@ -21,7 +21,7 @@ if test -n "$Submit"; then
 			cookie=$(httpd -d $cookie)
 		fi
 
-		echo "feed = { url => \"$(httpd -d $feed)\" cookies => \"$cookie\" }" >> $CONF_AUTO
+		echo -e "feed = { url => \"$(httpd -d $feed)\"\tcookies => \"$cookie\" }" >> $CONF_AUTO
 	done
 
 	for i in $(seq 0 $pattern_cnt); do
@@ -33,7 +33,7 @@ if test -n "$Submit"; then
 			folder=$(httpd -d $folder)
 		fi
 
-		echo "filter = { pattern => \"$(httpd -d $pattern)\" folder => \"$folder\" }" >> $CONF_AUTO
+		echo -e "filter = { pattern => \"$(httpd -d $pattern)\"\tfolder => \"$folder\" }" >> $CONF_AUTO
 	done
 
 	echo "interval = $interval" >> $CONF_AUTO
@@ -46,4 +46,4 @@ if test -n "$Submit"; then
 fi
 
 #enddebug
-gotopage /cgi-bin/automatic.cgi
+gotopage /cgi-bin/user_services.cgi

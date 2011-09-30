@@ -36,7 +36,8 @@ sleepnow() {
 		return
 	fi
 
-	if test "$(disk_power $1)" != "standby"; then	
+	if test "$(disk_power $1)" != "standby"; then
+		sync	
 		/sbin/hdparm -y $dsk >/dev/null 2>&1
 	fi
 }

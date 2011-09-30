@@ -18,10 +18,10 @@ cat<<-EOF
 	<form id=user name=userf action=user_proc.cgi method="post">
 	<table><tr>
 	<td>Script to execute on powerup:</td>
-	<td><input type=test name=user_script value="$USER_SCRIPT"></td>
+	<td><input type=text name=user_script value="$USER_SCRIPT"></td>
 	</tr>
 	<tr><td>Create diagnostics file:</td>
-	<td><input type=checkbox $log_chk name=create_log value="yes"</td></tr>
+	<td><input type=checkbox $log_chk name=create_log value="yes"></td></tr>
 	<tr><td><br></td></tr>
 	<tr><td></td><td>$(back_button)<input type=submit name=submit value="Submit"></td></tr>
 	</table></form></body></html>

@@ -3,7 +3,7 @@
 opt_month() {
 	j=1
 	for i in Jan Fev Mar Apr May Jun Jul Aug Sep Oct Nov Dec; do
-		echo "<option value=$j>$i</option>"
+		echo "<option value=\"$j\">$i</option>"
 		j=$((j+1))
 	done
 }
@@ -11,7 +11,7 @@ opt_month() {
 opt_wday() {
 	j=0
 	for i in Sun Mon Tue Wed Thu Fri Sat; do
-		echo "<option value=$j>$i</option>"
+		echo "<option value=\"$j\">$i</option>"
 		j=$((j+1))
 	done
 }
@@ -19,20 +19,20 @@ opt_wday() {
 opt_week() {
 	j=1
 	for i in first 2nd 3d 4th last; do
-		echo "<option value=$j>$i</option>"
+		echo "<option value=\"$j\">$i</option>"
 		j=$((j+1))
 	done
 }
 
 opt_hour() {
 	for i in $(seq 0 23); do
-		echo "<option value=$i>$i</option>"
+		echo "<option value=\"$i\">$i</option>"
 	done
 }
 
 opt_min() {
 	for i in $(seq 0 15 45); do
-		echo "<option value=$i>$i</option>"
+		echo "<option value=\"$i\">$i</option>"
 	done
 }
 
@@ -41,11 +41,7 @@ opt_min() {
 
 tzones() {
 
-	echo "<select name=tz_opt onChange='update_tz()'>"
-
-# using <optgroup> this way is toooo sloow
-#	lcontinent=""
-#	echo "<optgroup label=Africa>"
+	echo "<select name=tz_opt onChange=\"update_tz()\">"
 
 	while read city zone; do
 		sel=""
@@ -53,16 +49,11 @@ tzones() {
 			sel="SELECTED"
 			fnd=$zone
 		fi
-#		continent=$(echo $city | cut -d'/' -f1)
-#		if test "$lcontinent" != $continent; then
-#			lcontinent=$continent
-#			echo "</optgroup><optgroup label=$continent>"
-#		fi
-		echo "<option $sel value='$zone'> $city </option>"
+		echo "<option $sel value=\"$zone\"> $city </option>"
 	done < timezones.txt
 
 	if test -z "$fnd"; then
-		echo '<option SELECTED value="">Select one Continent/City</option>'
+		echo "<option SELECTED value=\"\">Select one Continent/City</option>"
 	fi
 
 	echo "</select>"	
@@ -124,7 +115,7 @@ if test -e $CONFNTP; then
 	while read server host; do
 		if test "$server" = "server" -a "$host" != "127.127.1.0"; then
 			ntps=$host
-			default_ntpd_server="<option value=$ntps>Default</option>"
+			default_ntpd_server="<option value=\"$ntps\">Default</option>"
 			break
 		fi
 	done < $CONFNTP
@@ -162,66 +153,57 @@ cat<<-EOF
 		document.frm.dst_hour_end.value + ":" +
 		document.frm.dst_min_end.value;
 	}
-	function toogle(theform) {
-		for (var i = 0; i < theform.length; i++) {
-			if (theform.elements[i].id == "dst")
-				theform.elements[i].disabled = theform.elements[i].disabled ? false : true;
-		}
+	function toogle() {
+		st = document.getElementById("fixdst").checked
+		for (i=1; i<11; i++)
+			document.getElementById("fix" + i).disabled = ! st
 	}
 	</script>
 
-	<form name=frm action="/cgi-bin/time_proc.cgi" method="post">
+<form name=frm action="/cgi-bin/time_proc.cgi" method="post">
 
-	<fieldset>
-	<legend><strong>Country</strong></legend>
-	<table>	
-	<tr><td>Timezone:</td>
-		<td><input type=text size=30 name=tz value=$tz></td>
-		<td>$(tzones)</td>
-		<td><input type=hidden name=timezone value=$timezone></td>
-	</tr>
+<fieldset><legend><strong>Country</strong></legend>
+	Timezone: <input type=text size=30 name=tz value="$tz">
+	$(tzones)
+	<input type=hidden name=timezone value="$timezone">
 
-	<tr><td></td><td>Daylight Saving Time (DST)</td>
-		<td><input type=checkbox name=po value=po onclick="toogle(frm)"></td>
-	</tr>
+<table>
+	<tr><td>Fix Daylight Saving Time (DST)</td>
+	<td><input type=checkbox id=fixdst name=fixdst value=po onclick="toogle()"></td></tr>
+	<tr><td align=right>DST start date</td>
+	<td><select disabled id=fix1 name=dst_week_start onChange="update_tz2()">
+			$(opt_week)</select></td>
 
-	<tr><td></td>
-		<td>DST start date</td>
-		<td><select disabled id=dst name=dst_week_start onChange=update_tz2()>
-			$(opt_week)</select>
+	<td><select disabled id=fix2 name=dst_day_start onChange="update_tz2()">
+		$(opt_wday)</select>of</td>
 
-	<select disabled id=dst name=dst_day_start onChange=update_tz2()>
-		$(opt_wday)</select>
+	<td><select disabled id=fix3 name=dst_mth_start onChange="update_tz2()">
+		$(opt_month)</select>at</td>
 
-	of <select disabled id=dst name=dst_mth_start onChange=update_tz2()>
-		$(opt_month)</select>
+	<td><select disabled id=fix4 name=dst_hour_start onChange="update_tz2()">
+		$(opt_hour)</select>:</td>
 
-	at <select disabled id=dst name=dst_hour_start onChange=update_tz2()>
-		$(opt_hour)</select>
-
-	:<select disabled id=dst name=dst_min_start onChange=update_tz2()>
+	<td><select disabled id=fix5 name=dst_min_start onChange="update_tz2()">
 		$(opt_min)</select></td></tr>
 
-	<tr><td></td><td>DST end date</td>
-	
-	<td><select disabled id=dst name=dst_week_end onChange=update_tz2()>
-		$(opt_week)</select>
+	<tr><td align=right>DST &nbsp;end date</td>
+	<td><select disabled id=fix6 name=dst_week_end onChange="update_tz2()">
+		$(opt_week)</select></td>
 
-	<select disabled id=dst name=dst_day_end onChange=update_tz2()>
-		$(opt_wday)</select>
+	<td><select disabled id=fix7 name=dst_day_end onChange="update_tz2()">
+		$(opt_wday)</select>of</td>
 
-	of <select disabled id=dst name=dst_mth_end onChange=update_tz2()>
-	$(opt_month)</select>
+	<td><select disabled id=fix8 name=dst_mth_end onChange="update_tz2()">
+	$(opt_month)</select>at</td>
 
-	at <select disabled id=dst name=dst_hour_end onChange=update_tz2()>
-		$(opt_hour)</select>
+	<td><select disabled id=fix9 name=dst_hour_end onChange="update_tz2()">
+		$(opt_hour)</select>:</td>
 
-	:<select disabled id=dst name=dst_min_end onChange=update_tz2()>
+	<td><select disabled id=fix10 name=dst_min_end onChange="update_tz2()">
 		$(opt_min)</select></td></tr>
-
-	<tr><td></td><td><input type="submit" name="country" value="Submit"></td>
-	<td></td></tr>
-</table></fieldset><br>
+</table>
+<br><input type="submit" name="country" value="Submit">
+</fieldset><br>
 
 <fieldset>
 <legend><strong>Adjust time through internet</strong></legend>
@@ -231,18 +213,18 @@ cat<<-EOF
 	</tr>
 
 	<tr><td>Adjust from:</td>
-		<td><input type=text size=20 name=ntps value=$ntps></td>
+		<td><input type=text size=20 name=ntps value="$ntps"></td>
 		<td><select name=ntps_opt onChange="update_smtp()">
 		$default_ntpd_server
-		<option value=pool.ntp.org>Worldwide</option>
-		<option value=asia.pool.ntp.org>Asia</option>
-		<option value=europe.pool.ntp.org>Europe</option>
-		<option value=north-america.pool.ntp.org>North America</option>
-		<option value=oceania.pool.ntp.org>Oceania</option>
-		<option value=south-america.pool.ntp.org>South America</option>
+		<option value="pool.ntp.org">Worldwide</option>
+		<option value="asia.pool.ntp.org">Asia</option>
+		<option value="europe.pool.ntp.org">Europe</option>
+		<option value="north-america.pool.ntp.org">North America</option>
+		<option value="oceania.pool.ntp.org">Oceania</option>
+		<option value="south-america.pool.ntp.org">South America</option>
 	</select></td>
 	</tr>
-	<tr><td></td><td><input type=submit name=ntpserver value=Submit></td><td></td></tr>
+	<tr><td></td><td><input type=submit name=ntpserver value="Submit"></td><td></td></tr>
 </table>
 </fieldset><br>
 

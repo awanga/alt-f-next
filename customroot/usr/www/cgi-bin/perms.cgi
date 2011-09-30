@@ -72,7 +72,7 @@ done < /etc/group
 IFS="$OIFS"
 
 cat <<-EOF
-	<form action=/cgi-bin/dir_proc.cgi method=post>
+	<form action="/cgi-bin/dir_proc.cgi" method="post">
 	<table><!--caption><h3>$browse</h3></caption-->
 	<tr align=center><th colspan=2 align=left><em>$(basename "$browse"):</em></th><th>Can Read</th><th>Can Write</th><th>Can Browse</th></tr>
 	<tr align=center>

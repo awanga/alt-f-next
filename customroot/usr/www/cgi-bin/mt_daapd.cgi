@@ -39,14 +39,14 @@ cat<<-EOF
 	</script>
 
 	<form name=transmission action=mt_daapd_proc.cgi method="post" >
-	<table><tr>
+	<table>
 EOF
 
 OIFS="$IFS"; IFS=','; k=1
 for i in $MP3_DIR; do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id=conf_dir_$k name=sdir_$k value="$i"></td>
+		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$i"></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$k')" value=Browse></td>
 		</tr>
 	EOF
@@ -58,7 +58,7 @@ if test "$def_dir" = "yes"; then
 for j in $(seq $k $((k+2))); do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id=conf_dir_$j name=sdir_$j value=""></td>
+		<td><input type=text size=32 id="conf_dir_$j" name="sdir_$j" value=""></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$j')" value=Browse></td>
 		</tr>
 	EOF
