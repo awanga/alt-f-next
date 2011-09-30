@@ -21,6 +21,11 @@ if test "$auth" = "on" -a \( -z "$user" -o -z "$password" \); then
 	msg "Username and Password must be filled"
 fi
 
+password=$(checkpass $password)
+if test $? != 0; then
+    msg "$password"
+fi
+
 user=$(httpd -d "$user")
 to=$(httpd -d "$to")
 
@@ -36,8 +41,8 @@ auth	$auth" > $CONFF
 
 if test -n "$port"; then echo -e "port\t$port" >> $CONFF; fi
 if test -n "$user"; then echo -e "user\t$user" >> $CONFF; fi
-if test -n "$password"; then echo -e "password\t$password" >> $CONFF; fi
 if test -n "$to"; then echo -e "from\t$to" >> $CONFF; fi
+if test -n "$password"; then echo -e "password\t$password" >> $CONFF; fi
 
 chmod 600 $CONFF
 
