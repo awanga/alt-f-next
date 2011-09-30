@@ -17,6 +17,7 @@ ipkg_cmd() {
 		opts="-force-defaults"
 	elif test $1 = "upgrade"; then
 		write_header "Upgrading all Alt-F packages"
+		opts="-force-defaults"
 	fi
 
 	cat<<-EOF
@@ -99,9 +100,31 @@ elif test -n "$RemoveAll"; then
 
 	echo "</body></html>"
 	exit 0
+
+elif test -n "$ChangeFeed"; then
+	if ! grep -q '^#!#src Alt-F-' $CONFF; then
+		sed -i '/^src Alt-F-/s|^.*$|#!#&|' $CONFF
+	fi
+	sed -i '/src feed_/d' $CONFF
+	for i in $(seq 1 $nfeeds); do
+		eval $(echo feed=\$feed_$i)
+		if test -z "$feed"; then continue; fi
+		feed="$(httpd -d $feed)"
+		echo "src feed_$i $feed" >> $CONFF
+	done
+
+elif test -n "$DefaultFeed"; then
+	if grep -q '^#!#src Alt-F-' $CONFF; then
+		sed -i '/^src feed_/d' $CONFF
+		sed -i '/^#!#.*/s|^#!#||' $CONFF
+	fi
 fi
 
-ipkg update >& /dev/null
+res=$(ipkg update)
+
+if test $? != 0; then
+	msg "$res"
+fi
 
 if test -n "$Remove"; then
 	res=$(ipkg remove $Remove | sed -n '/^Package/,/^$/p' | tr '\n' ' ')
@@ -111,7 +134,7 @@ if test -n "$Remove"; then
 	fi
 
 elif test -n "$InstallAll"; then
-	Write_header "Installing all Alt-F packages"
+	write_header "Installing all Alt-F packages"
 	echo "<pre>"
 	for i in $(ipkg -V0 list | cut -f1 -d" "); do
 		if ! ipkg -V0 list_installed | cut -f1 -d" " | grep -q $i; then
@@ -138,24 +161,6 @@ elif test -n "$Update"; then
 
 elif test -n "$UpdateAll"; then
 	ipkg_cmd upgrade
-
-elif test -n "$ChangeFeed"; then
-	if ! grep -q '^#!#src Alt-F-' $CONFF; then
-		sed -i '/^src Alt-F-/s|^.*$|#!#&|' $CONFF
-	fi
-	sed -i '/src feed_/d' $CONFF
-	for i in $(seq 1 $nfeeds); do
-		eval $(echo feed=\$feed_$i)
-		if test -z "$feed"; then continue; fi
-		feed="$(httpd -d $feed)"
-		echo "src feed_$i $feed" >> $CONFF
-	done
-
-elif test -n "$DefaultFeed"; then
-	if grep -q '^#!#src Alt-F-' $CONFF; then
-		sed -i '/^src feed_/d' $CONFF
-		sed -i '/^#!#.*/s|^#!#||' $CONFF
-	fi
 fi
 
 #enddebug
