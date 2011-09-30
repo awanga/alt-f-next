@@ -167,7 +167,7 @@ cat<<-EOF
 EOF
 
 # THIS IS RIGHT!
-p1=$(fdisk -l | awk 'substr($1,1,8) != "'$dsk'" && ($5 == "da" || $5 == "fd") {
+p1=$(fdisk -l /dev/sd? | awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
 	print substr($1, 6)}')
 p2=$(blkid -t TYPE="mdraid" | awk '{print substr($1, 6, 4)}')
 raidp=$(echo -e "$p1\n$p2" | sort -u)
@@ -221,7 +221,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 
 	for j in $raidp; do
 		cap="$(awk '{printf "%.0f", $0*512/1e9}' /sys/block/${j:0:3}/$j/size)"
-		raid_devs="$raid_devs<option value=$j>$j ${cap}GB</option>"
+		raid_devs="$raid_devs<option value=\"$j\">$j ${cap}GB</option>"
 	done
 
 	if ls /dev/md? >& /dev/null; then
@@ -290,7 +290,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 					<td><input type=submit name=$mdev value="Stop"></td>		
 					<td><select id="raidop_$mdev" name="$mdev" onChange="msubmit('raidop_$mdev', '$mdev')">
 						<option>Operation</option>
-						<option $remops value=${bitmap}_bitmap>$bitmap Bitmap</option>
+						<option $remops value="${bitmap}_bitmap">$bitmap Bitmap</option>
 						<option $remops>Verify</option>
 						<option $remops>Repair</option>
 						<option $remops value="Enlarge_raid">Enlarge</option>
@@ -305,8 +305,8 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 					<td><select id=rdev_$mdev name=rdev_$mdev>$raid_devs</select></td>
 					<td><select id=rops_$mdev name=$mdev onChange="msubmit('rops_$mdev', '$mdev')">
 						<option value=none>Operation</option>
-						<option value=Fail_part>Fail</option>"
-						<option value=Remove_part>Remove</option>"
+						<option value=Fail_part>Fail</option>
+						<option value=Remove_part>Remove</option>
 						<option value=Add_part>Add</option>
 						<option value=Clear_part>Clear</option>
 					</select></td>
