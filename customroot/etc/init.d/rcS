@@ -60,7 +60,7 @@ if ! grep -q "nodef" /proc/cmdline; then
 	if ! test -e /dev/mtdblock0; then # mdev -s has not yet run
 		mknod /dev/mtdblock0 b 31 0
 	fi
-	loadsave_settings -ck
+	logger -s $(loadsave_settings -ck)
 	loadsave_settings -lf
 	no_defaults=$?
 
@@ -70,9 +70,9 @@ if ! grep -q "nodef" /proc/cmdline; then
 fi
 
 # can't avoid this?
-logger "FIXME: Waiting 3 sec for kernel enumeration to finish..."
+logger -s "FIXME: Waiting 3 sec for kernel enumeration to finish..."
 sleep 3
-logger "FIXME: stop waiting."
+logger -s "FIXME: stop waiting."
 
 # sequences events
 echo > /dev/mdev.seq 
@@ -228,7 +228,7 @@ while read dev mp fs rest; do
 		fi
 	 fi
 done < /etc/fstab
-		
+
 # stop temporary syslog to /var/log/boot.log
 start-stop-daemon -K -q -n syslogd
 
