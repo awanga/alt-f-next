@@ -21,8 +21,13 @@ parse() {
 PRXEN=disabled
 PRXCHK=""
 if test -e $WGETCONF; then
-	while read ln; do
-		eval $(eatspaces $ln)
+	while read -r ln; do
+		if echo "$ln" | grep -q proxy_password; then
+			pass=$(echo $ln | sed -n '/proxy_password/s/proxy_password=//p')
+			proxy_password=$(html_escape "$pass")
+		else
+			eval $(eatspaces "$ln")
+		fi
 	done < $WGETCONF
 
 	eval $(parse $http_proxy)
@@ -45,42 +50,36 @@ fi
 cat<<-EOF
 	<script type="text/javascript">
 	function toogle() {
-		sipf = document.getElementById("proxyf");
-		state = document.getElementById("useproxy").checked == true ? false : true;
-		document.getElementById("anonproxy").disabled = state
-		for (var i = 0; i < sipf.length; i++) {
-			if (sipf.elements[i].id == "prx")
-				sipf.elements[i].disabled = state;
+		state = document.getElementById("usepr").checked == true ? false : true;
+		for (i=1; i<5; i++) {
+			obj = document.getElementById("usepr" + i);
+			obj.disabled = state
 		}
-
-		state2 = document.getElementById("anonproxy").checked
-		for (var i = 0; i < sipf.length; i++) {
-			if (sipf.elements[i].id == "aprx")
-				sipf.elements[i].disabled = state || state2;
-		}
+		atoogle()
+		document.getElementById("anonpr").disabled = state
 	}
 	function atoogle() {
-		sipf = document.getElementById("proxyf");
-		state = document.getElementById("anonproxy").checked
-		for (var i = 0; i < sipf.length; i++) {
-			if (sipf.elements[i].id == "aprx")
-				sipf.elements[i].disabled = state
+		state1 = document.getElementById("anonpr").checked == true ? true : false
+		state2 = document.getElementById("usepr").checked == true ? false : true
+		for (i=1; i<3; i++) {
+			obj = document.getElementById("anonpr" + i);
+			obj.disabled = state1 || state2
 		}
 	}
 	</script>
 
 	<form id="proxyf" action="/cgi-bin/proxy_proc.cgi" method="post">
 	<table>
-	<tr><td>Use a Proxy</td><td><input type=checkbox $PRXCHK id="useproxy" name="useproxy" value="yes" onclick="toogle()"></td></tr>
-	<tr><td>HTML Proxy Server:</td><td><input type=text $PRXEN id="prx" name="http_proxy" value="$http_srv"></td>
-		<td>Port:</td><td><input type=text $PRXEN id="prx" name="http_port" value="$http_port"></td></tr>
-	<tr><td>FTP Proxy Server:</td><td><input type=text $PRXEN id="prx" name="ftp_proxy" value="$ftp_srv"></td>
-		<td>Port:</td><td><input type=text $PRXEN id="prx" name="ftp_port" value="$ftp_port"></td></tr>
-	<tr><td><br></td></tr>
-	<tr><td>Anonymous Proxy</td><td><input type=checkbox $APRXCHK id="anonproxy" name="useproxy" value="yes" onclick="atoogle()"></td></tr>
-	<tr><td>Proxy Username:</td><td><input type=text $APRXEN $PRXEN id="aprx" name="proxy_user" value="$proxy_user"></td></tr>
-	<tr><td>Proxy Password:</td><td><input type=password $APRXEN $PRXEN id="aprx" name="proxy_password" value="$proxy_password"></td></tr>
+	<tr><td>Use a Proxy</td><td><input type=checkbox $PRXCHK id="usepr" name="useproxy" value="yes" onclick="toogle()"></td></tr>
 
+	<tr><td>HTML Proxy Server:</td><td><input type=text $PRXEN id="usepr1" name="http_proxy" value="$http_srv"></td>
+		<td>Port:</td><td><input type=text $PRXEN id="usepr2" name="http_port" value="$http_port"></td></tr>
+	<tr><td>FTP Proxy Server:</td><td><input type=text $PRXEN id="usepr3" name="ftp_proxy" value="$ftp_srv"></td>
+		<td>Port:</td><td><input type=text $PRXEN id="usepr4" name="ftp_port" value="$ftp_port"></td></tr>
+	<tr><td><br></td></tr>
+	<tr><td>Anonymous Proxy</td><td><input type=checkbox $APRXCHK id="anonpr" name="useproxy" value="yes" onclick="atoogle()"></td></tr>
+	<tr><td>Proxy Username:</td><td><input type=text $APRXEN $PRXEN  id="anonpr1" name="proxy_user" value="$proxy_user"></td></tr>
+	<tr><td>Proxy Password:</td><td><input type=password $APRXEN $PRXEN id="anonpr2" name="proxy_password" value="$proxy_password"></td></tr>
 	<tr><td></td><td><input type="submit" value="Submit"></td></tr>
 	</table>
 	</form>

@@ -44,8 +44,14 @@ if test "$useproxy" = "yes"; then
 	if test -n "$proxy_user"; then
 		echo proxy_user=$(httpd -d $proxy_user) >> $CONFF
 	fi
+
+	proxy_password=$(checkpass $proxy_password)
+	if test $? != 0; then
+    	msg "$proxy_password"
+	fi
+
 	if test -n "$proxy_password"; then
-		echo proxy_password=$(httpd -d $proxy_password)  >> $CONFF
+		echo proxy_password=$proxy_password  >> $CONFF
 	fi
 	echo use_proxy=on >> $CONFF
 	remove
