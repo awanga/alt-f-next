@@ -15,6 +15,24 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	uname="$(httpd -d "$uname")"
 	nick="$(httpd -d "$nick")"
 
+	if test -z "$pass" -o -z "$passa"; then
+		msg "The passwords can't be empty"
+	fi
+
+	if test "$pass" != "$passa"; then
+		msg "The passwords does not match"
+	fi
+
+	pass=$(checkpass $pass)
+	if test $? != 0; then
+		msg "$pass"
+	fi
+
+	passa=$(checkpass $passa)
+	if test $? != 0; then
+		msg "$passa"
+	fi
+
 	if test "$submit" = "Submit"; then
 		ouname="$(awk -F: -v ouname="$uname" '$5 == ouname {print $5}' $CONFP)"
 		onick="$(awk -F: -v onick="$nick" '$1 == onick {print $1}' $CONFP)"
@@ -26,8 +44,6 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 			msg "The nickname cant be empty, have spaces, or a user with same nickname already exists"
 		elif test -z "$uid" -o "$(awk -F: '$3 == "'$uid'" {print $3}' $CONFP)"; then
 			msg "A user with that user id already exists"
-		elif test -z "$pass" -o "$pass" != "$passa"; then
-			msg "Password can't be empty or does not match"
 		fi
 		#uname=$(echo "$uname" | tr ' ' '_')
 		#adduser -D -G users -u $uid -g "$uname" -h "/home/$nick" $nick > /dev/null 2>&1
@@ -44,10 +60,6 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		# why doesn't rsync uses unix authorization mechanisms?!
 		echo -e "\n[$nick]\npath = /home/$uname\ncomment = $uname home directory\n\
 read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> $CONFR
-	fi
-
-	if test -z "$pass" -o "$pass" != "$passa"; then
-		msg "Password can't be empty or does not match"
 	fi
 
 	echo "$nick:$pass" | chpasswd > /dev/null 2>&1
