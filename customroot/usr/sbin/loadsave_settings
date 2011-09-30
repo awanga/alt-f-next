@@ -131,7 +131,7 @@ loadflashdef() {
 	elif ! test -f "$1"; then
 		last=$save_dir/$1
 	else
-		last=""	
+		last="$1"	
 	fi
 
 	if test -z "$last" -o ! -f "$last" -o ! -s "$last"; then
@@ -159,7 +159,9 @@ loadflashdef() {
 #			chmod -x $i
 #		done
 		for i in $(cat $initscript_perms ); do
-			chmod +x $i
+			if test -f $i; then
+				chmod +x $i
+			fi
 		done
 		rm $initscript_perms
 	fi
