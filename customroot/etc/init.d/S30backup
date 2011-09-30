@@ -30,7 +30,7 @@ istop() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/bin/backup|d' $TF
-	crontab $TF
+	crontab $TF 2> /dev/null
 
 	rm -f $TF
 	echo "OK."
@@ -49,14 +49,14 @@ istart() {
 	sed -i '\|/usr/bin/backup|d' $TF
 
 	IFS=";"
-	while read id type runas srcpath dstpath when at log rest; do
+	while read id type runas host mac srcpath dstpath when at log rest; do
 		if test -z "$id" -o -z "$type" -o -z "$runas" -o -z "$srcpath" \
 			-o -z "$dstpath" -o -z "$when" -o -z "$at" -o -z "$log"; then continue; fi
 		if test "${id:0:1}" = "#"; then continue; fi
 		echo "0 $at * * $when /usr/bin/backup $id" >> $TF
 	done < $CONF
 
-	crontab $TF
+	crontab $TF 2> /dev/null
 	rm -f $TF
 
 	echo "OK."
