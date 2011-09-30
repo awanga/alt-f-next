@@ -109,6 +109,11 @@ case "$action" in
 
 	ChangePassword)
 		SECR=/etc/web-secret
+		if test -z "$passwd"; then
+			msg "The password can't be empty"
+		fi
+
+		passwd="$(httpd -d $passwd)"
 		if test -n "$passwd" -a "$passwd" = $(cat $SECR); then
 			rm -f $SECR
 			rm -f /tmp/cookie
@@ -148,7 +153,7 @@ case "$action" in
 		;;
 
 	*)
-		act=$(httpd -d $action)
+		act=$(httpd -d "$action")
 		if test -f "$act"; then
 			showlog $act $act "Contents of $act"
 			exit 0
