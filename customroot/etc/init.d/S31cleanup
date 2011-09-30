@@ -28,7 +28,7 @@ istop() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/sbin/cleanup|d' $TF
-	crontab $TF
+	crontab $TF 2> /dev/null
 	rm -f $TF
 	echo "OK."
 }
@@ -40,7 +40,7 @@ istart() {
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/sbin/cleanup|d' $TF
 	echo "0 * * * * /usr/sbin/cleanup" >> $TF
-	crontab $TF
+	crontab $TF 2> /dev/null
 	rm -f $TF
 	echo "OK."
 }
