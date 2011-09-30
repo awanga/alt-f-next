@@ -23,8 +23,8 @@ enable() {
 		sed -i s/^#$1/$1/ $CONFF
 		reload $NAME
 		avahi add $1
-	else
-		echo "$NAME: service $1 is already enabled"
+#	else
+#		echo "$NAME: service $1 is already enabled"
 	fi
 }
 
@@ -35,8 +35,8 @@ disable() {
 		sed -i s/^$1/#$1/ $CONFF
 		reload $NAME
 		avahi remove $1
-	else
-		echo "$NAME: service $1 already disabled"
+#	else
+#		echo "$NAME: service $1 already disabled"
 	fi
 }
 
