@@ -9,11 +9,12 @@ ftp:x:7:
 at:x:8:
 backup:x:34:
 utmp:x:43:
-netdev:x:82:
 sshd:x:67
 #avahi 68
 #multimedia 80
 #network	81
+netdev:x:82:
+#nut 84 
 nobody:x:98:
 nogroup:x:99:
 users:x:100:
