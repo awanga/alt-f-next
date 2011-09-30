@@ -16,8 +16,8 @@ activate_chroot() {
 	mount -o bind  /tmp  $debdir/tmp
 
 	grep -E ^/dev/md[0-9]\|^/dev/sd[a-z][1-9] /proc/mounts | while read mpart mpt rest; do
-	mkdir -p $debdir/$mpt
-	mount -o bind $mpt $debdir/$mpt
+		mkdir -p $debdir/$mpt
+		mount -o bind $mpt $debdir/$mpt
 	done
 
 	cp /etc/hostname $debdir/etc/hostname
@@ -27,8 +27,7 @@ activate_chroot() {
 
 deactivate_chroot() {
 
-	# the 3 is because of grep
-	if test "$(ps | grep '/usr/sbin/debian chroot' | wc -l)" -ne 3; then
+	if test "$(ps | grep '/usr/sbin/debian chroot' | wc -l)" -gt 1; then
 		return # more than one chroot
 	fi
 
@@ -48,50 +47,74 @@ for i in $inst; do
 	fi
 done
 
-if test -z "$debdir"; then
-	echo "No Debian installation found."
-	exit 1
-fi
+if test $# != 0 -a "$1" = "-chroot"; then
 
-if test "$1" = "chroot"; then
+	shift
+	if test $# = 0; then
+		cmd="/bin/bash"
+	else
+		cmd="$*"
+	fi
+
+	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec
 
 	activate_chroot
-	chroot $debdir /bin/bash
+	chroot $debdir $cmd
+	st=$?
 	deactivate_chroot
+	return $st
 
-elif test "$1" = "kexec"; then
+elif test $# != 0 -a "$1" = "-kexec"; then
 
-	part=/dev/$(basename $debdir)
-	mdadm --detail --test $part >& /dev/null
-	raid=$?
+cat<<-NEOF > /tmp/deb	
+	#!/bin/sh
+	part=$debdir
+	if ! test -f /dev/\$(basename \$part); then
+		part="\$(awk '/'\$(basename \$part)'/{print \$1}' /proc/mounts)"
+	fi
 
-	cp /etc/network/interfaces $debdir/etc/network/
+	mdadm --detail --test \$part >& /dev/null
+	raid=\$?
+
+	if grep -q '^iface eth0 inet static' /etc/network/interfaces; then
+		cp /etc/network/interfaces $debdir/etc/network/
+	else
+		cat<<-EOF > $debdir/etc/network/interfaces
+			auto lo
+			iface lo inet loopback
+
+			auto eth0
+			iface eth0 inet dhcp
+		EOF
+	fi
+
 	cp /etc/hostname /etc/resolv.conf /etc/hosts $debdir/etc/
 
 	cat<<-EOF > $debdir/etc/fstab
 		proc	/proc	proc	defaults	0	0
 		sysfs	/sys	sysfs	defaults	0	0
-		$part	/	$(blkid -sTYPE -o value $part)	defaults	1	1
+		\$part	/	\$(blkid -sTYPE -o value \$part)	defaults	1	1
 	EOF
 
-	for i in $(blkid -t TYPE=swap -o device); do
-		echo "$i	swap	swap	defaults	0	0" >> $debdir/etc/fstab
+	for i in \$(blkid -t TYPE=swap -o device); do
+		echo "\$i	swap	swap	defaults	0	0" >> $debdir/etc/fstab
 	done
+	
+	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec
 
 	echo "Now leaving Alt-F..."
-
 	rcall stop
 	eject -a
 
 	mkdir -p $debdir
-	if test "$raid" == 0; then
-		mdadm --assemble $part
-        mdadm --readonly $part
+	if test "\$raid" = 0; then
+		mdadm --assemble \$part
+		mdadm --readonly \$part
 	fi
-	mount -o ro $part $debdir 
+	mount -o ro \$part $debdir 
 
 	rcsysctrl stop
-	if test "$(cat /tmp/board)" = "C1"; then
+	if test "\$(cat /tmp/board)" = "C1"; then
 		echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
 	else
 		echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
@@ -100,16 +123,21 @@ elif test "$1" = "kexec"; then
 	echo "Executing Debian now..."
 
 	kexec --load $debdir/vmlinuz --initrd=$debdir/initrd.img \
-		--command-line="console=ttyS0,115200 root=$part" && kexec -e
+		--command-line="console=ttyS0,115200 root=\$part" && kexec -e
 
 	echo "Failed."
 	exit 1
+NEOF
+
+chmod +x /tmp/deb
+nohup /tmp/deb &
 
 else
-	echo "usage: debian chroot | kexec"
+	echo "usage: debian [-chroot [command] | -kexec]"
 	if test -n "$debdir"; then
-		echo "   A $(cat $debdir/etc/issue.net) installation was found at $debdir"
+		echo "A $(cat $debdir/etc/issue.net) installation was found at $debdir"
 	else
-		echo "   No Debian installation found"
+		echo "No Debian installation found"
+		exit 1
 	fi
 fi
