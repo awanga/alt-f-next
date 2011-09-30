@@ -72,6 +72,19 @@ writelog() {
 	chmod a+rw $i/$LOGF
 }
 
+user_script() {
+	for cnt in $(seq 1 12); do
+		if test -x "$USER_SCRIPT"; then
+			"$USER_SCRIPT"
+			return
+		fi
+
+		echo -n .
+		sleep 10
+	done
+	echo "Fail: user script $USER_SCRIPT not found."
+}
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
@@ -85,8 +98,8 @@ case "$1" in
 			bootlog
 		fi
 
-		if test -n "$USER_SCRIPT" -a -x "$USER_SCRIPT"; then
-			"$USER_SCRIPT"
+		if test -n "$USER_SCRIPT"; then
+			user_script
 		fi
 
 		echo "OK."
