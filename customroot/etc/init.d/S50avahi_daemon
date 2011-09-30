@@ -37,11 +37,11 @@ istart() {
 # de-register all running services
 # when a service is stoped its own initscript or the daemon de-registers itself
 istop() {
+	stop $NAME
 	for i in /etc/avahi/services/*.service; do
 		srv=$(basename $i)
 		avahi remove ${srv%.*}
 	done
-	stop $NAME
 }
 
 case "$1" in
