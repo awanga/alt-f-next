@@ -21,7 +21,7 @@ cat<<EOF
 			document.formd.user.disabled = true;
 			document.formd.passwd.disabled = true;
 			document.getElementById("host_id").innerHTML = 
-"hostname,<a href=http://freedns.afraid.org/dynamic/ target=_blank>Direct URL</a>"
+'hostname,<a href="http://freedns.afraid.org/dynamic/" target="_blank">Direct URL<\/a>'
 		} else {
 			document.formd.user.disabled = false;
 			document.formd.passwd.disabled = false;
@@ -32,8 +32,14 @@ cat<<EOF
 EOF
 
 if test -f $CONFF; then
-	while read line; do
-		eval $(echo $line | awk '!/#/{if (NF == 2) print $1 "=" $2}')
+	while read -r key value; do
+		if test -n "$key" -a -n "$value" -a "${key###}" = "$key"; then
+			if test "$key" = "password"; then
+				password=$(html_escape "$value")
+			else
+				eval "$key=$value"
+			fi
+		fi
 	done < $CONFF
 
 	case $dyndns_system in
