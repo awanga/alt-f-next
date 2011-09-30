@@ -13,6 +13,9 @@ MINIDLNA_ARGS=""
 
 check_shares() {
 	if test -r "$CONF_MINIDLNA"; then
+		if grep -q '^#force_rescan=yes' $CONF_MINIDLNA; then
+			RESCAN="-R"
+		fi
 		MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONF_MINIDLNA)"
 		OIFS="$IFS"; IFS=";"
 		for i in $MDLNA_DIR; do
@@ -38,7 +41,7 @@ case "$1" in
 
 	start)
 		check_shares
-		start $NAME -- $MINIDLNA_ARGS 
+		start $NAME -- $RESCAN $MINIDLNA_ARGS 
 		;;
 
 	stop) stop $NAME;;
