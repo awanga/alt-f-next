@@ -81,6 +81,23 @@ status() {
 	fi
 }
 
+# $1-crypt|linear
+dmstatus() {
+	if ! lsmod | grep -q ^dm_mod; then
+		return 1
+	fi
+	dmout=$(dmsetup ls --target $1)
+	if test -z "$dmout" -o "$dmout" = "No devices found"; then
+		return 1
+	else
+		for i in $dmout; do
+			if test "$(dmsetup info $i | awk '/State/{print $2}')" = "ACTIVE"; then
+				return 0
+			fi
+		done
+	fi
+}
+
 omsg() {
 	if test $1 = 0; then
 		echo "OK."
