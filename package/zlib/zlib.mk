@@ -43,17 +43,17 @@ $(ZLIB_DIR)/.configured: $(ZLIB_DIR)/.patched
 	)
 	touch $@
 
-$(ZLIB_DIR)/libz.a: $(ZLIB_DIR)/.configured
-	$(MAKE) -C $(ZLIB_DIR) all libz.a
+$(ZLIB_DIR)/.built: $(ZLIB_DIR)/.configured
+	$(MAKE) -C $(ZLIB_DIR) all
 	touch -c $@
 
-$(STAGING_DIR)/usr/lib/libz.a: $(ZLIB_DIR)/libz.a
+$(STAGING_DIR)/usr/lib/libz.a: $(ZLIB_DIR)/.built
 	$(INSTALL) -D $(ZLIB_DIR)/libz.a $(STAGING_DIR)/usr/lib/libz.a
 	$(INSTALL) -D $(ZLIB_DIR)/zlib.h $(STAGING_DIR)/usr/include/zlib.h
 	$(INSTALL) $(ZLIB_DIR)/zconf.h $(STAGING_DIR)/usr/include/
 	touch -c $@
 
-$(STAGING_DIR)/usr/lib/libz.so: $(STAGING_DIR)/usr/lib/libz.a
+$(STAGING_DIR)/usr/lib/libz.so: $(ZLIB_DIR)/.built
 	cp -dpf $(ZLIB_DIR)/libz.so* $(STAGING_DIR)/usr/lib/
 	touch -c $@
 
