@@ -10,21 +10,26 @@ read_args
 
 if ! test -e $SECR; then
 	if test -z "$passwd"; then
-		msg "Password can't be empty."
+		msg "The password can't be empty."
 	elif test "$passwd" != "$passwd_again"; then
 		msg "The two passwords don't match."
 	fi
 
-	if test "$(httpd -d $passwd)" != "$passwd"; then    
-		msg "You are using illegal characters, use only alphanumeric characters."
+	passwd=$(checkpass $passwd)
+	if test $? != 0; then
+    	msg "$passwd"
 	fi
 
 	echo -n $passwd > $SECR
 	chmod og-r $SECR
 # FIXME: if root already has a password, don't change it?
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
-    echo -e "username=admin\npassword=$passwd" > /etc/samba/credentials.root
-    chmod og-rw /etc/samba/credentials.root
+	echo -e "username=Administrator\npassword=$passwd" > /etc/samba/credentials.root
+	chmod og-rw /etc/samba/credentials.root
+	if ! grep -q '^root = ' /etc/samba/smbusers; then
+		echo "root = \"Administrator\"" >> /etc/samba/smbusers
+	fi
+	echo -e "$passwd\n$passwd" | smbpasswd -s -a root >& /dev/null
 
 	if test -z "$(loadsave_settings -ls)"; then
 		touch /tmp/firstboot
@@ -33,6 +38,12 @@ if ! test -e $SECR; then
 		loc="/cgi-bin/status.cgi"
 	fi
 else
+
+	passwd=$(checkpass $passwd)
+	if test $? != 0; then
+    	msg "$passwd"
+	fi
+
 	if test "$from_url" != "login.cgi"; then
 		loc="/cgi-bin/$from_url"
 	else
@@ -45,7 +56,7 @@ if test "$passwd" = "$(cat $SECR)"; then
 	echo $id > /tmp/cookie
 	chmod og-r /tmp/cookie
     
-	if test $(cat $TZF) = "NONE-0"; then
+	if test "$(cat $TZF)" = "NONE-0"; then
 		expl=""
 	else # expire cookie (login) one hour after login
 		eval $(TZ=GMT awk 'END{printf "exp=%s", \
