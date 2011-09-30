@@ -30,7 +30,7 @@ elif test "$1" = "-show"; then
 
 	echo "RTC:  $(hwclock -u | awk '{print $4}')"
 	echo "date: $(date | awk '{print $4}')"
-	echo "sntp: $(sntp $NTPD_SERVER | awk '{print $4 " " $5 $6}')"
+	echo "sntp: $(sntp $NTPD_SERVER | tail -1 | awk '{print $4 " " $5 $6}')"
 
 elif test "$1" = "-setrtc"; then
 
@@ -51,7 +51,7 @@ elif test "$1" = "-restart"; then
 	fi
 	adjtimex -f $adj > /dev/null 2>&1
 	# ntpd -qg # too slow, but accurate
-	sntp -a $NTPD_SERVER
+	sntp -s $NTPD_SERVER
 	echo "$(date +%s) $adj" >> $CONFF
 	tail -20 $CONFF > /tmp/adjtime
 	mv /tmp/adjtime $CONFF
@@ -62,7 +62,8 @@ elif test "$1" = "-adjust"; then
 
 		echo "No config file."
 		adjtimex -f 0 > /dev/null 2>&1
-		ntpd -qg
+		#ntpd -qg
+		sntp -s $NTPD_SERVER
 		echo "$(date +%s) 0" > $CONFF
 
 	else	
@@ -97,7 +98,9 @@ elif test "$1" = "-adjust"; then
 		curr_adj=$(adjtimex | awk '/frequency/{print $3}')
 	
 		# expr does not accept decimals, so use awk
-		drift=$(ntpd -qg | awk '{printf "%d", $4 * -1000000}') # ntpd takes a variable execution time
+		# drift=$(ntpd -qg | awk '{printf "%d", $4 * -1000000}') # ntpd takes a variable execution time
+		drift=$(sntp $NTPD_SERVER | tail -1 | awk '{printf "%d", $4 * -1000000}') # ntpd takes a variable execution time
+		sntp -s $NTPD_SERVER
 		delta=$(expr $(date +%s) - $(tail -1 $CONFF | cut -d" " -f1)) # time since last adjust
 		adj=$(expr $drift \* 65536 / $delta)
 		new_adj=$(expr $curr_adj - $adj) 
