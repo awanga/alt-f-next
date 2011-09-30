@@ -20,8 +20,15 @@ else
 	strict_dlna=no
 fi
 
+if test -n "$force_rescan"; then
+	force_rescan=yes
+else
+	force_rescan=no
+fi
+
 sed -i 's/^enable_tivo=.*$/enable_tivo='$enable_tivo'/' $CONFF
 sed -i 's/^strict_dlna=.*$/strict_dlna='$strict_dlna'/' $CONFF
+sed -i 's/^#force_rescan=.*$/#force_rescan='$force_rescan'/' $CONFF
 
 # save old, in case of errors
 sed -i 's/^media_dir=.*$/#!#&/' $CONFF
