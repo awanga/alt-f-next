@@ -32,6 +32,20 @@ fartocel() {
 	awk 'END{ printf "%.1f", 5 / 9 * ( '$1' - 32)}' </dev/null
 }
 
+checkpass() {
+	if test -n "$1"; then
+		lpass="$(httpd -d $1)"
+		if test -n "$(echo $lpass | tr -d [!-~])"; then
+			echo "Use only ASCII characters for the password, no spaces:\n\
+letters, numbers and ! \\\" # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\\ ] ^ _ \` { | } ~"
+			return 1
+		else
+			echo $lpass
+			return 0
+		fi
+	fi
+}
+
 checkip() {
 #	echo "$1" | grep -q -e '^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$'
 	echo $* | awk '{ nf = split($0, a, ".")
@@ -63,6 +77,10 @@ path_unescape() {
 	echo $(echo "$1" | sed 's/\\040/ /g')
 }
 
+html_escape() {
+	echo -n "$1" | od -An -t dC -w300 | sed -e 's/^ *//' -e 's/\([0-9]*\)/\&#\1;/g' -e 's/ //g'
+}
+
 # $1-share "[Public (Read Write)]" [$2-path]
 make_available() {
 
@@ -87,8 +105,15 @@ make_available() {
 	rcsmb reload >& /dev/null
 }
 
+# $1-title (optional)
 html_header() {
-	echo -e "Content-Type: text/html; charset=UTF-8\n\n<html><body>"
+	cat<<-EOF
+		Content-Type: text/html; charset=UTF-8
+
+		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>$1</title></head><body>
+	EOF
 }
 
 debug() {
@@ -197,7 +222,7 @@ back_button() {
 	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
 
-# $1=pre-select pard (eg: sda4)
+# $1=pre-select part (eg: sda4)
 select_part() {
 	if test -n "$1"; then presel=$1; fi
 
@@ -332,9 +357,10 @@ busy_cursor_end() {
 
 # wait_count $1=msg
 wait_count_start() {
-	tmp_id=$(mktemp)
+	tmp_id=$(mktemp -t)
+	tid=$(basename $tmp_id)
 	cat<<-EOF
-		$1: <span id="$tmp_id">0</span>
+		$1: <span id="$tid">0</span>
 		<style>	body { height : 100%;} </style>
 		<script type="text/javascript">
 			function wait_count_update(id) {
@@ -342,14 +368,14 @@ wait_count_start() {
 				obj.innerHTML = parseInt(obj.innerHTML) + 1;
 			}
 			var waittimerID;
-			waittimerID = setInterval("wait_count_update('$tmp_id')",1000);
+			waittimerID = setInterval("wait_count_update('$tid')",1000);
 			document.body.style.cursor = 'wait';
 		</script>
 	EOF
 }
 
 wait_count_stop() {
-	rm $tmp_id
+	rm -f $tmp_id
 	cat<<-EOF	
 		<script type="text/javascript">
 			clearInterval(waittimerID);
@@ -387,7 +413,7 @@ embed_page() {
 drawbargraph() {
 
 	linewidth="$1"
-	if test $linewidth -gt 99; then
+	if test "$linewidth" -gt 99; then
 		linewidth="99"
 	fi
 
@@ -420,14 +446,14 @@ drawbargraph() {
 }
 
 drawbargraph_setup() {
-cat<<-EOF
+cat<<EOF
 	<style type="text/css">
-		.meter-wrap{
+		.meter-wrap {
 			position: relative;
 		}
 		.meter-wrap, .meter-value, .meter-text {
 			width: 100px; height: 1em;
-		}
+		}	
 		.meter-wrap, .meter-value {
 			background: #bdbdbd top left no-repeat;
 		}		   
