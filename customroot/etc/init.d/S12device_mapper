@@ -1,0 +1,38 @@
+#!/bin/sh
+
+DESC="Manges LVM device mapper modules"
+NAME=device-mapper
+REQUIREDBY="lvm cryptsetup"
+
+umask 077
+
+. $(dirname $0)/common
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		modprobe -q dm-mod
+		omsg $?
+		;;
+
+	stop)
+		if ! lsmod | grep -q ^dm_mod; then
+			omsg 0
+			return 0
+		fi
+		requiredby $NAME $REQUIREDBY
+		echo -n "Stopping $NAME: "
+		modprobe -qr dm-mod
+		omsg $?
+		;;
+
+	status)
+		if lsmod | grep -q ^dm_mod; then
+			echo $NAME running
+		else
+			echo $NAME stopped
+			return 1
+		fi
+		;;
+	*)  usage $0 "start|stop|status" ;;
+esac

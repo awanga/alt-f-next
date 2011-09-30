@@ -1,0 +1,34 @@
+#!/bin/sh -e
+
+NAME=ietd
+DESC="iSCSI Enterprise Target is for building an iSCSI storage system on Linux"
+TYPE=net
+
+IETD_OPTS=""
+
+. $(dirname $0)/common
+
+istart() {
+	modprobe crc32c
+	modprobe iscsi_trgt
+	start $NAME -- $IETD_OPTS
+}
+
+istop() {
+	ietadm --op delete
+	stop $NAME
+#	modprobe -r iscsi_trgt crc32c
+}
+
+case "$1" in
+	start) istart ;;
+	stop) istop ;;
+	restart) restart $NAME ;;
+#	reload) reload $NAME ;;
+	status) status $NAME ;;
+
+	*)
+		echo "Usage: $0 {start|stop|status|restart}"
+		exit 1
+		;;
+esac

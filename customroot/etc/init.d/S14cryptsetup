@@ -1,0 +1,88 @@
+#!/bin/sh
+
+#set -x
+
+DESC="Setup cryptographic volumes for dm-crypt/LUKS"
+NAME=cryptsetup
+TYPE=sys
+REQUIRE="device_mapper"
+
+CONFF=/etc/misc.conf
+
+umask 077
+
+. $(dirname $0)/common
+
+if test -f $CONFF; then
+	. $CONFF
+fi
+
+case "$1" in
+	start)
+		require $NAME $REQUIRE
+		echo -n "Starting $NAME: "
+		st=0
+		if ! lsmod | grep -q dm_crypt; then
+			modprobe -q dm-crypt
+			st=$?
+			modprobe -q mv_cesa # partially fails, because of crypto_hash
+			modprobe -q mv_cesa # trying again succeeds
+		fi
+
+		if test "$st" = 0 -a -f "$CRYPT_KEYFILE"; then
+			for i in /dev/sd[a-z][1-9]; do
+				dev=$(basename $i)
+				if test -z "$(cryptsetup isLuks $i 2>&1)" -a ! -b /dev/mapper/${dev}-crypt; then
+					cryptsetup --key-file="$CRYPT_KEYFILE" luksOpen $i ${dev}-crypt
+					st=$((st+$?))
+				fi
+			done
+		fi
+		omsg $st
+		;;
+
+	stop)
+		echo -n "Stopping $NAME: "
+		if ! dmstatus crypt; then
+			omsg 0
+			return 0
+		fi
+
+		st=0
+		for i in /dev/sd[a-z][1-9]; do
+			dev=$(basename $i)
+			if test -z "$(cryptsetup isLuks $i 2>&1)" -a -b /dev/mapper/${dev}-crypt; then
+				# find device-mapper name under /dev/mapper/
+				#eval $(awk '/'$dev'/{printf "mj=%d mi=%d", $1, $2}' /proc/partitions)
+				#eval $(dmsetup deps | awk -F: '/('$mj', *'$mi'))/{printf "dm=%s", $1}')
+				dm=${dev}-crypt
+
+				# find device-mapper name under /dev, e.g. /dev/dm-3 
+				eval $(dmsetup ls | awk '/'$dm'/{printf "mj=%d mi=%d", substr($2,2), $3}')
+				eval $(awk '/'$mj' *'$mi'/{printf "tdm=%s", $4}' /proc/partitions)
+
+				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$tdm /usr/sbin/hot.sh)
+
+				cryptsetup luksClose $dm
+				st=$((st+$?))
+			fi
+		done
+
+		# removing modules is unreliable, dont! Also, dm_mod might be removed, even if in use by lvm
+		# modprobe -r sha256_generic ansi_cprng eseqiv hmac sha1_generic mv_cesa dm_crypt krng cryptomgr
+		# unloading dm_crypt unloads dm_mod
+		#stoprequired $NAME $REQUIRE 
+
+		omsg $st
+		;;
+
+	status)
+		if dmstatus crypt; then
+			echo $NAME running
+		else
+			echo $NAME stopped
+			return 1
+		fi
+		;;
+	*)  usage $0 "start|stop|status" ;;
+esac

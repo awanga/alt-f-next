@@ -1,0 +1,53 @@
+#!/bin/sh
+
+DESC="Manages LVM (Logical Volume Management)"
+NAME=lvm
+TYPE=sys
+REQUIRE="device_mapper"
+
+umask 077
+
+. $(dirname $0)/common
+
+case "$1" in
+	start)
+		require $NAME $REQUIRE
+		echo -n "Starting $NAME: "
+		vgscan --mknodes >& /dev/null
+		vgchange -a y  >& /dev/null
+		omsg $?
+		;;
+
+	stop)
+		echo -n "Stopping $NAME: "
+		if ! dmstatus linear; then
+			omsg 0
+			return 0
+		fi
+
+		for i in /dev/dm-*; do
+			nm=$(cat /sys/block/$(basename $i)/dm/name | tr '-' '/')
+			if lvdisplay -c $nm >& /dev/null; then
+				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh)
+			fi
+		done
+
+		vgchange -a n >& /dev/null
+		st=$?
+		if test $st = 0; then
+			stoprequired $NAME $REQUIRE
+		fi
+		omsg $st
+		;;
+
+	status)
+		if dmstatus linear; then
+			echo $NAME running
+		else
+			echo $NAME stopped
+			return 1
+		fi
+		;;
+
+	*)  usage $0 "start|stop|status" ;;
+esac
