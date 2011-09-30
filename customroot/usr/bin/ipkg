@@ -64,17 +64,24 @@ install() {
 	
 	CONFF=/etc/ipkg.conf
 	IPKG=ipkg_0.99.163_arm.ipk
-	FEED=$(awk '/^src/{print $3}' $CONFF)
+	FEED=$(awk '/^src.*unstable/{print $3}' $CONFF)
+	if test -z "$FEED"; then
+		FEED=$(awk '/^src.*feed_1/{print $3}' $CONFF)
+	fi
 	DESTD=$(awk '/^dest/{print $3}' $CONFF)
 
-	if ! nslookup www.dropbox.com >& /dev/null; then
-		if ! test -e /tmp/$IPKG; then
-			msg "You don't seem to have a name server configured,
+	if ! wget $FEED/Packages -P /tmp; then
+		if ! nslookup www.dropbox.com >& /dev/null; then
+			if ! test -e /tmp/$IPKG; then
+				msg "You don't seem to have a name server configured,
 or a working internet connection,
 and no /tmp/$IPKG file found. Exiting"
-		else
-			local="true"
+			else
+				local="true"
+			fi
 		fi
+	else
+		rm /tmp/Packages
 	fi
 
 	if test "$DESTD" != "/Alt-F"; then
