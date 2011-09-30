@@ -111,7 +111,7 @@ awk -F = ' {
 	END {
 		for (i=cnt+1; i<cnt+4; i++)
 			spit(i, opts)
-		printf "<input type=hidden name=smb_cnt value=%d>", i
+		printf "</table><input type=hidden name=smb_cnt value=\"%d\">", i
 	}
 
 function pshare(line) {
@@ -120,9 +120,15 @@ function pshare(line) {
 }
 
 function spit(cnt, opts) {
+	
+	rdir = public_chk = rdonly_chk = dis_chk = browse_chk = ""
 
 	if (opts["path"] != "") {
 		sprintf("readlink -f \"%s\" ", opts["path"]) | getline rdir
+		if (rdir == "") {
+			rdir = opts["path"]
+			opts["available"] = "no"
+		}
 		browse_chk = "checked"
 		if (opts["browseable"] == "no")
 			browse_chk = ""		
@@ -132,8 +138,6 @@ function spit(cnt, opts) {
 			rdonly_chk = "checked"
 		if (opts["available"] == "no")
 			dis_chk = "checked"
-	} else {
-		rdir = public_chk = rdonly_chk = dis_chk = browse_chk = ""
 	}
 
 	printf "<tr><td align=center><input type=checkbox %s name=avail_%d value=no></td>", dis_chk, cnt
@@ -175,7 +179,7 @@ function parse(share_name, line) {
 }' $CONF_SMB
 
 cat<<-EOF
-	</table></fieldset><br>
+	</fieldset><br>
 
 	<fieldset>
 	<legend><strong>Directories to import from other hosts</strong></legend>
@@ -206,8 +210,8 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 cat<<EOF
-	<input type=hidden name=import_cnt value=$i>
-	</table></fieldset><br>
+	</table><input type=hidden name=import_cnt value=$i>
+	</fieldset><br>
 	$(back_button)<input type=submit name=submit value="Submit">
 	<input type=submit name=submit value="Advanced">
 	</form></body></html>
