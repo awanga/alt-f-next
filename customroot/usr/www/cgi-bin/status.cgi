@@ -263,6 +263,11 @@ raid_st() {
 filesys() {
 	dsk="$1"
 	dev=$(basename $dsk)
+	dname=$dev
+	# show LV name?
+	if test ${dev:0:3} = "dm-"; then
+		dname=$(cat /sys/block/$dev/dm/name)
+	fi
 	
 	if test -b $dsk; then
 		eval $(df -h $dsk | awk '/'$dev'/{printf "cap=%s;free=%s;perc=%d", $2, $4, $5}')
@@ -303,15 +308,17 @@ filesys() {
 	fi
 
 	MD="$(awk '$1 == "/dev/'$dev'" { n = split($4, a,",")
-		for (i=1;i<=n;i++)
-			if (a[i] == "ro")
-				printf ("<font color=red> %s </font>", toupper(a[i]))
-			else if(a[i] == "rw")
-				print toupper(a[i]) }' /proc/mounts)"
+		for (i=1;i<=n;i++) {
+			if (a[i] == "ro") {
+				printf ("<font color=red> %s </font>", toupper(a[i])); exit }
+			else if(a[i] == "rw") {
+				print toupper(a[i]); exit }
+		}
+	} ' /proc/mounts)"
 
 	cat<<-EOF
 		<tr>
-		<td>$dev</td>
+		<td>$dname</td>
 		<td>$lbl</td>
 		<td align=right>${cap}B</td>
 		<td>$(drawbargraph $perc ${free}B)</td>
@@ -325,7 +332,7 @@ filesys() {
 
 mounted_filesystems_st() {
 
-	if ! grep -q '^/dev/\(sd\|md\)' /proc/mounts; then
+	if ! grep -q '^/dev/\(sd\|md\|dm-\)' /proc/mounts; then
 		return 0
 	fi
 
@@ -340,12 +347,10 @@ mounted_filesystems_st() {
 		</tr>
 	EOF
 
-	while read dev mnt fs rest; do
-		dsk=$(echo $dev | grep '^/dev/\(sd\|md\)')
-		if test -n "$dsk"; then
-			filesys $dsk
-		fi
-	done < /proc/mounts
+	for dsk in $(cut -d" " -f1 /proc/mounts | grep '^/dev/\(sd\|md\|dm-\)' | sort -u); do
+		filesys $dsk
+	done
+
 	echo "</table></fieldset><br>"
 }
 
@@ -471,7 +476,7 @@ filesystem_maintenance_st() {
 		<table><tr><th>Dev.</th><th>Label</th><th>Operation</th></tr>
 	EOF
 
-	for j in /dev/sd[a-z][1-9] /dev/md[0-9]*; do
+	for j in /dev/sd[a-z][1-9] /dev/md[0-9]* /dev/dm-*; do
 		part=$(basename $j)
 		fs_progress $part # global ln
 		if test -n "$ln"; then
