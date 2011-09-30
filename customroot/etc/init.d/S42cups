@@ -16,12 +16,6 @@ case "$1" in
 		export TZ=$(cat /etc/TZ)
 		unset TMPDIR
 
-#		if test -e $PRINTC; then
-#			if ! grep -q cupsd $PRINTC; then 
-#				mv  $PRINTC ${PRINTC}-safe
-#			fi
-#		fi
-
 		rcinetd disable printer
 		start $NAME
 		avahi add ipp
@@ -33,10 +27,7 @@ case "$1" in
 	stop)
 		stop $NAME
 
-#		if test -e ${PRINTC}-safe; then 
-#			mv $PRINTC-safe $PRINTC
-#		else
-		if grep -q cupsd $PRINTC; then 
+		if grep -q cupsd $PRINTC >& /dev/null; then 
 			rm $PRINTC
 		fi		
 
