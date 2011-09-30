@@ -1,19 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>ALT-F Help Page</title>
+</head><body>
 
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>ALT-F Help Page</title>
-</head>
-<body>
-
-<h2><center>Status Page Help</center></h2>
+<center><h2>Status Page Help</h2></center>
 
 <p>This page shows the box status.<br>
 If the Autorefresh checkbox at the botton is checked, then each status section will refresh itself between every 10 to 20 seconds. 
 Leaving it checked will avoid the disks to spin down and will consume some CPU power, so some lenghly tasks might tale longer to accomplish.
-If the disks are already spindown they will not spinup when the page is displayed.<p>
+If the disks are already spindown they will not spinup when the page is displayed.
 
 <p>There are several Status sections, not all will be shown if there are no status to display for them:
 
@@ -37,7 +34,7 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<ul>
 	<li>Speed: can be 10, 100 or 1000 Mega bits per second, depending on the negotiated rate with the nearby connected device.
 	<li>MTU: also called "jumbo frames"; they can improve network throughtput when transfering large files, but both sides of the transfer must support it.<br>
-	To change it, go to Setup->Host. Try to use values lower than 3700 bytes and/or 7500 bytes.<bt>
+	To change it, go to Setup->Host. Try to use values lower than 3700 bytes and/or 7500 bytes.<br>
 	Changing it right after powerup is fine, but changing it when the system has already beeing
 	active for a some time can actually degrade network performance.
 	<li>Rx/Tx the amount of data received and sent by the box
@@ -123,9 +120,8 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<li>Name: the printer identification
 	<li>Model: the printer model
 	<li>Jobs: the number of print jobs awaiting to be printed
-	<ul>
+	</ul>
 </ul>
 
-<input type=button value="Back" onclick="history.back()">
-</body>
+<br><button type=button onclick="history.back()">Back</button></body>
 
