@@ -18,12 +18,16 @@ elif test -n "$Submit"; then
 
 	dstpath="/Backup"
 
+	echo "#id;type;runas;host;mac;srcpath;dstpath;when;at;log;nrotate" > $CONF
+
 	for i in $(seq 0 $cnt_know); do
 		cmtd=""; type=""; runas=""; srcpath=""; when="";  at=""; log=""; nlogs=""
 		id=$i
 		cmtd="$(eval echo \$cmtd_$i)"
 		type="$(eval echo \$bck_type_$i)"
 		runas="$(eval echo \$bck_user_$i)"
+		host="$(eval echo \$host_$i)"
+		mac="$(eval echo \$mac_$i)"
 		srcpath="$(eval echo \$src_$i)"
 		when="$(eval echo \"\$when_$i\")"
 		at="$(eval echo \"\$at_$i\")"
@@ -35,7 +39,19 @@ elif test -n "$Submit"; then
 		if test -z "$id" -o -z "$type" -o -z "$runas" -o -z "$srcpath" -o -z "$dstpath" \
 			-o -z "$when" -o -z "$at" -o -z "$log" -o -z "$nlogs"; then continue; fi
 
-		echo $(httpd -d "${cmtd}$id;$type;$runas;$srcpath;$dstpath;$when;$at;$log;$nlogs") >> $CONF
+		if test "$type" != "Dir"; then
+			if test -z "$host" ; then continue; fi
+			if test -z "$mac"; then
+				if ping -W 3 -c 2 $host >& /dev/null; then
+					res=$(arp -n $host)
+					if ! test "$(echo $res | cut -d" " -f1,2,3)" = "No match found"; then
+						mac=$(echo $res | cut -d" " -f 4)
+					fi
+				fi
+			fi
+		fi
+
+		echo $(httpd -d "${cmtd}$id;$type;$runas;$host;$mac;$srcpath;$dstpath;$when;$at;$log;$nlogs") >> $CONF
 	done
 
 	if rcbackup status >& /dev/null; then
