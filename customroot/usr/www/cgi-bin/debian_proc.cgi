@@ -35,6 +35,10 @@ fi
 DEBDEV=$part
 DEBDIR=/mnt/$DEBDEV 
 
+if ! test -d "$DEBDIR"; then
+	DEBDIR="$(awk '/'$part'/{print $2}' /proc/mounts)"
+fi
+
 if test "$submit" = "Install"; then
 
 	if test -z "$mirror" -o "$mirror" = "none"; then
@@ -68,7 +72,7 @@ if test "$submit" = "Install"; then
 
 	mkdir -p $DEBDIR 
 	cdebootstrap-static --allow-unauthenticated --arch=armel \
-		--include=linux-image-2.6.32-5-orion5x,openssh-server,kexec-tools \
+		--include=linux-image-2.6.32-5-orion5x,openssh-server,kexec-tools,mdadm \
 		squeeze $DEBDIR $DEBMIRROR
 	if test $? != 0; then cleanup; fi
 
@@ -78,9 +82,24 @@ if test "$submit" = "Install"; then
 
 	chroot $DEBDIR /usr/bin/apt-get update
 
-	echo "</pre><h4>Downloading and installing Alt-F in Debian...</h4><pre>"
+	if mdadm --detail --test /dev/$DEBDEV >& /dev/null; then
+
+		echo "</pre><h4>Adding RAID boot support....</h4><pre>"
+
+		mount -o bind  /proc $DEBDIR/proc
+		mount -o bind  /sys  $DEBDIR/sys
+		mount -o bind  /dev  $DEBDIR/dev
+
+		chroot $DEBDIR /usr/sbin/update-initramfs -u
+
+		umount $DEBDIR/proc
+		umount $DEBDIR/sys
+		umount $DEBDIR/dev
+	fi
 
 	ver=$(cat /etc/Alt-F)
+	echo "</pre><h4>Downloading and installing Alt-F $ver in Debian...</h4><pre>"
+	
 	wget --progress=dot:mega http://alt-f.googlecode.com/files/Alt-F-${ver}.tar 
 	if test $? != 0; then cleanup; fi
 	tar -xf Alt-F-${ver}.tar
@@ -89,39 +108,16 @@ if test "$submit" = "Install"; then
 	mv alt-f/zImage $DEBDIR/boot/Alt-F-zImage
 	rm -rf alt-f Alt-F-${ver}.tar 
 
-	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
-		#!/bin/bash
-
-		if test "\$(runlevel | cut -d" " -f1)" != "1"; then
-			echo -e "Debian is not being cleanly shutdown.\n"\
-				"You should go to runlevel 1 by issuing the \"init 1\" command\n"\
-				"before executing this command, or help me fix this script."
-			exit 1
-		fi
-
-		kexec -l /boot/Alt-F-zImage --initrd=/boot/Alt-F-rootfs.arm.cpio-sq.lzma \
-			--command-line="console=ttyS0,115200" && kexec -e
-	EOF
-	chmod +x $DEBDIR/usr/sbin/alt-f
-
-	echo "</pre><h4>Setting up some Debian installation details...</h4><pre>"
+	echo "</pre><h4>Setting up some Debian installation details...</h4>"
 	
 	echo "<p>Enabling serial port acess..."
 
 	sed -i 's/^[1-6]:/#&/' $DEBDIR/etc/inittab
 	echo "T0:1235:respawn:/sbin/getty -n -l /bin/bash -L ttyS0 115200 vt100" >> $DEBDIR/etc/inittab
 
-	echo "<p>Setting /etc/fstab..."
+	echo "<p>Changing Debian the message of the day..."
 
-	cat<<-EOF > $DEBDIR/etc/fstab
-		proc	/proc	proc	defaults	0	0
-		sysfs	/sys	sysfs	defaults	0	0
-		/dev/$DEBDEV	/	$(blkid -sTYPE -o value /dev/$DEBDEV)	defaults	1	1
-	EOF
-
-	for i in $(blkid -t TYPE=swap -o device); do
-		echo "$i	swap	swap	defaults	0	0" >> $DEBDIR/etc/fstab
-	done
+	echo -e "\nYou leaved Alt-F, you are now on your own.\nTo return to Alt-F, execute the command 'alt-f',\n" >> $DEBDIR/etc/motd.tail
 
 	echo "<p>Using same ssh host key as Alt-F is using now..."
 
@@ -130,19 +126,64 @@ if test "$submit" = "Install"; then
 	done
 
 	dropbearconvert dropbear openssh /etc/dropbear/dropbear_rsa_host_key $DEBDIR/etc/ssh/ssh_host_rsa_key 
-	dropbearconvert dropbear openssh /etc/dropbear/dropbear_dss_host_key $DEBDIR/etc/ssh/ssh_host_dsa_key 
+	dropbearconvert dropbear openssh /etc/dropbear/dropbear_dss_host_key $DEBDIR/etc/ssh/ssh_host_dsa_key
+	chmod og-rw $DEBDIR/etc/ssh/*
+	chown root $DEBDIR/etc/ssh/*
 
-	echo "<p>Setting root default password..."
+	echo "<p>Setting root password the same as Alt-F web admin password..."
 
 	chroot $DEBDIR /bin/bash -c "/bin/echo root:$(cat /etc/web-secret) | /usr/sbin/chpasswd"
 	if test $? != 0; then cleanup; fi
 
+if false; then # not working
+	echo "<p>Predate runlevel 4 to perform an Alt-F kexec, using runlevel 6 initscripts..."
+
+ 	(
+	cd $DEBDIR/etc/rc4.d
+	rm *
+	for i in ../rc6.d/*; do
+		ln -s $i $(basename $i)
+	done
+	)
+
+	rm $DEBDIR/etc/rc4.d/K01kexec-load
+	cp $DEBDIR/etc/init.d/kexec-load $DEBDIR/etc/rc4.d/K01kexec-load
+	sed -i 's|default/kexec|default/kexec-alt-f|g' $DEBDIR/etc/rc4.d/K01kexec-load
+
+	rm $DEBDIR/etc/rc4.d/K09kexec
+	cp $DEBDIR/etc/init.d/kexec $DEBDIR/etc/rc4.d/K09kexec
+	sed -i 's|default/kexec|default/kexec-alt-f|g' $DEBDIR/etc/rc4.d/K09kexec
+
+	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
+	sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
+		-e 's|^INITRD.*|INITRD="/boot/Alt-F-rootfs.arm.cpio-sq.lzma"|' \
+		$DEBDIR/etc/default/kexec-alt-f
+
+	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
+		#!/bin/bash
+		init 4
+	EOF
+	chmod +x $DEBDIR/usr/sbin/alt-f
+else
+	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-debian
+	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
+	sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
+		-e 's|^INITRD.*|INITRD="/boot/Alt-F-rootfs.arm.cpio-sq.lzma"|' \
+		$DEBDIR/etc/default/kexec-alt-f
+	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
+		#!/bin/bash
+		cp /etc/default/kexec-alt-f /etc/default/kexec
+		reboot
+	EOF
+	chmod +x $DEBDIR/usr/sbin/alt-f
+fi
+
 	clean
 
-	echo "</pre><h4>Success.</h4>"
+	echo "<h4>Success.</h4>"
 	cat<<-EOF
 		<script type="text/javascript">
-			setTimeout(function() {window.location.assign(document.referrer);}, 3000)
+			setTimeout(function() {window.location.assign(document.referrer);}, 5000)
 		</script>
 	EOF
 	exit 0
@@ -150,10 +191,12 @@ if test "$submit" = "Install"; then
 elif test "$submit" = "Uninstall"; then
 
 	html_header
+	echo "<h3><center>Uninstalling Debian...</center></h3>"
 	busy_cursor_start
 
 	for i in bin boot dev etc home initrd.img lib media mnt opt proc root sbin selinux \
 			srv sys tmp usr var vmlinuz; do
+		echo "Removing $DEBDIR/$i...<br>"
 		rm -rf $DEBDIR/$i >& /dev/null
 	done
 
@@ -171,11 +214,9 @@ elif test "$submit" = "Execute"; then
 	html_header 
 	echo "<h3><center>Executing Debian...</center></h3><pre>"
 
-	debian kexec
+	debian -kexec
 	
 	echo "</pre><h4>failed.</h4> $(back_button)</body></html>"
 fi
 
 #enddebug
-
-

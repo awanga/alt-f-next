@@ -45,7 +45,7 @@ if test -n "$mirror" -a -n "$dbpart"; then
 		<fieldset><legend><strong>Found a $(cat $dbpart/etc/issue.net) installation in $dbpart</strong></legend>
 		<input type="submit" name="submit" value="Execute" $(ttip kexec_tt) onClick="return confirm('Executing Debian will stop Alt-F and all its services.\n\n\
 You will have to use a ssh client to login as user root,\n\
-default password 1234 and use the command line.\n\nProceed?')">
+password is the same as Alt-F web password, and use the command line.\n\nProceed?')">
 		<input type="submit" name="submit" value="Uninstall" $(ttip rm_tt)></fieldset><br>
 	EOF
 fi
@@ -54,7 +54,7 @@ cat<<-EOF
 	<fieldset><legend><strong>Install Debian</strong></legend>
 	<table>
 	<tr><td>Debian mirror:</td>
-	<td><input type=text size=30 name=mirror value=$mirror></td>
+	<td><input type=text size=30 name=mirror value="$mirror"></td>
 	<td><select name=sel_mirror onChange="up_mirror()">
 	<option value="none">Select one</option>
 EOF
@@ -64,10 +64,17 @@ while read url country; do
 	echo "<option $sel value=\"$url\">$(echo $country | tr '_' ' ')</option>"
 done < deb-mirrors.txt
 
+if test -n "$part"; then
+	part=$(basename $dbpart)
+	if ! test -f /dev/$part; then
+		part="$(basename $(awk '/'$part'/{print $1}' /proc/mounts))"
+	fi
+fi
+
 cat<<-EOF
 	</select></td></tr>
 	<tr><td>Install in</td>
-	<td>$(select_part $(basename $dbpart))</td>
+	<td>$(select_part $part)</td>
 	<td><input type="submit" name="submit" value="Install" $(ttip install_tt)></td>
 	</tr></table></fieldset>
 	</form></body></html>
