@@ -44,7 +44,7 @@ case "$1" in
 		start $NAME -- $RESCAN $MINIDLNA_ARGS 
 		;;
 
-	stop) stop $NAME;;
+	stop) stop $NAME 1 ;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
 	*)
