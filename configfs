@@ -57,7 +57,7 @@ BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-b
 BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
 BR2_PACKAGE_LVM2="etc/init.d/S14lvm"
-BR2_PACKAGE_CRYPTSETUP="etc/init.d/S14cryptsetup"
+BR2_PACKAGE_CRYPTSETUP="etc/init.d/S14cryptsetup usr/www/cgi-bin/cryptsetup.cgi usr/www/cgi-bin/cryptsetup_proc.cgi"
 
 # see above comment
 if test -n "$(grep ^BR2_PACKAGE_NETATALK2=y .config)" -a \
