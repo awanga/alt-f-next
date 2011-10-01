@@ -38,7 +38,7 @@ elif test -n "$DeleteDir"; then
 
 elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	sbn=$(basename "$srcdir")
-	if test -d "${wdir}/${sbn}"; then
+	if test -d "${wdir}/${sbn}" -a -z "$CopyContent"; then
 		msg "$wdir already contains a directory named $sbn"
 	fi
 
@@ -46,19 +46,39 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	wait_count_start "$op from $srcdir to $wdir"
 	for i in $(seq 1 5); do sleep 1; echo; done & # why the hell is this needed?!
 
+	# cp -a, piped tar and rsync uses too much memory (that keeps growing) for big trees and start swapping
+	# cpio has constante memory usage but is limited to 4GB files...
 	if test -n "$Copy" -o -n "$CopyContent"; then
-		cmd="cp -a"
+		if test -n "$CopyContent"; then
+			cd "$srcdir"
+			srcdir="."
+		else
+			cd $(dirname "$srcdir")
+			srcdir=$(basename "$srcdir")
+		fi
+		
+		tf=$(mktemp -t)
+		find "$srcdir" -size +4294967295c > $tf
+		if test -s $tf; then
+			res=$(find "$srcdir" -depth | grep -v -f $tf | nice cpio -pdm "$wdir" 2>&1)
+			st=$?
+			if test "$st" = 0; then
+				while read fn; do
+					res=$(nice cp -a "$fn" "$wdir"/$(dirname "$fn") 2>&1)
+					st=$?
+					if test "$st" != 0; then break; fi
+				done < $tf
+			fi	
+		else
+			res=$(find "$srcdir" -depth | nice cpio -pdm "$wdir" 2>&1)
+			st=$?
+		fi
+		rm -f $tf
 	else
-		cmd="mv -f"
+		res=$(nice mv -f "$srcdir" "$wdir" 2>&1)
+		st=$?
 	fi
 
-	cont=""
-	if test -n "$CopyContent"; then
-		cont="/*"
-	fi
-
-	res="$($cmd "$srcdir"$cont "$wdir" 2>&1)"
-	st=$?
 	wait_count_stop
 	if test $st != 0; then
 		msg "$res"
