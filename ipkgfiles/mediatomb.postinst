@@ -23,6 +23,10 @@ rm $MT_PIDFILE
 # add holder for shares
 sed -i '/<import hidden-files/a \
     <autoscan> \
-    </autoscan>' $MT_CFG
+        <directory location="/Public" mode="inotify" recursive="yes"/> \
+    </autoscan> \
+    <filesystem-charset>UTF-8</filesystem-charset> \
+    <metadata-charset>UTF-8</metadata-charset> \
+    <playlist-charset>UTF-8</playlist-charset> ' $MT_CFG
 
 
