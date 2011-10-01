@@ -22,7 +22,6 @@ pre() {
 
 	# stop hotplug
 	echo > /proc/sys/kernel/hotplug
-
 	echo " done.</p>"
 }
 
@@ -50,8 +49,8 @@ loadall() {
 }
 
 # $1=dsk
-reread_part() {
-	sfdisk -R /dev/$1 >& /dev/null
+reread_part() { # FIXME needed with GPT?
+	sfdisk -R /dev/$1 >& /dev/null 
 	sleep 3
 
 	# somehow, in this scenario, mdev does not remove device, only creates them
@@ -59,151 +58,8 @@ reread_part() {
 	mdev -s
 }
 
-has_disks
-
-if test -n "$cp_from"; then
-	eval cp_to=$(echo \$cp_$cp_from)
-	dsk=$cp_to
-
-	pre
-	echo "<p>Copying partition table from $cp_from to ${cp_to}..."
-
-	TFILE=$(mktemp -t sfdisk-XXXXXX)
-	sfdisk -d /dev/$cp_from > $TFILE
-	res="$(sfdisk --force /dev/$cp_to < $TFILE 2>&1)"
-	st=$?
-	rm -f $TFILE
-	if test $st != 0; then
-		err "$res"
-	fi
-
-	reread_part $dsk
-
-elif test -n "$Erase"; then
-	dsk=${Erase#op_}
-	
-	pre
-	echo "<p>Erasing partition table from ${dsk}..."
-
-	# erase also the MBR id (sector last 2 bytes, otherwise would be count=64)
-	dd if=/dev/zero of=/dev/$dsk bs=1 count=66 seek=446 >& /dev/null
-
-	reread_part $dsk
-
-elif test -n "$Save"; then
-	dsk=${Save#op_}
-
-	sfdisk -d /dev/$dsk > /tmp/saved_${dsk}_part 2> /dev/null
-	gotopage /cgi-bin/diskpart.cgi?disk=$dsk
-
-elif test -n "$Load"; then
-	dsk=${Load#op_}
-
-	if ! test -f /tmp/saved_${dsk}_part; then
-		msg "File /tmp/saved_${dsk}_part does not exists.\n\n\
-In order to Load, you have to first save the disk partition."
-	fi
-
-	if grep -q "No partitions found" /tmp/saved_${dsk}_part; then
-		msg "The loaded file doesn't contain a valid partition table."
-	fi
-
-	pre
-	echo "<p>Loading partition table to ${dsk}..."
-
-	res="$(sfdisk -f /dev/$dsk < /tmp/saved_${dsk}_part 2>&1)"
-	if test $? != 0; then
-		err "$res"
-	fi
-
-	reread_part $dsk
-	
-elif test -n "$Partition"; then
-	dsk="$Partition"
-
-	FMTFILE=$(mktemp -t sfdisk-XXXXXX)
-
-	fout=$(sfdisk -l -uS /dev/$dsk | tr '*' ' ') # *: the boot flag...
-
-	eval $(echo "$fout" | awk '
-		/cylinders/ {printf "cylinders=%d; heads=%d; sectors=%d", $3, $5, $7}')
-
-	pos=64 # 4k aligned, assuming offset=1. sfdisk will complain, use -f
-	sect_cyl=$(expr $heads \* $sectors) # number of sectors per cylinder
-	maxsect=$(expr $cylinders \* $sect_cyl)
-
-	if $(echo $fout | grep -q "No partitions found"); then
-		fout="/dev/${dsk}1          0       -       0          0    0  Empty
-/dev/${dsk}2          0       -       0          0    0  Empty
-/dev/${dsk}3          0       -       0          0    0  Empty
-/dev/${dsk}4          0       -       0          0    0  Empty"
-	fi
-
-	for pl in 1 2 3 4; do
-
-		part=/dev/${dsk}${pl}
-		ppart=$(basename $part)
-		id=""; type="";cap=""
-		eval $(echo "$fout" | awk '
-			/'$ppart'/{printf "start=%d; end=%d; sects=%d; id=%s", \
-			$2,  $3, $4, $5}')
-
-		if test "$(eval echo \$keep_$ppart)" = "yes"; then
-			if test "$pos" -gt "$start" -a "$id" != 0 -a "$sects" != 0; then
-				rm -f $FMTFILE
-				msg "Partition $last is too big, it extends over $ppart,\nor\npartitions are not in order"
-			fi
-			if test "$id" = 0 -a "$sects" = 0; then
-				echo "0,0,0" >> $FMTFILE
-			else
-				echo "$start,$sects,$id" >> $FMTFILE
-				pos=$((start + sects))
-			fi
-		else
-			case "$(eval echo \$type_$ppart)" in
-				empty) id=0 ;;
-				swap) id=82 ;;
-				linux) id=83 ;;
-				vfat) id=c ;;
-				ntfs) id=7 ;;
-				RAID) id=da  ;;
-			esac
-
-			rem=$(expr $pos % 8)
-			if test $rem -ne 0; then
-				pos=$(expr $pos + 8 - $rem)	# ceil to next 4k alignement
-			fi
-
-			nsect=$(eval echo \$cap_$ppart | awk '{printf "%d", $0 * 1e9/512}')
-
-			if test "$id" = 0 -a "$nsect" = 0; then
-				echo "0,0,0" >> $FMTFILE
-			else
-				if test $(expr $pos + $nsect) -gt $maxsect; then
-					nsect=$(expr $maxsect - $pos)
-				fi
-				rem=$(expr $nsect % 8)
-				if test $rem -ne 0; then
-					nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
-				fi
-				echo "$pos,$nsect,$id" >> $FMTFILE
-				pos=$(expr $pos + $nsect)
-			fi
-		fi
-		last=$ppart
-	done
-
-	pre
-	echo "<p>Partitioning disk $dsk..."
-
-	res=$(sfdisk --force -uS /dev/$dsk < $FMTFILE 2>&1) # sfdisk don't like 4k aligned partitions
-	st=$?
-	rm -f $FMTFILE
-	if test $st != 0; then
-		err "$res"
-	fi
-
-	reread_part $dsk
+# $1-dsk
+finalize() {
 
 	allst=0
 	allres="Partitioning succeeded but some RAID operations failed:"
@@ -212,7 +68,7 @@ elif test -n "$Partition"; then
 	echo " done</p><p>Setting up partitions details..."
 	for pl in 1 2 3 4; do
 
-		part=/dev/${dsk}${pl}
+		part=/dev/${1}${pl}
 		ppart=$(basename $part)
 
 		if test "$(eval echo \$keep_$ppart)" = "yes"; then continue; fi
@@ -235,12 +91,310 @@ elif test -n "$Partition"; then
 				dd if=/dev/zero of=$part bs=512 count=1 >& /dev/null
 				;;
 
-			raid|linux|ntfs|empty)
+			LVM|RAID|linux|"Windows Data"|ntfs|empty)
 				# clean raid superblock, otherwise blkid will report it as mdraid
 				mdadm  --zero-superblock $part >& /dev/null
 				;;
 		esac
 	done
+}
+
+has_disks
+
+if test -n "$cp_from"; then
+	eval cp_to=$(echo \$cp_$cp_from)
+
+	pre
+	echo "<p>Copying partition table from $cp_from to $cp_to..."
+
+	if test "$in_use" = "MBR"; then
+		sgdisk --zap-all /dev/$cp_to >& /dev/null
+		res="$(sfdisk -d /dev/$cp_from | sfdisk --force /dev/$cp_to  2>&1)"
+		if test $? != 0; then
+			err "$res"
+		fi
+	elif test "$in_use" = "GPT"; then
+		res=$(sgdisk --replicate=/dev/$cp_to /dev/$cp_from 2>&1)
+		if test $? != 0; then
+			err "$res"
+		fi
+		sgdisk --randomize-guids /dev/$cp_to >& /dev/null
+	fi
+
+	reread_part $cp_to
+
+elif test -n "$Erase"; then
+	dsk=${Erase#op_}
+	
+	pre
+	echo "<p>Erasing partition table from ${dsk}..."
+
+	if test "$in_use" = "MBR"; then
+		# erase also the MBR id (sector last 2 bytes, otherwise would be count=64)
+		dd if=/dev/zero of=/dev/$dsk bs=1 count=66 seek=446 >& /dev/null
+		sgdisk --zap /dev/$dsk >& /dev/null
+	elif test "$in_use" = "GPT"; then
+		sgdisk --zap-all /dev/$dsk >& /dev/null
+	fi
+
+	reread_part $dsk
+
+elif test -n "$Save"; then
+	dsk=${Save#op_}
+
+	if test "$in_use" = "MBR"; then
+		sfdisk -d /dev/$dsk > /tmp/saved_mbr_${dsk}_part 2> /dev/null
+	elif test "$in_use" = "GPT"; then
+		sgdisk --backup=/tmp/saved_gpt_${dsk}_part /dev/$dsk >& /dev/null
+	fi
+	gotopage /cgi-bin/diskpart.cgi?disk=$dsk
+
+elif test -n "$Load"; then
+	dsk=${Load#op_}
+
+	fname=""
+	if test "$in_use" = "MBR"; then
+		fname=/tmp/saved_mbr_${dsk}_part
+	elif test "$in_use" = "GPT"; then
+		fname=/tmp/saved_gpt_${dsk}_part
+	fi
+
+	if ! test -f "$fname"; then
+		msg "File $fname does not exists.\n\n\
+In order to Load, you have to first save the disk partition."
+	fi
+
+	if test "$in_use" = "MBR"; then
+		if grep -q "No partitions found" $fname; then
+			msg "The loaded file doesn't contain a valid MBR partition table."
+		fi
+	fi
+
+	pre
+	echo "<p>Loading partition table to ${dsk}..."
+
+	if test "$in_use" = "MBR"; then
+		res="$(sfdisk --force /dev/$dsk < $fname 2>&1)"
+	elif test "$in_use" = "GPT"; then
+		res="$(sgdisk --load-backup=$fname /dev/$dsk 2>&1)"
+	fi
+	if test $? != 0; then
+		err "$res"
+	fi
+
+	reread_part $dsk
+
+elif test -n "$Conv_MBR"; then # GPT to MBR
+	dsk=${Conv_MBR#op_}
+
+	pre
+	echo "<p>Converting ${dsk} disk GPT partition table to MBR..."
+
+	pn=$(sgdisk -p /dev/$dsk | awk '/^Number/ {while (getline) pn=pn ":" $1; print pn}' 2> /dev/null)
+	if test -z "$pn"; then
+		res=$(sgdisk --zap-all /dev/$dsk >& /dev/null)
+	else
+		res=$(sgdisk --gpttombr $pn --zap /dev/$dsk 2>&1)
+	fi
+	if test $? != 0; then
+		msg "$res"
+	fi
+
+	reread_part $dsk
+
+elif test -n "$Conv_GPT"; then # MBR to GPT
+	dsk=${Conv_GPT#op_}
+
+	pre
+	echo "<p>Converting ${dsk} disk MBR partition table to GPT..."
+
+	res=$(sgdisk --zap --mbrtogpt /dev/$dsk 2>&1)
+	if test $? != 0; then
+		msg "Conv_GPT $dsk: $res"
+	fi
+
+	reread_part $dsk
+	
+elif test -n "$Partition" -a "$in_use" = "MBR"; then
+	dsk="$Partition"
+
+	FMTFILE=$(mktemp -t sfdisk-XXXXXX)
+
+	fout=$(sfdisk -l -uS /dev/$dsk | tr '*' ' ') # *: the boot flag...
+
+	eval $(echo "$fout" | awk '
+		/cylinders/ {printf "cylinders=%d; heads=%d; sectors=%d", $3, $5, $7}')
+
+# 2TB
+#cylinders=243201
+#heads=255
+#sectors=63
+
+	pos=64 # 4k aligned, assuming offset=1. sfdisk will complain, use -f
+	sect_cyl=$(expr $heads \* $sectors) # number of sectors per cylinder
+	maxsect=$(expr $cylinders \* $sect_cyl)
+
+	if $(echo $fout | grep -q "No partitions found"); then
+		fout="/dev/${dsk}1          0       -       0          0    0  Empty
+/dev/${dsk}2          0       -       0          0    0  Empty
+/dev/${dsk}3          0       -       0          0    0  Empty
+/dev/${dsk}4          0       -       0          0    0  Empty"
+	fi
+
+	for pl in 1 2 3 4; do
+
+		part=/dev/${dsk}${pl}
+		ppart=$(basename $part)
+		id=""; type="";cap=""
+		eval $(echo "$fout" | awk '
+			/'$ppart'/{printf "start=%.0f; end=%.0f; sects=%.0f; id=%s", \
+			$2,  $3, $4, $5}')
+
+		if test "$(eval echo \$keep_$ppart)" = "yes"; then
+			if test "$pos" -gt "$start" -a "$id" != 0 -a "$sects" != 0; then
+				rm -f $FMTFILE
+				msg "Partition $last is too big, it extends over $ppart,\nor\npartitions are not in order"
+			fi
+			if test "$id" = 0 -a "$sects" = 0; then
+				echo "0,0,0" >> $FMTFILE
+			else
+				echo "$start,$sects,$id" >> $FMTFILE
+				pos=$((start + sects))
+			fi
+		else
+			case "$(eval echo \$type_$ppart)" in
+				empty) id=0 ;;
+				swap) id=82 ;;
+				linux) id=83 ;;
+				LVM) id=8e ;;
+				vfat) id=c ;;
+				ntfs) id=7 ;;
+				RAID) id=da  ;;
+			esac
+
+			if test "$adv_fl" = "Basic"; then
+				rem=$(expr $pos % 8)
+				if test $rem -ne 0; then
+					pos=$(expr $pos + 8 - $rem)	# ceil to next 4k alignement
+				fi
+
+				nsect=$(eval echo \$cap_$ppart | awk '{printf "%.0f", $0 * 1e9/512}')
+
+				if test "$id" = 0 -a "$nsect" = 0; then
+					echo "0,0,0" >> $FMTFILE
+				else
+					if test $(expr $pos + $nsect) -gt $maxsect; then
+						nsect=$(expr $maxsect - $pos)
+					fi
+					rem=$(expr $nsect % 8)
+					if test $rem -ne 0; then
+						nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
+					fi
+					echo "$pos,$nsect,$id" >> $FMTFILE
+					pos=$(expr $pos + $nsect)
+				fi
+			else
+				spos=$(eval echo \$start_$ppart)
+				slen=$(eval echo \$len_$ppart)
+				echo "$spos,$slen,$id" >> $FMTFILE
+			fi
+		fi
+		last=$ppart
+	done
+
+	pre
+	echo "<p>Partitioning disk $dsk..."
+
+	res=$(sfdisk --force -uS /dev/$dsk < $FMTFILE 2>&1) # sfdisk don't like 4k aligned partitions
+	st=$?
+	rm -f $FMTFILE
+	if test $st != 0; then
+		err "$res"
+	fi
+
+	reread_part $dsk
+
+	finalize $dsk
+
+elif test -n "$Partition" -a "$in_use" = "GPT"; then
+	dsk="$Partition"
+
+	fout=$(fdisk -lu /dev/$dsk)
+
+	maxsect=$(echo "$fout" | awk '/First/ {print $10}')
+	parts=$(echo "$fout" | awk '/Device/ { while (getline) printf " %d", substr($1,9)}')
+	pos=64 # 4k aligned, assuming offset=1.
+        
+	for pl in 1 2 3 4; do
+		part=/dev/${dsk}${pl}
+		ppart=$(basename $part)
+		id=""; type=""; cap=""; dcmd=""
+
+		eval $(echo "$fout" | awk '
+			/'$ppart'/{printf "start=%.0f; end=%.0f; sects=%.0f; id=%s", \
+			$2,  $3, $4, $5}')
+		
+		if test "$(eval echo \$keep_$ppart)" = "yes"; then
+			pos=$(expr $end + 1)
+		else
+			type=$(httpd -d $(eval echo \$type_$ppart))
+			case "$type" in
+				empty) id=0 ;;
+				swap) id=8200 ;;
+				linux) id=8300 ;;
+				LVM) id=8e00 ;;
+				RAID) id=fd00 ;;
+				"Windows Data") id=0700 ;;
+			esac
+
+			if test "$adv_fl" = "Basic"; then
+				rem=$(expr $pos % 8)
+				if test "$rem" -ne 0; then
+					pos=$(expr $pos + 8 - $rem)	# ceil to next 4k alignement
+				fi
+
+				nsect=$(eval echo \$cap_$ppart | awk '{printf "%.0f", $0 * 1e9 / 512}')
+
+				if test "$id" = 0 -o "$nsect" = 0; then
+					if echo $parts | grep -q $pl; then dcmd="--delete=$pl"; fi
+					cmd="$cmd $dcmd"
+					continue
+				else
+					if test $(expr $pos + $nsect) -gt $maxsect; then
+						nsect=$(expr $maxsect - $pos)
+					fi
+					rem=$(expr $nsect % 8)
+					if test $rem -ne 0; then
+						nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
+					fi
+					if echo $parts | grep -q $pl; then dcmd="--delete=$pl"; fi
+					cmd="$cmd $dcmd --new=$pl:$pos:$(expr $pos + $nsect - 1) --typecode=$pl:$id"
+					pos=$(expr $pos + $nsect)
+				fi
+			else
+				spos=$(eval echo \$start_$ppart)
+				slen=$(eval echo \$len_$ppart)
+				if echo $parts | grep -q $pl; then dcmd="--delete=$pl"; fi
+				if test -z "$spos" -o -z "$slen" -o "$id" = 0; then
+					cmd="$cmd $dcmd"
+				else
+					cmd="$cmd $dcmd --new=$pl:$spos:$(expr $spos + $slen - 1) --typecode=$pl:$id"
+				fi
+			fi
+		fi
+	done
+
+	pre
+	echo "<p>Partitioning disk $dsk..."
+
+	res=$(sgdisk --set-alignment=8 $cmd /dev/$dsk 2>&1)
+	if test $? != 0; then
+		err "$res"
+	fi
+
+	reread_part $dsk
+
+	finalize $dsk
 fi
 
 # reload disks

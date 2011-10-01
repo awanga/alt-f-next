@@ -6,7 +6,7 @@ write_header "Disk Partitioner" "document.diskp.reset()"
 
 has_disks
 
-mktt tt_keep "If checked, no changes will be made to this partition."
+mktt tt_keep "If <strong>never</strong> unchecked, no changes will be made to this partition."
 mktt tt_psize "Partition size. Rounding can occur."
 mktt tt_pstart "Partition start sector."
 mktt tt_plen "Partition lenght, in sectors."
@@ -21,9 +21,9 @@ if ! isflashed; then
 	EOF
 fi
 
-cat<<-EOF
+cat<<EOF
 	<script type="text/javascript">
-	// Erase, Save and Load operations
+	// Erase, Save, Load and Convert operations
 	function opsubmit(disk, bay, cap) {
 		obj = document.getElementById("op_" + disk)
 		idx = obj.selectedIndex
@@ -44,7 +44,17 @@ It will disappear after a reboot or powerdown.')
 		}
 		else if (op == "Load") {
 			ret = confirm('You are going to write the ' + cap + ' ' + bay + ' disk\n\
- partition table  with a previously saved one.\n\nContinue?') 
+partition table  with a previously saved one.\n\nContinue?') 
+		}
+
+		else if (op == "Conv_MBR") {
+			ret = confirm('You are going to convert the ' + cap + ' ' + bay + ' disk\
+partition table to the MBR format.\n\Adjustments might be necessary afterwards.\n\nContinue?') 
+		}
+
+		else if (op == "Conv_GPT") {
+			ret = confirm('You are going to convert the ' + cap + ' ' + bay + ' disk\
+partition table to the GPT format.\n\Adjustments might be necessary afterwards.\n\nContinue?') 
 		}
 
 		if (ret == false) {
@@ -64,16 +74,12 @@ It will disappear after a reboot or powerdown.')
 		topart = obj.options[idx].value
 
 		ret = false
-		if (topart == frompart) {
-			alert("Select a destination disk different from the origin disk.")
-			obj.selectedIndex = 0
-		}
-		else if (topart == "CopyTo") {
+		if (topart == "CopyTo") {
 			alert("Select a destination disk.")
 			obj.selectedIndex = 0
 		} else {
 			ret = confirm("The partition table of the " + frompart + " disk will be copied" + '\n' + "to the " + topart + " disk, " + \
-"making all " +  topart + " disk data inacessible." + '\n' + '\n' + "Continue?")
+", making all " +  topart + " disk data inacessible." + '\n' + "Success depends on disk sizes." + '\n' + '\n' + "Continue?")
 		}
 
 		if (ret == false) {
@@ -91,6 +97,7 @@ It will disappear after a reboot or powerdown.')
 	}
 
 	function advanced(dcap, disk) {
+
 		st = document.getElementById("adv_id").value == "Advanced" ? true : false 
 		if ( st == false)
 			updatesect(dcap, disk)
@@ -102,8 +109,9 @@ It will disappear after a reboot or powerdown.')
 			document.getElementById("len_" + disk + i).disabled = !st;
 			document.getElementById("cap_" + disk + i).disabled = true;
 			document.getElementById("type_" + disk + i).disabled = !st;
-			document.getElementById("adv_id").value = (st == true ? "Basic" : "Advanced")
 		}
+		document.getElementById("adv_id").value = (st == true ? "Basic" : "Advanced")
+		document.getElementById("adv_hid").value = (st == false ? "Basic" : "Advanced")
 	}
 
 	function check_adv(dcap, disk, pn) {
@@ -137,12 +145,12 @@ It will disappear after a reboot or powerdown.')
 
 		if (msg.length > 0)
 			alert(msg)
-
 	}
 
 	// update sectors view and free available space when entering partition size in GB
 	function updatesect(dcap, dsk) {
 		free = dcap;
+		msg = ""
 		for (i=1; i<=4; i++) {
 			prev = "" + dsk + (i - 1)
 			if (i == 1)
@@ -152,17 +160,33 @@ It will disappear after a reboot or powerdown.')
 					parseInt(document.getElementById("len_" + prev).value);
 			}
 
+			if (i == 4)
+				nstart = dcap
+			else
+				nstart = parseInt(document.getElementById("start_" +  dsk + (i + 1)).value)
+			
 			if (document.getElementById("keep_" + dsk + i).checked == false) {
 				document.getElementById("start_" + dsk + i).value = pstart;
 				nsect = document.getElementById("cap_" + dsk + i).value * 1e9 / 512;
 				nsect -= nsect % 8
 				document.getElementById("len_" + dsk + i).value = nsect;
-				if (nsect == 0)
-					document.getElementById("type_" + dsk + i).selectedIndex = 0;
+				// if (nsect == 0)
+				//	document.getElementById("type_" + dsk + i).selectedIndex = 0;
+				if ( document.getElementById("keep_" + dsk + (i + 1)).checked == true && 
+					pstart + nsect > nstart) {
+						pmaxsize = Math.round((nstart - pstart) * 512 / 1e6)/1000
+						msg = "Maximum available space for partition " + i + " is " + pmaxsize + " GB" + '\n'
+				}
 			}
 			free -= document.getElementById("len_" + dsk + i).value;
 		}
-		document.getElementById("free_id").value = Math.round(free * 512 / 1e6)/1000;
+		cfree = Math.round(free * 512 / 1e6)/1000;
+		document.getElementById("free_id").value = cfree;
+		if (cfree < 0)
+			msg += "Disk capacity exceeded."
+ 
+		if (msg.length > 0)
+			alert(msg)
 	}
 
 	// partition submit
@@ -197,12 +221,12 @@ else
 	done
 fi
 
-ntfsopt="disabled"
+ntfs_avail="disabled"
 if test -f /usr/sbin/mkntfs; then
-	ntfsopt=""
+	ntfs_avail=""
 fi
 
-cat<<-EOF
+cat<<EOF
 	<fieldset>
 	<legend><strong>Select the disk you want to partition</strong></legend>
 	<table style="border-collapse:collapse">
@@ -219,19 +243,27 @@ cat<<-EOF
 EOF
 
 opt_disks="$(for i in $disks; do echo "<option>$(basename $i)</option>"; done)"
-opt_disks="<option>CopyTo</option> $opt_disks"
  
 for i in $disks; do
 	disk=$(basename $i)
 
 	disk_details $disk
 
+	optd=$(echo $opt_disks | sed 's|<option>'$disk'</option>||')
+
+	conv_gpt_dis=""; conv_mbr_dis=""
+	if fdisk -lu $i | grep -q "Found valid GPT with protective MBR; using GPT"; then
+		conv_gpt_dis="disabled"
+	else
+		conv_mbr_dis="disabled"
+	fi
+	
 	chkd=""	
 	if test "$i" = "$dsk"; then chkd="checked"; fi
 
-	cat<<-EOF
+	cat<<EOF
 		<tr>
-		<td><input type=radio $chkd name=disk value=$disk onchange="reopen('$disk')"></td>
+		<td><input type=radio $chkd name=disk value="$disk" onchange="reopen('$disk')"></td>
 		<td>$dbay</td>
 		<td align=center>$disk</td>
 		<td align=right>$dcap</td>
@@ -241,24 +273,44 @@ for i in $disks; do
 			<option>Erase</option>
 			<option>Save</option>
 			<option>Load</option>
+			<option $conv_mbr_dis value=Conv_MBR>Convert to MBR</option>
+			<option $conv_gpt_dis value=Conv_GPT>Convert to GPT</option>
 		</select></td>
-		<td><select id=cp_$disk name=cp_$disk onChange="msubmit('$disk','$dbay', '$dcap')">$opt_disks</select></td>
+		<td><select id=cp_$disk name=cp_$disk onChange="msubmit('$disk','$dbay', '$dcap')"><option>CopyTo</option>$optd</select></td>
 		</tr>
-	EOF
+EOF
 done
 
-echo "<input type=hidden name=cp_from>"
-echo "</table></fieldset><br>"	
+cat<<EOF
+	</table></fieldset><br>
+	<input type=hidden name=cp_from>
+EOF
 
 ddsk=$(basename $dsk)
-#rawcap=$(expr $(sfdisk -s $dsk) \* 2) # sectors
-rawcap=$(cat /sys/block/$ddsk/size)
+rawcap=$(cat /sys/block/$ddsk/size) # sectors
+#rawcap=3907024065 # 2 TB 
+#rawcap=5860536096 # 3 TB
 
 disk_details $ddsk
 
-cat<<-EOF
+fout=$(fdisk -lu $dsk | tr '*' ' ') # *: the boot flag...
+
+npart=4
+keepchk="checked"
+keepdis="disabled"
+windd_dis="disabled"
+in_use="MBR"
+if $(echo $fout | grep -q "Found valid GPT with protective MBR; using GPT"); then
+	in_use="GPT"
+	windd_dis=""; ntfsd="disabled"; vfatd="disabled"
+fi
+
+cat<<EOF
 	<fieldset>
 	<legend><strong>Partition $dbay disk, $dcap, $dmod </strong></legend>
+	<p>Using <strong>$in_use</strong> partitioning.</p>
+	<p>Every disk must have a swap partitionas its first partition, 0.5GB is generally enought.</p>
+	<input type=hidden name=in_use value="$in_use">
 	<table>
 	<tr align=center>
 	<th> Keep </th>
@@ -270,11 +322,13 @@ cat<<-EOF
 	</tr>
 EOF
 
-fout=$(sfdisk -luS $dsk | tr '*' ' ') # *: the boot flag...
+if test "$in_use" = "GPT" -o "$rawcap" -gt 3907024065; then
+		if ! isflashed; then
+			echo "<h4><font color=RED>This disk is partitioned with GPT or is bigger then 2.2TB, but the box is not Alt-F flashed, the stock firmware will not recognize GPT partitioned disks.</font></h4>" 
+		fi
+fi
 
-keepchk="checked"
-keepdis="disabled"
-if $(echo $fout | grep -q "No partitions found"); then
+if $(echo $fout | grep -q "doesn't contain a valid partition table"); then
 	fout="${dsk}1          0       -       0          0    0  Empty
 ${dsk}2          0       -       0          0    0  Empty
 ${dsk}3          0       -       0          0    0  Empty
@@ -284,62 +338,73 @@ keepdis=""
 fi
 
 used=0
-for pl in 1 2 3 4; do
+for pl in $(seq 1 $npart); do
 	part=${dsk}$pl
 	ppart=$(basename $part)
-	id=""; type="";cap=""
+
+	id=""; type=""; cap=""; start=""; len="";
 	eval $(echo "$fout" | awk '
-		/'$ppart'/{printf "id=\"%s\" type=\"%s\"; cap=%.3f; start=%d; len=%d;", \
-		$5, substr($0, index($0,$6)), $4*512/1e9, $2, $4}')
+		/'$ppart'/{len = $3 - $2 ; if (len > 0) len += 1; printf "id=\"%s\" type=\"%s\"; cap=%.3f; start=%.0f; len=%.0f;", \
+		$5, substr($0, index($0,$6)), len * 512/1e9, $2, len}')
 
-	used=$(expr $used + $len)
+	if test -n "$len"; then
+		used=$(expr $used + $len)
+	fi
 
-	emptys=""; swaps=""; linuxs=""; raids=""; vfats=""; ntfss=""; extendeds=""
+	emptys=""; swaps=""; linuxs=""; lvms=""; raids="";
+	vfats=""; ntfss=""; extendeds=""; GPTs=""; windds=""
 	case $id in
 		0) emptys="selected" ;;
-		82) swaps="selected" ;;
-		83) linuxs="selected" ;;
+		82|8200) swaps="selected" ;;
+		83|8300) linuxs="selected" ;;
+		8e|8e00) lvms="selected" ;;
 		5|f|85) extendeds="selected" ;;
-		fd|da) raids="selected"	;;
+		fd|da|fd00) raids="selected"	;;
 		b|c) vfats="selected" ;;
 		7) ntfss="selected" ;;
+		ee) GPTs="selected";;
+		0700) windds="selected";;
 	esac
 
-	cat<<-EOF
+	cat<<EOF
 	<tr>
 	<td align=center><input type="checkbox" $extendeddis $keepchk id="keep_$ppart" name="keep_$ppart" value="yes" 
 		onclick="keeppart('$ppart')" $(ttip tt_keep)></td>
 	<td>$ppart</td>
-	<td><input type=text disabled size=10 id=start_$ppart name=start_$ppart value=$start
+	<td><input type=text disabled size=10 id=start_$ppart name=start_$ppart value="$start"
 		onchange="check_adv('$rawcap', '$ddsk', '$pl')"  $(ttip tt_pstart)></td>
-	<td><input type=text disabled size=10 id=len_$ppart name=len_$ppart value=$len
+	<td><input type=text disabled size=10 id=len_$ppart name=len_$ppart value="$len"
 		onchange="check_adv('$rawcap', '$ddsk', '$pl')" $(ttip tt_plen)></td>
 	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
-		value=$cap onclick="updatesect('$rawcap', '$ddsk')" onmouseout="updatesect('$rawcap', '$ddsk')" $(ttip tt_psize)></td>
+		value="$cap" onkeyup="updatesect('$rawcap', '$ddsk')" $(ttip tt_psize)></td>
 	<td><select $keepdis id=type_$ppart name=type_$ppart>
 	<option $emptys>empty</option>
 	<option $raids>RAID</option>
 	<option $swaps>swap</option>
 	<option $linuxs>linux</option>
-	<option $vfats>vfat</option>
-	<option $ntfss $ntfsopt>ntfs</option>
+	<option $lvms>LVM</option>
+	<option $vfatd $vfats>vfat</option>
+	<option $ntfsd $ntfss $ntfs_avail>ntfs</option>
 	<option $extendeds disabled>extended</option>
+	<option $GPTs disabled>GPT</option>
+	<option $windds $windd_dis>Windows Data</option>
 	</select></td>
 	</tr>
-	EOF
+EOF
 
 done 
 
 free=$(awk 'BEGIN {printf "%.3f", ('$rawcap' - '$used') * 512/1e9}')
 
-cat<<-EOF
+cat<<EOF
 	<tr><td colspan=3></td>
 	<td align=right>Free: </td>
 	<td><input type=text readonly id="free_id" size=6 value="$free" $(ttip tt_free)></td>
 	</tr>
 	<tr><td align=center colspan=2><input type=submit name=$ddsk value=Partition
 		onclick="return psubmit('$dcap', '$dbay', '$free')"></td>
-	<td><input type=button id=adv_id value=Advanced onclick="return advanced('$rawcap','$ddsk')"></td>
+	<td><input type=button id=adv_id name=adv_bt value="Advanced" onclick="return advanced('$rawcap','$ddsk')"></td>
+	<td><input type=hidden id=adv_hid name=adv_fl value="Basic"></td>
 	</tr>
 	</table></fieldset><br>
 	</form></body></html>
