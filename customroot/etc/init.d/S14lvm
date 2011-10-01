@@ -14,7 +14,7 @@ case "$1" in
 		require $NAME $REQUIRE
 		echo -n "Starting $NAME: "
 		vgscan --mknodes >& /dev/null
-		vgchange -a y  >& /dev/null
+		vgchange -a y
 		omsg $?
 		;;
 
