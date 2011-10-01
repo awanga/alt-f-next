@@ -125,7 +125,7 @@ enddebug() {
 }
 
 msg() {
-	txt=$(echo "$1" | awk '{printf "%s\\n", $0}')
+	txt=$(echo "$1" | tr -d "\"" | awk '{printf "%s\\n", $0}')
 
 	html_header
 	echo "<script type=text/javascript>
