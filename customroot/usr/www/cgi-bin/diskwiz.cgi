@@ -58,11 +58,14 @@ Continue?")
 	</tr>
 EOF
 
-
 for i in $disks; do
 	disk=$(basename $i)
 
 	disk_details $disk
+
+	if test "$(cat /sys/block/${disk}/size)" -gt 3907024065; then
+		huge_disk="yes"
+	fi
 
 	chkd=""	
 	if test "$i" = "$dsk"; then chkd="checked"; fi
@@ -85,6 +88,11 @@ If you have plugged a usb pen, eject and remove it and retry again.</h4></center
 	exit 1
 fi
 
+if test -n "$huge_disk"; then
+	fmsg1="<p>At least one of your disks is greater than 2.2TB, to use its full capacity
+it will be partitioned using GPT partitioning."
+fi
+
 if isflashed; then
 	std_chk="checked"
 	ext4_chk="checked"
@@ -95,10 +103,9 @@ else
 	raid5_dis="disabled"
 	cat<<-EOF
 		<script type="text/javascript">
-			alert("Your box is not flashed, some options not recognized " +
-			"by the stock firmware are not available." + '\n' +
-			"The stock firmware might not even recognize the new disks setup, " +
-			"so keep the selected defaults.")
+			alert("Your box is not Alt-F flashed, some options not recognized by the stock firmware," + '\n' +
+			"such as the ext4 filesystem, RAID-5 and GPT partitioning, are not available," + '\n' +
+			"as the stock firmware would not recognize them.")
 		</script>
 	EOF
 fi
@@ -115,19 +122,19 @@ cat<<-EOF
 		<td>Don't touch my disks in any way!</td></tr>
 	<tr><td align=center>
 		<input type=radio $std_chk name=wish_part value=standard></td>
-		<td>One big standard partition per disk, for easy management (standard)</td></tr>
+		<td>One big filesystem per disk, for easy management (standard)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=jbd></td>
-		<td>Merge all disks in one big partition, low data security (JDB)</td></tr>
+		<td>Merge all disks in one big filesystem, low data security (JBOD)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=raid0></td>
-		<td>Maximum performance and space with two disks, but low data security (raid0)</td></tr>
+		<td>Maximum performance and space with two or three disks (one an external USB disk), but low data security (raid0)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=raid1></td>
-		<td>Data security, duplicate everything on both disks (raid1)</td></tr>
+		<td>Data security, duplicate everything on two disks (and use an external USB disk, if available, as a spare) (raid1)</td></tr>
 	<tr><td align=center>
 		<input type=radio $raid5_dis name=wish_part value=raid5></td>
-		<td>Data security and more space, with two disks plus an external USB disk (raid5)</td></tr>
+		<td>Data security and space, with two disks plus an external USB disk (raid5)</td></tr>
 
 	<tr><td colspan=2><br>And I want the filesystems to be:<br></td></tr>
 	<tr><td align=center>
