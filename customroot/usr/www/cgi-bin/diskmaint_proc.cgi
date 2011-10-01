@@ -11,7 +11,7 @@ tune() {
 			tune2fs -c $mounts -i $days $part >& /dev/null
 			mounts=$((mounts - 2)) # try to avoid simultaneus fsck at mount time
 			days=$((days - 2))
-		    fi
+		fi
 	done < /proc/mounts
 } 
 
@@ -56,7 +56,7 @@ check() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		res=\$(fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
+		res=\$(nice fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
 		st=\$?
 		logger "Cheking $1 finished with status code \$st: \$res"
 		if test "\$st" = 0 -o "\$st" = 1; then
@@ -85,7 +85,7 @@ format() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		mkfs.$2 $opts -v /dev/$1 > $logf 2>&1
+		nice mkfs.$2 $opts -v /dev/$1 > $logf 2>&1
 		st=\$?
 		if test \$st != 0; then
 			logger "Formating /dev/$1 with $2 failed with code \$st: \$(cat $logf)"
@@ -100,12 +100,14 @@ format() {
 		if test "${1:0:2}" = "sd"; then
 			p=${1:0:3}
 			pn=${1:3}
-			if test "\$pn" -ge 1 -a "\$pn" -le 4; then
-				sfdisk --change-id /dev/\$p \$pn $id -O /tmp/mbr-\$p
-				if test \$? != 0; then
-					sfdisk /dev/\$p -I /tmp/mbr-\$p
+			if ! fdisk -l /dev/\$p | grep -q "Found valid GPT"; then # non GPT disk
+				if test "\$pn" -ge 1 -a "\$pn" -le 4; then
+					sfdisk --change-id /dev/\$p \$pn $id -O /tmp/mbr-\$p
+					if test \$? != 0; then
+						sfdisk /dev/\$p -I /tmp/mbr-\$p
+					fi
+					rm /tmp/mbr-\$p
 				fi
-				rm /tmp/mbr-\$p
 			fi
 		fi
 
@@ -137,7 +139,7 @@ resize() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		fsck -fy -C /dev/$1 > $logf 2>&1
+		nice fsck -fy -C /dev/$1 > $logf 2>&1
 		st=\$?
 		if ! test "\$st" = 0 -o "\$st" = 1; then
 			logger "Checking /dev/$1 failed with error code \$st: \$(cat $logf)"
@@ -145,7 +147,7 @@ resize() {
 		fi
 		logger "Checking /dev/$1 OK"
 		
-		resize2fs -p /dev/$1 $nsz > $logf 2>&1
+		nice resize2fs -p /dev/$1 $nsz > $logf 2>&1
 		if test $? != 0; then
 			logger "${2}ing /dev/$1 failed: \$(cat $logf)"
 			exit 1
@@ -160,7 +162,7 @@ resize() {
 # wipe $1=part
 wipe() {
 	lumount $1 "wiping"
-	eval $(sfdisk -uM -l /dev/${1:0:3} | awk '/'$1'/{printf "nblk=%d", $5/1024}')
+	nblk=$(expr $(cat /sys/block/${1:0:3}/$1/size) \* 512 / 1024 / 1024)
 	cat<<-EOF > /tmp/wip-$1
 		#!/bin/sh
 		trap "" 1
@@ -196,8 +198,8 @@ if test "$Submit" = "tune"; then
 	tune $TUNE_DAYS $TUNE_MOUNTS
 
 elif test -n "$setLabel"; then
-	part=$setLabel
-	eval lab=\$lab_$part
+	eval part=\$part_$setLabel
+	eval lab=\$lab_$setLabel
 	if test -n "$lab"; then
 		lab=$(httpd -d $lab)
 	fi
@@ -207,14 +209,14 @@ elif test -n "$setLabel"; then
 	lmount $part
 
 elif test -n "$setMountOpts"; then
-	part=$setMountOpts
-	eval mopts=\$mopts_$part
+	eval part=\$part_$setMountOpts
+	eval mopts=\$mopts_$setMountOpts
 
 	if test -n "$mopts"; then
 		mopts=$(httpd -d $mopts)
 	fi
 
-	lumount $part
+	lumount "$part"
 
 	TF=$(mktemp -t) 
 	awk '{
@@ -234,66 +236,66 @@ elif test -n "$setMountOpts"; then
 		echo "mopts_${uuid}=$mopts" >> /etc/misc.conf
 	fi
 	
-	lmount $part
+	lmount "$part"
 
 elif test -n "$Mount"; then
-	part=$Mount
-	lmount $part "mount"
+	eval part=\$part_$Mount
+	lmount "$part" "mount"
 
 elif test -n "$unMount"; then
-	part=$unMount
-	lumount $part "unmount"
+	eval part=\$part_$unMount
+	lumount "$part" "unmount"
 
 elif test -n "$Check"; then
-	part=$Check
+	eval part=\$part_$Check
 	type=$(blkid -s TYPE -o value /dev/$part)
-	lumount $part "checking"
-	check $part $type "check"
+	lumount "$part" "checking"
+	check "$part" "$type" "check"
 		
 elif test -n "$Format"; then
-	part=$Format
+	eval part=\$part_$Format
+	eval type=\$type_$Format
 	label="$(plabel $part)"
-	eval type=\$type_$part
-	lumount $part "formating"
-	format $part $type "$label"
+	lumount "$part" "formating"
+	format "$part" "$type" "$label"
 
 elif test -n "$Convert"; then
-	part=$Convert
-	eval type=\$type_$part
+	eval part=\$part_$Convert
+	eval type=\$type_$Convert
 	from=$(blkid -s TYPE -o value /dev/$part)
-	lumount $part "converting"
+	lumount "$part" "converting"
 
 	if test "$type" != "ext3" -a "$type" != "ext4"; then
 		msg "Can only convert upward from 'ext' filesystems."
 	fi 
 
-	if test $from = "ext2"; then # 2->3	
+	if test "$from" = "ext2"; then # 2->3	
 		res="$(tune2fs -j /dev/$part)"
 		if test $? != 0; then
 			msg "$res"
 		fi
 	fi
 
-	if test $type = "ext4"; then # 3->4
+	if test "$type" = "ext4"; then # 3->4
 		res="$(tune2fs -O extents,uninit_bg,dir_index /dev/$part)"
 		if test $? != 0; then
 			msg "$res"
 		fi
 	fi
 
-	check $part $from "convert"
+	check "$part" "$from" "convert"
 
 elif test -n "$Shrink"; then
-	part=$Shrink
-	resize $part "shrink"
+	eval part=\$part_$Shrink
+	resize "$part" "shrink"
 
 elif test -n "$Enlarge"; then
-	part=$Enlarge
-	resize $part "enlarg"
+	eval part=\$part_$Enlarge
+	resize "$part" "enlarg"
 
 elif test -n "$Wipe"; then
-	part=$Wipe
-	wipe $part
+	eval part=\$part_$Wipe
+	wipe "$part"
 
 fi
 

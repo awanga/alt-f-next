@@ -14,54 +14,63 @@ cat<<-EOF
 		opi = obj.selectedIndex
 		op = obj.options[opi].value
 
+		cmsg = "During the process the filesystem will be unavailable for usage\n\
+and the operation evolution can be verified in the status page.\n\n"
+
 		res = false
 		if (opi == 0)
 			return false;
 
 		else if (op == "Format" || op == "Convert") {
-			if (document.getElementById("fsfs_" + part).selectedIndex == 0) {
+			if (document.getElementById(id).selectedIndex == 0) {
 				alert("Select a FS first.")
 				obj.selectedIndex = 0
 				return false
 			}
-			if (document.getElementById("fsfs_" + part).selectedIndex == 3 && notflashed == 1) {
+			if (document.getElementById(id).selectedIndex == 3 && notflashed == 1) {
 				if (! confirm("Your box is not Alt-F flashed and the ext4 filesystem is not recognized by the stock firmware." + '\n' + "Proceed anyway?")) {
 					obj.selectedIndex = 0
 					return false
 				}
 			}
+
 			if (op == "Format")
-				res = confirm("Formating will destroy all data in the partition " + part + "\n\n\
-Proceed?");
+				res = confirm("Formating will destroy all data in the filesystem " + part + "\n\n" + cmsg + "Proceed?");
 			else if (op == "Convert")
 				res = confirm("Converting filesystems can only be done upwards.\n\n\
 It is not advisable to do if you intend to continue using\n\
-the vendors firmware, that might not recognize the new format.\n\n\
-Proceed converting the " + part + " partition anyway?");
+the vendors firmware, that might not recognize the new format.\n\n" + cmsg +
+"Proceed converting the " + part + " filesystem anyway?");
 		}
 		else if (op == "Mount")
 			res = true
 		else if (op == "unMount")
 			res = true
 		else if (op == "Check")
-			res = true
+			res = confirm("Cleaning a filesystems means verifying its consistency\n\
+and automatically repairing it if necessary and possible.\n\n\
+If a major problem is found, the filesystem will not be repaired,\n\
+will be remounted read-only and manual intervention will be needed.\n\n" + cmsg + "Proceed checking the " + part + " filesystem?");
 		else if (op == "setLabel")
 			res = true
 		else if (op == "setMountOpts")
 			res = true
 		else if (op == "Shrink")
-			res = confirm("Shrink a filesystem only if you intend to latter shrink\n\
-the disk partition (or RAID device) where it lays-on,\n\
-in order to make more space available in the next partition.\n\
-The filesystem will be 5% bigger than the data it contains.\n\nProceed?")
+			res = confirm("Shrinking a filesystem compacts all its data at the partition begin.\n\n\
+Shrink a filesystem if you intend to latter shrink the disk partition\n\
+(or RAID device) where it lays-on, in order to make more space\n\
+available for the next partition.\n\
+At the end the filesystem will be only 5% bigger than the data it contains.\n\n" + cmsg + "Proceed?")
 		else if (op == "Enlarge")
-			res = confirm("Enlarge a filesystem only if you have made more space\n\
+			res = confirm("Enlarging a filesystem makes it possible to use all available\n\
+space in the partition where it lays-on.\n\n\
+Enlarge a filesystem only if you have made more space\n\
 available in the disk partition (or RAID device) where it lays-on.\n\
-The filesystem will occupy the whole partition (or RAID device).\n\nProceed?")
+At the end the filesystem can use the whole partition (or RAID device).\n\n" + cmsg + "Proceed?")
 		else if (op == "Wipe")
 			res = confirm("Wiping a filesystem fills it with zeros, destroing all its data.\n\
 The data can only be recovered at specialized data recovery centers.\n\
-It runs at about 1GB/min.\n\nProceed?")
+It runs at about 1GB/min.\n\n" + cmsg + "Proceed?")
 
 		if (res == true)
 			document.getElementById("diskm").submit();
@@ -101,15 +110,25 @@ fi
 isflashed
 flashed=$?
 
-blk=$(blkid -c /dev/null -s LABEL -s TYPE) # -s UUID)
+# somehow blkid only reports /dev/mapper/ devices, not /dev/dm-* ones.
+# not blkid cache problem, is because /dev/mapper/* and /dev/dm-* has the same major,minor?
+blk=$(blkid -s LABEL -s TYPE)
+blk="$blk $(blkid -s LABEL -s TYPE /dev/dm-[0-9]*)"
+
 ppart=$(cat /proc/partitions)
 i=1
-for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
+for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* /dev/dm-[0-9] 2> /dev/null); do
 	part=$(basename $j)
+	dname=$part
 
 	if test ${part:0:2} = "md"; then
 		if ! test -f /sys/block/$part/md/array_state; then continue; fi
 		if test "$(cat /sys/block/$part/md/array_state)" = "inactive"; then continue; fi
+	elif test ${part:0:3} = "dm-"; then
+		# show LV name?
+		dname=$(cat /sys/block/$part/dm/name)
+	elif ! test -d /sys/block/${part:0:3}/$part; then
+		continue
 	else # is an extended partition?
 		if test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then continue; fi
 	fi
@@ -117,8 +136,10 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 	LABEL=""; TYPE="none"
 	eval $(echo "$blk" | sed -n '\|^'$j':|s|.*:||p');
 
-	# partitions that where once a component raid can appear as mdraid
-	if test "$TYPE" = "swap" -o "$TYPE" = "mdraid"; then continue; fi
+	if test "$TYPE" = "swap" -o "$TYPE" = "mdraid" \
+		-o "$TYPE" = "lvm2pv" -o "$TYPE" = "crypt_LUKS"; then
+		continue
+	fi
 
 	otype=$TYPE
 
@@ -162,7 +183,7 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 
 	cat<<-EOF
 		<tr>
-		<td>$part</td>
+		<td><input type=hidden name=part_$i value="$part">$dname</td>
 		<td align=right>$pcap</td>
 	EOF
 
@@ -177,9 +198,9 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 		cat<<-EOF
 			<td align=center>$otype</td>
 			<td align=center>$mtdf</td>
-			<td><input $all_dis type=text size=10 name=lab_$part value="$LABEL"></td>
-			<td><input $all_dis type=text size=16 name=mopts_$part value="$mount_opts"></td>
-			<td><select id="op_$part" $all_dis name="$part" onChange="msubmit('op_$part', '$part', '$flashed')">
+			<td><input $all_dis type=text size=10 name=lab_$i value="$LABEL"></td>
+			<td><input $all_dis type=text size=16 name=mopts_$i value="$mount_opts"></td>
+			<td><select id="op_$i" $all_dis name="$i" onChange="msubmit('op_$i', '$part', '$flashed')">
 				<option>Operation</option>
 				$mtd
 				<option $clean_en>Check</option>
@@ -189,7 +210,7 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 				<option $resize_en>Enlarge</option>
 				<option>Wipe</option>
 			</select></td>
-			<td><select id=fsfs_$part name="type_$part">
+			<td><select id="fs_$i" name="type_$i">
 				<option>New FS</option>
 				<option>ext2</option>
 				<option>ext3</option>
@@ -197,9 +218,9 @@ for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* 2>/dev/null); do
 				<option>vfat</option>
 				<option $ntfs_dis>ntfs</option>
 			</select></td>
-			<td><select id="fs_$part" name="$part" onChange="msubmit('fs_$part', '$part', '$flashed')">
+			<td><select id="fsfs_$i" name="$i" onChange="msubmit('fsfs_$i', '$part', '$flashed')">
 				<option>Operation</option>
-				<option >Format</option>
+				<option>Format</option>
 				<option $all_dis $conv_en >Convert</option>
 			</select></td></tr>
 		EOF
@@ -223,8 +244,8 @@ cat<<-EOF
 	</table></fieldset><br>
 
 	<fieldset><Legend><strong> Set mounted filesystems to be checked every </strong></legend>
-	<input type=text size=4 name=TUNE_MOUNTS value=$TUNE_MOUNTS> mounts
-	or every <input type=text size=4 name=TUNE_DAYS value=$TUNE_DAYS> days
+	<input type=text size=4 name=TUNE_MOUNTS value="$TUNE_MOUNTS"> mounts
+	or every <input type=text size=4 name=TUNE_DAYS value="$TUNE_DAYS"> days
 	<input type=submit name=tune value=Submit>
 	</fieldset>
 	</form></body></html>
