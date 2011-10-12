@@ -14,7 +14,10 @@ fi
 #debug
 
 if test "$action" = "Format"; then
-	if test -f $CRYPT_KEYFILE -a -b /dev/$devto; then
+	if ! rccryptsetup status >& /dev/null; then
+		rccryptsetup start >& /dev/null
+	fi
+	if test -f "$CRYPT_KEYFILE" -a -b "/dev/$devto"; then
 		res="$(cryptsetup -q luksFormat --key-file=$CRYPT_KEYFILE /dev/$devto 2>&1)"
 		if test $? != 0; then
 			msg "$res"
