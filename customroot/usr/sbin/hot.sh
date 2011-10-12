@@ -51,6 +51,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	res=$(mdadm --query --examine --export --test $PWD/$MDEV)
 	if test $? = 0; then
 		mdadm --examine --scan > $MDADMC
+		echo "DEVICES /dev/sd*" >> $MDADMC
 		mdadm --incremental --run $PWD/$MDEV
 		eval $res
 		if test -z "$MD_NAME"; then # version 0.9 doesnt have the MD_NAME attribute
@@ -231,12 +232,14 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 		# for now use only disk partition-based md
 		if ! fdisk -l /dev/$MDEV | awk '$6 == "da" || $6 == "fd" || $6 == "fd00" { exit 1 }'; then
 			mdadm --examine --scan > $MDADMC
+			echo "DEVICES /dev/sd*" >> $MDADMC
 		fi
 	fi
 
 elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 
 	mdadm --examine --scan > $MDADMC
+	echo "DEVICES /dev/sd*" >> $MDADMC
 	blkid -g
 
 	# remove some modules (repeat it while there are some?)
@@ -257,6 +260,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 
 	ret=0
 	mdadm --examine --scan > $MDADMC
+	echo "DEVICES /dev/sd*" >> $MDADMC
 
 	mpt=$(awk '/'$MDEV'/{print $2}' /proc/mounts )
 	if $(grep -q -e ^$PWD/$MDEV /proc/swaps); then
