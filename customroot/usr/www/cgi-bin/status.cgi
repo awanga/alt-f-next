@@ -436,7 +436,7 @@ remotely_mounted_filesystems_st() {
 }
 
 backup_st() {
-	pso=$(ps | grep "backup *[0-9]")
+	pso=$(ps | grep "backup *[0-9]" | sort -un -k5)
 	if test -z "$pso"; then
 		return 0
 	fi
