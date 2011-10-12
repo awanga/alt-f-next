@@ -56,7 +56,10 @@ elif test -n "$NewGroup"; then
 		msg "Group name must not contain spaces"
 	fi
 	eval $(awk -F : '{if ($3 > mg) mg=$3} END{printf "ggid=%d", mg+1}' $CONFG)
-	addgroup -g $ggid "$gname"
+	res=$(addgroup -g $ggid "$gname" 2>&1)
+	if test $? != 0; then
+		msg "Can't create group $gname: $res"
+	fi
 
 elif test -n "$DelGroup"; then
 #	echo "Del Group: gname=$gname"
