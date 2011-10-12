@@ -323,7 +323,8 @@ gotopage() {
 js_gotopage() {
 	cat<<-EOF
 		<script type="text/javascript">
-			window.location.assign("http://" + location.hostname + "$1")
+			//window.location.assign("http://" + location.hostname + "$1")
+			window.location.assign("$1")
 		</script>
 	EOF
 }
@@ -695,7 +696,8 @@ write_header() {
 
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
-		hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
+		#hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
+		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 	
 	cat<<-EOF
