@@ -8,8 +8,8 @@
 <center><h2>Status Page Help</h2></center>
 
 <p>This page shows the box status.<br>
-If the Autorefresh checkbox at the botton is checked, then each status section will refresh itself between every 10 to 20 seconds. 
-Leaving it checked will avoid the disks to spin down and will consume some CPU power, so some lenghly tasks might tale longer to accomplish.
+If the Autorefresh checkbox at the bottom is checked, then each status section will refresh itself between every 10 to 20 seconds. 
+Leaving it checked will avoid the disks to spin down and will consume some CPU power, so some lengthy tasks might tale longer to accomplish.
 If the disks are already spindown they will not spinup when the page is displayed.
 
 <p>There are several Status sections, not all will be shown if there are no status to display for them:
@@ -20,8 +20,8 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<li>Temperature: is the box internal temperature. It will be affected by ambient temperature and by disks temperature.
 
 	<li>Fan speed: the current fan speed.
-	The fan speed is automaticaly adjusted according to the box temperature.
-	You can change the relationship bewteen fan speed and temperature in the Services->System->sysctrl->Configure section.
+	The fan speed is automatically adjusted according to the box temperature.
+	You can change the relationship between fan speed and temperature in the Services->System->sysctrl->Configure section.
 
 	<li>Load: The number of processes trying to execute simultaneously on the CPU.
 
@@ -33,9 +33,9 @@ If the disks are already spindown they will not spinup when the page is displaye
 <li>Network: shows network status
 	<ul>
 	<li>Speed: can be 10, 100 or 1000 Mega bits per second, depending on the negotiated rate with the nearby connected device.
-	<li>MTU: also called "jumbo frames"; they can improve network throughtput when transfering large files, but both sides of the transfer must support it.<br>
+	<li>MTU: also called "jumbo frames"; they can improve network throughput when transferring large files, but both sides of the transfer must support it.<br>
 	To change it, go to Setup->Host. Try to use values lower than 3700 bytes and/or 7500 bytes.<br>
-	Changing it right after powerup is fine, but changing it when the system has already beeing
+	Changing it right after power up is fine, but changing it when the system has already being
 	active for a some time can actually degrade network performance.
 	<li>Rx/Tx the amount of data received and sent by the box
 	<li>MAC: the network chip identification, which is fixed and world-unique
@@ -47,7 +47,7 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<li>Dev: the linux device name used to identify the disk
 	<li>Model: the disk model
 	<li>Capacity: the disk Capacity
-	<li>Power: the disk power status, can be "active or iddle", standby or unknown.
+	<li>Power: the disk power status, can be "active or idle", standby or unknown.
 	<li>Temp: the disk internal temperature
 	<li>Health: the disk health, as reported by SMART, or unknown, if the drive does not support SMART or is in standby.<br>
 	If you see a message in red, replace the disk as soon as possible, as the disk is likely
@@ -59,11 +59,11 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<ul>
 	<li>Dev: the name used by linux to identify the RAID device
 	<li>Capacity: the RAID capacity
-	<li>Level: the RAID type, can be linear(JOBD), raid0, raid1 or raid5
+	<li>Level: the RAID type, can be linear(JBOD), raid0, raid1 or raid5
 	<li>State:
 	<li>Status: the RAID status, can be OK or degraded. If 'degraded' appears in red, the RAID is not providing any redundancy, as one disk has failed and must be replaced. Go to Disk->RAID.<br>
 	<li>Action: can rebuilding or resyncing.
-	<li>Done: shows the percent completion of th the Action operation
+	<li>Done: shows the percent completion of the the Action operation
 	<li>ETA: shows the expected time to complete the Action operation
 	</ul>
 
@@ -74,31 +74,31 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<li>Capacity: the filesystem capacity
 	<li>Available: the filesystem capacity still available for use, and a bar showing the percentage already used.
 	li>FS: the kind of filesystem, can be ext2/3/4, fat or NTFS
-	<li>Mode: can be RO (Read-only) or RW (Read and Write). A filesystem is RO if when it was checked at powerup or at plug-time some errors couldn't be fixed -- to fix them a manual operation is needed.
+	<li>Mode: can be RO (Read-only) or RW (Read and Write). A filesystem is RO if when it was checked at power-up or at plug-time some errors couldn't be fixed -- to fix them a manual operation is needed.
 	<li>Dirty: the filesystem is in an inconsistent state, you should go to
-	Disk->Filesystem->FS Operation and selecte "Check". "ext2" filesystems are marked as dirty
+	Disk->Filesystem->FS Operation and select "Check". "ext2" filesystems are marked as dirty
 	as soon as they are mounted.
 	<li>Automatic FSCK in: the number of mounts or days left until an automatic
-	filesystem check will be done at powerup or mount time.<br>
-	To avoid an inoportune lenghly check, that will certainly happen when you most need your files,	you should manualy start a filesystem check using
+	filesystem check will be done at power-up or mount time.<br>
+	To avoid an inopportune lengthy check, that will certainly happen when you most need your files,	you should manually start a filesystem check using
 	Disk->Filesystems->Operation->Clean
 	</ul>
 
-<li>Mounted Remote Filesystems: shows filesystems from remote hosts localy available
+<li>Mounted Remote Filesystems: shows filesystems from remote hosts locally available
 	<ul>
 	<li>Host: the host where the filesystem resides
 	<li>Remote Dir/Share: the directory or share of the remoter host
 	<li>Local Dir: the local directory where the filesystem is available
 	<li>Capacity: the filesystem capacity
 	<li>Available; the amount of free storage on the filesystem
-	<li>FS: the filesystem type, can be NFS otr cifs/smb
+	<li>FS: the filesystem type, can be NFS or CIFS/smb
 	</ul>
 
 <li>Remotely Mounted Filesystems: shows local filesystems in use by remote hosts
 	<ul>
 	<li>Host: the host that is using the local filesystem
 	<li>Dir/Share: the local directory or share name being used
-	<li>FS: the kind of filesystem, can be NFS or cifs (smb)
+	<li>FS: the kind of filesystem, can be NFS or CIFS (smb)
 	</ul>
 
 <li>Backup: shows currently running backup
@@ -112,7 +112,7 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<ul>
 	<li>Dev: The filesystem linux identifier
 	<li>Label: The filesystem label
-	<li>Operation: the maintenence operation occuring, can be checking, formating, converting, shrinking, enlarging or wiping.
+	<li>Operation: the maintenance operation occurring, can be checking, formatting, converting, shrinking, enlarging or wiping.
 	</ul>
 
 <li>Printers: shows available printers
