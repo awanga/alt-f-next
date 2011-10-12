@@ -62,11 +62,15 @@ case "$1" in
 				eval $(awk '/'$mj' *'$mi'/{printf "tdm=%s", $4}' /proc/partitions)
 
 				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$tdm /usr/sbin/hot.sh)
-
 				cryptsetup luksClose $dm
 				st=$((st+$?))
 			fi
 		done
+
+		if test $st != 0; then
+			omsg $st
+			return 1
+		fi
 
 		# removing modules recursively is unreliable, dont!
 		# Also, dm_mod might be removed, even if in use by lvm
@@ -83,8 +87,7 @@ case "$1" in
 		done
 
 		stoprequired $NAME $REQUIRE 
-
-		omsg $st
+		return 0
 		;;
 
 	status)
