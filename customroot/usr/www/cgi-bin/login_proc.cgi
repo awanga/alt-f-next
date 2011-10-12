@@ -26,7 +26,7 @@ if ! test -e $SECR; then
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
 	echo -e "username=Administrator\npassword=$passwd" > /etc/samba/credentials.root
 	chmod og-rw /etc/samba/credentials.root
-	if ! grep -q '^root = ' /etc/samba/smbusers; then
+	if ! grep -q '^root = ' /etc/samba/smbusers 2>/dev/null; then
 		echo "root = \"Administrator\"" >> /etc/samba/smbusers
 	fi
 	echo -e "$passwd\n$passwd" | smbpasswd -s -a root >& /dev/null
@@ -38,7 +38,6 @@ if ! test -e $SECR; then
 		loc="/cgi-bin/status.cgi"
 	fi
 else
-
 	passwd=$(checkpass $passwd)
 	if test $? != 0; then
     	msg "$passwd"
