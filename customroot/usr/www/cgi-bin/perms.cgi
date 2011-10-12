@@ -14,7 +14,8 @@ else
 	}
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
-		hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
+		#hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
+		hlp="<a href=\"$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
 	echo "<center><h2>Directory Ownership and Access Permissions $hlp</h2></center>"
