@@ -60,6 +60,7 @@ fi
 ifconfig eth0 >/dev/null 2>&1
 if test $? = 0; then
 	hostname=$(hostname -s)
+	domain=$(hostname -d)
 	hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 	netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 	bcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
@@ -75,7 +76,7 @@ cat<<-EOF
 		document.getElementById("static").checked = !state
 		document.getElementById("dhcp").checked = state;
 
-		for (var i = 1; i < 4; i++)
+		for (var i = 1; i < 5; i++)
 			document.getElementById("sip" + i).disabled = state
 	}
 	function ipchange(oip) {
@@ -117,9 +118,10 @@ cat<<-EOF
 	<td>DHCP <input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td>
 	</tr>
 
-	<tr><td>Host IP:</td><td><input type=text id=sip1 name="hostip" value="$hostip"></td></tr>
-	<tr><td>Netmask:</td><td><input type=text id=sip2 name="netmask" value="$netmask"></td></tr>
-	<tr><td>Gateway:</td><td><input type=text id=sip3 name="gateway" value="$gateway"></td></tr>
+	<tr><td>Domain:</td><td><input type=text id=sip1 name="domain" value="$domain"></td></tr>
+	<tr><td>Host IP:</td><td><input type=text id=sip2 name="hostip" value="$hostip"></td></tr>
+	<tr><td>Netmask:</td><td><input type=text id=sip3 name="netmask" value="$netmask"></td></tr>
+	<tr><td>Gateway:</td><td><input type=text id=sip4 name="gateway" value="$gateway"></td></tr>
 	<tr><td>Name server 1:</td><td><input type=text name="ns1" value="$ns1"></td></tr>
 	<tr><td>Name server 2:</td><td><input type=text name="ns2" value="$ns2"></tr>
 	<tr><td>Frame size:</td><td><input type=text name="mtu" value="$mtu" onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>

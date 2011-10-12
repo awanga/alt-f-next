@@ -37,17 +37,19 @@ fi
 html_header
 busy_cursor_start
 
-hostdesc=$(httpd -d $hostdesc)
+hostdesc=$(httpd -d "$hostdesc")
 workgp=$(httpd -d "$workgp")
+domain=$(httpd -d "$domain")
+hostname=$(httpd -d "$hostname")
 
-hostname $hostname.$workgp
+hostname $hostname
 echo $hostname > /etc/hostname
 
 # remove entries with oldip and oldname 
 sed -i "/^[^#].*$oldnm$/d" $CONFH
 sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
-echo "$oldip $hostname.$workgp $hostname" >> $CONFH
+echo "$oldip $hostname.$domain $hostname" >> $CONFH
 
 #sed -i '/^A:.*\.$/d' $CONFHTTP
 sed -i "s/^workgroup =.*$/workgroup = $workgp/" $CONFS
@@ -58,25 +60,25 @@ if test "$iptype" = "static"; then
 	eval $(ipcalc -b "$hostip" "$netmask") # evaluate  BROADCAST
 
 	sed -i '/^domain=/d' $DNSMASQ_F
-	echo "domain=$workgp" >> $DNSMASQ_F
+	echo "domain=$domain" >> $DNSMASQ_F
 	sed -i '/^option:router,/d' $DNSMASQ_O
 	echo "option:router,$gateway	# default route" >> $DNSMASQ_O
 
 	FLG_MSG="#!in use by dnsmasq, don't change"
 	if test -z "$cflg"; then
-		echo -e "search $workgp\nnameserver $ns1" > $CONFR
+		echo -e "search $domain\nnameserver $ns1" > $CONFR
 		if test -n "$ns2"; then echo "nameserver $ns2" >> $CONFR; fi
 	else
-		echo -e "$FLG_MSG\nnameserver 127.0.0.1\nsearch $workgp\n#!nameserver $ns1\n#!nameserver $ns2" > $CONFR
+		echo -e "$FLG_MSG\nnameserver 127.0.0.1\nsearch $domain\n#!nameserver $ns1\n#!nameserver $ns2" > $CONFR
 		if test -n "$ns2"; then echo "#!nameserver $ns2" >> $CONFR; fi
-		echo -e "search $workgp\nnameserver $ns1\nnameserver $ns2" > $DNSMASQ_R
+		echo -e "search $domain\nnameserver $ns1\nnameserver $ns2" > $DNSMASQ_R
 		if test -n "$ns2"; then echo "nameserver $ns2" >> $DNSMASQ_R; fi
 	fi
 	
 	# remove any hosts with same name or ip
 	sed -i "/ $hostname$/d" $CONFH
 	sed -i "/^$hostip/d" $CONFH
-	echo "$hostip $hostname.$workgp $hostname" >> $CONFH
+	echo "$hostip $hostname.$domain $hostname" >> $CONFH
 
 	sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" $CONFHTTP
 	sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${netmask}\3|" $CONFS
