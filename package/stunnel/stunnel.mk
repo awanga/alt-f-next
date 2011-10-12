@@ -3,11 +3,14 @@
 # stunnel
 #
 #############################################################
-STUNNEL_VERSION:=4.16
+#STUNNEL_VERSION:=4.16
+STUNNEL_VERSION:=4.44
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
 STUNNEL_SITE:=http://www.stunnel.org/download/stunnel/src
 STUNNEL_CAT:=$(ZCAT)
 STUNNEL_DIR:=$(BUILD_DIR)/stunnel-$(STUNNEL_VERSION)
+STUNNEL_LIBTOOL_PATCH = NO
+STUNNEL_DEPENDENCIES := uclibc openssl
 
 $(DL_DIR)/$(STUNNEL_SOURCE):
 	 $(call DOWNLOAD,$(STUNNEL_SITE),$(STUNNEL_SOURCE))
@@ -25,8 +28,6 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 	(cd $(STUNNEL_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
-		ac_cv_file___dev_ptmx_=yes \
-		ac_cv_file___dev_ptc_=no \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -48,6 +49,9 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
 	)
+	sed -i -e 's|.*HAVE_DEV_PTMX.*|#define HAVE_DEV_PTMX 1|' \
+		-e 's|.*HAVE_DAEMON.*|/\* #undef HAVE_DAEMON \*/|' \
+		$(STUNNEL_DIR)/src/config.h
 	touch $(STUNNEL_DIR)/.configured
 
 $(STUNNEL_DIR)/src/stunnel: $(STUNNEL_DIR)/.configured
@@ -61,6 +65,10 @@ ifeq ($(BR2_CROSS_TOOLCHAIN_TARGET_UTILS),y)
 	install -c $(TARGET_DIR)/usr/bin/stunnel \
 		$(STAGING_DIR)/usr/$(REAL_GNU_TARGET_NAME)/target_utils/stunnel
 endif
+
+stunnel-configure: $(STUNNEL_DIR)/.configured
+
+stunnel-build: $(STUNNEL_DIR)/src/stunnel
 
 stunnel: uclibc $(TARGET_DIR)/usr/bin/stunnel
 
