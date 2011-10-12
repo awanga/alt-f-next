@@ -6,6 +6,8 @@ NAME=inetd
 CONFF=/etc/inetd.conf
 SRV="rsync ssh telnet ftp http printer swat"
 
+REQUIREDBY="stunnel inetd" # don't let stunnel stop to stop inetd
+
 . $(dirname $0)/common
 
 check() {
