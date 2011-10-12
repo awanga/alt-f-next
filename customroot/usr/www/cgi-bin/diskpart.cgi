@@ -151,39 +151,34 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 	function updatesect(dcap, dsk) {
 		free = dcap;
 		msg = ""
+		prev_end = 64
 		for (i=1; i<=4; i++) {
-			prev = "" + dsk + (i - 1)
-			if (i == 1)
-				pstart = 64
-			else {
-				pstart = parseInt(document.getElementById("start_" + prev).value) +
-					parseInt(document.getElementById("len_" + prev).value);
-			}
-
-			if (i == 4)
-				nstart = dcap
-			else
-				nstart = parseInt(document.getElementById("start_" +  dsk + (i + 1)).value)
-			
 			if (document.getElementById("keep_" + dsk + i).checked == false) {
-				document.getElementById("start_" + dsk + i).value = pstart;
-				nsect = document.getElementById("cap_" + dsk + i).value * 1e9 / 512;
+				start = prev_end
+				nsect = document.getElementById("cap_" + dsk + i).value * 1e9 / 512
 				nsect -= nsect % 8
-				document.getElementById("len_" + dsk + i).value = nsect;
-				// if (nsect == 0)
-				//	document.getElementById("type_" + dsk + i).selectedIndex = 0;
-				if ( document.getElementById("keep_" + dsk + (i + 1)).checked == true && 
-					pstart + nsect > nstart) {
-						pmaxsize = Math.round((nstart - pstart) * 512 / 1e6)/1000
-						msg = "Maximum available space for partition " + i + " is " + pmaxsize + " GB" + '\n'
+				document.getElementById("start_" + dsk + i).value = start
+				document.getElementById("len_" + dsk + i).value = nsect
+			} else {
+				start = parseInt(document.getElementById("start_" + dsk + i).value)
+				nsect = parseInt(document.getElementById("len_" + dsk + i).value)
+				if (prev_end > start) {
+					pmaxsize = Math.round((prev_end - start) * 512 / 1e6)/1000
+					msg += "Partition " + (i - 1) + " capacity exceeded by " + pmaxsize + " GB" + '\n'
 				}
 			}
+			prev_end = start + nsect
 			free -= document.getElementById("len_" + dsk + i).value;
 		}
+		if (prev_end > dcap) {
+			pmaxsize = Math.round((prev_end - dcap) * 512 / 1e6)/1000
+			msg += "Partition 4 capacity exceeded by " + pmaxsize + " GB" + '\n'
+		}
+
 		cfree = Math.round(free * 512 / 1e6)/1000;
 		document.getElementById("free_id").value = cfree;
 		if (cfree < 0)
-			msg += "Disk capacity exceeded."
+			msg += '\n' + "Disk capacity exceeded by " + (-cfree) + " GB"
  
 		if (msg.length > 0)
 			alert(msg)
