@@ -218,7 +218,7 @@ cifs_nfs_backup() {
 
 	save_srcpath="$srcpath"
 
-	mtddir=$(mktemp -td)
+	mtddir=$(mktemp -td backup-XXXXXX)
 
 	if test "$type" = "NFS"; then
 		destname="$dstpath/${host}$(echo "${srcpath}" | tr -s "/ " "_")" 
@@ -251,7 +251,11 @@ ftp_http_backup() {
 		dcnt=$((dcnt+1))
 	done
 
-	destname="$dstpath/${host}_$(echo "${srcpath}" | tr -s "/ " "_")"
+	if test "$type" = "FTP"; then
+		destname="$dstpath/${host}_${runas}_$(echo "${srcpath}" | tr -s "/ " "_")"
+	else
+		destname="$dstpath/${host}_$(echo "${srcpath}" | tr -s "/ " "_")"
+	fi
 
 	mkdir -p $destname/mirror
 	chown ${runas}:$(id -gn $runas) $destname/mirror
@@ -276,10 +280,14 @@ rsync_backup() {
 	fi
 
 # daemon:
-	tf=$(mktemp -t)
+	tf=$(mktemp -t backup-XXXXXX)
 	chmod og-r $tf
 
-	if rsync --password-file $tf -ax "${runas}@${host}::${srcpath}/" >& /dev/null; then
+	mod=$srcpath	
+	while test $(dirname $mod) != .; do mod=$(dirname $mod); done
+
+#	if rsync --password-file $tf -ax "${runas}@${host}::${srcpath}/" >& /dev/null; then
+	if rsync ${host}:: | grep -q ^$mod; then 
 		echo "rsync module"
 		awk -F: '/'$runas'/{print $2}' /etc/rsyncd.secrets > $tf
 		chown ${runas}:users $tf
@@ -298,7 +306,7 @@ rsync_backup() {
 			cp "$ident" "$bdir"/id_rsa
 		dropbearkey -t rsa -y -f "$ident" | grep ssh-rsa > "$bdir"/id_rsa.pub
 			chown -R $runas:$(id -gn $runas) "$bdir"
-			logger -st backup "ID $id: ssh keys created for you.
+			msg="ssh keys have been created for you.
 You must now setup a trusted password-less connection from host $(hostname)
 to host $host. This can't be automated, manual intervention is needed:
 1-Logged in as user $runas at host $host you should execute the commands
@@ -307,7 +315,10 @@ to host $host. This can't be automated, manual intervention is needed:
 	cat id_rsa.pub >> .ssh/authorized_keys # allow password-less connection from $(hostname)
 2-Login as user $runas to host $(hostname) and execute the command
 	ssh $host # this will make $(hostname) a trusted host to host $host
-"
+After accepting, you can logout."
+			logger -st backup "ID $id: $msg"
+			echo "$msg" > ${bdir}/../Backup-rsync-ssh.txt
+			chmod a+rw ${bdir}/../Backup-rsync-ssh.txt
 			return 1		
 		fi
 		cp "$ident" $tf
@@ -322,10 +333,28 @@ to host $host. This can't be automated, manual intervention is needed:
 	return $st
 }
 
-if test "$#" = 0; then return 1; fi
+if test "$#" = 0; then
+	logger -st backup "need a backup ID as a argument!"
+	return 1
+fi
 
 if ! details "$1"; then
 	logger -st backup "Can't find backup $1 in the configuration file."
+	return 1
+fi
+
+tmp=$(readlink -f $dstpath)
+if ! test -d "$tmp"; then
+	logger -st backup "\"$dstpath\" does not exists or is not a directory"
+	return 1
+fi
+
+while ! mountpoint $tmp > /dev/null; do
+	tmp=$(dirname $tmp)
+done
+
+if test $tmp = "/" -o $tmp = "."; then
+	logger -st backup "\"$dstpath\" is not on a mounted filesystem"
 	return 1
 fi
 
