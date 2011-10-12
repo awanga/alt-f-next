@@ -52,7 +52,6 @@ $(STAMP_DIR)/host_pkgconfig_installed: $(STAMP_DIR)/host_pkgconfig_compiled
 	touch $@
 
 host-pkgconfig: $(STAMP_DIR)/host_pkgconfig_installed
-	touch $@
 
 host-pkgconfig-clean:
 	rm -f $(addprefix $(STAMP_DIR)/host_pkgconfig_,unpacked configured compiled installed)
@@ -63,7 +62,6 @@ host-pkgconfig-dirclean:
 	rm -rf $(PKG_CONFIG_HOST_DIR)
 
 pkg-config: host-pkgconfig
-	touch $@
 
 ifeq ($(BR2_PACKAGE_PKG_CONFIG),y)
 TARGETS+=pkg-config
