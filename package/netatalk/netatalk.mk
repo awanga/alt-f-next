@@ -3,7 +3,7 @@
 # netatalk
 #
 #############################################################
-NETATALK_VERSION = 2.1.5
+NETATALK_VERSION = 2.1.6
 NETATALK_SOURCE = netatalk-$(NETATALK_VERSION).tar.gz
 NETATALK_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/netatalk
 NETATALK_AUTORECONF = NO
