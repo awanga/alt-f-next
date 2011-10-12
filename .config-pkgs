@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Thu Sep 29 02:09:01 2011
+# Sun Oct  9 19:38:25 2011
 #
 BR2_HAVE_DOT_CONFIG=y
 BR2_VERSION="2009.08"
@@ -562,7 +562,7 @@ BR2_PACKAGE_SAMBA_DOC=y
 # BR2_PACKAGE_SAMBA_WINBINDD is not set
 # BR2_PACKAGE_SOCAT is not set
 # BR2_PACKAGE_SPAWN_FCGI is not set
-# BR2_PACKAGE_STUNNEL is not set
+BR2_PACKAGE_STUNNEL=y
 # BR2_PACKAGE_TCPDUMP is not set
 # BR2_PACKAGE_DHCPDUMP is not set
 # BR2_PACKAGE_TFTPD is not set
