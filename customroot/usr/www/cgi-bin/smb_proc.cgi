@@ -10,8 +10,12 @@ CONF_FSTAB=/etc/fstab
 CONF_SMB=/etc/samba/smb.conf
 
 if test "$submit" = "Advanced"; then
-#	gotopage http://$(hostname -i | sed 's/ //'):901
-	embed_page "http://$(hostname -i | sed 's/ //'):901"
+	# embed_page "http://$(hostname -i | sed 's/ //'):901"
+	if echo $HTTP_REFERER | grep -q '^https://'; then
+		embed_page "https://$HTTP_HOST:902"
+    else
+		embed_page "http://$HTTP_HOST:901"
+	fi
 
 elif test -n "$unMount"; then
 	mp=$(httpd -d "$unMount")
@@ -86,4 +90,5 @@ elif test "$submit" = "Submit"; then
 
 fi
 
+#enddebug
 gotopage /cgi-bin/smb.cgi
