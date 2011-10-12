@@ -18,6 +18,7 @@ sinit() {
 			echo -e ".\n.\n.\n.\n.\n$(hostname)\n.\n" > $tf
 			openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout  "$rsa_cert_file" -out "$rsa_cert_file" < $tf  2> /dev/null
 			rm -f $tf
+			chmod og-r $rsa_cert_file
 		fi
 	fi
 }
