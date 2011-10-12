@@ -175,6 +175,7 @@ webster		765/udp
 rsync           873/tcp    # rsync
 rsync           873/udp    # rsync
 swat            901/tcp
+swats           902/tcp		# secure swat through 'stunnel'
 #
 # From ``Assigned Numbers'':
 #
