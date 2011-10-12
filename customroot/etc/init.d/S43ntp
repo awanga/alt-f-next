@@ -19,8 +19,9 @@ if test -e $CONFM; then
 fi
 
 istatus() {
-	if test "$NTPD_DAEMON" = "yes"; then
-		status $1
+	if status $1 >& /dev/null; then
+		echo "$1 running"
+		return 0
 	else
 		crontab -l 2>/dev/null | grep -q adjtime 
 		if test $? = 0; then
@@ -46,15 +47,25 @@ update_cron() {
 	rm "$NTPD_CRON"
 }
 
+get_server() {
+	while read arg server; do
+		if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
+			echo $server
+			return
+		fi
+	done < $CONF
+}
+
 case "$1" in
 	start)
-		if test "$NTPD_BOOT" = "yes" ; then
-			echo -n "$NAME: Getting initial time via ntp: "
-			ntpd -qg
-			omsg $?
-		fi
-
 		if test "$NTPD_DAEMON" = "yes" ; then
+			if test "$NTPD_BOOT" = "yes" ; then
+				echo -n "$NAME: Getting initial time via ntp: "
+				#ntpd -qg
+				sntp -t 2 -s $(get_server) >& /dev/null
+				omsg $?
+			fi
+
 			echo -n "Starting $NAME: "
 			update_cron
 			avahi add ntp
