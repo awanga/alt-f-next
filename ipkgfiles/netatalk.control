@@ -1,5 +1,5 @@
 Package: netatalk
-Version: 2.1.5-2
+Version: 2.1.6
 Depends: db,libgcrypt,libgpg-error,avahi,ipkg
 Description: AFP (Apple Filling Protocol), AppleTalk and AppleTalk print server daemon
 Architecture: arm
