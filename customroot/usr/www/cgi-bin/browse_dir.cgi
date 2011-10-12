@@ -100,10 +100,12 @@ cat <<-EOF
 			window.close();
 		}
 		function perms(dir) {
-			window.location.assign("http://" + location.hostname + "/cgi-bin/perms.cgi?${url_wind}browse=" + dir)
+			//window.location.assign("http://" + location.hostname + "/cgi-bin/perms.cgi?${url_wind}browse=" + dir)
+			window.location.assign("/cgi-bin/perms.cgi?${url_wind}browse=" + dir)
 		}
 		function ops(op, dir, id, wind) {
-			window.location.assign("http://" + location.hostname + "/cgi-bin/browse_dir.cgi?" +
+			//window.location.assign("http://" + location.hostname + "/cgi-bin/browse_dir.cgi?" +
+			window.location.assign("/cgi-bin/browse_dir.cgi?" +
 wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 		}
 		function op_paste(op, srcdir, destdir) {
