@@ -8,15 +8,14 @@ mktt kexec_tt "When executed, Debian will replace Alt-F during its execution<br>
 and you will have to ssh the box and use the command line.<br>
 You can login using the 'root' username, without quotes, with the<br>
 same passwd as Alt-F admnistrative web pages password.<br>
-To return to Alt-F, you can use the 'alt-f' command,<br>
-which doesn't do a clean shutdown, just kexec Alt-F."
+To return to Alt-F, you can use the 'alt-f' command, otherwise you will be on your own."
 
 mktt rm_tt "Delete the Debian installation from disk."
 
 mktt install_tt "Debian will be installed in the root of the selected filesystem, not in a directory.<br>
 It is recommended, although not necessary, to dedicate the selected filesystem to Debian.<br>
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
-After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian."
+After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
 
 # check installed:
 
@@ -64,7 +63,7 @@ while read url country; do
 	echo "<option $sel value=\"$url\">$(echo $country | tr '_' ' ')</option>"
 done < deb-mirrors.txt
 
-if test -n "$part"; then
+if test -z "$part"; then
 	part=$(basename $dbpart)
 	if ! test -f /dev/$part; then
 		part="$(basename $(awk '/'$part'/{print $1}' /proc/mounts))"

@@ -97,11 +97,20 @@ if test "$submit" = "Install"; then
 		umount $DEBDIR/dev
 	fi
 
-	ver=$(cat /etc/Alt-F)
-	echo "</pre><h4>Downloading and installing Alt-F $ver in Debian...</h4><pre>"
-	
-	wget --progress=dot:mega http://alt-f.googlecode.com/files/Alt-F-${ver}.tar 
-	if test $? != 0; then cleanup; fi
+	vers="$(cat /etc/Alt-F) 0.1B7" # fallback
+	for ver in $vers; do
+		echo "</pre><h4>Downloading and installing Alt-F $ver in Debian...</h4><pre>"
+		wget --progress=dot:mega http://alt-f.googlecode.com/files/Alt-F-${ver}.tar 
+		if test $? = 0; then
+			altf_down="ok"
+			break		
+		fi
+		echo "</pre><h4>Downloading Alt-F $ver failed...</h4><pre>"
+	done
+	if test -z "$altf_down"; then
+		cleanup
+	fi
+
 	tar -xf Alt-F-${ver}.tar
 	if test $? != 0; then cleanup; fi
 	mv alt-f/rootfs.arm.cpio-sq.lzma $DEBDIR/boot/Alt-F-rootfs.arm.cpio-sq.lzma
