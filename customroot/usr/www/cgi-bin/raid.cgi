@@ -174,7 +174,8 @@ raidp=$(echo -e "$p1\n$p2" | sort -u)
 
 pairs="<option>none</option>"
 for i in $raidp; do
-	pairs="$pairs <option>$i</option>"
+	cap="$(awk '{printf "%.0f", $0*512/1e9}' /sys/block/${i:0:3}/$i/size)"
+	pairs="$pairs <option value=\"$i\">$i ${cap}GB</option>"
 done
 
 # THIS IS RIGHT! first non-existing md device
@@ -343,7 +344,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 			<td>$level</td>
 			<td>$devs</td>
 			<td></td>
-			<td><input type=submit name=$rdev value="Start"</td>
+			<td><input type=submit name=$rdev value="Start"></td>
 			</tr>
 		EOF
 	done

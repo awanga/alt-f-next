@@ -70,6 +70,7 @@ if you want all its data to be lost."
 	fi
 
 	mdadm --examine --scan > /etc/mdadm.conf
+	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 	blkid -g >& /dev/null
 }
 
@@ -210,6 +211,7 @@ elif test -n "$Destroy_raid"; then
 		mdadm --zero-superblock /dev/$i >& /dev/null
 	done
 	mdadm --examine --scan > /etc/mdadm.conf
+	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 
 elif test -n "$Add_part"; then
 	mdev="$Add_part"
