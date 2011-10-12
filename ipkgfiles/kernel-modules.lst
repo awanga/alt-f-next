@@ -38,10 +38,7 @@
 ./usr/lib/modules/2.6.35.14/kernel/drivers/md
 ./usr/lib/modules/2.6.35.14/kernel/drivers/md/dm-crypt.ko
 ./usr/lib/modules/2.6.35.14/kernel/drivers/md/dm-mod.ko
-./usr/lib/modules/2.6.35.14/kernel/drivers/md/linear.ko
-./usr/lib/modules/2.6.35.14/kernel/drivers/md/md-mod.ko
 ./usr/lib/modules/2.6.35.14/kernel/drivers/md/raid0.ko
-./usr/lib/modules/2.6.35.14/kernel/drivers/md/raid1.ko
 ./usr/lib/modules/2.6.35.14/kernel/drivers/md/raid456.ko
 ./usr/lib/modules/2.6.35.14/kernel/drivers/md/raid6_pq.ko
 ./usr/lib/modules/2.6.35.14/kernel/drivers/net
