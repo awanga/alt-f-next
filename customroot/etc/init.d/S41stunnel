@@ -1,0 +1,23 @@
+#!/bin/sh
+
+DESC="Provides secure administrative web pages"
+NAME=stunnel
+TYPE=net
+
+REQUIRE="inetd"
+
+. $(dirname $0)/common
+
+istart() {
+	rcvsftpd init
+	start $NAME
+}
+
+case "$1" in
+	start) istart ;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	reload) reload $NAME ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart|reload" ;;
+esac
