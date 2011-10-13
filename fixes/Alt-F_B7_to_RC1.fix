@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sed -i -e 's/encrypt passwords = yes/encrypt passwords = yes\npassdb backend = smbpasswd/' \
+	-e 's/\[Printers\]/\[Printers\]\nuse client driver = yes/' /etc/samba/smb.conf
