@@ -11,5 +11,5 @@ fi
 
 if test -f /usr/bin/ipkg-cl; then
 	ipkg update
-	ipkg upgrade
+	ipkg -force-defaults upgrade
 fi
