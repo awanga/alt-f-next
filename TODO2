@@ -385,13 +385,13 @@ DONE -add a filter input to the logs page in System->utilities->Logs
 	The problem is that they are owned by root, and can't be deleted using samba.
 	does ftp works?
 
--temperature in C/F
+DONE -temperature in C/F
 
 -crypto web passwd (use busybox cryptpw -- Dwight Hubbard suggestion)
 
 -stop using the domain reported by DHCP, as not all DHCP servers allow customizing it
 
--host setup web page: don't allow/warn for more than +/-7500 bytes for MTU in the host web page
+DONE -host setup web page: don't allow/warn for more than +/-7500 bytes for MTU in the host web page
 
 -dir_proc.cgi has some issues with spaces in paths in the parent directory of the current
 	directory
@@ -608,16 +608,11 @@ diskmaint_proc, common.sh (fs_progress), hot_aux. Has to fix fsck to use a stand
 
 FIXED status.cgi: /tmp/smt_sda is created in /tmp for smartctl, and should not be needed anymore.
 
-debian: the install/run is susceptible to device enumeration ordering, and if it is mounted
-	by label the install/run will fail.
-
-samba/backup: fix the available setting in /etc/samba/smb.conf
+FIXED samba/backup: fix the available setting in /etc/samba/smb.conf
 	currently those settings are changed by the web interface when the Users/Backup directory
 	is created. If one fails to save settings, there is no other possibility of changing it
-
--smb: duplicated, see above. See if the available key in /etc/samba/smb.conf is correctly setup.
-	It is, for users, when  a user is created, but if user does not save settings, there
-	is no other place where is ist set. Perhaps hot.sh could do it?
+	Made all shares available in the samba configure page. This way users can manually
+	enable them
 
 -web server: every connection by a client browser, even for simple pages, seems to not be
 	properly closed, being left in a TIME_WAIT state.
@@ -632,8 +627,7 @@ remove all packages using the web page: when a package to be removed is running,
 	needed for another service that is running; the service is not stopped and the
 	package is removed... create a -force?
 
-INPROGRESS
-	REVERTED, /var/cache is now again on tempfs (using swap)
+DONE	REVERTED, /var/cache is now again on tempfs (using swap)
 	/var/cache can't be on disk, it avoids spindow! samba, e.g., stores data there,
 	even if not being accessed, as does nfs.
 	
@@ -643,10 +637,11 @@ INPROGRESS
 	This was the only reason to move /var/cache out of tempfs, but has to be reversed.
 	This data is temporary, is only needed when a printer is added or modified.
 
-	TODO: Warn the user to reboot after a new printer is added? No!
+	Warn the user to reboot after a new printer is added? No!
 	Detect a new cups printer (difficult -- needs to keep state) and stop cups,
 	clean cache and restart cups? Who will do the printcap check?
-	Should status.cgi detect the situation and take the necessary actions? yes!
+	Should status.cgi detect the situation and take the necessary actions?
+	end-up creating a log cleanup service
 
 FIXED Reboot: sys_utils_proc.cgi, when called from firmware2_proc.cgi, does nothing and goes to
 	sys_utils.cgi, that downloads a error message: "Usage httpd:..."
@@ -672,4 +667,205 @@ FIXED -disk-utils: if no misc.conf settings, the spindown entry is disabled,
 -FAQ: swat, cups: ask credentials: root, pass
 -better first time wizard!
 
--load setings: is it working?
+FIXED -load setings: is it working?
+	wasn't
+
+DONE -create openssh package (not only with sftp, as for the base system)
+
+openssh: fix conflicts with dropbear. Currently scp and ssh from dropbear (links) are overwritten
+	create own keys or use/convert dropbear ones?
+	create host key
+	try to ssh an external host from within the box
+	try to use sshd
+	
+
+FIXED -raid shrink: is being shrink too much, when mounting error:
+	EXT4-fs (md0): bad geometry: block count 884736 exceeds size of device (870892 blocks)
+
+DONE -debian password: use the same as /etc/websecret
+
+DONE -use "checking" instead of "cleaning" in all web pages related to fsck.
+
+FIXED -mtu: see if the dhcp stanza in /etc/network/interfaces accepts a mtu
+	it appears as a IF_MTU variable to udhcpc
+
+DONE -backup: do a "cp -a" for the first backup, instead of using rsync.
+	as a matter of fact "cp -a", "tar" and "rsync" memory usage increseases too much
+	on deeper and large directories. So used "cpio" for the first backup. BUT cpio
+	cant use filer bigger than 4GB, so for those do a "cp -a". 
+
+FIXED -samba mount: error when writing to fstab, parsing url
+
+FIXED -debian: if installed in a raid, kexec fails:
+	mount: mounting /dev/md0 on /mnt/md0 failed: No such file or directory 
+	Stopping sysctrl: OK. 
+	Executing Debian now... 
+	Cannot open `/mnt/md0/vmlinuz': (null) 
+	Cannot open `/mnt/md0/vmlinuz': No such file or directory 
+	Failed. 
+
+FIXED login/new user: accept more chars for passwd
+	accepted all ASCII chars in the range [!-~]
+
+FIXED partitioner: impossible to create greater then 1GB partitions?
+	reason: awk integer printf "%d" limited range, used "%.0f"
+	The Wizard is reported to create partitions bigger then 1TB
+
+fix all *-config and *.pc in staging dir, as they usualy have prefix=/usr, making 
+	compilation to use the system header files.
+	Test on a computer without -devel packages
+
+	grep ^prefix= /home/jcard/build-pkgs/build_arm/staging_dir/usr/bin/*-config
+	grep ^prefix= /home/jcard/build-pkgs/build_arm/staging_dir/usr/lib/pkgconfig/*.pc 
+
+FIXED Debian 'alt-f' command only works from within a serial connection;
+	Now the 'alt-f' command just changes Debian /etc/default/kexec to use Alt-F 
+	kernel/initramfs and issues a reboot.
+	The 'debian' Alt-F command sets Debian /etc/default/kexec to use
+	Debian kernel/initramfs, so a normal 'reboot' command within Debian reboots to Debian. 
+
+FIXED debian kexec: if started from ssh, the connection will be closed during
+	the normal Alt-F shutdown (dropbear terminated); use telnet instead.
+	make the 'debian' script detach. 
+	now create sh script and execute with nohup in background
+
+FIXED debian: the install/run is susceptible to device enumeration ordering,
+	and if it is mounted by label the install/run will fail.
+
+FIXED /etc/init.d/*cleanup/*backup:
+	crontab: chdir(/var/spool/cron/crontabs): No such file or directory
+	root: Stopping cleanup: OK.
+	crontab: chdir(/var/spool/cron/crontabs): No such file or directory
+	root: Stopping backup: OK.
+
+UNCOVERED ntfs-3g_ntfsprogs still need libfuse?
+	NO, is configured to use internal (light) libfuse (which is not created as a library)
+	The library still needs the kernel module
+
+Debian fsck failed at boot, out of swap/tmp memory? 
+
+DONE rcE: umount tmpfs before turning swap off? to avoid running out of memory if the tmpfs
+	filesystems uses a lot of space?
+	if /tmp is full or with many files, it will be using swap; when using swapoff,
+	/tmp might not have enough space on RAM, or will use all or most RAM.
+	So, unmount /tmp before swapping off.
+
+FIXED ntfs-3f-ntfsprogs: fix configfs BR2_PACKAGE_NTFS_3G_NTFSPROGS
+	base fw has usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs and shouldnt
+
+MB/MiB, GB/BiB: uniformize disk units, use MB/GB
+
+FIXED sysctrl: spindown timeout of zero constantly puts the disk to sleep!
+
+FIXED browse-dir: when nfs is mounted, 'find' gives a lot of 'not permited' errors
+	no permittion read users directories...
+
+DONE backup: do the first backup using a plain 'cp -a', faster than rsync
+	use instead 'find | cpio -p' instead of 'cp -a', as 'cp -a' uses too much memory,
+	using swap too much which slows down the copying
+	apply 'nice' to cpio and rsync
+
+DONE filesystems: aplly 'nice' when creating/cleaning/... filesystems
+
+DONE directory setup: use 'find|cpio -p' instead of 'cp -a', as 'cp -a' uses too much memory,
+	using swap too much which slows down the copying. Also apply nice to cpio.
+
+FIXED busy_start/stop: error on "rm" tmp file used to generate a random obj id 
+
+FIXED status page: remove bind mounts from filesystem section (or at least keep only one
+	of the device mounts.
+	Also, the RW status appears duplicated.
+
+FIXED rcbackup: 
+	more fields in /etc/backup.conf, crontab generation is wrong!
+	May 29 03:17:01 nas cron.err crond[1212]: user root: parse error at /Backup
+	May 29 03:17:01 nas cron.err crond[1212]: user root: parse error at /home/jcard
+
+backup: watchout 4GB problem in cpio
+
+ipkg install fails when ipkg.conf is inherited from a previous installation and does
+	not has a valid feed
+
+DONE /tmp size can grow... use other method to increase/decrease when adding/removing swap
+	/tmp size is now 10% os swap space
+
+icu: libicudata.so.48.0 is not stripped
+
+/etc/inittab: remove "logging junk" entry
+
+web smb: share permissions not right
+
+reloaded: fix proc-arm926.S. asm/asm-offsets.h should be used for 2.6.15
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)
+
+FIXED diskpart: js updatesect() display wrong current partition maximum size
+
+DONE diskwizard: raid0 message: "with two (or three, one an external USB) disks."
+	raid1: "duplicate everything on two disks (and use if an external USB disk if available as a spare)
+
+raid: when adding a component that has/was failed, mdadm gave error, but no error
+	appears in the web page, and it is keep blank.
+	mdadm report:
+	mdadm: /dev/sdb2 reports being an active member for /dev/md0, but a --re-add fails.
+	mdadm: not performing --add as that would convert /dev/sdb2 in to a spare.
+	mdadm: To make this a spare, use "mdadm --zero-superblock /dev/sdb2" first.
+
+ipkg packages: when installing from /tmp, the web interface should show as
+	installed "None", but it shows the header and even the remove all button 
+
+NONEED, current gptdisk doesn't use ICU
+	diskpart, gpt: the current method of copying icu libraries (*) needed by sgdisk fills
+	almost all /rootmnt fs space, leaving only 2.5MB available (icudata is 18MB!), 
+	One could increase the tmpfs capacity, as is done with /tmp, whenever
+	swap is added. The problem is that when partitioning disks swap can be
+	non-existent.
+	The real problem is the 18MB icudata library!
+	(*) when gpt partitioning the disk where Alt-F packages are, a copy
+	of sgdisk and needed libraries is made from /Alt-F to /rootmnt.
+	Currently this copy is not removed after the operation ends, as the user
+	might want to repartition again and the gptdisk/icu file packages have gone.
+
+DONE diskpart, mbrtogpt: run sgdisk -zap before, to clean traces of previous GPT data,
+	or an "invalid partition" error might happens
+
+DONE atexit: make it visible in uclibc (for 0.9.28 compatibility)
+	twonkymedia at least needs it
+
+status: when FS shrinking, in FS Maintenance does not shows all progress,
+	only the shrinking one
+
+status: when checking(?), in FS Maintenance a awk division by zero occurs
+
+samba: the patch applied to the Makefile might fail because of parallel makes?
+
+sysctrl: -if a disk is active, ignore the fan_off temperature.
+	-add temp hysteresis as a setting in the control file,
+	 but not to the web page 
+
+FIXED samba35-doc package: there are missing dirs compared with samba-doc
+
+DONT gptfdisk: after releasing RC1, change package to not include sgdisk, and 
+	buildroot package configuration 
+
+DONE minidlna: use kill -2 to terminate.
+	Not a nice thing to do, but otherwise it takes 2 minutes to stop
+
+ipkg: returns 0 when there is a package checksum error
+
+FIXED fstab: hot*.sh changes it, "save settings" message appears in status page 
+
+sysctrl: if temp is lower than fan_off_temp, the fan if not updated. If it is at a high speed,
+	it will remain at that speed. Not always.
+
+DONE minidlna: add a button to the webgui to force a rescan. Predate minidlna.conf to signal this,
+	using a commented line to not fool minidlna: #rescan=yes
+
+ipkg: the web page has ipkg_0.99.163_arm.ipk harcoded, if the package change, an old version
+	will be retrieved. This is problematic, if uclibc has changed, as the old ipkg will
+	not run.
+	The easy solution is to not version ipkg? Better, version it, but make the base version
+	a copy of the last version! This solve all problems:
+	Users with a old version will see the version number increase and will update,
+	new users will have the recent version and will made a (dummy) update afterwards.
+
+packages: allow specifying ipkg feed or ffp site when first installing
