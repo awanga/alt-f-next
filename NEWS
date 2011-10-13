@@ -1,3 +1,57 @@
+=== October 13, 2011: Alt-F-0.1RC1 is released
+
+-Alt-F can now be directly flashed using the vendor's firmware, no need for fun_plug
+ (tested with D-Link firmware 1.09 on a rev-B1 hardware box)
+
+-Support for greater then 2.2TB disks (with UEFI GPT partitioning)
+ Disk Partitioner and Disk Wizard support
+ Conversion from MBR to GPT and vice-versa
+
+-Secure (https) web pages through the optional package 'stunnel'
+ Both http and https are active (swat uses port 902 for https) 
+
+-The Backup Service can now backup remote hosts using ftp/http/smb/nfs/rsync/rsyncd.
+ It can even wakeup the remote host at backup time if the remote host is configured
+ to be awaked-up by a network magic packet, WOL.
+ Files greater than 4.2GB are not supported.
+
+-Debian now installs into and runs from RAID
+
+-More online-help pages
+
+-uClibc changes for Optware compatibility. However, most Optware packages are still not usable.
+ Due to the uClibc change, the recommended procedure is to update all packages 
+ after upgrading to RC1 (the Alt-F_B7_to_RC1.fix script does this)
+
+-updated packages: samba, netatalk, forked-daapd, transmission, avahi,
+ cups, mdadm, rsync, smartmontools, wget, openssh, ffmpeg, hplip,
+ libcurl, libpcap, libxml2, lzo, dnsmasq, dropbear, libiconv,
+ msmtp, nfs-utils, ntp, netsnmp, libgcrypt,
+ libgpg-error, libpcre, popt,
+
+-samba-3.5.9 update asks for configuration file editing,
+ adding "passdb backend = smbpasswd" to the Global section
+ (the Alt-F_B7_to_RC1.fix script does this)
+ 
+-Thanks to samba, now using 1/3 of flash space! the base firmware had to be compiled for
+ flash memory space saving, not execution speed :-(
+ -disk-installable packages are still compiled for execution speed
+
+-new packages: gptfdisk, openvpn, cryptsetup, lvm2, iscsitarget, nut, parted,
+ nmap, sysstat, bonnie++, ntfs-3g_ntfsprogs, stunnel, 
+
+-cryptsetup initial support adds capability to LUKS format a physical partition.
+ -No checks are done to see if the partition is currently in use
+ -remember dm-crypt/LUKS is 3 to 4 times slower than a non encrypted partition!
+ -there are some problems identifying and handling devices, cryptsetup fault,
+  as it generates lots of (unnecessary?) device add/remove kernel events.
+
+-LVM initial support, scan volume groups and and mounts physical volumes
+ no web interface to create and manage them.
+
+-LVM and cryptsetup might interfere Disk Partitioner.
+ You might have to stop them manually if problems arise. 
+
 === March 26, 2011: Alt-F-0.1B7 is released on Alt-F first anniversary
 
 	In the previous 12 months Alt-F has seen 6 releases, which gives an average of
