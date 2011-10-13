@@ -17,7 +17,7 @@ elif test "$Submit" = "manual"; then
 	next="true"
 
 elif test "$Submit" = "ntpserver"; then
-	sntp -P no -r $ntps >& /dev/null
+	sntp -s $ntps >& /dev/null
 	next="true"
 fi
 
