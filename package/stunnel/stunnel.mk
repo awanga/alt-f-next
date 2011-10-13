@@ -21,7 +21,6 @@ $(STUNNEL_DIR)/.unpacked: $(DL_DIR)/$(STUNNEL_SOURCE)
 	$(STUNNEL_CAT) $(DL_DIR)/$(STUNNEL_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	$(CONFIG_UPDATE) $(STUNNEL_DIR)
 	toolchain/patch-kernel.sh $(STUNNEL_DIR) package/stunnel stunnel\*.patch
-	touch $(STUNNEL_DIR)/*
 	touch $(STUNNEL_DIR)/.unpacked
 
 $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
