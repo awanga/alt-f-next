@@ -605,69 +605,27 @@ cat<<EOF
 EOF
 }
 
+fill_menu() {
+	echo "<td><div id=\"$1\" class=\"Menu\">$1</div><div id=\"$1_sub\">"
+	extra=$(cat $1*.men)
+	IFS=" "
+	echo $extra | while read entry url; do
+		echo "<a class=\"Menu\" href=\"/cgi-bin/$url\" target=\"content\">$entry</a>"
+	done
+	echo "</div><script type=\"text/javascript\">MenuEntry(\"$1\");</script></td>"
+}
+
 menu_setup2() {
 cat<<EOF
-	<table><tr>
+	<table cellspacing=0><tr>
 		<td><a class="Menu" href="/cgi-bin/logout.cgi" target="content">Logout</a></td>
 		<td><a class="Menu" href="/cgi-bin/status.cgi" target="content">Status</a></td>
-		<td><div id="Setup" class="Menu">Setup</div></td>
-		<td><div id="Disk" class="Menu">Disk</div></td>
-		<td><div id="Services" class="Menu">Services</div></td>
-		<td><div id="Packages" class="Menu">Packages</div></td>
-		<td><div id="System" class="Menu">System</div></td>
-	</tr></table>
-
-	<div id="Setup_sub">
-		<a class="Menu" href="/cgi-bin/host.cgi" target="content">Host</a>
-		<a class="Menu" href="/cgi-bin/time.cgi" target="content">Time</a>
-		<a class="Menu" href="/cgi-bin/mail.cgi" target="content">Mail</a>
-		<a class="Menu" href="/cgi-bin/proxy.cgi" target="content">Proxy</a>
-		<a class="Menu" href="/cgi-bin/hosts.cgi" target="content">Hosts</a>
-		<a class="Menu" href="/cgi-bin/usersgroups.cgi" target="content">Users</a>
-		<a class="Menu" href="/cgi-bin/debian.cgi" target="content">Debian</a>
-		<a class="Menu" href="/cgi-bin/browse_dir.cgi?wind=no?browse=/mnt" target="content">Directories</a>
-	</div>
-	<script type="text/javascript">
-		MenuEntry("Setup");
-	</script>
-
-	<div id="Disk_sub">
-		<a class="Menu" href="/cgi-bin/diskutil.cgi" target="content">Utilities</a>	
-		<a class="Menu" href="/cgi-bin/diskmaint.cgi" target="content">Filesystems</a>
-		<a class="Menu" href="/cgi-bin/raid.cgi" target="content">RAID</a>
-		<a class="Menu" href="/cgi-bin/diskpart.cgi" target="content">Partitioner</a>
-		<a class="Menu" href="/cgi-bin/diskwiz.cgi" target="content">Wizard</a>
-	</div>
-	<script type="text/javascript">
-		MenuEntry("Disk");
-	</script>
-
-	<div id="Services_sub">
-		<a class="Menu" href="/cgi-bin/net_services.cgi" target="content">Network</a>
-		<a class="Menu" href="/cgi-bin/sys_services.cgi" target="content">System</a>
-		<a class="Menu" href="/cgi-bin/user_services.cgi" target="content">User</a>
-	</div>
-	<script type="text/javascript">
-		MenuEntry("Services");
-	</script>
-
-	<div id="Packages_sub">
-		<a class="Menu" href="/cgi-bin/packages_ipkg.cgi" target="content">Alt-F</a>
-		<a class="Menu" href="/cgi-bin/packages_ffp.cgi" target="content">ffp</a>
-	</div>
-	<script type="text/javascript">
-		MenuEntry("Packages");
-	</script>
-
-	<div id="System_sub">
-		<a class="Menu" href="/cgi-bin/sys_utils.cgi" target="content">Utilities</a>
-		<a class="Menu" href="/cgi-bin/settings.cgi" target="content">Settings</a>
-		<a class="Menu" href="/cgi-bin/firmware.cgi" target="content">Firmware</a>
-	</div>
-	<script type="text/javascript">
-		MenuEntry("System");
-	</script>		
 EOF
+
+	for i in Setup Disk Services Packages System; do
+		fill_menu $i
+	done
+	echo "</tr></table>"
 }
 
 # args: title [onload action]
