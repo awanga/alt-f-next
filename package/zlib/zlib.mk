@@ -44,6 +44,7 @@ $(ZLIB_DIR)/.configured: $(ZLIB_DIR)/.patched
 	touch $@
 
 $(ZLIB_DIR)/.built: $(ZLIB_DIR)/.configured
+	$(MAKE) -C $(ZLIB_DIR) libz.a
 	$(MAKE) -C $(ZLIB_DIR) all
 	touch -c $@
 
