@@ -3,5 +3,7 @@
 ./usr/lib/libcryptsetup.so.1
 ./usr/lib/libcryptsetup.so.1.2.0
 ./usr/sbin/cryptsetup
+./usr/www/cryptsetup_hlp.html
+./usr/www/cgi-bin/Disk_cryptsetup.men
 ./usr/www/cgi-bin/cryptsetup.cgi
 ./usr/www/cgi-bin/cryptsetup_proc.cgi
