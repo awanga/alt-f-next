@@ -59,6 +59,8 @@ Linux must have a swap partition to provide more (virtual) memory than the meage
 </ul>
 
 <p>NOTES:<br>
--To change only the type of <em>one</em> partition, uncheck its <strong>Keep</strong> checkbutton, select the new partition type and hit the <strong>Partition</strong> button.<br>
+-To change only the type of <em>one</em> partition, un-check its <strong>Keep</strong> check-button, select the new partition type and hit the <strong>Partition</strong> button.<br>
+-If the partition start sector does not changes, you can increase or decrease the partition size without data loss. To do it, keep the <strong>Keep</strong> check-button of the <em>previous</em> partition checked and change the size of the partition you intent to alter. Do first a Disk->Filesystem->Operations->Shrink followed by a Disk->RAID->Operations->Shrink if the filesystem is on RAID, then decrease the partition size. To increase the partition size do the same, but you have also to uncheck the <strong>Keep</strong> check button of the <em>next</em> partition, loosing all its data. After partitioning succeeds you have to <strong>Grow</strong> the RAID device (if there is one), then <strong>Enlarge</strong> the filesystem.
+-Disks partitioned using the vendor's firmware are often not in start sector increasing order, and can't be manipulated using this tool; you have to erase the partition table and loose all your data.
 
 <br><button type=button onclick="history.back()">Back</button></body>
