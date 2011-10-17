@@ -4,7 +4,8 @@
 #
 #############################################################
 
-SQLITE_VERSION = 3.6.16
+#SQLITE_VERSION = 3.6.16
+SQLITE_VERSION = 3.6.23.1
 SQLITE_SOURCE = sqlite-amalgamation-$(SQLITE_VERSION).tar.gz
 SQLITE_SITE = http://www.sqlite.org
 SQLITE_INSTALL_STAGING = YES
@@ -13,19 +14,18 @@ SQLITE_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 SQLITE_LIBTOOL_PATCH = YES
 SQLITE_DEPENDENCIES = uclibc
 
-SQLITE_CONF_OPT =	--enable-shared \
+SQLITE_CONF_OPT = --enable-shared \
 			--disable-static \
-			--enable-tempstore=yes \
 			--enable-threadsafe \
-			--enable-releasemode \
-			--disable-tcl \
+			--enable-dynamic-extensions \
 			--localstatedir=/var
 
 SQLITE_CONF_ENV += CFLAGS+=" -DSQLITE_ENABLE_UNLOCK_NOTIFY"
 
 ifeq ($(BR2_PACKAGE_SQLITE_READLINE),y)
 SQLITE_DEPENDENCIES += ncurses readline
-SQLITE_CONF_OPT += --with-readline-inc="-I$(STAGING_DIR)/usr/include"
+#SQLITE_CONF_OPT += --with-readline-inc="-I$(STAGING_DIR)/usr/include"
+SQLITE_CONF_OPT += --enable-readline
 else
 SQLITE_CONF_OPT += --disable-readline
 endif
