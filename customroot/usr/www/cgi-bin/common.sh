@@ -452,7 +452,7 @@ drawbargraph_setup() {
 cat<<EOF
 	<style type="text/css">
 		.meter-wrap {
-			position: relative;
+			position: relative; z-index: -1;
 		}
 		.meter-wrap, .meter-value, .meter-text {
 			width: 100px; height: 1em;
