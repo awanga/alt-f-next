@@ -66,8 +66,25 @@ sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
 
 chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
-rctransmission reload >& /dev/null
-make_available [Transmission] "$WATCH_DIR"
+if ! grep -q "^\[Transmission\]" /etc/samba/smb.con
+	cat<<-EOF >> /etc/samba/smb.conf
+
+		[Transmission]
+		comment = Transmission Download area
+		path = "$WATCH_DIR"
+		public = yes
+		read only = no
+		available = yes
+	EOF
+
+	if rcsmb status >& /dev/null; then
+		rcsmb reload >& /dev/null
+	fi
+fi
+
+if rctransmission status >& /dev/null; then
+	rctransmission reload >& /dev/null
+fi
 
 #enddebug
 gotopage /cgi-bin/user_services.cgi

@@ -102,7 +102,9 @@ make_available() {
 	}' /etc/samba/smb.conf > /etc/samba/smb.conf-new
 
 	mv /etc/samba/smb.conf-new /etc/samba/smb.conf
-	rcsmb reload >& /dev/null
+	if rcsmb status >& /dev/null; then
+		rcsmb reload >& /dev/null
+	fi
 }
 
 # $1-title (optional)

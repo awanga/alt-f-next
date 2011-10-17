@@ -69,7 +69,22 @@ elif test -n "$CreateDir"; then
 	chown backup:backup "$mp"/Backup
 	chmod g+rwx,o+rx "$mp"/Backup
 	ln -sf "$mp"/Backup /Backup
-	make_available "[Backup]"
+
+	if ! grep -q "^\[Backup\]" /etc/samba/smb.conf; then
+		cat<<-EOF >> /etc/samba/smb.conf
+
+			[Backup]
+			comment = Backup Area
+			path = /Backup
+			public = yes
+			read only = yes
+			available = yes
+		EOF
+
+		if rcsmb status >& /dev/null; then
+			rcsmb reload >& /dev/null
+		fi
+	fi
 fi
 
 #enddebug

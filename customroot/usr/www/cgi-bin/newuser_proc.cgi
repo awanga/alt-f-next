@@ -99,10 +99,6 @@ elif test "$create_dir" = "CreateDir"; then
 	chown nobody:nobody "$mp"/Public/RW
 	chmod a+rwx "$mp"/Public/RW
 
-	make_available "[Users]"
-	make_available "[Public (Read Write)]"
-	make_available "[Public (Read Only)]"
-
 	IFS=":"
 	while read  nick x uid gid name hdir rest; do
 		if test "$uid" -ge 1000; then
@@ -112,6 +108,37 @@ elif test "$create_dir" = "CreateDir"; then
 			fi
 		fi
 	done < $CONFP
+
+	if ! grep -q "^\[Users\]"; then
+		cat<<-EOF >> /etc/samba/smb.conf
+
+			[Users]
+			comment = Users private directories
+			path = /home
+			read only = No
+			available = yes
+
+			[Public (Read Write)]
+			comment = Public Area where everybody can read and write
+			path = /Public/RW
+			public = yes
+			read only = no
+			available = yes
+			create mask = 0666
+			directory mask = 0777
+
+			[Public (Read Only)]
+			comment = Public Area that everybody can read
+			path = /Public/RO
+			public = yes
+			read only = yes
+			available = yes
+		EOF
+
+		if rcsmb status >& /dev/null; then
+			rcsmb reload >& /dev/null
+		fi
+	fi
 
 	gotopage /cgi-bin/$(basename "$HTTP_REFERER")
 fi
