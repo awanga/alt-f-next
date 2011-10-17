@@ -5,6 +5,7 @@ TYPE=user
 NAME=user
 
 CONF_MISC=/etc/misc.conf
+USERLOCK=/var/lock/userscript
 
 # inspired by "nogi"
 LOGF="alt-f.log"
@@ -72,34 +73,23 @@ writelog() {
 	chmod a+rw $i/$LOGF
 }
 
-user_script() {
-	for cnt in $(seq 1 12); do
-		if test -x "$USER_SCRIPT"; then
-			"$USER_SCRIPT"
-			return
-		fi
-
-		echo -n .
-		sleep 10
-	done
-	echo "Fail: user script $USER_SCRIPT not found."
-}
+if test -f "$CONF_MISC"; then
+	. $CONF_MISC
+else
+	USER_LOGFILE="yes"
+fi
 
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		if test -f "$CONF_MISC"; then
-			. $CONF_MISC
-		else
-			USER_LOGFILE="yes"
-		fi
 
 		if test "$USER_LOGFILE" = "yes"; then
 			bootlog
 		fi
 
-		if test -n "$USER_SCRIPT"; then
-			user_script
+		if test -x "$USER_SCRIPT" -a ! -f $USERLOCK; then
+			touch $USERLOCK
+			$USER_SCRIPT start &
 		fi
 
 		echo "OK."
@@ -107,12 +97,20 @@ case "$1" in
 
 	stop)
 		echo -n "Stopping $NAME: "
+		if test -x "$USER_SCRIPT" -a -f $USERLOCK; then
+			$USER_SCRIPT stop &
+			rm $USERLOCK
+		fi
 		echo "OK."
 		;;
 
 	status)
-		echo "$NAME stopped."
-		exit 1
+		if test -x "$USER_SCRIPT" -a -f $USERLOCK; then
+			echo "$NAME started."
+		else
+			echo "$NAME stopped."
+			exit 1
+		fi
 		;;
 
 	restart) restart $NAME
