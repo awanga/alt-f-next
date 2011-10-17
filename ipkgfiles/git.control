@@ -1,0 +1,9 @@
+Package: git
+Description: Git is a free & open source, distributed version control system
+Version: 1.7.7
+Depends: libcurl,expat,ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://git-scm.com/
+Maintainer: jcard
