@@ -38,12 +38,15 @@ check() {
 }
 
 FSTAB=/etc/fstab
+USERLOCK=/var/lock/userscript
 
 fsckcmd=$1
 fsopt=$2
 mopts=$3
 lbl=$4
 fstype=$5
+
+. /etc/misc.conf
 
 if test "$fsckcmd" != "echo"; then
 	
@@ -111,6 +114,14 @@ if test -d "/mnt/$lbl/Backup"; then
 	if ! test -h /Backup -a -d "$(readlink -f /Backup)" ; then
 		logger -t hot "Backup directory found in $lbl"
 		ln -s "/mnt/$lbl/Backup" /Backup
+	fi
+fi
+
+if test -n "$USER_SCRIPT" -a ! -f $USERLOCK; then
+	if test "/mnt/$lbl" = "$(dirname $USER_SCRIPT)" -a -x "/mnt/$lbl/$(basename $USER_SCRIPT)"; then
+		touch $USERLOCK
+		logger -t hot "Executing \"$USER_SCRIPT start\" in background"
+		$USER_SCRIPT start &
 	fi
 fi
 

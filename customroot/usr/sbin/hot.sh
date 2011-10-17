@@ -44,6 +44,11 @@ FSTAB=/etc/fstab
 MISCC=/etc/misc.conf
 BAYC=/etc/bay
 MDADMC=/etc/mdadm.conf
+USERLOCK=/var/lock/userscript
+
+if test -f $MISCC; then
+	. $MISCC
+fi
 
 if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	if test -z "$MDEV"; then return 0; fi
@@ -67,10 +72,6 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			fi
 		fi
 		return 0
-	fi
-
-	if test -f $MISCC; then
-		. $MISCC
 	fi
 
 	eval $(blkid -w /dev/null -c /dev/null $PWD/$MDEV | sed 's|^.*: ||')
@@ -269,6 +270,14 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 		ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
 		mount -o remount,size=${ns}M /tmp
 	elif $(grep -q -e ^$PWD/$MDEV /proc/mounts); then
+		if test -n "$USER_SCRIPT" -a -f $USERLOCK; then
+			if test "$mpt" = "$(dirname $USER_SCRIPT)" -a -x "$mpt/$(basename $USER_SCRIPT)"; then
+				rm $USERLOCK
+				logger -t hot "Executing \"$USER_SCRIPT stop\" in background"
+				$USER_SCRIPT stop &
+			fi
+		fi
+
 		if test "$(readlink -f /ffp)" = "$mpt/ffp"; then
 			if test -x /etc/init.d/S??ffp; then
 				/etc/init.d/S??ffp stop
