@@ -55,7 +55,9 @@ if test "$passwd" = "$(cat $SECR)"; then
 	echo $id > /tmp/cookie
 	chmod og-r /tmp/cookie
     
-	if test "$(cat $TZF)" = "NONE-0"; then
+	if ! test -s "$TZF"; then
+		expl=""
+	elif test "$(cat $TZF)" = "NONE-0"; then
 		expl=""
 	else # expire cookie (login) one hour after login
 		eval $(TZ=GMT awk 'END{printf "exp=%s", \
