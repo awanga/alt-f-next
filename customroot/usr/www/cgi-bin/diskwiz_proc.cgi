@@ -97,7 +97,7 @@ mbr_partition() {
 
 if true; then
 	eval $(sfdisk -l -uS $i | tr '*' ' ' | awk '
-		/cylinders/ {printf "maxsect=%d;", $3 * $5 * $7}')
+		/cylinders/ {printf "maxsect=%0.f;", $3 * $5 * $7}')
 else
 	maxsect=$(cat /sys/block/$(basename $i)/size)
 fi
@@ -256,7 +256,7 @@ create_fs() {
 		else
 			sf=/sys/block/${dev:0:3}/${dev}/size
 		fi
-		eval $(awk '{ printf "min=%d", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
+		eval $(awk '{ printf "min=%.0f", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
 		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
 		wait_count_start "$min minute(s)"
 		res="$(mke2fs -T $wish_fs ${1} 2>&1)"
