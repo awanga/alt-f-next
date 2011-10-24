@@ -50,7 +50,7 @@ elif test "$submit" = "Submit"; then
 	done  >> $CONF_FSTAB
 
 	sed -i '/#!#/,$d' $CONF_SMB
-	echo -e "#!# extra shares, don't change anything above, dont remove me\n" >> $CONF_SMB
+	echo -e "#!# Add extra shares bellow, don't change anything above, dont remove me\n" >> $CONF_SMB
 
 	for i in $(seq 1 $smb_cnt); do
 		if test -z "$(eval echo \$ldir_$i)" -o -z "$(eval echo \$shname_$i)"; then continue; fi
