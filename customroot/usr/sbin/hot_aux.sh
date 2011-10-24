@@ -46,7 +46,9 @@ mopts=$3
 lbl=$4
 fstype=$5
 
-. /etc/misc.conf
+if test -f /etc/misc.conf; then
+	. /etc/misc.conf
+fi
 
 if test "$fsckcmd" != "echo"; then
 	
