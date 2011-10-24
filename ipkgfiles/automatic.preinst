@@ -1,0 +1,8 @@
+#!/bin/sh 
+
+# fix automatic.conf from 0.6.4 to 0.6.7
+# split feed: url/cookies and filter: pattern/folder into two lines
+if test -f /etc/automatic.conf; then
+	sed -i -e '/^feed.*cookies.*/s/\(^feed.*\)\t\(cookies.*\)/\1\n\t\2/' \
+		-e '/^filter.*folder.*/s/\(^filter.*\)\t\(folder.*\)/\1\n\t\2/' /etc/automatic.conf
+fi
