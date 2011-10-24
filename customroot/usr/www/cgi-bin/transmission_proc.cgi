@@ -6,6 +6,7 @@ read_args
 
 CONFF=/var/lib/transmission
 JSON=settings.json
+SMBCONF=/etc/samba/smb.conf
 
 TRANSMISSION_USER=transmission
 TRANSMISSION_GROUP=network
@@ -66,8 +67,8 @@ sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
 
 chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
-if ! grep -q "^\[Transmission\]" /etc/samba/smb.con
-	cat<<-EOF >> /etc/samba/smb.conf
+if ! grep -q "^\[Transmission\]" $SMBCONF; then
+	cat<<-EOF >> $SMBCONF
 
 		[Transmission]
 		comment = Transmission Download area
