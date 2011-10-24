@@ -10,7 +10,7 @@ CONF_AUTO=/etc/automatic.conf
 
 if test -n "$Submit"; then
 
-	sed -i '/\(^feed\|^filter\|^interval\|start-torrents\)/d' $CONF_AUTO
+	sed -i '/\(^feed\|^filter\| *cookie\| *folder\|^interval\|^start-torrents\)/d' $CONF_AUTO
 
 	for i in $(seq 0 $feed_cnt); do
 		feed=$(eval echo \$feed_$i)
@@ -21,7 +21,7 @@ if test -n "$Submit"; then
 			cookie=$(httpd -d $cookie)
 		fi
 
-		echo -e "feed = { url => \"$(httpd -d $feed)\"\tcookies => \"$cookie\" }" >> $CONF_AUTO
+		echo -e "feed = { url => \"$(httpd -d $feed)\"\n\tcookies => \"$cookie\" }" >> $CONF_AUTO
 	done
 
 	for i in $(seq 0 $pattern_cnt); do
@@ -33,7 +33,7 @@ if test -n "$Submit"; then
 			folder=$(httpd -d $folder)
 		fi
 
-		echo -e "filter = { pattern => \"$(httpd -d $pattern)\"\tfolder => \"$folder\" }" >> $CONF_AUTO
+		echo -e "filter = { pattern => \"$(httpd -d $pattern)\"\n\tfolder => \"$folder\" }" >> $CONF_AUTO
 	done
 
 	echo "interval = $interval" >> $CONF_AUTO

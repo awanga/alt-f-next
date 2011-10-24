@@ -23,7 +23,7 @@ cat<<-EOF
 EOF
 
 cnt=0
-for i in $(sed -n '/^feed/s/.*url.*"\(.*\)".*cookie.*"\(.*\)".*/feed="\1";cookie="\2"/p' $CONF_AUTO); do
+for i in $(sed -n '/^feed/Ns/.*url.*"\(.*\)".*cookie.*"\(.*\)".*/feed="\1";cookie="\2"/p' $CONF_AUTO); do
 	eval $i
 	cat<<-EOF
 		<tr><td><input type=text size=40 name="feed_$cnt" value="$feed"></td>
@@ -48,7 +48,7 @@ cat<<EOF
 EOF
 
 cnt=0
-for i in $(sed -n '/^filter/s/.*pattern.*"\(.*\)".*folder.*"\(.*\)".*/pattern="\1";folder="\2"/p' $CONF_AUTO); do
+for i in $(sed -n '/^filter/Ns/.*pattern.*"\(.*\)".*folder.*"\(.*\)".*/pattern="\1";folder="\2"/p' $CONF_AUTO); do
 	eval $i
 	cat<<-EOF
 		<tr><td><input type=text size=40 name="pattern_$cnt" value="$pattern"></td>
