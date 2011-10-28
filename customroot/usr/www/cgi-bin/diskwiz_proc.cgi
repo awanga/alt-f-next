@@ -378,6 +378,15 @@ if test "$advise" != "Abracadabra"; then
 	msg "Unknown operation"
 fi
 
+if test "$wish_part" = "notouch"; then
+	if test -f /tmp/firstboot; then
+		pg=newuser.cgi
+	else
+		pg=diskmaint.cgi
+	fi
+	gotopage /cgi-bin/$pg
+fi
+
 html_header
 echo "<center><h2>Disk Wizard</h2></center>"
 busy_cursor_start
@@ -408,7 +417,7 @@ loadall
 # restart hotplug
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 
-enddebug
+#enddebug
 
 if test -f /tmp/firstboot; then
 	pg=newuser.cgi

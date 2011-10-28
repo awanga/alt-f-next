@@ -6,10 +6,10 @@ write_header "Disk Wizard"
 
 if test -f /tmp/firstboot; then
 	cat<<-EOF
-		<center>
+		<center><font color=blue>
 		<h3>Welcome to your first login to Alt-F</h3>
 		<h4>To continue setting up Alt-F, you should now choose a disk configuration.</h4>
-		</center>
+		</font></center>
 	EOF
 fi
 
