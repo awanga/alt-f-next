@@ -1,3 +1,4 @@
+./lib/libpthread-0.9.30.3.so
 ./lib/libthread_db-0.9.30.3.so
 ./lib/libthread_db.so.1
 ./usr/bin/gdb
