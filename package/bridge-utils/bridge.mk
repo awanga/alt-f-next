@@ -4,7 +4,7 @@
 #
 #############################################################
 #
-BRIDGE_VERSION:=1.4
+BRIDGE_VERSION:=1.5
 BRIDGE_SOURCE:=bridge-utils-$(BRIDGE_VERSION).tar.gz
 BRIDGE_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/bridge/
 BRIDGE_AUTORECONF:=YES
