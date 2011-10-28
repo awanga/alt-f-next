@@ -35,6 +35,23 @@ eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
 
 browse="$(httpd -d $browse)"
 
+# get the fs type
+tmp="$browse"
+while ! mountpoint -q "$tmp"; do
+	tmp=$(dirname "$tmp")
+done
+#eval $(blkid -s TYPE $(mountpoint -n $tmp | cut -d' ' -f1) | cut -d' ' -f2)
+TYPE=$(grep $tmp /proc/mounts | cut -d" " -f3)
+if test "$TYPE" != "ext2" -a "$TYPE" != "ext3" -a "$TYPE" != "ext4" -a "$TYPE" != "nfs"; then
+	cat<<-EOF
+		<h3><font color=blue>
+			Filesystem is of type $TYPE, not a linux native filesystem.<br>
+			Only ext2, ext3, ext4 or NFS filesystems can use UNIX permissions.
+		</font></h3>$(back_button)</body></html>
+	EOF
+	exit 0
+fi
+
 echo "$browse" | grep -q '^/mnt'
 if test "$?" = 1; then
 	echo "<h3>Warning: Directory base must be /mnt</h3>"
