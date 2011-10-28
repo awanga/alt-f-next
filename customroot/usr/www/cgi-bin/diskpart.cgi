@@ -304,7 +304,7 @@ cat<<EOF
 	<fieldset>
 	<legend><strong>Partition $dbay disk, $dcap, $dmod </strong></legend>
 	<p>Using <strong>$in_use</strong> partitioning.</p>
-	<p>Every disk must have a swap partitionas its first partition, 0.5GB is generally enought.</p>
+	<p>Every disk must have a swap partition as its first partition, 0.5GB is generally enought.</p>
 	<input type=hidden name=in_use value="$in_use">
 	<table>
 	<tr align=center>
