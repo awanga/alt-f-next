@@ -1,4 +1,21 @@
 
+# Add "enable" and "disable" options for all scripts.
+# Notice that S42inetd and uses enable/disable, but with an argument
+if test "$1" = "enable" -a -z "$2" ; then
+	echo "Enabling boot execution of $(basename $0)"
+	chmod +x $0
+	exit 0
+elif test "$1" = "disable" -a -z "$2" ; then
+	echo "Disabling boot execution of $(basename $0)"
+	chmod -x $0
+	exit 0
+fi
+
+# for process match, some processes need -n, the default, others -x
+if test -z "$START_STOP"; then
+	START_STOP=-n
+fi
+
 AVAHI_SRV_DIR=/etc/avahi/services
 
 # $1-add/remove $2-service name
@@ -66,11 +83,6 @@ excludedby() {
 	done
 }
 
-# for process match, some processes need -n, the default, others -x
-if test -z "$START_STOP"; then
-	START_STOP=-n
-fi
-
 status() {
 	if start-stop-daemon -K -t -q $START_STOP $1; then
 		echo "$1 running"
@@ -101,8 +113,10 @@ dmstatus() {
 omsg() {
 	if test $1 = 0; then
 		echo "OK."
+	elif test -n "$2"; then
+		echo -e "Fail: $2"
 	else
-		echo "Fail."
+			echo "Fail."
 	fi
 	return $1	
 }
