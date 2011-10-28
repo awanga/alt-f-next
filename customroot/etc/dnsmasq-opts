@@ -1,8 +1,9 @@
 #see "dnsmasq --help dhcp"
 
-option:ip-forward-enable,0	# option ip-forwarding off
-option:netbios-ns,0.0.0.0	# set netbios-over-TCP/IP nameserver(s) aka WINS server(s)
-option:netbios-dd,0.0.0.0	# netbios datagram distribution server
-option:netbios-nodetype,8	# netbios node type
-option:netbios-scope		# empty netbios scope
-vendor:MSFT,2,1i			# ???
+option:ip-forward-enable,0		# option ip-forwarding off
+option:netbios-ns,0.0.0.0		# set netbios-over-TCP/IP nameserver(s) aka WINS server(s)
+option:netbios-dd,0.0.0.0		# netbios datagram distribution server
+option:netbios-nodetype,8		# netbios node type
+option:netbios-scope			# empty netbios scope
+vendor:MSFT,2,1i				# ???
+option:bootfile-name,pxelinux.0 # tftp boot file to offer
