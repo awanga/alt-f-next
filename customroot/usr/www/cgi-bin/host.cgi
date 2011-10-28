@@ -16,9 +16,9 @@ When disabling, submiting will schedule it for disable at next reboot."
 if test -f /tmp/firstboot; then
 	cat<<-EOF
 		<center>
-		<h3>Welcome to your first login to Alt-F</h3>
+		<font color=blue><h3>Welcome to your first login to Alt-F</h3>
 		<h4>You should now fill all the host details
-		and Submit them</h4>
+		and Submit them</h4></font>
 		</center>
 	EOF
 fi
@@ -30,6 +30,10 @@ else
 	stk="nameserver"
 fi
 
+if ! ipkg list_installed | grep -q kernel-modules; then
+	ipv6_dis="disabled"
+fi
+
 if test -f $CONF_MODPROBE; then
 	if ! grep -q 'blacklist.*ipv6' $CONF_MODPROBE; then
 		ipv6_chk="checked"
@@ -38,6 +42,8 @@ fi
 
 if ifconfig eth0 | grep -q inet6; then
 	ipv6_inuse="(currently in use)"
+elif test -n "$ipv6_chk"; then
+		ipv6_inuse="(not loaded)"
 fi
 
 if test -e $RESOLV; then
@@ -125,7 +131,7 @@ cat<<-EOF
 	<tr><td>Name server 1:</td><td><input type=text name="ns1" value="$ns1"></td></tr>
 	<tr><td>Name server 2:</td><td><input type=text name="ns2" value="$ns2"></tr>
 	<tr><td>Frame size:</td><td><input type=text name="mtu" value="$mtu" onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
-	<tr><td>Enable IPv6</td><td><input type=checkbox $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
+	<tr><td>Enable IPv6:</td><td><input type=checkbox $ipv6_dis $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
 	</table></fieldset><br>
 
 	<input type=hidden name=cflg value="$cflg">

@@ -14,6 +14,7 @@ CONFS=/etc/samba/smb.conf
 CONFHTTP=/etc/httpd.conf
 CONFINT=/etc/network/interfaces
 CONF_MODPROBE=/etc/modprobe.conf
+CONF_MISC=/etc/misc.conf
 
 #debug
 
@@ -21,10 +22,15 @@ if test -f $CONF_MODPROBE; then
 	sed -i '/^blacklist.*ipv6/d' $CONF_MODPROBE
 fi
 
+if test -f "$CONF_MISC"; then
+	sed -i '/^MODLOAD_IPV6=/d' $CONF_MISC
+fi
+
 if test -z "$ipv6"; then
 	echo "blacklist ipv6" >> $CONF_MODPROBE
 else
-	modprobe ipv6
+	echo "MODLOAD_IPV6=y" >> $CONF_MISC
+	modprobe ipv6 >& /dev/null
 fi
 
 if test "$iptype" = "static"; then
