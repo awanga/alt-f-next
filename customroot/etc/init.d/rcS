@@ -84,12 +84,6 @@ echo > /dev/mdev.seq
 # "hotplug", mdev.conf registers /usr/sbin/hot.sh, 
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 
-if test -f /etc/modprobe.conf; then
-	if ! grep -q 'blacklist.*ipv6' /etc/modprobe.conf; then
-		modprobe ipv6
-	fi
-fi
-
 # set a default hostname
 hostname -F /etc/hostname
 
