@@ -18,8 +18,8 @@ case "$1" in
 	start)
 		echo -n "Starting $NAME: "
 #	fuppes does a fork...	--make-pidfile --pidfile $PIDFILE \
+#			--chuid $FUPPES_USER:$FUPPES_GROUP \
 		start-stop-daemon -S -q -b \
-			--chuid $FUPPES_USER:$FUPPES_GROUP \
 			-x $NAME -- $FUPPES_ARGS
 		omsg $?
 		;;
