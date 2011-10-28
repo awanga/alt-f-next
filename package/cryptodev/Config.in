@@ -1,0 +1,12 @@
+config BR2_PACKAGE_CRYPTODEV
+	bool "cryptodev"
+	help
+	  Cryptodev-linux is a device that allows access to Linux kernel cryptographic drivers; thus allowing of userspace applications to take advantage of hardware accelerators
+
+	  http://home.gna.org/cryptodev-linux
+
+config BR2_PACKAGE_CRYPTODEV_HEADER_ONLY
+	bool "criptodev-header"
+	depends on BR2_PACKAGE_CRYPTODEV
+	help
+	  Only install cryptodev.h on staging dir for openssl usage
