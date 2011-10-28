@@ -8,11 +8,12 @@ CONFP=/etc/passwd
 
 if test -f /tmp/firstboot; then
 	cat<<-EOF
-		<center>
+		<center><font color=blue>
 		<h3>Welcome to your first login to Alt-F</h3>
 		<h4>To continue setting up Alt-F, you should now specify</h4>
-		 <h4>the disk partition where users will store their data</h4>
-		</center>
+		 <h4>the filesystem where users will store their data</h4>
+		<h4>and create an user account</h4>
+		</font></center>
 	EOF
 fi
 
