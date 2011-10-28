@@ -122,23 +122,25 @@ function pshare(line) {
 function spit(cnt, opts) {
 	
 	rdir = public_chk = rdonly_chk = dis_chk = browse_chk = ""
+	rdonly_chk = "checked"
+	browse_chk = "checked"
 
 	if (opts["path"] != "") {
 		sprintf("readlink -f \"%s\" ", opts["path"]) | getline rdir
 		if (rdir == "") {
 			rdir = opts["path"]
-			opts["available"] = "no"
 		}
 		browse_chk = "checked"
 		if (opts["browseable"] == "no")
-			browse_chk = ""		
-		if (opts["public"] == "yes")
+			browse_chk = ""
+		if (opts["public"] == "yes" || opts["guest ok"] == "yes")
 			public_chk = "checked"
-		if (opts["read only"] == "yes")
-			rdonly_chk = "checked"
+		if (opts["read only"] == "no")
+			rdonly_chk = ""
 		if (opts["available"] == "no")
 			dis_chk = "checked"
-	}
+	} else 
+		rdonly_chk = dis_chk = browse_chk = ""
 
 	printf "<tr><td align=center><input type=checkbox %s name=avail_%d value=no></td>", dis_chk, cnt
 	printf "<td><input type=text id=ldir_%d name=ldir_%d value=\"%s\"></td>\n", cnt, cnt, rdir
@@ -167,7 +169,7 @@ function parse(share_name, line) {
 
 		gsub("^( |\t)*|( |\t)*$","", $1)
 		gsub("^( |\t)*|( |\t)*$","", $2)
-		opts[$1] = $2
+		opts[$1] = tolower($2)
 	}
 
 	spit(cnt, opts)
@@ -209,11 +211,23 @@ for i in $(seq $cnt $((cnt+2))); do
 	fstab_row "" $i	# ln cnt
 done
 
+
+if grep -q "# Samba config file created using SWAT" $CONF_SMB; then
+	swat="<font color=blue><h4>The Advanced SWAT configuration tool has been used.<br>
+	If you Submit changes, then SWAT changes applied to shares will be lost</h4></font>"
+else
+	swat="<p>"
+fi
+
 cat<<EOF
 	</table><input type=hidden name=import_cnt value=$i>
-	</fieldset><br>
+	</fieldset>
+	$swat
 	$(back_button)<input type=submit name=submit value="Submit">
-	<input type=submit name=submit value="Advanced">
+	<input type=submit name=submit value="Advanced" onClick="return confirm('\
+On the next SWAT Authentication dialogue you have to enter' + '\n' +
+'\'root\' for the \'User Name\' and the web password for \'Password\'.' + '\n\n' +
+'Changes made might not be recognized latter in this web page.' + '\n\n' + 'Continue?')">
 	</form></body></html>
 EOF
 

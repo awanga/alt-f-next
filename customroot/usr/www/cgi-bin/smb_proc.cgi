@@ -49,37 +49,60 @@ elif test "$submit" = "Submit"; then
 		echo
 	done  >> $CONF_FSTAB
 
-	sed -i '/#!#/,$d' $CONF_SMB
-	echo -e "#!# Add extra shares bellow, don't change anything above, dont remove me\n" >> $CONF_SMB
+	#sed -i '/#!#/,$d' $CONF_SMB
+	#echo -e "#!# Add extra shares bellow, don't change anything above, dont remove me\n" >> $CONF_SMB
+
+	cp $CONF_SMB $CONF_SMB-
+	awk '
+		{ pshare($0) }
+
+		function pshare(line) {
+			s = index(line, "[") ; e = index(line, "]")
+			share_name = tolower(substr(line, s+1, e-s-1))
+			if (share_name == "global" || share_name == "printers") {
+				print $0
+				while (st = getline) {
+					if (substr($0,1,1) == "[")
+						break
+					printf "%s\n", $0
+				}
+				if (st == 0)
+					exit
+			} else
+				if (! getline)
+					exit
+			pshare($0)
+		}
+	' $CONF_SMB- > $CONF_SMB
 
 	for i in $(seq 1 $smb_cnt); do
 		if test -z "$(eval echo \$ldir_$i)" -o -z "$(eval echo \$shname_$i)"; then continue; fi
 
 		httpd -d "$(eval echo -e [\$shname_$i])"; echo
-		httpd -d "$(eval echo comment = \$cmt_$i)"; echo
-		httpd -d "$(eval echo path = \$ldir_$i)"; echo
+		t=$(httpd -d "$(eval echo comment = \$cmt_$i)"); echo -e "\t$t"
+		t=$(httpd -d "$(eval echo path = \$ldir_$i)"); echo -e "\t$t"
 
 		avail=no
 		if test -z "$(eval echo \$avail_$i)"; then
 			avail=yes
 		fi
-		echo "available = $avail"
+		echo -e "\tavailable = $avail"
 
 		if test -z "$(eval echo \$browse_$i)"; then
-			echo "browseable = no"
+			echo -e "\tbrowseable = no"
 		fi
 
 		pub=yes
 		if test -z "$(eval echo \$public_$i)"; then
 			pub=no
 		fi
-		echo "public = $pub"
+		echo -e "\tpublic = $pub"
 
 		ro=yes
 		if test -z "$(eval echo \$rdonly_$i)"; then
 			ro=no
 		fi
-		echo "read only = $ro"
+		echo -e "\tread only = $ro"
 		echo
 
 	done  >> $CONF_SMB
