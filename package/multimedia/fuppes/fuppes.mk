@@ -3,6 +3,7 @@
 # fuppes
 #
 #############################################################
+#FUPPES_VERSION = 689
 FUPPES_VERSION = 660
 FUPPES_SOURCE = fuppes-0.$(FUPPES_VERSION).tar.gz
 FUPPES_SITE = http://downloads.sourceforge.net/project/fuppes/fuppes/SVN-$(FUPPES_VERSION)
@@ -19,8 +20,13 @@ FUPPES_CONF_ENV += MYSQL_CONFIG=no \
  PKG_CONFIG_PATH=$(STAGING_DIR)/usr/lib/pkgconfig \
  FFMPEGTHUMBNAILER_CFLAGS=-I$(STAGING_DIR)/usr/include/libffmpegthumbnailer
 
-FUPPES_CONF_OPT = --disable-mp4v2 --enable-transcoder-ffmpeg --enable-mad --enable-lame --disable-ffmpegthumbnailer
+#FUPPES_CONF_ENV += MYSQL_CONFIG=no \
+# TAGLIB_CFLAGS=-I$(STAGING_DIR)/usr/include/taglib \
+# MAD_CFLAGS=" " MAD_LIBS=-lmad \
+# PKG_CONFIG_PATH=$(STAGING_DIR)/usr/lib/pkgconfig
 
-#--enable-ffmpegthumbnailer
+FUPPES_CONF_OPT = --disable-mp4v2 --disable-ffmpegthumbnailer --enable-transcoder-ffmpeg --enable-mad --enable-lame  
+
+# 689: --localstatedir=/var
 
 $(eval $(call AUTOTARGETS,package/multimedia,fuppes))

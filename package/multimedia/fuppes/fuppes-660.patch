@@ -1,0 +1,11 @@
+--- fuppes-660/src/lib/HTTP/HTTPParser.cpp.orig	2011-10-27 03:45:25.741066384 +0100
++++ fuppes-660/src/lib/HTTP/HTTPParser.cpp	2011-10-27 03:45:55.721141083 +0100
+@@ -52,7 +52,7 @@
+   else if(rxResponse.Search(header)) {
+ 		sType    = rxResponse.Match(2);
+ 		nVersion = atoi(rxResponse.Match(1).c_str());
+-		message->m_sRequest = rxRequest.Match(3);
++		message->m_sRequest = rxResponse.Match(3);
+ 	}
+ 	else {    
+ 		return false;
