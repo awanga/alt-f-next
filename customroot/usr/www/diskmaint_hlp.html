@@ -32,7 +32,7 @@ Adding a filesystem label is useful because it makes the device or filesystem co
 <strong>FS Operations:</strong>
 <ul>
 <li><strong>Mount/Unmount</strong> enables to manually mount or unmount a filesystem
-<li><strong>Check</strong> verifies filesystem consistency and if needed automatically fixes it. This operation can take a long time to complete, and its evolution can be seen in the Status page. When if finishes, you can see the log using the System->Utilities->View Logs->System Log page and searching for "fsck".
+<li><strong>Check</strong> verifies filesystem consistency and if needed automatically fixes it. This operation can take a long time to complete, and its evolution can be seen in the Status page and the blue power led blinks with a slow heart-beat rhythm. When if finishes, you can see the log using the System->Utilities->View Logs->System Log page and searching for "fsck".
 <li><strong>Set Label</strong> sets the filesystem label using the <em>Label</em> entry
 <li><strong>Set Mnt options</strong> sets mount options using the <em>Mount Options</em> entry. The options will be used whenever the filesystem is mounted.
 <li><strong>Shrink</strong> consolidates the filesystem data at the device start, occupying the minimum possible space. After the operation completes and the filesystem is mounted the <strong>Size</strong> column shows the new size. It can take a very long time to complete, use the Status page and consult the System Log at the end.
@@ -45,5 +45,6 @@ When an ext2/3/4 filesystem is created, it is marked with some default values fo
 
 On every mount operation, which happens at least when the box is powered-up or a device is plugged-in, every filesystem is checked to verify that it was cleanly unmounted, i.e., there was not a catastrophic power-off or device unplugging.<br>
 If the filesystem is marked as have being cleanly unmounted, and the number of days or mount operations since the last check/fix has not elapsed, no further checks are done, otherwise an automatic check and fix is done.<br>
+While the filesystem check is being done the blue power led blinks with a slow heart-beat rhythm.<br>
 
 <br><button type=button onclick="history.back()">Back</button></body>
