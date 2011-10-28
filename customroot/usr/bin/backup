@@ -349,11 +349,11 @@ if ! test -d "$tmp"; then
 	return 1
 fi
 
-while ! mountpoint $tmp > /dev/null; do
-	tmp=$(dirname $tmp)
+while ! mountpoint -q "$tmp"; do
+	tmp=$(dirname "$tmp")
 done
 
-if test $tmp = "/" -o $tmp = "."; then
+if test "$tmp" = "/" -o $tmp = "."; then
 	logger -st backup "\"$dstpath\" is not on a mounted filesystem"
 	return 1
 fi
