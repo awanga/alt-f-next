@@ -4,7 +4,8 @@
 #
 #############################################################
 #PCRE_VERSION = 7.7
-PCRE_VERSION = 8.13
+#PCRE_VERSION = 8.13
+PCRE_VERSION = 8.20
 PCRE_SOURCE = pcre-$(PCRE_VERSION).tar.bz2
 PCRE_SITE = ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre
 PCRE_INSTALL_STAGING = YES
