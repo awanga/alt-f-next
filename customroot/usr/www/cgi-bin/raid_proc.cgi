@@ -13,7 +13,21 @@ raid() {
 	rspare=""
 
 	case "$level" in
-		linear|raid0)	pair2="/dev/$pair2"
+		linear)
+			pair2="/dev/$pair2"
+			ndevices=2
+
+			if test "$pair3" != "none"; then
+				pair3="/dev/$pair3"
+				ndevices=3
+			else
+				pair3=""
+			fi
+			;;
+
+		raid0)
+			pair2="/dev/$pair2"
+			pair3=""
 			ndevices=2
 			;;
 
@@ -34,7 +48,8 @@ raid() {
 			ndevices=2
 			;;
 
-		raid5)	pair2="/dev/$pair2"
+		raid5)
+			pair2="/dev/$pair2"
 			if test "$pair3" = "none"; then
 				pair3="missing"
 			else

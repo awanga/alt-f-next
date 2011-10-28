@@ -134,13 +134,13 @@ Add a component as soon as possible.\n\nContinue?")
 
 		document.diskr.comp3.disabled = false
 
-		if (level == "linear" || level == "raid0") {
+		if (level == "raid0") {
 			document.diskr.comp3.disabled = true
 			document.getElementById("spare_hd").innerHTML = ""
 		}
 		else if (level == "raid1")
 			document.getElementById("spare_hd").innerHTML = "Spare"
-		else if (level == "raid5") {
+		else if (level == "linear" || level == "raid5") {
 			document.getElementById("spare_hd").innerHTML = "Comp 3"
 		}
 
