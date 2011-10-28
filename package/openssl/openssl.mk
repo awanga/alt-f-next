@@ -3,8 +3,9 @@
 # openssl
 #
 #############################################################
-#OPENSSL_VERSION:=0.9.8k
-OPENSSL_VERSION:=0.9.8r
+
+#OPENSSL_VERSION:=0.9.8r
+OPENSSL_VERSION:=1.0.0e
 
 OPENSSL_SITE:=http://www.openssl.org/source
 
@@ -26,10 +27,14 @@ endif
 
 OPENSSL_INSTALL_STAGING = YES
 OPENSSL_INSTALL_STAGING_OPT = INSTALL_PREFIX=$(STAGING_DIR) install
-
-OPENSSL_INSTALL_TARGET_OPT = INSTALL_PREFIX=$(TARGET_DIR) install
+OPENSSL_INSTALL_TARGET_OPT = INSTALL_PREFIX=$(TARGET_DIR) install_sw
 
 OPENSSL_DEPENDENCIES = zlib
+
+ifeq ($(BR2_PACKAGE_CRYPTODEV),y)
+	OPENSSL_DEPENDENCIES += cryptodev
+	OPENSSL_CRYPTO_OPT = -DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS -DHASH_MAX_LEN=64
+endif
 
 $(eval $(call AUTOTARGETS,package,openssl))
 
@@ -38,23 +43,24 @@ $(OPENSSL_TARGET_CONFIGURE):
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_OPTS) \
 		./Configure \
-			linux-$(OPENSSL_TARGET_ARCH) \
+			$(OPENSSL_CRYPTO_OPT) \
 			--prefix=/usr \
 			--openssldir=/etc/ssl \
-			threads \
-			shared \
-			no-idea \
-			no-mdc2 \
-			no-rc5 \
-			zlib-dynamic \
+			threads shared \
+			no-idea no-md2 no-mdc2 no-rc5 no-camellia no-seed \
+			no-krb5 no-jpake no-store no-hw no-zlib \
+			linux-$(OPENSSL_TARGET_ARCH) \
 	)
-	$(SED) "s:-march=[-a-z0-9] ::" -e "s:-mcpu=[-a-z0-9] ::g" $(OPENSSL_DIR)/Makefile
 	$(SED) "s:-O[0-9]:$(TARGET_CFLAGS):" $(OPENSSL_DIR)/Makefile
+	#$(SED) "s:-march=[-a-z0-9] ::" -e "s:-mcpu=[-a-z0-9] ::g" $(OPENSSL_DIR)/Makefile
 	touch $@
 
 $(OPENSSL_TARGET_BUILD):
-	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) all build-shared
-	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) do_linux-shared
+	#$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
+	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
+	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
+	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
+	#$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR)  all build-shared do_linux-shared
 	touch $@
 
 $(OPENSSL_HOOK_POST_INSTALL):
