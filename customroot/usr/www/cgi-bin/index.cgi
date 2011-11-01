@@ -15,6 +15,25 @@ cat<<-EOF
 	<html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	</head><body>
+	<script type="text/javascript">
+		function addbookmark() {
+			location.assign("/cgi-bin/bookmark.cgi?add=" + parent.content.document.title +
+				 "&url=" + parent.content.window.location.pathname)
+		}
+		function rmbookmark() {
+			location.assign("/cgi-bin/bookmark.cgi?rm=" + parent.content.document.title +
+				 "&url=" + parent.content.window.location.pathname)
+		}
+	</script>
+EOF
+
+if test -s bookmarks.html; then
+	echo "<h4>Bookmarks</h4>"
+	cat bookmarks.html
+	echo "<button type=button onClick=\"rmbookmark()\">Remove Current</button><h4>Menu</h4>"
+fi
+
+cat<<EOF
 	<a href="/cgi-bin/logout.cgi" target="content">Logout</a><br>
 	<a href="/cgi-bin/status.cgi" target="content">Status</a><br>
 EOF
@@ -29,5 +48,8 @@ for i in Setup Disk Services Packages System; do
 		done
 	fi
 done
+
+#echo "<a href=\"/cgi-bin/bookmark.cgi\" onClick=\"addbookmark()\">Bookmark</a><br>"
+echo "<button type=button onClick=\"addbookmark()\">Bookmark</button>"
 
 echo "</body></html>"

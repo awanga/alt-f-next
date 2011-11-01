@@ -617,6 +617,7 @@ fill_menu() {
 	echo "</div><script type=\"text/javascript\">MenuEntry(\"$1\");</script></td>"
 }
 
+# $1-page title $2-script
 menu_setup2() {
 cat<<EOF
 	<table cellspacing=0><tr>
@@ -627,7 +628,7 @@ EOF
 	for i in Setup Disk Services Packages System; do
 		fill_menu $i
 	done
-	echo "</tr></table>"
+	echo "<td><a class=\"Menu\" href=\"/cgi-bin/bookmark.cgi?add=$1&url=$2\" target=\"content\">Bookmark</a></td></tr></table>"
 }
 
 # args: title [onload action]
@@ -667,7 +668,7 @@ write_header() {
 		$(drawbargraph_setup)
 		</head>
 		<body $act>
-		$(menu_setup2)
+		$(menu_setup2 "$1" "/cgi-bin/$0") 
 		$(mktt tt_help "Get a descriptive help")
 		$(mktt tt_settings "$warn_tt")
 		<center><h2>$1 $hlp</h2></center>
