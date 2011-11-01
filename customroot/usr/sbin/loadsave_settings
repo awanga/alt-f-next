@@ -341,6 +341,7 @@ files="
 /etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf
 /etc/wgetrc			/etc/ssl/certs/vsftpd.pem	/etc/backup.conf
 /etc/syslog.conf	/etc/sysctl.conf	/etc/modprobe.conf
+/usr/www/cgi-bin/bookmarks.html
 "
 
 # those are also used only when mounting/unmounting the aufs branch
