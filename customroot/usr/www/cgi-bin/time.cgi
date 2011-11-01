@@ -1,9 +1,14 @@
 #!/bin/sh
 
+# $1-default month
 opt_month() {
 	j=1
 	for i in Jan Fev Mar Apr May Jun Jul Aug Sep Oct Nov Dec; do
-		echo "<option value=\"$j\">$i</option>"
+		sel=""
+		if test "$j" = "$1"; then
+			sel="selected"
+		fi
+		echo "<option $sel value=\"$j\">$i</option>"
 		j=$((j+1))
 	done
 }
@@ -11,7 +16,11 @@ opt_month() {
 opt_wday() {
 	j=0
 	for i in Sun Mon Tue Wed Thu Fri Sat; do
-		echo "<option value=\"$j\">$i</option>"
+		sel=""
+		if test "$j" = "$1"; then
+			sel="selected"
+		fi
+		echo "<option $sel value=\"$j\">$i</option>"
 		j=$((j+1))
 	done
 }
@@ -19,20 +28,32 @@ opt_wday() {
 opt_week() {
 	j=1
 	for i in first 2nd 3d 4th last; do
-		echo "<option value=\"$j\">$i</option>"
+		sel=""
+		if test "$j" = "$1"; then
+			sel="selected"
+		fi
+		echo "<option $sel value=\"$j\">$i</option>"
 		j=$((j+1))
 	done
 }
 
 opt_hour() {
 	for i in $(seq 0 23); do
-		echo "<option value=\"$i\">$i</option>"
+		sel=""
+		if test "$i" = "$1"; then
+			sel="selected"
+		fi
+		echo "<option $sel value=\"$i\">$i</option>"
 	done
 }
 
 opt_min() {
 	for i in $(seq 0 15 45); do
-		echo "<option value=\"$i\">$i</option>"
+		sel=""
+		if test "$i" = "$1"; then
+			sel="selected"
+		fi
+		echo "<option $sel value=\"$i\">$i</option>"
 	done
 }
 
@@ -62,18 +83,18 @@ tzones() {
 # not used
 parse_tz() {
 	eval $(echo "$tz" | awk -F ',' \
-		'{printf "tz=%s;dsts=%s;dste=%s", $1, $2, $3}')
+		'{printf "ptz=%s;dsts=%s;dste=%s", $1, $2, $3}')
 
 	if test -n "$dsts"; then
 		eval $(echo $dsts | tr 'M./:' ' '  | awk \
 			'{printf "months=%s;weeks=%s;days=%s;hours=%s;mins=%s", \
 				$1, $2, $3, $4, $5}')
-		if test -z "$hours"; then hours=2;mins=0; fi
+		if test -z "$hours"; then hours=2; mins=0; fi
 
 		eval $(echo $dste | tr 'M./:' ' '  | awk \
 			'{printf "monthe=%s;weeke=%s;dayse=%s;houre=%s;mine=%s", \
 				$1, $2, $3, $4, $5}')
-		if test -z "$houre"; then houre=2;mine=0; fi
+		if test -z "$houre"; then houre=2; mine=0; fi
 	fi
 }
 
@@ -121,6 +142,9 @@ if test -e $CONFNTP; then
 	done < $CONFNTP
 fi
  
+parse_tz
+
+#debug 
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -172,35 +196,35 @@ cat<<-EOF
 	<td><input type=checkbox id=fixdst name=fixdst value=po onclick="toogle()"></td></tr>
 	<tr><td align=right>DST start date</td>
 	<td><select disabled id=fix1 name=dst_week_start onChange="update_tz2()">
-			$(opt_week)</select></td>
+			$(opt_week $weeks)</select></td>
 
 	<td><select disabled id=fix2 name=dst_day_start onChange="update_tz2()">
-		$(opt_wday)</select>of</td>
+		$(opt_wday $days)</select>of</td>
 
 	<td><select disabled id=fix3 name=dst_mth_start onChange="update_tz2()">
-		$(opt_month)</select>at</td>
+		$(opt_month $months)</select>at</td>
 
 	<td><select disabled id=fix4 name=dst_hour_start onChange="update_tz2()">
-		$(opt_hour)</select>:</td>
+		$(opt_hour $hours)</select>:</td>
 
 	<td><select disabled id=fix5 name=dst_min_start onChange="update_tz2()">
-		$(opt_min)</select></td></tr>
+		$(opt_min $mins)</select></td></tr>
 
 	<tr><td align=right>DST &nbsp;end date</td>
 	<td><select disabled id=fix6 name=dst_week_end onChange="update_tz2()">
-		$(opt_week)</select></td>
+		$(opt_week $weeke)</select></td>
 
 	<td><select disabled id=fix7 name=dst_day_end onChange="update_tz2()">
-		$(opt_wday)</select>of</td>
+		$(opt_wday $daye)</select>of</td>
 
 	<td><select disabled id=fix8 name=dst_mth_end onChange="update_tz2()">
-	$(opt_month)</select>at</td>
+	$(opt_month $monthe)</select>at</td>
 
 	<td><select disabled id=fix9 name=dst_hour_end onChange="update_tz2()">
-		$(opt_hour)</select>:</td>
+		$(opt_hour $houre)</select>:</td>
 
 	<td><select disabled id=fix10 name=dst_min_end onChange="update_tz2()">
-		$(opt_min)</select></td></tr>
+		$(opt_min $mine)</select></td></tr>
 </table>
 <br><input type="submit" name="country" value="Submit">
 </fieldset><br>
