@@ -28,6 +28,13 @@ cat<<-EOF
 				fstype=document.wizf.wish_fs[i].value
 		}
 
+		t=0;
+		for (var i = 1; i <= ndisks; i++) {
+			if (document.getElementById("disk_" + i).checked == true)
+				t++;
+		}
+		ndisks = t;
+
 		if (ndisks == 1 && (ptype == "raid0" || ptype == "jbd")) {
 			alert("You need at least two disks to create a " + ptype + " RAID array")
 			return false
@@ -48,9 +55,11 @@ and formated with " + fstype + " and all its content will be lost.\n\n\
 Continue?")
 	}
 	</script>
+	<form name=wizf action="/cgi-bin/diskwiz_proc.cgi" method="post">	
 	<fieldset>
-	<legend><strong>Detected disks</strong></legend>
+	<legend><strong>Select the disks you want to format</strong></legend>
 	<table><tr>
+	<th>Format</th>
 	<th>Bay</th>
 	<th>Device</th>
 	<th>Capacity</th>
@@ -58,6 +67,7 @@ Continue?")
 	</tr>
 EOF
 
+j=1;
 for i in $disks; do
 	disk=$(basename $i)
 
@@ -67,19 +77,18 @@ for i in $disks; do
 		huge_disk="yes"
 	fi
 
-	chkd=""	
-	if test "$i" = "$dsk"; then chkd="checked"; fi
-
 	cat<<-EOF
 		<tr>
+		<td align=center><input type=checkbox checked id="disk_$j" name="disk_$j" value="$disk"></td>
 		<td>$dbay</td>
 		<td align=center>$disk</td>
 		<td align=right>$dcap</td>
 		<td>$dmod</td>
 		</tr>
 	EOF
+	j=$((j+1))
 done
-echo "</table></fieldset><br>"	
+echo "</table></fieldset><input type=hidden name=num_disks value=$((j-1))><br>"	
 
 nusb="$(cat /etc/bay | grep =usb | wc -l)"
 if test  "$nusb" -ge 2; then
@@ -111,7 +120,6 @@ else
 fi
 
 cat<<-EOF
-	<form name=wizf action="/cgi-bin/diskwiz_proc.cgi" method="post">
 	<fieldset>
 	<legend><strong>Whirl your magic wand...</strong></legend>
 	$fmsg

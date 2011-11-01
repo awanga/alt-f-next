@@ -49,7 +49,7 @@ minsize() {
 # remove raid superblock to avoid auto rebuild on partially created arrays
 # if by hazard the new partition table fits a previous one
 cleanraid() {
-	for i in $(fdisk -l /dev/sd? | awk '$5 == "da" || $5 == "fd" || $5 == "fd00" {printf "%s ", $1}'); do
+	for i in $(fdisk -l $disks | awk '$5 == "da" || $5 == "fd" || $5 == "fd00" {printf "%s ", $1}'); do
 		mdadm --zero-superblock $i >& /dev/null
 	done
 }
@@ -378,7 +378,18 @@ if test "$advise" != "Abracadabra"; then
 	msg "Unknown operation"
 fi
 
-if test "$wish_part" = "notouch"; then
+#has_disks
+ndisks=0
+for i in $(seq 1 $num_disks); do
+	dsk=$(eval echo \$disk_$i)
+	if test -n "$dsk"; then
+		disks="$disks /dev/$dsk"
+		ndisks=$((ndisks+1))
+	fi
+done
+#echo "$ndisks $disks"
+
+if test "$ndisks" = "0" -o "$wish_part" = "notouch"; then
 	if test -f /tmp/firstboot; then
 		pg=newuser.cgi
 	else
@@ -387,11 +398,11 @@ if test "$wish_part" = "notouch"; then
 	gotopage /cgi-bin/$pg
 fi
 
-html_header
-echo "<center><h2>Disk Wizard</h2></center>"
-busy_cursor_start
+#exit 0
 
-has_disks
+html_header
+echo "<center><h2>Processing</h2></center>"
+busy_cursor_start
 
 echo "<p>Stopping all services and disks..."
 if ! eject -a; then
