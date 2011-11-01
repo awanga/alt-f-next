@@ -57,7 +57,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	if test $? = 0; then
 		mdadm --examine --scan > $MDADMC
 		echo "DEVICES /dev/sd*" >> $MDADMC
-		mdadm --incremental --run $PWD/$MDEV
+		mdadm --incremental --no-degraded $PWD/$MDEV
 		eval $res
 		if test -z "$MD_NAME"; then # version 0.9 doesnt have the MD_NAME attribute
 			MD_NAME=$(ls /sys/block/${MDEV:0:3}/$MDEV/holders/)
