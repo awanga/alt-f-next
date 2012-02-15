@@ -10,15 +10,16 @@ eval $(echo -n $QUERY_STRING | tr '\r' '\n' | sed -e 's/'"'"'/%27/g' | \
 
 #debug
 
-html_header
+if test -z "$add" -a -z "$rm"; then
+	gotopage $(basename $url _proc.cgi).cgi
 
-if test -n "$add"; then
+elif test -n "$add"; then
 	title=$(httpd -d $add)
-
 	if ! grep -q "$title" bookmarks.html; then
 		echo "<a href=\"$url\" target=\"content\">$title</a><br>" >> bookmarks.html
 	fi
 
+	html_header
 	cat<<-EOF
 		<script type="text/javascript">
 			parent.nav.location.reload()
@@ -26,11 +27,13 @@ if test -n "$add"; then
 		</script>
 	EOF
 
-
 elif test -n "$rm"; then
 	title=$(httpd -d $rm)
-	sed -i "\|$title|d" bookmarks.html
+	if test -n "$title"; then
+		sed -i "\|$title|d" bookmarks.html
+	fi
 
+	html_header
 	cat<<-EOF
 		<script type="text/javascript">
 		location.assign("/cgi-bin/index.cgi")
