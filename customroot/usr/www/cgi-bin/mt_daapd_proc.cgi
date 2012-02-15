@@ -30,6 +30,7 @@ if test "$def_dir" = "yes"; then
 		t=$(mktemp -p $DEF_DIR "$n"-XXXXXX)
 		ln -sf "$s" "$t"
 	done
+	sed -i 's|^servername.*|servername '"$(httpd -d $sname)"'|' $CONFF
 else
 	share="$(httpd -d $sdir_1)"
 	sed -i 's|^mp3_dir.*$|mp3_dir '"$share"'|' $CONFF

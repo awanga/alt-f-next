@@ -10,6 +10,7 @@ CONFF=/etc/mt-daapd.conf
 DEF_DIR=/var/lib/mt-daapd/mp3_dir
 
 MP3_DIR="$(awk '/^mp3_dir/{print substr($0, index($0,$2))}' $CONFF)"
+SNAME=$(sed -n 's/^servername.\(.*\)/\1/p' $CONFF)
 
 OIFS="$IFS"; IFS=";"
 if test "$MP3_DIR" = "$DEF_DIR"; then
@@ -66,6 +67,7 @@ done
 fi
 
 cat<<-EOF
+	<tr><td>Server Name</td><td><input type=text name=sname value="$SNAME"></td></tr>
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=hidden name=def_dir value=$def_dir>
