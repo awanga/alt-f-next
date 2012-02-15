@@ -6,9 +6,11 @@ read_args
 
 write_header "forked-daapd Setup"
 
+mktt sname_tt "Advertised name.<br>A '%h' will be replaced with the host name."
 CONF_FORKED=/etc/forked-daapd.conf
 
-SHARE_DIRS=$(awk -F= '/directories/{print $2}' $CONF_FORKED | tr -d '{}')
+SHARE_DIRS=$(awk -F= '/\tdirectories =/{print $2}' $CONF_FORKED | tr -d '{}')
+SNAME=$(sed -n 's/\tname = "\(.*\)"/\1/p' $CONF_FORKED)
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -47,9 +49,8 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
-	<tr><td></td><td>
-	<input type=submit value=Submit> $(back_button)
-	</td></tr></table>
+	<tr><td>Server Name</td><td><input type=text name=sname value="$SNAME" $(ttip sname_tt)></td></tr>
+	<tr><td></td><td><input type=submit value=Submit> $(back_button)</td></tr></table>
 	<input type=hidden name=cnt value=$j>
 	</form></body></html>
 EOF

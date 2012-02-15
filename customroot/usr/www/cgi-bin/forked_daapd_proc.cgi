@@ -18,8 +18,10 @@ for i in $(seq 1 $cnt); do
 done
 
 shares="$(httpd -d $res)"
-
 sed -i -e 's|directories =.*$|directories = { '"$shares"' } |' -e 's/, }/ }/' $CONF_FORKED
+
+sname="$(httpd -d $sname)"
+sed -i 's|\tname =.*$|\tname = "'"$sname"'"|' $CONF_FORKED 
 
 if rcforked_daapd status >& /dev/null; then
 	rcforked_daapd restart >& /dev/null
