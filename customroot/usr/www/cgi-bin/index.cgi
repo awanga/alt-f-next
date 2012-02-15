@@ -14,7 +14,20 @@ cat<<-EOF
 	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 	<html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	</head><body>
+	<style type="text/css">
+	p.Menu {
+		display: block;
+		width: 100px;
+		padding: 2px 5px;
+		background: #8F8F8F;		
+		color: #F0F0F0;
+		text-align: center;
+		font-family: Sans-Sherif;
+		font-size: 0.9em;
+		font-weight: 900;
+		text-decoration: none;
+	}	
+	</style><title>Index</title></head><body>
 	<script type="text/javascript">
 		function addbookmark() {
 			location.assign("/cgi-bin/bookmark.cgi?add=" + parent.content.document.title +
@@ -28,9 +41,10 @@ cat<<-EOF
 EOF
 
 if test -s bookmarks.html; then
-	echo "<h4>Bookmarks</h4>"
+	echo "<p class=\"Menu\">Bookmarks</p>"
 	cat bookmarks.html
-	echo "<button type=button onClick=\"rmbookmark()\">Remove Current</button><h4>Menu</h4>"
+	echo "<button type=button onClick=\"rmbookmark()\">Remove Current</button>"
+	echo "<p class=\"Menu\">Menu</p>"
 fi
 
 cat<<EOF
@@ -49,7 +63,4 @@ for i in Setup Disk Services Packages System; do
 	fi
 done
 
-#echo "<a href=\"/cgi-bin/bookmark.cgi\" onClick=\"addbookmark()\">Bookmark</a><br>"
-echo "<button type=button onClick=\"addbookmark()\">Bookmark</button>"
-
-echo "</body></html>"
+echo "<button type=button onClick=\"addbookmark()\">Bookmark Current</button></body></html>"
