@@ -40,7 +40,7 @@ jscripts() {
 	
 				if (arg == "yes") {
 					arefresh = true
-					requestfromserver('system', 11)
+					requestfromserver('systems', 11)
 					requestfromserver('network', 11)
 					requestfromserver('disks', 13)
 					requestfromserver('raid', 13)
@@ -58,7 +58,7 @@ jscripts() {
 	EOF
 }
 
-system_st() {
+systems_st() {
 	cpu="$(top -bn1 | awk '/^CPU:/ {printf "%d", 100 - $8}')"
 	loadv=$(cut -f1 -d" " /proc/loadavg)
 	load=$(awk '{printf "%d", 50 * $1 }' /proc/loadavg)
@@ -268,13 +268,15 @@ filesys() {
 	if test ${dev:0:3} = "dm-"; then
 		dname=$(cat /sys/block/$dev/dm/name)
 	fi
+
+	cnt=""; dirty=""; days="";
+	cap=0; free=0; perc=0
 	
 	if test -b $dsk; then
 		eval $(df -h $dsk | awk '/'$dev'/{printf "cap=%s;free=%s;perc=%d", $2, $4, $5}')
 		type=$(blkid -s TYPE -o value $dsk)
 		lbl="$(plabel $dsk)"
 
-		cnt=""; dirty=""; days=""
 		if test "$type" == "ext2" -o "$type" == "ext3" -o "$type" == "ext4"; then
 			res=$(tune2fs -l $dsk 2> /dev/null)
 			if test $? = 0; then
@@ -540,7 +542,7 @@ mktt st_tt "Checking this will refresh different sections in the page every 10 t
 This consumes CPU, so if you are waiting for something lengtly to accomplish<br>
 it will actually take more time if autorefresh is enabled."
 
-launch system
+launch systems
 launch network
 launch disks
 launch raid
