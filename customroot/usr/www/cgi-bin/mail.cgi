@@ -6,6 +6,7 @@ check_cookie
 write_header "Mail Setup"
 
 CONFF=/etc/msmtprc
+CONFM=/etc/misc.conf
 
 parse() {
 	while read -r key value; do
@@ -21,16 +22,34 @@ parse() {
 
 parse $CONFF
 
+if test -f $CONFM; then
+	. $CONFM
+fi
+
+if test -z "$MAILTO"; then
+	MAILTO=$from
+fi
+
 if test "$tls" = "on"; then tlsf=checked; fi
-if test "$auth" = "off"; then authf=checked; sipf=disabled; fi
+
+case "$auth" in
+	on) auth_sel=selected;;
+	off) anon_sel=selected; sipf=disabled;;
+	plain) plain_sel=selected;;
+	login) login_sel=selected;;
+esac
 
 cat<<-EOF
 	<script type="text/javascript">
-	function toogle() {
-			obj = document.getElementById("sip1")
-			obj.disabled = obj.disabled ? false : true;
-			obj = document.getElementById("sip2")
-			obj.disabled = obj.disabled ? false : true;
+	function authh() {
+		obj = document.getElementById("auth_id")
+		opi = obj.selectedIndex
+		opt = obj.options[opi].value
+		value = false
+		if (opt == "off")
+			value = true
+		document.getElementById("sip1").disabled = value
+		document.getElementById("sip2").disabled = value
 	}
 	</script>
 
@@ -43,7 +62,13 @@ cat<<-EOF
 	<tr><td>TLS/SSL</td><td><input type=checkbox $tlsf name=tls value="on"></td></tr>
 
 	<tr><td><br></td></tr>
-	<tr><td>Anonymous</td><td><input type=checkbox $authf name=auth value="off" onchange="toogle()"></td></tr>
+	<tr><td>Authentication</td><td>
+	<select id="auth_id" name=auth onchange="authh()">
+	<option $auth_sel value=on>On</option>
+	<option $plain_sel value=plain>Plain</option>
+	<option $login_sel value=login>Login</option>
+	<option $anon_sel value=off>Anonymous</option>
+	</select></td></tr>
 
 	<tr><td>Username</td>
 		<td><input type=text size=20 id=sip1 $sipf name=user value="$user"></td></tr>
@@ -51,8 +76,12 @@ cat<<-EOF
 		<td><input type=password size=20 id=sip2 $sipf name=password value="$password"></td></tr>
 
 	<tr><td><br></td></tr>
-	<tr><td>Send To</td>
-		<td><input type=text size=20 name=to value="$from">
+	<tr><td>From</td>
+		<td><input type=text size=20 name=from value="$from">
+		</td></tr>
+
+	<tr><td>To</td>
+		<td><input type=text size=20 name=to value="$MAILTO">
 		<input type=submit name=submit value=Test>	
 		</td></tr>
 
