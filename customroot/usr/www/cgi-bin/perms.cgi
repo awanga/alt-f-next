@@ -14,15 +14,11 @@ else
 	}
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
-		#hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 		hlp="<a href=\"$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
 	echo "<center><h2>Directory Ownership and Access Permissions $hlp</h2></center>"
 fi
-
-#echo "<pre>$(set)</pre>"
-#echo QUERY_STRING=$QUERY_STRING
 
 if test -z "$QUERY_STRING"; then	
 	echo "</body></html>"
@@ -40,16 +36,19 @@ tmp="$browse"
 while ! mountpoint -q "$tmp"; do
 	tmp=$(dirname "$tmp")
 done
-#eval $(blkid -s TYPE $(mountpoint -n $tmp | cut -d' ' -f1) | cut -d' ' -f2)
-TYPE=$(grep $tmp /proc/mounts | cut -d" " -f3)
-if test "$TYPE" != "ext2" -a "$TYPE" != "ext3" -a "$TYPE" != "ext4" -a "$TYPE" != "nfs"; then
-	cat<<-EOF
-		<h3><font color=blue>
-			Filesystem is of type $TYPE, not a linux native filesystem.<br>
-			Only ext2, ext3, ext4 or NFS filesystems can use UNIX permissions.
-		</font></h3>$(back_button)</body></html>
-	EOF
+
+if test "$tmp" != "/"; then
+	TYPE=$(grep $tmp /proc/mounts | cut -d" " -f3)
+
+	if test "$TYPE" != "ext2" -a "$TYPE" != "ext3" -a "$TYPE" != "ext4" -a "$TYPE" != "nfs"; then
+		cat<<-EOF
+		<h4><font color=blue>
+		Filesystem is of type $TYPE, not a linux native filesystem.<br>
+		Only ext2, ext3, ext4 or NFS filesystems can use UNIX permissions.
+		</font></h4>$(back_button)</body></html>
+		EOF
 	exit 0
+	fi
 fi
 
 echo "$browse" | grep -q '^/mnt'
@@ -114,7 +113,7 @@ cat <<-EOF
 	</tr>
 	<tr><td><br></td></tr>
 	<tr><td colspan=2>Apply recursively to subdirectories</td><td><input type=checkbox name=recurse value=yes></td></tr>
-	<tr><td colspan=2>Apply ownership also to files</td><td><input type=checkbox name=toFiles value=yes></td></tr>
+	<tr><td colspan=2>Apply also to files</td><td><input type=checkbox name=toFiles value=yes></td></tr>
 	<tr><td><br></td></tr>
 	<tr><td></td><td colspan=2>$(back_button)<input type=submit name=Permissions value="Submit"></td></tr>
 	</table>
