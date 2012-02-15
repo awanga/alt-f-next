@@ -97,7 +97,7 @@ mbr_partition() {
 
 if true; then
 	eval $(sfdisk -l -uS $i | tr '*' ' ' | awk '
-		/cylinders/ {printf "maxsect=%0.f;", $3 * $5 * $7}')
+		/cylinders/ {printf "maxsect=%.0f;", $3 * $5 * $7}')
 else
 	maxsect=$(cat /sys/block/$(basename $i)/size)
 fi
