@@ -91,6 +91,9 @@ you then release the button no action will be taken.
 <li>Finally, if you press the box back button for one or two seconds,
 both leds will start flashing, and the script that you specified in the
 <strong>Back button cmd</strong> will be executed.<br>
+If no script is specified all USB mounted filesystems will be unmounted,
+making it safe to remove the attached USB device. Notice that unmounting
+will be unsuccessful if any service is accessing the USB filesystems.<br>
 
 The back button also has two <em>recovery actions</em> if the
 <strong>Enable Recovery</strong> checkbox is checked:<ul>

@@ -21,7 +21,7 @@ Depending on the current Alt-F and vendor's settings, there can be not enough fl
 <p>In this page upper section, <strong>Flash Memory</strong>, you can
 <ul>
 <li><strong>SaveSettings</strong>: the current in-memory settings are saved into flash-memory. Several sets of Alt-F settings can coexist, tagged with the date and hour of the save operation; if necessary the older is deleted in order to provide space for the new set.
-<li><strong>LoadSettings</strong>: You have to select one of the available sets using the <strong>Select one</strong> button. The stored settings will be loaded in memory and become effective immediately; the box IP might change.
+<li><strong>LoadSettings</strong>: You have to select one of the available sets using the <strong>Select one</strong> button. The stored settings will be loaded in memory and become effective immediately; however, most running services will not recognize configuration changes until they are restarted. You might restart then all using System->Utilities->Services->RestartAll. The box IP and name might change.
 <li><strong>ClearSettings</strong>: the flash-memory used to store settings will be wiped, removing all vendor's and Alt-F settings. Current in-memory settings will not be cleared, and you might want to <strong>SaveSettings</strong> afterward, or on the next reboot the box will use Alt-F "factory" settings.
 </ul>
 
