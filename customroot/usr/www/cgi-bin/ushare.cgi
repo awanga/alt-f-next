@@ -9,6 +9,7 @@ CONF_USHARE=/etc/ushare.conf
 
 if test -e $CONF_USHARE; then
 	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)" 
+	USHARE_NAME="$(awk -F= '/^USHARE_NAME/{print $2}' $CONF_USHARE)" 
 	eval $(grep ^ENABLE_WEB $CONF_USHARE)
 	if test "$ENABLE_WEB" = "yes"; then
 		chkweb="checked"
@@ -66,6 +67,7 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	<tr><td>Server Name</td><td><input type=text name=sname value="$USHARE_NAME"></td></tr>
 	<tr><td>Enable Web</td><td><input type=checkbox id=chkweb $chkweb name="ENABLE_WEB" value="yes" onclick="edisable('chkweb','webbut', '$webbut')"></td></tr>
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>

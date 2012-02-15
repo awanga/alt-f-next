@@ -24,12 +24,13 @@ for i in $(seq 1 $cnt); do
 	res="$d,$res"
 done
 
-shares="$(httpd -d $res)"
+if test -n "$res"; then shares="$(httpd -d $res)"; fi
 
 if test -z "$ENABLE_WEB"; then ENABLE_WEB="no"; fi
 
 sed -i 's|USHARE_DIR=.*$|USHARE_DIR='"$shares"'|' $CONF_USHARE
 sed -i 's|ENABLE_WEB=.*$|ENABLE_WEB='"$ENABLE_WEB"'|' $CONF_USHARE
+sed -i 's|USHARE_NAME=.*$|USHARE_NAME='"$(httpd -d $sname)"'|' $CONF_USHARE
 
 if rcushare status >& /dev/null; then
 	rcushare reload >& /dev/null
