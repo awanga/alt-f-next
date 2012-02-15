@@ -19,7 +19,7 @@ exports_row() {
 		<tr><td align=center><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
 		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value="$exdir"></td>
 		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
-		<td><input type=text size=10 name=ip_$cnt value="$aip"></td>
+		<td><input type=text size=10 id=aip_$cnt name=ip_$cnt value="$aip" onclick="def_aip('aip_$cnt','$def_ip')"></td>
 		<td><input type=text size=40 id=expopts_$cnt name=xopts_$cnt value="$opts" onclick="def_opts('xpt', 'expopts_$cnt')"></td>
 		<td><input type=button value=Browse onclick="opts_popup('expopts_$cnt', 'nfs_exp_opt')"></td>
 		</tr>
@@ -74,6 +74,11 @@ write_header "NFS Setup"
 
 CONFX=/etc/exports
 CONFT=/etc/fstab
+CONFM=/etc/misc.conf
+
+if test -f $CONFM; then
+	. $CONFM
+fi
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -92,6 +97,14 @@ cat<<-EOF
 			eopts=document.getElementById(id).value
 			window.open("browse_opts.cgi?id=" + id + "?kind=" + kind + "?eopts=" + eopts, "Browse", "scrollbars=yes, width=500, height=500");
 			return false;
+		}
+		function def_aip(id, def_ip) {
+			var opts = document.getElementById(id);
+			if (opts.value != "")
+				return
+			else
+				//opts.value = def_ip
+				opts.value = "*"
 		}
 		function def_opts(kind, id) {
 			var opts = document.getElementById(id);
@@ -131,6 +144,11 @@ cat<<-EOF
 		<th>Options</th>
 		</tr>
 EOF
+
+hostip=$(hostname -i)
+netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
+eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
+def_ip="$NETWORK/$netmask"
 
 cnt=1
 if test -e $CONFX; then
@@ -197,7 +215,18 @@ done)
 echo "<ul> $res </ul>"
 fi
 
+if ! aufs.sh -s >& /dev/null; then
+	dnfs_dis="disabled"	
+fi
+
+if test -n "$DELAY_NFS"; then
+	dnfs_chk="checked"
+fi
+
+mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages directory becomes available"
+
 cat<<-EOF
+	<br>Delay NFS start on boot <input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)>
 	<br><input type="submit" name="submit" value="Submit">
 	$(back_button)
 	</form></body></html>
