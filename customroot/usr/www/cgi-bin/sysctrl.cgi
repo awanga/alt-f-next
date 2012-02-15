@@ -5,7 +5,11 @@ check_cookie
 write_header "Temperature, Fan and Buttons Setup"
 
 CONFF=/etc/sysctrl.conf
-CONFM=/etc/msmtprc
+CONFM=/etc/misc.conf
+
+mktt tt_1cmd "User script to execute before the box reboots. Read the online help"
+mktt tt_2cmd "User script to execute before the box powers-down. Read the online help"
+mktt tt_3cmd "User script to execute when pressing the back button. Read the online help"
 
 board="$(cat /tmp/board)"
 
@@ -45,7 +49,7 @@ if test "$mail" = "1"; then
 fi
 
 if test -e $CONFM; then
-	SENDTO=$(awk '/^from/{ print $2}' $CONFM)
+	SENDTO=$(awk -F= '/^MAILTO/{ print $2}' $CONFM)
 	if test -z "$SENDTO"; then NOMAILF=disabled; fi
 fi
 
@@ -120,13 +124,13 @@ cat<<-EOF
 	<fieldset><Legend><strong>Action to execute on Button press</strong>
 		</legend><table>
 			<tr><td>Front button 1st cmd:</td>
-				<td colspan=3><input type=text name=front_button_command1  value="$front_button_command1"></td>
+				<td colspan=3><input type=text name=front_button_command1  value="$front_button_command1" $(ttip tt_1cmd)></td>
 			</tr>
 			<tr><td>Front button 2nd cmd:</td>
-				<td colspan=3><input type=text name=front_button_command2 value="$front_button_command2"></td>
+				<td colspan=3><input type=text name=front_button_command2 value="$front_button_command2" $(ttip tt_2cmd)></td>
 			</tr>
 			<tr><td>Back button cmd:</td>
-				<td colspan=3><input type=text name=back_button_command value="$back_button_command"></td>
+				<td colspan=3><input type=text name=back_button_command value="$back_button_command" $(ttip tt_3cmd)></td>
 			</tr>
 			<tr><td>Enable Recovery</td>
 				<td><input type=checkbox $recovchk name=recovery value="1"></td>
