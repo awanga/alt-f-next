@@ -19,6 +19,7 @@ EOF
 
 # FIXME: add service description
 ssrv="rsync ssh telnet ftp http printer swat"
+if test -f /usr/sbin/saned; then ssrv="$ssrv sane"; fi
 for i in $ssrv; do
 	chkf=""
 	if $(grep -q -e "^$i" $CONFF); then
