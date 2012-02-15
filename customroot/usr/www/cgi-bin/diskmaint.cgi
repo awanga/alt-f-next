@@ -117,17 +117,21 @@ blk="$blk $(blkid -s LABEL -s TYPE /dev/dm-[0-9]*)"
 
 ppart=$(cat /proc/partitions)
 i=1
-for j in $(ls /dev/sd[a-z][1-9] /dev/md[0-9]* /dev/dm-[0-9] 2> /dev/null); do
+for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 	part=$(basename $j)
 	dname=$part
 
-	if test ${part:0:2} = "md"; then
+	if test ${part:0:2} = "md"; then # RAID
 		if ! test -f /sys/block/$part/md/array_state; then continue; fi
 		if test "$(cat /sys/block/$part/md/array_state)" = "inactive"; then continue; fi
-	elif test ${part:0:3} = "dm-"; then
+	elif test ${part:0:3} = "dm-"; then # device mapper, LVM or dm-crypt
 		# show LV name?
 		dname=$(cat /sys/block/$part/dm/name)
-	elif ! test -d /sys/block/${part:0:3}/$part; then
+		# don't show internal LVM devices for mirror, snapshot, etc volumes
+		if echo $dname | grep -qE _mlog\|_mimage\|-real\|-cow\|-pvmove\|-missing_; then continue; fi
+	elif blkid /dev/$part >& /dev/null ; then # non-partitioned disk, filesystem uses all device
+		:
+	elif ! test -d /sys/block/${part:0:3}/$part; then # standard partitioned disk
 		continue
 	else # is an extended partition?
 		if test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then continue; fi
