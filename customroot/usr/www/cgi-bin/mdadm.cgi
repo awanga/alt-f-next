@@ -5,7 +5,6 @@ check_cookie
 write_header "MDadm setup"
 
 CONFF=/etc/misc.conf
-CONFM=/etc/msmtprc
 
 if test -e $CONFF; then
 	. $CONFF
@@ -15,9 +14,7 @@ if test -z "$MDADM_INTERVAL"; then
 	MDADM_INTERVAL=30
 fi
 
-if test -e $CONFM; then
-	SENDTO="$(awk '/^from/{ print $2}' $CONFM)"
-fi
+SENDTO=$(grep '^MAILTO' $CONFF | cut -d= -f2)
 
 if test -z "$SENDTO"; then
 	msg "Please setup Mail first"
@@ -29,7 +26,7 @@ cat<<-EOF
 	<form action="/cgi-bin/mdadm_proc.cgi" method="post">
 	<table>
 	<tr><td>Send mail to </td><td><input type=text readonly name=sendto value="$SENDTO">
-	Use "Mail Setting" to change</td></tr>
+	Use "Setup Mail" to change</td></tr>
 	<tr><td>Check RAID every </td><td><input type=text name=interval value="$MDADM_INTERVAL">
 	minutes</td></tr>
 	<tr><td>Send test message</td><td><input type=checkbox $testck name=test value="--test">
