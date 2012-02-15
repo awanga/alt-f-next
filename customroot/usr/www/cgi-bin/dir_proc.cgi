@@ -95,21 +95,17 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 elif test -n "$Permissions"; then
 	nuser="$(httpd -d $nuser)"
 	ngroup="$(httpd -d $ngroup)"
-	
-	if test -z "$nuser" -o -z "$ngroup"; then
-		msg "No user or group for directory?!"
-	fi
-	
+		
 	if test -z "$recurse"; then
 		optr="-maxdepth 0"
 	fi
 
-	if test -n "$toFiles"; then
-		optf="-o -type f"
+	if test -z "$toFiles"; then
+		optf="-type d"
 	fi
 
-	find "$wdir" $optr -type d $optf -exec chown "${nuser}:${ngroup}" {} \;
-	find "$wdir" $optr -type d -exec chmod u=$p2$p3$p4,g=$p5$p6$p7,o=$p8$p9$p10 {} \;
+	find "$wdir" $optr $optf -exec chown "${nuser}:${ngroup}" {} \;
+	find "$wdir" $optr $optf -exec chmod u=$p2$p3$p4,g=$p5$p6$p7,o=$p8$p9$p10 {} \;
 
 	HTTP_REFERER="$(httpd -d $goto)"
 fi
