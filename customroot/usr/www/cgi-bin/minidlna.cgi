@@ -17,12 +17,20 @@ if test -e $CONFF; then
 	fi
 fi
 
+if test -n "$presentation_url"; then
+	XBOX_CHK=checked
+fi
+
 if test "$enable_tivo" = "yes"; then
 	TV_CHK=checked
 fi
 
 if test "$strict_dlna" = "yes"; then
 	STRICT_CHK=checked
+fi
+
+if test -z "$friendly_name"; then
+	friendly_name=miniDLNA
 fi
  
 cat<<-EOF
@@ -37,14 +45,35 @@ cat<<-EOF
 	</script>
 
 	<form name=minidlna action=minidlna_proc.cgi method="post" >
-	<table>
+	<table><tr><th>Type</th><th>Share Directory</th></tr>
 EOF
 
 OIFS="$IFS"; IFS=";"; k=1
+
 for i in $MDLNA_DIR; do
+
+	achk=""; vchk=""; pchk="";
+	if echo $i | grep -q ^/ ; then
+		mdir=$i
+	else
+		mdir=${i:2}
+		mtype=${i:0:1}
+		case $mtype in
+			A|a) achk=selected ;;
+			V|v) vchk=selected ;;
+			P|p) pchk=selected ;;
+		esac
+	fi
+
+	otype="<option>Any</option>
+	<option value=A $achk>Audio</option>
+	<option value=V $vchk>Video</option>
+	<option value=P $pchk>Pictures</option>"
+
 	cat<<-EOF
-		<tr><td>Share directory</td>
-		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$i"></td>
+		<tr>
+		<td align=center><select name=stype_$k>$otype</select></td>
+		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$mdir"></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$k')" value=Browse></td>
 		</tr>
 	EOF
@@ -53,8 +82,11 @@ done
 IFS="$OIFS"
 
 for j in $(seq $k $((k+2))); do
+	otype="<option>Any</option><option value=A>Audio</option>
+		<option value=V>Video</option><option value=P>Pictures</option>"
 	cat<<-EOF
-		<tr><td>Share directory</td>
+		<tr>
+		<td align=center><select name=stype_$j>$otype</select></td>
 		<td><input type=text size=32 id="conf_dir_$j" name="sdir_$j" value=""></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$j')" value=Browse></td>
 		</tr>
@@ -62,12 +94,16 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	<tr><td></td></tr>
+	<tr><td>Server Name</td><td><input type=text name=friendly_name value="$friendly_name"></td></tr>
 	<tr><td>Rescan shares</td><td><input type=checkbox $RESCAN_CHK=checked name=force_rescan value=yes $(ttip rescan_tt)></td></tr>
 	<tr><td>Strict DLNA</td><td><input type=checkbox $STRICT_CHK name=strict_dlna value=yes></td></tr>
 	<tr><td>TiVo Support</td><td><input type=checkbox $TV_CHK name=enable_tivo value=yes></td></tr>
+	<tr><td>Xbox Support</td><td><input type=checkbox $XBOX_CHK name=enable_xbox value=yes></td></tr>
 	<tr><td></td><td>
 	<input type=submit value=Submit> $(back_button)
 	</td></tr></table>
 	<input type=hidden name=cnt value=$j>
+	<input type=hidden name=port value=$port>
 	</form></body></html>
 EOF
