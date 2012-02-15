@@ -47,7 +47,6 @@ letters, numbers and ! \\\" # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\\ ] ^ _
 }
 
 checkip() {
-#	echo "$1" | grep -q -e '^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$'
 	echo $* | awk '{ nf = split($0, a, ".")
 		if (nf < 4) exit 1
 		for (i=1; i<=nf; i++) {
@@ -81,40 +80,14 @@ html_escape() {
 	echo -n "$1" | od -An -t dC -w300 | sed -e 's/^ *//' -e 's/\([0-9]*\)/\&#\1;/g' -e 's/ //g'
 }
 
-# $1-share "[Public (Read Write)]" [$2-path]
-make_available() {
-
-	awk '{
-		while ($0 != "'"$1"'") {
-			print $0
-			if (! getline) exit
-		}
-		print $0; getline
-
-		while (substr($0,1,1) != "[") {
-			if ($1 == "available") 	print "available = yes"
-			else if ($1 == "path" && "'"$2"'" != "") print "path = \"'"$2"'\""
-			else print $0
-			if (! getline) exit
-		}
-		print $0
-		while(getline) print $0
-	}' /etc/samba/smb.conf > /etc/samba/smb.conf-new
-
-	mv /etc/samba/smb.conf-new /etc/samba/smb.conf
-	if rcsmb status >& /dev/null; then
-		rcsmb reload >& /dev/null
-	fi
-}
-
 # $1-title (optional)
 html_header() {
 	cat<<-EOF
 		Content-Type: text/html; charset=UTF-8
 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>$1</title></head><body>
+		<html style="height: 100%;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>$1</title></head><body style="height: 100%;">
 	EOF
 }
 
@@ -191,6 +164,11 @@ ismount() {
 	grep -q ^/dev/$1 /proc/mounts
 }
 
+find_dm() {
+	eval $(dmsetup info /dev/$1/$2 | awk '/Major/{printf "mj=%d mi=%d", $3, $4}')
+	awk '/'$mj' *'$mi'/{printf "%s", $4}' /proc/partitions
+}
+
 # $1=sda global: ln 
 fs_progress() {
 	part=$1
@@ -206,7 +184,6 @@ fs_progress() {
 				elif test $k = "format"; then
 					ln=$(echo $ln | awk -F/ '/.*\/.*/{printf "%d%%", $1*100/$2}')
 				elif test $k = "shrink" -o $k = "enlarg"; then
-#					ln=$(echo $ln | grep -oE ' [0-9]+.[0-9]+%|X|[0-9]+/[0-9]+')
 					ln=$(echo $ln | grep -o X)
 					if test -n "$ln"; then
 						ln=" step 2: $(expr $(echo "$ln" | wc -l) \* 100 / 40)%"
@@ -325,7 +302,6 @@ gotopage() {
 js_gotopage() {
 	cat<<-EOF
 		<script type="text/javascript">
-			//window.location.assign("http://" + location.hostname + "$1")
 			window.location.assign("$1")
 		</script>
 	EOF
@@ -334,16 +310,19 @@ js_gotopage() {
 check_cookie() {
 	eval $HTTP_COOKIE >& /dev/null
 	if test -n "$HTTP_COOKIE" -a -f /tmp/cookie; then
-		if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
-			return
+		if test $(expr $(date +%s) - $(date +%s -r /tmp/cookie) ) -lt 1800; then
+			if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
+				touch /tmp/cookie
+				return
+			fi
 		fi
+		rm /tmp/cookie
 	fi
 	gotopage /cgi-bin/login.cgi?$REQUEST_URI
 }
 
 busy_cursor_start() {
 	cat<<-EOF
-		<style>	body { height : 100%;} </style>
 		<script type="text/javascript">
 			document.body.style.cursor = 'wait';
 		</script>
@@ -364,7 +343,6 @@ wait_count_start() {
 	tid=$(basename $tmp_id)
 	cat<<-EOF
 		$1: <span id="$tid">0</span>
-		<style>	body { height : 100%;} </style>
 		<script type="text/javascript">
 			function wait_count_update(id) {
 				obj = document.getElementById(id);
@@ -394,13 +372,7 @@ embed_page() {
 	write_header ""
 
 	cat<<-EOF
-		<!--style>
-			html, body, div, iframe { height : 100%;}
-			iframe { display:block; width:100%; border:none; } 
-		</style-->
-		<div>
-			<iframe src="$1" width="100%" height="1200px" frameborder=0 scrolling=auto></iframe>
-		</div>
+		<iframe src="$1" width="100%" height="95%" frameborder="0" scrolling="auto"></iframe>
 		</body></html>
 	EOF
 	exit 0
@@ -628,7 +600,7 @@ EOF
 	for i in Setup Disk Services Packages System; do
 		fill_menu $i
 	done
-	echo "<td><a class=\"Menu\" href=\"/cgi-bin/bookmark.cgi?add=$1&url=$2\" target=\"content\">Bookmark</a></td></tr></table>"
+	echo "<td><a class=\"Menu\" href=\"/cgi-bin/bookmark.cgi?add=$1&amp;url=$2\" target=\"content\">Bookmark</a></td></tr></table>"
 }
 
 # args: title [onload action]
@@ -637,14 +609,14 @@ write_header() {
 		Content-Type: text/html; charset=UTF-8
 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html><head>
+		<html style="height: 95%;"><head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	EOF
 
 	if ! loadsave_settings -st >/dev/null; then
 		warn_tt="The following files have changed since the last save:<br>$(loadsave_settings -lc | sed -n 's/ /<br>/gp')"
 		warn="<center><h5>
-			<a href=\"javascript:void(0)\" $(ttip tt_settings)
+			<a href=\"/cgi-bin/settings.cgi\" $(ttip tt_settings)
 			style=\"text-decoration: none; color: red\">
 			When done you should save settings
 			<img src=\"../help.png\" width=11 height=11 alt=\"help\" border=0>
@@ -657,7 +629,6 @@ write_header() {
 
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
-		#hlp="<a href=\"http://$HTTP_HOST/$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 	
@@ -667,7 +638,7 @@ write_header() {
 		$(tooltip_setup)
 		$(drawbargraph_setup)
 		</head>
-		<body $act>
+		<body style="height: 95%;" $act>
 		$(menu_setup2 "$1" "/cgi-bin/$0") 
 		$(mktt tt_help "Get a descriptive help")
 		$(mktt tt_settings "$warn_tt")
