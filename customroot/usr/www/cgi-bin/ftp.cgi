@@ -5,10 +5,17 @@ check_cookie
 write_header "vsftpd server Setup"
 
 mktt tt_jail "If checked, the user will be restricted to use only its own directories"
+mktt tt_dusers "list of space separated usernames to deny ftp access"
 
 CONFF=/etc/vsftpd.conf
+CONFU=/etc/vsftpd.user_list
 
 hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
+
+userdeny=""
+if test -f $CONFU; then
+	denyusers=$(cat $CONFU | tr '\n' ' ')
+fi
 
 if test -f $CONFF; then
 	. $CONFF
@@ -68,6 +75,7 @@ cat<<-EOF
 	<table>
 
 	<tr><td>Restrict directories:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" $(ttip tt_jail)></td></tr>
+	<tr><td>Disallow users:</td><td><input type=text name=denyusers value="$denyusers" $(ttip tt_dusers)></td></tr>
 	<tr><td><br></td></tr>
 
 	<tr><td>Enable Anonymous:</td><td><input type=checkbox $anon_en_chk id=anon name=anonymous_enable value="yes" onchange="toogle('anon')"></td></tr>
