@@ -36,6 +36,7 @@ sed -i -e '/^#!#.*<directory .*$/d' -e 's/^!#!\(.*<directory .*$\)/\1/' $CONFF
 if test -z "$ENABLE_WEB"; then ENABLE_WEB="no"; fi
 sed -i 's/<ui enabled=.*>/<ui enabled="'$ENABLE_WEB'" show-tooltips="yes">/' $CONFF
 
+sed -i 's|<name>.*</name>|<name>'"$(httpd -d $sname)"'</name>|' $CONFF
 
 rcmediatomb status >& /dev/null
 if test $? = 0; then

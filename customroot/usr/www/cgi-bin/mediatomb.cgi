@@ -18,6 +18,8 @@ if test $? != 0 -o "$chkweb" != "checked"; then
 		webbut="disabled"
 fi
 
+sname="$(sed -n 's|.*<name>\(.*\)</name>|\1|p' $CONFF)"
+
 cat<<-EOF
 	<script type="text/javascript">
 		function browse_dir_popup(input_id) {
@@ -63,6 +65,7 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	<tr><td>Server Name</td><td><input type=text name=sname value="$sname"></td></tr>
 	<tr><td>Enable Web</td><td><input type=checkbox id=chkweb $chkweb name="ENABLE_WEB" value="yes" onclick="edisable('chkweb','webbut', '$webbut')"></td></tr>
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
