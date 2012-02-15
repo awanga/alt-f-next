@@ -5,7 +5,7 @@ write_header "Alt-F Login"
 
 SECR=/etc/web-secret
 
-mktt tt_login "Enter your web administration password, the session is valid for one hour.<br>The box date must be correct for the password to be accepted."
+mktt tt_login "Enter your web administration password, the session will expire after 30 minutes of inactivity."
 mktt tt_again "Type your password again. It will be your \"root\" password."
 
 cat<<-EOF
