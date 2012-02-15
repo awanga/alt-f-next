@@ -23,10 +23,35 @@ if test $st != "0"; then
 	exit 0
 fi
 
+# Model			product_id	custom_id	model_id	sub_id	NewVersion
+# DNS323		7			1			1			1		4
+# CH3SNAS		7			2			1			1		4
+# Alt-F-0.1B	1			2			3			4		5
+# Alt-F-0.1RC	7			1			1			1		4
+
+for i in $res; do
+	if echo $i | grep -q ';'; then
+		eval "$i" >& /dev/null
+	fi
+done
+
+sig=${product_id}${custom_id}${model_id}${sub_id}
+
+case $sig in
+	"7111") ftype="DNS-323" ;;
+	"7211") ftype="CH3SNAS" ;;
+	"1234") ftype="Alt-F-0.1Bx" ;;
+	*) 
+		rm -f kernel initramfs defaults
+		msg "$sig Does not seems to be a firmware file for the DNS323 nor the CH3SNAS."
+		exit 0
+		;;
+esac
+
 html_header
 echo "<h2><center>Firmware Updater</center></h2><pre>"
 
-echo -e "$res\n\n<strong>Everything looks OK</strong>\n"
+echo -e "$res\n\n<strong>Everything looks OK, it is a $ftype compatible firmware file</strong>\n"
 
 ls -l kernel initramfs defaults
 
