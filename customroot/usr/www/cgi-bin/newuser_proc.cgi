@@ -8,6 +8,7 @@ CONFP=/etc/passwd
 CONFR=/etc/rsyncd.conf
 CONFRS=/etc/rsyncd.secrets
 CONFS=/etc/samba/smbusers
+CONFSMB=/etc/samba/smb.conf
 
 #debug
 
@@ -101,6 +102,7 @@ elif test "$create_dir" = "CreateDir"; then
 
 	IFS=":"
 	while read  nick x uid gid name hdir rest; do
+		if echo "$nick" | grep -q '^#'; then continue; fi
 		if test "$uid" -ge 1000; then
 			if ! test -d "$hdir"; then
 				mkdir "$hdir"
@@ -109,31 +111,30 @@ elif test "$create_dir" = "CreateDir"; then
 		fi
 	done < $CONFP
 
-	if ! grep -q "^\[Users\]"; then
-		cat<<-EOF >> /etc/samba/smb.conf
+	if ! grep -q "^\[Users\]" $CONFSMB; then
+		cat<<EOF >> $CONFSMB		
 
-			[Users]
-			comment = Users private directories
-			path = /home
-			read only = No
-			available = yes
-
-			[Public (Read Write)]
-			comment = Public Area where everybody can read and write
-			path = /Public/RW
-			public = yes
-			read only = no
-			available = yes
-			create mask = 0666
-			directory mask = 0777
-
-			[Public (Read Only)]
-			comment = Public Area that everybody can read
-			path = /Public/RO
-			public = yes
-			read only = yes
-			available = yes
-		EOF
+[Users]
+	comment = Users private directories
+	path = /home
+	read only = no
+	available = yes
+			
+[Public (Read Write)]
+	comment = Public Area where everybody can read and write
+	inherit permissions = yes
+	path = /Public/RW
+	public = yes
+	read only = no
+	available = yes
+		
+[Public (Read Only)]
+	comment = Public Area that everybody can read
+	path = /Public/RO
+	public = yes
+	read only = yes
+	available = yes
+EOF
 
 		if rcsmb status >& /dev/null; then
 			rcsmb reload >& /dev/null
