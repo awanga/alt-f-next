@@ -54,12 +54,16 @@ createdef() {
 
 	# special case, only save nfs and cifs mounts, as other entries are hotpluged
 	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0}' /etc/fstab > /tmp/xfstab
-	files="$files /tmp/xfstab $initscript_perms"
+
+	# another special case, only save user cron entries, not Alt-F ones
+	sed '/#!# Alt-F cron/d' /var/spool/cron/crontabs/root > /tmp/ucron
+
+	files="$files /tmp/xfstab /tmp/ucron $initscript_perms"
 
 	dt=$(date +%F_%T)
 	nm=set_$dt.tgz
 	tar -czf /tmp/$nm $files > /dev/null 2>&1
-	rm /tmp/xfstab
+	rm /tmp/xfstab /tmp/ucron
 	echo $nm
 }
 
@@ -108,7 +112,9 @@ checkfile() {
 	if ! tar -C $TD -xzf $1; then
 		ret=1
 	fi
-		
+
+if false; then
+	# FIXME: stupid test. Store a signature instead!		
 	for i in $files tmp/initd_perms tmp/xfstab; do
 		rm -f $TD/$i
 	done
@@ -116,6 +122,7 @@ checkfile() {
 	if test "$(find $TD -type f | wc -l)" != "0"; then
 		ret=1
 	fi
+fi
 
 	rm -rf $TD
 	return $ret
@@ -144,9 +151,24 @@ loadflashdef() {
 		tar -C / -xzf $last
 		res=$?
 		# special nfs and cifs cases
-		#cat /etc/fstab /tmp/xfstab | sort | uniq > /etc/fstab
-		cat /tmp/xfstab >> /etc/fstab
+		TF=$(mktemp)
+		cat /tmp/xfstab /etc/fstab | sort -u > $TF
+		mv $TF /etc/fstab
 		rm /tmp/xfstab
+
+		if test -f /var/spool/cron/crontabs/root; then
+			TF=$(mktemp)
+			cat /tmp/ucron /var/spool/cron/crontabs/root | sort -u > $TF
+			mv $TF /var/spool/cron/crontabs/root
+			rm /tmp/ucron
+		else
+			mkdir -p /var/spool/cron/crontabs
+			mv /tmp/ucron /var/spool/cron/crontabs/root
+		fi
+
+		# there are several configuration files that would require services to reload them,
+		# such as inetd, samba, nfs... etc. This is not important at boot, only when the user
+		# loads a settings file when the box is already running. call 'rcall restart' 
 	fi
 
 	umount $save_dir
@@ -335,17 +357,18 @@ files="
 /etc/samba/credentials.*	/etc/exports
 /etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
 /etc/dnsmasq-resolv	/etc/rsyncd.conf	/etc/rsyncd.secrets
-/etc/inetd.conf		/etc/vsftpd.conf	/etc/httpd.conf
+/etc/vsftpd.conf	/etc/vsftpd.user_list
+/etc/inetd.conf		/etc/httpd.conf
 /etc/misc.conf		/etc/inadyn.conf	/etc/ipkg.conf
 /etc/ntp.conf		/etc/ntp.drift		/etc/adjtime.conf
-/etc/sysctrl.conf	/etc/msmtprc		/etc/smartd.conf
-/etc/wgetrc			/etc/ssl/certs/vsftpd.pem	/etc/backup.conf
-/etc/syslog.conf	/etc/sysctl.conf	/etc/modprobe.conf
-/usr/www/cgi-bin/bookmarks.html
+/etc/sysctrl.conf	/etc/msmtprc		/etc/msmtprc.alias
+/etc/smartd.conf	/etc/wgetrc			/etc/ssl/certs/vsftpd.pem
+/etc/backup.conf	/etc/syslog.conf	/etc/sysctl.conf
+/etc/modprobe.conf	/usr/www/cgi-bin/bookmarks.html
 "
 
 # those are also used only when mounting/unmounting the aufs branch
-xfiles="/etc/fstab /etc/bay"
+xfiles="/etc/fstab /etc/bay /var/spool/cron/crontabs/root"
 
 if test $# = 0; then
 	usage
