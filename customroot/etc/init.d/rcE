@@ -23,19 +23,16 @@ sleep 1
 #fi
 
 echo "rcE: unmounting aufs "
-# unmount aufs
 if aufs.sh -s >& /dev/null ; then
 	aufs.sh -u
 fi
 
 echo "rcE: unmounting all mounted filesystems"
-# unmount all mounted filesystems
 for i in nfs cifs iso9660 ext2 ext3 ext4 vfat ntfs; do
 		umount -t $i -rf -a 
 done
 
 echo "rcE: stopping RAID"
-# stop raid
 for i in /dev/md[0-9]; do
   if test -b $i; then
 	mdadm --stop $i
@@ -66,6 +63,9 @@ for i in /dev/sd[a-z]; do
 	eject $(basename $i)
   fi
 done
+
+echo "rcE: still mounted filesystems"
+mount
 
 echo "rcE: saving date and time to RTC"
 # write system time to RTC, waiting for second change
