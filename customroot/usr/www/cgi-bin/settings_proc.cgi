@@ -3,6 +3,29 @@
 . common.sh
 check_cookie
 
+restart() {
+	html_header
+	busy_cursor_start
+
+	hostname -f /etc/hostname >& /dev/null
+	
+	start-stop-daemon -K -x udhcpc >& /dev/null
+
+	ifdown eth0 >& /dev/null
+	sleep 1
+	ifup eth0 >& /dev/null
+
+	# FIXME: add 'reload' as 'restart' to all initscript services
+	# that do not support reload and use 'rcall reload' instead
+	# rcall restart >& /dev/null
+
+	busy_cursor_end
+
+	js_gotopage /cgi-bin/settings.cgi
+	echo "</body></html>"
+	exit 0
+}
+
 if test "${CONTENT_TYPE%;*}" = "multipart/form-data"; then
 	upfile=$(upload_file)
 	action="Upload"
@@ -33,6 +56,7 @@ case $action in
 		settings=$(httpd -d "$(echo $settings)")
 		if test -n "$settings"; then
 			loadsave_settings -lf "$settings"
+			restart
 		else
 			msg "You must select a settings set."
 		fi
@@ -45,6 +69,7 @@ case $action in
 		if test $st != 0; then
 			msg "$res"
 		fi
+		restart
 		;;
 
 	Download)

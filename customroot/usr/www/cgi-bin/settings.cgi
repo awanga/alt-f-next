@@ -21,6 +21,9 @@ if test -f /tmp/firstboot; then
 fi
 
 res=$(loadsave_settings -ls)
+for i in $res; do
+	sets="$sets <option>$i</option>"
+done	
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -30,21 +33,20 @@ cat<<-EOF
 		 "Under Alt-F, without settings, the box will first try to use a DHCP assigned IP," + '\n' +
 		 "and if not successful will try to find a free IP in the 192.168.1.254-240 range."); 
 	}
+	function load_ask() {
+		return confirm("Loading settings might change the box name and IP." + '\n' +
+			"You should afterwards restart all running services, so they will apply changes." +
+			 '\n' + '\n' + "Continue?");
+
+	}
 	</script>
+
 	<fieldset><legend><strong>Flash Memory</strong></legend>
 	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	<input type=submit name=action value=SaveSettings><br><br>
 	<select name=settings>
-	<option value="">Select one</option>
-EOF
-
-for i in $res; do
-	echo "<option>$i</option>"
-done	
-
-cat<<-EOF
-	</select>
-	<input type=submit name=action value=LoadSettings><br><br>
+	<option value="">Select one</option>$sets</select>
+	<input type=submit name=action value=LoadSettings onclick="return load_ask()"><br><br>
 	<input type=submit $clear_dis name=action value=ClearSettings onclick="return ask()">
 	</form>
 	</fieldset><br>
@@ -56,7 +58,7 @@ cat<<-EOF
 
 	<form action="/cgi-bin/settings_proc.cgi" method="post" enctype="multipart/form-data"><br>
 	Load settings from file: <input type=file name=uploadedfile>
-	<input type=submit name=action value="Upload">
+	<input type=submit name=action value="Upload" onclick="return load_ask()">
 	</form>
 	</fieldset>
 	</body></html>
