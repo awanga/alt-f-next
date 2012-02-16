@@ -25,12 +25,7 @@ disk_details() {
 
 eject_all() {
 	# stop all services
-	rcall stop
-
-#	if test -x /usr/sbin/lvm; then
-#		mkdir -p /tmp/lvm
-#		cp /lib/libdevmapper.so.1.02 /usr/sbin/lvm /tmp/lvm
-#	fi
+	rcall stop # this stops lvm and cryptsetup
 
 	# unmount aufs
 	if aufs.sh -s >& /dev/null ; then
@@ -66,17 +61,9 @@ eject_all() {
 		fi
 	done
 
-#	# stop lvm
-#	if test -x /tmp/lvm; then
-#		echo "rcE: stopping LVM"
-#		mv /tmp/lvm/libdevmapper.so.1.02 /lib
-#		mv /tmp/lvm/lvm /usr/sbin/
-#		lvm vgchange -a n
-#	fi
-
 	ret=0
 
-	for i in /dev/sd[a-z][1-9]; do
+	for i in /dev/sd[a-z]*; do
     	(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh >& /dev/null)
 	    ret=$(($ret + $?))
 	done
@@ -141,12 +128,23 @@ bay2disk() {
 
 # $1=dsk, not in use ret=0
 notinuse() {
-	if test -z "$(grep /dev/$1 /proc/mounts 2> /dev/null)" -a \
-		-z "$(grep /dev/$1 /proc/swaps 2> /dev/null)" -a \
-		-z "$(grep $1 /proc/mdstat 2> /dev/null)"; then
-			return 0
+	
+	st=0
+
+	if test -n "$(grep /dev/$1 /proc/mounts 2> /dev/null)" -o \
+		-n "$(grep /dev/$1 /proc/swaps 2> /dev/null)" -o \
+		-n "$(grep $1 /proc/mdstat 2> /dev/null)" -o \
+		-n "$(ls /dev/mapper/ 2> /dev/null | grep $1)"; then
+			st=1
 	fi
-	return 1
+
+	for i in /dev/$1?; do
+		if test -n "$(pvdisplay --map $i 2> /dev/null | sed -n '\|Logical volume|s|.*dev/||p')"; then
+			st=$((st+1))
+		fi
+	done
+
+	return $st
 }
 
 # $1=dsk
@@ -233,7 +231,7 @@ echo -n "$msg disk ${dsk} in $bay bay... "
 cd /dev
 
 ret=0
-for i in /dev/${dsk}?; do
+for i in /dev/${dsk}*; do
     ACTION=$action DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh >/dev/null 2>&1
     ret=$(($ret + $?))
 done
