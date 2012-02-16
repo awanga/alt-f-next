@@ -7,12 +7,11 @@ read_args
 #debug
 
 CONFF=/etc/smartd.conf
-CONFM=/etc/msmtprc
 CONFO=/etc/misc.conf
 
 mailto() {
-	if test -e $CONFM; then
-		SENDTO=$(awk '/^from/{ print $2}' $CONFM)
+	if test -e $CONFO; then
+		SENDTO=$(grep '^MAILTO' $CONFO | cut -d= -f2)
 	fi
 
 	if test -z "$SENDTO"; then

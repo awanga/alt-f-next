@@ -85,8 +85,8 @@ else
 	WAKEF=checked;
 fi
 
-if test -e $CONFM; then
-	SENDTO=$(awk '/^from/{ print $2}' $CONFM)
+if test -e $CONFO; then
+	SENDTO=$(grep '^MAILTO' $CONFO | cut -d= -f2)
 	if test -z "$SENDTO"; then NOMAILF=disabled; fi
 fi
 
@@ -109,7 +109,7 @@ cat<<-EOF
 	Scans the drive every four hours for disk defects</td></tr>
 
 	<tr><td><br>Send mail to <input type=text readonly name=sendto value="$SENDTO">
-	Use "Mail Setting" to change</td></tr>
+	Use "Setup Mail" to change</td></tr>
 
 	<tr><td><input type=checkbox $MAILF $NOMAILF name="mailerror" value="yes">
 	Send e-mail when an error is detected</td></tr>
