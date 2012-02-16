@@ -19,9 +19,16 @@ check_shares() {
 		MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONF_MINIDLNA)"
 		OIFS="$IFS"; IFS=";"
 		for i in $MDLNA_DIR; do
-			if ! test -d "$i"; then
-				echo "$NAME: Share $i does not exists, disabling it."
-				sed -i 's|^media_dir='$i'|#&|' $CONF_MINIDLNA
+			if echo $i | grep -q ^/ ; then
+				mdir=$i
+			else
+				mdir=${i:2}
+			fi
+
+			if ! test -d "$mdir"; then
+				echo "$NAME: Share $mdir does not exists."
+				exit 1
+				#sed -i 's|^media_dir='$i'|# directory not found: &|' $CONF_MINIDLNA
 			else
 				conf_ok="yes"
 			fi
