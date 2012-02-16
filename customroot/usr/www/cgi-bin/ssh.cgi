@@ -9,9 +9,9 @@ write_header "ssh server Setup"
 CONF_INETD=/etc/inetd.conf
 
 eval $(awk '/(^ssh|#ssh)/{ if ($6 == "/usr/sbin/dropbear") {
-	if (index($8,"s")) print "NOPASS_CHK=checked; "
-	if (index($8,"w")) print "NOROOT_CHK=checked; "
-	if (index($8,"g")) print "NOROOTPASS_CHK=checked; "
+	if (index($0,"-s")) print "NOPASS_CHK=checked; "
+	if (index($0,"-w")) print "NOROOT_CHK=checked; "
+	if (index($0,"-g")) print "NOROOTPASS_CHK=checked; "
 	print "dropbear=yes"
 	} else	print "dropbear=no"
 }' $CONF_INETD)
