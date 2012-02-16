@@ -49,9 +49,6 @@ elif test "$submit" = "Submit"; then
 		echo
 	done  >> $CONF_FSTAB
 
-	#sed -i '/#!#/,$d' $CONF_SMB
-	#echo -e "#!# Add extra shares bellow, don't change anything above, dont remove me\n" >> $CONF_SMB
-
 	cp $CONF_SMB $CONF_SMB-
 	awk '
 		{ pshare($0) }
@@ -78,9 +75,18 @@ elif test "$submit" = "Submit"; then
 	for i in $(seq 1 $smb_cnt); do
 		if test -z "$(eval echo \$ldir_$i)" -o -z "$(eval echo \$shname_$i)"; then continue; fi
 
-		httpd -d "$(eval echo -e [\$shname_$i])"; echo
+		t=$(httpd -d "$(eval echo \$shname_$i)"); echo -e "[$t]"
 		t=$(httpd -d "$(eval echo comment = \$cmt_$i)"); echo -e "\t$t"
 		t=$(httpd -d "$(eval echo path = \$ldir_$i)"); echo -e "\t$t"
+
+		t=$(httpd -d "$(eval echo \$user_$i)")
+		if test "$t" = "anybody"; then
+			echo -e "\tpublic = yes"
+		elif test "$t" = "nonpublic"; then
+			echo -e "\tpublic = no"
+		else
+			echo -e "\tvalid users = $t"
+		fi
 
 		avail=no
 		if test -z "$(eval echo \$avail_$i)"; then
@@ -92,17 +98,16 @@ elif test "$submit" = "Submit"; then
 			echo -e "\tbrowseable = no"
 		fi
 
-		pub=yes
-		if test -z "$(eval echo \$public_$i)"; then
-			pub=no
-		fi
-		echo -e "\tpublic = $pub"
-
 		ro=yes
 		if test -z "$(eval echo \$rdonly_$i)"; then
 			ro=no
 		fi
 		echo -e "\tread only = $ro"
+
+		if test -n "$(eval echo \$inhperms_$i)"; then
+			echo -e "\tinherit permissions = yes"
+		fi
+
 		echo
 
 	done  >> $CONF_SMB

@@ -91,20 +91,24 @@ cat<<EOF
 		<th>Browse</th>
 		<th>Share Name</th>
 		<th>Comment</th>
-		<th align=center>Browseable</th>
-		<th>Public</th>
-		<th>Read Only</th>
+		<th>Allow</th>
+		<th>Browseable</th>
+		<th>Read<br>Only</th>
+		<th>Inherit<br>Perms</th>
 	</tr>
 EOF
 
-#awk -F = '/#!#/ {
-awk -F = ' {
-		mark_found = 1
+awk -F = 'BEGIN {
+		t = FS; FS= ":"
+		i = 0; users[i++] = "anybody"; users[i++] = "nonpublic"
+		while (getline <"/etc/samba/smbpasswd")
+			users[i++] = $1
+		while (getline <"/etc/group")
+			if ($3 >= 100 || $3 == 34 || $3 == 80 || $3 == 84) 
+				users[i++] = "+" $1
+	FS = t
 	}
-	/\[.*\]/ {
-		if (mark_found == 0)
-			next
-
+	 /\[.*\]/ {
 		parse( pshare($0), $0)
 		delete opts
 	}
@@ -121,9 +125,11 @@ function pshare(line) {
 
 function spit(cnt, opts) {
 	
-	rdir = public_chk = rdonly_chk = dis_chk = browse_chk = ""
+	rdir = rdonly_chk = dis_chk = browse_chk = inhperms_chk = ""
 	rdonly_chk = "checked"
 	browse_chk = "checked"
+	sel = "anybody"
+	useropt = ""
 
 	if (opts["path"] != "") {
 		sprintf("readlink -f \"%s\" ", opts["path"]) | getline rdir
@@ -133,23 +139,40 @@ function spit(cnt, opts) {
 		browse_chk = "checked"
 		if (opts["browseable"] == "no")
 			browse_chk = ""
-		if (opts["public"] == "yes" || opts["guest ok"] == "yes")
-			public_chk = "checked"
+
+		if (opts["valid users"] != "")
+			sel = opts["valid users"]
+		else if (opts["public"] == "no" || opts["guest ok"] == "no")
+			sel = "nonpublic"
+
 		if (opts["read only"] == "no")
 			rdonly_chk = ""
+
 		if (opts["available"] == "no")
 			dis_chk = "checked"
+
+		if (opts["inherit permissions"] == "yes")
+			inhperms_chk = "checked"
+
 	} else 
 		rdonly_chk = dis_chk = browse_chk = ""
 
+	for (j in users) {
+		if (users[j] == sel)
+			useropt = useropt "<option selected>" users[j] "</option>"
+		else
+			useropt = useropt "<option>" users[j] "</option>"
+	}
+
 	printf "<tr><td align=center><input type=checkbox %s name=avail_%d value=no></td>", dis_chk, cnt
-	printf "<td><input type=text id=ldir_%d name=ldir_%d value=\"%s\"></td>\n", cnt, cnt, rdir
-	printf "<td><input type=button  onclick=\"browse_dir_popup(%cldir_%d%c)\" value=Browse></td>\n", 047, cnt, 047
-	printf "<td><input type=text size=8 name=shname_%d value=\"%s\"></td>\n", cnt, opts["share_name"]
-	printf "<td><input type=text name=cmt_%d value=\"%s\"></td>\n", cnt, opts["comment"]
+	printf "<td><input type=text size=16 id=ldir_%d name=ldir_%d value=\"%s\"></td>\n", cnt, cnt, rdir
+	printf "<td><input type=button onclick=\"browse_dir_popup(%cldir_%d%c)\" value=Browse></td>\n", 047, cnt, 047
+	printf "<td><input type=text size=12 name=shname_%d value=\"%s\"></td>\n", cnt, opts["share_name"]
+	printf "<td><input type=text size=16 name=cmt_%d value=\"%s\"></td>\n", cnt, opts["comment"]
+	printf "<td align=center><select name=user_%d>%s</select></td>\n", cnt, useropt
 	printf "<td align=center><input %s type=checkbox name=browse_%d value=yes></td>\n", browse_chk, cnt
-	printf "<td align=center><input %s type=checkbox name=public_%d value=yes></td>\n", public_chk, cnt
 	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=yes></td>\n", rdonly_chk, cnt 
+	printf "<td align=center><input %s type=checkbox name=inhperms_%d value=yes></td>\n", inhperms_chk, cnt 
 	print "</tr>\n"
 }
 
@@ -169,7 +192,7 @@ function parse(share_name, line) {
 
 		gsub("^( |\t)*|( |\t)*$","", $1)
 		gsub("^( |\t)*|( |\t)*$","", $2)
-		opts[$1] = tolower($2)
+		opts[$1] = $2; # tolower($2)
 	}
 
 	spit(cnt, opts)
