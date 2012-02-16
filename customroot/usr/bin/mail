@@ -5,8 +5,7 @@
 usage() {
 	echo "Usage: mail [-s subject | -r from_address] to_address
 	Message body is read from standard input, terminate with CTRL-D
-	when writing from the console.
-	'-r' does not work, 'From:' is always the account owner."
+	when writing from the console."
 	exit 1
 }
 
@@ -34,19 +33,23 @@ done
 
 if test -z "$to"; then usage; fi
 
+if test -z "$from"; then
+	from=$(grep '^from' /etc/msmtprc | cut -f2)	
+fi
+
 exec > $TF
 
-if test -n "$from"; then echo "From: $from"; fi
+echo "From: $from"
 if test -n "$subj"; then echo "Subject: $subj"; fi
 echo "To: $to"
 echo 
 cat
 echo
 
+echo "Sending..." >/dev/console
+
 msmtp --read-recipients < $TF
 ret=$?
 rm $TF
 
 exit $ret
-
-
