@@ -37,6 +37,7 @@ check() {
 	done
 }
 
+MISCC=/etc/misc.conf
 FSTAB=/etc/fstab
 USERLOCK=/var/lock/userscript
 
@@ -46,8 +47,8 @@ mopts=$3
 lbl=$4
 fstype=$5
 
-if test -f /etc/misc.conf; then
-	. /etc/misc.conf
+if test -f $MISCC; then
+	. $MISCC
 fi
 
 if test "$fsckcmd" != "echo"; then
@@ -151,6 +152,9 @@ OR IN ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG." > /Alt-F/README.txt
 				tostart="$tostart rc${f#S??}"
 			fi
 		done
+		if test -n "$DELAY_NFS" -a -x /etc/init.d/S60nfs; then
+			tostart="$tostart rcnfs"
+		fi
 		loadsave_settings -ta
 		mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw /
 		for i in $tostart; do
