@@ -1,0 +1,115 @@
+#!/bin/sh
+
+DESC="Load kernel modules"
+NAME=modload
+
+CONF_MISC=/etc/misc.conf
+
+#set -x
+
+umask 077
+
+. $(dirname $0)/common
+
+if test -f "$CONF_MISC"; then
+	. $CONF_MISC
+fi
+
+mload() {
+	if lsmod | grep -q $1; then return 0; fi
+	res="$res $(modprobe -q $1 2>&1)\n"
+	st=$((st+$?))
+}
+
+munload() {
+	if lsmod | grep -q ^$1; then
+		modprobe -qr $1
+	fi
+}
+
+mstat() {
+	if lsmod | grep -q ^$1; then
+		res="$res module $1 loaded\n"
+	else
+		res="$res module $1 *not* loaded\n"
+		st=$((st+1))
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+
+		st=0
+		if test "$MODLOAD_IPV6" = "y"; then
+			mload ipv6
+		fi
+
+		if test "$MODLOAD_CESA" = "y"; then
+			mload crypto_hash
+			mload mv_cesa
+		fi
+
+		if test "$MODLOAD_CRYPTODEV" = "y"; then
+			mload cryptodev
+		fi
+
+		omsg $st "$res"
+		;;
+
+	stop)
+		# removing modules is not a good ideia... 
+
+		echo -n "Stopping $NAME: "
+		# ipv6 can't be removed
+		if lsmod | grep -q ipv6; then
+			echo "IPV6 module can't be removed"
+		fi
+
+		if lsmod | grep -q mv_cesa; then
+			rmmod mv_cesa
+		fi
+
+		if lsmod | grep -q cryptodev; then # FIXME this should disapear
+			# removing modules recursively is unreliable, dont!
+			mod="hmac sha1_generic mv_cesa krng rng cryptomgr aead pcompress aes_generic cryptodev crypto_hash crypto_blkcipher crypto_algapi"
+			for j in $(seq 1 3); do
+				lsm=$(lsmod)
+				for i in $mod; do
+					if test "$(echo "$lsm" | awk '/^'$i'/{print $3}')" = 0; then
+						echo -n "removing module $i: "
+						rmmod $i
+						omsg $?
+						mod=$(echo $mod | sed -n 's/'$i'//p')
+					fi
+				done
+			done
+		fi
+
+		omsg 0
+		;;
+
+	status)
+		if test "$MODLOAD_IPV6" = "y"; then
+			mstat ipv6
+		fi
+
+		if test "$MODLOAD_CESA" = "y"; then
+			mstat mv_cesa
+		fi
+
+		if test "$MODLOAD_CRYPTODEV" = "y"; then
+			mstat cryptodev
+		fi
+
+		echo -ne "$res"
+		return $st
+		;;
+
+	restart)
+		rcmodload stop
+		rcmodload start		
+		;;
+
+	*)  usage $0 "start|stop|status" ;;
+esac
