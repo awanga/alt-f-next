@@ -172,10 +172,10 @@ kerberos-adm	749/tcp				# Kerberos `kadmin' (v5)
 webster		765/tcp				# Network dictionary
 webster		765/udp
 
-rsync           873/tcp    # rsync
-rsync           873/udp    # rsync
-swat            901/tcp
-swats           902/tcp		# secure swat through 'stunnel'
+rsync	873/tcp    # rsync
+rsync	873/udp    # rsync
+swat	901/tcp
+swats	902/tcp		# secure swat through 'stunnel'
 #
 # From ``Assigned Numbers'':
 #
@@ -276,11 +276,11 @@ afbackup	2988/tcp			# Afbackup system
 afbackup	2988/udp			# Afbackup system
 icp		3130/tcp			# Internet Cache Protocol (Squid)
 icp		3130/udp			# Internet Cache Protocol (Squid)
-daap            3689/tcp   # Digital Audio Access Protocol
-daap            3689/udp   # Digital Audio Access Protocol
+daap	3689/tcp   # Digital Audio Access Protocol
+daap	3689/udp   # Digital Audio Access Protocol
 postgres	5432/tcp			# POSTGRES
 postgres	5432/udp			# POSTGRES
-fax		4557/tcp			# FAX transmission service        (old)
+fax			4557/tcp			# FAX transmission service        (old)
 hylafax		4559/tcp			# HylaFAX client-server protocol  (new)
 mdns		5353/tcp		# Multicast DNS
 mdns		5353/udp		# Multicast DNS
@@ -302,17 +302,16 @@ isdnlog		20011/tcp			# isdn logging system
 isdnlog		20011/udp			# isdn logging system
 vboxd		20012/tcp			# voice box system
 vboxd		20012/udp			# voice box system
-binkp           24554/tcp			# Binkley
-binkp           24554/udp			# Binkley
+binkp	24554/tcp			# Binkley
+binkp	24554/udp			# Binkley
 asp		27374/tcp			# Address Search Protocol
 asp		27374/udp			# Address Search Protocol
-tfido           60177/tcp			# Ifmail
-tfido           60177/udp			# Ifmail
-fido            60179/tcp			# Ifmail
-fido            60179/udp			# Ifmail
-
-sane-port       6566/tcp   # SANE Control Port
-sane-port       6566/udp   # SANE Control Port
+tfido	60177/tcp			# Ifmail
+tfido	60177/udp			# Ifmail
+fido	60179/tcp			# Ifmail
+fido	60179/udp			# Ifmail
+sane	6566/tcp   # SANE Control Port
+sane	6566/udp   # SANE Control Port
 # Local services
 mediatomb	50500/tcp
 
