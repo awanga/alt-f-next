@@ -1,0 +1,11 @@
+--- samba-3.6.3/lib/replace/libreplace_network.m4.orig	2012-02-02 19:04:03.590182874 +0000
++++ samba-3.6.3/lib/replace/libreplace_network.m4	2012-02-02 19:07:23.414156671 +0000
+@@ -227,7 +227,7 @@
+ ],
+ libreplace_cv_HAVE_GETADDRINFO=yes,libreplace_cv_HAVE_GETADDRINFO=no)])
+ 
+-if test x"$libreplace_cv_HAVE_GETADDRINFO" = x"yes"; then
++if test x"$libreplace_cv_HAVE_GETADDRINFO" = x"yes" -a x"$libreplace_cv_HAVE_GETADDRINFO_BUG" != x"no"; then
+ 	# getaddrinfo is broken on some AIX systems
+ 	# see bug 5910, use our replacements if we detect
+ 	# a broken system.
