@@ -44,7 +44,8 @@ $(LIBUSB_DIR)/.configured: $(LIBUSB_DIR)/.unpacked
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
-		--prefix=$(STAGING_DIR)/usr \
+		--prefix=/usr \
+		--libdir=/usr/lib \
 		--disable-debug \
 		--disable-build-docs \
 	)
@@ -52,7 +53,7 @@ $(LIBUSB_DIR)/.configured: $(LIBUSB_DIR)/.unpacked
 
 $(STAGING_DIR)/usr/lib/libusb.so: $(LIBUSB_DIR)/.configured
 	$(MAKE) -C $(LIBUSB_DIR)
-	$(MAKE) -C $(LIBUSB_DIR) install
+	$(MAKE) -C $(LIBUSB_DIR) DESTDIR=$(STAGING_DIR) install
 
 $(TARGET_DIR)/$(LIBUSB_BINARY): $(STAGING_DIR)/usr/lib/libusb.so
 	cp -dpf $(STAGING_DIR)/usr/lib/libusb*.so* $(TARGET_DIR)/usr/lib/
@@ -62,9 +63,9 @@ libusb: uclibc host-pkgconfig $(TARGET_DIR)/$(LIBUSB_BINARY)
 
 libusb-clean:
 	rm -f $(STAGING_DIR)/bin/libusb-config
-	rm -f $(STAGING_DIR)/usr/includes/usb*.h
+	rm -f $(STAGING_DIR)/usr/include/usb*.h
 	rm -f $(STAGING_DIR)/lib/libusb*
-	rm -rf $(STAGING_DIR)/lib/pkgconfig
+	#rm -rf $(STAGING_DIR)/lib/pkgconfig
 	rm -f $(TARGET_DIR)/usr/lib/libusb*
 	-$(MAKE) -C $(LIBUSB_DIR) clean
 
