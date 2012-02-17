@@ -8,10 +8,21 @@
 # "interface" option must be specified in the samba config.file
 # (or an "couln'd get interface address" (or similar) error happens at runtime 
 
-SAMBA_VERSION:=3.5.9
+#SAMBA_VERSION:=3.3.9
+#SAMBA_VERSION:=3.3.15
+#SAMBA_VERSION:=3.4.13
+SAMBA_VERSION:=3.5.12
+#SAMBA_VERSION:=3.6.3 don't fit flash
+
+ifeq ($(SAMBA_VERSION),3.3.9)
+	SAMBA_SUBDIR=source
+else
+	SAMBA_SUBDIR=source3
+endif
+
 SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
 SAMBA_SITE:=http://samba.org/samba/ftp/stable/
-SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/source3
+SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/$(SAMBA_SUBDIR)
 SAMBA_CAT:=$(ZCAT)
 SAMBA_BINARY:=bin/smbd
 SAMBA_TARGET_BINARY:=usr/sbin/smbd
@@ -41,6 +52,8 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		samba_cv_CC_NEGATIVE_ENUM_VALUES=yes \
 		samba_cv_fpie=no \
 		samba_cv_have_longlong=yes \
+		ac_cv_file__proc_sys_kernel_core_pattern=yes \
+		libreplace_cv_HAVE_GETADDRINFO_BUG=no \
 		libreplace_cv_HAVE_IPV6=$(if $(BR2_INET_IPV6),yes,no) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
@@ -48,6 +61,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
 		--localstatedir=/var \
+		--libdir=/usr/lib \
 		--with-lockdir=/var/cache/samba \
 		--with-piddir=/var/run \
 		--with-privatedir=/etc/samba \
@@ -124,6 +138,8 @@ ifeq ($(BR2_PACKAGE_SAMBA_DOC),y)
 SAMBA_INSTALL_TARGETS += installswat
 endif
 
+#DESTDIR="${TARGET_DIR}" \
+
 $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) \
 		prefix="${TARGET_DIR}/usr" \
@@ -133,6 +149,8 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 		PRIVATEDIR="${TARGET_DIR}/etc/samba" \
 		CONFIGDIR="${TARGET_DIR}/etc/samba" \
 		VARDIR="${TARGET_DIR}/var/log/samba" \
+		MODULESDIR="${TARGET_DIR}/usr/lib" \
+		LIBDIR="${TARGET_DIR}/usr/lib" \
 		-C $(SAMBA_DIR) $(SAMBA_INSTALL_TARGETS)
 	# jc: 	
 	-cp $(SAMBA_DIR)/bin/libsmbcommon.so $(TARGET_DIR)/usr/lib/
