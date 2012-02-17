@@ -41,6 +41,7 @@ $(GMP_TARGET_DIR)/.configured: $(GMP_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		$(PREFERRED_LIB_FLAGS) \
 		$(DISABLE_NLS) \
 	)
@@ -83,6 +84,7 @@ $(GMP_DIR2)/.configured: $(GMP_DIR)/.unpacked
 		--prefix="$(GMP_HOST_DIR)" \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
+		--libdir="$(GMP_HOST_DIR)"/lib \
 		--disable-shared \
 		--enable-static \
 		$(DISABLE_NLS) \
