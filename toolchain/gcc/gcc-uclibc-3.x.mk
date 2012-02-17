@@ -177,7 +177,7 @@ $(GCC_BUILD_DIR1)/.configured: $(GCC_DIR)/.patched
 		--target=$(REAL_GNU_TARGET_NAME) \
 		--enable-languages=c \
 		--with-sysroot=$(TOOL_BUILD_DIR)/uClibc_dev/ \
-		--disable-__cxa_atexit \
+		--enable-__cxa_atexit \
 		--enable-target-optspace \
 		--with-gnu-ld \
 		--disable-shared \
@@ -244,7 +244,7 @@ $(GCC_BUILD_DIR2)/.configured: $(GCC_DIR)/.patched $(GCC_STAGING_PREREQ)
 		--host=$(GNU_HOST_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
 		--enable-languages=$(GCC_CROSS_LANGUAGES) \
-		--disable-__cxa_atexit \
+		--enable-__cxa_atexit \
 		--enable-target-optspace \
 		--with-gnu-ld \
 		--disable-libssp \
@@ -395,7 +395,7 @@ $(GCC_BUILD_DIR3)/.configured: $(GCC_BUILD_DIR3)/.prepared
 		--target=$(REAL_GNU_TARGET_NAME) \
 		--enable-languages=$(GCC_TARGET_LANGUAGES) \
 		--with-gxx-include-dir=/usr/include/c++ \
-		--disable-__cxa_atexit \
+		--enable-__cxa_atexit \
 		--with-gnu-ld \
 		--with-gnu-as \
 		--disable-libssp \
