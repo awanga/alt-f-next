@@ -32,6 +32,7 @@ $(DB_DIR)/.configured: $(DB_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--enable-shared \
 		--disable-static \
 		--disable-posixmutexes \
