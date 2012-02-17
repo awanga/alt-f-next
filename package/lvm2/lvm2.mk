@@ -28,7 +28,8 @@ LVM2_DMVER=1.02
 #LVM2_PATCH=50
 #LVM2_PATCH=67
 #LVM2_VERSION=$(LVM2_BASEVER).$(LVM2_PATCH)
-LVM2_VERSION=2.02.67
+#LVM2_VERSION=2.02.67
+LVM2_VERSION=2.02.88
 LVM2_SOURCE:=LVM2.$(LVM2_VERSION).tgz
 LVM2_SITE:=ftp://sources.redhat.com/pub/lvm2
 LVM2_CAT:=$(ZCAT)
@@ -39,6 +40,7 @@ LVM2_LIB:=libdevmapper.so.$(LVM2_DMVER)
 LVM2_TARGET_SBINS=$(foreach lvm2sbin, $(LVM2_SBIN), $(TARGET_DIR)/usr/sbin/$(lvm2sbin))
 LVM2_TARGET_DMSETUP_SBINS=$(foreach lvm2sbin, $(LVM2_DMSETUP_SBIN), $(TARGET_DIR)/sbin/$(lvm2sbin))
 LVM2_TARGET_LIBS=$(foreach lvm2lib, $(LVM2_LIB), $(TARGET_DIR)/lib/$(lvm2lib))
+LVM2_CONF_OPT:=--disable-dmeventd --disable-selinux --disable-udev_sync --disable-udev_rules
 
 $(DL_DIR)/$(LVM2_SOURCE):
 	 $(call DOWNLOAD,$(LVM2_SITE),$(LVM2_SOURCE))
@@ -70,12 +72,15 @@ $(LVM2_DIR)/.configured: $(LVM2_DIR)/.unpacked
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
+		--libdir=/usr/lib \
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
-		--with-user=$(shell id -un) --with-group=$(shell id -gn) \
 		$(LVM2_CONF_OPT) \
 	)
 	touch $(LVM2_DIR)/.configured
+
+#--with-usrlibdir=/usr/lib \
+# --with-user=$(shell id -un) --with-group=$(shell id -gn) \
 
 $(LVM2_DIR)/.built: $(LVM2_DIR)/.configured
 	$(MAKE1) CC=$(TARGET_CC) RANLIB=$(TARGET_RANLIB) AR=$(TARGET_AR) -C $(LVM2_DIR) DESTDIR=$(STAGING_DIR)
@@ -84,7 +89,7 @@ $(LVM2_DIR)/.built: $(LVM2_DIR)/.configured
 	# several times in the $(TARGET_DIR)
 	chmod 755 $(STAGING_DIR)/sbin/lvm
 	chmod 755 $(STAGING_DIR)/sbin/dmsetup
-	chmod 644 $(STAGING_DIR)/lib/$(LVM2_LIB)
+	chmod 644 $(STAGING_DIR)/usr/lib/$(LVM2_LIB)
 	touch $(LVM2_DIR)/.built
 
 $(LVM2_TARGET_SBINS) $(LVM2_TARGET_DMSETUP_SBINS): $(LVM2_DIR)/.built
@@ -92,7 +97,7 @@ $(LVM2_TARGET_SBINS) $(LVM2_TARGET_DMSETUP_SBINS): $(LVM2_DIR)/.built
 	cp -a $(STAGING_DIR)/etc/lvm $(TARGET_DIR)/etc
 
 $(LVM2_TARGET_LIBS): $(LVM2_DIR)/.built
-	cp -a $(STAGING_DIR)/lib/$(notdir $@) $@
+	cp -a $(STAGING_DIR)/usr/lib/$(notdir $@) $@
 
 lvm2-configure: $(LVM2_DIR)/.configured
 
