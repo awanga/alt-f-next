@@ -1,9 +1,0 @@
-Package: netatalk
-Version: 2.1.6
-Depends: db,libgcrypt,libgpg-error,avahi,ipkg
-Description: AFP (Apple Filling Protocol), AppleTalk and AppleTalk print server daemon
-Architecture: arm
-Priority: optional
-Section: admin
-Source: http://netatalk.sourceforge.net/
-Maintainer: jcard
