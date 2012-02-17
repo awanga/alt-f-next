@@ -4,8 +4,8 @@
 #
 #############################################################
 
-#NETATALK2_VERSION = 2.2.0
-NETATALK2_VERSION = 2.2.1
+#NETATALK2_VERSION = 2.2.1
+NETATALK2_VERSION = 2.2.2
 NETATALK2_SOURCE = netatalk-$(NETATALK2_VERSION).tar.bz2
 NETATALK2_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/netatalk
 NETATALK2_AUTORECONF = NO
