@@ -249,6 +249,8 @@ $(BUILD_DIR)/%/.stamp_configured:
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
 		--exec-prefix=/usr \
+		--libdir=/usr/lib \
+		--libexecdir=/usr/lib \
 		--sysconfdir=/etc \
 		$(DISABLE_DOCUMENTATION) \
 		$(DISABLE_NLS) \
