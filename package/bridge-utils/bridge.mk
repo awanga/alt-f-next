@@ -3,7 +3,7 @@
 # bridge-utils - User Space Program For Controlling Bridging
 #
 #############################################################
-#
+
 BRIDGE_VERSION:=1.5
 BRIDGE_SOURCE:=bridge-utils-$(BRIDGE_VERSION).tar.gz
 BRIDGE_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/bridge/
