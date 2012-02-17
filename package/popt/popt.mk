@@ -3,13 +3,13 @@
 # popt
 #
 #############################################################
-#POPT_VERSION:=1.15
+
 POPT_VERSION:=1.16
 POPT_SITE:=http://rpm5.org/files/popt
 POPT_INSTALL_STAGING = YES
 POPT_INSTALL_TARGET = YES
 POPT_LIBTOOL_PATCH = NO
-
+POPT_CONF_OPT = --libdir=/usr/lib
 POPT_CONF_ENV = ac_cv_va_copy=yes
 
 ifeq ($(BR2_PACKAGE_LIBICONV),y)
