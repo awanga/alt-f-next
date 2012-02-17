@@ -4,7 +4,8 @@
 #
 #############################################################
 
-CRYPTSETUP_VERSION = 1.3.1
+#CRYPTSETUP_VERSION = 1.3.1
+CRYPTSETUP_VERSION = 1.4.1
 CRYPTSETUP_SOURCE = cryptsetup-$(CRYPTSETUP_VERSION).tar.bz2
 CRYPTSETUP_SITE = http://cryptsetup.googlecode.com/files
 CRYPTSETUP_AUTORECONF = NO
