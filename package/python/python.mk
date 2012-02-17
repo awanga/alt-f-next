@@ -99,11 +99,15 @@ $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		OPT="$(TARGET_CFLAGS)" \
+		MACHDEP=linux2 \
 		./configure \
+		ac_sys_system=Linux \
+		ac_sys_release=2 \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--sysconfdir=/etc \
 		--with-cxx=no \
 		--enable-shared \
