@@ -254,31 +254,38 @@ pkg=$1
 PKG=$(echo $pkg | tr '[:lower:]-' '[:upper:]_')
 
 if test "$force" != "y"; then
-	PKGMK=$(find $CDIR/package -name $pkg.mk)
-	if test -z "$PKGMK"; then
-		echo Package $pkg not found, is it a sub-package?
+	if test "$pkg" = "gdb" -a -n "$(grep '^BR2_PACKAGE_GDB=y' .config)"; then # special gdb case
+		PKGDIR=toolchain/gdb
+		eval $(grep '^BR2_GDB_VERSION=' .config)
+		version=$BR2_GDB_VERSION
 		
-		if $(grep -q ^BR2_PACKAGE_$PKG .config); then
-			MPKG=$(echo $PKG | cut -f1 -d "_")
-			mpkg=$(echo $MPKG | tr '[:upper:]_' '[:lower:]-' )
-			MPKGMK=$(find $CDIR/package -name $mpkg.mk)
-			if test -z "$MPKGMK"; then
-				echo Main Package $mpkg not found, exiting.
+	else
+		PKGMK=$(find $CDIR/package -name $pkg.mk)
+		if test -z "$PKGMK"; then
+			#echo Package $pkg not found, is it a sub-package?
+			
+			if $(grep -q ^BR2_PACKAGE_$PKG .config); then
+				MPKG=$(echo $PKG | cut -f1 -d "_")
+				mpkg=$(echo $MPKG | tr '[:upper:]_' '[:lower:]-' )
+				MPKGMK=$(find $CDIR/package -name $mpkg.mk)
+				if test -z "$MPKGMK"; then
+					echo Main Package $mpkg not found, exiting.
+					exit 1
+				fi
+			else
+				echo Package $pkg is not configured, exiting.
 				exit 1
 			fi
-		else
-			echo Package $pkg is not configured, exiting.
-			exit 1
-		fi
-		echo $pkg is a sub-package of $mpkg
+			echo $pkg is a sub-package of $mpkg
 
-		PKGDIR=$(dirname $MPKGMK)
-		eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
-		version=$(eval echo \$${MPKG}_VERSION)	
-	else
-		PKGDIR=$(dirname $PKGMK)
-		eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
-		version=$(eval echo \$${PKG}_VERSION)
+			PKGDIR=$(dirname $MPKGMK)
+			eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
+			version=$(eval echo \$${MPKG}_VERSION)	
+		else
+			PKGDIR=$(dirname $PKGMK)
+			eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
+			version=$(eval echo \$${PKG}_VERSION)
+		fi
 	fi
 fi
 
