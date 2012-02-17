@@ -2,7 +2,7 @@
 
 DESC="Daemon to run jobs queued for later execution"
 NAME=atd
-TYPE=sys
+#TYPE=sys
 
 . $(dirname $0)/common
 
