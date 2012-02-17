@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#WGET_VERSION:=1.12
 WGET_VERSION:=1.13.4
 WGET_SOURCE:=wget-$(WGET_VERSION).tar.gz
 WGET_SITE:=$(BR2_GNU_MIRROR)/wget
