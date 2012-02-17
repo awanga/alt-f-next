@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Thu Jul  1 22:45:58 2010
+# Sat Feb 11 16:12:53 2012
 #
 BR2_HAVE_DOT_CONFIG=y
 BR2_VERSION="2009.08"
@@ -162,7 +162,7 @@ BR2_OPTIMIZE_2=y
 # BR2_HAVE_MANPAGES is not set
 # BR2_HAVE_INFOPAGES is not set
 # BR2_HAVE_DOCUMENTATION is not set
-BR2_HAVE_DEVFILES=y
+# BR2_HAVE_DEVFILES is not set
 BR2_UPDATE_CONFIG=y
 
 #
@@ -267,7 +267,7 @@ BR2_GCC_SHARED_LIBGCC=y
 # Common Toolchain Options
 #
 BR2_LARGEFILE=y
-# BR2_INET_IPV6 is not set
+BR2_INET_IPV6=y
 BR2_INET_RPC=y
 # BR2_ENABLE_LOCALE is not set
 # BR2_ENABLE_LOCALE_PURGE is not set
@@ -281,7 +281,7 @@ BR2_PTHREADS_OLD=y
 BR2_PROGRAM_INVOCATION=y
 BR2_GCC_CROSS_CXX=y
 BR2_INSTALL_LIBSTDCPP=y
-BR2_TARGET_OPTIMIZATION="-pipe -O2"
+BR2_TARGET_OPTIMIZATION="-pipe -fomit-frame-pointer"
 # BR2_ELF2FLT is not set
 # BR2_MKLIBS is not set
 # BR2_PACKAGE_SSTRIP_TARGET is not set
@@ -304,8 +304,7 @@ BR2_CROSS_TOOLCHAIN_TARGET_UTILS=y
 # BR2_PACKAGE_FINDUTILS is not set
 # BR2_PACKAGE_FLEX is not set
 # BR2_PACKAGE_GAWK is not set
-BR2_PACKAGE_GCC_TARGET=y
-BR2_EXTRA_TARGET_GCC_CONFIG_OPTIONS=""
+# BR2_PACKAGE_GCC_TARGET is not set
 # BR2_PACKAGE_GREP is not set
 # BR2_PACKAGE_MAKE is not set
 # BR2_PACKAGE_PATCH is not set
@@ -320,6 +319,7 @@ BR2_EXTRA_TARGET_GCC_CONFIG_OPTIONS=""
 # BR2_PACKAGE_BISON is not set
 # BR2_PACKAGE_CCACHE_TARGET is not set
 # BR2_PACKAGE_CVS is not set
+# BR2_PACKAGE_GIT is not set
 # BR2_PACKAGE_DISTCC is not set
 # BR2_PACKAGE_DMALLOC is not set
 # BR2_PACKAGE_FAKEROOT is not set
@@ -328,18 +328,18 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_LIBINTL is not set
 # BR2_PACKAGE_LIBGMP is not set
 # BR2_PACKAGE_GPERF is not set
-# BR2_PACKAGE_HOST_PKGCONFIG is not set
 # BR2_PACKAGE_LIBTOOL is not set
 # BR2_PACKAGE_M4 is not set
 # BR2_PACKAGE_LIBMPFR is not set
-# BR2_PACKAGE_MPATROL is not set
 # BR2_PACKAGE_OPROFILE is not set
+# BR2_PACKAGE_PKG_CONFIG is not set
 # BR2_PACKAGE_READLINE is not set
 # BR2_PACKAGE_PCRE is not set
 
 #
 # Other stuff
 #
+# BR2_PACKAGE_A2PS is not set
 # BR2_PACKAGE_AT is not set
 # BR2_PACKAGE_BEECRYPT is not set
 # BR2_PACKAGE_BERKELEYDB is not set
@@ -350,15 +350,19 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_DASH is not set
 # BR2_PACKAGE_ENCHANT is not set
 # BR2_PACKAGE_FILE is not set
+# BR2_PACKAGE_FOOMATIC_DB is not set
+# BR2_PACKAGE_FOOMATIC_FILTERS is not set
 # BR2_PACKAGE_GAMIN is not set
 # BR2_PACKAGE_ICU is not set
 # BR2_PACKAGE_KEXEC is not set
 # BR2_PACKAGE_LESS is not set
+# BR2_PACKAGE_LIBAVL is not set
 # BR2_PACKAGE_LIBCONFIG is not set
 # BR2_PACKAGE_LIBCONFUSE is not set
 # BR2_PACKAGE_LIBDAEMON is not set
 # BR2_PACKAGE_LIBELF is not set
 # BR2_PACKAGE_LIBEVENT is not set
+# BR2_PACKAGE_LIBEVENT2 is not set
 # BR2_PACKAGE_LIBGCRYPT is not set
 # BR2_PACKAGE_LIBGPG_ERROR is not set
 # BR2_PACKAGE_LIBICONV is not set
@@ -366,6 +370,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_LIBLOCKFILE is not set
 # BR2_PACKAGE_LIBOIL is not set
 # BR2_PACKAGE_LIBSYSFS is not set
+# BR2_PACKAGE_LIBUNISTRING is not set
 # BR2_PACKAGE_LOCKFILE_PROGS is not set
 # BR2_PACKAGE_LOGROTATE is not set
 # BR2_PACKAGE_LSOF is not set
@@ -411,6 +416,7 @@ BR2_HOST_FAKEROOT=y
 # Networking applications
 #
 # BR2_PACKAGE_ARGUS is not set
+# BR2_PACKAGE_AUTOMATIC is not set
 # BR2_PACKAGE_AVAHI is not set
 # BR2_PACKAGE_AXEL is not set
 # BR2_PACKAGE_BOA is not set
@@ -426,13 +432,11 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_HASERL is not set
 # BR2_PACKAGE_IFPLUGD is not set
 # BR2_PACKAGE_IPERF is not set
-
-#
-# iproute2 requires a toolchain with IPv6 support
-#
+# BR2_PACKAGE_IPROUTE2 is not set
 # BR2_PACKAGE_IPSEC_TOOLS is not set
 # BR2_PACKAGE_IPTABLES is not set
 # BR2_PACKAGE_INADYN is not set
+# BR2_PACKAGE_ISCSITARGET is not set
 # BR2_PACKAGE_IW is not set
 # BR2_PACKAGE_KISMET is not set
 # BR2_PACKAGE_L2TP is not set
@@ -455,10 +459,12 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_MROUTED is not set
 # BR2_PACKAGE_MSMTP is not set
 # BR2_PACKAGE_MUTT is not set
+# BR2_PACKAGE_NMAP is not set
 # BR2_PACKAGE_NBD is not set
 # BR2_PACKAGE_NCFTP is not set
 # BR2_PACKAGE_NEON is not set
 # BR2_PACKAGE_NETATALK is not set
+# BR2_PACKAGE_NETATALK2 is not set
 # BR2_PACKAGE_NETCAT is not set
 # BR2_PACKAGE_NETKITBASE is not set
 # BR2_PACKAGE_NETKITTELNET is not set
@@ -474,6 +480,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_OPENVPN is not set
 # BR2_PACKAGE_PORTMAP is not set
 # BR2_PACKAGE_PPPD is not set
+# BR2_PACKAGE_RADVD is not set
 # BR2_PACKAGE_RP_PPPOE is not set
 # BR2_PACKAGE_PPTP_LINUX is not set
 # BR2_PACKAGE_PROFTPD is not set
@@ -486,6 +493,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_QUAGGA_RIPD is not set
 # BR2_PACKAGE_QUAGGA_RIPNGD is not set
 # BR2_PACKAGE_QUAGGA_OSPFD is not set
+# BR2_PACKAGE_QUAGGA_OSPF6D is not set
 # BR2_PACKAGE_QUAGGA_WATCHQUAGGA is not set
 # BR2_PACKAGE_QUAGGA_ISISD is not set
 # BR2_PACKAGE_RSYNC is not set
@@ -499,6 +507,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_THTTPD is not set
 # BR2_PACKAGE_TINYHTTPD is not set
 # BR2_PACKAGE_TN5250 is not set
+# BR2_PACKAGE_TRANSMISSION is not set
 # BR2_PACKAGE_TTCP is not set
 # BR2_PACKAGE_UDPCAST is not set
 # BR2_PACKAGE_VPNC is not set
@@ -522,6 +531,9 @@ BR2_HOST_FAKEROOT=y
 #
 # dbus-glib needs dbus to be compiled with expat support
 #
+# BR2_PACKAGE_BONNIEPP is not set
+# BR2_PACKAGE_CRYPTODEV is not set
+# BR2_PACKAGE_CRYPTSETUP is not set
 # BR2_PACKAGE_DEVMEM2 is not set
 # BR2_PACKAGE_DMRAID is not set
 # BR2_PACKAGE_DOSFSTOOLS is not set
@@ -531,6 +543,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_FCONFIG is not set
 # BR2_PACKAGE_FIS is not set
 # BR2_PACKAGE_GADGETFS_TEST is not set
+# BR2_PACKAGE_GPTFDISK is not set
 # BR2_PACKAGE_HAL is not set
 # BR2_PACKAGE_HDPARM is not set
 # BR2_PACKAGE_HOTPLUG is not set
@@ -540,6 +553,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_I2C_TOOLS is not set
 # BR2_PACKAGE_INPUT_TOOLS is not set
 # BR2_PACKAGE_IOSTAT is not set
+# BR2_PACKAGE_KERNEL_MODULES is not set
 # BR2_PACKAGE_LIBAIO is not set
 # BR2_PACKAGE_LIBFUSE is not set
 # BR2_PACKAGE_LIBRAW1394 is not set
@@ -550,13 +564,17 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_MEMTESTER is not set
 # BR2_PACKAGE_MTD is not set
 # BR2_PACKAGE_NTFS_3G is not set
+# BR2_PACKAGE_NTFS_3G_NTFSPROGS is not set
 # BR2_PACKAGE_NTFSPROGS is not set
+# BR2_PACKAGE_NUTS is not set
+# BR2_PACKAGE_PARTED is not set
 # BR2_PACKAGE_PCIUTILS is not set
 # BR2_PACKAGE_SANE is not set
 # BR2_PACKAGE_SETSERIAL is not set
 # BR2_PACKAGE_SFDISK is not set
 # BR2_PACKAGE_SG3_UTILS is not set
 # BR2_PACKAGE_SMARTMONTOOLS is not set
+# BR2_PACKAGE_SYSSTAT is not set
 # BR2_PACKAGE_UDEV is not set
 # BR2_PACKAGE_UNIONFS_UTILS is not set
 # BR2_PACKAGE_USBMOUNT is not set
@@ -576,6 +594,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_FFMPEG is not set
 # BR2_PACKAGE_FFMPEGTHUMBNAILER is not set
 # BR2_PACKAGE_FLAC is not set
+# BR2_PACKAGE_FORKED_DAAPD is not set
 # BR2_PACKAGE_FUPPES is not set
 # BR2_PACKAGE_GSTREAMER is not set
 # BR2_PACKAGE_LAME is not set
@@ -621,6 +640,7 @@ BR2_HOST_FAKEROOT=y
 #
 # BR2_PACKAGE_DIRECTFB is not set
 # BR2_PACKAGE_FBDUMP is not set
+# BR2_PACKAGE_LIBGD is not set
 # BR2_PACKAGE_IMAGEMAGICK is not set
 # BR2_PACKAGE_JPEG is not set
 # BR2_PACKAGE_LIBART is not set
@@ -706,6 +726,7 @@ BR2_HOST_FAKEROOT=y
 #
 # BR2_PACKAGE_GS is not set
 # BR2_PACKAGE_LUA is not set
+# BR2_PACKAGE_LIBANTLR is not set
 # BR2_PACKAGE_MICROPERL is not set
 # BR2_PACKAGE_PYTHON is not set
 # BR2_PACKAGE_RUBY is not set
@@ -719,6 +740,7 @@ BR2_HOST_FAKEROOT=y
 # BR2_PACKAGE_EZXML is not set
 # BR2_PACKAGE_LIBXML2 is not set
 # BR2_PACKAGE_LIBXSLT is not set
+# BR2_PACKAGE_MXML is not set
 # BR2_PACKAGE_XERCES is not set
 
 #
