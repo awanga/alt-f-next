@@ -2,7 +2,7 @@
 
 DESC="Manages LVM (Logical Volume Management)"
 NAME=lvm
-TYPE=sys
+#TYPE=sys
 REQUIRE="device_mapper"
 
 umask 077
@@ -12,6 +12,9 @@ umask 077
 case "$1" in
 	start)
 		require $NAME $REQUIRE
+		modprobe dm_mirror
+		modprobe dm_snapshot
+
 		echo -n "Starting $NAME: "
 		vgscan --mknodes >& /dev/null
 		vgchange -a y
@@ -36,6 +39,7 @@ case "$1" in
 		st=$?
 		if test $st = 0; then
 			stoprequired $NAME $REQUIRE
+			rmmod dm_snapshot dm_mirror dm_region_hash dm_log
 		fi
 		omsg $st
 		;;
