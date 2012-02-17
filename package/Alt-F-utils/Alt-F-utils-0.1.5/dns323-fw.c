@@ -305,7 +305,7 @@ int split() {
 	exit(1);
   }
  
-  printf("product_id=%x;\ncustom_id=%x;\nmodel_id=%x;\nsub_id=%x;\nNewVersion=%x\n",
+  printf("product_id=%x;\ncustom_id=%x;\nmodel_id=%x;\nsub_id=%x;\nNewVersion=%x;\n",
 		 hd.product_id, hd.custom_id, hd.model_id, hd.sub_id, hd.NewVersion);
 
   if (!quiet) {

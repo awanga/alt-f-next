@@ -51,7 +51,7 @@ int button(void);
 void led(int which, char *value, char *mode, char *on, char *off);
 void blink_leds(int leds);
 
-void backup();
+void back_button();
 void reboot();
 void poweroff();
 
@@ -185,7 +185,7 @@ void mainloop()
 			blink_leds(0);
 
 		if (bt == BACK_BT) {
-			backup();
+			back_button();
 			continue;
 		}
 
@@ -234,11 +234,10 @@ void mainloop()
 	return;
 }
 
-// FIXME: misname
-void backup()
+void back_button()
 {
 	time_t count = time(NULL);
-	syslog(LOG_INFO, "Entering Backup");
+	syslog(LOG_INFO, "Entering back_button");
 
 	blink_leds(right_led | left_led);
 	
@@ -249,11 +248,13 @@ void backup()
 	count = time(NULL) - count;
 
 	if (args.recovery && count > 20) // twenty seconds
-		exec_userscript("/usr/sbin/recover", 3, "f"); // clear flash, reboot
+		exec_userscript("/usr/sbin/recover", SCRIPT_TIMEOUT, "f"); // clear flash, reboot
 	else if (args.recovery && count > 10) 	// ten seconds
-		exec_userscript("/usr/sbin/recover", 3, "t"); // telnet port 26
+		exec_userscript("/usr/sbin/recover", SCRIPT_TIMEOUT, "t"); // telnet port 26
+	else if (args.back_button_command)
+		exec_userscript(args.back_button_command, SCRIPT_TIMEOUT, NULL);
 	else
-		exec_userscript(args.back_button_command, 1, NULL);
+		exec_userscript("/usr/bin/eject", SCRIPT_TIMEOUT, "usb");
 	
 	blink_leds(0);
 }
@@ -316,7 +317,13 @@ void smail(char *type, int fan, float temp, int limit) {
 	pop_sys("/bin/hostname -f", host);
 	
 	char to[80];
-	if (pop_sys("grep '^from' /etc/msmtprc | cut -f2", to) == NULL) {
+	if (pop_sys("grep '^MAILTO' /etc/misc.conf | cut -d= -f2", to) == NULL) {
+		syslog(LOG_ERR, "mail not configured");
+		return;
+	}
+	
+	char from[80];
+	if (pop_sys("grep '^from' /etc/msmtprc | cut -f2", from) == NULL) {
 		syslog(LOG_ERR, "mail not configured");
 		return;
 	}
@@ -327,10 +334,11 @@ void smail(char *type, int fan, float temp, int limit) {
 		return;
 	}
 	fprintf(fo, "To: %s"
+		"From: %s"
 		"Subject: Alt-F System Control %s message\n\n"
 		"This is a %s message from %s\n"
 		"Fan speed=%d\nSystem Temperature=%.1f\nLimit Temperature=%d\n\n"
-		"This message will not be sent again unless the situation normalizes and reappears afterwards.", to, type, type, host, fan, temp, limit);
+		"This message will not be sent again unless the situation normalizes and reappears afterwards.\n", to, from, type, type, host, fan, temp, limit);
 	fclose(fo);
 }
 
