@@ -32,6 +32,7 @@ $(LIBEVENT_DIR)/.configured: $(LIBEVENT_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--mandir=/usr/share/man \
 		--disable-static \
 		--with-gnu-ld \
