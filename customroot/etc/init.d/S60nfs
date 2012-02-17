@@ -5,19 +5,32 @@ TYPE=net
 NAME=nfsd
 REQUIRE="portmap"
 
+MISCC=/etc/misc.conf
+
 . $(dirname $0)/common
+
+if test -f $MISCC; then
+	. $MISCC
+fi
 
 # The /var/lib/nfs directory is actually on a tmpfs filesystem.
 # except when Alt-F is aufs mounted (just install ipkg for this to take effect)
 
 mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
 
-touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
-	/var/lib/nfs/state /var/lib/nfs/xtab
+#touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
+#	/var/lib/nfs/state /var/lib/nfs/xtab
 
-chown -R daemon /var/lib/nfs /var/lib/nfs
+chown -R daemon /var/lib/nfs
 
 istart() {
+	if test -n "$DELAY_NFS"; then
+		if ! aufs.sh -s >& /dev/null ; then
+			echo "NFS: delaying NFS start"
+			return 1
+		fi
+	fi
+
 	# Don't fail if /etc/exports doesn't exist;
 	# create a bare-bones version and continue.
 
@@ -43,13 +56,13 @@ istart() {
 	exportfs -r
 	start rpc.mountd -- --no-nfs-version 4
 	start rpc.statd -- --no-notify
-	start rpc.nfsd -- --no-nfs-version 4 -s 2
+	start rpc.nfsd -- --no-nfs-version 4 -s 4
 	start sm-notify
 	avahi add nfs
 }
 
 istop() {
-	stop nfsd 9 # should be 2.
+	stop nfsd 2
 
 #	if ! rcnfs_client status >& /dev/null; then
 	if test -z "$(mount -t nfs)"; then
