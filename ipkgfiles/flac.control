@@ -1,5 +1,5 @@
 Package: flac
-Version: 1.2.1-2
+Version: 1.2.1-3
 Description: FLAC is an Open Source lossless audio codec.
 Depends: libogg, ipkg
 Architecture: arm

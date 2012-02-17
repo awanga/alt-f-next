@@ -1,6 +1,6 @@
 Package: libogg
 Depends: ipkg
-Version: 1.1.4-2
+Version: 1.1.4-3
 Description: Ogg is a multimedia container format, and the native file and stream format for the Xiph.org multimedia codecs.
 Architecture: arm
 Priority: optional

@@ -1,6 +1,6 @@
 Package: gdb
 Description: The GNU debugger
-Version: 6.8
+Version: 6.8-1
 Depends: ncurses, ipkg
 Architecture: arm
 Priority: optional

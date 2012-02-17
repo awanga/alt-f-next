@@ -1,6 +1,6 @@
 Package: uemacs
 Description: A small emacs.	  
-Version: 4.0.15-lt-1
+Version: 4.0.15-lt-2
 Depends: ncurses , ipkg
 Architecture: arm
 Priority: optional

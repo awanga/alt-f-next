@@ -1,6 +1,6 @@
 Package: gs
 Description: An interpreter for the PostScript (TM) language and the Adobe Portable Document Format
-Version: 8.71-2
+Version: 8.71-3
 Depends: jpeg, libpng, tiff, ipkg
 Architecture: arm
 Priority: optional

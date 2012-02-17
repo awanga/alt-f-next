@@ -1,5 +1,5 @@
 Package: sqlite
-Version: 3.6.23.1
+Version: 3.6.23.1-1
 Description: SQLite is a small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.
 Depends: readline, ipkg
 Architecture: arm

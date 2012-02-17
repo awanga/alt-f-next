@@ -41,3 +41,7 @@
 ./usr/sbin/vgs
 ./usr/sbin/vgscan
 ./usr/sbin/vgsplit
+./usr/www/cgi-bin/Disk_lvm.men
+./usr/www/cgi-bin/lvm.cgi
+./usr/www/cgi-bin/lvm_proc.cgi
+./usr/www/lvm_hlp.html

@@ -1,7 +1,7 @@
 Package: libavl
 Description: AVLTree is a small implementation of AVL trees for the C programming language.
 	  libavl is not the GNU libavl
-Version: 0.3.5-1
+Version: 0.3.5-2
 Depends: ipkg
 Architecture: arm
 Priority: optional

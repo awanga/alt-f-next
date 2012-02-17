@@ -108,14 +108,12 @@
 ./usr/lib/python2.4/lib-dynload/_heapq.so
 ./usr/lib/python2.4/lib-dynload/_hotshot.so
 ./usr/lib/python2.4/lib-dynload/itertools.so
-./usr/lib/python2.4/lib-dynload/linuxaudiodev.so
 ./usr/lib/python2.4/lib-dynload/_locale.so
 ./usr/lib/python2.4/lib-dynload/math.so
 ./usr/lib/python2.4/lib-dynload/md5.so
 ./usr/lib/python2.4/lib-dynload/mmap.so
 ./usr/lib/python2.4/lib-dynload/_multibytecodec.so
 ./usr/lib/python2.4/lib-dynload/operator.so
-./usr/lib/python2.4/lib-dynload/ossaudiodev.so
 ./usr/lib/python2.4/lib-dynload/parser.so
 ./usr/lib/python2.4/lib-dynload/pyexpat.so
 ./usr/lib/python2.4/lib-dynload/_random.so
