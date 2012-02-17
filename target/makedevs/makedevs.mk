@@ -13,7 +13,7 @@ $(MAKEDEVS_DIR)/makedevs.c: target/makedevs/makedevs.c
 	cp target/makedevs/makedevs.c $(MAKEDEVS_DIR)
 
 $(MAKEDEVS_DIR)/makedevs: $(MAKEDEVS_DIR)/makedevs.c
-	$(HOSTCC) -Wall -Werror -O2 $(MAKEDEVS_DIR)/makedevs.c -o $@
+	$(HOSTCC) -Wall -O2 $(MAKEDEVS_DIR)/makedevs.c -o $@
 
 $(HOST_DIR)/usr/bin/makedevs: $(MAKEDEVS_DIR)/makedevs
 	$(INSTALL) -m 755 $^ $@
