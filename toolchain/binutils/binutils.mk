@@ -146,6 +146,7 @@ $(BINUTILS_DIR2)/.configured: $(BINUTILS_DIR)/.patched
 		$(BINUTILS_DIR)/configure \
 		--prefix=/usr \
 		--exec-prefix=/usr \
+		--libdir=/usr/lib \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(REAL_GNU_TARGET_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
