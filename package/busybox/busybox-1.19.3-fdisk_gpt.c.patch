@@ -1,0 +1,70 @@
+--- busybox-1.19.3/util-linux/fdisk_gpt.c-orig	2011-11-10 21:26:22.089885476 +0000
++++ busybox-1.19.3/util-linux/fdisk_gpt.c	2011-11-10 21:33:37.972889534 +0000
+@@ -87,6 +87,30 @@
+ 	}
+ }
+ 
++static unsigned int
++gpt_type(uint8_t type[GUID_LEN]) {
++
++       char buf[GUID_LEN];
++       sprintf(buf, 
++               "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
++               type[3], type[2], type[1], type[0],
++               type[5], type[4],
++               type[7], type[6],
++               type[8], type[9],
++               type[10], type[11], type[12], type[13], type[14], type[15]);
++       if (memcmp(buf, "EBD0A0A2-B9E5-4433-87C0-68B6B72699C7", GUID_LEN) == 0) // Windows data
++               return 0x0700;
++       if (memcmp(buf, "0FC63DAF-8483-4772-8E79-3D69D8477DE4", GUID_LEN) == 0) // Linux filesystem
++               return 0x8300;
++       if (memcmp(buf, "0657FD6D-A4AB-43C4-84E5-0933C84B4F4F", GUID_LEN) == 0) // Linux swap
++               return 0x8200;
++       if (memcmp(buf, "A19D880F-05FC-4D3B-A006-743F0F84911E", GUID_LEN) == 0) // Linux RAID
++               return 0xfd00;
++       if (memcmp(buf, "E6D6D379-F507-44C2-A23C-238F2A3DF928", GUID_LEN) == 0) // Linux LVM
++               return 0x8e00;
++       return 0xffff;
++}
++
+ static void
+ gpt_list_table(int xtra UNUSED_PARAM)
+ {
+@@ -108,22 +132,20 @@
+ 		(unsigned long long)SWAP_LE64(gpt_hdr->first_usable_lba),
+ 		(unsigned long long)SWAP_LE64(gpt_hdr->last_usable_lba));
+ 
+-	printf("Number  Start (sector)    End (sector)  Size       Code  Name\n");
+-	for (i = 0; i < n_parts; i++) {
+-		gpt_partition *p = gpt_part(i);
+-		if (p->lba_start) {
+-			smart_ulltoa5(1 + SWAP_LE64(p->lba_end) - SWAP_LE64(p->lba_start),
+-				numstr6, " KMGTPEZY");
+-			printf("%4u %15llu %15llu %11s   %04x  ",
+-				i + 1,
+-				(unsigned long long)SWAP_LE64(p->lba_start),
+-				(unsigned long long)SWAP_LE64(p->lba_end),
+-				numstr6,
+-				0x0700 /* FIXME */);
+-			gpt_print_wide(p->name, 18);
+-			printf("\n");
+-		}
+-	}
++       printf("   Device  Start (sector)    End (sector)  Size (sectors)   Code  Name\n");
++       for (i = 0; i < n_parts; i++) {
++               gpt_partition *p = gpt_part(i);
++               if (p->lba_start) {
++                       printf("%s%1u %15llu %15llu %15llu   %04x  ",
++                               disk_device, i + 1,
++                               (unsigned long long)SWAP_LE64(p->lba_start),
++                               (unsigned long long)SWAP_LE64(p->lba_end),
++                               1 + SWAP_LE64(p->lba_end) - SWAP_LE64(p->lba_start),
++                               gpt_type(p->type_guid));
++                       gpt_print_wide(p->name, 18);
++                       printf("\n");
++               }
++       }
+ }
+ 
+ static int
