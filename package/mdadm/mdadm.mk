@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#MDADM_VERSION:=3.1.4
 MDADM_VERSION:=3.1.5
 MDADM_SOURCE:=mdadm-$(MDADM_VERSION).tar.gz
 MDADM_CAT:=$(ZCAT)
