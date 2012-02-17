@@ -31,6 +31,7 @@ $(LIBMAD_DIR)/.configured: $(LIBMAD_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--sysconfdir=/etc \
 		--disable-debugging \
 		--enable-speed \
