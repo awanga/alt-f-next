@@ -75,7 +75,7 @@ case "$1" in
 			require $NAME cron
 			echo -n "$NAME: Setting up crontab... "
 			adjtime -restart >& /dev/null
-			update_cron "0 6 * * * /usr/sbin/adjtime -adjust"
+			update_cron "0 6 * * * /usr/sbin/adjtime -adjust #!# Alt-F cron"
 		fi
 		omsg $?
 		;;
