@@ -5,7 +5,6 @@ NAME=mdadm
 TYPE=sys
 PIDFILE=/var/run/mdadm.pid
 CONFF=/etc/misc.conf
-CONFM=/etc/msmtprc
 
 . $(dirname $0)/common
 
@@ -20,7 +19,7 @@ case "$1" in
 			MDADM_INTERVAL=$(expr $MDADM_INTERVAL \* 60)
 		fi
 
-		SENDTO="$(awk '/^from/{ print $2}' $CONFM)"
+		SENDTO=$(grep '^MAILTO' $CONFF | cut -d= -f2)
 		if test -z "$SENDTO"; then
 			echo "Mail not configured, exiting."
 			exit 1
