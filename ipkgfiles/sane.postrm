@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sed -i '/.sane/d' /etc/inetd.conf
