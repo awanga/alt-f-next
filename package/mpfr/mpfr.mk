@@ -48,6 +48,7 @@ $(MPFR_TARGET_DIR)/.configured: $(MPFR_DIR)/.unpacked $(STAGING_DIR)/usr/lib/$(G
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		$(PREFERRED_LIB_FLAGS) \
 		--with-gmp-build=$(GMP_TARGET_DIR) \
 		$(DISABLE_NLS) \
@@ -96,6 +97,7 @@ $(MPFR_DIR2)/.configured: $(MPFR_DIR)/.unpacked $(GMP_HOST_DIR)/lib/$(GMP_HOST_B
 		--prefix="$(MPFR_HOST_DIR)" \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
+		--libdir="$(MPFR_HOST_DIR)"/lib \
 		--disable-shared \
 		--enable-static \
 		--with-gmp=$(GMP_HOST_DIR) \
