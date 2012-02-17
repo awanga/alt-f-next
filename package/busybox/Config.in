@@ -12,7 +12,7 @@ config BR2_PACKAGE_BUSYBOX
 choice
 	prompt "BusyBox Version"
 	depends on BR2_PACKAGE_BUSYBOX
-	default BR2_BUSYBOX_VERSION_1_15_X
+	default BR2_BUSYBOX_VERSION_1_19_X
 	help
 	  Select the version of BusyBox you wish to use.
 
@@ -30,6 +30,9 @@ choice
 	config BR2_BUSYBOX_VERSION_1_15_X
 		bool "BusyBox 1.15.x"
 
+	config BR2_BUSYBOX_VERSION_1_19_X
+		bool "BusyBox 1.19.x"
+
 	config BR2_PACKAGE_BUSYBOX_SNAPSHOT
 		bool "daily snapshot"
 
@@ -41,6 +44,7 @@ config BR2_BUSYBOX_VERSION
 	default "1.13.4"	if BR2_BUSYBOX_VERSION_1_13_X
 	default "1.14.3"	if BR2_BUSYBOX_VERSION_1_14_X
 	default "1.15.3"	if BR2_BUSYBOX_VERSION_1_15_X
+	default "1.19.3"	if BR2_BUSYBOX_VERSION_1_19_X
 
 config BR2_PACKAGE_BUSYBOX_FULLINSTALL
 	bool "Run BusyBox's own full installation"
