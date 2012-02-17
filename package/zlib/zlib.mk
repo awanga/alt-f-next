@@ -3,7 +3,7 @@
 # zlib
 #
 #############################################################
-#ZLIB_VERSION:=1.2.3
+
 ZLIB_VERSION:=1.2.5
 ZLIB_SOURCE:=zlib-$(ZLIB_VERSION).tar.bz2
 ZLIB_CAT:=$(BZCAT)
