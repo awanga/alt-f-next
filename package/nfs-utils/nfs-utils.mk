@@ -3,11 +3,8 @@
 # nfs-utils
 #
 #############################################################
-#NFS_UTILS_VERSION:=1.2.0
-# NFS_UTILS_VERSION:=1.2.1 current
-# NFS_UTILS_VERSION:=1.2.2 uses libcap (capabilities.h), not in uclibc
-# NFS_UTILS_VERSION:=1.2.3 rpc.mountd core dumps with showmount and +1 mount
-NFS_UTILS_VERSION:=1.2.4
+
+NFS_UTILS_VERSION:=1.2.5
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
 NFS_UTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/nfs/
 NFS_UTILS_CAT:=$(BZCAT)
