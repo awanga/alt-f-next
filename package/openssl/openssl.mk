@@ -4,11 +4,9 @@
 #
 #############################################################
 
-#OPENSSL_VERSION:=0.9.8r
-OPENSSL_VERSION:=1.0.0e
-
+#OPENSSL_VERSION:=1.0.0e
+OPENSSL_VERSION:=1.0.0g
 OPENSSL_SITE:=http://www.openssl.org/source
-
 OPENSSL_TARGET_ARCH=generic32
 
 # Some architectures are optimized in OpenSSL
