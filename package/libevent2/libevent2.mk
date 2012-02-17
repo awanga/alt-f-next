@@ -43,6 +43,7 @@ $(LIBEVENT2_DIR)/.configured: $(LIBEVENT2_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/libevent2 \
+		--libdir=/libevent2/lib \
 		--mandir=/usr/share/man \
 		--disable-static \
 		--with-gnu-ld \
