@@ -4,12 +4,10 @@
 #
 #############################################################
 
-#OPENVPN_VERSION = 2.0.9
 OPENVPN_VERSION = 2.2.1
 OPENVPN_SOURCE = openvpn-$(OPENVPN_VERSION).tar.gz
 OPENVPN_SITE = http://openvpn.net/release
 OPENVPN_DEPENDENCIES = lzo openssl uclibc
-
 #OPENVPN_CONF_OPT = --enable-small
 
 ifeq ($(BR2_PTHREADS_NATIVE),y)
