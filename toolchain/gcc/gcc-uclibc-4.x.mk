@@ -209,12 +209,13 @@ $(GCC_BUILD_DIR1)/.configured: $(GCC_DIR)/.patched
 		$(HOST_CONFIGURE_OPTS) \
 		$(GCC_DIR)/configure \
 		--prefix=$(STAGING_DIR)/usr \
+		--libdir=$(STAGING_DIR)/usr/lib \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
 		--enable-languages=c \
 		$(BR2_CONFIGURE_DEVEL_SYSROOT) \
-		--disable-__cxa_atexit \
+		--enable-__cxa_atexit \
 		--enable-target-optspace \
 		--with-gnu-ld \
 		--disable-shared \
@@ -285,13 +286,14 @@ $(GCC_BUILD_DIR2)/.configured: $(GCC_SRC_DIR)/.patched $(GCC_STAGING_PREREQ)
 		$(HOST_CONFIGURE_OPTS) \
 		$(GCC_SRC_DIR)/configure \
 		--prefix=$(BR2_SYSROOT_PREFIX)/usr \
+		--libdir=$(BR2_SYSROOT_PREFIX)/usr/lib \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
 		--enable-languages=$(GCC_CROSS_LANGUAGES) \
 		$(BR2_CONFIGURE_STAGING_SYSROOT) \
 		$(BR2_CONFIGURE_BUILD_TOOLS) \
-		--disable-__cxa_atexit \
+		--enable-__cxa_atexit \
 		--enable-target-optspace \
 		--with-gnu-ld \
 		--disable-libssp \
@@ -414,12 +416,13 @@ $(GCC_BUILD_DIR3)/.configured: $(GCC_BUILD_DIR3)/.prepared
 		$(TARGET_GCC_FLAGS) \
 		$(GCC_SRC_DIR)/configure \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(REAL_GNU_TARGET_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
 		--enable-languages=$(GCC_TARGET_LANGUAGES) \
 		--with-gxx-include-dir=/usr/include/c++ \
-		--disable-__cxa_atexit \
+		--enable-__cxa_atexit \
 		--with-gnu-ld \
 		--disable-libssp \
 		--disable-tls \
