@@ -5,6 +5,8 @@
 #############################################################
 
 E2FSPROGS_VERSION:=1.41.14
+#E2FSPROGS_VERSION:=1.42 this new release is too big! (and uclibc needs ftw, +4KB) 
+
 E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
 E2FSPROGS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/e2fsprogs
 E2FSPROGS_DIR=$(BUILD_DIR)/e2fsprogs-$(E2FSPROGS_VERSION)
@@ -51,11 +53,11 @@ $(E2FSPROGS_DIR)/.configured: $(E2FSPROGS_DIR)/.unpacked
 		--localstatedir=/var \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-		--disable-tls \
-		--enable-elf-shlibs --enable-dynamic-e2fsck --disable-swapfs \
-		--disable-debugfs --disable-imager \
 		--enable-resizer --enable-fsck \
-		--disable-e2initrd-helper \
+		--enable-elf-shlibs --enable-dynamic-e2fsck \
+		--disable-defrag \
+		--disable-swapfs --disable-tls --disable-e2initrd-helper \
+		--disable-debugfs --disable-imager --disable-testio-debug \
 		--without-catgets $(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
 	)
