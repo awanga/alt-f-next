@@ -48,6 +48,7 @@ $(ICU_DIR)/.configured: $(ICU_HOST_DIR)/.done
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--mandir=/usr/man \
 		--infodir=/usr/info \
 		--disable-layout \

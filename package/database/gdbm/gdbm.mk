@@ -32,6 +32,7 @@ $(GDBM_DIR)/.configured: $(GDBM_DIR)/.unpacked
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
+		--libdir=/usr/lib \
 		--enable-shared \
 		--disable-static \
 	)
