@@ -14,6 +14,4 @@ PARTED_DEPENDENCIES = uclibc libuuid
 
 PARTED_CONF_OPT = --disable-device-mapper --disable-dynamic-loading --without-readline --disable-shared
 
-#PARTED_CONF_ENV = CFLAGS+=-Os
-
 $(eval $(call AUTOTARGETS,package,parted))
