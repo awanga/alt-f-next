@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#OPENSSL_VERSION:=1.0.0e
 OPENSSL_VERSION:=1.0.0g
 OPENSSL_SITE:=http://www.openssl.org/source
 OPENSSL_TARGET_ARCH=generic32
@@ -42,6 +41,7 @@ $(OPENSSL_TARGET_CONFIGURE):
 		$(TARGET_CONFIGURE_OPTS) \
 		./Configure \
 			$(OPENSSL_CRYPTO_OPT) \
+			-DOPENSSL_SMALL_FOOTPRINT \
 			--prefix=/usr \
 			--openssldir=/etc/ssl \
 			threads shared \
@@ -54,7 +54,7 @@ $(OPENSSL_TARGET_CONFIGURE):
 	touch $@
 
 $(OPENSSL_TARGET_BUILD):
-	#$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
+	$(MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
 	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
 	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
 	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
