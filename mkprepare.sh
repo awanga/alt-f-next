@@ -126,7 +126,7 @@ cp ipkg-utils-050831/ipkg-build \
 	../bin
 sed -i 's|*control|./control|' ../bin/ipkg.py
 sed -i '1s/python/python -W ignore/' ../bin/ipkg-make-index
-
+sed -i 's/.*Packaged contents.*/#&/' ../bin/ipkg-build
 
 # some old Makefiles (including some linux kernel sources) are not accepted
 # by make version greater than 3.81, so install 3.81.
