@@ -66,9 +66,8 @@ sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
 echo "$oldip $hostname.$domain $hostname" >> $CONFH
 
-#sed -i '/^A:.*\.$/d' $CONFHTTP
-sed -i "s/^workgroup =.*$/workgroup = $workgp/" $CONFS
-sed -i "s/^server string =.*$/server string = $hostdesc/" $CONFS
+sed -i "s/workgroup =.*$/workgroup = $workgp/" $CONFS
+sed -i "s/server string =.*$/server string = $hostdesc/" $CONFS
 
 if test "$iptype" = "static"; then
 	eval $(ipcalc -n "$hostip" "$netmask") # evaluate NETWORK
