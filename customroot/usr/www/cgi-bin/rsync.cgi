@@ -59,7 +59,7 @@ EOF
 #awk -F = '/#!#/ {
 awk -F = 'BEGIN {
 		t = FS; FS= ":"
-		i = 0; users[i++] = "anybody"; users[i++] = "root"
+		i = 0; users[i++] = "anybody"
 		while (getline <"/etc/rsyncd.secrets")
 			users[i++] = $1
 		FS = t
