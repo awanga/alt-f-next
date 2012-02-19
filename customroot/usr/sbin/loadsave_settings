@@ -56,7 +56,7 @@ createdef() {
 	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0}' /etc/fstab > /tmp/xfstab
 
 	# another special case, only save user cron entries, not Alt-F ones
-	sed '/#!# Alt-F cron/d' /var/spool/cron/crontabs/root > /tmp/ucron
+	sed '/#!# Alt-F cron/d' /var/spool/cron/crontabs/root > /tmp/ucron 2> /dev/null
 
 	files="$files /tmp/xfstab /tmp/ucron $initscript_perms"
 
