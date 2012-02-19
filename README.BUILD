@@ -1,3 +1,8 @@
+#summary How to Build
+
+=How to Build=
+
+{{{
 
 You know that you don't need to build Alt-F, don't you? you can just
 download and install it. If building is what you really need, then read
@@ -10,8 +15,8 @@ decided to re-distribute the whole tree with my changes. IT IS NOT A
 FORK. I latter intend to use a more recent buildroot version.
 
 The files you might be interested in are in the customroot directory,
-the mk*.sh scripts, the package/Alt-F-utils directory, the host-tools
-directory and the patches directory.
+the mk*.sh scripts, the package/Alt-F-utils directory, and the host-tools
+directory.
 
 If you really want to try to build Alt-F, you must choose to checkout
 the current development tree, unstable, or a stable release.
@@ -30,12 +35,16 @@ and checkout the one of your choice, e.g.
 
 Then,
   
-	cd alt-f-read-only
+	cd alt-f-read-only/alt-f
 	export BLDDIR=<dir> # where you want the build tree, e.g. ~/Alt-F-build
-	./mkprepare.sh
+	export PATH=$PATH:$PWD/bin:$BLDDIR/build_arm/staging_dir/usr/bin: # PATH to host-tools and build made programs
+	./mkprepare.sh # build host-tools, put them in bin/
+	make O=$BLDDIR menuconfig # exit without making modifications (but save if asked)
 	make O=$BLDDIR
 
-and go for a two hours walk (old P4HT@3.2GHz/2GB) 
+and make a 15 minutes coffee-break (Core i5-2400@3.10GHz/4GB), or go for a two hours walk (old P4HT@3.2GHz/2GB) (times given does not include tarball downloads)
+
+	make O=$BLDDIR # for the *first* build a second (faster) make is needed
 
 When finished, you should find in $BLDDIR/binaries/dns323, the kernel,
 "zImage", and the root filesystem image, "rootfs.arm.ext2".
@@ -45,11 +54,11 @@ structure used to create the root filesystem image, "rootfs.arm.ext2".
 That directory was first populated by buildroot, using first the
 contents of target/generic/target_busybox_skeleton as a template, and
 then populating it with the configured packages; after that the
-directory is processed by the  "configfs" script, that copied the
+directory is processed by the "configfs" script, that copied the
 contents of "customroot" to it and also remove some other files.
 
 To create an initramfs, do
-	./mkinitramfs.sh sqfs
+	./mkinitramfs.sh <sqfs|gz|lzma>
 
 Some mk*.sh scripts will ask for the root password; this is needed to
 mount the generated ext2 rootfs as a loop device and manipulate it. See
@@ -75,20 +84,20 @@ initramfs, still smaller in size but slower to boot.
 
 If you are already using Alt-F, you can copy zImage and
 rootfs.arm.cpio-sq.lzma (or rootfs.arm.cpio.gz or rootfs.arm.cpio.lzma)
-to the box  root home directory, "/root" directory and issue a "reboot"
-command. The /etc/init.d/rcE script will recognize these files and will
+to the box "/root" directory and issue a "reboot" command.
+The /etc/init.d/rcE script will recognize these files and will
 do a kexec after doing all other cleanup, thus reloading a new kernel
 and initramfs without an actual hardware reboot.
 
 To create a "reloaded" tar file, just
-	./mkreloaded.sh
+	./mkreloaded.sh <sqfs|gz|lzma>
 
 and you will find it in $BLDDIR/binaries/dns323/Alt-F-0.1B1.tar.
 It is not compressed as it makes no sense to compress it (it is already
 internally compressed).
 
 To create a firmware image, just type
-	./mkfw.sh
+	./mkfw.sh <sqfs|gz|lzma>
 
 and again in $BLDDIR/binaries/dns323 you will found "Alt-F-0.1B1.bin",
 file that you can use to flash Alt-F using Alt-F firmware updater web
@@ -103,37 +112,46 @@ The Alt-F firmware updater web page also accepts vendor distributed
 firmware, so you can revert the box back to its original state.
 
 Other buildroot make options:
+============================
 
-make O=<path-to-build-directory> menuconfig # to configure the build
-make O=<path-to-build-directory> linux26-menuconfig # to fine configure linux
-make O=<path-to-build-directory> busybox-menuconfig # to fine configure busybox
-make O=<path-to-build-directory> uclibc-menuconfig  # to fine configure uclibc
-make O=<path-to-build-directory> saveconfig  # to save configuration (in local/dns323)
-make O=<path-to-build-directory> loadconfig # to retrieve the saved configuration
+make O=$BLDDIR menuconfig # to configure the build
+make O=$BLDDIR linux26-menuconfig # to fine configure linux
+make O=$BLDDIR busybox-menuconfig # to fine configure busybox
+make O=$BLDDIR uclibc-menuconfig  # to fine configure uclibc
+make O=$BLDDIR saveconfig  # to save configuration (in local/dns323/)
+make O=$BLDDIR loadconfig # to retrieve the saved configuration
 
-Buildroot is temperamental, to say the least. After you do a "make", you
-should do a second or a third one :-/, at least in the first build or
-when configuration files are changed.
+Make clean
+==========
 
 "make clean" does not do what you would expect. The official way of
 cleaning is to delete the build tree and restart again :-/.
 
-A faster, non guaranteed and involved way to "clean":
-  rm $BLDDIR/project_build_arm/dns323/autotools-stamps/*
-  rm -rf $BLDDIR/project_build_arm/dns323/root
+A faster, *non guaranteed* way to clean, that sometimes produces erroneous system
+libraries is:
+
+  rm $BLDDIR/project_build_arm/dns323/autotools-stamps/* # but *not* the gcc_libs_target_installed file
+  rm -rf $BLDDIR/project_build_arm/dns323/root/* # but *not* the lib directory
+   nor the usr/lib/libstdc++.so* files
   rm $BLDDIR/project_build_arm/dns323/.root
   make O=$BLDDIR
 
 This way the toolchain, kernel, and already built packages are not
 rebuilt, only the root directory is repopulated and the rootfs rebuild.
 
+If in the next build you see that system libraries are being rebuild, *they will
+be on error!*
+
+Remaking a package
+=================
+
 To remake only a package, you should delete its directory under
 $BLDDIR/build_arm, and
-a) remove all files in $BLDDIR/project_build_arm/dns323/autotools-stamps/
-with the package name, or
+a) remove in $BLDDIR/project_build_arm/dns323/autotools-stamps/ the file with the package name, or
 b) if none is found, remove from
- $BLDDIR/project_build_arm/dns323/root the package target.
+ $BLDDIR/project_build_arm/dns323/root the package target file.
 You can edit the package makefile in packages/<package-name>/<package-name>.mk
 
-Hopping that there are no inaccuracies,
-Joao
+Hopping that there are no inaccuracies.
+
+}}}
