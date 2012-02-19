@@ -128,7 +128,7 @@ function spit(cnt, opts) {
 	rdir = rdonly_chk = dis_chk = browse_chk = inhperms_chk = ""
 	rdonly_chk = "checked"
 	browse_chk = "checked"
-	sel = "anybody"
+	sel = "nonpublic"
 	useropt = ""
 
 	if (opts["path"] != "") {
@@ -142,16 +142,16 @@ function spit(cnt, opts) {
 
 		if (opts["valid users"] != "")
 			sel = opts["valid users"]
-		else if (opts["public"] == "no" || opts["guest ok"] == "no")
-			sel = "nonpublic"
+		else if (opts["public"] == "yes" || opts["guest ok"] == "yes")
+			sel = "anybody"
 
-		if (opts["read only"] == "no")
+		if (opts["read only"] == "no" || opts["read only"] == "No")
 			rdonly_chk = ""
 
 		if (opts["available"] == "no")
 			dis_chk = "checked"
 
-		if (opts["inherit permissions"] == "yes")
+		if (opts["inherit permissions"] == "yes" || opts["share_name"] == "Public (Read Write)")
 			inhperms_chk = "checked"
 
 	} else 
