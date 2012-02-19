@@ -83,15 +83,16 @@ if test -n "$curr"; then
 		</tr>
 		EOF
 	done
-	
-	cat<<-EOF
-		</table></fieldset>
-		<table>
-		<tr><td>Use hardware accelerator</td><td><input type=checkbox $cesa_chk name=use_cesa value="yes" $(ttip cesa_tt)></td></tr>
-		<tr><td>Password file:</td><td><input type=text name="keyfile" value="$CRYPT_KEYFILE" $(ttip crypt_tt)></td></tr>
-		<tr><td></td><td><input type="submit" name=action value="Submit">$(back_button)</td></tr>
-		</table></form>
-	EOF
+
+	echo "</table></fieldset>"
 fi
+
+cat<<-EOF
+	<table>
+	<tr><td>Use hardware accelerator</td><td><input type=checkbox $cesa_chk name=use_cesa value="yes" $(ttip cesa_tt)></td></tr>
+	<tr><td>Password file:</td><td><input type=text name="keyfile" value="$CRYPT_KEYFILE" $(ttip crypt_tt)></td></tr>
+	<tr><td></td><td><input type="submit" name=action value="Submit">$(back_button)</td></tr>
+	</table></form>
+EOF
 
 echo "</body></html>"
