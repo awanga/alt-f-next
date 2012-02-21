@@ -36,9 +36,11 @@ case "$1" in
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK $MTU
 
 		logger -s -t udhcpc "Updating /etc/hosts"
-		fnm=$(hostname -f)
 		hname=$(hostname)
-		sed -i '/^[^#].*'$fnm'/d' /etc/hosts
+		fnm=$(hostname -f)
+		if test $? = 0; then
+			sed -i '/^[^#].*'$fnm'/d' /etc/hosts
+		fi
 		echo -ne "$ip\t$hname.$domain\t$hname\n" >> /etc/hosts
 
 		logger -s -t udhcpc "Updating /etc/httpd.conf"
