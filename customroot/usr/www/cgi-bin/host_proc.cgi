@@ -97,19 +97,6 @@ if test "$iptype" = "static"; then
 	sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" $CONFHTTP
 	sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${netmask}\3|" $CONFS
 
-# FIXME: the following might not be enough.
-# FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
-
-	start-stop-daemon -K -x udhcpc >& /dev/null
-
-	if rcsmb status >& /dev/null; then
-		rcsmb reload  >& /dev/null
-	fi
-
-	if rcdnsmasq status >& /dev/null; then
-		rcdnsmasq reload  >& /dev/null
-	fi
-
 	if test -n "$gateway"; then igw="gateway $gateway"; fi
 
 	cat<<-EOF > $CONFINT
@@ -142,6 +129,23 @@ ifdown eth0 >& /dev/null
 sleep 1
 ifup eth0 >& /dev/null
 sleep 3
+
+
+# FIXME: the following might not be enough.
+# FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
+
+# ifdown stops udhcpc, no need to kill it
+# start-stop-daemon -K -x udhcpc >& /dev/null
+
+if rcsmb status >& /dev/null; then
+	# samba-3.5.12 does not change workgroup or server string on reload...
+	#rcsmb reload >& /dev/null
+	rcsmb restart >& /dev/null
+fi
+
+if rcdnsmasq status >& /dev/null; then
+	rcdnsmasq reload  >& /dev/null
+fi
 
 busy_cursor_end
 
