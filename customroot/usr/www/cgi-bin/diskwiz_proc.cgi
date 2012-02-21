@@ -401,7 +401,7 @@ fi
 #exit 0
 
 html_header
-echo "<center><h2>Processing</h2></center>"
+echo "<center><h2>Disk Wizard</h2></center>"
 busy_cursor_start
 
 echo "<p>Stopping all services and disks..."
@@ -423,7 +423,9 @@ case $wish_part in
 	raid5) raid5 ;;
 esac
 
+echo "<p>Reloading all disks and restarting all boot-enabled services..."
 loadall
+rcall start >& /dev/null
 
 # restart hotplug
 echo /sbin/mdev > /proc/sys/kernel/hotplug
