@@ -7,12 +7,19 @@ read_args
 #debug
 
 CONF_HOSTS=/etc/hosts
+CONF_MISC=/etc/misc.conf
 
 if test -n "$Submit"; then
 
-	TF=$(mktemp)
+	. $CONF_MISC
+
 	net=$(hostname -d)
-	echo -e "127.0.0.1	localhost\n::1	localhost ipv6-localhost ipv6-loopback"  > $TF
+
+	TF=$(mktemp)
+	echo "127.0.0.1	localhost" > $TF
+	if test "$MODLOAD_IPV6" = "y"; then
+		echo "::1	localhost ipv6-localhost ipv6-loopback"  >> $TF
+	fi
 
 	for i in $(seq 0 $cnt_know); do
 		nm=$(eval echo \$knm_$i)
@@ -34,7 +41,7 @@ if test -n "$Submit"; then
 
 		if echo "$ip" | grep -q ':'; then
 			echo "$ip	$nm" >> $TF
-		elif ! $(checkip $ip); then
+		elif ! $(checkip $ip); then # FIXME: make checkip() check IPv6 IPs
 			msg "The IP must be in the form x.x.x.x, where x is greater than 0 and lower then 255."
 		else
 			echo "$ip	$nm.$net	$nm" >> $TF
