@@ -110,9 +110,8 @@ if test -f /tmp/firstboot; then
 	cat<<-EOF
 		<center><font color=blue>
 		<h3>Welcome to your first login to Alt-F</h3>
-		<h4>To continue setting up Alt-F, you should now specify where
-		 you live, Submit  it,</h4>
-		<h4> and then adjust the local time and date.</h4>
+		<h4>To continue setting up Alt-F, you should now specify where you live, Submit it,</h4>
+		<h4> and in the second step adjust the time though the internet or mannualy and Submit it.</h4>
 		</font></center>
 	EOF
 fi
