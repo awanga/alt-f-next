@@ -93,7 +93,7 @@ elif test "$create_dir" = "CreateDir"; then
 	ln -sf "$mp"/Users /home
 
 	mkdir -p "$mp"/Public
-	ln -s "$mp"/Public /Public
+	ln -sf "$mp"/Public /Public
 
 	mkdir -p "$mp"/Public/RO
 	mkdir -p "$mp"/Public/RW
