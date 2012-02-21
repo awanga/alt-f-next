@@ -1,3 +1,44 @@
+=== February 21, 2012: Alt-F-0.1RC2 is released
+
+-All packages in the base firmware updated to the last version (but e2fsprogs and samba,
+which is now at version 3.5.12; samba-3.6.3 and e2fsprogs-1.42 just don't fit
+the available flash space)
+
+This package update has subverted the Release Candidate (RC) concept,
+and although care has been taken, there might exists incompatibility
+with some RC1 configuration files. New users should have no problems.
+No update fix script will be made available.
+
+-Most bugs and feature requests fixed
+-Most web pages are now W3c Validator compliant
+-Ability to bookmark frequently accessed web pages
+-New rsyncd setup web page
+-New crontab setup web page
+-Preliminary LVM setup web page (don't use in production!)
+-Improved cryptsetup web page
+-Improved mail setup web page
+-Improved samba setup web page
+-Restore RAID behaviour of 0.1B7
+-IPv6 moved to the kernel-modules packages
+-Obsolete/Updated/new disk-instalable packages (more to follow after this release):
+
+	netatalk-2.1.6 is not supported anymore, upgrade to netatalk2.
+	netatalk-2.2.2
+	transmission-2.42
+	fuppes-660 is back
+	minidlna-1.024	
+	automatic-0.7.2
+	cryptsetup-1.4.1
+	bridge-1.5
+	pcre-8.20
+	cryptodev-linux-1.0 (for hardware accelerated crypto engine)
+	kernel-modules has now more drivers available
+
+User who have an already Alt-F flashed box should use the TryIt button 
+in the Firmware Upgrader web page before flashing this new version. 
+Users that are using a reloaded Alt-F can proceed as above first, in order 
+to try the new version without messing up with the fun_plug installation. 
+
 === October 13, 2011: Alt-F-0.1RC1 is released
 
 -Alt-F can now be directly flashed using the vendor's firmware, no need for fun_plug
