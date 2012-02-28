@@ -13,9 +13,12 @@ DROPBEAR_TARGET_BINS = dbclient dropbearkey dropbearconvert scp ssh
 DROPBEAR_MAKE =	$(MAKE) MULTI=1 SCPPROGRESS=1 \
 		PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp"
 
+DROPBEAR_CONF_OPT = --disable-wtmp --disable-lastlog
+
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
 DROPBEAR_DEPENDENCIES += openssl
 endif
+
 $(eval $(call AUTOTARGETS,package,dropbear))
 
 $(DROPBEAR_HOOK_POST_EXTRACT):
