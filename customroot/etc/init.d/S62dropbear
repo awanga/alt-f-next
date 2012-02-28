@@ -27,7 +27,7 @@ sinit() {
 	fi
 
 	umask 077
-	if ! test -e /var/log/lastlog; then touch /var/log/lastlog; fi
+	#if ! test -e /var/log/lastlog; then touch /var/log/lastlog; fi
 }
 
 case "$1" in
