@@ -73,7 +73,7 @@ while read user upass uid ugid uname dir shell;do
 	if test $shell = "/bin/false"; then continue; fi
 	if test $uid -lt 100; then continue; fi
 	echo "<option>$uname</option>"
-jstr="$jstr; users[$cnt]=\"$user\"; groupsInUser[$cnt]=\"$(id -Gn $user)\";"
+	jstr="$jstr; users[$cnt]=\"$user\"; groupsInUser[$cnt]=\"$(id -Gn $user)\";"
 	cnt=$((cnt+1))
 done < $CONFP
 echo "</select></td></tr>"
@@ -97,19 +97,23 @@ EOF
 #group_name:passwd:GID:user_list
 cnt=0; jstr=""
 echo "<tr><td colspan=2><select multiple style=\"width:40ex\" size=\"8\" name=\"groups\" onChange=\"update_groups()\">"
-while read group gpass ggid userl;do
-	if test "${group:0:1}" = "#" -o "$gpass" = "!"; then continue; fi
+while read group gpass ggid userl; do
+	if test "${group:0:1}" = "#" -o "$gpass" = "!" -o -z "$group"; then continue; fi
 	if test $ggid -lt 100; then continue; fi
 	echo "<option>$group</option>"
+
 	# primary group
-	uu=$(awk -F: '{if ($4 == '$ggid') printf "%s, ", $5}' $CONFP)
-	# suplementary groups
-	if test -n "$userl"; then 
-		for i in $(echo $userl | tr ',' ':'); do # IFS is a ":"
-			uu="$uu, $(awk -F: '/'$i'/{print $5}' $CONFP)"
-		done
-	fi
-jstr="$jstr; groups[$cnt]=\"$group\"; usersInGroup[$cnt]=\"$uu\";"
+	ul=$(awk -F: '{if ($4 == '$ggid' && substr($0, 1, 1) != "#") printf "%s," $1}' $CONFP)
+
+	# plus suplementary groups, remove dups
+	ul=$(echo -e "$userl,$ul" | tr ',' '\n' | sort -u | tr '\n' ':')
+
+	un="" # get user name
+	for i in $ul; do 
+		un="$(awk -F: '/^'$i':/{printf "%s, ", $5}' $CONFP)${un}"
+	done
+
+	jstr="$jstr; groups[$cnt]=\"$group\"; usersInGroup[$cnt]=\"$un\";"
 	cnt=$((cnt+1))
 done < $CONFG
 echo "</select></td></tr>"
