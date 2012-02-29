@@ -15,14 +15,14 @@ fi
 
 if test -n "$CreateDir"; then
 	if test -d "$wdir"; then
-		msg "Can't create, directory $wdir already exists."
+		msg "Can't create, folder $wdir already exists."
 	elif test -d "$bdir"; then
 		res="$(mkdir "$wdir" 2>&1 )"
 		if test $? != 0; then
 			msg "$res"
 		fi
 	else
-		msg "Can't create, parent directory $bdir does not exist."
+		msg "Can't create, parent folder $bdir does not exists."
 	fi
 
 elif test -n "$DeleteDir"; then
@@ -33,15 +33,18 @@ elif test -n "$DeleteDir"; then
 		fi
 		HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$bdir"'|p')
 	else
-		msg "Can't delete, directory $wdir does not exist."
+		msg "Can't delete, folder $wdir does not exists."
 	fi
 
 elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	sbn=$(basename "$srcdir")
 	if test -d "${wdir}/${sbn}" -a -z "$CopyContent"; then
-		msg "$wdir already contains a directory named $sbn"
+		msg "$wdir already contains a folder named $sbn"
 	fi
 
+	if test "$op" = "CopyContent"; then
+		op="Copy contents"
+	fi
 	html_header
 	wait_count_start "$op from $srcdir to $wdir"
 	for i in $(seq 1 5); do sleep 1; echo; done & # why the hell is this needed?!

@@ -5,4 +5,4 @@ Proxy proxy.cgi
 Hosts hosts.cgi
 Users usersgroups.cgi
 Debian debian.cgi
-Directory browse_dir.cgi?wind=no?browse=/mnt
+Folders browse_dir.cgi?wind=no?browse=/mnt

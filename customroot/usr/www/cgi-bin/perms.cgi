@@ -3,7 +3,7 @@
 . common.sh
 check_cookie
 
-hdr="Directory Ownership and Access Permissions"
+hdr="Folder Ownership and Access Permissions"
 
 if test -n "$(echo "$QUERY_STRING" | grep 'wind=no')"; then	
 	write_header "$hdr"
@@ -17,7 +17,7 @@ else
 		hlp="<a href=\"$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
-	echo "<center><h2>Directory Ownership and Access Permissions $hlp</h2></center>"
+	echo "<center><h2>Folder Ownership and Access Permissions $hlp</h2></center>"
 fi
 
 if test -z "$QUERY_STRING"; then	
@@ -53,10 +53,10 @@ fi
 
 echo "$browse" | grep -q '^/mnt'
 if test "$?" = 1; then
-	echo "<h3>Warning: Directory base must be /mnt</h3>"
+	echo "<h3>Warning: Folder base must be /mnt</h3>"
 	browse="/mnt"
 elif ! test -d "$browse"; then
-	echo "<h3>Warning: Directory \"$browse\" does not exista.</h3>"
+	echo "<h3>Warning: Folder \"$browse\" does not exists.</h3>"
 	browse="/mnt"
 fi
 
@@ -112,7 +112,7 @@ cat <<-EOF
 		<td><input type=checkbox $p10 name=p10 value="x"></td>
 	</tr>
 	<tr><td><br></td></tr>
-	<tr><td colspan=2>Apply recursively to subdirectories</td><td><input type=checkbox name=recurse value=yes></td></tr>
+	<tr><td colspan=2>Apply recursively to sub-folders</td><td><input type=checkbox name=recurse value=yes></td></tr>
 	<tr><td colspan=2>Apply also to files</td><td><input type=checkbox name=toFiles value=yes></td></tr>
 	<tr><td><br></td></tr>
 	<tr><td></td><td colspan=2>$(back_button)<input type=submit name=Permissions value="Submit"></td></tr>

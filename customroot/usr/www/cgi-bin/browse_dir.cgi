@@ -31,7 +31,7 @@ transverse() {
 . common.sh
 check_cookie
 
-hdr="Directory Browse"
+hdr="Folders Browse"
 
 if test -n "$(echo "$QUERY_STRING" | grep 'wind=no')"; then	
 	ok_sel="disabled"
@@ -44,15 +44,15 @@ else
 	echo "<center><h2>$hdr</h2></center>"
 fi
 
-mktt curdir "The currently selected directory.<br>
-Can be edited to create a directory using the CreateDir button bellow."
-mktt cpdir "Mark the above selected directory for copying."
-mktt cpdircont "Mark the above selected directory contents (not the directory itself) for copying."
-mktt cutdir "Mark the above selected directory for moving."
-mktt pastedir "Paste the previously marked directory into the above selected directory."
-mktt mkdir "Create the directory whose name is in the above field."
-mktt rmdir "Delete the above selected directory."
-mktt perms "Change permissions and ownership of the selected directory."
+mktt curdir "The currently selected folder.<br>
+Can be edited to create a folder using the Create button bellow."
+mktt cpdir "Mark the above selected folder for copying."
+mktt cpdircont "Mark the above selected folder contents (not the folder itself) for copying."
+mktt cutdir "Mark the above selected folder for moving."
+mktt pastedir "Paste the previously marked folder into the above selected folder."
+mktt mkdir "Create the folder whose name is in the above field."
+mktt rmdir "Delete the above selected folder."
+mktt perms "Change permissions and ownership of the selected folder."
 
 eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
 	awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
@@ -86,10 +86,10 @@ fi
 #fi
 
 if ! echo "$browse" | grep -q '^/mnt'; then
-	echo "<h3>Warning: Directory base must be /mnt</h3>"
+	echo "<h3>Warning: Folder base must be /mnt</h3>"
 	browse="/mnt"
 elif ! test -d "$browse"; then
-	echo "<h3>Warning: Directory \"$browse\" does not exist.</h3>"
+	echo "<h3>Warning: Folder \"$browse\" does not exist.</h3>"
 	browse="/mnt"
 fi
 
@@ -100,27 +100,29 @@ cat <<-EOF
 			window.close();
 		}
 		function perms(dir) {
-			//window.location.assign("http://" + location.hostname + "/cgi-bin/perms.cgi?${url_wind}browse=" + dir)
 			window.location.assign("/cgi-bin/perms.cgi?${url_wind}browse=" + dir)
 		}
 		function ops(op, dir, id, wind) {
-			//window.location.assign("http://" + location.hostname + "/cgi-bin/browse_dir.cgi?" +
 			window.location.assign("/cgi-bin/browse_dir.cgi?" +
 wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 		}
 		function op_paste(op, srcdir, destdir) {
 			ret = false;
 			if ( op == "")
-				alert("No copy or move operattion has been previously selected.")
+				alert("No copy or move operation has been previously selected.")
 			else if (destdir == "" || srcdir == "")
-				alert("No source or destination directory has been selected.")
+				alert("No source or destination folder has been selected.")
 			else if (srcdir == destdir)
-				alert("Source and destination directory are the same.")
-			else	
-				ret = confirm(op + " all files and sub-directories from " + '\n\n' +
+				alert("Source and destination folder are the same.")
+			else if (op == 'Copy')
+				msg = "Copy folder"	
+			else if (op == 'CopyContent')
+				msg = "Copy all files and folders from"	
+
+			ret = confirm(msg + '\n\n' +
 "   " + srcdir + '\n' + "to" + '\n' + "   " + destdir + '\n\n' +
 "This operation can take a long time to accomplish," + '\n' +
-"dependending on the amount of data to " + op + '\n\n' + "Proceed?")
+"depending on the amount of data to " + op + '\n\n' + "Proceed?")
 			return ret
 		}
 	</script>
@@ -136,14 +138,14 @@ wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 
 	<tr><td></td>
 	<td colspan=5>
-		<input type=button name=copyDir value=CopyDir $(ttip cpdir) onclick="ops('Copy','$browse','$url_id','$url_wind')">
-		<input type=button name=copyDirContent value=CopyDirContent $(ttip cpdircont) onclick="ops('CopyContent','$browse','$url_id','$url_wind')">
-		<input type=button name=cutDir value=CutDir  $(ttip cutdir) onclick="ops('Move','$browse','$url_id','$url_wind')">
+		<input type=button name=copyDir value=Copy $(ttip cpdir) onclick="ops('Copy','$browse','$url_id','$url_wind')">
+		<input type=button name=copyDirContent value=CopyContent $(ttip cpdircont) onclick="ops('CopyContent','$browse','$url_id','$url_wind')">
+		<input type=button name=cutDir value=Cut  $(ttip cutdir) onclick="ops('Move','$browse','$url_id','$url_wind')">
 		<input type=hidden name=op value="$op">
 		<input type=hidden name=srcdir value="$srcdir">
-		<input type=submit name=PasteDir value=PasteDir  $(ttip pastedir) onclick="return op_paste('$op','$srcdir','$browse')">
-		<input type=submit name=CreateDir value=CreateDir $(ttip mkdir)>
-		<input type=submit name=DeleteDir value=DeleteDir $(ttip rmdir) onclick="return confirm('Remove directory $browse and all its files and subdirectories?')">
+		<input type=submit name=PasteDir value=Paste  $(ttip pastedir) onclick="return op_paste('$op','$srcdir','$browse')">
+		<input type=submit name=CreateDir value=Create $(ttip mkdir)>
+		<input type=submit name=DeleteDir value=Delete $(ttip rmdir) onclick="return confirm('Remove folder $browse and all its files and sub-folders?')">
 	</td>
 	</tr></table></form>
 
@@ -152,9 +154,7 @@ wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 		<td><strong>Owner</strong></td>
 		<td><strong>Group</strong></td>
 		<td><strong>Permissions</strong></td></tr>
-		<!--tr><td><a style="text-decoration: none" href="/cgi-bin/browse_dir.cgi?${url_op}${url_srcdir}${url_wind}${url_id}browse=$(dirname "$browse")">Up Directory &uarr;</a></td></tr-->
 EOF
-
 
 transverse /mnt "$(echo $browse | cut -d/ -f3-)"
 
