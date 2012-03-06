@@ -8,9 +8,7 @@ html_header
 #debug
 
 if test -n "$QUERY_STRING"; then		
-	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-			printf "%s=%c%s%c\n",$1,39,$2,39}')
+	parse_qstring
 else
 	echo "<script type="text/javascript"> window.close() </script></body></html>"
 	exit 0

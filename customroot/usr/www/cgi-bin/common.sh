@@ -18,6 +18,15 @@ read_args() {
 			printf "%s=%c%s%c\n",$2,39,$1,39}' )                
 }
 
+# like read_args above but for QUERY_STRING (does not evaluate value=key)
+# split tok[&tok]*, where tok has form "<key=value>"
+# notice that QUERY_STRING does not has spaces at its end (busybox httpd bug?)
+parse_qstring() {
+	eval $(echo -n $QUERY_STRING | sed -e 's/'"'"'/%27/g' |
+		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
+			printf "%s=%c%s%c\n",$1,39,substr($0,index($0,$2)),39}')
+}
+
 isnumber() {
 	echo "$1" | grep -qE '^[0-9.]+$'
 }
@@ -74,10 +83,6 @@ path_escape() {
 
 path_unescape() {
 	echo $(echo "$1" | sed 's/\\040/ /g')
-}
-
-html_escape() {
-	echo -n "$1" | od -An -t dC -w300 | sed -e 's/^ *//' -e 's/\([0-9]*\)/\&#\1;/g' -e 's/ //g'
 }
 
 # $1-title (optional)

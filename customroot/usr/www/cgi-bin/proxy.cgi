@@ -24,7 +24,7 @@ if test -e $WGETCONF; then
 	while read -r ln; do
 		if echo "$ln" | grep -q proxy_password; then
 			pass=$(echo $ln | sed -n '/proxy_password/s/proxy_password=//p')
-			proxy_password=$(html_escape "$pass")
+			proxy_password=$(httpd -e "$pass")
 		else
 			eval $(eatspaces "$ln")
 		fi

@@ -5,7 +5,12 @@ check_cookie
 
 hdr="Folder Ownership and Access Permissions"
 
-if test -n "$(echo "$QUERY_STRING" | grep 'wind=no')"; then	
+if test -n "$QUERY_STRING"; then
+	parse_qstring
+fi
+
+#if test -z "$wind" -o "$wind" = "no"; then
+if test "$wind" = "no"; then
 	write_header "$hdr"
 else
 	html_header
@@ -14,20 +19,11 @@ else
 	}
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
-		hlp="<a href=\"$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
+		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
 	echo "<center><h2>Folder Ownership and Access Permissions $hlp</h2></center>"
 fi
-
-if test -z "$QUERY_STRING"; then	
-	echo "</body></html>"
-	exit 0
-fi
-
-eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-	awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-		printf "%s=%c%s%c\n",$1,39,$2,39}')
 
 browse="$(httpd -d $browse)"
 

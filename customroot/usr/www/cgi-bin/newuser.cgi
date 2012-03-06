@@ -68,9 +68,7 @@ if test -z "$QUERY_STRING"; then
 	if test "$uid" -lt 1000; then uid=1000; fi
 	gid=100
 else
-	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-		printf "%s=%c%s%c\n",$1,39,$2,39}')
+	parse_qstring
 	uname="$(httpd -d "$uname")"
 	chpass="readonly"
 	if test -z "$nick"; then

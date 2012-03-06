@@ -4,20 +4,21 @@
 check_cookie
 read_args
 
+wdir=$(httpd -d "$newdir")
+bdir=$(dirname "$wdir")
+nbdir=$(echo "$bdir" | sed 's|\([]\&\|[]\)|\\\1|g')
+
 #debug
 
-wdir="$(httpd -d $newdir)"
-bdir=$(dirname "$wdir")
-
 if test -n "$srcdir"; then
-	srcdir="$(httpd -d $srcdir)"
+	srcdir=$(httpd -d "$srcdir")
 fi
 
 if test -n "$CreateDir"; then
 	if test -d "$wdir"; then
 		msg "Can't create, folder $wdir already exists."
 	elif test -d "$bdir"; then
-		res="$(mkdir "$wdir" 2>&1 )"
+		res=$(mkdir "$wdir" 2>&1 )
 		if test $? != 0; then
 			msg "$res"
 		fi
@@ -27,11 +28,11 @@ if test -n "$CreateDir"; then
 
 elif test -n "$DeleteDir"; then
 	if test -d "$wdir"; then
-		res="$(rm -rf "$wdir" 2>&1)"
+		res=$(rm -rf "$wdir" 2>&1)
 		if test $? != 0; then
 			msg "$res"
 		fi
-		HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$bdir"'|p')
+		HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
 	else
 		msg "Can't delete, folder $wdir does not exists."
 	fi
@@ -47,7 +48,6 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	fi
 	html_header
 	wait_count_start "$op from $srcdir to $wdir"
-	for i in $(seq 1 5); do sleep 1; echo; done & # why the hell is this needed?!
 
 	# cp -a, piped tar and rsync uses too much memory (that keeps growing) for big trees and start swapping
 	# cpio has constante memory usage but is limited to 4GB files...
@@ -56,7 +56,7 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 			cd "$srcdir"
 			srcdir="."
 		else
-			cd $(dirname "$srcdir")
+			cd "$(dirname "$srcdir")"
 			srcdir=$(basename "$srcdir")
 		fi
 		
@@ -67,7 +67,8 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 			st=$?
 			if test "$st" = 0; then
 				while read fn; do
-					res=$(nice cp -a "$fn" "$wdir"/$(dirname "$fn") 2>&1)
+					td=$(dirname "$fn")
+					res=$(nice cp -a "$fn" "$wdir/$td" 2>&1)
 					st=$?
 					if test "$st" != 0; then break; fi
 				done < $tf
@@ -87,12 +88,9 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 		msg "$res"
 	fi
 	
-	HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$bdir"'|p')
-	cat<<-EOF
-		<script type="text/javascript">
-			window.location.assign('$HTTP_REFERER')
-		</script></body></html>
-	EOF
+	HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
+	js_gotopage $HTTP_REFERER
+	echo "</body></html>"
 	exit 0
 
 elif test -n "$Permissions"; then
@@ -114,5 +112,5 @@ elif test -n "$Permissions"; then
 fi
 
 #enddebug
-gotopage $HTTP_REFERER
+gotopage "$HTTP_REFERER"
 

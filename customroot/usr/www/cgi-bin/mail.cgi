@@ -12,7 +12,7 @@ parse() {
 	while read -r key value; do
 		if test -n "$key" -a -n "$value" -a "${key###}" = "$key"; then
 			if test "$key" = "password"; then
-				password=$(html_escape "$value")
+				password=$(httpd -e "$value")
 			else
 				eval "$key=$value"
 			fi

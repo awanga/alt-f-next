@@ -7,9 +7,7 @@ html_header "NFS Browse"
 echo "<center><h2>NFS Browse</h2></center>"
 
 if test -n "$QUERY_STRING"; then		
-	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-			printf "%s=%c%s%c\n",$1,39,$2,39}')
+	parse_qstring
 else
 	echo "<h3>No arguments given.</h3></body></html>"
 	exit 0

@@ -3,11 +3,8 @@
 . common.sh
 check_cookie
 
-# handle options of kind var=val
 if test -n "$QUERY_STRING"; then		
-	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-			printf "%s=%c%s%c\n",$1,39,substr($0,index($0,"=")+1),39}')
+	parse_qstring
 else
 	write_header "NFS options error"
 	echo "<script type="text/javascript"> window.close() </script></body></html>"

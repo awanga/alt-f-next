@@ -522,9 +522,7 @@ printers_st() {
 }
 
 if test -n "$QUERY_STRING"; then
-	eval $(echo -n $QUERY_STRING |  sed -e 's/'"'"'/%27/g' |
-		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-		printf "%s=%c%s%c\n",$1,39,$2,39}')
+	parse_qstring
 fi
 
 if test -n "$refresh"; then

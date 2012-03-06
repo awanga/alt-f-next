@@ -190,9 +190,12 @@ function parse(share_name, line) {
 		if (fc == "[")
 			break
 
-		gsub("^( |\t)*|( |\t)*$","", $1)
-		gsub("^( |\t)*|( |\t)*$","", $2)
-		opts[$1] = $2; # tolower($2)
+		key=$1
+		gsub("^( |\t)*|( |\t)*$", "", key)  # remove leading and trailing spaces
+
+		value=substr($0, index($0,$2)) # path can have the '=' char, which is the field separator
+		gsub("^( |\t)*|( |\t)*$", "", value)
+		opts[key] = value
 	}
 
 	spit(cnt, opts)
