@@ -168,7 +168,7 @@ cat<<-EOF
 EOF
 
 eval $(awk -F= '/enable-tftp/{print "tftp=checked"} \
-		/tftp-root/{printf "tftproot=%s", $2}' $CONF_F)
+		/tftp-root/{printf "tftproot=%s", substr($0,index($0,$2))}' $CONF_F)
 if test -z "$tftp"; then
 	tftpdis=disabled
 fi
