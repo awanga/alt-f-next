@@ -179,15 +179,15 @@ fs_progress() {
 	part=$1
 	ln=""
 	for k in check format convert shrink enlarg wip; do
-		if test -f /tmp/${k}-${part}; then
+		if test -s /tmp/${k}-${part}; then
 			if kill -1 $(cat /tmp/${k}-${part}.pid) 2> /dev/null; then
-				if test -f /tmp/${k}-${part}.log; then
+				if test -s /tmp/${k}-${part}.log; then
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
 				fi
 				if test $k = "check"; then
-					ln=$(echo $ln | awk '{printf "step %d: %d%%", $1, $2*100/$3}')
+					ln=$(echo $ln | awk '{if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
 				elif test $k = "format"; then
-					ln=$(echo $ln | awk -F/ '/.*\/.*/{printf "%d%%", $1*100/$2}')
+					ln=$(echo $ln | awk -F/ '/.*\/.*/{if ($2 != 0) printf "%d%%", $1*100/$2}')
 				elif test $k = "shrink" -o $k = "enlarg"; then
 					ln=$(echo $ln | grep -o X)
 					if test -n "$ln"; then
