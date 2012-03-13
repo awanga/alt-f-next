@@ -47,7 +47,7 @@ BAYC=/etc/bay
 MDADMC=/etc/mdadm.conf
 USERLOCK=/var/lock/userscript
 
-if test -f $MISCC; then
+if test -s $MISCC; then
 	. $MISCC
 fi
 
@@ -117,17 +117,19 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			fsopt="-" # FIXME, hack for hot_aux arguments (can't be empty)
 			;; 
 		swap) # don't mount swap on usb devices
-			if ! readlink /sys/block/${MDEV:0:3}/device | grep -q /usb1/; then
-				swapon -p 1 $PWD/$MDEV
-				ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
-				mount -o remount,size=${ns}M /tmp
-				touch -r $FSTAB /tmp/fstab_date
-				sed -i '\|^'$PWD/$MDEV'|d' $FSTAB
-				echo "$PWD/$MDEV none swap pri=1 0 0" >> $FSTAB
-				touch -r /tmp/fstab_date $FSTAB
-				rm /tmp/fstab_date
-
+			if readlink /sys/block/${MDEV:0:3}/device | grep -q /usb1/; then
+				if test -z "$USB_SWAP" -o "$USB_SWAP" = "no"; then
+					return 0
+				fi
 			fi
+			swapon -p 1 $PWD/$MDEV
+			ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
+			mount -o remount,size=${ns}M /tmp
+			touch -r $FSTAB /tmp/fstab_date
+			sed -i '\|^'$PWD/$MDEV'|d' $FSTAB
+			echo "$PWD/$MDEV none swap pri=1 0 0" >> $FSTAB
+			touch -r /tmp/fstab_date $FSTAB
+			rm /tmp/fstab_date
 			return 0
 			;;
 		lvm2pv) # LVM

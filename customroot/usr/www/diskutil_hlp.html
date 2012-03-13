@@ -20,7 +20,7 @@ In this page all found disks, including USB disks or pens, will be presented, on
 <li><strong>Load</strong> appears, it means that no disk resource is in use, and you can safely remove or eject the disk. If you press the button, all filesystems found on the disk will be mounted and ready to be used. When a disk is plugged-in, this happens automatically.
 </ul>
 
-<li><strong>Health</strong>: you can see the disk <a href="http://en.wikipedia.org/wiki/S.M.A.R.T.">S.M.A.R.T.</a> status or perform some SMART tests.
+<li><strong>Health</strong>: you can see the disk <a href="http://en.wikipedia.org/wiki/S.M.A.R.T." target="_blank">S.M.A.R.T.</a> status or perform some SMART tests.
 <br>
 You can use Services->System->smart->Configure to automate tests.
 <ul>
@@ -41,5 +41,13 @@ You can use Services->System->smart->Configure to automate tests.
 <li><strong>Spindow</strong> You can enter the number of minutes of disk inactivity after which it will enter standby mode, stopping spinning. If services are using the disk, it might not be possible to spin it down. This depends on how the service uses the disk. Also, when packages are installed on disk and are running, the disk where the package was installed might not be put in standby; again, it depends on the service that the package offers. You have to press the <strong>Submit</strong> button for this to take efect.
 
 </ul>
+
+<strong>Swapping on USB devices: </strong> <em>Enable</em> if you want to enable 
+<a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.<br>
+By default swaping is not enabled on USB pens or disks,
+as it will degrade performance and can shorten the life of your USB pen (that has a limited number
+of write cycles).<br>
+Swap <strong>is necessary</strong> and is enabled for internal disks,
+that must have a swap partition as its first partition.
 
 <br><button type=button onclick="history.back()">Back</button></body>

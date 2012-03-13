@@ -113,6 +113,13 @@ elif test -n "$longtest"; then
 	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
 	msg "$res\n\nYou can see the result using Health Status."
 
+elif test -n "$Enable"; then
+	sed -i '/USB_SWAP/d' $CONFT >& /dev/null
+	echo USB_SWAP=yes >> $CONFT
+
+elif test -n "$Disable"; then
+	sed -i '/USB_SWAP/d' $CONFT >& /dev/null
+
 # this must the last else. Currently HDPOWER_* is always visible
 elif test -n "$standby" -o -n "$HDPOWER_LEFT" -o -n "$HDPOWER_RIGHT" -o -n "$HDPOWER_USB"; then
 	for i in HDPOWER_LEFT HDPOWER_RIGHT HDPOWER_USB HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do

@@ -88,7 +88,7 @@ for disk in $disks; do
 	
 	cat<<-EOF	 
 		<tr><td>$dbay</td><td>$dsk</td><td>$dcap</td><td>$dmod</td>
-		<td> <input type="submit" name="$dsk" value="$ejectop"></td>
+		<td><input type="submit" name="$dsk" value="$ejectop"></td>
 		<td><select name="$dsk" onChange="return submit()">
 			<option value="">Select Action</option>
 			<option value="hstatus">Show Status</option>
@@ -106,9 +106,15 @@ for disk in $disks; do
 	EOF
 done
 
+usb_swap_val="Enable"
+if test "$USB_SWAP" = "yes"; then
+	usb_swap_val="Disable"
+fi
+
 cat<<-EOF
 	<tr><td colspan=8></td>
 	<td colspan=1 align=center><input type="submit" name="standby" value="Submit"></td></tr>        
 	</table></fieldset><br>
+	Swapping on USB devices: <input type="submit" name=usb_swap value="$usb_swap_val">
 	</form></body></html>
 EOF
