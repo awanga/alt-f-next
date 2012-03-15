@@ -6,6 +6,46 @@
 
 <center><h2>Alt-F Package Manager Help</h2></center>
 
-Write me. Yes, YOU!
+<p>This page allows you to add functionalities to Alt-F, by downloading packages from the
+Internet and installing them on disk.
+<p>You need a working internet connection; if you need to use a proxy, set it first using
+Setup->Proxy.
+
+<p>On the first time you reach the page you will be asked where on disk you want to install the
+packages. After you select a filesystem, a directory called 'Alt-F' (not 'alt-f', case is
+ significant) will be created and the 'ipkg' package will be downloaded and installed.
+
+<p>You will then be presented with a list of installed and available packages that you can install.
+You can read the simplified description of the package functionality and visit the package
+homepage for further information.
+
+<p>You can install and remove packages by hitting the corresponding buttons.
+Many packages depends on others, and all needed packages will be automatically installed.
+
+<p>You can't remove a package that is needed by others, you have to remove the main package first.
+
+<p>Removing a package does not necessary means a fresh start, as some configuration files
+are left; for a really fresh start you have to remove all packages and restart anew.
+
+<p>You can also install all available packages, which is not recommended, and remove all installed
+packages.
+
+<p>From time to time new packages are made available or existing packages are updated. For the
+changes to appear, you have to hit the <em>UpdateList</em> button. When a package is Updated, its
+configuration files are not lost, so you don't loose your settings.
+
+<p>Some packages, mostly those that are for direct user usage, have administrative web pages.
+Depending on the package functionality, you will find its web page under Services->Network,
+System or User; in same cases the package web page will be accessed though one of the main menus,
+look for changes there.
+
+<p>The packages administrative web pages are simple by nature and design, trying to cover
+the most frequent needs. You can also edit the packages configuration files directly,
+if you dare. It is not however guaranteed that your manual changes will be recognized
+or preserved by the administrative web pages if you use them afterwards.
+
+<p>In the "Configure Feeds" section you can change the address of the packages origin, in case
+you want to setup your own package feed; if you mess it up, you can recover the original package
+feeds by hitting the DefaultFeed button.
 
 <br><button type=button onclick="history.back()">Back</button></body>
