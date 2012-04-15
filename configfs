@@ -51,7 +51,8 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
-BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES"
+BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
+BR2_PACKAGE_PHP"
 
 BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
@@ -86,6 +87,11 @@ BR2_PACKAGE_LVM2="etc/init.d/S14lvm usr/www/cgi-bin/Disk_lvm.men usr/www/cgi-bin
 BR2_PACKAGE_CRYPTSETUP="etc/init.d/S14cryptsetup usr/www/cryptsetup_hlp.html usr/www/cgi-bin/Disk_cryptsetup.men usr/www/cgi-bin/cryptsetup.cgi usr/www/cgi-bin/cryptsetup_proc.cgi"
 BR2_PACKAGE_STUNNEL="etc/stunnel etc/init.d/S41stunnel"
 BR2_PACKAGE_KERNEL_MODULES="etc/init.d/S13modload"
+
+BR2_PACKAGE_LIGHTTPD="etc/init.d/S52lighttpd usr/www/cgi-bin/lighttpd.cgi
+usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
+
+BR2_PACKAGE_PHP="etc/php.ini"
 
 # see above comment
 if test -n "$BR2_PACKAGE_NETATALK2" -a \
