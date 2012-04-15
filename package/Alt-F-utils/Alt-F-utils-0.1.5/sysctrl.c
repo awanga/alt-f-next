@@ -111,12 +111,10 @@ int leds_changed = 0;
 
 #define BUFSZ 256
 
-void alarm_handler()
-{
+void alarm_handler() {
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 
 	check_board();
 	
@@ -131,14 +129,15 @@ int main(int argc, char *argv[])
 	new.sa_mask = smask;
 	new.sa_flags = 0;
 
-	//new.sa_handler = SIG_IGN;
-	//sigaction(SIGTERM, &new, NULL);
+	// avoid zombie processes due to user scripts
+	new.sa_handler = SIG_IGN;
+	sigaction(SIGCHLD, &new, NULL);
 
 	// timeout for user sripts
 	new.sa_handler = alarm_handler;
 	sigaction(SIGALRM, &new, NULL);
 
-	// reread configureation file
+	// reread configuration file
 	new.sa_handler = read_config;
 	sigaction(SIGHUP, &new, NULL);
 
@@ -155,8 +154,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void mainloop()
-{
+void mainloop() {
 	int bt, count = 0, state = IDLE;
 
 	int powercheck_interval = 5;
@@ -234,8 +232,7 @@ void mainloop()
 	return;
 }
 
-void back_button()
-{
+void back_button() {
 	time_t count = time(NULL);
 	syslog(LOG_INFO, "Entering back_button");
 
@@ -259,22 +256,19 @@ void back_button()
 	blink_leds(0);
 }
 
-void reboot()
-{
+void reboot() {
 	syslog(LOG_INFO, "Rebooting NOW");
 	exec_userscript(args.front_button_command1, SCRIPT_TIMEOUT, NULL);
 	execl("/bin/busybox", "reboot", NULL);
 }
 
-void poweroff()
-{
+void poweroff() {
 	syslog(LOG_INFO, "Poweroff NOW");
 	exec_userscript(args.front_button_command2, SCRIPT_TIMEOUT, NULL);
 	execl("/bin/busybox", "poweroff", NULL);
 }
 
-char *checkfile(char *fname)
-{
+char *checkfile(char *fname) {
 	struct stat buf;
 
 	if (fname == NULL || strlen(fname) == 0)
@@ -342,8 +336,7 @@ void smail(char *type, int fan, float temp, int limit) {
 	fclose(fo);
 }
 
-void exec_userscript(char *script, int timeout, char *arg)
-{
+void exec_userscript(char *script, int timeout, char *arg) {
 	if (script == NULL || strlen(script) == 0)
 		return;
 
@@ -356,21 +349,17 @@ void exec_userscript(char *script, int timeout, char *arg)
 		// exit(1);
 	} else if (pid > 0) {
 		alarm(timeout);
-		if (waitpid(pid, NULL, 0) > 0)	// wait(NULL) not working!
+		waitpid(pid, NULL, 0);
+		if (alarm(0))
 			syslog(LOG_INFO, "user script \"%s\" finished", script);
 		else
-			syslog(LOG_ERR,
-			       "user script \"%s\" did not finish in %d sec",
-			       script, timeout);
+			syslog(LOG_INFO, "user script \"%s\" not finished, continuing anyway", script);
 		return;
-	}			/* else
-				   exit(1); // really?!   
-				 */
+	}
 	return;
 }
 
-void logger(char *cmd)
-{
+void logger(char *cmd) {
 	FILE *f = popen(cmd, "r");
 	char buf[BUFSZ];
 	while (fgets(buf, BUFSZ, f) != NULL) {
@@ -380,8 +369,7 @@ void logger(char *cmd)
 	pclose(f);
 }
 
-void check_other_daemon()
-{
+void check_other_daemon() {
 	char *pidf = "/var/run/sysctrl.pid";
 	int fd =
 	    open(pidf, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IROTH);
@@ -464,8 +452,7 @@ pwd=180 fan=6467
 float p2f[] = { 0.00111642, -0.148356, 16.3374, 1839.55 };
 float f2p[] = { 2.66029E-9, -4.28952E-5, 0.244737, -328.233 };
 
-float poly(float pwm, float coef[])
-{
+float poly(float pwm, float coef[]) {
 	int i;
 	float ret = coef[0];
 	for (i = 1; i < 4; i++)
@@ -473,8 +460,7 @@ float poly(float pwm, float coef[])
 	return ret;
 }
 
-int read_str_from_file(const char *filename, char *str, int sz)
-{
+int read_str_from_file(const char *filename, char *str, int sz) {
 	int fd;
 	int len;
 
@@ -492,8 +478,7 @@ int read_str_from_file(const char *filename, char *str, int sz)
 	return 0;
 }
 
-int write_str_to_file(const char *filename, char *str)
-{
+int write_str_to_file(const char *filename, char *str) {
 	int fd;
 
 	if ((fd = open(filename, O_WRONLY)) == -1) {
@@ -508,8 +493,7 @@ int write_str_to_file(const char *filename, char *str)
 	return 0;
 }
 
-int read_int_from_file(const char *filename, int *u)
-{
+int read_int_from_file(const char *filename, int *u) {
 	char buf[64];
 	if (read_str_from_file(filename, buf, 64))
 		return -1;
@@ -517,8 +501,7 @@ int read_int_from_file(const char *filename, int *u)
 	return 0;
 }
 
-int write_int_to_file(const char *filename, int u)
-{
+int write_int_to_file(const char *filename, int u) {
 	int fd;
 	char buf[64];
 
@@ -562,34 +545,29 @@ void check_board() {
 	sprintf(sys_temp_input, "/sys/class/hwmon/hwmon%d/device/temp1_input", dev);
 }
 
-int read_fan(void)
-{
+int read_fan(void) {
 	int u = 0;
 	read_int_from_file(sys_fan_input, &u);
 	return u;
 }
 
-void write_pwm(int u)
-{
+void write_pwm(int u) {
 	write_int_to_file(sys_pwm, u);
 }
 
-int read_pwm(void)
-{
+int read_pwm(void) {
 	int u = 0;
 	read_int_from_file(sys_pwm, &u);
 	return u;
 }
 
-int read_temp(void)
-{
+int read_temp(void) {
 	int u = 0;
 	read_int_from_file(sys_temp_input, &u);
 	return u;
 }
 
-void fanctl(void)
-{
+void fanctl(void) {
 	static float last_temp = 0.;
 	static int warn = 0, crit = 0;
 	int pwm;
@@ -682,8 +660,7 @@ void fanctl(void)
  * Most code stolen from hdparm.
  * 1 = active, 0 = standby/sleep, -1 = unknown
  */
-int check_powermode(char *dev)
-{
+int check_powermode(char *dev) {
 	char dsk[32] = "/dev/";
 	strcat(dsk, dev);
 	int fd;
@@ -731,8 +708,7 @@ unsigned long dstat(char *dsk) {
 // if noleds == 0, use leds and syslog
 // if noleds == 1, don't use leds, logs to syslog
 // if noleds == 2, don't use leds, don't log
-void hdd_powercheck(int noleds)
-{
+void hdd_powercheck(int noleds) {
 
 	static int power_st[16] =
 	    { -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, };
@@ -867,8 +843,7 @@ void hdd_powercheck(int noleds)
  * returns 1 if degraded but not rebuilding
  * returns 2 if degraded and rebuilding
  */
-int md_stat()
-{
+int md_stat() {
 	struct stat st;
 	char buf[64], msg[64];
 	int dev, degraded, ret = 0;
@@ -968,8 +943,7 @@ int md_stat()
 #define FRONT 0x02		// bit 1 - front button
 #define BACK 0x04		// bit 2 - back button
 
-int button()
-{
+int button() {
 	static int fd = 0;	// odd, if fd is not static read() *always* return EAGAIN
 	struct input_event ev;
 	int n, but = 0;
@@ -1009,8 +983,7 @@ int button()
 	return but;
 }
 
-int debounce()
-{
+int debounce() {
 	static int bt = NO_BT;
 	int count, tbt;
 	
@@ -1043,8 +1016,7 @@ int debounce()
 	return bt;
 }
 
-void syswrite(char *fname, char *value)
-{
+void syswrite(char *fname, char *value) {
 	int fd;
 	if ((fd = open(fname, O_WRONLY)) == -1) {
 		syslog(LOG_INFO, "open %s: %m", fname);
@@ -1054,8 +1026,7 @@ void syswrite(char *fname, char *value)
 	close(fd);
 }
 
-void led(int which, char *value, char *mode, char *on, char *off)
-{
+void led(int which, char *value, char *mode, char *on, char *off) {
 	char buf[128];
 
 	if (which == 0 || which > 2 )
@@ -1078,8 +1049,7 @@ void led(int which, char *value, char *mode, char *on, char *off)
 }
 
 /* arg: 'leds' is a bitmask */
-void blink_leds(int leds)
-{
+void blink_leds(int leds) {
 	int i;
 	for (i = 0; i < 3; i++) {
 		if (leds & 1 << i)
@@ -1090,8 +1060,7 @@ void blink_leds(int leds)
 	leds_changed = 1;
 }
 
-void config(char *n, char *v)
-{
+void config(char *n, char *v) {
 	if (strcmp(n, "lo_fan") == 0) {
 		args.lo_fan = atoi(v);
 	} else if (strcmp(n, "hi_fan") == 0) {
@@ -1128,8 +1097,7 @@ void config(char *n, char *v)
 	}
 }
 
-void trim(char **str, char *end)
-{
+void trim(char **str, char *end) {
 	while (isspace(**str))
 		++ * str;
 	if (end)
@@ -1146,8 +1114,7 @@ void trim(char **str, char *end)
 	}
 }
 
-void read_config()
-{
+void read_config() {
 	FILE *fp;
 	char str[128];
 	int line = 0;
@@ -1187,8 +1154,7 @@ void read_config()
 	fclose(fp);
 }
 
-void print_config()
-{
+void print_config() {
 	syslog(LOG_INFO, "args.lo_fan=%d", args.lo_fan);
 	syslog(LOG_INFO, "args.hi_fan=%d", args.hi_fan);
 	syslog(LOG_INFO, "args.lo_temp=%d", args.lo_temp);
