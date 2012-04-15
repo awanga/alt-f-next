@@ -3,10 +3,11 @@
 # stunnel
 #
 #############################################################
-#STUNNEL_VERSION:=4.16
-STUNNEL_VERSION:=4.44
+
+#STUNNEL_VERSION:=4.44
+STUNNEL_VERSION:=4.53
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
-STUNNEL_SITE:=http://www.stunnel.org/download/stunnel/src
+STUNNEL_SITE:=ftp://ftp.stunnel.org/stunnel/archive/4.x/
 STUNNEL_CAT:=$(ZCAT)
 STUNNEL_DIR:=$(BUILD_DIR)/stunnel-$(STUNNEL_VERSION)
 STUNNEL_LIBTOOL_PATCH = NO
