@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser lighttpd
+delgroup network
+rm -rf /sbin/rclighttpd /var/log/lighttpd
