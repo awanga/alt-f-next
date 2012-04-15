@@ -1,0 +1,59 @@
+#! /bin/sh
+
+DESC="A secure, fast, compliant and very flexible web-server"
+TYPE=net
+NAME=lighttpd
+CONF=/etc/lighttpd/lighttpd.conf
+LOG_DIR=/var/log/lighttpd 
+HOME_DIR=/var/lib/lighttpd
+SECR_DIGST=/etc/lighttpd/lighttpd-digest.user
+SECR_RSYNC=/etc/rsyncd.secrets 
+
+. $(dirname $0)/common
+
+digs_pass() {
+	realm="WebDAV"
+	while read ln; do
+    	user=$(echo $ln | cut -d: -f1)
+		pass=$(echo $ln | cut -d: -f2)
+		hash=$(echo -n "$user:$realm:$pass" | md5sum | cut -b -32)
+		echo "$user:$realm:$hash" 
+	done < $SECR_RSYNC
+}
+
+case "$1" in
+	start)
+		if ! test -f $CONF; then
+			echo "Starting $NAME: No $CONF configuration file, fail"
+			exit 1
+		fi
+		
+		if test $(grep ^var.server_root $CONF | cut -d" " -f3) = '"/mnt"'; then
+			echo "$NAME: server document root not set, you have to configure $NAME first."
+			exit 1
+		fi
+
+		if ! test -d $LOG_DIR; then
+			mkdir -p $LOG_DIR
+			chown lighttpd:network $LOG_DIR
+		fi
+
+		if ! test -d $HOME_DIR/sockets; then
+			mkdir $HOME_DIR/sockets
+			chown lighttpd $HOME_DIR/sockets
+		fi
+
+		if test $SECR_RSYNC -nt $SECR_DIGST -o ! -f $SECR_DIGST; then
+			digs_pass > $SECR_DIGST
+			chown lighttpd $SECR_DIGST
+			chmod go-rwx $SECR_DIGST
+		fi
+
+		start $NAME -- -f $CONF
+		;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
