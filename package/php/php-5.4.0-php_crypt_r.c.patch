@@ -1,0 +1,29 @@
+*** php-5.4.0/ext/standard/php_crypt_r.c-orig	2012-03-25 20:14:22.000000000 +0100
+--- php-5.4.0/ext/standard/php_crypt_r.c	2012-03-25 20:16:21.000000000 +0100
+***************
+*** 92,106 ****
+  #endif
+  
+  	if (!initialized) {
+- #ifdef PHP_WIN32
+- 		InterlockedIncrement(&initialized);
+- #elif defined(HAVE_SYNC_FETCH_AND_ADD)
+- 		__sync_fetch_and_add(&initialized, 1);
+- #elif defined(HAVE_ATOMIC_H) /* Solaris 10 defines atomic API within */
+- 		membar_producer();
+- 		atomic_add_int(&initialized, 1);
+- #endif
+  		_crypt_extended_init();
+  	}
+  #ifdef ZTS
+  	tsrm_mutex_unlock(php_crypt_extended_init_lock);
+--- 92,100 ----
+  #endif
+  
+  	if (!initialized) {
+  		_crypt_extended_init();
++ 		initialized = 1;
++ 
+  	}
+  #ifdef ZTS
+  	tsrm_mutex_unlock(php_crypt_extended_init_lock);

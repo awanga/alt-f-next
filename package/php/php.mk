@@ -4,21 +4,31 @@
 #
 #############################################################
 
-PHP_VERSION = 5.2.10
-PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
+PHP_VERSION = 5.4.0
 PHP_SITE = http://www.php.net/distributions
+PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
 PHP_INSTALL_STAGING = YES
 PHP_INSTALL_STAGING_OPT = INSTALL_ROOT=$(STAGING_DIR) install
 PHP_INSTALL_TARGET_OPT = INSTALL_ROOT=$(TARGET_DIR) install
 PHP_LIBTOOL_PATCH = NO
 PHP_DEPENDENCIES = uclibc
-PHP_CONF_OPT =	$(DISABLE_IPV6) \
+
+PHP_CONF_ENV = ac_cv_func_dlopen=yes ac_cv_lib_dl_dlopen=yes EXTENSION_DIR=/usr/lib/php5/extensions
+
+PHP_CONF_OPT = $(DISABLE_IPV6) \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-		--disable-all \
-		--without-pear \
+		--program-transform-name='' \
 		--with-config-file-path=/etc \
 		--localstatedir=/var \
+		--disable-all \
+		--without-pear \
+		--with-zlib-dir=${STAGING_DIR}/usr \
+		--with-jpeg-dir=${STAGING_DIR}/usr \
+		--with-png-dir=${STAGING_DIR}/usr \
+		--with-openssl-dir=${STAGING_DIR}/usr \
+		--with-libxml-dir=${STAGING_DIR}/usr \
+		--with-iconv-dir=${STAGING_DIR}/usr
 
 ifneq ($(BR2_PACKAGE_PHP_CLI),y)
 	PHP_CONF_OPT += --disable-cli
@@ -30,57 +40,91 @@ ifneq ($(BR2_PACKAGE_PHP_CGI),y)
 	PHP_CONF_OPT += --disable-cgi
 else
 	PHP_CONF_OPT += --enable-cgi
-	ifeq ($(BR2_PACKAGE_PHP_FASTCGI),y)
-		PHP_CONF_OPT += --enable-fastcgi
-	endif
 endif
 
 ### Extensions
+
+# PHP has its own version of libgd! Better if they changed its name!
+ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
+	PHP_CONF_OPT += --with-gd=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_CURL),y)
+	PHP_CONF_OPT += --with-curl=shared,${STAGING_DIR}/usr 
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_CTYPE),y)
+	PHP_CONF_OPT += --enable-ctype=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_FILEINFO),y)
+	PHP_CONF_OPT += --enable-fileinfo=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_SNMP),y)
+	PHP_CONF_OPT += --with-snmp=shared,$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += netsnmp
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_MBSTRING),y)
+	PHP_CONF_OPT += --enable-mbstring=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_DOM),y)
+	PHP_CONF_OPT += --enable-dom=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_HASH),y)
+	PHP_CONF_OPT += --enable-hash=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_TOKENIZER),y)
+	PHP_CONF_OPT += --enable-tokenizer=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_SOAP),y)
+	PHP_CONF_OPT += --enable-soap=shared
+endif
+
 ifeq ($(BR2_PACKAGE_PHP_EXT_SOCKETS),y)
-	PHP_CONF_OPT += --enable-sockets
+	PHP_CONF_OPT += --enable-sockets=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_POSIX),y)
-	PHP_CONF_OPT += --enable-posix
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SPL),y)
-	PHP_CONF_OPT += --enable-spl
+	PHP_CONF_OPT += --enable-posix=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SESSION),y)
-	PHP_CONF_OPT += --enable-session
+	PHP_CONF_OPT += --enable-session=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_OPENSSL),y)
-	PHP_CONF_OPT += --with-openssl=$(STAGING_DIR)/usr
+	PHP_CONF_OPT += --with-openssl=shared,$(STAGING_DIR)/usr  
 	PHP_DEPENDENCIES += openssl
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_LIBXML2),y)
-	PHP_CONF_OPT += --enable-libxml \
-		--with-libxml-dir=${STAGING_DIR}/usr \
-		 --enable-xml \
-		 --enable-xmlreader \
-		 --enable-xmlwriter
+	PHP_CONF_OPT += --enable-libxml=shared --enable-xml=shared \
+		--enable-xmlreader=shared \
+		--enable-xmlwriter=shared
 	PHP_DEPENDENCIES += libxml2
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SIMPLEXML),y)
-	PHP_CONF_OPT += --enable-simplexml
+	PHP_CONF_OPT += --enable-simplexml=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_ZLIB),y)
-	PHP_CONF_OPT += --with-zlib=$(STAGING_DIR)/usr
+	PHP_CONF_OPT += --with-zlib=shared,$(STAGING_DIR)/usr
 	PHP_DEPENDENCIES += zlib
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_EXIF),y)
-	PHP_CONF_OPT += --enable-exif
+	PHP_CONF_OPT += --enable-exif=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_FTP),y)
-	PHP_CONF_OPT += --enable-ftp
+	PHP_CONF_OPT += --enable-ftp=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_GETTEXT),y)
@@ -94,81 +138,81 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_GMP),y)
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_JSON),y)
-	PHP_CONF_OPT += --enable-json
+	PHP_CONF_OPT += --enable-json=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_READLINE),y)
-	PHP_CONF_OPT += --with-readline=$(STAGING_DIR)/usr
+	PHP_CONF_OPT += --with-readline=shared,$(STAGING_DIR)/usr
 	PHP_DEPENDENCIES += readline
 endif
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_NCURSES),y)
-	PHP_CONF_OPT += --with-ncurses=$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += ncurses
-endif
-
 ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVMSG),y)
-	PHP_CONF_OPT += --enable-sysvmsg
+	PHP_CONF_OPT += --enable-sysvmsg=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVSEM),y)
-	PHP_CONF_OPT += --enable-sysvsem
+	PHP_CONF_OPT += --enable-sysvsem=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVSHM),y)
-	PHP_CONF_OPT += --enable-sysvshm
+	PHP_CONF_OPT += --enable-sysvshm=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_ZIP),y)
-	PHP_CONF_OPT += --enable-zip
+	PHP_CONF_OPT += --enable-zip=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_FILTER),y)
-	PHP_CONF_OPT += --enable-filter
+	PHP_CONF_OPT += --enable-filter=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_CALENDAR),y)
-	PHP_CONF_OPT += --enable-calendar
+	PHP_CONF_OPT += --enable-calendar=shared
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_PCRE),y)
 	PHP_CONF_OPT += --with-pcre-regex
 endif
 
-### Legacy sqlite2 support
+# php seg faults if compiled/linked against external sqlite!
+# even tried compiling the same version of sqlite bundled with php.
+# so, don't use --with*sqlite=shared,$(STAGING_DIR)/usr
+
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE),y)
-	PHP_CONF_OPT += --with-sqlite
-ifneq ($(BR2_LARGEFILE),y)
-	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_DISABLE_LFS"
-endif
-ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE_UTF8),y)
-	PHP_CONF_OPT += --enable-sqlite-utf8
-endif
+	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_ENABLE_UNLOCK_NOTIFY"
+	PHP_CONF_OPT += --with-sqlite3=shared
 endif
 
 ### PDO
+# see above comment regarding sqlite
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO),y)
-	PHP_CONF_OPT += --enable-pdo
+	PHP_CONF_OPT += --enable-pdo=shared
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
-	PHP_CONF_OPT += --with-pdo-sqlite=$(STAGING_DIR)/usr
+	PHP_CONF_OPT += --with-pdo-sqlite=shared,$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += sqlite
 else
-	PHP_CONF_OPT += --with-pdo-sqlite
+	PHP_CONF_OPT += --with-pdo-sqlite=shared
 endif
-	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION"
 endif
+
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
-	PHP_CONF_OPT += --with-pdo-mysql=$(STAGING_DIR)/usr
+	PHP_CONF_OPT += --with-pdo-mysql=shared,$(STAGING_DIR)/usr
 	PHP_DEPENDENCIES += mysql_client
 endif
+
 endif
 
 $(eval $(call AUTOTARGETS,package,php))
 
+$(PHP_HOOK_POST_EXTRACT):
+	sed -i '/unset.*ac_cv_func_dlopen/d' $(PHP_DIR)/configure
+	touch $@
+	
 $(PHP_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/lib/php
 	rm -f $(TARGET_DIR)/usr/bin/phpize
 	rm -f $(TARGET_DIR)/usr/bin/php-config
+	rm -rf $(TARGET_DIR)/usr/lib/build
 	if [ ! -f $(TARGET_DIR)/etc/php.ini ]; then \
 		$(INSTALL) -m 0755 $(BR2_PACKAGE_PHP_CONFIG) $(TARGET_DIR)/etc/php.ini; fi
 	touch $@
@@ -182,4 +226,3 @@ $(PHP_TARGET_UNINSTALL):
 	rm -f $(TARGET_DIR)/etc/php.ini
 	rm -f $(TARGET_DIR)/usr/bin/php*
 	rm -f $(PHP_TARGET_INSTALL_TARGET) $(PHP_HOOK_POST_INSTALL)
-
