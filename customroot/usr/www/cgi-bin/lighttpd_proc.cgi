@@ -1,0 +1,130 @@
+#!/bin/sh
+
+. common.sh
+check_cookie
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+CONF_LIGHTY2=/etc/lighttpd/modules.conf
+CONF_PHP=/etc/php.ini
+PHP_EDIR=/usr/lib/php5/extensions
+CONF_SSL=/etc/lighttpd/conf.d/ssl.conf
+CONF_AUTH=/etc/lighttpd/conf.d/auth.conf
+
+vars="ipv6 ssl auth wdav userdir dirlist accesslog php"
+for i in $vars; do eval $i=no; done
+
+if test -x /usr/bin/php; then
+	for i in $(ls $PHP_EDIR); do
+		bi=$(basename $i .so)
+		eval $bi=no
+	done
+fi
+
+read_args
+
+#debug
+
+if test -z "$sslport"; then sslport="8443"; fi
+if test -z "$port"; then port="8080"; fi
+
+if test -n "$sroot"; then sroot=$(httpd -d "$sroot"); fi
+
+if test -z "$sroot" -o "$sroot" = "/mnt"; then
+	msg "You have to create and specify a folder from where web pages will be served.
+A sub-folder named \"htdocs\" will be created for you if it doesn't exists."
+fi
+
+if ! test -d "$sroot"; then
+	msg "Folder \"$sroot\" does not exists"
+else
+	chown lighttpd "$sroot"
+	chmod og-w "$sroot"
+fi
+
+if ! test -d "$sroot/htdocs"; then
+	mkdir -p "$sroot/htdocs"
+	chown lighttpd:network "$sroot/htdocs"
+	chmod og-w "$sroot/htdocs"
+	echo "<html><body><p>Hello Dolly</body></html>" > "$sroot/htdocs/hello.html"
+	echo "<?php phpinfo(); ?>" > "$sroot/htdocs/hello.php"
+	chmod go-w "$sroot/htdocs/hello.html" "$sroot/htdocs/hello.php"
+fi
+
+sed -i 's|^var.server_root.*$|var.server_root = "'$(httpd -d $sroot)'"|' $CONF_LIGHTY
+sed -i 's|^server.port.*$|server.port = '$(httpd -d $port)'|' $CONF_LIGHTY
+
+#IPv6
+opt="enable"
+if test "$ipv6" = "no"; then opt="disable"; fi
+sed -i 's|^server.use-ipv6.*$|server.use-ipv6 = "'$opt'"|' $CONF_LIGHTY
+
+#SSL
+cmt="#"
+if test "$ssl" = "yes"; then cmt=""; fi
+sed -i 's|.*\(include.*ssl.conf.*\)|'$cmt'\1|' $CONF_LIGHTY
+
+#SSL port
+sed -i 's|^$SERVER\["socket"\].*$|$SERVER\["socket"\] == ":'$(httpd -d $sslport)'" \{|' $CONF_SSL
+
+#auth
+cmt="#"
+if test "$wdav" = "yes" -a "$user" != "anybody"; then cmt=""; fi
+sed -i 's|.*\(include.*auth.conf.*\)|'$cmt'\1|' $CONF_LIGHTY2
+
+#webdav
+cmt="#"
+if test "$wdav" = "yes"; then
+	if ! test -d "$sroot/htdocs/webdav"; then
+		mkdir -p "$sroot/htdocs/webdav"
+		chown lighttpd:network "$sroot/htdocs/webdav"
+		chmod og-w "$sroot/htdocs/webdav"
+	fi
+	cmt=""
+fi
+sed -i 's|.*\(include.*webdav.conf.*\)|'$cmt'\1|' $CONF_LIGHTY2
+
+#webdav user
+cmt=""
+opt="valid-user"
+if test "$user" = "anybody"; then
+	cmt="#"
+elif test "$user" != "anyuser"; then
+	opt="user=$user";
+fi
+sed -i 's|.*\(auth.require.*webdav.*"require" *=> *"\)\(.*\)"\(.*\)|'$cmt'\1'$opt'"\3|' $CONF_AUTH
+
+
+cmt="#"
+if test "$userdir" = "yes"; then cmt=""; fi
+sed -i 's|.*\(include.*userdir.conf.*\)|'$cmt'\1|' $CONF_LIGHTY2
+
+cmt="#"
+if test "$dirlist" = "yes"; then cmt=""; fi
+sed -i 's|.*\(include.*dirlisting.conf.*\)|'$cmt'\1|' $CONF_LIGHTY
+
+cmt="#"
+if test "$accesslog" = "yes"; then cmt=""; fi
+sed -i 's|.*\(include.*access_log.conf.*\)|'$cmt'\1|' $CONF_LIGHTY
+
+cmt="#"
+if test "$php" = "yes"; then cmt=""; fi
+sed -i 's|.*\(include.*fastcgi.conf.*\)|'$cmt'\1|' $CONF_LIGHTY2
+
+if test "$php" = "yes"; then
+	if test -z "$php_maxupload"; then php_maxupload="10M"; fi
+
+	sed -i 's|.*upload_max_filesize.*|upload_max_filesize = '$(httpd -d $php_maxupload)'|' $CONF_PHP
+	for i in $(ls $PHP_EDIR); do
+		bi=$(basename $i .so)
+		cmt=";"
+		if test "$(eval echo \$$bi)" = "yes"; then cmt=""; fi
+		sed -i 's|.*\(extension='$i'\)|'$cmt'\1|' $CONF_PHP
+	done
+fi
+
+if rclighttpd status >& /dev/null; then
+	rclighttpd restart >& /dev/null
+fi
+
+#enddebug
+gotopage /cgi-bin/lighttpd.cgi
