@@ -4,9 +4,15 @@
 #
 #############################################################
 
-#SQLITE_VERSION = 3.6.16
 SQLITE_VERSION = 3.6.23.1
 SQLITE_SOURCE = sqlite-amalgamation-$(SQLITE_VERSION).tar.gz
+
+# version bundled with php-5.40
+#SQLITE_VERSION = 3070701
+# last version
+#SQLITE_VERSION = 3071100
+#SQLITE_SOURCE = sqlite-autoconf-$(SQLITE_VERSION).tar.gz
+
 SQLITE_SITE = http://www.sqlite.org
 SQLITE_INSTALL_STAGING = YES
 SQLITE_INSTALL_TARGET = YES
@@ -24,7 +30,6 @@ SQLITE_CONF_ENV += CFLAGS+=" -DSQLITE_ENABLE_UNLOCK_NOTIFY"
 
 ifeq ($(BR2_PACKAGE_SQLITE_READLINE),y)
 SQLITE_DEPENDENCIES += ncurses readline
-#SQLITE_CONF_OPT += --with-readline-inc="-I$(STAGING_DIR)/usr/include"
 SQLITE_CONF_OPT += --enable-readline
 else
 SQLITE_CONF_OPT += --disable-readline
