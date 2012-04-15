@@ -1,0 +1,13 @@
+#!/bin/sh
+
+PHP_CONF=/etc/php.ini
+
+php_mod=$(ls -r /usr/lib/php5/extensions/)
+
+for i in $php_mod; do
+	if ! grep -q extension=$i $PHP_CONF; then
+		sed -i '/; default extension directory./a;extension='$i $PHP_CONF
+	fi
+done
+
+sed -i 's|;date.timezone.*|date.timezone = '$(cat /etc/timezone)'|' $PHP_CONF
