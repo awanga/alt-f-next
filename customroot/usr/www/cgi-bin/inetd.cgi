@@ -18,8 +18,10 @@ cat<<-EOF
 EOF
 
 # FIXME: add service description
-ssrv="rsync ssh telnet ftp http printer swat"
+ssrv=$(awk '{if (substr($1,1,1) == "#") $1=substr($1,2); print $1}' $CONFF)
+
 if test -f /usr/sbin/saned; then ssrv="$ssrv sane"; fi
+
 for i in $ssrv; do
 	chkf=""
 	if $(grep -q -e "^$i" $CONFF); then

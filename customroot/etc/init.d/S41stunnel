@@ -2,7 +2,7 @@
 
 DESC="Provides secure administrative web pages"
 NAME=stunnel
-TYPE=net
+#TYPE=net
 
 REQUIRE="inetd"
 
