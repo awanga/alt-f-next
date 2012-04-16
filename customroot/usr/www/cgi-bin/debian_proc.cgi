@@ -7,7 +7,7 @@ cleanup() {
 }
 
 clean() {
-	rm -f data.tar.gz cdebootstrap-static_0.5.4_armel.deb
+	rm -f data.tar.gz $CDEBOOT
 
 	for i in $filelist; do
 		if test -f /$i; then
@@ -51,17 +51,19 @@ if test "$submit" = "Install"; then
 		msg "Debian is already installed in this filesystem."
 	fi
 
+	CDEBOOT=$(wget -q -O - $DEBMIRROR/pool/main/c/cdebootstrap/ | sed -n 's/.*>\(cdebootstrap-static_.*_armel.deb\)<.*/\1/p' | head -1)
+
 	write_header "Installing Debian"
 
 	echo "<small><h4>Downloading installer...</h4><pre>"
 
 	cd /tmp
-	wget --progress=dot:binary $DEBMIRROR/pool/main/c/cdebootstrap/cdebootstrap-static_0.5.4_armel.deb
+	wget --progress=dot:binary $DEBMIRROR/pool/main/c/cdebootstrap/$CDEBOOT
 	if test $? != 0; then cleanup; fi
 
 	echo "</pre><h4>Extracting installer...</h4><pre>"
 
-	ar x cdebootstrap-static_0.5.4_armel.deb data.tar.gz
+	ar x $CDEBOOT data.tar.gz
 	if test $? != 0; then cleanup; fi
 
 	filelist=$(tar -tzf data.tar.gz)
