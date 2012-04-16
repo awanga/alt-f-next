@@ -19,7 +19,7 @@ download() {
 	wget --tries=3 --progress=dot:mega \
 		http://www.inreto.de/dns323/fun-plug/0.5/packages/$2 \
 		-O $TMPDIR/$2
-	if test $? = 1; then
+	if test $? != 0; then
 		wget --tries=3 --progress=dot:mega  \
 			http://www.inreto.de/dns323/fun-plug/0.5/extra-packages/All/$2 \
 			-O $TMPDIR/$2
