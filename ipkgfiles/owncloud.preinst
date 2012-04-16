@@ -41,6 +41,7 @@ for i in json sqlite3 xml mbstring zip gd curl   session ctype simplexml hash do
 done
 
 sed -i 's|.*\(include.*fastcgi.conf.*\)|\1|' $CONF_LIGHTY2
+sed -i 's|.*\(include.*owncloud.conf.*\)|\1|' $CONF_LIGHTY
 
 if rclighttpd status >& /dev/null; then
         rclighttpd restart >& /dev/null
