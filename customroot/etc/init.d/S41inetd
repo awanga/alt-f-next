@@ -4,46 +4,46 @@ DESC="ssh, telnet, rsync, ftp, http, swat, lpd...<br><strong>Don't disable unles
 TYPE=net
 NAME=inetd
 CONFF=/etc/inetd.conf
-SRV="rsync ssh telnet ftp http printer swat"
+AVAHI_SRV="rsync ssh telnet ftp http printer swat"
 
-REQUIREDBY="stunnel inetd" # don't let stunnel stop to stop inetd
+REQUIREDBY="stunnel inetd" # don't allow inetd to be stopped
 
 . $(dirname $0)/common
 
 check() {
 	if ! grep -q -e "\(^#$1\|^$1\)" $CONFF; then
 		echo "$NAME: service $1 does not exists"
-		exit 1
+		return 1
 	fi
 }
 
 # $1-service (rsync ssh telnet ftp http printer swat)
 enable() {
-	check $1
-	if grep -q -e "^#$1" $CONFF; then
-		if test "$1" = "printer"; then modprobe usblp; fi
-		sed -i s/^#$1/$1/ $CONFF
-		reload $NAME
-		avahi add $1
-#	else
-#		echo "$NAME: service $1 is already enabled"
-	fi
+	for i in $*; do
+		if ! check $i; then continue; fi
+		if grep -q -e "^#$i" $CONFF; then
+			if test "$i" = "printer"; then modprobe usblp; fi
+			sed -i s/^#$i/$i/ $CONFF
+			avahi add $i
+		fi
+	done
+	reload $NAME
 }
 
 disable() {
-	check $1
-	if grep -q -e "^$1" $CONFF; then
-		if test "$1" = "printer"; then modprobe -r usblp; fi
-		sed -i s/^$1/#$1/ $CONFF
-		reload $NAME
-		avahi remove $1
-#	else
-#		echo "$NAME: service $1 already disabled"
-	fi
+	for i in $*; do
+		if ! check $i; then continue; fi
+		if grep -q -e "^$i" $CONFF; then
+			if test "$i" = "printer"; then modprobe -r usblp; fi
+			sed -i s/^$i/#$i/ $CONFF
+			avahi remove $i
+		fi
+	done
+	reload $NAME
 }
 
 avahi_add() {
-	for i in $SRV; do
+	for i in $AVAHI_SRV; do
 		if grep -q -e "^$i" $CONFF; then
 			avahi add $i
 		fi
@@ -51,7 +51,7 @@ avahi_add() {
 }
 
 avahi_remove() {
-	for i in $SRV; do
+	for i in $AVAHI_SRV; do
 		avahi remove $i
 	done
 }
@@ -70,7 +70,7 @@ case "$1" in
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
 	status) status $NAME ;;
-	enable) enable $2 ;;
-	disable) disable $2 ;;
+	enable) shift; enable $* ;;
+	disable) shift; disable $* ;;
 	*) usage $0 "start|stop|status|reload|restart|enable <srv>|disable <srv>" ;;
 esac
