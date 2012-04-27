@@ -8,6 +8,8 @@ read_args
 #debug
 
 CONFF=/etc/httpd.conf
+INETD_CONF=/etc/inetd.conf
+STUNNEL_CONF=/etc/stunnel/stunnel.conf
 
 hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
@@ -46,11 +48,48 @@ done
 cat<<EOF > $CONFF
 A:127.0.0.1     #!# Allow local loopback connections
 D:*             #!# Deny from other IP connections
-A:192.168.1.0/255.255.255.0 #!# Allow local net
+A:$NETWORK/$netmask #!# Allow local net
 EOF
 
 cat $TF >> $CONFF
 rm $TF
+
+if false; then
+	if grep -q 'server.port.*=.*8080' /etc/lighttpd/lighttpd.conf; then echo yes; fi
+	grep '^include.*ssl.conf' /etc/lighttpd/lighttpd.conf
+
+	port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
+	sslport=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
+fi
+
+case $port in
+	8080) sed -i 's/http[\t ]/http_alt\t/' $INETD_CONF ;;
+	80) sed -i 's/http_alt/http/' $INETD_CONF ;;
+esac
+
+case $sport in
+	8443) sed -i 's/https[\t ]/https_alt\t/' $INETD_CONF ;;
+	443) sed -i 's/https_alt/https/' $INETD_CONF ;;
+esac
+
+if test "$stunnel" = "server"; then
+	rcinetd disable https https_alt swats >& /dev/null
+	if test "$sport" = "8443"; then
+		sed -i 's/^accept.*=.*443/accept = 8443/' $STUNNEL_CONF
+	else
+		sed -i 's/^accept.*=.*443/accept = 443/' $STUNNEL_CONF
+	fi
+	rcstunnel restart >& /dev/null
+	rcstunnel enable >& /dev/null
+else
+	rcstunnel stop >& /dev/null
+	rcstunnel disable >& /dev/null
+	if test "$sport" = "8443"; then
+		rcinetd enable swats https_alt >& /dev/null
+	else
+		rcinetd enable swats https >& /dev/null
+	fi
+fi
 
 #enddebug
 gotopage /cgi-bin/inetd.cgi 
