@@ -69,6 +69,11 @@ checkmac() {
 	echo "$1" | grep -q -e '^\([a-fA-F0-9]\{2\}:\)\{5\}[a-fA-F0-9]\{2\}$'
 }
 
+checkport() {
+	if netstat -ltn 2> /dev/null | grep -q ":$1 "; then return 0; fi
+	return 1
+}
+
 checkname() {
 	echo "$1" | grep -v -q -e '^[^a-zA-Z]' -e '[^a-zA-Z0-9-].*'
 }
@@ -85,6 +90,50 @@ path_unescape() {
 	echo $(echo "$1" | sed 's/\\040/ /g')
 }
 
+# usefull for filepaths that might have non-ASCII chars (UTF-8 to UCS2 to html numeric entity) 
+http_encode() {
+	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%d;"'
+}
+
+urlencode() {
+echo "$1" | sed " 
+s/%/%25/g
+s/ /%20/g
+s/	/%09/g
+s/!/%21/g
+s/\"/%22/g
+s/#/%23/g
+s/\\$/%24/g
+s/\&/%26/g
+s/'/%27/g
+s/(/%28/g
+s/)/%29/g
+s/\*/%2a/g
+s/+/%2b/g
+s/,/%2c/g
+s/-/%2d/g
+s/\./%2e/g
+s/\//%2f/g
+s/:/%3a/g
+s/;/%3b/g
+s/</%3c/g
+s/=/%3d/g
+s/>/%3e/g
+s/?/%3f/g
+s/@/%40/g
+s/\[/%5b/g
+s/\\\/%5c/g
+s/\]/%5d/g
+s/\^/%5e/g
+s/_/%5f/g
+s/\`/%60/g
+s/{/%7b/g
+s/|/%7c/g
+s/}/%7d/g
+s/~/%7e/g
+"
+}
+
 # $1-title (optional)
 html_header() {
 	cat<<-EOF
@@ -92,7 +141,7 @@ html_header() {
 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 		<html style="height: 100%;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>$1</title></head><body style="height: 100%;">
+		<title>$1</title></head><body style="height: 100%; font-family: arial,verdana">
 	EOF
 }
 
@@ -643,7 +692,7 @@ write_header() {
 		$(tooltip_setup)
 		$(drawbargraph_setup)
 		</head>
-		<body style="height: 95%;" $act>
+		<body style="height: 95%; font-family: arial,verdana" $act>
 		$(menu_setup2 "$1" "/cgi-bin/$0") 
 		$(mktt tt_help "Get a descriptive help")
 		$(mktt tt_settings "$warn_tt")
