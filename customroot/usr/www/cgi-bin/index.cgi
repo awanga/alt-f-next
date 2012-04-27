@@ -26,7 +26,7 @@ cat<<-EOF
 		font-weight: 900;
 		text-decoration: none;
 	}	
-	</style><title>Index</title></head><body>
+	</style><title>Index</title></head><body style="font-family: arial,verdana">
 	<script type="text/javascript">
 		function addbookmark() {
 			location.assign("/cgi-bin/bookmark.cgi?add=" + parent.content.document.title +
