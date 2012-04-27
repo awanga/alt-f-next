@@ -59,32 +59,33 @@ cat <<EOF
 	</script>
 EOF
 
-eval $(awk -F: '{if ($3 > uid) uid=$3}
-		{if ($4 > gid) gid=$4
-		} END{ 
-	printf "uid=%d; gid=%d", uid, gid}' $CONFP)
+parse_qstring
 
-if test -z "$QUERY_STRING"; then
-	if test "$uid" -lt 1000; then uid=1000; fi
-	gid=100
-else
-	parse_qstring
-	uname="$(httpd -d "$uname")"
+#debug
+
+if test "$act" = "changepass"; then
+	uname=$(httpd -d "$uname")
+	uid=$(id -u $nick)
+	gid=$(id -g $nick)
 	chpass="readonly"
-	if test -z "$nick"; then
-		cat<<-EOF
-			<script type="text/javascript">
-			setTimeout("upnick()", 500) // hack, the form is not yet created
-			</script>
-		EOF
-		chpass=""
-		if test "$uid" -lt 1000; then uid=999; fi
-		uid=$((uid+1))
-	fi
+	subbut='<td><input type="submit" name="chpass" value="ChangePass">'
+
+elif test "$act" = "newuser"; then
+	cat<<-EOF
+		<script type="text/javascript">
+		setTimeout("upnick()", 500) // hack, the form is not yet created
+		</script>
+	EOF
+
+	eval $(awk -F: '{ if ($3 > uid) uid=$3}
+		{ if ($4 > gid) gid=$4}
+		END { if (uid < 1000) uid=1000; gid=100; printf "uid=%d; gid=%d", uid+1, gid}' $CONFP)
+
+	chpass=""
+	subbut='<td><input type="submit" name="submit" value="Submit">'
 fi
 
 cat <<EOF
-	<!--form name=frm action="/cgi-bin/newuser_proc.cgi" method="post" onSubmit="pcheck()"-->
 	<form name=frm action="/cgi-bin/newuser_proc.cgi" method="post">
 	<fieldset><legend><strong>User Details</strong></legend>
 	<table>
@@ -95,13 +96,7 @@ cat <<EOF
 	<tr><td>Password<td><input type=password name=pass $(ttip ttpass)></td></tr>
 	<tr><td>Again<td><input type=password name=passa $(ttip ttpassa)></td></tr>
 	<tr><td></td>
-EOF
-if test -z "$chpass"; then
-	echo '<td><input type="submit" name="submit" value="Submit">'
-else
-	echo '<td><input type="submit" name="chpass" value="ChangePass">'
-fi	
-cat<<-EOF
+	$subbut
 	<input type="submit" name="cancel" value="Cancel"></td></tr>
 	</table></fieldset></form></body></html>
 EOF

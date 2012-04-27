@@ -59,8 +59,10 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		addgroup $nick backup
 
 		# why doesn't rsync uses unix authorization mechanisms?!
-		echo -e "\n[$nick]\npath = /home/$uname\ncomment = $uname home directory\n\
-read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> $CONFR
+		echo -e "\n[$nick]\n\tpath = /home/$uname\n\tcomment = $uname home directory\n\
+\tread only = no\n\tauth users = $nick\n\tuid = $nick\n\tgid = users\n" >> $CONFR
+		echo -e "\n[$uname]\n\tpath = /home/$uname\n\tcomment = $uname home directory\n\
+\tread only = no\n\tauth users = $nick\n\tuid = $nick\n\tgid = users\n" >> $CONFR
 	fi
 
 	echo "$nick:$pass" | chpasswd > /dev/null 2>&1
@@ -71,6 +73,7 @@ read only = no\nauth users = $nick\nuid = $nick\ngid = users\n" >> $CONFR
 	chmod og-rw /etc/samba/credentials.$nick
 	sed -i "/^$nick:/d" $CONFRS >& /dev/null
 	echo "$nick:$pass" >> $CONFRS
+	echo "$uname:$pass" >> $CONFRS
 	chmod og-rw $CONFRS
 
 	if test -f /tmp/firstboot; then
