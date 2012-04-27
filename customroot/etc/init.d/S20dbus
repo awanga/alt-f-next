@@ -21,6 +21,7 @@ REQUIREDBY="avahi_daemon"
 [ -x /usr/bin/dbus-daemon ] || exit 0
 
 # Create needed directories.
+[ -d /var/lib/dbus ] || mkdir -p /var/lib/dbus
 [ -d /var/run/dbus ] || mkdir -p /var/run/dbus
 [ -d /var/lock/subsys ] || mkdir -p /var/lock/subsys
 [ -d /tmp/dbus ] || mkdir -p /tmp/dbus
