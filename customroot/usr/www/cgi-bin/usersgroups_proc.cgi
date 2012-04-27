@@ -10,26 +10,23 @@ CONFS=/etc/samba/smbusers
 CONFR=/etc/rsyncd.conf
 CONFRS=/etc/rsyncd.secrets
 
-#if test -z "$NewUser"; then # the gotopage in NewUser
-#	debug
-#fi
-
 if test -n "$NewUser"; then
-	gotopage /cgi-bin/newuser.cgi?uname=$uname
+	gotopage /cgi-bin/newuser.cgi?act=newuser
 
 elif test -n "$ChangePass"; then
-	gotopage /cgi-bin/newuser.cgi?uname=$uname?nick=$nick
+	gotopage /cgi-bin/newuser.cgi?act=changepass?uname=$uname?nick=$nick
 
 elif test -n "$DelUser"; then
-#	echo "Del User: nick=$nick"
-
 	udir=$(awk -F : '/'$nick'/{print $6}' $CONFP)
+	uname=$(awk -F : '/'$nick'/{print $5}' $CONFP)
 #	rm -rf $(readlink -f "$udir")
 	smbpasswd -x $nick >& /dev/null
 	rm -f /etc/samba/credentials.$nick
 	sed -i "/^$nick = /d" $CONFS >& /dev/null
 	sed -i "/^$nick:/d" $CONFRS  >& /dev/null
+	sed -i "/^$uname:/d" $CONFRS  >& /dev/null
 	sed -i "/^\[$nick\]/,/^$/d" $CONFR
+	sed -i "/^\[$uname\]/,/^$/d" $CONFR
 
 	# busybox bug: says that can't remove user from its main group (when what is asked is supplementary)
 	mgrp=$(id -gn $nick)
@@ -50,7 +47,6 @@ elif test -n "$DelUser"; then
 	fi
 
 elif test -n "$NewGroup"; then
-#	echo "Add Group: gname=$gname"
 	gname="$(httpd -d "$gname")"
 	if test $(eatspaces $gname) != "$gname"; then
 		msg "Group name must not contain spaces"
@@ -62,7 +58,6 @@ elif test -n "$NewGroup"; then
 	fi
 
 elif test -n "$DelGroup"; then
-#	echo "Del Group: gname=$gname"
 	gname="$(httpd -d "$gname")"
 	if test $(eatspaces $gname) != "$gname"; then
 		msg "Group name must not contain spaces"
@@ -75,12 +70,9 @@ elif test -n "$DelGroup"; then
 	delgroup "$gname"
 
 elif test -n "$AddToGroup"; then
-#	echo "Add user to Group: gname=$gname nick=$nick"
 	addgroup $nick "$gname"
 
 elif test -n "$DelFromGroup"; then
-#	echo "Del user from Group: gname=$gname nick=$nick"		
-
 	# delgroup $nick $gname # not working, busybox bug
 	sed -i  -e '/^'$gname':/s/,'$nick'$//'  \
 		-e '/^'$gname':/s/:'$nick',/:/' \
