@@ -34,7 +34,7 @@ dmesg | awk '/Identified HW revision/{print $5}' > /tmp/board
 # start fan because the disks might have to be fsck
 # and might warm up a lot in the process
 if test "$(cat /tmp/board)" = "C1"; then
-	echo 255 >> /sys/class/hwmon/hwmon1/device/pwm1
+	echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
 else
 	echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
 fi
