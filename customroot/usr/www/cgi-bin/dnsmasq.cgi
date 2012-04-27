@@ -169,9 +169,12 @@ EOF
 
 eval $(awk -F= '/enable-tftp/{print "tftp=checked"} \
 		/tftp-root/{printf "tftproot=%s", substr($0,index($0,$2))}' $CONF_F)
+tftproot=$(httpd -e "$tftproot")
 if test -z "$tftp"; then
 	tftpdis=disabled
 fi
+
+
 
 cat<<-EOF
 	<script type="text/javascript">
