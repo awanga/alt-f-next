@@ -50,8 +50,10 @@ The RAID device will have the same size as the filesystem it contains.\n\n\
 Continue? ")
 
 		else if (op == "Destroy_raid") // raid to release its components
-			res = confirm("Destroying a RAID will erase all data it contains\n\
-and will make its components available to other RAID arrays.\n\nContinue?")
+			res = confirm("Destroying a RAID will make all data it contains inaccessible\n\
+and will make its components available to other RAID arrays.\n\n\
+However, for RAID1, the data it contains will be available duplicated on\n\
+each component, which can be used latter as a \"standard\" filesystem.\n\nContinue?")
 
 		else if (op == "Add_part" || op == "Remove_part" || op == "Fail_part" || op == "Clear_part") {
 			if (document.getElementById("rdev_" + part).selectedIndex == 0) {
@@ -141,7 +143,7 @@ Add a component as soon as possible.\n\nContinue?")
 		else if (level == "raid1")
 			document.getElementById("spare_hd").innerHTML = "Spare"
 		else if (level == "linear" || level == "raid5") {
-			document.getElementById("spare_hd").innerHTML = "Comp 3"
+			document.getElementById("spare_hd").innerHTML = "Component 3"
 		}
 
 		return true
@@ -160,8 +162,8 @@ cat<<-EOF
 	<tr>
 	<th>Dev.</th>
 	<th>Type</th>
-	<th>Comp 1</th>
-	<th>Comp 2</th>
+	<th>Component 1</th>
+	<th>Component 2</th>
 	<th id="spare_hd">Spare</th>
 	</tr>
 EOF
@@ -200,7 +202,7 @@ cat<<-EOF
 	</tr></table></fieldset><br>
 EOF
 
-if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
+if test -e /proc/mdstat -a -n "$(grep ^md /proc/mdstat 2> /dev/null)"; then
 	cat<<-EOF
 		<fieldset><Legend><strong>RAID Maintenance</strong></legend>
 		<table style="border-collapse:collapse">
@@ -226,23 +228,30 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 	done
 
 	if ls /dev/md? >& /dev/null; then
+#		for mdev in $curdev; do
 		for i in /dev/md[0-9]*; do
 			mdev=$(basename $i)
-	
+
 			if ! test -f /sys/block/$mdev/md/array_state; then continue; fi
 
 			state=$(cat /sys/block/$mdev/md/array_state)
 			type=$(cat /sys/block/$mdev/md/level)
 			pcap=$(awk '/'$mdev'/{printf "%.1f GB", $3/1048576}' /proc/partitions)
-	
+
+			act="Stop"
+			if test "$state" = "clear"; then
+				act="Start"
+				destroy_dis="disabled"
+			fi
+
 			devs=""
-			for i in $(ls /sys/block/$mdev/slaves); do
-				if test $(cat /sys/block/$mdev/md/dev-$i/state) = "faulty"; then
-					devs="$devs <font color=RED>$i</font>"
-				elif test $(cat /sys/block/$mdev/md/dev-$i/state) = "spare"; then
-					devs="$devs <font color=GREEN>$i</font>"
+			for j in $(ls /sys/block/$mdev/slaves); do
+				if test $(cat /sys/block/$mdev/md/dev-$j/state) = "faulty"; then
+					devs="$devs <font color=RED>$j</font>"
+				elif test $(cat /sys/block/$mdev/md/dev-$j/state) = "spare"; then
+					devs="$devs <font color=GREEN>$j</font>"
 				else
-					devs="$devs $i"
+					devs="$devs $j"
 				fi
 			done
 	
@@ -288,7 +297,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 			else
 				cat<<-EOF
 					<td></td>
-					<td><input type=submit name=$mdev value="Stop"></td>		
+					<td><input type=submit name=$mdev value=$act></td>		
 					<td><select id="raidop_$mdev" name="$mdev" onChange="msubmit('raidop_$mdev', '$mdev')">
 						<option>Operation</option>
 						<option $remops value="${bitmap}_bitmap">$bitmap Bitmap</option>
@@ -296,7 +305,7 @@ if blkid -c /dev/null -t TYPE=mdraid >& /dev/null; then
 						<option $remops>Repair</option>
 						<option $remops value="Enlarge_raid">Enlarge</option>
 						<option $remops value="Shrink_raid">Shrink</option>
-						<option value="Destroy_raid">Destroy</option>
+						<option $destroy_dis value="Destroy_raid">Destroy</option>
 					</select></td>
 				EOF
 
