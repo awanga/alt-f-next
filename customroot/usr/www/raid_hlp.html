@@ -49,7 +49,12 @@ The following operations can be performed on level 1 and 5 RAID arrays, if the a
 <li><strong>Repair</strong> verify the consistency of the device and try to fix any inconsistency found 
 <li><strong>Enlarge</strong> make the device ocupy the maximum available space from its components. Usefull after adding or replacing components with others of greater capacity.
 <li><strong>Shrink</strong> shrink the device to the minimum needed to hold the filesystem it contains.
-<li><strong>Destroy</strong> the RAID device and the RAID information contained in its components. You will not be able to access the data its contains.
+<li><strong>Destroy</strong> the RAID device and the RAID information
+contained in its components.  You will not be able to access the data
+its contains.  For RAID1, however, your data will still be available in
+each of the previous RAID components, and you can mount and use them
+using the Disk->Filesystem web page.
+
 </ul>
 
 <li><strong>Component Operations</strong><br>

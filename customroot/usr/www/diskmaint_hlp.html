@@ -12,7 +12,10 @@ A device can be a <a href="diskpart_hlp.html">disk partition</a>, a <a href="rai
 On Alt-F, everytime a filesystem is detected the mountpoint is automatically created under the directory <em>/mnt</em>, using either the device name or the filesystem label, e.g., <em>/mnt/sda2</em> or <em>/mnt/Videos</em> if <em>Videos</em> is the label found in the filesystem.<br>
 Adding a filesystem label is useful because it makes the device or filesystem content clear and independent of the order that the device is found -- it might happens that sometimes a faster disk is detected before a slower one, and the device name, <em>sda</em> or <em>sdb</em> might appear exchanged.
 
-<p>In this page all box available devices suitable to contain a filesystem are shown. Suitable devices are physical partitions of adequate type (which excludes swap, RAID and LVM partition types), RAID arrays or LVM physical volumes.<br>
+<p>In this page all box available devices suitable to contain a filesystem are shown
+(but devices that are currently in use by a RAID device are not).<br> 
+Suitable devices are physical partitions of adequate type (which excludes swap,
+RAID and LVM partition types), RAID arrays or LVM physical volumes.<br>
 
 <p>In the description bellow, and depending on the filesystem type, state and installed packages, not all operations might be available.
 
