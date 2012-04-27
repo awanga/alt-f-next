@@ -2,14 +2,20 @@
 
 DESC="Provides secure administrative web pages"
 NAME=stunnel
-#TYPE=net
-
+TYPE=net
 REQUIRE="inetd"
+INETD_CONF=/etc/inetd.conf
 
 . $(dirname $0)/common
 
 istart() {
 	rcvsftpd init
+
+	if grep -qE '(^https|^swats)' $INETD_CONF; then
+		echo "https and/or swats are already configured through inetd, exiting."
+		exit 1
+	fi
+
 	start $NAME
 }
 
