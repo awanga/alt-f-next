@@ -1,6 +1,6 @@
 
 # Add "enable" and "disable" options for all scripts.
-# Notice that S42inetd and uses enable/disable, but with an argument
+# Notice that S42inetd also uses enable/disable, but with arguments
 if test "$1" = "enable" -a -z "$2" ; then
 	echo "Enabling boot execution of $(basename $0)"
 	chmod +x $0
