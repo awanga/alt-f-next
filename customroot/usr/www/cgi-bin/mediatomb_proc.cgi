@@ -9,7 +9,7 @@ read_args
 CONFF=/var/lib/mediatomb/config.xml
 
 if test -n "$webPage"; then
-	embed_page "http://$(hostname -i | tr -d ' '):50500"
+	embed_page "http://${HTTP_HOST%%:*}:50500"
 fi
 
 # save old, in case of errors

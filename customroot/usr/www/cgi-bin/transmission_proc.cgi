@@ -14,14 +14,14 @@ TRANSMISSION_GROUP=network
 #debug
 
 if test -n "$WebPage"; then
-	embed_page "http://$(hostname -i | tr -d ' '):9091"
+	embed_page "http://${HTTP_HOST%%:*}:9091"
 fi
 
 if test -z "$WATCH_DIR"; then
 	msg "You must specify the directory where to Download."
 fi
 
-WATCH_DIR="$(httpd -d $WATCH_DIR)"
+WATCH_DIR=$(httpd -d "$WATCH_DIR")
 INCOMPLETE_DIR="$WATCH_DIR/InProgress"
 DOWNLOAD_DIR="$WATCH_DIR/Finished"
 
@@ -29,8 +29,8 @@ if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
 	mkdir -p "$DOWNLOAD_DIR" "$WATCH_DIR" "$INCOMPLETE_DIR"
 fi
 
-chown $TRANSMISSION_USER:$TRANSMISSION_GROUP $DOWNLOAD_DIR $INCOMPLETE_DIR $WATCH_DIR
-chmod a+rw $DOWNLOAD_DIR $INCOMPLETE_DIR $WATCH_DIR
+chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$DOWNLOAD_DIR" "$INCOMPLETE_DIR" "$WATCH_DIR"
+chmod a+rw "$DOWNLOAD_DIR" "$INCOMPLETE_DIR" "$WATCH_DIR"
 
 if test -z "$ENABLE_WEB"; then
 	ENABLE_WEB=false
@@ -53,9 +53,14 @@ else
 	BLOCKLIST_URL=$(httpd -d $BLOCKLIST_URL)
 fi
 
-sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
-	-e 's|.*"incomplete-dir":.*|    "incomplete-dir": "'$INCOMPLETE_DIR'",|' \
-	-e 's|.*"watch-dir":.*|    "watch-dir": "'$WATCH_DIR'",|' \
+# escape sed special char '&' and '|' delimiter on pathnames
+EWATCH_DIR=$(echo "$WATCH_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
+EDOWNLOAD_DIR=$(echo "$DOWNLOAD_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
+EINCOMPLETE_DIR=$(echo "$INCOMPLETE_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
+
+sed -i -e 's|.*"download-dir":.*|    "download-dir": "'"$EDOWNLOAD_DIR"'",|' \
+	-e 's|.*"incomplete-dir":.*|    "incomplete-dir": "'"$EINCOMPLETE_DIR"'",|' \
+	-e 's|.*"watch-dir":.*|    "watch-dir": "'"$EWATCH_DIR"'",|' \
 	-e 's|.*"rpc-enabled":.*|    "rpc-enabled": '$ENABLE_WEB',|' \
 	-e 's|.*"ratio-limit-enabled":.*|    "ratio-limit-enabled": '$SEED_RATIO_ENABLED',|' \
 	-e 's|.*"ratio-limit":.*|    "ratio-limit": '$SEED_RATIO',|' \
@@ -68,15 +73,15 @@ sed -i -e 's|.*"download-dir":.*|    "download-dir": "'$DOWNLOAD_DIR'",|' \
 chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
 if ! grep -q "^\[Transmission\]" $SMBCONF; then
-	cat<<-EOF >> $SMBCONF
+	cat<<EOF >> $SMBCONF
 
-		[Transmission]
-		comment = Transmission Download area
-		path = "$WATCH_DIR"
-		public = yes
-		read only = no
-		available = yes
-	EOF
+[Transmission]
+	comment = Transmission Download area
+	path = $WATCH_DIR
+	public = yes
+	read only = no
+	available = yes
+EOF
 
 	if rcsmb status >& /dev/null; then
 		rcsmb reload >& /dev/null

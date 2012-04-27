@@ -12,7 +12,7 @@ DEF_DIR=/var/lib/mt-daapd/mp3_dir
 if test -n "$webPage"; then
 	PORT=$(awk '/^port/{print $2}' $CONFF)
 	pass=$(awk '/^admin_pw/{print $2}' $CONFF)
-	webhost="$(hostname -i | tr -d ' '):$PORT"
+	webhost="${HTTP_HOST%%:*}:$PORT"
 	embed_page "http://mt-daapd:${pass}@$webhost"
 fi
 

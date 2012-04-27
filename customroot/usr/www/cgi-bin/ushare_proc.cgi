@@ -11,7 +11,7 @@ CONF_USHARE=/etc/ushare.conf
 if test -n "$webPage"; then
 	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)" 
 	eval $(grep ^USHARE_PORT $CONF_USHARE)
-	webhost="$(hostname -i | tr -d ' '):$USHARE_PORT/web/ushare.html"
+	webhost="${HTTP_HOST%%:*}:$USHARE_PORT/web/ushare.html"
 	embed_page "http://$webhost"
 fi
 
