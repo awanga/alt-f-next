@@ -20,8 +20,6 @@ EOF
 # FIXME: add service description
 ssrv=$(awk '{if (substr($1,1,1) == "#") $1=substr($1,2); print $1}' $CONFF)
 
-if test -f /usr/sbin/saned; then ssrv="$ssrv sane"; fi
-
 for i in $ssrv; do
 	chkf=""
 	if $(grep -q -e "^$i" $CONFF); then
@@ -35,7 +33,7 @@ for i in $ssrv; do
 	fi
 
 	cat<<-EOF
-		<tr><td> $i </td>
+		<tr><td>$i</td>
 		<td align=center><input type=checkbox $chkf name=$i value=enable></td>
 		$conf
 		</tr>
@@ -43,7 +41,7 @@ for i in $ssrv; do
 done
 
 cat<<-EOF
-	<tr><td></td><td><input type="submit" name="$ssrv" value="Submit"></td>
+	<tr><td></td><td><input type="submit" name=submit value="Submit"></td>
 	<td>$(back_button)</td></tr>	
 	</table></form></body></html>
 EOF

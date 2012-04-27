@@ -4,31 +4,34 @@
 read_args
 check_cookie
 
+CONFF=/etc/inetd.conf
+
 #debug
 
 if test -n "$Configure"; then
-	if test -f $PWD/${Configure}.cgi; then
 		gotopage /cgi-bin/${Configure}.cgi
-	else
-		write_header "$Configure setup"
-		echo "<p>Write me</p>"
-		back_button
-		echo "</body></html>"
-		exit 0
-	fi
 
 elif test -n "$Submit"; then
 
-	ssrvs="$(httpd -d $Submit)"
+	ssrv=$(awk '{if (substr($1,1,1) == "#") $1=substr($1,2); print $1}' $CONFF)
 
-	for i in $ssrvs; do
+	for i in $ssrv; do
 		serv=$(eval echo \$$i)
 		if test "$serv" = "enable"; then
-			rcinetd enable $i >& /dev/null
+			to_enable="$to_enable $i"
 		else
-			rcinetd disable $i >& /dev/null
+			to_disable="$to_disable $i"
 		fi
 	done
+
+	# by default, use stunnel in inetd mode
+	if echo "$to_enable" | grep -qE '(https|swats)'; then
+		rcstunnel stop >& /dev/null
+		rcstunnel disable >& /dev/null
+	fi
+
+	rcinetd enable $to_enable >& /dev/null
+	rcinetd disable $to_disable >& /dev/null
 fi
 
 #enddebug
