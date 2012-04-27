@@ -124,6 +124,27 @@ case "$action" in
 		exit 0
 		;;
 
+
+	createNew)
+		html_header
+		busy_cursor_start
+		BOX_PEM=/etc/ssl/certs/vsftpd.pem
+		rm $BOX_PEM
+		rcvsftpd init >& /dev/null
+		if test -f /usr/sbin/cupsd; then
+			CUPS_CRT=/etc/cups/ssl/server.crt
+			CUPS_KEY=/etc/cups/ssl/server.key
+			sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' $BOX_PEM > $CUPS_CRT
+			sed -n '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/p' $BOX_PEM > $CUPS_KEY
+		fi
+		if rcstunnel status >& /dev/null; then rcstunnel restart >& /dev/null; fi
+		if rclighttpd status >& /dev/null; then rclighttpd restart >& /dev/null; fi
+		if rccups status >& /dev/null; then rccups restart >& /dev/null; fi
+		busy_cursor_end
+		js_gotopage /cgi-bin/sys_utils.cgi
+		echo "</body></html>"
+		;;
+
 	KernelLog)
 		TF=$(mktemp -t)
 		dmesg > $TF

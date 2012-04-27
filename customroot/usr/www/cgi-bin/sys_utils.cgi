@@ -5,6 +5,11 @@ check_cookie
 
 write_header "System utilities" "document.sysutils.reset()"
 
+mktt ssl_tt "Erases current SSL certificate for https and creates a new one.<br>
+WARNING: your browser will complain and you will have to delete<br>
+or revoke the old certificate and make the browser accept the new one.<br>
+Does not affects the ssh host key."
+
 logsel="<select name=\"logaction\" onchange=\"return submit()\">
 <option>Select one</option>
 <option value=\"KernelLog\">Kernel Log</option>
@@ -41,6 +46,10 @@ cat<<-EOF
 
 	<fieldset><legend><strong>Printers</strong></legend>
 	<input type=submit name="action" value="ClearPrintQueues">
+	</fieldset><br>
+
+	<fieldset><legend><strong>SSL Certificate</strong></legend>
+	<input type=submit name="action" value="createNew" $(ttip ssl_tt)>
 	</fieldset><br>
 
 	</form></body></html>
