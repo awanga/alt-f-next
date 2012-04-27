@@ -73,7 +73,7 @@ writelog() {
 	chmod a+rw $i/$LOGF
 }
 
-if test -f "$CONF_MISC"; then
+if test -s "$CONF_MISC"; then
 	. $CONF_MISC
 else
 	USER_LOGFILE="yes"
