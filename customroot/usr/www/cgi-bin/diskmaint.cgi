@@ -145,6 +145,8 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 		continue
 	fi
 
+	if find /sys/block/md*/slaves/$part >& /dev/null ; then continue; fi
+
 	otype=$TYPE
 
 	mount_opts=""
