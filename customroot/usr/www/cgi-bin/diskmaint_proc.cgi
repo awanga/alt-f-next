@@ -91,6 +91,9 @@ format() {
 			logger "Formating /dev/$1 with $2 failed with code \$st: \$(cat $logf)"
 			exit 1
 		fi
+		if test "$2" = "ext3"; then
+			tune2fs -o journal_data_ordered /dev/$1
+		fi
 		logger "Formated /dev/$1 with $2 OK"
 
 		if test -n "$3"; then
@@ -269,18 +272,24 @@ elif test -n "$Convert"; then
 		msg "Can only convert upward from 'ext' filesystems."
 	fi 
 
-	if test "$from" = "ext2"; then # 2->3	
+	if test "$from" = "ext2"; then # 2->3, perhaps intermediate step	
 		res="$(tune2fs -j /dev/$part)"
 		if test $? != 0; then
 			msg "$res"
 		fi
 	fi
 
-	if test "$type" = "ext4"; then # 3->4
+	if test "$from" = "ext2" -a "$type" = "ext3"; then # 2->3, final
+		res="$(tune2fs -o journal_data_ordered /dev/$part)"
+		if test $? != 0; then
+			msg "$res"
+		fi
+	elif test "$type" = "ext4"; then # 3->4, final
 		res="$(tune2fs -O extents,uninit_bg,dir_index /dev/$part)"
 		if test $? != 0; then
 			msg "$res"
 		fi
+		# FIXME: chattr -R +e /mnt/... # make existing files use extents (has to be mounted)
 	fi
 
 	check "$part" "$from" "convert"
