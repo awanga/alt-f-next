@@ -43,15 +43,20 @@ cat<<-EOF
 	Current Password:<input type="password" autocomplete="off" name="passwd" value="" onkeypress="return event.keyCode != 13">
 	<input type="submit" name="action" value="ChangePassword">
 	</fieldset><br>
+EOF
 
-	<fieldset><legend><strong>Printers</strong></legend>
-	<input type=submit name="action" value="ClearPrintQueues">
-	</fieldset><br>
+if test -s /etc/printcap; then
+	cat<<-EOF
+		<fieldset><legend><strong>Printers</strong></legend>
+		<input type=submit name="action" value="ClearPrintQueues">
+		</fieldset><br>
+	EOF
+fi
 
+cat<<-EOF
 	<fieldset><legend><strong>SSL Certificate</strong></legend>
 	<input type=submit name="action" value="createNew" $(ttip ssl_tt)>
 	</fieldset><br>
-
 	</form></body></html>
 EOF
 
