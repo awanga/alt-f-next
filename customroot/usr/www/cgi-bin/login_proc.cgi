@@ -8,7 +8,7 @@ read_args
 
 #debug
 
-if ! test -e $SECR; then
+if ! test -f "$SECR"; then
 	if test -z "$passwd"; then
 		msg "The password can't be empty."
 	elif test "$passwd" != "$passwd_again"; then
@@ -47,10 +47,9 @@ else
     	msg "$passwd"
 	fi
 
-	if test "$from_url" != "login.cgi"; then
-		loc="/cgi-bin/$from_url"
-	else
-		loc="/cgi-bin/status.cgi"
+	loc="/cgi-bin/status.cgi"
+	if test -n "$from_url"; then
+		loc=$(httpd -d "$from_url")
 	fi
 fi
 
@@ -70,4 +69,4 @@ else
 	gotopage /cgi-bin/login.cgi
 fi
 
-#enddebug
+enddebug
