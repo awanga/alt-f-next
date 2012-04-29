@@ -444,7 +444,8 @@ elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
 	sed -i '/^'$MDEV'|/d' $PCAP
 
 	if test -e $PCAP -a ! -s $PCAP; then
-		rm $PCAP
+		#rm $PCAP
+		echo -n > $PCAP
 	fi
 	rcsmb reload
 

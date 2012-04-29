@@ -20,6 +20,7 @@ done
 mkdir -p /mnt /var/lib /var/spool/lpd /var/spool/samba
 chmod a+wt /var/spool/lpd /var/spool/samba
 echo > /etc/bay
+echo -n > /etc/printcap
 
 # create rc* shortcuts to /etc/init.d/S??*
 ln -f /etc/init.d/rcall /sbin/rcall

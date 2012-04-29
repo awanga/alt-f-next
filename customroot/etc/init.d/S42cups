@@ -27,8 +27,10 @@ case "$1" in
 	stop)
 		stop $NAME
 
+		# allow empty printcap
 		if grep -q cupsd $PRINTC >& /dev/null; then 
-			rm $PRINTC
+			#rm $PRINTC
+			echo -n > $PRINTC
 		fi		
 
 		rcinetd enable printer
