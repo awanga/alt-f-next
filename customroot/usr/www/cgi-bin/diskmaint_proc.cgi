@@ -74,7 +74,7 @@ check() {
 format() {
 
 	case $2 in
-		ext2|ext3|ext4) opts=""; id=83 ;;
+		ext2|ext3|ext4) opts="-m 1"; id=83 ;;
 		vfat) opts="-v"; id=c ;; # c Win95 FAT32 (LBA)
 		ntfs) opts="-f"; id=7 ;; # 7 HPFS/NTFS
 		*) msg "Wrong filesystem type." ;;
