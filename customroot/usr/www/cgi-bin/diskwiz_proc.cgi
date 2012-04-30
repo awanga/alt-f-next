@@ -6,6 +6,8 @@ check_cookie
 
 #debug
 
+MIN_SIZE=20000 # minimum size of a partition or filesystem, in 512 bytes sectors (10MB)
+
 # $1=error message
 err() {
 	busy_cursor_end
@@ -22,7 +24,7 @@ err() {
 
 # load all disk
 loadall() {
-	for i in $disks; do
+	for i in /dev/sd?; do
 		dsk=$(basename $i)
 		eject -r $dsk >& /dev/null
 	done
@@ -125,7 +127,7 @@ fi
 		pos3=$(expr $pos2 + $nsect2)
 		nsect3=$(expr $maxsect - $pos3)
 		nsect3=$(align $pos3 $nsect3 $maxsect)
-		if test "$nsect3" -gt 0; then
+		if test "$nsect3" -gt "$MIN_SIZE"; then
 			par3="$pos3,$nsect3,83"
 		fi
 	fi
@@ -164,7 +166,7 @@ gpt_partition() {
 	local i commonsect
 	i=$1
 
-	echo "<p>GPT partitioning disk $(basename $i)...$*"
+	echo "<p>GPT partitioning disk $(basename $i)..."
 
 	clean_traces $i
 	if test "$2" = "raid"; then
@@ -189,7 +191,7 @@ gpt_partition() {
 	nextstart=$(sgdisk --first-in-largest $i)
 	nextend=$(sgdisk --end-of-largest $i)
 	nextleng=$(expr $nextend - $nextstart)
-	if test	$nextstart -gt 64 -a $nextleng -gt 204800; then
+	if test	$nextstart -gt 64 -a $nextleng -gt $MIN_SIZE; then
 		res=$(sgdisk --set-alignment=8 --new=0:0:0 --typecode=3:8300 $i)
 		if test $? != 0; then
 			err "$res"
@@ -256,15 +258,19 @@ create_fs() {
 		else
 			sf=/sys/block/${dev:0:3}/${dev}/size
 		fi
+		if test $(cat $sf) -lt $MIN_SIZE; then return; fi # don't create fs smaller than 10MB
 		eval $(awk '{ printf "min=%.0f", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
 		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
 		wait_count_start "$min minute(s)"
-		res="$(mke2fs -T $wish_fs ${1} 2>&1)"
+		res="$(mke2fs -m 1 -T $wish_fs ${1} 2>&1)"
 		st=$?
 		wait_count_stop
 		if test $st != 0; then
 			err "$res"
 		else
+			if test "$wish_fs" = "ext3"; then
+				tune2fs -o journal_data_ordered ${1} >& /dev/null
+			fi
 			echo ". Done.</p>"
 		fi
 }
@@ -276,31 +282,42 @@ create_raid() {
 		if ! echo $curdev | grep -q md$dev; then MD=md$dev break; fi
 	done
 
-	. /etc/bay
-	usb=$(sed -n '/^usb/s/\(.*_dev=\)\(.*\)/\2/p' /etc/bay) # assume only one usb disk!
+	pair1="missing"; pair2="missing"; spare=""
 
-	opts=""; pair1=/dev/${left_dev}2; pair2=/dev/${right_dev}2; spare=""
+	if test $(ls /dev/sd? | wc -l) = $ndisks; then # all disks selected
+		. /etc/bay
+		if test -n "$left_dev"; then pair1=/dev/${left_dev}2; fi
+		if test -n "$right_dev"; then pair2=/dev/${right_dev}2; fi
+		usb=$(sed -n '/^usb/s/usb._dev=\(.*\)/\1/p' /etc/bay) # assume only one usb disk!
+	else
+		for i in $disks; do
+			if test $pair1 = "missing"; then pair1=${i}2; continue; fi
+			if test $pair2 = "missing"; then pair2=${i}2; continue; fi
+		done
+	fi
+
+	opts=""; 
 	case "$1" in
 		linear|raid0)
-				if test $ndisks = 3; then
-					spare="/dev/${usb}2"
-				fi
-				;;
+			if test $ndisks = 3; then
+				spare="/dev/${usb}2"
+			fi
+			;;
 		raid1)  opts="--bitmap=internal"
-				if test $ndisks = 1; then
-					pair2="missing"
-					ndisks=2
-				elif test $ndisks = 3; then
-					spare="/dev/${usb}2"
-					opts="$opts --spare-devices=1"
-					ndisks=2
-				fi
-				;;
+			if test $ndisks = 1; then
+				pair2="missing"
+				ndisks=2
+			elif test $ndisks = 3; then
+				spare="/dev/${usb}2"
+				opts="$opts --spare-devices=1"
+				ndisks=2
+			fi
+			;;
 		raid5)  opts="--bitmap=internal"
-				if test $ndisks = 3; then
-					spare="/dev/${usb}2"
-				fi
-				;;
+			if test $ndisks = 3; then
+				spare="/dev/${usb}2"
+			fi
+			;;
 	esac
 
 	echo "<p>Creating $1..."
