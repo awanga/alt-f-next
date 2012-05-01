@@ -3,8 +3,10 @@
 # flex
 #
 #############################################################
-FLEX_VERSION:=2.5.33
-FLEX_PATCH_VERSION:=11
+#FLEX_VERSION:=2.5.33
+#FLEX_PATCH_VERSION:=11
+FLEX_VERSION:=2.5.35
+FLEX_PATCH_VERSION:=10
 FLEX_SOURCE:=flex_$(FLEX_VERSION).orig.tar.gz
 FLEX_PATCH:=flex_$(FLEX_VERSION)-$(FLEX_PATCH_VERSION).diff.gz
 FLEX_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/f/flex
@@ -90,6 +92,10 @@ endif
 	(cd $(TARGET_DIR)/usr/bin; ln -snf flex lex)
 
 flex: uclibc $(TARGET_DIR)/$(FLEX_TARGET_BINARY)
+
+flex-configure: $(FLEX_DIR)/.configured
+
+flex-build: $(FLEX_DIR)/$(FLEX_BINARY)
 
 flex-clean:
 	$(MAKE) \
