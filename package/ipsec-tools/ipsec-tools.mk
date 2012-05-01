@@ -4,7 +4,9 @@
 #
 #############################################################
 
-IPSEC_TOOLS_VERSION:=0.7.2
+#IPSEC_TOOLS_VERSION:=0.7.2
+#IPSEC_TOOLS_VERSION:=0.7.3
+IPSEC_TOOLS_VERSION:=0.8.0
 IPSEC_TOOLS_SOURCE:=ipsec-tools-$(IPSEC_TOOLS_VERSION).tar.bz2
 IPSEC_TOOLS_CAT:=$(BZCAT)
 IPSEC_TOOLS_DIR:=$(BUILD_DIR)/ipsec-tools-$(IPSEC_TOOLS_VERSION)
@@ -86,7 +88,10 @@ $(IPSEC_TOOLS_DIR)/.configured: $(IPSEC_TOOLS_DIR)/.patched
 	  --host=$(GNU_TARGET_NAME) \
 	  --build=$(GNU_HOST_NAME) \
 	  --prefix=/usr \
+	  --libdir=/usr/lib \
 	  --sysconfdir=/etc \
+	  --localstatedir=/var \
+	  --sysconfdir=/etc/racoon \
 	  --disable-hybrid \
 	  --without-libpam \
 	  --disable-gssapi \
@@ -94,13 +99,23 @@ $(IPSEC_TOOLS_DIR)/.configured: $(IPSEC_TOOLS_DIR)/.patched
 	  $(IPSEC_TOOLS_CONFIG_FLAGS) \
 	)
 	# simpler than patching that cruft..
-	(echo '#undef bzero'; \
-	 echo '#define bzero(a, b) memset((a), 0, (b))'; \
-	 echo '#undef bcopy'; \
-	 echo '#define bcopy(src, dest, len) memmove(dest, src, len)'; \
-	 echo '#undef index'; \
-	 echo '#define index(a, b) strchr(a, b)'; \
-	) >> $(IPSEC_TOOLS_DIR)/config.h
+	#(echo '#undef bzero'; \
+	# echo '#define bzero(a, b) memset((a), 0, (b))'; \
+	# echo '#undef bcopy'; \
+	# echo '#define bcopy(src, dest, len) memmove(dest, src, len)'; \
+	# echo '#undef index'; \
+	# echo '#define index(a, b) strchr(a, b)'; \
+	#) >> $(IPSEC_TOOLS_DIR)/config.h
+	(echo '#include <errno.h>'; \
+	echo '#define err(exitcode, format, args...) \
+		errx(exitcode, format ": %s", ## args, strerror(errno))'; \
+	echo '#define errx(exitcode, format, args...) \
+		{ warnx(format, ## args); exit(exitcode); }'; \
+	echo '#define warn(format, args...) \
+		warnx(format ": %s", ## args, strerror(errno))'; \
+	echo '#define warnx(format, args...) \
+		fprintf(stderr, format "\n", ## args)'; \
+	) > $(IPSEC_TOOLS_DIR)/err.h
 	touch $@
 
 $(IPSEC_TOOLS_DIR)/$(IPSEC_TOOLS_BINARY_SETKEY) \
@@ -121,6 +136,9 @@ $(TARGET_DIR)/$(IPSEC_TOOLS_TARGET_BINARY_RACOONCTL): \
 	  $(TARGET_DIR)/$(IPSEC_TOOLS_TARGET_BINARY_SETKEY) \
 	  $(TARGET_DIR)/$(IPSEC_TOOLS_TARGET_BINARY_RACOON) \
 	  $(TARGET_DIR)/$(IPSEC_TOOLS_TARGET_BINARY_RACOONCTL)
+	mkdir -p $(TARGET_DIR)/etc/racoon/samples/{racoon,setkey}
+	cp -a $(IPSEC_TOOLS_DIR)/src/racoon/samples/* $(TARGET_DIR)/etc/racoon/samples/racoon
+	cp $(IPSEC_TOOLS_DIR)/src/setkey/*.cf $(TARGET_DIR)/etc/racoon/samples/setkey
 ifneq ($(BR2_HAVE_MANPAGES),y)
 	rm -f $(addprefix $(TARGET_DIR)/usr/man/, \
 		man3/ipsec_strerror.3 man3/ipsec_set_policy.3 \
@@ -148,6 +166,12 @@ endif
 ipsec-tools: uclibc openssl flex $(IPSEC_TOOLS_PROGS)
 
 ipsec-tools-source: $(DL_DIR)/$(IPSEC_TOOLS_SOURCE)
+
+ipsec-tools-configure: $(IPSEC_TOOLS_DIR)/.configured
+
+ipsec-tools-build: $(IPSEC_TOOLS_DIR)/$(IPSEC_TOOLS_BINARY_SETKEY) \
+	$(IPSEC_TOOLS_DIR)/$(IPSEC_TOOLS_BINARY_RACOON) \
+	$(IPSEC_TOOLS_DIR)/$(IPSEC_TOOLS_BINARY_RACOONCTL)
 
 ipsec-tools-uninstall:
 
