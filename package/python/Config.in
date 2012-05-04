@@ -35,10 +35,31 @@ comment "The following modules are unusual or require extra libraries"
 
 config BR2_PACKAGE_PYTHON_BSDDB
 	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_BERKELEYDB
+	select BR2_PACKAGE_DB
 	bool "bsddb module"
 	help
 	  bsddb module for Python.
+
+config BR2_PACKAGE_PYTHON_GDBM
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_GDBM
+	bool "gdbm module"
+	help
+	  gdbm module for Python.
+
+config BR2_PACKAGE_PYTHON_SQLITE3
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_SQLITE
+	bool "sqlite3 module"
+	help
+	  sqlite3 module for Python.
+
+config BR2_PACKAGE_PYTHON_UNICODEDATA
+	depends on BR2_PACKAGE_PYTHON
+	bool "unicodedata module"
+	default y
+	help
+	  Unicode character database (used by stringprep module) (large).
 
 config BR2_PACKAGE_PYTHON_CODECSCJK
 	depends on BR2_PACKAGE_PYTHON
@@ -54,25 +75,6 @@ config BR2_PACKAGE_PYTHON_CURSES
 	help
 	  curses module for Python.
 
-# config BR2_PACKAGE_PYTHON_GDBM
-# 	depends on BR2_PACKAGE_PYTHON
-# 	bool "gdbm module"
-# 	help
-# 	  gdbm module for Python.
-
-# config BR2_PACKAGE_PYTHON_NIS
-# 	depends on BR2_PACKAGE_PYTHON
-# 	bool "nis module"
-# 	help
-# 	  nis module for Python.
-
-config BR2_PACKAGE_PYTHON_PYEXPAT
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_EXPAT
-	bool "pyexpat"
-	help
-	  pyexpat module for Python.
-
 config BR2_PACKAGE_PYTHON_READLINE
 	depends on BR2_PACKAGE_PYTHON
 	select BR2_PACKAGE_READLINE
@@ -81,6 +83,19 @@ config BR2_PACKAGE_PYTHON_READLINE
 	  readline module for Python (required for command-line
 	  editing in the Python shell).
 
+config BR2_PACKAGE_PYTHON_NIS
+	depends on BR2_PACKAGE_PYTHON
+	bool "nis module"
+	help
+	  nis module for Python.
+
+config BR2_PACKAGE_PYTHON_PYEXPAT
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_EXPAT
+	bool "pyexpat"
+	help
+	  pyexpat module for Python.
+
 config BR2_PACKAGE_PYTHON_SSL
 	depends on BR2_PACKAGE_PYTHON
 	select BR2_PACKAGE_OPENSSL
@@ -88,16 +103,16 @@ config BR2_PACKAGE_PYTHON_SSL
 	help
 	  _ssl module for Python (required for https in urllib etc).
 
+config BR2_PACKAGE_PYTHON_ZLIB
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_ZLIB
+	bool "zlib"
+	help
+	  zlib module for Python
+
 config BR2_PACKAGE_PYTHON_TKINTER
 	depends on BR2_PACKAGE_PYTHON
 	select BR2_PACKAGE_TCL
 	bool "tkinter module"
 	help
 	  tkinter module for Python.
-
-config BR2_PACKAGE_PYTHON_UNICODEDATA
-	depends on BR2_PACKAGE_PYTHON
-	bool "unicodedata module"
-	default y
-	help
-	  Unicode character database (used by stringprep module) (large).
