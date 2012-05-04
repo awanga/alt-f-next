@@ -1,0 +1,6 @@
+#!/bin/sh
+
+PVER=2.7
+
+rm -rf /usr/include/python$PVER /usr/lib/python$PVER/config
+find /usr/lib/python$PVER/ -name \*.pyc -exec rm {} \;

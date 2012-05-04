@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# python needs pyconfig.h and Makefile at runtime!
+
+PVER=2.7
+
+INCDIR=/usr/include/python$PVER
+CONFDIR=/usr/lib/python$PVER/config
+
+mkdir -p $INCDIR $CONFDIR
+cp /usr/lib/python$PVER/pyconfig.h $INCDIR
+cp /usr/lib/python$PVER/Makefile $CONFDIR
+
