@@ -1,5 +1,8 @@
 #!/bin/sh
 
+BOX_PEM=/etc/ssl/certs/vsftpd.pem
+CUPS_CRT=/etc/cups/ssl/server.crt
+CUPS_KEY=/etc/cups/ssl/server.key
 DIRS="/var/spool/cups /var/cache/cups /var/run/cups /var/log/cups"
 
 addgroup -S -g 9 lpadmin
@@ -8,5 +11,9 @@ adduser -S -g "CUPS Daemon" -G lpadmin -u 9 -h /var/lib/cups cups
 mkdir -p $DIRS
 chown -R cups:lpadmin /etc/cups $DIRS
 chmod a+rx /usr/sbin/cupsd
+
+# reuse box certificate
+sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' $BOX_PEM > $CUPS_CRT
+sed -n '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/p' $BOX_PEM > $CUPS_KEY
 
 ln -sf /usr/sbin/rcscript /sbin/rccups
