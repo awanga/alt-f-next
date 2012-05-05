@@ -35,7 +35,7 @@ KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.k
 
 if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 	OPWD=$PWD;
-	cd $ROOTFS/lib/modules/$kver
+	cd $BLDDIR/project_build_arm/dns323/root/lib/modules/$kver
 	for i in $(find . -name \*.ko); do
 		if ! echo $KMOD | grep -q $i; then
 			RMF="$RMF usr/lib/modules/$kver/$i"
@@ -89,7 +89,7 @@ BR2_PACKAGE_STUNNEL="etc/stunnel etc/init.d/S41stunnel"
 BR2_PACKAGE_KERNEL_MODULES="etc/init.d/S13modload"
 
 BR2_PACKAGE_LIGHTTPD="etc/init.d/S52lighttpd usr/www/cgi-bin/lighttpd.cgi
-usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
+usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd etc/owncloud.conf"
 
 BR2_PACKAGE_PHP="etc/php.ini"
 
