@@ -15,6 +15,12 @@ LIBICONV_CONF_OPT = --libdir=/usr/lib
 
 LIBICONV_DEPENDENCIES = uclibc
 
+ifeq ($(BR2_ENABLE_DEBUG),y)
+LIBICONV_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+else
+LIBICONV_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install-strip STRIPPROG="$(STRIPCMD)"
+endif
+
 $(eval $(call AUTOTARGETS,package,libiconv))
 
 # a patch in uClibc removes iconv.h.
