@@ -50,6 +50,7 @@ int debounce();
 int button(void);
 void led(int which, char *value, char *mode, char *on, char *off);
 void blink_leds(int leds);
+void syswrite(char *fname, char *value);
 
 void back_button();
 void reboot();
@@ -813,6 +814,7 @@ void hdd_powercheck(int noleds) {
 				switch (noleds) {
 					case 0:
 						led(wled, "1", "timer", "50", "2000");
+						syswrite("/sys/class/leds/power:blue/brightness", "1");
 						/* fall through */
 					case 1:	
 						syslog(LOG_INFO, "%s disk (%s) standby", bay, dev);
@@ -824,6 +826,7 @@ void hdd_powercheck(int noleds) {
 				switch (noleds) {
 					case 0:
 						led(wled, "0", "none", NULL, NULL);
+						syswrite("/sys/class/leds/power:blue/brightness", "0");
 						/* fall through */
 					case 1:
 						syslog(LOG_INFO, "%s disk (%s) wakeup", bay, dev);
