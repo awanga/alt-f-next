@@ -1,0 +1,10 @@
+config BR2_PACKAGE_SABNZBD
+	bool "sabnzbd"
+	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_CHEETAH
+	select BR2_PACKAGE_PYOPENSSL
+	select BR2_PACKAGE_YENC
+	help
+	   SABnzbd is an Open Source Binary Newsreader written in Python. (dummy package)
+
+	   http://sabnzbd.org/
