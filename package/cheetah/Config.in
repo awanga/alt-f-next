@@ -1,0 +1,7 @@
+config BR2_PACKAGE_CHEETAH
+	bool "cheetah"
+	select BR2_PACKAGE_PYTHON
+	help
+	  Cheetah is a template engine and code generation python module
+
+	  http://www.cheetahtemplate.org/
