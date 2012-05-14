@@ -1,0 +1,9 @@
+config BR2_PACKAGE_SICKBEARD
+	bool "sickbeard"
+	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_CHEETAH
+	select BR2_PACKAGE_PYOPENSSL
+	help
+	  The ultimate PVR application that searches for and manages your TV shows (dummy package)
+
+	  http://sickbeard.com
