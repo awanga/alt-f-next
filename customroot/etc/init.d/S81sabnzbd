@@ -1,0 +1,69 @@
+#! /bin/sh
+
+DESC="SABnzbd is a Binary Newsreader written in Python"
+NAME=sabnzbd
+TYPE=user
+
+USER=sabnzbd
+GROUP=TV
+
+DATA_DIR=/var/lib/sabnzbd
+PROG_DIR=/opt/SABnzbd
+PROG=${PROG_DIR}/SABnzbd.py
+CONFF=/etc/sabnzbd/sabnzbd.conf
+
+PORT=$(awk '/[misc]/{ while (st = getline) { if ($1 == "port") {print $3; exit}}}' $CONFF)
+PID_PATH=/var/run/sabnzbd
+PID_FILE=$PID_PATH/sabnzbd-$PORT.pid
+
+OPTS="--daemon --pid=$PID_PATH --config-file $CONFF"
+
+. $(dirname $0)/common
+
+if ! test -d $PID_PATH; then
+	mkdir -p $PID_PATH
+	chown $USER:$GROUP $PID_PATH
+fi
+
+if test -e $PID_FILE; then
+	if ! kill -0 $(cat $PID_FILE) >& /dev/null; then
+		rm $PID_FILE
+	fi
+fi
+
+if ! test -h /var/log/sabnzbd.log; then 
+	ln -sf $DATA_DIR/logs/sabnzbd.log /var/log/sabnzbd.log
+	ln -sf $DATA_DIR/logs/sabnzbd.error.log /var/log/sabnzbd-error.log
+fi
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		start-stop-daemon -S -q -o --chuid $USER:$GROUP -x $PROG -- $OPTS
+		omsg $?
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -o --pidfile $PID_FILE
+		omsg $?
+		;;
+	status)
+		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
+			echo "$NAME running"
+			return 0
+		else
+			echo "$NAME stopped"
+			return 1
+		fi
+		;;
+	restart)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		while sh $0 status >& /dev/null; do echo -n '.'; sleep 1; done
+		sleep 5
+		sh $0 start
+        ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
+exit 0
