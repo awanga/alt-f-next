@@ -1,0 +1,4 @@
+./usr/bin/par2
+./usr/bin/par2create
+./usr/bin/par2repair
+./usr/bin/par2verify

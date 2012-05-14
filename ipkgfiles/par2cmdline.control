@@ -1,0 +1,9 @@
+Package: par2cmdline
+Description: par2cmdline is a PAR 2.0 compatible file verification and repair tool.
+Version: 0.4
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://parchive.sourceforge.net
+Maintainer: jcard
