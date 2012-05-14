@@ -8,6 +8,6 @@ INCDIR=/usr/include/python$PVER
 CONFDIR=/usr/lib/python$PVER/config
 
 mkdir -p $INCDIR $CONFDIR
-cp /usr/lib/python$PVER/pyconfig.h $INCDIR
-cp /usr/lib/python$PVER/Makefile $CONFDIR
+mv /usr/lib/python$PVER/pyconfig.h $INCDIR
+mv /usr/lib/python$PVER/Makefile $CONFDIR
 
