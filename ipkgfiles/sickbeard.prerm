@@ -1,0 +1,20 @@
+#/bin/sh
+
+DAEMON=rcsickbeard
+
+$DAEMON stop
+
+i=150 # wait 150/5=30 seconds
+while $DAEMON status >/dev/null; do
+	i=$((i-1))
+	if test $i -eq 0; then
+		exit 1
+	fi
+	usleep 200000
+done 
+ 
+rm -rf /Alt-F/opt/Sick-Beard
+
+deluser sickbeard >& /dev/null
+delgroup TV >& /dev/null
+rm -rf /sbin/rcsickbeard

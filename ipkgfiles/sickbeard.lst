@@ -1,0 +1,3 @@
+./etc/sickbeard.conf
+./etc/init.d/S81sickbeard
+./usr/www/cgi-bin/sickbeard.cgi

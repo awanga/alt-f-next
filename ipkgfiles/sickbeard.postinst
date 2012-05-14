@@ -1,0 +1,106 @@
+#!/bin/sh
+
+if ! readlink -f /Public; then
+	echo "*******************************************************"
+	echo "* The /Public folder is needed to install Sick-Beard. *"
+	echo "* Please create a user, any user, first.              *"
+	echo "*******************************************************"
+	exit 1
+fi
+
+BASE=$(dirname $(readlink -f /Public/))
+
+if ! mountpoint -q $BASE; then
+	echo "*************************************************"
+	echo "* /Public isn't a simbolic link to a filesystem *"
+	echo "* Check your instalation                        *"
+	echo "*************************************************"
+	exit 1
+fi
+
+SITE=https://github.com/midgetspy/Sick-Beard/tarball
+TBALL=master
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo "Downloading of Sick-Beard from its homepage page failed."
+	exit 1
+fi
+
+mkdir -p /Alt-F/opt
+if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
+	rm -f /tmp/$TBALL
+	echo "Extraction of Sick-Beard failed."
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+SBPROG=/Alt-F/opt/Sick-Beard
+SBCONF=/etc/sickbeard.conf
+SBHOME=/var/lib/sickbeard
+SBDATA=/$BASE/Sick-Beard
+
+SABHOME=/var/lib/sabnzbd
+SABCONF=/etc/sabnzbd/sabnzbd.conf
+
+SMBCF=/etc/samba/smb.conf
+
+mv /Alt-F/opt/midgetspy-Sick-Beard-* $SBPROG
+ln -s /usr/sbin/rcscript /sbin/rcsickbeard
+
+addgroup -S -g 200 TV
+adduser -S -g "Sick Beard user" -G TV -u 18 -h $SBHOME sickbeard
+
+# What happpens on package upgrade?!?
+# the existence of Public in the conf file shows that an upgrade is in course
+sed -i "s|/Public/|$BASE/|" $SBCONF
+
+# I'm not sure about this...
+if test -f /opt/SABnzbd/SABnzbd.py; then # SABnzbd is installed
+	rcsabnzbd stop
+	while rcsabnzbd status >& /dev/null; do echo -n '.'; sleep 1; done
+
+	# copy SickBeard postprocess script to SAPnzbd
+	# autoProcessTV.cfg must be edited by the user if he adds a password to SAB/Sick
+	mkdir -p $SABHOME/scripts; chown -R sabnzbd:TV $SABHOME
+	cp $SBPROG/autoProcessTV/* $SABHOME/scripts/
+	cp $SABHOME/scripts/autoProcessTV.cfg.sample $SABHOME/scripts/autoProcessTV.cfg
+
+	sab_apikey=$(sed -n 's/^api_key.*=\(.*\)/\1/p' $SABCONF | tr -d ' ')
+	if test -z "$sab_apikey"; then
+		sab_apikey=$(uuidgen | tr -d '-')
+		sed -i "s/^api_key.*/api_key = $sab_apikey/" $SABCONF
+	fi
+	sed -i "s/^sab_apikey.*/sab_apikey = $sab_apikey/" $SBCONF
+	sed -i "s|^sab_host.*|sab_host = http://$(hostname -i | tr -d ' '):8082/|" $SBCONF
+	sed -i "s/^nzb_method.*/nzb_method = sabnzbd/" $SBCONF
+	#sed -i "s|^tv_download_dir.*|tv_download_dir = /$BASE/SABnzbd/Complete|" $SBCONF
+fi
+
+mkdir -p $SBDATA
+chown -R sickbeard:TV $SBPROG $SBCONF $SBDATA
+chmod g+rwxs $SBDATA
+
+if ! grep -q '\[Sick-Beard\]' $SMBCF; then
+cat <<EOF >> $SMBCF
+
+[Sick-Beard]
+	comment = Sick-Beard download area
+	path = $BASE/Sick-Beard
+	valid users = +TV
+	available = yes
+	read only = yes
+EOF
+fi
+
+rcsmb reload
+
+# reuse box certificate
+BOX_PEM=/etc/ssl/certs/vsftpd.pem
+BOX_CRT=/etc/ssl/certs/server.crt
+BOX_KEY=/etc/ssl/certs/server.key
+
+if ! test -f $BOX_CRT; then
+	sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' $BOX_PEM > $BOX_CRT
+	sed -n '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/p' $BOX_PEM > $BOX_KEY
+fi
