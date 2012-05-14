@@ -374,7 +374,7 @@ for i in $(cat $IPKGDIR/$pkg.lst); do
 	fi
 done
 
-tar -C root -c -T $IPKGDIR/$pkg.lst | tar -C $CDIR/tmp -x
+tar -C root -c --no-recursion -T $IPKGDIR/$pkg.lst | tar -C $CDIR/tmp -x
 if test $? = 1; then 
 	echo Fail creating $pkg package
 	exit 1
