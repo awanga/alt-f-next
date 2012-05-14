@@ -3,8 +3,7 @@
 # python
 #
 #############################################################
-#PYTHON_VERSION=2.4.5
-#PYTHON_VERSION_MAJOR=2.4
+
 PYTHON_VERSION=2.7.2
 PYTHON_VERSION_MAJOR=2.7
 
@@ -13,15 +12,20 @@ PYTHON_SITE:=http://python.org/ftp/python/$(PYTHON_VERSION)
 PYTHON_DIR:=$(BUILD_DIR)/Python-$(PYTHON_VERSION)
 PYTHON_CAT:=$(BZCAT)
 PYTHON_BINARY:=python
+
 PYTHON_TARGET_BINARY:=usr/bin/python
-PYTHON_DEPS:=
+LIBPYTHON_BINARY:=usr/lib/libpython$(PYTHON_VERSION_MAJOR).so
 PYTHON_SITE_PACKAGE_DIR=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
+
+PYTHON_DEPS:=
 
 ifneq ($(BR2_INET_IPV6),y)
 	DISABLE_IPV6= --disable-ipv6
 else
 	DISABLE_IPV6= --enable-ipv6
 endif
+
+BR2_PYTHON_DISABLED_MODULES = ossaudiodev linuxaudiodev
 
 ifeq ($(BR2_PACKAGE_PYTHON_READLINE),y)
 PYTHON_DEPS += readline
@@ -37,6 +41,7 @@ endif
 
 ifeq ($(BR2_PACKAGE_PYTHON_PYEXPAT),y)
 PYTHON_DEPS += expat
+PYTHON_SYS_EXPACT = --with-system-expat
 else
 BR2_PYTHON_DISABLED_MODULES += pyexpat
 endif
@@ -50,7 +55,7 @@ endif
 ifeq ($(BR2_PACKAGE_PYTHON_BSDDB),y)
 PYTHON_DEPS += db
 else
-BR2_PYTHON_DISABLED_MODULES += bsddb
+BR2_PYTHON_DISABLED_MODULES += _bsddb
 endif
 
 ifeq ($(BR2_PACKAGE_PYTHON_SQLITE3),y)
@@ -102,14 +107,13 @@ $(PYTHON_DIR)/.patched: $(PYTHON_DIR)/.unpacked
 
 $(PYTHON_DIR)/.hostpython: $(PYTHON_DIR)/.patched
 	(cd $(PYTHON_DIR); rm -rf config.cache; \
-		CC="$(HOSTCC)" OPT="-O2" \
-		./configure \
-		$(DISABLE_NLS) && \
-		$(MAKE) python Parser/pgen && \
-		mv python hostpython && \
-		mv Parser/pgen Parser/hostpgen && \
-		$(MAKE) distclean \
-	) && \
+		./configure --prefix=/usr --libdir=/usr/lib --sysconfdir=/etc --enable-shared; \
+		$(MAKE) python Parser/pgen; \
+		mv python hostpython;  \
+		mv Parser/pgen Parser/hostpgen; \
+		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" $(MAKE) all install DESTDIR=$(HOST_DIR); \
+		$(MAKE) -i distclean \
+	)
 	touch $@
 
 $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
@@ -118,7 +122,6 @@ $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
 		$(TARGET_CONFIGURE_ARGS) \
 		OPT="$(TARGET_CFLAGS)" \
 		MACHDEP=linux2 \
-		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
 		./configure \
 		ac_sys_system=Linux \
 		ac_sys_release=2 \
@@ -130,6 +133,7 @@ $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
 		--libdir=/usr/lib \
 		--sysconfdir=/etc \
 		--enable-shared \
+		$(PYTHON_SYS_EXPACT) \
 		$(DISABLE_IPV6) \
 		$(DISABLE_NLS) \
 	)
@@ -141,31 +145,22 @@ $(PYTHON_DIR)/$(PYTHON_BINARY): $(PYTHON_DIR)/.configured
 		PYTHON_MODULES_LIB="$(STAGING_DIR)/lib $(STAGING_DIR)/usr/lib" \
 		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
 		HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen \
-		CROSS_COMPILE=arm-linux- CROSS_COMPILE_TARGET=yes \
-		HOSTARCH=arm-linux BUILDARCH=x86_64-pc-linux-gnu \
-		BLDSHARED="arm-linux-gcc -shared"
-
-python-install: $(TARGET_DIR)/$(PYTHON_TARGET_BINARY)
+		CROSS_COMPILE=$(GNU_TARGET_NAME)- CROSS_COMPILE_TARGET=yes \
+		HOSTARCH=$(GNU_TARGET_NAME) BUILDARCH=$(GNU_HOST_NAME) \
+		BLDSHARED="$(TARGET_CC) -shared"
 
 $(TARGET_DIR)/$(PYTHON_TARGET_BINARY): $(PYTHON_DIR)/$(PYTHON_BINARY)
 	rm -rf $(PYTHON_DIR)/Lib/test
-	# LD_LIBRARY_PATH=$(STAGING_DIR)/lib
 	$(MAKE) CC=$(TARGET_CC) -C $(PYTHON_DIR) install \
 		DESTDIR=$(TARGET_DIR) CROSS_COMPILE=yes \
 		PYTHON_MODULES_INCLUDE=$(STAGING_DIR)/usr/include \
 		PYTHON_MODULES_LIB="$(STAGING_DIR)/lib $(STAGING_DIR)/usr/lib" \
 		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
 		HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen
-	rm $(TARGET_DIR)/usr/bin/python
-	( cd $(TARGET_DIR)/usr/bin; ln -s python$(PYTHON_VERSION_MAJOR) python )
-	chmod u+w $(TARGET_DIR)/usr/lib/libpython$(PYTHON_VERSION_MAJOR).so
-	$(STRIPCMD) $(TARGET_DIR)/usr/lib/libpython$(PYTHON_VERSION_MAJOR).so
-	$(STRIPCMD) $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/lib-dynload/*.so
+	(cd $(TARGET_DIR)/usr/bin; ln -sf python$(PYTHON_VERSION_MAJOR) python )
 	rm $(TARGET_DIR)/usr/bin/idle $(TARGET_DIR)/usr/bin/pydoc
-	rm -rf $(TARGET_DIR)/share/locale $(TARGET_DIR)/usr/info \
-		$(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/doc \
-		$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/test
-	cp -dpr $(TARGET_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR) $(STAGING_DIR)/usr/include/
+	cp -dpr $(TARGET_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR) $(STAGING_DIR)/usr/include
+	cp -dp $(TARGET_DIR)/$(LIBPYTHON_BINARY)* $(STAGING_DIR)/usr/lib
 	mkdir -p $(STAGING_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)
 	cp -dpr $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/config \
 		$(STAGING_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/
@@ -183,8 +178,6 @@ endif
 ifneq ($(BR2_PACKAGE_PYTHON_DEV),y)
 	rm -f $(TARGET_DIR)/usr/bin/python*config
 	rm -rf $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/config
-	#rm -rf $(TARGET_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR)
-	#find $(TARGET_DIR)/usr/lib/ -name '*.py' -exec rm {} \;
 endif
 ifneq ($(BR2_PACKAGE_PYTHON_BSDDB),y)
 	rm -rf $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/bsddb
@@ -207,6 +200,8 @@ python-configure: $(PYTHON_DIR)/.configured
 
 python-build: $(PYTHON_DIR)/$(PYTHON_BINARY)
 
+python-install: $(TARGET_DIR)/$(PYTHON_TARGET_BINARY)
+
 python-clean:
 	-$(MAKE) -C $(PYTHON_DIR) distclean
 	rm -f $(PYTHON_DIR)/.configured $(TARGET_DIR)/$(PYTHON_TARGET_BINARY)
@@ -215,28 +210,6 @@ python-clean:
 
 python-dirclean:
 	rm -rf $(PYTHON_DIR)
-
-####  LIBPYTHON
-
-LIBPYTHON_BINARY:=libpython$(PYTHON_VERSION_MAJOR).so
-
-libpython:	python $(TARGET_DIR)/usr/lib/$(LIBPYTHON_BINARY)
-
-$(STAGING_DIR)/usr/lib/libpython$(PYTHON_VERSION_MAJOR).so: $(TARGET_DIR)/$(PYTHON_TARGET_BINARY)
-		cp -dpr $(PYTHON_DIR)/$(LIBPYTHON_BINARY).* $(STAGING_DIR)/usr/lib
-		(\
-		cd $(STAGING_DIR)/usr/lib ; \
-		rm -f $(LIBPYTHON_BINARY) ; \
-		ln -s `basename  \`ls libpython*.so.*\`` $(LIBPYTHON_BINARY) \
-		)
-
-$(TARGET_DIR)/usr/lib/$(LIBPYTHON_BINARY): $(STAGING_DIR)/usr/lib/$(LIBPYTHON_BINARY)
-		cp -dpr $(STAGING_DIR)/usr/lib/$(LIBPYTHON_BINARY).* $(TARGET_DIR)/usr/lib
-		(\
-		cd $(TARGET_DIR)/usr/lib ; \
-		rm -f $(LIBPYTHON_BINARY) ; \
-		ln -s `basename  \`ls libpython*.so.*\`` $(LIBPYTHON_BINARY) \
-		)
 
 #############################################################
 #
