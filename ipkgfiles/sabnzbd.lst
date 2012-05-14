@@ -1,0 +1,3 @@
+./etc/sabnzbd/sabnzbd.conf
+./etc/init.d/S81sabnzbd
+./usr/www/cgi-bin/sabnzbd.cgi
