@@ -1,0 +1,7 @@
+config BR2_PACKAGE_YENC
+	bool "yenc"
+	select BR2_PACKAGE_PYTHON
+	help
+	  Python module providing raw yEnc encoding/decoding with built-in crc32 calculation
+
+	  http://www.golug.it/yenc.html
