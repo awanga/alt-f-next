@@ -100,6 +100,7 @@ source "package/module-init-tools/Config.in"
 source "package/modutils/Config.in"
 endif
 source "package/ng-spice-rework/Config.in"
+source "package/par2cmdline/Config.in"
 source "package/popt/Config.in"
 if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
 source "package/procps/Config.in"
@@ -218,7 +219,9 @@ source "package/pptp-linux/Config.in"
 source "package/proftpd/Config.in"
 source "package/quagga/Config.in"
 source "package/rsync/Config.in"
+source "package/sabnzbd/Config.in"
 source "package/samba/Config.in"
+source "package/sickbeard/Config.in"
 source "package/socat/Config.in"
 source "package/spawn-fcgi/Config.in"
 source "package/stunnel/Config.in"
@@ -433,14 +436,18 @@ endmenu
 
 menu "Interpreter languages / Scripting"
 
+source "package/cheetah/Config.in"
 source "package/gs/Config.in"
-source "package/lua/Config.in"
 source "package/libantlr/Config.in"
+source "package/lua/Config.in"
 source "package/microperl/Config.in"
+source "package/php/Config.in"
 source "package/python/Config.in"
+source "package/pyopenssl/Config.in"
 source "package/ruby/Config.in"
 source "package/tcl/Config.in"
-source "package/php/Config.in"
+source "package/yenc/Config.in"
+
 endmenu
 
 menu "XML handling"
