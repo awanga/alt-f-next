@@ -12,7 +12,7 @@ pre() {
 	echo "<center><h2>Disk Partitioner</h2></center>"
 	busy_cursor_start
 
-	echo "<p>Stopping disk..."
+	echo "<p>Stopping disk $dsk..."
 	if ! eject $dsk >& /dev/null ; then
 		echo " failed</p>.<p>Trying to stop all services and disks..."
 		if ! eject -a; then
@@ -56,6 +56,25 @@ reread_part() { # FIXME needed with GPT?
 	# somehow, in this scenario, mdev does not remove device, only creates them
 	rm -f /dev/${1}[0-9]
 	mdev -s
+}
+
+#$1-dsk
+make_swap() {
+	sout=$(sfdisk -l /dev/$1)
+	pt=$(echo "$sout" | awk '/\/dev\//{if ($6 == "82") print $1}')
+	if test -n "$pt"; then
+		echo " done</p><p>Creating swap on $(basename $pt)..."
+		mkswap $pt >& /dev/null
+		return 0
+	fi
+
+	if test -n "$(echo "$sout" | awk '/\/dev\//{if ($6 == "ee") print $1}')"; then
+	    gpt=$(sgdisk -p /dev/$1 | awk '{if ($6 == "8200") print $1}')
+		if test -n "$gpt"; then
+			echo " done</p><p>Creating swap on ${1}$gpt..."
+			mkswap /dev/${1}$gpt >& /dev/null
+		fi
+	fi
 }
 
 # $1-dsk
@@ -103,6 +122,7 @@ has_disks
 
 if test -n "$cp_from"; then
 	eval cp_to=$(echo \$cp_$cp_from)
+	dsk=$cp_to
 
 	pre
 	echo "<p>Copying partition table from $cp_from to $cp_to..."
@@ -121,7 +141,8 @@ if test -n "$cp_from"; then
 		sgdisk --randomize-guids /dev/$cp_to >& /dev/null
 	fi
 
-	reread_part $cp_to
+	reread_part $dsk
+	make_swap $dsk
 
 elif test -n "$Erase"; then
 	dsk=${Erase#op_}
@@ -183,6 +204,7 @@ In order to Load, you have to first save the disk partition."
 	fi
 
 	reread_part $dsk
+	make_swap $dsk
 
 elif test -n "$Conv_MBR"; then # GPT to MBR
 	dsk=${Conv_MBR#op_}
