@@ -209,11 +209,11 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 		# which bay?	
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
 		PHYSD=$(readlink /sys/block/$MDEV/device) 
-		if $(echo $PHYSD | grep -q /host0/); then
+		if echo $PHYSD | grep -q /host0/; then
 			bay="right"
-		elif $(echo $PHYSD | grep -q /host1/); then
+		elif echo $PHYSD | grep -q /host1/; then
 			bay="left"
-		elif $(echo $PHYSD | grep -q /usb1/); then
+		elif echo $PHYSD | grep -q /usb1/; then
 			bay="usb"${MDEV:2}
 		fi
 	
@@ -237,7 +237,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 			echo ${bay}_fam=\"$fam\" >> $BAYC
 			echo ${bay}_mod=\"$mod\" >> $BAYC
 
-			if test -f $MISCC; then
+			if test -s $MISCC; then
 				. $MISCC
 
 				# set advanced power management
@@ -311,12 +311,12 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	echo "DEVICES /dev/sd*" >> $MDADMC
 
 	mpt=$(awk '/'$MDEV'/{print $2}' /proc/mounts )
-	if $(grep -q -e ^$PWD/$MDEV' ' /proc/swaps); then
+	if grep -q ^$PWD/$MDEV /proc/swaps; then
 		swapoff $PWD/$MDEV
 		ret=$?
 		ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
 		mount -o remount,size=${ns}M /tmp
-	elif $(grep -q -e ^$PWD/$MDEV' ' /proc/mounts); then
+	elif grep -q ^$PWD/$MDEV' ' /proc/mounts; then
 		if test -n "$USER_SCRIPT" -a -f $USERLOCK; then
 			if test "$mpt" = "$(dirname $USER_SCRIPT)" -a -x "$mpt/$(basename $USER_SCRIPT)"; then
 				rm $USERLOCK
@@ -381,7 +381,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 				\( "$type" = "raid5" -a "$actdev" = 3 \) \) ; then
 				mdadm $PWD/$md --fail $PWD/$MDEV --remove $PWD/$MDEV
 				return $ret
-			elif $(grep -q ^$PWD/$md /proc/mounts); then
+			elif grep -q ^$PWD/$md /proc/mounts; then
 				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$md /usr/sbin/hot.sh)
 				if test $? != 0; then return 1; fi
 				mdadm --stop $PWD/$md
