@@ -169,32 +169,36 @@ gpt_partition() {
 	echo "<p>GPT partitioning disk $(basename $i)..."
 
 	clean_traces $i
+	sgdisk --zap-all $i >& /dev/null
+	res=$(sgdisk --set-alignment=8 --new=1:64:+512M --typecode=1:8200 $i)
+	if test $? != 0; then
+		err "Error creating swap: $res"
+	fi
+
+	firstend=$(sgdisk --set-alignment=8 --end-of-largest $i)
 	if test "$2" = "raid"; then
 		if test "$3" = "equal"; then
 			commonsect="+$(expr $4 \* 512 / 1024 - 524288)K"
 			cmd="--new=2:0:$commonsect --typecode=2:fd00"
 		else
-			cmd="--new=2:0:0 --typecode=2:fd00"
+			cmd="--new=2:0:$firstend --typecode=2:fd00"
 		fi
 	else
-		cmd="--new=2:0:0 --typecode=2:8300"
+		cmd="--new=2:0:$firstend --typecode=2:8300"
 	fi
 
-#echo "<p>$cmd</p>"
-
-	sgdisk --zap-all $i >& /dev/null
-	res=$(sgdisk --set-alignment=8 --new=1:64:+512M --typecode=1:8200 $cmd $i)
+	res=$(sgdisk --set-alignment=8 $cmd $i)
 	if test $? != 0; then
-		err "$res"
+		err "Error creating first partition: $res"
 	fi
 
-	nextstart=$(sgdisk --first-in-largest $i)
-	nextend=$(sgdisk --end-of-largest $i)
+	nextstart=$(sgdisk --set-alignment=8 --first-in-largest $i)
+	nextend=$(sgdisk --set-alignment=8 --end-of-largest $i)
 	nextleng=$(expr $nextend - $nextstart)
 	if test	$nextstart -gt 64 -a $nextleng -gt $MIN_SIZE; then
-		res=$(sgdisk --set-alignment=8 --new=0:0:0 --typecode=3:8300 $i)
+		res=$(sgdisk --set-alignment=8 --new=3:$nextstart:$nextend --typecode=3:8300 $i)
 		if test $? != 0; then
-			err "$res"
+			err "Error creating second partition: $res"
 		fi
 	fi
 
@@ -320,7 +324,7 @@ create_raid() {
 			;;
 	esac
 
-	echo "<p>Creating $1..."
+	echo "<p>Creating $1 $MD..."
 	res="$(mdadm --create --run --level=$1 --metadata=0.9 $opts --raid-devices=$ndisks \
 		/dev/$MD $pair1 $pair2 $spare 2>&1)"
 	if test $? != 0; then
