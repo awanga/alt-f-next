@@ -239,6 +239,7 @@ if test -e /proc/mdstat -a -n "$(grep ^md /proc/mdstat 2> /dev/null)"; then
 			pcap=$(awk '/'$mdev'/{printf "%.1f GB", $3/1048576}' /proc/partitions)
 
 			act="Stop"
+			destroy_dis=""
 			if test "$state" = "clear"; then
 				act="Start"
 				destroy_dis="disabled"
