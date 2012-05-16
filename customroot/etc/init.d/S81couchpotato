@@ -1,0 +1,68 @@
+#!/bin/sh
+
+DESC="CouchPotato searches and manages your movies"
+NAME=couchpotato
+TYPE=user
+
+USER=couchpotato
+GROUP=TV
+
+DATA_DIR=/var/lib/couchpotato
+PROG_DIR=/opt/CouchPotato
+PROG=${PROG_DIR}/CouchPotato.py
+CONFF=/etc/couchpotato.conf
+
+PID_PATH=/var/run/couchpotato
+PID_FILE=$PID_PATH/couchpotato.pid
+
+OPTS="--quiet -d --nolaunch --config=$CONFF --datadir=$DATA_DIR --pidfile=$PID_FILE"
+
+. $(dirname $0)/common
+
+if ! test -d $PID_PATH; then
+	mkdir -p $PID_PATH
+	chown $USER:$GROUP $PID_PATH
+fi
+
+if test -e $PID_FILE; then
+	PID=$(cat $PID_FILE)
+	if ! kill -0 $PID >& /dev/null; then
+		rm $PID_FILE
+	fi
+fi
+
+if ! test -h /var/log/couchpotato.log; then
+    ln -sf $DATA_DIR/logs/CouchPotato.log /var/log/couchpotato.log
+fi
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		start-stop-daemon -S -q -o --chuid $USER:$GROUP -x $PROG -- $OPTS
+		omsg $?
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -o --pidfile $PID_FILE
+		omsg $?
+		;;
+	status)
+		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
+			echo "$NAME running"
+			return 0
+		else
+			echo "$NAME stopped"
+			return 1
+		fi
+		;;
+	restart)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		while sh $0 status >& /dev/null; do echo -n '.'; sleep 1; done
+		sleep 5
+		sh $0 start
+        ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
+exit 0
