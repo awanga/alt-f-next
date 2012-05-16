@@ -8,7 +8,9 @@ start_stop() {
 
 	sscript=/etc/init.d/S??$serv
 	rcscript=rc${serv}
-	if test -n "$sscript"; then    
+	if test -n "$sscript"; then
+		html_header    
+		busy_cursor_start
 		if test "$act" = "enable"; then
 			chmod +x $sscript
 			touch $sscript
@@ -34,9 +36,10 @@ start_stop() {
 				usleep 200000
 			done
 			if test "$i" -eq 50; then
-				msg "Service was successfully signaled to stop but is slow to finish."
+				msg "Service was successfully signaled to stop but it is slow to finish, please wait."
 			fi
 		fi
+		busy_cursor_end
 	fi
 }
 
@@ -47,7 +50,6 @@ check_cookie
 #debug
 
 if test -n "$Submit"; then
-
 	srvs="$(httpd -d $Submit)"
 	for i in $srvs; do
 		st=$(eval echo \$$i)
@@ -65,18 +67,10 @@ elif test -n "$StopNow"; then
 	start_stop $StopNow stop
 
 elif test -n "$Configure"; then
-#	if test -f $PWD/${Configure}.cgi; then
-		gotopage /cgi-bin/${Configure}.cgi
-#	else
-#		write_header "$Configure setup"
-#		echo "<p>Write me</p>"
-#		back_button
-#		echo "</body></html>"
-#		exit 0
-#	fi
+	gotopage /cgi-bin/${Configure}.cgi
 fi
 
 #enddebug
 
 back=$(echo $HTTP_REFERER | sed -n 's|.*/cgi-bin/||p')
-gotopage /cgi-bin/$back
+js_gotopage /cgi-bin/$back
