@@ -4,6 +4,11 @@
 
 [ -z "$1" ] && logger -s "Error: should be called from udhcpc" && exit 1
 
+# record current date on modifiable files
+for i in /etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf; do
+    touch -r $i /tmp/$(basename $i)
+done
+
 RESOLV_CONF="/etc/resolv.conf"
 [ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
 [ -n "$subnet" ] && NETMASK="netmask $subnet"
@@ -70,5 +75,11 @@ case "$1" in
 		done
 		;;
 esac
+
+# recover dates on modified files
+for i in /etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf; do
+    touch -r /tmp/$(basename $i) $i
+	rm /tmp/$(basename $i)
+done
 
 exit 0
