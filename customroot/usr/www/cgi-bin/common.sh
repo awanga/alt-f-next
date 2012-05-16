@@ -136,6 +136,9 @@ s/~/%7e/g
 
 # $1-title (optional)
 html_header() {
+	if test -n "$HTML_HEADER_DONE"; then return; fi
+	HTML_HEADER_DONE="yes"
+
 	cat<<-EOF
 		Content-Type: text/html; charset=UTF-8
 
