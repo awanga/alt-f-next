@@ -19,7 +19,9 @@ fstab_row() {
 		printf "rhost=\"%s\"; rdir=\"%s\"", $3, substr($0, index($0,$4))}')
 
 	rdir="$(path_unescape $rdir)"
+	rdir=$(httpd -e "$rdir")
 	mdir="$(path_unescape $mdir)"
+	mdir=$(httpd -e "$mdir")
 
 	cmtd=${hostdir%%[!#]*}	# get possible comment char
 	if test -n "$cmtd"; then dis_chk=checked; else dis_chk=""; fi
@@ -136,6 +138,7 @@ function spit(cnt, opts) {
 		if (rdir == "") {
 			rdir = opts["path"]
 		}
+		sprintf("httpd -e \"%s\" ", rdir) | getline rdir
 		browse_chk = "checked"
 		if (opts["browseable"] == "no")
 			browse_chk = ""
@@ -193,7 +196,7 @@ function parse(share_name, line) {
 		key=$1
 		gsub("^( |\t)*|( |\t)*$", "", key)  # remove leading and trailing spaces
 
-		value=substr($0, index($0,$2)) # path can have the '=' char, which is the field separator
+		value = substr($0, index($0,$2)) # path can have the '=' char, which is the field separator
 		gsub("^( |\t)*|( |\t)*$", "", value)
 		opts[key] = value
 	}

@@ -48,7 +48,7 @@ elif test "$submit" = "Submit"; then
 		echo
 	done  >> $CONF_FSTAB
 
-	cp $CONF_SMB $CONF_SMB-
+#	cp $CONF_SMB $CONF_SMB-
 	awk '
 		{ pshare($0) }
 
@@ -72,19 +72,29 @@ elif test "$submit" = "Submit"; then
 	' $CONF_SMB- > $CONF_SMB
 
 	for i in $(seq 1 $smb_cnt); do
-		if test -z "$(eval echo \$ldir_$i)" -o -z "$(eval echo \$shname_$i)"; then continue; fi
+		if test -z "$(eval echo \$ldir_$i)"; then continue; fi
 
-		t=$(httpd -d "$(eval echo \$shname_$i)"); echo -e "[$t]"
-		t=$(httpd -d "$(eval echo comment = \$cmt_$i)"); echo -e "\t$t"
-		t=$(httpd -d "$(eval echo path = \$ldir_$i)"); echo -e "\t$t"
+		path=$(httpd -d "$(eval echo \$ldir_$i)")
 
-		t=$(httpd -d "$(eval echo \$user_$i)")
-		if test "$t" = "anybody"; then
+		shname=$(httpd -d "$(eval echo \$shname_$i)")
+		if test -z "$shname"; then shname=$(basename $path); fi
+
+		cmt=$(httpd -d "$(eval echo \$cmt_$i)")
+		if test -z "$cmt"; then cmt="$shname folder"; fi
+
+		echo -e "[$shname]"
+
+		echo -e "\tcomment = $cmt"
+
+		echo -e "\tpath = $path"
+
+		user=$(httpd -d "$(eval echo \$user_$i)")
+		if test "$user" = "anybody"; then
 			echo -e "\tpublic = yes"
-		elif test "$t" = "nonpublic"; then
+		elif test "$user" = "nonpublic"; then
 			echo -e "\tpublic = no"
 		else
-			echo -e "\tvalid users = $t"
+			echo -e "\tvalid users = $user"
 		fi
 
 		avail=no
