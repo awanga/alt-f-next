@@ -8,4 +8,9 @@ if ! rccups status >& /dev/null; then
 	rccups start >& /dev/null
 fi
 
-embed_page "https://${HTTP_HOST%%:*}:631/admin"
+PROTO="http"
+if echo $HTTP_REFERER | grep -q 'https://'; then
+	PROTO="https"
+fi
+
+embed_page "$PROTO://${HTTP_HOST%%:*}:631/admin"
