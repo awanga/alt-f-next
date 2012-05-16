@@ -1,0 +1,99 @@
+#!/bin/sh
+
+if ! readlink -f /home >& /dev/null; then
+	echo "********************************************************"
+	echo "* The /home folder is needed to install CouchPotato. *"
+	echo "* Please create a user, any user, first.               *"
+	echo "********************************************************"
+	exit 1
+fi
+
+BASE=$(dirname $(readlink -f /home))
+
+if ! mountpoint -q $BASE; then
+	echo "*************************************************"
+	echo "* /home isn't a simbolic link to a filesystem *"
+	echo "* Check your instalation                        *"
+	echo "*************************************************"
+	exit 1
+fi
+
+SITE=https://github.com/RuudBurger/CouchPotato/tarball
+TBALL=master
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo "Downloading of CouchPotato from its homepage page failed."
+	exit 1
+fi
+
+mkdir -p /Alt-F/opt
+if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
+	rm -f /tmp/$TBALL
+	echo "Extraction of CouchPotato failed."
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+CBPROG=/Alt-F/opt/CouchPotato
+CPCONF=/etc/couchpotato.conf
+CPHOME=/var/lib/couchpotato
+CPDATA=/$BASE/CouchPotato
+
+SABHOME=/var/lib/sabnzbd
+SABCONF=/etc/sabnzbd/sabnzbd.conf
+
+SMBCF=/etc/samba/smb.conf
+
+mv /Alt-F/opt/RuudBurger-CouchPotato-* $CBPROG
+sed -i 's|#!/usr/bin/env python|#!/usr/bin/python|' $CBPROG/CouchPotato.py
+
+ln -s /usr/sbin/rcscript /sbin/rccouchpotato
+
+addgroup -S -g 200 TV
+adduser -S -g "Sick Beard user" -G TV -u 20 -h $CPHOME couchpotato
+
+# What happpens on package upgrade?!?
+# the existence of Public in the conf file shows that an upgrade is in course
+sed -i "s|/Public/|$BASE/|" $CPCONF
+
+# I'm not sure about this...
+if test -f /opt/SABnzbd/SABnzbd.py; then # SABnzbd is installed
+	rcsabnzbd stop
+	while rcsabnzbd status >& /dev/null; do echo -n '.'; sleep 1; done
+
+	sab_apikey=$(sed -n 's/^api_key.*=\(.*\)/\1/p' $SABCONF | tr -d ' ')
+	if test -z "$sab_apikey"; then
+		sab_apikey=$(uuidgen | tr -d '-')
+		sed -i "s/^api_key.*/api_key = $sab_apikey/" $SABCONF
+	fi
+	sed -i "/\[Sabnzbd\]/,/\[.*\]/s/^apikey.*/apikey = $sab_apikey/" $CPCONF
+	if ! grep -q '\[\[movie\]\]' $SABCONF; then
+		sed -i '/^\[categories\]/a \
+\[\[movie\]\] \
+priority = -100 \
+pp = "" \
+name = movie \
+script = Default \
+newzbin = Movies \
+dir = Movies' $SABCONF
+	fi
+fi
+
+mkdir -p $CPDATA
+chown -R couchpotato:TV $CBPROG $CPCONF $CPDATA
+chmod g+rwxs $CPDATA
+
+if ! grep -q '\[CouchPotato\]' $SMBCF; then
+cat <<EOF >> $SMBCF
+
+[CouchPotato]
+	comment = CouchPotato download area
+	path = $BASE/CouchPotato
+	valid users = +TV
+	available = yes
+	read only = yes
+EOF
+fi
+
+rcsmb reload

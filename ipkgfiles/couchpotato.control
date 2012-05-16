@@ -1,0 +1,9 @@
+Package: couchpotato
+Description: CouchPotato searches and manages your movies
+Version: 2012-05-15
+Depends: python,cheetah
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sickbeard.com
+Maintainer: jcard
