@@ -6,7 +6,7 @@
 
 NFS_UTILS_VERSION:=1.2.5
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
-NFS_UTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/nfs/
+NFS_UTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/nfs/nfs-utils/$(NFS_UTILS_VERSION)
 NFS_UTILS_CAT:=$(BZCAT)
 NFS_UTILS_DIR:=$(BUILD_DIR)/nfs-utils-$(NFS_UTILS_VERSION)
 NFS_UTILS_BINARY:=utils/nfsd/nfsd
