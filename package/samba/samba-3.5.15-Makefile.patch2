@@ -1,0 +1,233 @@
+--- Makefile.orig	2011-07-08 19:36:55.000000000 +0100
++++ Makefile	2011-07-08 19:47:19.000000000 +0100
+@@ -70,7 +70,7 @@
+ LDAP_LIBS=
+ NSCD_LIBS=
+ UUID_LIBS=
+-LIBWBCLIENT=bin/libwbclient.a 
++LIBWBCLIENT=bin/libwbclient.a
+ LIBWBCLIENT_LIBS=bin/libwbclient.a
+ PTHREAD_LDFLAGS=-lpthread
+ PTHREAD_CFLAGS=-D_REENTRANT -D_POSIX_PTHREAD_SEMANTICS
+@@ -832,9 +832,11 @@
+ PRINTBASE_OBJ = printing/notify.o printing/printing_db.o
+ PRINTBACKEND_OBJ = printing/printing.o printing/nt_printing.o $(PRINTBASE_OBJ)
+ 
+-SMBD_OBJ = $(SMBD_OBJ_BASE) $(SMBD_OBJ_MAIN)
++SMBD_OBJ = $(SMBD_OBJ_BASE)
+ 
+-NMBD_OBJ1 = nmbd/asyncdns.o nmbd/nmbd.o nmbd/nmbd_become_dmb.o \
++NMBD_OBJ_MAIN = nmbd/nmbd.o
++
++NMBD_OBJ1 = nmbd/asyncdns.o nmbd/nmbd_become_dmb.o \
+             nmbd/nmbd_become_lmb.o nmbd/nmbd_browserdb.o \
+             nmbd/nmbd_browsesync.o nmbd/nmbd_elections.o \
+             nmbd/nmbd_incomingdgrams.o nmbd/nmbd_incomingrequests.o \
+@@ -851,8 +853,10 @@
+            $(PROFILE_OBJ) $(LIB_NONSMBD_OBJ) $(POPT_LIB_OBJ) \
+ 	   $(LIBNDR_GEN_OBJ0)
+ 
++SWAT_OBJ_MAIN = web/swat.o
++
+ SWAT_OBJ1 = web/cgi.o web/diagnose.o web/startstop.o web/statuspage.o \
+-           web/swat.o web/neg_lang.o
++            web/neg_lang.o
+ 
+ SWAT_OBJ = $(SWAT_OBJ1) $(PARAM_OBJ) $(PRINTING_OBJ) $(PRINTBASE_OBJ) $(LIBSMB_OBJ) \
+ 	   $(LOCKING_OBJ) $(PASSDB_OBJ) $(KRBCLIENT_OBJ) \
+@@ -860,7 +864,9 @@
+ 	   $(POPT_LIB_OBJ) $(SMBLDAP_OBJ) $(RPC_PARSE_OBJ) $(LIBMSRPC_GEN_OBJ) $(LIBMSRPC_OBJ) \
+            $(PASSCHANGE_OBJ) $(LDB_OBJ) $(FNAME_UTIL_OBJ)
+ 
+-STATUS_OBJ = utils/status.o utils/status_profile.o \
++STATUS_OBJ_MAIN = utils/status.o
++
++STATUS_OBJ = utils/status_profile.o \
+ 	     $(LOCKING_OBJ) $(PARAM_OBJ) \
+              $(PROFILE_OBJ) $(LIB_NONSMBD_OBJ) $(POPT_LIB_OBJ) \
+ 	     $(LIBSAMBA_OBJ) $(FNAME_UTIL_OBJ)
+@@ -870,7 +876,9 @@
+ 	$(LIBSAMBA_OBJ) $(FNAME_UTIL_OBJ) \
+ 	$(PRINTBASE_OBJ)
+ 
+-SMBTREE_OBJ = utils/smbtree.o $(PARAM_OBJ) \
++SMBTREE_OBJ_MAIN = utils/smbtree.o 
++
++SMBTREE_OBJ = $(PARAM_OBJ) \
+              $(PROFILE_OBJ) $(LIB_NONSMBD_OBJ) $(LIBSMB_OBJ) \
+ 	     $(KRBCLIENT_OBJ) $(POPT_LIB_OBJ) \
+              $(RPC_CLIENT_OBJ) ../librpc/rpc/binding.o $(RPC_PARSE_OBJ2) \
+@@ -888,7 +896,9 @@
+ 
+ PASSWD_UTIL_OBJ = utils/passwd_util.o
+ 
+-SMBPASSWD_OBJ = utils/smbpasswd.o $(PASSWD_UTIL_OBJ) $(PASSCHANGE_OBJ) \
++SMBPASSWD_OBJ_MAIN = utils/smbpasswd.o
++
++SMBPASSWD_OBJ =  $(PASSWD_UTIL_OBJ) $(PASSCHANGE_OBJ) \
+ 		$(PARAM_OBJ) $(LIBSMB_OBJ) $(PASSDB_OBJ) \
+ 		$(GROUPDB_OBJ) $(LIB_NONSMBD_OBJ) $(KRBCLIENT_OBJ) \
+ 		$(POPT_LIB_OBJ) $(SMBLDAP_OBJ) $(RPC_PARSE_OBJ) \
+@@ -1547,26 +1557,89 @@
+ 	  dir=bin $(MAKEDIR); fi
+ 	@: >> $@ || : > $@ # what a fancy emoticon!
+ 
+-bin/smbd: $(BINARY_PREREQS) $(SMBD_OBJ) $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT) 
+-	@echo Linking $@
+-	@$(CC) -o $@ $(SMBD_OBJ) $(LDFLAGS) $(LDAP_LIBS)  \
+-		$(KRB5LIBS) $(DYNEXP) $(PRINT_LIBS) $(AUTH_LIBS) \
+-		$(ACL_LIBS) $(PASSDB_LIBS) $(LIBS) $(DNSSD_LIBS) $(AVAHI_LIBS) \
+-		$(POPT_LIBS)  $(LIBTALLOC_LIBS) $(LIBTDB_LIBS) \
+-		$(LIBWBCLIENT_LIBS) $(ZLIB_LIBS)
++ALT_F_PROGS = bin/smbd bin/nmbd bin/smbstatus bin/smbtree bin/smbpasswd bin/swat
+ 
+-bin/nmbd: $(BINARY_PREREQS) $(NMBD_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
++alt-f: $(ALT_F_PROGS)
++
++alt-f-clean:
++	rm $(ALT_F_PROGS) bin/libnmbd.a bin/libsmbd.a bin/libsmbstatus.a \
++	bin/libsmbtree.a bin/libsmbpasswd.a bin/libsmbswat.a bin/libsmbcommon.*
++
++bin/libsmbcommon.so: $(SMBD_OBJ) $(NMBD_OBJ) $(SMBPASSWD_OBJ) $(STATUS_OBJ) $(SMBTREE_OBJ) $(SWAT_OBJ) $(LIBTALLOC_OBJ0) $(LIBTDB_OBJ0) $(LIBWBCLIENT_OBJ0) $(WBCOMMON_OBJ)
++	@echo $(LIBTALLOC_OBJ0) $(LIBTDB_OBJ0) $(LIBWBCLIENT_OBJ0) \
++		$(WBCOMMON_OBJ) | tr ' ' '\n' | sort > libs.files
++	@echo $(SMBD_OBJ) | tr ' ' '\n' | sort > smbd.files     
++	@echo $(NMBD_OBJ) | tr ' ' '\n' | sort > nmbd.files
++	@echo $(SMBPASSWD_OBJ) | tr ' ' '\n' | sort > smbpasswd.files
++	@echo $(STATUS_OBJ) | tr ' ' '\n' | sort > smbstatus.files
++	@echo $(SMBTREE_OBJ) | tr ' ' '\n' | sort > smbtree.files
++	@echo $(SWAT_OBJ) | tr ' ' '\n' | sort > swat.files
++	@cat smbd.files nmbd.files smbpasswd.files  \
++		smbstatus.files smbtree.files swat.files \
++		| sort | uniq -d > smbcommon.files
++	@cat libs.files smbcommon.files | sort > smbcommont.files
++	@mv smbcommont.files smbcommon.files
++	sed -i '/popt_common.o/d' smbcommon.files 
++	$(AR) cqT bin/libsmbcommon_pic.a $$(cat smbcommon.files)
++	$(CC) -O -D_SAMBA_BUILD_=3 -shared -Wl,-Bsymbolic -Wl,-z,relro -L./bin \
++		-Wl,-h,libsmbcommon.so -o bin/libsmbcommon.so $$(cat smbcommon.files)
++	#	
++	diff smbd.files smbcommon.files | grep '< ' | \
++	sed 's/< //' > smbd-only.files
++	$(AR) cqT bin/libsmbd.a $$(cat smbd-only.files)
++	#$(AR) cqT bin/libsmbd_pic.a $$(cat smbd-only.files)
++	#$(CC) -O -D_SAMBA_BUILD_=3  $(LDSHFLAGS) \
++	#	-Wl,-h,libsmbd.so -o bin/libsmbd.so $$(cat smbd-only.files)
++	#
++	diff nmbd.files smbcommon.files | grep '< ' | \
++	sed 's/< //' > nmbd-only.files
++	$(AR) cqT bin/libnmbd.a $$(cat nmbd-only.files)
++	#$(AR) cqT bin/libnmbd_pic.a $$(cat nmbd-only.files)
++	#$(CC) -O -D_SAMBA_BUILD_=3  $(LDSHFLAGS) \
++	#	-Wl,-h,libnmbd.so -o bin/libnmbd.so $$(cat nmbd-only.files)
++	#
++	diff smbpasswd.files smbcommon.files | grep '< ' | \
++	sed 's/< //' > smbpasswd-only.files
++	$(AR) cqT bin/libsmbpasswd.a $$(cat smbpasswd-only.files)
++	#$(AR) cqT bin/libsmbpasswd_pic.a $$(cat smbpasswd-only.files)
++	#$(CC) -O -D_SAMBA_BUILD_=3  $(LDSHFLAGS) \
++	#	-Wl,-h,libsmbpasswd.so -o bin/libsmbpasswd.so $$(cat smbpasswd-only.files)
++	#	
++	diff smbstatus.files smbcommon.files | grep '< ' | \
++	sed 's/< //' > smbstatus-only.files
++	$(AR) cqT bin/libsmbstatus.a $$(cat smbstatus-only.files)
++	#$(AR) cqT bin/libsmbstatus_pic.a $$(cat smbstatus-only.files)
++	#$(CC) -O -D_SAMBA_BUILD_=3  $(LDSHFLAGS) \
++	#	-Wl,-h,libsmbstatus.so -o bin/libsmbstatus.so $$(cat smbstatus-only.files)
++	#	
++	diff smbtree.files smbcommon.files | grep '< ' | \
++	sed 's/< //' > smbtree-only.files
++	$(AR) cqT bin/libsmbtree.a $$(cat smbtree-only.files)		
++	#$(AR) cqT bin/libsmbtree_pic.a $$(cat smbtree-only.files)		
++	#$(CC) -O -D_SAMBA_BUILD_=3 $(LDSHFLAGS) \
++	#	-Wl,-h,libsmbtree.so -o bin/libsmbtree.so $$(cat smbtree-only.files)
++	#
++	diff swat.files smbcommon.files | grep '< ' | \
++	sed 's/< //' > swat-only.files
++	$(AR) cqT bin/libsmbswat.a $$(cat swat-only.files)
++	#$(AR) cqT bin/libswat_pic.a $$(cat swat-only.files)
++	#$(CC) -O -D_SAMBA_BUILD_=3  $(LDSHFLAGS) \
++	#	-Wl,-h,libswat.so -o bin/libswat.so $$(cat swat-only.files)
++
++bin/smbd: $(BINARY_PREREQS) $(SMBD_OBJ_MAIN) bin/libsmbcommon.so
++	@echo Linking $@
++	$(CC) -o $@ $(SMBD_OBJ_MAIN) $(LDFLAGS) -lsmbcommon -lsmbd \
++		$(AUTH_LIBS) $(LIBS) $(POPT_LIBS) $(ZLIB_LIBS)
++
++bin/nmbd: $(BINARY_PREREQS) $(NMBD_OBJ_MAIN) bin/libsmbcommon.so
+ 	@echo Linking $@
+-	@$(CC) -o $@ $(NMBD_OBJ) $(LDFLAGS) $(DYNEXP) $(LIBS) \
+-		bin/libwbclient.a $(LIBWBCLIENT_LIBS) \
+-		$(LIBTALLOC_LIBS) $(LIBTDB_LIBS) $(POPT_LIBS) \
+-		$(KRB5LIBS) $(LDAP_LIBS) $(ZLIB_LIBS)
++	$(CC) -o $@ $(NMBD_OBJ_MAIN) $(LDFLAGS) -lsmbcommon -lnmbd \
++		$(LIBS) $(POPT_LIBS) $(AUTH_LIBS) $(ZLIB_LIBS)
+ 
+-bin/swat: $(BINARY_PREREQS) $(SWAT_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
++bin/swat: $(BINARY_PREREQS) $(SWAT_OBJ_MAIN) bin/libsmbcommon.so
+ 	@echo Linking $@
+-	@$(CC) -o $@ $(SWAT_OBJ) $(LDFLAGS) $(DYNEXP) $(PRINT_LIBS) \
+-	  $(AUTH_LIBS) $(LIBS) $(PASSDB_LIBS) $(POPT_LIBS) $(KRB5LIBS) \
+-	  $(LDAP_LIBS) $(LIBTALLOC_LIBS) $(LIBTDB_LIBS) $(LIBWBCLIENT_LIBS) $(ZLIB_LIBS)
++	$(CC) -o $@ $(SWAT_OBJ_MAIN) $(LDFLAGS) -lsmbcommon -lsmbswat  \
++		$(AUTH_LIBS) $(LIBS) $(POPT_LIBS) $(ZLIB_LIBS)
+ 
+ bin/rpcclient: $(BINARY_PREREQS) $(RPCCLIENT_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
+ 	@echo Linking $@
+@@ -1623,11 +1696,10 @@
+ 		bin/libwbclient.a $(LIBWBCLIENT_LIBS) \
+ 		$(LDAP_LIBS) $(POPT_LIBS) $(LIBTALLOC_LIBS) $(LIBTDB_LIBS)
+ 
+-bin/smbstatus: $(BINARY_PREREQS) $(STATUS_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
++bin/smbstatus: $(BINARY_PREREQS) $(STATUS_OBJ_MAIN) bin/libsmbcommon.so
+ 	@echo Linking $@
+-	@$(CC) -o $@ $(STATUS_OBJ) $(LDFLAGS) $(DYNEXP) $(LIBS) \
+-		bin/libwbclient.a $(LIBWBCLIENT_LIBS) \
+-		$(LDAP_LIBS) $(POPT_LIBS) $(LIBTALLOC_LIBS) $(LIBTDB_LIBS)
++	$(CC) -o $@ $(STATUS_OBJ_MAIN) $(LDFLAGS) -lsmbcommon -lsmbstatus \
++		$(LIBS) $(POPT_LIBS) $(ZLIB_LIBS) $(AUTH_LIBS) 
+ 
+ bin/smbcontrol: $(BINARY_PREREQS) $(SMBCONTROL_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
+ 	@echo Linking $@
+@@ -1637,17 +1709,15 @@
+ 		bin/libwbclient.a $(LIBWBCLIENT_LIBS) \
+ 		$(LIBTALLOC_LIBS) $(LIBTDB_LIBS)
+ 
+-bin/smbtree: $(BINARY_PREREQS) $(SMBTREE_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
++bin/smbtree: $(BINARY_PREREQS) $(SMBTREE_OBJ_MAIN) bin/libsmbcommon.so
+ 	@echo Linking $@
+-	@$(CC) -o $@ $(SMBTREE_OBJ) $(LDFLAGS) $(DYNEXP) \
+-		$(LIBS) $(POPT_LIBS) $(KRB5LIBS) $(LDAP_LIBS) $(NSCD_LIBS) \
+-		$(LIBTALLOC_LIBS) $(LIBTDB_LIBS) $(LIBWBCLIENT_LIBS) $(ZLIB_LIBS)
++	$(CC) -o $@ $(SMBTREE_OBJ_MAIN) $(LDFLAGS) -lsmbcommon -lsmbtree \
++		$(LIBS) $(POPT_LIBS) $(AUTH_LIBS) $(ZLIB_LIBS)
+ 
+-bin/smbpasswd: $(BINARY_PREREQS) $(SMBPASSWD_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
++bin/smbpasswd: $(BINARY_PREREQS) $(SMBPASSWD_OBJ_MAIN) bin/libsmbcommon.so
+ 	@echo Linking $@
+-	@$(CC) -o $@ $(SMBPASSWD_OBJ) $(LDFLAGS) $(PASSDB_LIBS) \
+-		$(DYNEXP) $(LIBS) $(POPT_LIBS) $(KRB5LIBS) $(LDAP_LIBS) \
+-		$(LIBTALLOC_LIBS) $(LIBTDB_LIBS) $(LIBWBCLIENT_LIBS) $(ZLIB_LIBS)
++	$(CC) -o $@ $(SMBPASSWD_OBJ_MAIN) $(LDFLAGS) -lsmbcommon -lsmbpasswd \
++		$(LIBS) $(POPT_LIBS) $(AUTH_LIBS) $(ZLIB_LIBS)
+ 
+ bin/pdbedit: $(BINARY_PREREQS) $(PDBEDIT_OBJ)  $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT)
+ 	@echo Linking $@
+@@ -2943,7 +3013,7 @@
+ install-dbwrap_tool:: bin/dbwrap_tool
+ 	@$(SHELL) script/installbin.sh $(INSTALLPERMS_BIN) $(DESTDIR) $(prefix) $(BINDIR) $<
+ 
+-install:: installservers installbin installcifsmount installcifsumount  installman \
++install:: installservers installbin installcifsmount installcifsumount installman \
+ 		installscripts installdat installmodules installswat \
+ 		 installlibs installmo
+ 
+@@ -3057,7 +3127,7 @@
+ 	@echo "  codepagedir: $(CODEPAGEDIR)"
+ 
+ 
+-uninstall:: uninstallmo uninstallman uninstallservers uninstallbin uninstallcifsmount uninstallcifsumount  uninstallscripts uninstalldat uninstallswat uninstallmodules uninstalllibs 
++uninstall:: uninstallmo uninstallman uninstallservers uninstallbin uninstallcifsmount    uninstallcifsumount uninstallscripts uninstalldat uninstallswat uninstallmodules uninstalllibs 
+ 
+ uninstallmo::
+ 	@$(SHELL) $(srcdir)/script/uninstallmo.sh $(DESTDIR) $(LOCALEDIR) $(srcdir)
