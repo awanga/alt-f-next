@@ -15,27 +15,20 @@ You must be confident on the site, the default value is not endorsed."
 CONFF=/var/lib/transmission
 JSON=settings.json
 
-eval $(awk '/"download-dir"/ { \
-		gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2} \
-	/"watch-dir"/ { \
-		gsub(",|\\\\", "", $2); printf "WATCH_DIR=%s;", $2} \
-	/"incomplete-dir"/ { \
-		gsub(",|\\\\", "", $2); printf "INCOMPLETE_DIR=%s;", $2} \
-	/"rpc-enabled"/ { \
-		gsub(",|\\\\", "", $2); printf "ENABLE_WEB=%s;", $2} \
-	/"ratio-limit"/ { \
-		gsub(",|\\\\", "", $2); printf "SEED_RATIO=%s;", $2} \
-	/"ratio-limit-enabled"/ { \
-		gsub(",|\\\\", "", $2); printf "SEED_RATIO_ENABLED=%s;", $2} \
-	/"blocklist-enabled"/ { \
-		gsub(",|\\\\", "", $2); printf "BLOCKLIST_ENABLED=%s;", $2} \
-	/"blocklist-url"/ { \
-		gsub(",|\\\\", "", $2); printf "BLOCKLIST_URL=%s;", $2} \
-	/"idle-seeding-limit-enabled"/ { \
-		gsub(",|\\\\", "", $2); printf "SEED_LIMIT_ENABLED=%s;", $2} \
-	/"idle-seeding-limit"/ { \
-		gsub(",|\\\\", "", $2); printf "SEED_LIMIT=%s;", $2}' \
-	"$CONFF/$JSON")
+parse() {
+	sed -n '/'$1'/s/.*"'$1'": *\(.*\),/\1/p' $CONFF/$JSON | tr -d '"'
+}
+
+WATCH_DIR=$(parse watch-dir)
+WATCH_DIR=$(httpd -e "$WATCH_DIR")
+
+ENABLE_WEB=$(parse rpc-enabled)
+SEED_RATIO=$(parse ratio-limit)
+SEED_RATIO_ENABLED=$(parse ratio-limit-enabled)
+BLOCKLIST_ENABLED=$(parse blocklist-enabled)
+BLOCKLIST_URL=$(parse blocklist-url)
+SEED_LIMIT_ENABLED=$(parse idle-seeding-limit-enabled)
+SEED_LIMIT=$(parse idle-seeding-limit)
 
 if test "$ENABLE_WEB" = "true"; then
 	chkweb="checked"
