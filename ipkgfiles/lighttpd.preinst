@@ -1,0 +1,14 @@
+#!/bin/sh
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+
+if test -e $CONF_LIGHTY; then
+	DAEMON=rclighttpd
+
+	$DAEMON stop
+
+	for i in $(seq 1 30); do
+		if ! $DAEMON status >& /dev/null; then break; fi
+		sleep 1
+	done
+fi
