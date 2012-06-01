@@ -4,7 +4,7 @@ debug=true
 
 if test -n "$debug"; then
 	exec >> /var/log/hot.log 2>&1
-	set -x
+#	set -x
 	echo -e "\nDATE=$(date)"
 	env	
 fi
