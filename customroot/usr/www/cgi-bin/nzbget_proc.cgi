@@ -1,0 +1,147 @@
+#!/bin/sh
+
+. common.sh
+check_cookie
+read_args
+
+#debug
+
+NZBCONF=/etc/nzbget.conf
+NZBWDATA=/opt/nzbgetweb
+NZBWCONF=$NZBWDATA/settings.php
+NZBWCONFT=$NZBWDATA/settings-template.php
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+CONF_LIGHTY2=/etc/lighttpd/modules.conf
+CONF_SSL=/etc/lighttpd/conf.d/ssl.conf
+PHP_CONF=/etc/php.ini
+
+SMBCF=/etc/samba/smb.conf
+
+# this is to disappear after RC3 (included in common.sh)
+# -----------------------------------------------------
+check_folder() {
+	if ! test -d "$1"; then
+		echo "\"$1\" does not exists or is not a folder."
+		return 1
+	fi
+
+	tmp=$(readlink -f "$1")
+	while ! mountpoint -q "$tmp"; do
+		tmp=$(dirname "$tmp")
+	done
+
+	if test "$tmp" = "/" -o "$tmp" = "."; then
+		echo "\"$1\" is not on a filesystem."
+		return 1
+	fi
+
+	if test "$tmp" = "$1"; then
+		echo "\"$1\" is a filesystem root, not a folder."
+		return 1
+	fi
+}
+# ----------------------------------------
+
+sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
+if test "$sroot" = "/Public"; then
+	msg "You have to configure lighttpd first"
+fi
+
+if test -f "$NZBWCONFT" -a ! -f "$NZBWCONF"; then # first time install
+	rm -f "$sroot"/htdocs/nzbgetweb
+	ln -sf $NZBWDATA "$sroot"/htdocs/nzbgetweb
+
+	# nzbgetweb, through php/lighttpd needs to be able to write nzbget.conf file
+	addgroup lighttpd TV
+	chown -R lighttpd:network $NZBWDATA
+	chown nzbget:TV /etc/nzbget*
+	chmod g+w /etc/nzbget*
+	
+	# setup php modules
+	for i in json session; do
+		sed -i "s|^;extension="$i".so|extension="$i".so|" $PHP_CONF
+	done
+
+	#enable php
+	sed -i 's|.*\(include.*fastcgi.conf.*\)|\1|' $CONF_LIGHTY2
+
+	if rclighttpd status >& /dev/null; then
+   	    rclighttpd restart >& /dev/null
+	fi
+fi
+
+if test -n "$submit"; then
+
+	if test -n "$conf_dir"; then
+		conf_dir=$(httpd -d $conf_dir)
+	fi
+
+	if test "$(basename $conf_dir)" = "Public"; then
+		msg "You must create a folder for NZBget." 
+	elif ! res=$(check_folder "$conf_dir"); then
+		msg "$res"
+	fi
+
+	sed -i 's|^$MAINDIR=.*|$MAINDIR='"$conf_dir"'|' $NZBCONF
+
+	mkdir -p "$conf_dir"
+	chown -R nzbget:TV "$conf_dir"
+	chmod g+rwxs "$conf_dir"
+
+	if test -f $NZBWCONF; then
+		NZBT=$NZBWCONF
+	elif test -f $NZBWCONFT; then
+		NZBT=$NZBWCONFT
+	fi
+
+	if test -n "$NZBT"; then
+		sed -i -e "s|^\$NzbDir=.*|\$NzbDir='$conf_dir/nzb';|" \
+			-e "s|^\$CheckSpaceDir.*|\$CheckSpaceDir='$conf_dir';|" $NZBT
+	fi
+
+	if ! grep -q '\[NZBget\]' $SMBCF; then
+		cat <<EOF >> $SMBCF
+
+[NZBget]
+	comment = NZBget download area
+	path = $conf_dir
+	valid users = +TV
+	available = yes
+	read only = yes
+EOF
+	else
+		sed -i "/\[NZBget\]/,/\[.*\]/ { s|path.*|path = $conf_dir|}" $SMBCF
+	fi
+	
+	if rcsmb status >& /dev/null; then
+		rcsmb reload >& /dev/null
+	fi
+
+elif test -n "$webPage"; then
+
+	port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
+	sslport=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
+
+	PROTO="http"
+	PORT=$port
+	if echo $HTTP_REFERER | grep -q 'https://'; then
+		if grep -q '^include.*ssl.conf' $CONF_LIGHTY; then
+			PROTO="https"
+			PORT=$sslport
+		fi
+	fi
+
+	if ! rcnzbget status >& /dev/null; then
+		rcnzbget start >& /dev/null
+	fi
+
+	if ! rclighttpd status >& /dev/null; then
+		rclighttpd start >& /dev/null
+	fi
+
+	embed_page "$PROTO://${HTTP_HOST%%:*}:$PORT/nzbgetweb"
+
+fi
+
+gotopage /cgi-bin/user_services.cgi
