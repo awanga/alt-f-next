@@ -1,0 +1,76 @@
+#! /bin/sh
+
+DESC="NZBGet is a binary newsgrabber for nzb files"
+NAME=nzbget
+TYPE=user
+
+USER=nzbget
+GROUP=TV
+
+CONFF=/etc/nzbget.conf
+LOG_PATH=/var/log/nzbget
+PID_PATH=/var/run/nzbget
+PID_FILE=$PID_PATH/nzbget.pid
+DATA_DIR=$(sed -n '/^$MAINDIR=/s/$MAINDIR=\(.*\)/\1/p' /etc/nzbget.conf)
+
+OPTS="--daemon -c $CONFF"
+
+. $(dirname $0)/common
+
+umask 002
+
+if ! test -d $LOG_PATH; then
+	mkdir -p $LOG_PATH
+	chown $USER:$GROUP $LOG_PATH
+fi
+
+if ! test -d $PID_PATH; then
+	mkdir -p $PID_PATH
+	chown $USER:$GROUP $PID_PATH
+fi
+
+if test -e $PID_FILE; then
+	PID=$(cat $PID_FILE)
+	if ! kill -0 $PID >& /dev/null; then
+		rm $PID_FILE
+	fi
+fi
+
+if test "$DATA_DIR" = "/Public"; then
+	echo "Fail: you have to configure NZBget first."
+	exit 1
+fi
+
+if ! test -d "$DATA_DIR"; then
+	mkdir -p "$DATA_DIR"
+	chown $USER:$GROUP "$DATA_DIR"
+	chmod g+rwxs "$DATA_DIR"
+fi
+
+case "$1" in
+	start) start $NAME --chuid $USER:$GROUP -- $OPTS ;;
+	stop)
+		echo -n "Stopping $NAME: "
+		start-stop-daemon -K -q -o --pidfile $PID_FILE
+		omsg $?
+		;;
+	status)
+		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
+			echo "$NAME running"
+			return 0
+		else
+			echo "$NAME stopped"
+			return 1
+		fi
+		;;
+	restart)
+		echo "Restarting $NAME: "
+		sh $0 stop
+		while sh $0 status >& /dev/null; do echo -n '.'; sleep 1; done
+		sleep 5
+		sh $0 start
+        ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
+exit 0
