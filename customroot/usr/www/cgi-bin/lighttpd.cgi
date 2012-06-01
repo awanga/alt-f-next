@@ -17,11 +17,11 @@ if test $(grep ^server.use-ipv6 $CONF_LIGHTY | cut -d" " -f3) = '"enable"'; then
 	IPV6_CHK="checked"
 fi
 
-sroot=$(grep ^var.server_root $CONF_LIGHTY | cut -d" " -f3)
+sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
 port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
 sslport=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
 
-mktt sroot_tt "Serve files from this directory.<br>
+mktt sroot_tt "Serve files from this folder.<br>
 You have to create one, such as /mnt/sda2/WebData"
 mktt sport_tt "Server port, generaly 80.<br>
 If the Alt-F administrative web server is running on the default 80 port,<br>
@@ -36,8 +36,8 @@ Some clients might require 'http:' or 'https:' instead of 'webdav:'."
 mktt udav_tt "User(s) that can use WebDAV<br>
 If "anyuser" is selected, all valid users will share the same writing area.<br>
 If "anybody" is selected, even guests can write."
-mktt udir_tt "Serve users web pages from them "public_html" home directory."
-mktt dlist_tt "Generate a directory listing on directories without an index file."
+mktt udir_tt "Serve users web pages from them "public_html" home folder."
+mktt dlist_tt "Generate a folder listing on folders without an index file."
 mktt access_tt "Generate server access loggs"
 mktt php_tt "Enable PHP. Due to memory constrains enable only if needed and only the needed modules."
 
@@ -118,7 +118,7 @@ cat<<-EOF
 	</script>
 	<form name="lighttpd" action="/cgi-bin/lighttpd_proc.cgi" method="post">
 	<table>
-	<tr><td>Server root</td><td colspan=3><input type=text style="width:100%;" id=root_id name=sroot value=$sroot $(ttip sroot_tt)></td>
+	<tr><td>Server root</td><td colspan=3><input type=text style="width:100%;" id=root_id name=sroot value="$sroot" $(ttip sroot_tt)></td>
 		<td><input type=button onclick="browse_dir_popup('root_id')" value=Browse></td></tr>
 	<tr><td></td><td></td><td>on port</td><td><input type=text size=2 style="width:100%;" name=port value="$port" $(ttip sport_tt)></td></tr>
 	<tr><td>Enable IPv6</td><td><input type=checkbox $IPV6_DIS $IPV6_CHK name=ipv6 value=yes></td></tr>

@@ -3,12 +3,38 @@
 . common.sh
 check_cookie
 
+# this is to disappear after RC3 (included in common.sh)
+# -----------------------------------------------------
+check_folder() {
+	if ! test -d "$1"; then
+		echo "\"$1\" does not exists or is not a folder."
+		return 1
+	fi
+
+	tmp=$(readlink -f "$1")
+	while ! mountpoint -q "$tmp"; do
+		tmp=$(dirname "$tmp")
+	done
+
+	if test "$tmp" = "/" -o "$tmp" = "."; then
+		echo "\"$1\" is not on a filesystem."
+		return 1
+	fi
+
+	if test "$tmp" = "$1"; then
+		echo "\"$1\" is a filesystem root, not a folder."
+		return 1
+	fi
+}
+# ----------------------------------------
+
 CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
 CONF_LIGHTY2=/etc/lighttpd/modules.conf
 CONF_PHP=/etc/php.ini
 PHP_EDIR=/usr/lib/php5/extensions
 CONF_SSL=/etc/lighttpd/conf.d/ssl.conf
 CONF_AUTH=/etc/lighttpd/conf.d/auth.conf
+SMBCF=/etc/samba/smb.conf
 
 vars="ipv6 ssl auth wdav userdir dirlist accesslog php"
 for i in $vars; do eval $i=no; done
@@ -29,15 +55,14 @@ if test -z "$port"; then port="8080"; fi
 
 if test -n "$sroot"; then sroot=$(httpd -d "$sroot"); fi
 
-if test -z "$sroot" -o "$sroot" = "/mnt"; then
-	msg "You have to create and specify a folder from where web pages will be served.
-A sub-folder named \"htdocs\" will be created for you if it doesn't exists."
+if test "$(basename $sroot)" = "Public"; then
+	msg "You must create a 'Server Root' folder."
 fi
 
-if ! test -d "$sroot"; then
-	msg "Folder \"$sroot\" does not exists"
+if ! res=$(check_folder $sroot); then
+	msg "$res"
 else
-	chown lighttpd "$sroot"
+	chown lighttpd:network "$sroot"
 	chmod og-w "$sroot"
 fi
 
@@ -48,6 +73,20 @@ if ! test -d "$sroot/htdocs"; then
 	echo "<html><body><p>Hello Dolly</body></html>" > "$sroot/htdocs/hello.html"
 	echo "<?php phpinfo(); ?>" > "$sroot/htdocs/hello.php"
 	chmod go-w "$sroot/htdocs/hello.html" "$sroot/htdocs/hello.php"
+fi
+
+if ! grep -q '\[WebData\]' $SMBCF; then
+	cat <<EOF >> $SMBCF
+
+[WebData]
+	comment = Lighttpd area
+	path = $sroot/htdocs
+	public = no 
+	available = yes
+	read only = yes
+EOF
+else
+	sed -i "/\[WebData\]/,/\[.*\]/ { s|path.*|path = $sroot/htdocs|}" $SMBCF
 fi
 
 sed -i 's|^var.server_root.*$|var.server_root = "'$(httpd -d $sroot)'"|' $CONF_LIGHTY
@@ -74,10 +113,11 @@ sed -i 's|.*\(include.*auth.conf.*\)|'$cmt'\1|' $CONF_LIGHTY2
 #webdav
 cmt="#"
 if test "$wdav" = "yes"; then
-	if ! test -d "$sroot/htdocs/webdav"; then
-		mkdir -p "$sroot/htdocs/webdav"
-		chown lighttpd:network "$sroot/htdocs/webdav"
-		chmod og-w "$sroot/htdocs/webdav"
+	wdavd="$sroot/htdocs/webdav"
+	if ! test -d "$wdavd"; then
+		mkdir -p "$wdavd"
+		chown lighttpd:network "$wdavd"
+		chmod og-w "$wdavd"
 	fi
 	cmt=""
 fi
@@ -114,6 +154,7 @@ if test "$php" = "yes"; then
 	if test -z "$php_maxupload"; then php_maxupload="10M"; fi
 
 	sed -i 's|.*upload_max_filesize.*|upload_max_filesize = '$(httpd -d $php_maxupload)'|' $CONF_PHP
+	sed -i 's|.*post_max_size.*|post_max_size = '$(httpd -d $php_maxupload)'|' $CONF_PHP
 	for i in $(ls $PHP_EDIR); do
 		bi=$(basename $i .so)
 		cmt=";"
@@ -127,4 +168,4 @@ if rclighttpd status >& /dev/null; then
 fi
 
 #enddebug
-gotopage /cgi-bin/lighttpd.cgi
+gotopage /cgi-bin/net_services.cgi
