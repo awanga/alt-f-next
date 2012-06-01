@@ -6,3 +6,4 @@ addgroup -S -g 81 network
 adduser -S -g "Lighttpd daemon" -G network -u 35 -h $LIGHTYHOME lighttpd
 
 ln -sf /usr/sbin/rcscript /sbin/rclighttpd
+

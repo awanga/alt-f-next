@@ -2,4 +2,4 @@
 
 deluser lighttpd
 delgroup network
-rm -rf /sbin/rclighttpd /var/log/lighttpd
+rm -rf /sbin/rclighttpd /var/log/lighttpd /etc/lighttpd/lighttpd-digest.use
