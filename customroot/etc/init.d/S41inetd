@@ -10,8 +10,10 @@ REQUIREDBY="stunnel inetd" # don't allow inetd to be stopped
 
 . $(dirname $0)/common
 
+#set -x
+
 check() {
-	if ! grep -q -e "\(^#$1\|^$1\)" $CONFF; then
+	if ! grep -q "\(^#$1[[:space:]]\|^$1[[:space:]]\)" $CONFF; then
 		echo "$NAME: service $1 does not exists"
 		return 1
 	fi
@@ -21,9 +23,9 @@ check() {
 enable() {
 	for i in $*; do
 		if ! check $i; then continue; fi
-		if grep -q -e "^#$i" $CONFF; then
+		if grep -q "^#$i[[:space:]]" $CONFF; then
 			if test "$i" = "printer"; then modprobe usblp; fi
-			sed -i s/^#$i/$i/ $CONFF
+			sed -i "s/^#$i[[:space:]]/$i\\t/" $CONFF
 			avahi add $i
 		fi
 	done
@@ -33,9 +35,9 @@ enable() {
 disable() {
 	for i in $*; do
 		if ! check $i; then continue; fi
-		if grep -q -e "^$i" $CONFF; then
+		if grep -q "^$i[[:space:]]" $CONFF; then
 			if test "$i" = "printer"; then modprobe -r usblp; fi
-			sed -i s/^$i/#$i/ $CONFF
+			sed -i "s/^$i[[:space:]]/#$i\\t/" $CONFF
 			avahi remove $i
 		fi
 	done
@@ -44,7 +46,7 @@ disable() {
 
 avahi_add() {
 	for i in $AVAHI_SRV; do
-		if grep -q -e "^$i" $CONFF; then
+		if grep -q "^$i[[:space:]]" $CONFF; then
 			avahi add $i
 		fi
 	done
