@@ -1,0 +1,11 @@
+#/bin/sh
+ 
+NZBWDATA=/Alt-F/opt/nzbgetweb
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+
+# get lighttpd server root
+sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
+
+rm -rf $NZBWDATA $sroot/htdocs/nzbgetweb 
+
+delgroup lighttpd TV

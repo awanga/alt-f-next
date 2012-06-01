@@ -1,0 +1,13 @@
+#!/bin/sh
+
+NZBCONF="/etc/nzbget*.conf"
+NZBHOME=/var/lib/nzbget
+
+ln -s /usr/sbin/rcscript /sbin/rcnzbget
+
+addgroup -S -g 200 TV
+adduser -S -g "NZBget user" -G TV -u 21 -h $NZBHOME nzbget
+
+chown -R nzbget:TV $NZBCONF
+chmod g+rw $NZBCONF
+

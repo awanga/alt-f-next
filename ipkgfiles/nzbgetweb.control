@@ -1,0 +1,9 @@
+Package: nzbgetweb
+Description: The NZBget web interface
+Version: 1.5
+Depends: nzbget,php,lighttpd,ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://nzbget.sourceforge.net
+Maintainer: jcard

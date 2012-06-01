@@ -1,0 +1,7 @@
+./etc/init.d/S81nzbget
+./etc/nzbget.conf
+./etc/nzbget-pp.conf
+./usr/bin/nzbget
+./usr/bin/nzbget-pp.sh
+./usr/www/cgi-bin/nzbget.cgi
+./usr/www/cgi-bin/nzbget_proc.cgi

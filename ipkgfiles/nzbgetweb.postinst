@@ -1,0 +1,32 @@
+#!/bin/sh
+
+SITE=http://sourceforge.net/projects/nzbget/files/web-interface-stable/1.5
+TBALL=nzbgetweb-1.5.zip
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo "******************************************************"
+	echo "* Downloading of NZBgetweb from its homesite failed. *"
+	echo "******************************************************"
+	exit 1
+fi
+
+mkdir -p /Alt-F/opt
+if ! unzip /tmp/$TBALL -d /Alt-F/opt >& /dev/null; then
+	rm -f /tmp/$TBALL
+	echo "***********************************"
+	echo "* Extraction of NZBgetweb failed. *"
+	echo "***********************************"
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+NZBWDATA=/Alt-F/opt/nzbgetweb
+NZBWCONF=$NZBWDATA/settings-template.php
+
+sed -i -e "s/^\$ServerPassword=.*/\$ServerPassword='';/" \
+	-e "s|^\$ServerConfigFile=.*|\$ServerConfigFile='/etc/nzbget.conf';|" \
+	-e "s|^\$ServerConfigTemplate=.*|\$ServerConfigTemplate='/etc/nzbget-example.conf';|" \
+	-e "s|^\$WebPassword.*|\$WebPassword = '';|" \
+	-e "s|^\$PostProcessConfigFile.*|\$PostProcessConfigFile='/etc/nzbget-pp.conf';|" \
+	-e "s|^\$PostProcessConfigTemplate.*|\$PostProcessConfigTemplate='/etc/nzbget-pp-example.conf';|" $NZBWCONF
