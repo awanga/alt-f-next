@@ -15,42 +15,8 @@ You must be confident on the site, the default value is not endorsed."
 CONFF=/var/lib/transmission
 JSON=settings.json
 
-parse() {
-	sed -n '/'$1'/s/.*"'$1'": *\(.*\),/\1/p' $CONFF/$JSON | tr -d '"'
-}
-
-WATCH_DIR=$(parse watch-dir)
+WATCH_DIR=$(sed -n '/watch-dir/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF/$JSON)
 WATCH_DIR=$(httpd -e "$WATCH_DIR")
-
-ENABLE_WEB=$(parse rpc-enabled)
-SEED_RATIO=$(parse ratio-limit)
-SEED_RATIO_ENABLED=$(parse ratio-limit-enabled)
-BLOCKLIST_ENABLED=$(parse blocklist-enabled)
-BLOCKLIST_URL=$(parse blocklist-url)
-SEED_LIMIT_ENABLED=$(parse idle-seeding-limit-enabled)
-SEED_LIMIT=$(parse idle-seeding-limit)
-
-if test "$ENABLE_WEB" = "true"; then
-	chkweb="checked"
-fi
-
-if test "$SEED_RATIO_ENABLED" = "true"; then
-	chkratio="checked"
-fi
-
-if test "$SEED_LIMIT_ENABLED" = "true"; then
-	chklimit="checked"
-fi
-
-if test "$BLOCKLIST_ENABLED" = "true"; then
-	chkblock="checked"
-fi
-
-webbutton="enabled"
-rctransmission status >& /dev/null
-if test $? != 0 -o "$ENABLE_WEB" = "false" ; then
-	webbutton="disabled"
-fi
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -61,45 +27,17 @@ cat<<-EOF
 			window.open("browse_dir.cgi?id=" + input_id + "?browse=" + start_dir, "Browse", "scrollbars=yes, width=500, height=500");
 			return false;
 		}
-	function edisable(chk, but, st) {
-		if (st == "disabled")
-			return;
-		if (document.getElementById(chk).checked == true)
-			document.getElementById(but).disabled = false;
-		else
-			document.getElementById(but).disabled = true;
-		}
 	</script>
 
-	<form name=transmission action=transmission_proc.cgi method="post" >
+	<form name=transmission action=transmission_proc.cgi method="post">
 	<table><tr>
 	<td>Transmission directory</td>
 		<td><input type=text size=32 id=watch_dir name=WATCH_DIR value="$WATCH_DIR" $(ttip trdir_tt)>
-		<td><input type=button onclick="browse_dir_popup('watch_dir')" value=Browse></td>
+		<td><input type=button onclick="browse_dir_popup('watch_dir')" value="Browse"></td>
 		</tr>
-
-	<tr><td>Stop seeding</td>
-		<td><input type=checkbox id="seedcheck" $chkratio name="SEED_RATIO_ENABLED" value="true" onclick="edisable('seedcheck','seedentry')">
-		&ensp;when upload/download ratio is</td>
-		<td><input type=text id="seedentry" size=3 name=SEED_RATIO value="$SEED_RATIO"></td>
-		</tr>
-
-	<tr><td>Stop seeding</td>
-		<td><input type=checkbox id="limitcheck" $chklimit name="SEED_LIMIT_ENABLED" value="true" onclick="edisable('limitcheck','limitentry')">
-		&ensp;after downloading completes</td>
-		<td><input type=text id="limitentry" size=3 name=SEED_LIMIT value="$SEED_LIMIT">&ensp;min</td>
-		</tr>
-
-	<tr><td>Enable blocklist</td>
-		<td><input type=checkbox id="blockcheck" $chkblock name="BLOCKLIST_ENABLED" value="true" onclick="edisable('blockcheck','blockentry')">
-		&ensp;blocklist download url</td>
-		<td><input type=text id="blockentry" size=30 name=BLOCKLIST_URL value="$BLOCKLIST_URL" $(ttip block_tt)></td>
-		</tr>
-
-	<tr><td>Enable web page</td><td><input type=checkbox id="webcheck" $chkweb name="ENABLE_WEB" value="true" onclick="edisable('webcheck','webbut', '$webbutton')"></td></tr>
-	<tr><td></td><td><input type=submit value=Submit>
+	<tr><td></td><td><input type=submit name=submit value="Submit">
 		$(back_button)
-		<input type="submit" id="webbut" $webbutton name=webPage value="WebPage"> 
+		<input type=submit name=webPage value="WebPage"> 
 	</td></tr>
 	</table></form></body></html>
 EOF

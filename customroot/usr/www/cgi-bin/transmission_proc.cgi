@@ -9,89 +9,99 @@ JSON=settings.json
 SMBCONF=/etc/samba/smb.conf
 
 TRANSMISSION_USER=transmission
-TRANSMISSION_GROUP=network
+TRANSMISSION_GROUP=BT
 
 #debug
+# this is to disappear after RC3 (included in common.sh)
+# -----------------------------------------------------
+check_folder() {
+	if ! test -d "$1"; then
+		echo "\"$1\" does not exists or is not a folder."
+		return 1
+	fi
+
+	tmp=$(readlink -f "$1")
+	while ! mountpoint -q "$tmp"; do
+		tmp=$(dirname "$tmp")
+	done
+
+	if test "$tmp" = "/" -o "$tmp" = "."; then
+		echo "\"$1\" is not on a filesystem."
+		return 1
+	fi
+
+	if test "$tmp" = "$1"; then
+		echo "\"$1\" is a filesystem root, not a folder."
+		return 1
+	fi
+}
+# ----------------------------------------
 
 if test -n "$WebPage"; then
-	embed_page "http://${HTTP_HOST%%:*}:9091"
-fi
+	if ! rctransmission status >& /dev/null; then
+		rctransmission start  >& /dev/null
+	fi
+	
+	rpc_port=$(sed -n 's/.*"rpc-port":[[:space:]]*\([[:digit:]]*\).*/\1/p' $CONFF/$JSON)
+	embed_page "http://${HTTP_HOST%%:*}:${rpc_port}"
 
-if test -z "$WATCH_DIR"; then
-	msg "You must specify the directory where to Download."
-fi
+elif test -n "$Submit"; then
 
-WATCH_DIR=$(httpd -d "$WATCH_DIR")
-INCOMPLETE_DIR="$WATCH_DIR/InProgress"
-DOWNLOAD_DIR="$WATCH_DIR/Finished"
+	if test -n "$WATCH_DIR"; then
+		WATCH_DIR=$(httpd -d "$WATCH_DIR")
+	fi
 
-if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
-	mkdir -p "$DOWNLOAD_DIR" "$WATCH_DIR" "$INCOMPLETE_DIR"
-fi
+	if test "$(basename $WATCH_DIR)" = "Public"; then
+		msg "You must create a folder for Transmission." 
+	elif ! res=$(check_folder "$WATCH_DIR"); then
+		msg "$res"
+	fi
 
-chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$DOWNLOAD_DIR" "$INCOMPLETE_DIR" "$WATCH_DIR"
-chmod a+rw "$DOWNLOAD_DIR" "$INCOMPLETE_DIR" "$WATCH_DIR"
+	INCOMPLETE_DIR="$WATCH_DIR/InProgress"
+	DOWNLOAD_DIR="$WATCH_DIR/Finished"
 
-if test -z "$ENABLE_WEB"; then
-	ENABLE_WEB=false
-fi
+	if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
+		mkdir -p "$DOWNLOAD_DIR" "$WATCH_DIR" "$INCOMPLETE_DIR"
+	fi
 
-if test -z "$SEED_RATIO_ENABLED"; then
-	SEED_RATIO_ENABLED=false
-	SEED_RATIO=2
-fi
+	chown -R $TRANSMISSION_USER:$TRANSMISSION_GROUP "$WATCH_DIR"
+	chmod -R g+rws "$WATCH_DIR"
 
-if test -z "$SEED_LIMIT_ENABLED"; then
-	SEED_LIMIT_ENABLED=false
-	SEED_LIMIT=30
-fi
+	# escape sed special char '&' and '|' delimiter on pathnames
+	EWATCH_DIR=$(echo "$WATCH_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
+	EDOWNLOAD_DIR=$(echo "$DOWNLOAD_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
+	EINCOMPLETE_DIR=$(echo "$INCOMPLETE_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
 
-if test -z "$BLOCKLIST_ENABLED"; then
-	BLOCKLIST_ENABLED=false
-	BLOCKLIST_URL="http://www.bluetack.co.uk/config/level1.gz"
-else
-	BLOCKLIST_URL=$(httpd -d $BLOCKLIST_URL)
-fi
-
-# escape sed special char '&' and '|' delimiter on pathnames
-EWATCH_DIR=$(echo "$WATCH_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
-EDOWNLOAD_DIR=$(echo "$DOWNLOAD_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
-EINCOMPLETE_DIR=$(echo "$INCOMPLETE_DIR" | sed 's|\([]\&\|[]\)|\\\1|g')
-
-sed -i -e 's|.*"download-dir":.*|    "download-dir": "'"$EDOWNLOAD_DIR"'",|' \
+	sed -i -e 's|.*"download-dir":.*|    "download-dir": "'"$EDOWNLOAD_DIR"'",|' \
 	-e 's|.*"incomplete-dir":.*|    "incomplete-dir": "'"$EINCOMPLETE_DIR"'",|' \
 	-e 's|.*"watch-dir":.*|    "watch-dir": "'"$EWATCH_DIR"'",|' \
-	-e 's|.*"rpc-enabled":.*|    "rpc-enabled": '$ENABLE_WEB',|' \
-	-e 's|.*"ratio-limit-enabled":.*|    "ratio-limit-enabled": '$SEED_RATIO_ENABLED',|' \
-	-e 's|.*"ratio-limit":.*|    "ratio-limit": '$SEED_RATIO',|' \
-	-e 's|.*"idle-seeding-limit-enabled":.*|    "idle-seeding-limit-enabled": '$SEED_LIMIT_ENABLED',|' \
-	-e 's|.*"idle-seeding-limit":.*|    "idle-seeding-limit": '$SEED_LIMIT',|' \
-	-e 's|.*"blocklist-enabled":.*|    "blocklist-enabled": '$BLOCKLIST_ENABLED',|' \
-	-e 's|.*"blocklist-url":.*|    "blocklist-url": "'$BLOCKLIST_URL'",|' \
 	"$CONFF/$JSON"
 
-chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
+	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
-if ! grep -q "^\[Transmission\]" $SMBCONF; then
-	cat<<EOF >> $SMBCONF
+	if ! grep -q "^\[Transmission\]" $SMBCONF; then
+		cat<<EOF >> $SMBCONF
 
 [Transmission]
 	comment = Transmission Download area
 	path = $WATCH_DIR
-	public = yes
+	valid users = +BT
 	read only = no
 	available = yes
 EOF
 
+	else
+		sed -i "/\[Transmission\]/,/\[.*\]/ { s|path.*|path = $WATCH_DIR|}" $SMBCONF
+	fi
+
 	if rcsmb status >& /dev/null; then
 		rcsmb reload >& /dev/null
 	fi
+
+	if rctransmission status >& /dev/null; then
+		rctransmission reload >& /dev/null
+	fi
+
+	#enddebug
+	gotopage /cgi-bin/user_services.cgi
 fi
-
-if rctransmission status >& /dev/null; then
-	rctransmission reload >& /dev/null
-fi
-
-#enddebug
-gotopage /cgi-bin/user_services.cgi
-

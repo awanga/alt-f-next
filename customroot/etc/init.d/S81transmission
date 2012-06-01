@@ -10,15 +10,31 @@ REQUIREDBY="automatic"
 CONFF=/var/lib/transmission
 JSON=settings.json
 
-OPTS="--logfile /var/log/transmission.log --config-dir=$CONFF -x /var/run/transmission.pid"
+LOGDIR=/var/log/transmission
+LOGFILE=$LOGDIR/transmission.log
+
+PIDDIR=/var/run/transmission
+PIDFILE=$PIDDIR/transmission.pid
+
+OPTS="--logfile $LOGFILE --pid-file $PIDFILE --config-dir=$CONFF"
 
 TRANSMISSION_USER=transmission
-TRANSMISSION_GROUP=network
+TRANSMISSION_GROUP=BT
 
 # special flag to start-stop-daemon
 START_STOP=-x
 
 . $(dirname $0)/common
+
+if ! test -d $LOGDIR; then
+	mkdir -p $LOGDIR
+	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP $LOGDIR
+fi
+
+if ! test -d $PIDDIR; then
+	mkdir -p $PIDDIR
+	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP $PIDDIR
+fi
 
 case "$1" in
 	start)
@@ -38,9 +54,10 @@ case "$1" in
 		network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
 		sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
 			"$CONFF/$JSON"
+
 		chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
-		start $NAME -- $OPTS
+		start $NAME --chuid $TRANSMISSION_USER:$TRANSMISSION_GROUP -- $OPTS
 		;;
 
 	stop) stop $NAME ;;
