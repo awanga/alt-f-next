@@ -231,7 +231,7 @@ echo -n "$msg disk ${dsk} in $bay bay... "
 cd /dev
 
 ret=0
-for i in /dev/${dsk}?; do
+for i in /dev/${dsk}*; do
     ACTION=$action DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh >/dev/null 2>&1
     ret=$(($ret + $?))
 done
