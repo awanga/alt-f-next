@@ -5,10 +5,18 @@ check_cookie
 read_args
 
 wdir=$(httpd -d "$newdir")
+wdir=$(echo "$wdir" | sed -n 's/^ *//;s/ *$//p')
 bdir=$(dirname "$wdir")
-nbdir=$(echo "$bdir" | sed 's|\([]\&\|[]\)|\\\1|g')
+#nbdir=$(echo "$bdir" | sed 's|\([\&\|]\)|\\\1|g')
+nbdir=$(urlencode "$bdir")
+
+#echo -e "$0: HTTP_REFERER=$HTTP_REFERER\nnbdir=$nbdir" >> /tmp/foo
 
 #debug
+
+if ! echo "$wdir" | grep -q '^/mnt'; then
+	msg "Only operations on /mnt sub-folders are allowed"
+fi
 
 if test -n "$srcdir"; then
 	srcdir=$(httpd -d "$srcdir")
@@ -32,7 +40,7 @@ elif test -n "$DeleteDir"; then
 		if test $? != 0; then
 			msg "$res"
 		fi
-		HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
+		HTTP_REFERER=$(echo "$HTTP_REFERER" | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
 	else
 		msg "Can't delete, folder $wdir does not exists."
 	fi
@@ -87,9 +95,9 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	if test $st != 0; then
 		msg "$res"
 	fi
-	
-	HTTP_REFERER=$(echo $HTTP_REFERER | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
-	js_gotopage $HTTP_REFERER
+msg "continue"
+	HTTP_REFERER=$(echo "$HTTP_REFERER" | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
+	js_gotopage "$HTTP_REFERER"
 	echo "</body></html>"
 	exit 0
 
@@ -105,12 +113,17 @@ elif test -n "$Permissions"; then
 		optf="-type d"
 	fi
 
-	find "$wdir" $optr $optf -exec chown "${nuser}:${ngroup}" {} \;
-	find "$wdir" $optr $optf -exec chmod u=$p2$p3$p4,g=$p5$p6$p7,o=$p8$p9$p10 {} \;
+	if test -n "$setgid"; then
+		setgid="s"
+	fi
 
-	HTTP_REFERER="$(httpd -d $goto)"
+	find "$wdir" $optr $optf -exec chown "${nuser}:${ngroup}" {} \;
+	find "$wdir" $optr $optf -exec chmod u=$p2$p3$p4,g=$p5$p6$p7$setgid,o=$p8$p9$p10 {} \;
+
+	HTTP_REFERER=$(httpd -d "$goto")
 fi
 
 #enddebug
+#echo -e "$0: HTTP_REFERER2=$HTTP_REFERER" >> /tmp/foo
 gotopage "$HTTP_REFERER"
 

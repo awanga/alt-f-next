@@ -26,6 +26,7 @@ else
 fi
 
 browse="$(httpd -d $browse)"
+esc_browse=$(httpd -e "$browse")
 
 # get the fs type
 tmp="$browse"
@@ -52,7 +53,7 @@ if test "$?" = 1; then
 	echo "<h3>Warning: Folder base must be /mnt</h3>"
 	browse="/mnt"
 elif ! test -d "$browse"; then
-	echo "<h3>Warning: Folder \"$browse\" does not exists.</h3>"
+	echo "<h3>Warning: Folder \"$esc_browse\" does not exists.</h3>"
 	browse="/mnt"
 fi
 
@@ -62,6 +63,8 @@ eval $(ls -ldL "$browse" | awk '{
 		key = substr($1,i,1)
 		if (key == "r" || key == "w" || key == "x" || key == "s")
 			printf "p%d=checked; ", i
+		if ((key == "s" || key == "S") && i == 7)
+			print "GIDCHK=checked"
 	}
 }')
 
@@ -86,7 +89,7 @@ IFS="$OIFS"
 
 cat <<-EOF
 	<form action="/cgi-bin/dir_proc.cgi" method="post">
-	<table><!--caption><h3>$browse</h3></caption-->
+	<table>
 	<tr align=center><th colspan=2 align=left><em>$(basename "$browse"):</em></th><th>Can Read</th><th>Can Write</th><th>Can Browse</th></tr>
 	<tr align=center>
 		<td align=left><strong>Owner</strong></td>
@@ -108,12 +111,13 @@ cat <<-EOF
 		<td><input type=checkbox $p10 name=p10 value="x"></td>
 	</tr>
 	<tr><td><br></td></tr>
+	<tr><td colspan=2>Make new files/folders inherit the group ownership</td><td><input type=checkbox $GIDCHK name=setgid value=yes></td></tr>
 	<tr><td colspan=2>Apply recursively to sub-folders</td><td><input type=checkbox name=recurse value=yes></td></tr>
 	<tr><td colspan=2>Apply also to files</td><td><input type=checkbox name=toFiles value=yes></td></tr>
 	<tr><td><br></td></tr>
 	<tr><td></td><td colspan=2>$(back_button)<input type=submit name=Permissions value="Submit"></td></tr>
 	</table>
-	<input type=hidden name=newdir value="$browse">
+	<input type=hidden name=newdir value="$esc_browse">
 	<input type=hidden name=goto value="$HTTP_REFERER">
 	</form></body></html>
 EOF

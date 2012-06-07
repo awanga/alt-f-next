@@ -30,6 +30,11 @@ Having the read but not the browse permissions allows one to access
 (read) a file if one knows its name, even if one could not obtain the
 folder listing. 
 
+<p>A folder can also have what is called a "set-group-ID" flag; when that flag is set,
+new files or folders created in it will belong to the folder owner, i.e, they will
+inherit group ownership. This flag, if set, will be automaticaly set to new sub-folders.<br>
+If the "Make new files/folders inherit the group ownership" checkbox is checked, this flag will be set.
+
 <p>Supose that you have a folder that belongs to user Alice and group
 Video.<br>
 
@@ -47,5 +52,9 @@ delete and create files on it.<br>
 
 If none of the "other users" permissions are set, than Dave can not even
 browse the folder.<br>
+
+If the folder has the "set-group-ID" flag set and Bob creates a new file on
+it, the new file will belong to the Video group, and not to the group
+that Bob belongs to.
 
 <br><button type=button onclick="history.back()">Back</button></body>
