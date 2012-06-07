@@ -78,6 +78,28 @@ checkname() {
 	echo "$1" | grep -v -q -e '^[^a-zA-Z]' -e '[^a-zA-Z0-9-].*'
 }
 
+check_folder() {
+	if ! test -d "$1"; then
+		echo "\"$1\" does not exists or is not a folder."
+		return 1
+	fi
+
+	tmp=$(readlink -f "$1")
+	while ! mountpoint -q "$tmp"; do
+		tmp=$(dirname "$tmp")
+	done
+
+	if test "$tmp" = "/" -o "$tmp" = "."; then
+		echo "\"$1\" is not on a filesystem."
+		return 1
+	fi
+
+	if test "$tmp" = "$1"; then
+		echo "\"$1\" is a filesystem root, not a folder."
+		return 1
+	fi
+}
+
 eatspaces() {
 	echo "$*" | tr -d ' \t'
 }
@@ -143,7 +165,8 @@ html_header() {
 		Content-Type: text/html; charset=UTF-8
 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html style="height: 100%;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style type="text/css">html { height: 100%; }</style>
 		<title>$1</title></head><body style="height: 100%; font-family: arial,verdana">
 	EOF
 }
@@ -375,7 +398,12 @@ check_cookie() {
 		fi
 		rm /tmp/cookie
 	fi
-	gotopage /cgi-bin/login.cgi?$REQUEST_URI
+	html_header
+	cat<<-EOF
+		<script type="text/javascript">
+			parent.frames.content.location.assign("/cgi-bin/login.cgi?$REQUEST_URI")
+		</script></body></html>
+	EOF
 }
 
 busy_cursor_start() {
@@ -620,6 +648,8 @@ cat<<EOF
 	</script>
 
 	<style type="text/css">
+	html { height:95%; }
+
 	a.Menu, div.Menu {
 		display: block;
 		width: 100px;
@@ -662,11 +692,12 @@ EOF
 
 # args: title [onload action]
 write_header() {
+	HTML_HEADER_DONE="yes"
 	cat<<-EOF
 		Content-Type: text/html; charset=UTF-8
 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html style="height: 95%;"><head>
+		<html><head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	EOF
 
