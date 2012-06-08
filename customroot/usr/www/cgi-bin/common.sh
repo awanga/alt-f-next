@@ -402,8 +402,10 @@ check_cookie() {
 	cat<<-EOF
 		<script type="text/javascript">
 			parent.frames.content.location.assign("/cgi-bin/login.cgi?$REQUEST_URI")
+			parent.frames.nav.location.assign("/cgi-bin/index.cgi")
 		</script></body></html>
 	EOF
+	exit 0
 }
 
 busy_cursor_start() {

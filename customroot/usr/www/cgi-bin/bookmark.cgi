@@ -36,7 +36,8 @@ elif test -n "$rm"; then
 	html_header
 	cat<<-EOF
 		<script type="text/javascript">
-		location.assign("/cgi-bin/index.cgi")
+		parent.frames.nav.location.assign("/cgi-bin/index.cgi")
+		parent.frames.content.location.assign("$url")
 		</script>
 	EOF
 fi
