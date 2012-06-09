@@ -454,11 +454,15 @@ wait_count_stop() {
 
 # use an iframe to embed apps own webpages
 # FIXME, iframe height!
-# $1=url to open
+# $1=url to open, $2=page title
 embed_page() {
 	write_header ""
 
 	cat<<-EOF
+		<form name=embedf action="" method="">
+		<input type=hidden name=ifsrc value="$1">
+		<input type=hidden name=ifname value="$2">
+		</form>
 		<iframe src="$1" width="100%" height="95%" frameborder="0" scrolling="auto"></iframe>
 		</body></html>
 	EOF
@@ -607,6 +611,37 @@ cat<<EOF
 EOF
 }
 
+bookmf() {
+cat<<EOF
+	<script type="text/javascript">
+		function addbookmark() {
+			if (parent.content.embedf != null) {
+				title = parent.content.embedf.ifname.value
+				url = parent.content.embedf.ifsrc.value
+			} else {
+				title = parent.content.document.title
+				url = parent.content.window.location.pathname
+			}
+			location.assign("/cgi-bin/bookmark.cgi?add=" + title + "&url=" + url)
+			return false
+		}
+		function rmbookmark() {
+			location.assign("/cgi-bin/bookmark.cgi?rm=" + parent.content.document.title +
+				 "&url=" + parent.content.window.location.pathname)
+			return false
+		}
+		function rmall() {
+			if (parent.content.embedf != null)
+				url = parent.content.embedf.ifsrc.value
+			else
+				url = parent.content.window.location.pathname
+			location.assign("/cgi-bin/bookmark.cgi?rm=all&url=" + url)
+			return false
+		}
+	</script>
+EOF
+}
+
 menu_setup() {
 cat<<EOF
 	<script type="text/javascript">
@@ -689,7 +724,15 @@ EOF
 	for i in Setup Disk Services Packages System; do
 		fill_menu $i
 	done
-	echo "<td><a class=\"Menu\" href=\"/cgi-bin/bookmark.cgi?add=$1&amp;url=$2\" target=\"content\">Bookmark</a></td></tr></table>"
+
+cat<<EOF
+	<td><div id="Bookmark" class="Menu">Bookmark</div><div id="Bookmark_sub">
+	<a class="Menu" href="" onclick="return addbookmark()">Add</a>
+	<a class="Menu" href="" onclick="return rmbookmark()">Remove</a>
+	<a class="Menu" href="" onclick="return rmall()">Remove All</a>
+	</div><script type="text/javascript">MenuEntry("Bookmark")</script></td>
+	</tr></table>
+EOF
 }
 
 # args: title [onload action]
@@ -727,6 +770,7 @@ write_header() {
 		$(menu_setup)
 		$(tooltip_setup)
 		$(drawbargraph_setup)
+		$(bookmf)
 		</head>
 		<body style="height: 95%; font-family: arial,verdana" $act>
 		$(menu_setup2 "$1" "/cgi-bin/$0") 

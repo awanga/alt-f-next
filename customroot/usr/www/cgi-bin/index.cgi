@@ -27,22 +27,14 @@ cat<<-EOF
 		text-decoration: none;
 	}	
 	</style><title>Index</title></head><body style="font-family: arial,verdana">
-	<script type="text/javascript">
-		function addbookmark() {
-			location.assign("/cgi-bin/bookmark.cgi?add=" + parent.content.document.title +
-				 "&url=" + parent.content.window.location.pathname)
-		}
-		function rmbookmark() {
-			location.assign("/cgi-bin/bookmark.cgi?rm=" + parent.content.document.title +
-				 "&url=" + parent.content.window.location.pathname)
-		}
-	</script>
+	$(bookmf)
 EOF
 
 if test -s bookmarks.html; then
 	echo "<p class=\"Menu\">Bookmarks</p>"
 	cat bookmarks.html
 	echo "<button type=button onClick=\"rmbookmark()\">Remove Current</button>"
+	echo "<button type=button onClick=\"rmall()\">Remove All</button>"
 	echo "<p class=\"Menu\">Menu</p>"
 fi
 

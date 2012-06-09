@@ -28,9 +28,14 @@ elif test -n "$add"; then
 	EOF
 
 elif test -n "$rm"; then
+
 	title=$(httpd -d $rm)
 	if test -n "$title"; then
-		sed -i "\|$title|d" bookmarks.html
+		if test "$title" = "all"; then
+			echo -n > bookmarks.html
+		else
+			sed -i "\|$title|d" bookmarks.html
+		fi
 	fi
 
 	html_header
