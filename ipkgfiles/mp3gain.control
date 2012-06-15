@@ -1,0 +1,9 @@
+Package: mp3gain
+Description: MP3Gain analyzes and adjusts mp3 files so that they have the same volume
+Version: 1.5.2
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://mp3gain.sourceforge.net
+Maintainer: jcard
