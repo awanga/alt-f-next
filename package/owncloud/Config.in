@@ -1,0 +1,8 @@
+config BR2_PACKAGE_OWNCLOUD
+	bool "owncloud"
+	select BR2_PACKAGE_PHP
+	select BR2_PACKAGE_LIGHTTPD
+	help
+	  ownCloud enables universal access to files through the WebDAV standard
+
+	  http://www.owncloud.org
