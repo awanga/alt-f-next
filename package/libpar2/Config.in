@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBPAR2
+	bool "libpar2"
+	select BR2_PACKAGE_LIBSIGCPP
+	help
+	  Parity Archive Volume recovery of multi-part archives on Usenet
+
+	  http://parchive.sourceforge.net
