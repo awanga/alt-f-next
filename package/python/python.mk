@@ -107,7 +107,7 @@ $(PYTHON_DIR)/.patched: $(PYTHON_DIR)/.unpacked
 
 $(PYTHON_DIR)/.hostpython: $(PYTHON_DIR)/.patched
 	(cd $(PYTHON_DIR); rm -rf config.cache; \
-		./configure --prefix=/usr --libdir=/usr/lib --sysconfdir=/etc --enable-shared; \
+		./configure --prefix=/usr --libdir=/usr/lib --sysconfdir=/etc --disable-shared; \
 		$(MAKE) python Parser/pgen; \
 		mv python hostpython;  \
 		mv Parser/pgen Parser/hostpgen; \
