@@ -1,0 +1,9 @@
+config BR2_PACKAGE_NZBGETWEB
+	bool "nzbgetweb"
+	select BR2_PACKAGE_NZBGET
+	select BR2_PACKAGE_PHP
+	select BR2_PACKAGE_LIGHTTPD
+	help
+	  NZBGetweb is a web interface to NZBget
+
+	  http://nzbget.sourceforge.net
