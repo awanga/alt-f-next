@@ -4,7 +4,7 @@
 #
 #############################################################
 
-PHP_VERSION = 5.4.0
+PHP_VERSION = 5.4.4
 PHP_SITE = http://www.php.net/distributions
 PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
 PHP_INSTALL_STAGING = YES
@@ -62,6 +62,7 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_FILEINFO),y)
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SNMP),y)
+	# when using /usr/lib/libnetsnmp.so.20.0.1 lots of tests fail
 	PHP_CONF_OPT += --with-snmp=shared,$(STAGING_DIR)/usr
 	PHP_DEPENDENCIES += netsnmp
 endif
@@ -104,7 +105,8 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_OPENSSL),y)
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_LIBXML2),y)
-	PHP_CONF_OPT += --enable-libxml=shared --enable-xml=shared \
+	PHP_CONF_OPT += --enable-libxml=shared \
+		--enable-xml=shared \
 		--enable-xmlreader=shared \
 		--enable-xmlwriter=shared
 	PHP_DEPENDENCIES += libxml2
@@ -179,28 +181,27 @@ endif
 # so, don't use --with*sqlite=shared,$(STAGING_DIR)/usr
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE),y)
-	PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_ENABLE_UNLOCK_NOTIFY"
+	#PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_ENABLE_UNLOCK_NOTIFY"
 	PHP_CONF_OPT += --with-sqlite3=shared
 endif
 
 ### PDO
 # see above comment regarding sqlite
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO),y)
-	PHP_CONF_OPT += --enable-pdo=shared
-ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
-ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
-	PHP_CONF_OPT += --with-pdo-sqlite=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += sqlite
-else
-	PHP_CONF_OPT += --with-pdo-sqlite=shared
-endif
-endif
+  PHP_CONF_OPT += --enable-pdo=shared
+  ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
+    ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
+      PHP_CONF_OPT += --with-pdo-sqlite=shared,$(STAGING_DIR)/usr
+      PHP_DEPENDENCIES += sqlite
+    else
+      PHP_CONF_OPT += --with-pdo-sqlite=shared
+    endif
+  endif
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
-	PHP_CONF_OPT += --with-pdo-mysql=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += mysql_client
-endif
-
+  ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
+    #PHP_CONF_OPT += --with-pdo-mysql=shared,$(STAGING_DIR)/usr
+    PHP_CONF_OPT += --with-mysql=shared --with-pdo-mysql=shared
+  endif
 endif
 
 $(eval $(call AUTOTARGETS,package,php))
@@ -209,6 +210,14 @@ $(PHP_HOOK_POST_EXTRACT):
 	sed -i '/unset.*ac_cv_func_dlopen/d' $(PHP_DIR)/configure
 	touch $@
 	
+$(PHP_HOOK_POST_CONFIGURE):
+	patch -d $(PHP_DIR) -p1 < package/php/php-5.4.4-Makefile.patch2
+ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
+	# configure can't check for some C types (cross-compiling)
+	touch $(PHP_DIR)/ext/mysqlnd/php_mysqlnd_config.h
+endif
+	touch $@
+
 $(PHP_HOOK_POST_INSTALL):
 	rm -f $(TARGET_DIR)/usr/bin/phpize
 	rm -f $(TARGET_DIR)/usr/bin/php-config
