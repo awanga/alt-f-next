@@ -28,10 +28,10 @@ default ports,<br>
 you can here select different ports for the administrative web server,<br>
 and using \"http://&lt;box-ip&gt;:8080\" or \"https://&lt;box-ip&gt;:8443\" to access it."
 
-mktt stunnel_tt "Inetd mode: stunnel runs only when necessary, slower to start, 
-conserves memory (this is the default).<br><br>
-Server mode: stunnel always running, faster, always consuming memory 
-(the https/swats checkboxes in the inetd web page will be unckecked)."
+mktt stunneli_tt "Inetd mode: stunnel runs only when necessary, slower to start, conserves memory."
+
+mktt stunnels_tt "Server mode: stunnel always running, faster, always consuming memory<br>
+(the https/swats checkboxes in the inetd web page will be unchecked)."
 
 if grep -q http_alt $INETD_CONF; then
 	ALT_PORT_CHK="checked"
@@ -85,8 +85,8 @@ cat<<-EOF
 
 	<fieldset><legend><strong>The stunnel program provides https and can be run in</strong></legend>
 	<table>
-		<tr><td>inetd mode</td><td><input type=radio $STUNNEL_INETD name=stunnel value="inetd" $(ttip stunnel_tt)></td></tr>
-		<tr><td>server mode</td><td><input type=radio $STUNNEL_SERVER name=stunnel value="server" $(ttip stunnel_tt)></td></tr>
+		<tr><td>inetd mode</td><td><input type=radio $STUNNEL_INETD name=stunnel value="inetd" $(ttip stunneli_tt)></td></tr>
+		<tr><td>server mode</td><td><input type=radio $STUNNEL_SERVER name=stunnel value="server" $(ttip stunnels_tt)></td></tr>
 	</table>
 	</fieldset><br>
 
