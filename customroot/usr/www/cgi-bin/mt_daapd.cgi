@@ -18,7 +18,7 @@ if test "$MP3_DIR" = "$DEF_DIR"; then
 	MP3_DIR=""
 	for i in $(ls $DEF_DIR | tr '\n' ';'); do
 		if test -z "$i"; then continue; fi
-		MP3_DIR="$(readlink $DEF_DIR/$i),$MP3_DIR"
+		MP3_DIR="$(readlink $DEF_DIR/$i);$MP3_DIR"
 	done
 fi
 IFS="$OIFS"
@@ -43,11 +43,11 @@ cat<<-EOF
 	<table>
 EOF
 
-OIFS="$IFS"; IFS=','; k=1
+OIFS="$IFS"; IFS=';'; k=1
 for i in $MP3_DIR; do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$i"></td>
+		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$(httpd -e "$i")"></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$k')" value=Browse></td>
 		</tr>
 	EOF
