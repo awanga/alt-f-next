@@ -128,21 +128,25 @@ case "$action" in
 	createNew)
 		html_header
 		busy_cursor_start
-		BOX_PEM=/etc/ssl/certs/vsftpd.pem
-		rm $BOX_PEM
+
+		BOX_PEM=/etc/ssl/certs/server.pem
+		CUPS_CRT=/etc/cups/ssl/server.crt
+		CUPS_KEY=/etc/cups/ssl/server.key
+		VSFTP_CERT=/etc/ssl/certs/vsftpd.pem
+		LIGHTY_PEM=/etc/ssl/certs/lighttpd.pem
+		STUNNEL_CERT=/etc/ssl/certs/stunnel.pem
+
+		rm $BOX_PEM $VSFTP_CERT $STUNNEL_CERT $LIGHTY_PEM $CUPS_CRT $CUPS_KEY
+
+		rcsslcert start >& /dev/null
+
 		rcvsftpd init >& /dev/null
-		if test -f /usr/sbin/cupsd; then
-			CUPS_CRT=/etc/cups/ssl/server.crt
-			CUPS_KEY=/etc/cups/ssl/server.key
-			sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' $BOX_PEM > $CUPS_CRT
-			sed -n '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/p' $BOX_PEM > $CUPS_KEY
-		fi
-		if rcstunnel status >& /dev/null; then rcstunnel restart >& /dev/null; fi
-		if rclighttpd status >& /dev/null; then rclighttpd restart >& /dev/null; fi
-		if rccups status >& /dev/null; then rccups restart >& /dev/null; fi
+		rcstunnel init >& /dev/null
+		rclighttpd init >& /dev/null
+		rccups init >& /dev/null
+
 		busy_cursor_end
 		js_gotopage /cgi-bin/sys_utils.cgi
-		echo "</body></html>"
 		;;
 
 	KernelLog)
