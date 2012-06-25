@@ -11,10 +11,10 @@ BRD=0
 
 if ! test -h /home -a -d "$(readlink -f /home)"; then
 	cat<<-EOF
-		<h4>No users directory found, create it in:</h4>
+		<h4>No users folder found, create it in:</h4>
 		<form action="/cgi-bin/newuser_proc.cgi" method=post>
 	EOF
-	# FIXME offer possibility of creation of Public directories
+	# FIXME offer possibility of creation of Public folders
 	select_part
 	echo "</select><input type=submit name=create_dir value=CreateDir>
 		</form></body></html>"

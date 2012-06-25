@@ -42,7 +42,7 @@ elif test -n "$DelUser"; then
 	if test -d "$udir"; then
 		rmdir "$udir" >& /dev/null
 		if test $? = 1; then
-			msg "The users home directory is not empty and was not deleted"
+			msg "The users home folder is not empty and was not deleted"
 		fi
 	fi
 
