@@ -30,11 +30,12 @@ for i in /etc/init.d/S??*; do
 done
 
 # what board revision? (Should be available in /proc/cpuinfo!)
-dmesg | awk '/Identified HW revision/{print $5}' > /tmp/board
+brd=$(dmesg | awk '/Identified HW revision/{print $5}')
+echo $brd > /tmp/board
 
 # start fan because the disks might have to be fsck
 # and might warm up a lot in the process
-if test "$(cat /tmp/board)" = "C1"; then
+if test "$brd" = "C1"; then
 	echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
 else
 	echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
@@ -46,6 +47,13 @@ echo "none" > /sys/class/leds/power\:blue/trigger
 TSYSLOG=/var/log/boot.log
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
 start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
+
+if ! test -e /dev/mtdblock2; then
+	mknod /dev/mtdblock2 b 31 2
+fi
+
+logger -s "Board: $brd"
+logger -s "Firmware: $(dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings)"
 
 # set system clock from RTC, in UTC
 # kernel do it at boot time, but seems to not wait for second change
