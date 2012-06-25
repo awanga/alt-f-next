@@ -12,6 +12,7 @@ exports_row() {
 	exdir=${edir#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${edir%%[!#]*}	# get possible comment char FIXME more than one and space
 	exdir="$(path_unescape $exdir)"
+	exdir=$(httpd -e "$exdir")
 
 	if test -n "$cmtd"; then sel=checked; else sel=""; fi
 
@@ -35,7 +36,9 @@ fstab_row() {
 	eval $(echo "$hostdir" | awk -F":" '{printf "rhost=\"%s\"; rdir=\"%s\"", $1, $2}')
 
 	rdir="$(path_unescape $rdir)"
+	rdir=$(httpd -e "$rdir")
 	mdir="$(path_unescape $mdir)"
+	mdir=$(httpd -e "$mdir")
 
 	rrhost=${rhost#\#} # remove possible comment char FIXME more than one and space
 	cmtd=${rhost%%[!#]*}	# get possible comment char FIXME more than one and space
@@ -133,11 +136,11 @@ cat<<-EOF
 
 	<form name=expdir action=nfs_proc.cgi method="post" >
 		<fieldset>
-		<legend><strong>Directories to export to other hosts</strong></legend>
+		<legend><strong>Folders to export to other hosts</strong></legend>
 		<table>
 		<tr align=center>
 		<th>Disable</th>
-		<th>Directory</th>
+		<th>Folder</th>
 		<th>Search</th>
 		<th>Allowed hosts</th>
 		<th>Export Options</th>
@@ -166,13 +169,13 @@ cat<<-EOF
 	</table><input type=hidden name="n_exports" value="$cnt">
 	</fieldset><br>
 	<fieldset>
-	<legend><strong>Directories to import from other hosts</strong></legend>
+	<legend><strong>Folders to import from other hosts</strong></legend>
 	<table>
 	<tr align=center>
 	<th>Disable</th>
 	<th></th>
 	<th>Host</th>
-	<th>Directory</th>
+	<th>Folder</th>
 	<th>Discover</th>
 	<th>Local dir</th>
 	<th>Search</th>
@@ -223,7 +226,7 @@ if test -n "$DELAY_NFS"; then
 	dnfs_chk="checked"
 fi
 
-mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages directory becomes available"
+mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages folder becomes available"
 
 cat<<-EOF
 	<br>Delay NFS start on boot <input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)>
