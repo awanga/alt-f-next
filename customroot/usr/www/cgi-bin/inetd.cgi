@@ -22,7 +22,7 @@ ssrv=$(awk '{if (substr($1,1,1) == "#") $1=substr($1,2); print $1}' $CONFF)
 
 for i in $ssrv; do
 	chkf=""
-	if $(grep -q -e "^$i" $CONFF); then
+	if $(grep -q -e "^$i[[:space:]]" $CONFF); then
 		chkf="checked"
 	fi
 	

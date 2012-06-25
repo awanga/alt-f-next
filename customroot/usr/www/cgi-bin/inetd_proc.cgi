@@ -7,9 +7,10 @@ check_cookie
 CONFF=/etc/inetd.conf
 
 #debug
+#set -x 
 
 if test -n "$Configure"; then
-		gotopage /cgi-bin/${Configure}.cgi
+	gotopage /cgi-bin/${Configure}.cgi
 
 elif test -n "$Submit"; then
 
@@ -32,8 +33,7 @@ elif test -n "$Submit"; then
 
 	rcinetd enable $to_enable >& /dev/null
 	rcinetd disable $to_disable >& /dev/null
+
+	#enddebug
+	gotopage /cgi-bin/net_services.cgi
 fi
-
-#enddebug
-gotopage /cgi-bin/net_services.cgi
-
