@@ -95,11 +95,9 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	if test $st != 0; then
 		msg "$res"
 	fi
-msg "continue"
+
 	HTTP_REFERER=$(echo "$HTTP_REFERER" | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
 	js_gotopage "$HTTP_REFERER"
-	echo "</body></html>"
-	exit 0
 
 elif test -n "$Permissions"; then
 	nuser="$(httpd -d $nuser)"
