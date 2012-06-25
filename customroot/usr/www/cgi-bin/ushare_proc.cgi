@@ -12,7 +12,7 @@ if test -n "$webPage"; then
 	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)" 
 	eval $(grep ^USHARE_PORT $CONF_USHARE)
 	webhost="${HTTP_HOST%%:*}:$USHARE_PORT/web/ushare.html"
-	embed_page "http://$webhost"
+	embed_page "http://$webhost" "uShare Page"
 fi
 
 for i in $(seq 1 $cnt); do

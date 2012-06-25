@@ -31,14 +31,14 @@ cat<<-EOF
 EOF
 
 if test -s bookmarks.html; then
-	echo "<p class=\"Menu\">Bookmarks</p>"
+	menu_setup
+	echo "<table cellspacing=0><tr>"
+	bookmark_fill
 	cat bookmarks.html
-	echo "<button type=button onClick=\"rmbookmark()\">Remove Current</button>"
-	echo "<button type=button onClick=\"rmall()\">Remove All</button>"
-	echo "<p class=\"Menu\">Menu</p>"
 fi
 
 cat<<EOF
+	<p class="Menu">Menu</p>
 	<a href="/cgi-bin/logout.cgi" target="content">Logout</a><br>
 	<a href="/cgi-bin/status.cgi" target="content">Status</a><br>
 EOF
@@ -54,4 +54,4 @@ for i in Setup Disk Services Packages System; do
 	fi
 done
 
-echo "<button type=button onClick=\"addbookmark()\">Bookmark Current</button></body></html>"
+echo "</body></html>"

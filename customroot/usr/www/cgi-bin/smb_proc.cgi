@@ -11,9 +11,9 @@ CONF_SMB=/etc/samba/smb.conf
 
 if test "$submit" = "Advanced"; then
 	if echo $HTTP_REFERER | grep -q '^https://'; then
-		embed_page "https://${HTTP_HOST%%:*}:902"
+		embed_page "https://${HTTP_HOST%%:*}:902" "SWAT Page"
     else
-		embed_page "http://${HTTP_HOST%%:*}:901"
+		embed_page "http://${HTTP_HOST%%:*}:901" "SWAT Page"
 	fi
 
 elif test -n "$unMount"; then
@@ -48,7 +48,7 @@ elif test "$submit" = "Submit"; then
 		echo
 	done  >> $CONF_FSTAB
 
-#	cp $CONF_SMB $CONF_SMB-
+	cp $CONF_SMB $CONF_SMB-
 	awk '
 		{ pshare($0) }
 

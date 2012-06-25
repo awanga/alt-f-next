@@ -10,7 +10,7 @@ CONFF=/etc/fuppes/fuppes.cfg
 
 if test -n "$webPage"; then
 	FUPPES_PORT=$(sed -n 's/.*<http_port>\(.*\)<\/http_port>/\1/p' $CONFF)
-	embed_page "http://${HTTP_HOST%%:*}:$FUPPES_PORT/presentation/config.html"
+	embed_page "http://${HTTP_HOST%%:*}:$FUPPES_PORT/presentation/config.html" "Fuppes Page"
 fi
 
 # mark lines, to undo changes on error

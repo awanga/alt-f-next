@@ -43,7 +43,7 @@ if test -n "$WebPage"; then
 	fi
 	
 	rpc_port=$(sed -n 's/.*"rpc-port":[[:space:]]*\([[:digit:]]*\).*/\1/p' $CONFF/$JSON)
-	embed_page "http://${HTTP_HOST%%:*}:${rpc_port}"
+	embed_page "http://${HTTP_HOST%%:*}:${rpc_port}" "Transmission Page"
 
 elif test -n "$Submit"; then
 

@@ -13,7 +13,7 @@ if test -n "$webPage"; then
 	PORT=$(awk '/^port/{print $2}' $CONFF)
 	pass=$(awk '/^admin_pw/{print $2}' $CONFF)
 	webhost="${HTTP_HOST%%:*}:$PORT"
-	embed_page "http://mt-daapd:${pass}@$webhost"
+	embed_page "http://mt-daapd:${pass}@$webhost" "mt-daapd Page"
 fi
 
 if test "$def_dir" = "yes"; then

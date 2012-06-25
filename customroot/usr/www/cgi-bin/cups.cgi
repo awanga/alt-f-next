@@ -13,4 +13,4 @@ if echo $HTTP_REFERER | grep -q 'https://'; then
 	PROTO="https"
 fi
 
-embed_page "$PROTO://${HTTP_HOST%%:*}:631/admin"
+embed_page "$PROTO://${HTTP_HOST%%:*}:631/admin" "CUPS Page"

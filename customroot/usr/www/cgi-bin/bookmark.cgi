@@ -22,8 +22,9 @@ elif test -n "$add"; then
 	html_header
 	cat<<-EOF
 		<script type="text/javascript">
-			parent.nav.location.reload()
-			location.assign("/cgi-bin/$(basename $HTTP_REFERER)")
+			parent.nav.document.location.reload()
+			//parent.content.document.location.assign("/cgi-bin/$(basename $HTTP_REFERER)")
+			parent.content.document.location.assign("$url")
 		</script>
 	EOF
 
@@ -41,8 +42,8 @@ elif test -n "$rm"; then
 	html_header
 	cat<<-EOF
 		<script type="text/javascript">
-		parent.frames.nav.location.assign("/cgi-bin/index.cgi")
-		parent.frames.content.location.assign("$url")
+		parent.nav.document.location.reload()
+		parent.content.document.location.assign("$url")
 		</script>
 	EOF
 fi
