@@ -4,7 +4,7 @@
 check_cookie
 write_header "vsftpd server Setup"
 
-mktt tt_jail "If checked, the user will be restricted to use only its own directories"
+mktt tt_jail "If checked, the user will be restricted to use only its own folder."
 mktt tt_dusers "list of space separated usernames to deny ftp access"
 
 CONFF=/etc/vsftpd.conf
@@ -18,8 +18,12 @@ if test -f $CONFU; then
 fi
 
 if test -f $CONFF; then
-	. $CONFF
+	. $CONFF >& /dev/null
 fi
+
+anon_root=$(sed -n 's/anon_root=\(.*\)/\1/p' $CONFF)
+anon_root=$(readlink -f "$anon_root")
+anon_root=$(httpd -e "$anon_root")
 
 ssl_en="disabled"
 if test "$ssl_enable" = "yes"; then
@@ -74,13 +78,13 @@ cat<<-EOF
 	<form name="ftpf" action="/cgi-bin/ftp_proc.cgi" method="post">
 	<table>
 
-	<tr><td>Restrict directories:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" $(ttip tt_jail)></td></tr>
+	<tr><td>Restrict folders:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" $(ttip tt_jail)></td></tr>
 	<tr><td>Disallow users:</td><td><input type=text name=denyusers value="$denyusers" $(ttip tt_dusers)></td></tr>
 	<tr><td><br></td></tr>
 
 	<tr><td>Enable Anonymous:</td><td><input type=checkbox $anon_en_chk id=anon name=anonymous_enable value="yes" onchange="toogle('anon')"></td></tr>
 	<tr><td>Anonymous uploads:</td><td><input type=checkbox $anon $anon_up_chk name=anon_upload_enable value="yes"></td></tr>
-	<tr><td>Anonymous Directory:</td><td><input type=text $anon id=anon_dir name=anon_root value="$(readlink -f "$anon_root")"></td>
+	<tr><td>Anonymous folder:</td><td><input type=text $anon id=anon_dir name=anon_root value="$anon_root"></td>
 		<td><input type=button name=browse onclick="browse_dir_popup('anon_dir')" value=Browse></td></tr>
 
 	<tr><td><br></td></tr>

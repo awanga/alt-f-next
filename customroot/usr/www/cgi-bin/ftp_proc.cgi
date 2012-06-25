@@ -16,7 +16,7 @@ read_args
 #debug
 
 if test -n "$anon_root"; then
-	anon_root="$(httpd -d $anon_root)"
+	anon_root=$(httpd -d "$anon_root")
 	sed -i '/^anon_root=/d' $CONFF
 	echo anon_root="$anon_root" >> $CONFF
 fi
