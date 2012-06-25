@@ -69,4 +69,4 @@ else
 	gotopage /cgi-bin/login.cgi
 fi
 
-enddebug
+#enddebug
