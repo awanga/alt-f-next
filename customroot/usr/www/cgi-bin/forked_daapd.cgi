@@ -9,7 +9,15 @@ write_header "forked-daapd Setup"
 mktt sname_tt "Advertised name.<br>A '%h' will be replaced with the host name."
 CONF_FORKED=/etc/forked-daapd.conf
 
-SHARE_DIRS=$(awk -F= '/\tdirectories =/{print $2}' $CONF_FORKED | tr -d '{}')
+SHARE_DIRS=$(sed -n '
+\|[^#]directories|{
+s|.*directories.*=.*{\(.*\)}|\1|
+s|" *, *"|\n|g
+s|\\"|"|g
+s|\\,|,|g
+s|"\(.*\)"|\1|gp
+}' $CONF_FORKED)
+
 SNAME=$(sed -n 's/\tname = "\(.*\)"/\1/p' $CONF_FORKED)
 
 cat<<-EOF
@@ -27,17 +35,16 @@ cat<<-EOF
 	<table>
 EOF
 
-OIFS="$IFS"; IFS=','; k=1
+k=1
 for i in $SHARE_DIRS; do
 	cat<<-EOF
 		<tr><td>Share directory</td>
-		<td><input type=text size=32 id="sdir_$k" name="sdir_$k" value=$i></td>
+		<td><input type=text size=32 id="sdir_$k" name="sdir_$k" value=$(httpd -e "$i")></td>
 		<td><input type=button onclick="browse_dir_popup('sdir_$k')" value=Browse></td>
 		</tr>
 	EOF
     k=$((k+1))
 done
-IFS="$OIFS"
 
 for j in $(seq $k $((k+2))); do
 	cat<<-EOF
