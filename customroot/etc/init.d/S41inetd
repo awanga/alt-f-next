@@ -62,6 +62,7 @@ istart() {
 		if grep -q "^printer" $CONFF; then modprobe usblp; fi
 		rcdropbear init
 		rcvsftpd init
+		rcstunnel init
 		avahi_add
 		start $NAME
 }
