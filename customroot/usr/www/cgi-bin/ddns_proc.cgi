@@ -10,7 +10,7 @@ check_cookie
 #debug
 
 CONFF=/etc/inadyn.conf
-SSCRIPT=/etc/init.d/S75ddns
+SSCRIPT=/etc/init.d/S44ddns
 
 case $provider in
 	dyndns.org) ddns=dyndns@dyndns.org ;;
@@ -25,7 +25,7 @@ if test $? != 0; then
 	msg "$passwd"
 fi
 
-if test -n "$ddns" -a -n "host"; then
+if test -n "$ddns" -a -n "$host"; then
 	host="$(httpd -d $host)"
 
 	cat<<-EOF > $CONFF
