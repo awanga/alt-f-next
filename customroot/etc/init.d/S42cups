@@ -6,13 +6,28 @@ NAME=cupsd
 INETD_CONF=/etc/inetd.conf
 PRINTC=/etc/printcap
 
+BOX_CRT=/etc/ssl/certs/server.crt
+BOX_KEY=/etc/ssl/certs/server.key
+
+CUPS_CRT=/etc/cups/ssl/server.crt
+CUPS_KEY=/etc/cups/ssl/server.key
+
 CUPS_USER=cups
 CUPS_GROUP=lpadmin
 
 . $(dirname $0)/common
 
+sinit() {
+	if ! test -e $CUPS_CRT; then
+		cp $BOX_CRT $CUPS_CRT                                            
+		cp $BOX_KEY $CUPS_KEY   
+	fi
+}
+
 case "$1" in
+	init) sinit ;;
 	start)
+		sinit
 		export TZ=$(cat /etc/TZ)
 		unset TMPDIR
 
@@ -40,5 +55,5 @@ case "$1" in
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
 	status) status $NAME ;;
-	*) usage $0 "start|stop|status|restart|reload" ;;
+	*) usage $0 "start|stop|status|restart|reload|init" ;;
 esac
