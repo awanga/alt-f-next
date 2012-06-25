@@ -8,12 +8,12 @@ CONF_BACKUP=/etc/backup.conf
 
 if ! test -h /Backup -a -d "$(readlink -f /Backup)"; then
 	cat<<-EOF
-		<h4>No Backup directory found, create it on a filesystem<br>
+		<h4>No Backup folder found, create it on a filesystem<br>
 		 big enought to hold all yours backups:</h4>
 		<form action="/cgi-bin/backup_proc.cgi" method=post>
 	EOF
 	select_part
-	echo "</select><input type=submit name=CreateDir value=CreateDir>
+	echo "<input type=submit name=CreateDir value=CreateDir>
 		</form></body></html>"
 	exit 0
 fi
@@ -21,13 +21,13 @@ fi
 mktt disable_tt "Check to temporarily disable this backup."
 mktt id_tt "Backup identifier."
 mktt type_tt "Backup source."
-mktt runas_tt "Run the backup as the selected user.<br><br>Should be the \"root\" user for local directories, or the<br> user owning the files when the directory is mounted by NFS or Samba." 
+mktt runas_tt "Run the backup as the selected user.<br><br>Should be the \"root\" user for local folders, or the<br> user owning the files when the folder is mounted by NFS or Samba." 
 mktt host_tt "Computer to backup from."
-mktt src_tt "Directory to backup from."
+mktt src_tt "Folder to backup from."
 mktt when_tt "Week day(s) to perform the backup.<br><br>0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br>No spaces allowed, no checks done"
 mktt at_tt "Hour of the day to perform the backup, 0..23.<br><br>Use the same format as in the \"When\" field.<br>You can schedule several backup for the same hour,<br> they will be performed one at a time, sequentially."
 mktt rot_tt "After doing this number of backups, start removing the oldest, as needed.<br>0 disables rotation."
-mktt log_tt "After doing a backup generates a log with added, removed and changed files.<br>If no changes were detected, the backup is removed.<br>It is too sloow, use only for special directories."
+mktt log_tt "After doing a backup generates a log with added, removed and changed files.<br>If no changes were detected, the backup is removed.<br>It is too sloow, use only for special folders."
 mktt now_tt "Perform the backup now.<br>Disabled if the backup is currently being done.<br>You can start several backups."
 
 cat<<EOF
@@ -91,7 +91,7 @@ cat<<-EOF
 	<form name=hosts action="/cgi-bin/backup_proc.cgi" method="post">
 	<table>
 	<tr align=center><th>Disable</th><th>ID</th><th>Type</th><th>Run As</th><th>Host</th>
-	<th>Directory</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th></tr>
+	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th></tr>
 EOF
 
 max_id=0
