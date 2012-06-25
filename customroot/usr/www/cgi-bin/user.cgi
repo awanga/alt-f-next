@@ -6,7 +6,7 @@ write_header "User script Setup"
 
 CONF_MISC=/etc/misc.conf
 
-if test -f "$CONF_MISC"; then
+if test -s "$CONF_MISC"; then
 	. "$CONF_MISC"
 fi
 
@@ -14,7 +14,7 @@ us=$(sed -n 's/USER_SCRIPT="\(.*\)"/\1/p' $CONF_MISC)
 us=$(readlink -f "$us")
 us=$(httpd -e "$us")
 
-if test "$USER_LOGFILE" = "yes"; then
+if ! test "$USER_LOGFILE" = "no"; then
 	log_chk="checked"
 fi
 
