@@ -42,11 +42,11 @@ cat<<EOF
 	</script>
 	<form id=rsyncf name=rsync action=rsync_proc.cgi method="post">
 	<fieldset>
-	<legend><strong>Directories Modules</strong></legend>
+	<legend><strong>Folder Modules</strong></legend>
 	<table>
 	<tr>
 		<th>Disable</th>
-		<th>Directory</th>
+		<th>Folder</th>
 		<th>Browse</th>
 		<th>Module Name</th>
 		<th>Comment</th>
@@ -56,7 +56,6 @@ cat<<EOF
 	</tr>
 EOF
 
-#awk -F = '/#!#/ {
 awk -F = 'BEGIN {
 		t = FS; FS= ":"
 		i = 0; users[i++] = "anybody"
@@ -92,6 +91,7 @@ function spit(cnt, opts) {
 		if (rdir == "") {
 			rdir = opts["path"]
 		}
+		sprintf("httpd -e \"%s\" ", rdir) | getline rdir
 		browse_chk = "checked"
 		if (opts["list"] == "no")
 			browse_chk = ""
@@ -153,7 +153,7 @@ function parse(share_name, line) {
 }' $CONF_RSYNC
 
 cat<<EOF
-	</table></fieldset><br>
+	</fieldset><br>
 	$(back_button)<input type=submit name=submit value="Submit">
 	</form></body></html>
 EOF
