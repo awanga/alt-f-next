@@ -77,11 +77,10 @@ if you want all its data to be lost."
 		fi
 	done
 
-	res=$(mdadm --create /dev/$md --run \
-		--level=$level --metadata=0.9 $opts \
-		--raid-devices=$ndevices $pair1 $pair2 $pair3 2>&1)
+	res=$(mdadm --create --run --level=$level --metadata=0.9 $opts \
+		--raid-devices=$ndevices /dev/$md $pair1 $pair2 $pair3 2>&1)
 	if test $? != 0; then
-		msg "Creating RAID on $ppart failed:\n\n$res"
+		msg "Creating RAID on $md failed:\n\n$res"
 	fi
 
 	mdadm --examine --scan > /etc/mdadm.conf
