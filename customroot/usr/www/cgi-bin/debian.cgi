@@ -12,7 +12,7 @@ To return to Alt-F, you can use the 'alt-f' command, otherwise you will be on yo
 
 mktt rm_tt "Delete the Debian installation from disk."
 
-mktt install_tt "Debian will be installed in the root of the selected filesystem, not in a directory.<br>
+mktt install_tt "Debian will be installed in the root of the selected filesystem, not in a folder.<br>
 It is recommended, although not necessary, to dedicate the selected filesystem to Debian.<br>
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
 After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
