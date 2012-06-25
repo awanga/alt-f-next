@@ -157,4 +157,3 @@ else
 	js_gotopage /cgi-bin/host.cgi
 fi
 
-echo "</body></html>"
