@@ -127,7 +127,7 @@ cat<<-EOF
 	<tr><td>Enable WebDAV</td><td><input type=checkbox $WDAV_DIS $WDAV_CHK id=wdav_id name=wdav value=yes $(ttip wdav_tt)>
 		<td>for user</td><td><select $WDAV_DIS id=user_id name=user style="width:100%;" $(ttip udav_tt)>$useropt</select></td></tr>
 	<tr><td>Enable User Pages</td><td><input type=checkbox $USERDIR_CHK name=userdir value=yes $(ttip udir_tt)></td></tr>
-	<tr><td>Enable Directory Listing</td><td><input type=checkbox $DIRLST_CHK name=dirlist value=yes $(ttip dlist_tt)></td></tr>
+	<tr><td>Enable Folder Listing</td><td><input type=checkbox $DIRLST_CHK name=dirlist value=yes $(ttip dlist_tt)></td></tr>
 	<tr><td>Enable Access Log</td><td><input type=checkbox $ACESSLOG_CHK name=accesslog value=yes $(ttip access_tt)></td>
 		<!--td>to syslog</td><td><input type=checkbox $SYSLOG_CHK name=syslog value=yes></td--></tr>
 	<tr><td>Enable PHP</td><td><input type=checkbox $PHP_DIS $PHP_CHK name=php value=yes onclick="php_toogle(this)" $(ttip php_tt)></td></tr>
