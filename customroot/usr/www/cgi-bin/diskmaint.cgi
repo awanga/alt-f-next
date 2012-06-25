@@ -51,6 +51,8 @@ the vendors firmware, that might not recognize the new format.\n\n" + cmsg +
 and automatically repairing it if necessary and possible.\n\n\
 If a major problem is found, the filesystem will not be repaired,\n\
 will be remounted read-only and manual intervention will be needed.\n\n" + cmsg + "Proceed checking the " + part + " filesystem?");
+		else if (op == "ForceFix")
+			res = confirm("Use ONLY if the Check operation failed and asked for manual intervention, as data loss might occur.\n\n" + cmsg + "Are you really sure that you want to force fix the " + part + " filesystem?");
 		else if (op == "setLabel")
 			res = true
 		else if (op == "setMountOpts")
@@ -210,6 +212,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 				<option>Operation</option>
 				$mtd
 				<option $clean_en>Check</option>
+				<option $clean_en>ForceFix</option>
 				<option $label_en value=setLabel>Set Label</option>
 				<option value=setMountOpts>Set Mnt Options</option>
 				<option $resize_en>Shrink</option>

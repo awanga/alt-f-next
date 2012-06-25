@@ -36,6 +36,7 @@ RAID and LVM partition types), RAID arrays or LVM physical volumes.<br>
 <ul>
 <li><strong>Mount/Unmount</strong> enables to manually mount or unmount a filesystem
 <li><strong>Check</strong> verifies filesystem consistency and if needed automatically fixes it. This operation can take a long time to complete, and its evolution can be seen in the Status page and the blue power led blinks with a slow heart-beat rhythm. When if finishes, you can see the log using the System->Utilities->View Logs->System Log page and searching for "fsck".
+<li><strong>ForceFix</strong>If the above automatic Check operation fails, it is necessary to run the 'fsck' program manually answering a series of cryptic questions.<br> If you are no expert, you will just answer 'yeah', trusting 'fsck' unconditionally. If you select this option a default answer of 'yes' will be given to 'fsck'. Use with care, as data loss might occur.
 <li><strong>Set Label</strong> sets the filesystem label using the <em>Label</em> entry
 <li><strong>Set Mnt options</strong> sets mount options using the <em>Mount Options</em> entry. The options will be used whenever the filesystem is mounted.
 <li><strong>Shrink</strong> consolidates the filesystem data at the device start, occupying the minimum possible space. After the operation completes and the filesystem is mounted the <strong>Size</strong> column shows the new size. It can take a very long time to complete, use the Status page and consult the System Log at the end.

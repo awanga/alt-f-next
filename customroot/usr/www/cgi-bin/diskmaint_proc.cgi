@@ -45,7 +45,13 @@ lmount() {
 check() {
 
 	case $2 in
-		ext2|ext3|ext4) opts="-fpD" ;;
+		ext2|ext3|ext4) 
+			if test "$3" = "fix"; then
+				opts="-fyD"
+			else
+				opts="-fpD"
+			fi
+			;;
 		vfat) opts="-a" ;;
 		ntfs) opts="" ;;
 		*) 	opts="" ;;
@@ -254,6 +260,12 @@ elif test -n "$Check"; then
 	type=$(blkid -s TYPE -o value /dev/$part)
 	lumount "$part" "checking"
 	check "$part" "$type" "check"
+
+elif test -n "$ForceFix"; then
+	eval part=\$part_$ForceFix
+	type=$(blkid -s TYPE -o value /dev/$part)
+	lumount "$part" "fixing"
+	check "$part" "$type" "fix"
 		
 elif test -n "$Format"; then
 	eval part=\$part_$Format
