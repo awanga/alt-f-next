@@ -5,9 +5,9 @@ check_cookie
 
 write_header "Transmission Setup"
 
-mktt trdir_tt "Directory where downloads will occur.<br>
-Subdirectories InProgress and Finished will be created<br>
-If you drop a torrent file in this directory, downloading will start."
+mktt trdir_tt "Folder where downloads will occur.<br>
+Sub-folders InProgress and Finished will be created<br>
+If you drop a torrent file in this folder, downloading will start."
 
 mktt block_tt "Example site from where a file with a list of IPs to block will be downloaded.<br>
 You must be confident on the site, the default value is not endorsed."
@@ -29,15 +29,15 @@ cat<<-EOF
 		}
 	</script>
 
-	<form name=transmission action=transmission_proc.cgi method="post">
+	<form name="transmissionf" action="transmission_proc.cgi" method="post">
 	<table><tr>
-	<td>Transmission directory</td>
-		<td><input type=text size=32 id=watch_dir name=WATCH_DIR value="$WATCH_DIR" $(ttip trdir_tt)>
+	<td>Transmission folder</td>
+		<td><input type=text size=32 id="watch_dir" name="WATCH_DIR" value="$WATCH_DIR" $(ttip trdir_tt)>
 		<td><input type=button onclick="browse_dir_popup('watch_dir')" value="Browse"></td>
 		</tr>
-	<tr><td></td><td><input type=submit name=submit value="Submit">
+	<tr><td></td><td><input type=submit name="submit" value="Submit">
 		$(back_button)
-		<input type=submit name=webPage value="WebPage"> 
+		<input type=submit name="webPage" value="WebPage"> 
 	</td></tr>
 	</table></form></body></html>
 EOF
