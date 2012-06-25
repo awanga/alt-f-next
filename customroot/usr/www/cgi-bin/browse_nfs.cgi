@@ -28,7 +28,7 @@ wait_count_start "Browsing the network for NFS servers, it takes 20 seconds"
 # this seems to be needed to start the window drawn...
 for i in $(seq 1 20); do sleep 1; echo; done &
 
-echo "<br><br><strong>Host:Directory</strong><br>"
+echo "<br><br><strong>Host:Folder</strong><br>"
 
 rpcinfo -b 100005 3 | sort -u  | while read hip hnm; do
 	if test $hnm = "(unknown)"; then
