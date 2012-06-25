@@ -22,8 +22,6 @@ restart() {
 	busy_cursor_end
 
 	js_gotopage /cgi-bin/settings.cgi
-	echo "</body></html>"
-	exit 0
 }
 
 if test "${CONTENT_TYPE%;*}" = "multipart/form-data"; then

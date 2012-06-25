@@ -28,9 +28,7 @@ done
 cat<<-EOF
 	<script type="text/javascript">
 	function ask() {
-		return confirm("Don't clear the flash-saved settings if your box still boots from the vendor firmware," + '\n' +
-		 "or the box might not boot up. Press Cancel." + '\n' + '\n' +
-		 "Under Alt-F, without settings, the box will first try to use a DHCP assigned IP," + '\n' +
+		return confirm("If rebooted without settings, the box will first try to use a DHCP assigned IP," + '\n' +
 		 "and if not successful will try to find a free IP in the 192.168.1.254-240 range."); 
 	}
 	function load_ask() {
