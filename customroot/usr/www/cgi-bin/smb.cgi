@@ -85,11 +85,11 @@ cat<<EOF
 	</script>
 	<form id=smbf name=smbf action=smb_proc.cgi method="post">
 	<fieldset>
-	<legend><strong>Directories to export to other hosts</strong></legend>
+	<legend><strong>Folders to export to other hosts</strong></legend>
 	<table>
 	<tr>
 		<th>Disable</th>
-		<th>Directory</th>
+		<th>Folder</th>
 		<th>Browse</th>
 		<th>Share Name</th>
 		<th>Comment</th>
@@ -213,13 +213,13 @@ cat<<-EOF
 	</fieldset><br>
 
 	<fieldset>
-	<legend><strong>Directories to import from other hosts</strong></legend>
+	<legend><strong>Folders to import from other hosts</strong></legend>
 	<table>
 	<tr align=center>
 	<th>Disable</th>
 	<th></th>
 	<th>Host</th>
-	<th>Directory</th>
+	<th>Folder</th>
 	<th>Discover</th>
 	<th>Local dir</th>
 	<th>Search</th>
