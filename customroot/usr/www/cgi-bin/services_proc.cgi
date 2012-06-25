@@ -9,7 +9,6 @@ start_stop() {
 	sscript=/etc/init.d/S??$serv
 	rcscript=rc${serv}
 	if test -n "$sscript"; then
-		html_header    
 		busy_cursor_start
 		if test "$act" = "enable"; then
 			chmod +x $sscript

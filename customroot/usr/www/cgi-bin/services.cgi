@@ -55,11 +55,11 @@ for i in $srv; do
 
 	chkf=""
 	if test -x /etc/init.d/S??$i; then
-		chkf="CHECKED"
+		chkf="checked"
 	fi
 
-	if rc$i status >/dev/null ; then
-		st="<strong> Running</strong>"
+	if rc$i status >& /dev/null ; then
+		st="<strong>Running</strong>"
 		act="StopNow"
 	else
 		st="Stopped"
