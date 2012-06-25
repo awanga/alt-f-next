@@ -224,6 +224,8 @@ raid_st() {
 	for i in /dev/md[0-9]*; do
 		mdev=$(basename $i)
 		state=$(cat /sys/block/$mdev/md/array_state)
+		# if test "$state" = "clear"; then continue; fi
+
 		type=$(cat /sys/block/$mdev/md/level)
 
 		sz=""; deg=""; act=""; compl=""; exp="";
@@ -452,7 +454,7 @@ backup_st() {
 
 	cat<<-EOF
 		<fieldset><legend><strong>Backup</strong></legend>
-		<table><tr><th>ID</th><th>Directory</th><th>State</th></tr>
+		<table><tr><th>ID</th><th>Folder</th><th>State</th></tr>
 	EOF
 
 	for i in $(echo "$pso" | awk '{print $5}'); do
