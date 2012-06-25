@@ -189,7 +189,7 @@ cat<<-EOF
 	<fieldset><legend> <strong> TFTP server </strong> </legend>
 	<table>
 	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp onchange="toogle_tftp()"></td></tr>
-	<tr><td>Root Directory</td>
+	<tr><td>Root Folder</td>
 		<td><input id=tftproot $tftpdis type=text size=20 name=tftproot value="$tftproot">
 		<input type=button $tftpdis name=ftpbrowse onclick="browse_dir_popup('tftproot')" value=Browse>
 		</td></tr>
