@@ -83,6 +83,7 @@ excludedby() {
 	done
 }
 
+# FIXME: add support for --pidfile
 status() {
 	if start-stop-daemon -K -t -q $START_STOP $1; then
 		echo "$1 running"
@@ -116,7 +117,7 @@ omsg() {
 	elif test -n "$2"; then
 		echo -e "Fail: $2"
 	else
-			echo "Fail."
+		echo "Fail."
 	fi
 	return $1	
 }
@@ -135,6 +136,7 @@ start() {
 	omsg $?
 }
 
+# FIXME: add support for --pidfile
 stop() {
 	if test -n "$REQUIREDBY"; then
 		requiredby $1 $REQUIREDBY
