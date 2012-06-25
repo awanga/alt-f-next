@@ -59,9 +59,9 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		addgroup $nick backup
 
 		# why doesn't rsync uses unix authorization mechanisms?!
-		echo -e "\n[$nick]\n\tpath = /home/$uname\n\tcomment = $uname home directory\n\
+		echo -e "\n[$nick]\n\tpath = /home/$uname\n\tcomment = $uname home folder\n\
 \tread only = no\n\tauth users = $nick\n\tuid = $nick\n\tgid = users\n" >> $CONFR
-		echo -e "\n[$uname]\n\tpath = /home/$uname\n\tcomment = $uname home directory\n\
+		echo -e "\n[$uname]\n\tpath = /home/$uname\n\tcomment = $uname home folder\n\
 \tread only = no\n\tauth users = $nick\n\tuid = $nick\n\tgid = users\n" >> $CONFR
 	fi
 
@@ -118,7 +118,7 @@ elif test "$create_dir" = "CreateDir"; then
 		cat<<EOF >> $CONFSMB		
 
 [Users]
-	comment = Users private directories
+	comment = Users private folder
 	path = /home
 	read only = no
 	available = yes

@@ -21,12 +21,12 @@ has_disks
 
 if ! test -h /home -a -d "$(readlink -f /home)"; then
 	cat<<-EOF
-		<h4>No users directory found, create it in:</h4>
+		<h4>No users folder found, create it in:</h4>
 		<form action="/cgi-bin/newuser_proc.cgi" method=post>
 	EOF
-	# FIXME offer possibility of creation of Public directories
+	# FIXME offer possibility of creation of Public Folders
 	select_part
-	echo "</select><input type=submit name=create_dir value=CreateDir>
+	echo "<input type=submit name=create_dir value=CreateDir>
 		</form></body></html>"
 	exit 0
 fi
@@ -65,10 +65,11 @@ parse_qstring
 
 if test "$act" = "changepass"; then
 	uname=$(httpd -d "$uname")
-	uid=$(id -u $nick)
-	gid=$(id -g $nick)
+	if ! id -u "$nick" >& /dev/null; then msg "User doesn't exists."; fi
+	gid=$(id -u "$nick")
+	gid=$(id -g "$nick")
 	chpass="readonly"
-	subbut='<td><input type="submit" name="chpass" value="ChangePass">'
+	subbut='<input type="submit" name="chpass" value="ChangePass">'
 
 elif test "$act" = "newuser"; then
 	cat<<-EOF
@@ -82,7 +83,7 @@ elif test "$act" = "newuser"; then
 		END { if (uid < 1000) uid=1000; gid=100; printf "uid=%d; gid=%d", uid+1, gid}' $CONFP)
 
 	chpass=""
-	subbut='<td><input type="submit" name="submit" value="Submit">'
+	subbut='<input type="submit" name="submit" value="Submit">'
 fi
 
 cat <<EOF
@@ -96,7 +97,7 @@ cat <<EOF
 	<tr><td>Password<td><input type=password name=pass $(ttip ttpass)></td></tr>
 	<tr><td>Again<td><input type=password name=passa $(ttip ttpassa)></td></tr>
 	<tr><td></td>
-	$subbut
+	<td>$subbut
 	<input type="submit" name="cancel" value="Cancel"></td></tr>
 	</table></fieldset></form></body></html>
 EOF
