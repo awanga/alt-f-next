@@ -172,6 +172,7 @@ html_header() {
 }
 
 debug() {
+	HTML_HEADER_DONE="yes"
 	echo -e "Content-Type: text/html; charset=UTF-8\n\n<html><body><pre>$(set)</pre>"
 }
 
@@ -380,11 +381,14 @@ gotopage() {
 }
 
 js_gotopage() {
+	if test -z "$HTML_HEADER_DONE"; then html_header; fi
 	cat<<-EOF
 		<script type="text/javascript">
 			window.location.assign("$1")
 		</script>
+		</body></html>
 	EOF
+	exit 0
 }
 
 check_cookie() {
@@ -409,6 +413,7 @@ check_cookie() {
 }
 
 busy_cursor_start() {
+	if test -z "$HTML_HEADER_DONE"; then html_header; fi
 	cat<<-EOF
 		<script type="text/javascript">
 			document.body.style.cursor = 'wait';
@@ -459,9 +464,9 @@ embed_page() {
 	write_header ""
 
 	cat<<-EOF
-		<form name=embedf action="" method="">
-		<input type=hidden name=ifsrc value="$1">
-		<input type=hidden name=ifname value="$2">
+		<form name="embedf" action="zpto" method="post">
+		<input type=hidden name="ifsrc" value="$1">
+		<input type=hidden name="ifname" value="$2">
 		</form>
 		<iframe src="$1" width="100%" height="95%" frameborder="0" scrolling="auto"></iframe>
 		</body></html>
@@ -614,28 +619,32 @@ EOF
 bookmf() {
 cat<<EOF
 	<script type="text/javascript">
-		function addbookmark() {
-			if (parent.content.embedf != null) {
-				title = parent.content.embedf.ifname.value
-				url = parent.content.embedf.ifsrc.value
-			} else {
+		function commonbookmark() {
+			try {
+				x = parent.content.document.embedf
+				title = x.ifname.value
+				url = x.ifsrc.value
+			} catch(err) {
 				title = parent.content.document.title
-				url = parent.content.window.location.pathname
+				url = parent.content.document.location.pathname
 			}
-			location.assign("/cgi-bin/bookmark.cgi?add=" + title + "&url=" + url)
+			return title + "&url=" + url
+		}
+		function addbookmark() {			
+			parent.content.document.location.assign("/cgi-bin/bookmark.cgi?add=" + commonbookmark())
 			return false
 		}
 		function rmbookmark() {
-			location.assign("/cgi-bin/bookmark.cgi?rm=" + parent.content.document.title +
-				 "&url=" + parent.content.window.location.pathname)
+			parent.content.document.location.assign("/cgi-bin/bookmark.cgi?rm=" + commonbookmark())
 			return false
 		}
 		function rmall() {
-			if (parent.content.embedf != null)
-				url = parent.content.embedf.ifsrc.value
-			else
-				url = parent.content.window.location.pathname
-			location.assign("/cgi-bin/bookmark.cgi?rm=all&url=" + url)
+			try {
+				url = parent.content.document.embedf.ifsrc.value
+			} catch(err) {
+				url = parent.content.document.location.pathname
+			}
+			parent.content.document.location.assign("/cgi-bin/bookmark.cgi?rm=all&url=" + url)
 			return false
 		}
 	</script>
@@ -713,6 +722,17 @@ fill_menu() {
 	echo "</div><script type=\"text/javascript\">MenuEntry(\"$1\");</script></td>"
 }
 
+bookmark_fill() {
+cat<<EOF
+	<td><div id="Bookmark" class="Menu">Bookmark</div><div id="Bookmark_sub">
+	<a class="Menu" href="" onclick="return addbookmark()">Add</a>
+	<a class="Menu" href="" onclick="return rmbookmark()">Remove</a>
+	<a class="Menu" href="" onclick="return rmall()">Remove All</a>
+	</div><script type="text/javascript">MenuEntry("Bookmark")</script>
+	</td></tr></table>
+EOF
+}
+
 # $1-page title $2-script
 menu_setup2() {
 cat<<EOF
@@ -724,15 +744,7 @@ EOF
 	for i in Setup Disk Services Packages System; do
 		fill_menu $i
 	done
-
-cat<<EOF
-	<td><div id="Bookmark" class="Menu">Bookmark</div><div id="Bookmark_sub">
-	<a class="Menu" href="" onclick="return addbookmark()">Add</a>
-	<a class="Menu" href="" onclick="return rmbookmark()">Remove</a>
-	<a class="Menu" href="" onclick="return rmall()">Remove All</a>
-	</div><script type="text/javascript">MenuEntry("Bookmark")</script></td>
-	</tr></table>
-EOF
+	bookmark_fill
 }
 
 # args: title [onload action]
