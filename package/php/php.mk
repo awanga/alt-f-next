@@ -47,10 +47,12 @@ endif
 # PHP has its own version of libgd! Better if they changed its name!
 ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
 	PHP_CONF_OPT += --with-gd=shared
+	PHP_DEPENDENCIES += libpng
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_CURL),y)
-	PHP_CONF_OPT += --with-curl=shared,${STAGING_DIR}/usr 
+	PHP_CONF_OPT += --with-curl=shared,${STAGING_DIR}/usr
+	PHP_DEPENDENCIES += libcurl
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_CTYPE),y)
@@ -123,6 +125,7 @@ endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_EXIF),y)
 	PHP_CONF_OPT += --enable-exif=shared
+	PHP_DEPENDENCIES += libexif
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_FTP),y)

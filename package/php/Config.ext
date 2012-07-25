@@ -28,6 +28,7 @@ config BR2_PACKAGE_PHP_EXT_MBSTRING
 
 config BR2_PACKAGE_PHP_EXT_CURL
 	bool "curl"
+	select BR2_PACKAGE_LIBCURL
 
 config BR2_PACKAGE_PHP_EXT_DOM
 	bool "dom"
@@ -91,6 +92,7 @@ config BR2_PACKAGE_PHP_EXT_ZLIB
 
 config BR2_PACKAGE_PHP_EXT_EXIF
 	bool "EXIF"
+	select BR2_PACKAGE_LIBEXIF
 	help
 	  EXIF support
 
