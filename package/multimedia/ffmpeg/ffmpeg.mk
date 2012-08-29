@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#FFMPEG_VERSION = 0.6.1
 FFMPEG_VERSION = 0.6.3
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.bz2
 FFMPEG_SITE = http://ffmpeg.org/releases/
@@ -18,7 +17,7 @@ FFMPEG_BINARY = ffmpeg
 FFMPEG_BINARIES = ffmpeg ffserver ffprobe
 FFMPEG_TARGET_BINARY = usr/bin/$(FFMPEG_BINARY)
 
-FFMPEG_CONF_OPT = $(DISABLE_IPV6) --enable-libmp3lame
+FFMPEG_CONF_OPT = --enable-libmp3lame
 # --enable-libtheora --enable-libvorbis 
 
 FFMPEG_DEPENDENCIES = uclibc lame
