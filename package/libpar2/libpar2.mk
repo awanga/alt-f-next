@@ -18,3 +18,4 @@ $(eval $(call AUTOTARGETS,package,libpar2))
 
 $(LIBPAR2_HOOK_POST_INSTALL):
 	rm -rf $(TARGET_DIR)/usr/lib/libpar2
+	touch $@
