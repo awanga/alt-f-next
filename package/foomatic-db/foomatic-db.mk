@@ -38,10 +38,11 @@ $(FOOMATIC_DB_ENGINE_DIR)/.unpacked: $(DL_DIR)/$(FOOMATIC_DB_ENGINE_SOURCE)
 	$(ZCAT) $(DL_DIR)/$(FOOMATIC_DB_ENGINE_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	touch $@
 
-# install host libxml2 devel first, otherwize the target ones will be used.
-# be sure the system one is on the PATH first.				
 $(FOOMATIC_DB_ENGINE_DIR)/.configured: $(FOOMATIC_DB_ENGINE_DIR)/.unpacked $(FOOMATIC_DB_DIR)/.unpacked
 	(cd $(FOOMATIC_DB_ENGINE_DIR); \
+		$(HOST_CONFIGURE_OPTS) \
+		CFLAGS="$(HOST_CFLAGS)" \
+		LDFLAGS="$(HOST_LDFLAGS)" \
 		./configure \
 	)
 	touch $@
@@ -76,7 +77,7 @@ foomatic-db-build: $(FOOMATIC_DB_ENGINE_DIR)/.build
 
 foomatic-db-install: $(FOOMATIC_DB_ENGINE_DIR)/.installed
 	
-foomatic-db: uclibc foomatic-db-install
+foomatic-db: uclibc host-libxml2 foomatic-db-install
 
 ifeq ($(BR2_PACKAGE_FOOMATIC_DB),y)
 TARGETS+=foomatic-db
