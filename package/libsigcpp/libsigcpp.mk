@@ -23,6 +23,10 @@ $(LIBSIGCPP_HOOK_POST_INSTALL):
 	rm -rf $(TARGET_DIR)/usr/lib/sigc++-2.0
 	cp $(STAGING_DIR)/usr/lib/sigc++-2.0/include/sigc++config.h \
 		$(STAGING_DIR)/usr/include
-	ln -s $(STAGING_DIR)/usr/include/sigc++-2.0/sigc++ $(STAGING_DIR)/usr/include/sigc++
+	ln -s $(STAGING_DIR)/usr/include/sigc++-2.0/sigc++ \
+		$(STAGING_DIR)/usr/include/sigc++
+	sed -i -e "s|^includedir=.*|includedir=$(STAGING_DIR)/usr/include|" \
+		-e "s|^libdir=.*|libdir=$(STAGING_DIR)/usr/lib|" \
+		$(STAGING_DIR)/usr/lib/pkgconfig/sigc++-2.0.pc
 	touch $@
 
