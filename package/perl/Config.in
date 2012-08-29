@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PERL
+	bool "perl"
+	select BR2_PACKAGE_GROFF
+	help
+	   perl - Practical Extraction and Report Language
+
+	   http://perl.org/
