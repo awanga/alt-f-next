@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GROFF
+	bool "groff"
+	help
+	  The groff package provides compatible versions of troff, nroff, eqn,
+	  tbl, and other Unix text formatting utilities.
+
+	  http://www.gnu.org/software/groff/
