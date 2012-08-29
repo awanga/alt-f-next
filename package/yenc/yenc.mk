@@ -19,7 +19,7 @@ YENC_BINARY:=_yenc.so
 YENC_SITE_PACKAGE_DIR=usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
 YENC_TARGET_BINARY:=$(YENC_SITE_PACKAGE_DIR)/$(YENC_BINARY)
 
-TARGET_CFLAGS += -I=/usr/include/python$(PYTHON_VERSION_MAJOR)
+YENC_CFLAGS = CFLAGS+=-I$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR)
 
 $(DL_DIR)/$(YENC_SOURCE):
 	 $(call DOWNLOAD,$(YENC_SITE),$(YENC_SOURCE))
@@ -34,7 +34,7 @@ $(YENC_DIR)/.patched: $(YENC_DIR)/.unpacked
 
 $(YENC_DIR)/.build: $(YENC_DIR)/.patched
 	(cd $(YENC_DIR); \
-		$(TARGET_CONFIGURE_OPTS) $(TARGET_CONFIGURE_ENV) LDSHARED="$(TARGET_CC) -shared" \
+		$(TARGET_CONFIGURE_OPTS) $(TARGET_CONFIGURE_ENV) LDSHARED="$(TARGET_CC) -shared" $(YENC_CFLAGS) \
 		LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib/ $(HOST_DIR)/usr/bin/python setup.py \
 		bdist_dumb --plat-name $(GNU_TARGET_NAME) --relative \
 	)
