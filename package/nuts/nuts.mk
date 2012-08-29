@@ -12,11 +12,10 @@ NUTS_INSTALL_STAGING = NO
 NUTS_INSTALL_TARGET = YES
 NUTS_LIBTOOL_PATCH = NO
 	
-NUTS_DEPENDENCIES = uclibc libusb netsnmp openssl libgd
+NUTS_DEPENDENCIES = uclibc libusb netsnmp openssl libgd neon
 NUTS_CONF_ENV = LIBS=-lm
 NUTS_CONF_OPT = --with-user=ups --with-group=nut \
 	--with-snmp-libs=-lnetsnmp --program-prefix="" 
-#	--with-cgi --with-htmlpath=/usr/www --with-cgipath=/usr/www/cgi-bi
 
 $(eval $(call AUTOTARGETS,package,nuts))
 	
