@@ -1,0 +1,7 @@
+config BR2_PACKAGE_DAVFS2
+	bool "davfs2"
+	select BR2_PACKAGE_NEON
+	help
+	  davfs2 will work with most WebDAV servers needing little or no configuration
+
+	  http://savannah.nongnu.org/projects/davfs2

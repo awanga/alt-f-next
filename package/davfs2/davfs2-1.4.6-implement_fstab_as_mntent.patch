@@ -1,0 +1,89 @@
+- uClibc doesn't have the fstab.h header file, so implement
+- access the setfsent/getfsfile/endfsent through the mntent structure
+
+--- davfs2-1.4.6.orig/src/mount_davfs.c	2010-01-21 18:50:15.000000000 +0000
++++ davfs2-1.4.6/src/mount_davfs.c	2012-01-08 21:35:05.000000000 +0000
+@@ -29,7 +29,6 @@
+ #ifdef HAVE_FCNTL_H
+ #include <fcntl.h>
+ #endif
+-#include <fstab.h>
+ #include <getopt.h>
+ #include <grp.h>
+ #ifdef HAVE_LIBINTL_H
+@@ -670,6 +669,17 @@
+ }
+ 
+ 
++static struct mntent*
++get_fstab_mountpoint(FILE *fp)
++{
++	struct mntent *ft = NULL;
++	while ((ft = getmntent(fp)) != NULL) {
++  	if (strcmp(ft->mnt_dir, mpoint) == 0)
++    	return ft;
++    }
++	return NULL;
++}
++
+ /* Checks fstab whether there is an entry for the mountpoint specified in args
+    and compares the values in args with the values in fstab.
+    If there is no such entry, or this entry does not allow user-mount, or the
+@@ -680,23 +690,23 @@
+     dav_args *n_args = new_args();
+     n_args->mopts = DAV_USER_MOPTS;
+ 
+-    setfsent();
+-    struct fstab *ft = getfsfile(mpoint);
+-    if (!ft || !ft->fs_spec)
+-        error(EXIT_FAILURE, 0, _("no entry for %s found in %s"), url,
++		FILE *fp = setmntent(_PATH_FSTAB, "r");
++    struct mntent *ft = get_fstab_mountpoint(fp);
++    if (!ft || ft->mnt_fsname == NULL)
++    		error(EXIT_FAILURE, 0, _("no entry for %s found in %s"), url,
+               _PATH_FSTAB);
+-
+-    if (strcmp(url, ft->fs_spec) != 0) {
+-        char *fstab_url = decode_octal(ft->fs_spec);
++    
++    if (strcmp(url, ft->mnt_fsname) != 0) {
++        char *fstab_url = decode_octal(ft->mnt_fsname);
+         if (strcmp(url, fstab_url) != 0)
+             error(EXIT_FAILURE, 0, _("different URL in %s"), _PATH_FSTAB);
+         free(fstab_url);
+     }
+ 
+-    if (ft->fs_mntops)
+-        get_options(n_args, ft->fs_mntops);
++    if (ft->mnt_opts)
++        get_options(n_args, ft->mnt_opts);
+ 
+-    if (! ft->fs_vfstype || strcmp(DAV_FS_TYPE, ft->fs_vfstype) != 0)
++    if (! ft->mnt_type || strcmp(DAV_FS_TYPE, ft->mnt_type) != 0)
+         error(EXIT_FAILURE, 0, _("different file system type in %s"),
+               _PATH_FSTAB);
+     if (args->conf || n_args->conf) {
+@@ -731,9 +739,9 @@
+     if (args->file_mode != n_args->file_mode)
+         error(EXIT_FAILURE, 0, _("different file_mode in %s"), _PATH_FSTAB);
+ 
+-    endfsent();
++    fclose(fp);
+     delete_args(n_args);
+ }
+ 
+
+ /* Checks if a valid mountpoint is specified.
+--- davfs2-1.4.6.orig/src/mount_davfs.h	2009-10-17 21:42:04.000000000 +0100
++++ davfs2-1.4.6/src/mount_davfs.h	2012-01-08 13:16:45.000000000 +0000
+@@ -21,6 +21,10 @@
+ #ifndef DAV_MOUNT_DAVFS_H
+ #define DAV_MOUNT_DAVFS_H
+
++#ifndef _PATH_FSTAB
++#define _PATH_FSTAB "/etc/fstab"
++#endif /* _PATH_FSTAB */
++
+
+ /* Data Types */
+ /*============*/
