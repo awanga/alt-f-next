@@ -15,7 +15,7 @@ CHEETAH_BINARY:=_namemapper.so
 CHEETAH_SITE_PACKAGE_DIR=usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/Cheetah
 CHEETAH_TARGET_BINARY:=$(CHEETAH_SITE_PACKAGE_DIR)/$(CHEETAH_BINARY)
 
-TARGET_CFLAGS += -I=/usr/include/python$(PYTHON_VERSION_MAJOR)
+CHEETAH_CFLAGS = CFLAGS+=-I$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR)
 
 $(DL_DIR)/$(CHEETAH_SOURCE):
 	 $(call DOWNLOAD,$(CHEETAH_SITE),$(CHEETAH_SOURCE))
@@ -30,7 +30,7 @@ $(CHEETAH_DIR)/.patched: $(CHEETAH_DIR)/.unpacked
 
 $(CHEETAH_DIR)/.build: $(CHEETAH_DIR)/.patched
 	(cd $(CHEETAH_DIR); \
-		$(TARGET_CONFIGURE_OPTS) $(TARGET_CONFIGURE_ENV) LDSHARED="$(TARGET_CC) -shared" \
+		$(TARGET_CONFIGURE_OPTS) $(TARGET_CONFIGURE_ENV) LDSHARED="$(TARGET_CC) -shared" $(CHEETAH_CFLAGS) \
 		LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib/ $(HOST_DIR)/usr/bin/python setup.py \
 		bdist_dumb --plat-name $(GNU_TARGET_NAME) --relative \
 	)
