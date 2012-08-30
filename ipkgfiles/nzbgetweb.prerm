@@ -6,6 +6,7 @@ CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
 # get lighttpd server root
 sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
 
-rm -rf $NZBWDATA $sroot/htdocs/nzbgetweb 
+rm -rf $NZBWDATA  
+rm $sroot/htdocs/nzbgetweb
 
 delgroup lighttpd TV

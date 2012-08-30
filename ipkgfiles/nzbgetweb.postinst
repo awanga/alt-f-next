@@ -12,7 +12,7 @@ if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
 fi
 
 mkdir -p /Alt-F/opt
-if ! unzip /tmp/$TBALL -d /Alt-F/opt >& /dev/null; then
+if ! unzip -o /tmp/$TBALL -d /Alt-F/opt >& /dev/null; then
 	rm -f /tmp/$TBALL
 	echo "***********************************"
 	echo "* Extraction of NZBgetweb failed. *"

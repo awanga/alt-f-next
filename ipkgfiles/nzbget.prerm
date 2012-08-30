@@ -11,5 +11,5 @@ done
 
 delgroup nzbget TV
 deluser nzbget
-delgroup TV >& /dev/null
+delgroup TV
 rm -f /sbin/rcnzbget
