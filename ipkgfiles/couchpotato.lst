@@ -1,3 +1,4 @@
 ./etc/couchpotato.conf
 ./etc/init.d/S81couchpotato
 ./usr/www/cgi-bin/couchpotato.cgi
+./usr/www/cgi-bin/couchpotato_proc.cgi
