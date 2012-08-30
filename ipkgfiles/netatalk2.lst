@@ -69,6 +69,5 @@
 ./usr/sbin/cnid_dbd
 ./usr/sbin/cnid_metad
 ./usr/share/netatalk/pagecount.ps
-./usr/www/afpd_hlp.html
 ./usr/www/cgi-bin/afpd.cgi
 ./usr/www/cgi-bin/afpd_proc.cgi
