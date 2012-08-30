@@ -4,16 +4,12 @@ DAEMON=rcsickbeard
 
 $DAEMON stop
 
-i=150 # wait 150/5=30 seconds
-while $DAEMON status >/dev/null; do
-	i=$((i-1))
-	if test $i -eq 0; then
-		exit 1
-	fi
-	usleep 200000
-done 
- 
-rm -rf /Alt-F/opt/Sick-Beard
+for i in $(seq 1 30); do
+	if ! $DAEMON status >& /dev/null; then break; fi
+	sleep 1
+done
+
+rm -rf /Alt-F/opt/SickBeard
 
 deluser sickbeard >& /dev/null
 delgroup TV >& /dev/null

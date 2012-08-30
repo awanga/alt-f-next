@@ -1,3 +1,4 @@
 ./etc/sickbeard.conf
 ./etc/init.d/S81sickbeard
 ./usr/www/cgi-bin/sickbeard.cgi
+./usr/www/cgi-bin/sickbeard_proc.cgi
