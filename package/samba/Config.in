@@ -157,6 +157,13 @@ config BR2_PACKAGE_SAMBA_SMBTREE
 	help
 	  A text based smb network browser
 
+config BR2_PACKAGE_SAMBA_MODULES
+	bool "modules"
+	default n
+	depends on BR2_PACKAGE_SAMBA
+	help
+	  Samba VFS modules
+
 config BR2_PACKAGE_SAMBA_SWAT
 	bool "swat"
 	default y
