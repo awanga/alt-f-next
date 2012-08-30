@@ -1,0 +1,4 @@
+./etc/couchpotato2.conf
+./etc/init.d/S81couchpotato2
+./usr/www/cgi-bin/couchpotato2.cgi
+./usr/www/cgi-bin/couchpotato2_proc.cgi

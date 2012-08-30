@@ -1,0 +1,32 @@
+#!/bin/sh
+
+SITE=https://github.com/RuudBurger/CouchPotatoServer/tarball
+TBALL=master
+
+CBPROG=/Alt-F/opt/CouchPotato2
+CPCONF=/etc/couchpotato2.conf
+CPHOME=/var/lib/couchpotato2
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo "Downloading of CouchPotato2 from its homepage page failed."
+	exit 1
+fi
+
+mkdir -p $CBPROG
+if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
+	rm -f /tmp/$TBALL
+	echo "Extraction of CouchPotato2 failed."
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+cp -a /Alt-F/opt/RuudBurger-CouchPotatoServer-*/* $CBPROG
+rm -rf /Alt-F/opt/RuudBurger-CouchPotatoServer-*
+
+ln -sf /usr/sbin/rcscript /sbin/rccouchpotato2
+
+addgroup -S -g 200 TV
+adduser -S -g "CouchPotato2 user" -G TV -u 22 -h $CPHOME couchpotato2
+
+chown -R couchpotato2:TV $CBPROG $CPCONF

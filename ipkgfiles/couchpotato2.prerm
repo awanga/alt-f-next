@@ -1,0 +1,16 @@
+#/bin/sh
+
+DAEMON=rccouchpotato2
+
+$DAEMON stop
+
+for i in $(seq 1 30); do
+	if ! $DAEMON status >& /dev/null; then break; fi
+	sleep 1
+done
+ 
+rm -rf /Alt-F/opt/CouchPotato2
+
+deluser couchpotato2 >& /dev/null
+delgroup TV >& /dev/null
+rm -rf /sbin/rccouchpotato2
