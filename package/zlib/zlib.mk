@@ -46,7 +46,7 @@ $(ZLIB_DIR)/.configured: $(ZLIB_DIR)/.patched
 $(ZLIB_DIR)/.built: $(ZLIB_DIR)/.configured
 	$(MAKE) -C $(ZLIB_DIR) libz.a
 	$(MAKE) -C $(ZLIB_DIR) all
-	touch -c $@
+	touch $@
 
 $(STAGING_DIR)/usr/include/zlib.h: $(ZLIB_DIR)/.built
 	$(INSTALL) -D $(ZLIB_DIR)/zlib.h $(STAGING_DIR)/usr/include/zlib.h
