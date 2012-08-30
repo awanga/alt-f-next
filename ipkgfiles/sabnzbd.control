@@ -1,6 +1,6 @@
 Package: sabnzbd
 Description: SABnzbd is an Open Source Binary Newsreader written in Python.
-Version: 0.6.15
+Version: 0.7.3
 Depends: ipkg,unrar,par2cmdline,sqlite,python,yenc,pyopenssl,cheetah
 Architecture: arm
 Priority: optional
