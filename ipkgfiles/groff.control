@@ -1,0 +1,9 @@
+Package: groff
+Description: The groff package provides compatible versions of troff, nroff, eqn, tbl, and other Unix text formatting utilities.
+Version: 1.21
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.gnu.org/software/groff
+Maintainer: jcard
