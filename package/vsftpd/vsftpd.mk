@@ -45,12 +45,14 @@ endif
 else # not uclibc
 	$(SED) 's,.*__UCLIBC_.*,,g' $(VSFTPD_DIR)/builddefs.h
 endif
+	touch $@
 
-$(VSFTPD_DIR)/$(VSFTPD_BINARY): $(VSFTPD_DIR)/.configured
+$(VSFTPD_DIR)/.built: $(VSFTPD_DIR)/.configured
 	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" LIBS="$(VSFTPD_LIBS)" -C $(VSFTPD_DIR)
+	touch $@
 
-$(TARGET_DIR)/$(VSFTPD_TARGET_BINARY): $(VSFTPD_DIR)/$(VSFTPD_BINARY)
-	cp -dpf $< $@
+$(TARGET_DIR)/$(VSFTPD_TARGET_BINARY): $(VSFTPD_DIR)/.built
+	cp -dpf $(VSFTPD_DIR)/$(VSFTPD_BINARY) $@
 	$(INSTALL) -D -m 0755 package/vsftpd/vsftpd-init $(TARGET_DIR)/etc/init.d/S70vsftpd
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
@@ -63,11 +65,11 @@ vsftpd-patch: $(VSFTPD_DIR)/.unpacked
 
 vsftpd-configure: $(VSFTPD_DIR)/.configured
 
-vsftpd-build: $(VSFTPD_DIR)/$(VSFTPD_BINARY)
+vsftpd-build: $(VSFTPD_DIR)/.built
 
 vsftpd-clean:
 	-$(MAKE) -C $(VSFTPD_DIR) clean
-	rm -f $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY)
+	rm -f $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY) $(VSFTPD_DIR)/.built
 
 vsftpd-dirclean:
 	rm -rf $(VSFTPD_DIR)
