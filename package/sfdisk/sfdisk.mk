@@ -18,14 +18,14 @@ $(SFDISK_DIR)/.patched: $(DL_DIR)/$(SFDISK_SOURCE)
 	touch $@
 
 
-$(SFDISK_DIR)/sfdisk: $(SFDISK_DIR)/.patched
+$(SFDISK_DIR)/.built: $(SFDISK_DIR)/.patched
 	$(MAKE) \
 		CROSS=$(TARGET_CROSS) DEBUG=false OPTIMIZATION="$(TARGET_CFLAGS)" \
 		-C $(SFDISK_DIR)
 	-$(STRIPCMD) $(SFDISK_DIR)/sfdisk
-	touch -c $(SFDISK_DIR)/sfdisk
+	touch $(SFDISK_DIR)/.built
 
-$(TARGET_DIR)/sbin/sfdisk: $(SFDISK_DIR)/sfdisk
+$(TARGET_DIR)/sbin/sfdisk: $(SFDISK_DIR)/.built
 	cp $(SFDISK_DIR)/sfdisk $(TARGET_DIR)/sbin/sfdisk
 	touch -c $(TARGET_DIR)/sbin/sfdisk
 
