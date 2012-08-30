@@ -6,4 +6,4 @@
 ./usr/www/cgi-bin/cryptsetup.cgi
 ./usr/www/cgi-bin/cryptsetup_proc.cgi
 ./usr/www/cgi-bin/Disk_cryptsetup.men
-./usr/www/cryptsetup_hlp.html
+
