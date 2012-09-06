@@ -25,12 +25,12 @@ $(MDADM_DIR)/.built: $(MDADM_DIR)/.unpacked
 	$(MAKE) CFLAGS="$(TARGET_CFLAGS) -DUCLIBC -DHAVE_STDINT_H" CC=$(TARGET_CC) -C $(MDADM_DIR)
 	touch $@
 
-$(TARGET_DIR)/$(MDADM_TARGET_BINARY): $(MDADM_DIR)/$(MDADM_BINARY)
+$(TARGET_DIR)/$(MDADM_TARGET_BINARY): $(MDADM_DIR)/.built
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(MDADM_DIR) install
 	rm -Rf $(TARGET_DIR)/usr/share/man
 	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
 
-mdadm-build: $(MDADM_DIR)/.built 
+mdadm-build: $(MDADM_DIR)/.built
 
 mdadm-source: $(DL_DIR)/$(MDADM_SOURCE) $(MDADM_PATCH_FILE)
 
