@@ -13,7 +13,7 @@ PERL_CAT:=$(ZCAT)
 
 PERL_CROSS_VERSION=0.7
 PERL_CROSS_SOURCE=perl-$(PERL_VERSION)-cross-$(PERL_CROSS_VERSION).tar.gz
-PERL_CROSS_SITE=http://prdownload.berlios.de/perlcross
+PERL_CROSS_SITE=http://download.berlios.de/perlcross
 
 $(DL_DIR)/$(PERL_CROSS_SOURCE):
 	$(call DOWNLOAD,$(PERL_CROSS_SITE),$(PERL_CROSS_SOURCE))
@@ -49,6 +49,8 @@ $(PERL_DIR)/.stamp_build: $(PERL_DIR)/.stamp_configured
 
 $(PERL_DIR)/.stamp_installed: $(PERL_DIR)/.stamp_build
 	make -C $(PERL_DIR) DESTDIR=$(TARGET_DIR) install.perl
+
+perl-source: $(DL_DIR)/$(PERL_SOURCE)
 
 perl-extract: $(PERL_DIR)/.stamp_extracted
 
