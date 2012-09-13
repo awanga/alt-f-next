@@ -3,94 +3,138 @@
 . common.sh
 
 check_cookie
-write_header "ffp Package Manager"
 
-if ! test -d /ffp/var/packages; then
+RSITE=www.inreto.de
+FSITE="http://$RSITE"
+FDIR="dns323/fun-plug"
+
+if test -s /ffp/etc/ffp-version; then
+	. /ffp/etc/ffp-version
+	if test "$FFP_VERSION" = "0.5"; then
+		ffpver="0.5"
+		FFP_DIR="0.5"
+		xtra_pkgs="$FSITE/$FDIR/0.5/extra-packages/All/"
+		arch_ext=tgz
+		spat='-*-*'
+		gpat='-[^-]*-[^-]*$'
+	else
+		ffpver="0.7"
+		FFP_DIR="0.7/oabi"
+		xtra_pkgs="$FSITE/$FDIR/0.7/oabi/extras/"
+		arch_ext=txz
+		spat='-*-oarm-*'
+		gpat='-[^-]*-oarm-[^-]*$'
+	fi
+fi
+
+write_header "ffp-$ffpver Package Manager"
+
+if ! test -d /ffp/var/packages -o -d /ffp/funpkg/installed; then
 	has_disks
 
 	cat<<-EOF
-		<h4>No ffp instalation found, install ffp in:</h4>
+		<h3>No ffp instalation found.</h3>
 		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
+		<table>
+		<tr><td>Install ffp-0.5 (stable)</td><td><input type=radio checked name=ffpver value=0.5></td></tr>
+		<tr><td>Install ffp-0.7 (recent)</td><td><input type=radio name=ffpver value=0.7></td></tr>
+		<tr><td>into</td><td>$(select_part)</select></td></tr>
+		<tr><td></td><td><input type=submit name=install value=Install></td></tr>
+		</table></form></body></html>
 	EOF
-	select_part
-	echo "</select><input type=submit name=install value=Install>
-	</form></body></html>"
 
 else
 
 	cat<<-EOF
 		<script type="text/javascript">
-			function ask() {
+			function ask_Uninstall() {
 				return confirm("All ffp files will be erased." + '\n\n' + "You will have to reinstall ffp.");
 			}
+			function ask_Upgrade() {
+				return confirm("The ffp folder will be renamed ffp-0.5." + '\n\n' + "If a folder named ffp-0.7 is found, it will be renamed ffp" + '\n' +  "and reused, otherwise you will have to reinstall and configure ffp.");
+			}
+			function ask_Downgrade() {
+				return confirm("The ffp folder will be renamed ffp-0.7." + '\n\n' + "If a ffp-0.5 folder is found it will be renamed ffp and reused, otherwise you will have to reinstall and configure ffp.");
+			}
 		</script>
+		<h4 align=center>Warning: configuration files are
+		overwritten when updating</h4>
 	EOF
 
-	echo "<h4 align=center>Warning: configuration files are
-		overwritten when updating</h4>"
-							
-	inst_pkg=$(ls /ffp/var/packages)
-	
-	wget http://www.inreto.de/dns323/fun-plug/0.5/packages/ \
-		-O /tmp/index.html >/dev/null 2>&1
-	
-	avail_pkg=$(awk -F \" '/href.*tgz/{print substr($4, 0, length($4)-4)}' \
-		/tmp/index.html)
-	
-	wget http://www.inreto.de/dns323/fun-plug/0.5/extra-packages/All/ \
-		-O /tmp/index.html >/dev/null 2>&1
-	
-	avail_pkg="$avail_pkg $(awk -F \" '/href.*tgz/{print substr($4, 0, length($4)-4)}' \
-		/tmp/index.html)"
-	
-	rm /tmp/index.html
-	
+	if test "$ffpver" = "0.5"; then
+		inst_pkg=$(ls /ffp/var/packages)
+	else
+		inst_pkg=$(ls /ffp/funpkg/installed)
+	fi
+
+	avail_pkg=$(wget $FSITE/$FDIR/$FFP_DIR/packages/ $xtra_pkgs -O - 2>/dev/null | \
+		sed -n 's|<li>.*>[[:space:]]*\(.*\).'$arch_ext'.*|\1|p')
+
+	avail_pkg=$(echo -e "$avail_pkg\n$inst_pkg" | sort -u)
+
 	cat <<-EOF
 		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
-		<fieldset><legend> <strong> Installed Packages </strong> </legend><table>
+		<input type=hidden name=ffpver value="$ffpver">
+		<fieldset><legend><strong>Installed Packages</strong></legend><table>
 	EOF
 	
 	for i in $inst_pkg; do
-		#pkg_ver=$(echo $i | grep -o -e '-[-0-9.]*')
-		base_name=${i%-*-*}
-		echo "<tr><td><a href=\"http://www.inreto.de/dns323/fun-plug/0.5/PACKAGES.html#$base_name\">$i</a></td>"
-		echo "<td><input type=submit name=\"$i\" value=Remove></td>"
-		echo "$avail_pkg" | grep -q $i
-		if test $? = "0"; then
-			echo "<td><td>"
-		else
-			update_name=$(echo "$avail_pkg" | grep $base_name)
-			if test -n "$update_name"; then
-				to_update="$to_update $update_name"
-				echo "<td><input type=submit name=\"$update_name\" value=Update ></td>"
-			fi
+		base_name=${i%$spat}
+
+		cat<<-EOF
+			<tr><td><a href="$FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name">$i</a></td>
+			<td><input type=submit name="$i" value="Remove"></td>
+		EOF
+
+		updates=$(echo "$avail_pkg" | grep $base_name$gpat)
+		update_name=$(echo "$updates" | tail -1)
+		if test "$update_name" != $i; then
+			echo "<td><input type=submit name=\"$update_name\" value=\"Update\">to $update_name</td>"
 		fi
-#		if test -f "/ffp/etc/www/${base_name}.html"; then
-#			echo "<td><a href="/ffp/etc/www/${base_name}.html">Configure</a></td>" # FIXME
-#		fi
+		for j in $updates; do
+			avail_pkg=$(echo "$avail_pkg" | sed "/$j/d")
+		done
+
 		echo "</tr>"
 	done
 	
+	if test "$ffpver" = "0.5"; then
+		op=Upgrade; to="ffp-0.7"
+	else
+		op=Downgrade; to="ffp-0.5"
+	fi
+
 	cat <<-EOF
 		<tr><td><br></td></tr>
-		<tr><td> <strong> Uninstall ffp </strong> </td>
-			<td><input type=submit name=uninstall value=Uninstall onclick="return ask()"></td></tr>
+		<tr><td><strong>Uninstall ffp-$ffpver</strong></td>
+			<td><input type=submit name=uninstall value="Uninstall" onclick="return ask_Uninstall()"></td></tr>
+		<tr><td><strong>$op to $to</upgrade></td>
+			<td><input type=submit name=$op value="$op" onclick="return ask_$op()"></td></tr>
 		</table></fieldset><br>
         
 		<fieldset><legend>
-		<a href="http://www.inreto.de/dns323/fun-plug/0.5/">
-		<strong> FFP Available Packages </strong> </a></legend><table>
+		<a href="$FSITE/$FDIR/$FFP_DIR/">
+		<strong>Available ffp Packages</strong></a></legend><table>
 	EOF
+
+if ! nslookup $RSITE >& /dev/null; then
+	echo "<h3><center>You don't seem to have a working internet connection<br>
+or/and a name server configured.</center></h3>"
+fi
 	
 	for i in $avail_pkg; do
-		if test -z "$(echo $inst_pkg | grep $i)"; then
-			base_name=${i%-*-*}
-			if test -z "$(echo $to_update | grep $base_name)"; then
-				pkg_ver=$(echo $i | grep -o -e '-[-0-9.]*')
-				echo "<tr><td><a href=\"http://www.inreto.de/dns323/fun-plug/0.5/PACKAGES.html#$base_name\">$i</a></td>"
-				echo "<td><input type=submit name=\"$i\" value=Install></td></tr>"
-			fi
-		fi
+		base_name=${i%$spat}
+
+		updates=$(echo "$avail_pkg" | grep $base_name$gpat)
+		if test -z "$updates"; then continue; fi
+		update_name=$(echo "$updates" | tail -1)
+		for j in $updates; do
+			avail_pkg=$(echo "$avail_pkg" | sed "/$j/d")
+		done
+		cat<<-EOF
+			<tr><td><a href="$FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name">$update_name</a></td>
+			<td><input type=submit name="$update_name" value="Install"></td></tr>
+		EOF
 	done
 	
 	echo "</table></fieldset></form></body></html>"
