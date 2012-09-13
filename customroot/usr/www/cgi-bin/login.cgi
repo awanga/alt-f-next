@@ -18,7 +18,7 @@ cat<<-EOF
 		<td><input type="password" autocomplete="off" name="passwd" $(ttip tt_login)></td>
 EOF
 
-if ! test -e $SECR; then
+if ! test -s $SECR; then
 	cat<<-EOF
 		</tr>
 		<tr><td>Again:</td>

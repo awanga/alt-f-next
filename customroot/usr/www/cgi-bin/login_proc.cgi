@@ -8,14 +8,14 @@ read_args
 
 #debug
 
-if ! test -f "$SECR"; then
+if ! test -s "$SECR"; then
 	if test -z "$passwd"; then
 		msg "The password can't be empty."
 	elif test "$passwd" != "$passwd_again"; then
 		msg "The two passwords don't match."
 	fi
 
-	passwd=$(checkpass $passwd)
+	passwd=$(checkpass "$passwd")
 	if test $? != 0; then
     	msg "$passwd"
 	fi
@@ -42,7 +42,7 @@ if ! test -f "$SECR"; then
 		loc="/cgi-bin/status.cgi"
 	fi
 else
-	passwd=$(checkpass $passwd)
+	passwd=$(checkpass "$passwd")
 	if test $? != 0; then
     	msg "$passwd"
 	fi
