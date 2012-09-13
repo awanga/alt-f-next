@@ -21,7 +21,7 @@ cat<<-EOF
 		background: #8F8F8F;		
 		color: #F0F0F0;
 		text-align: center;
-		font-family: Sans-Sherif;
+		font-family: arial,verdana;
 		font-size: 0.9em;
 		font-weight: 900;
 		text-decoration: none;
