@@ -64,7 +64,7 @@ check() {
 		echo \$$ > \$0.pid
 		res=\$(nice fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
 		st=\$?
-		logger "Cheking $1 finished with status code \$st: \$res"
+		logger "Checking $1 finished with status code \$st: \$res"
 		if test "\$st" = 0 -o "\$st" = 1; then
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
