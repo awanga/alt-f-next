@@ -42,16 +42,19 @@ fartocel() {
 }
 
 checkpass() {
-	if test -n "$1"; then
-		lpass="$(httpd -d $1)"
-		if test -n "$(echo $lpass | tr -d [!-~])"; then
-			echo "Use only ASCII characters for the password, no spaces:\n\
+	lpass=$(httpd -d "$1")
+	if test -n "$lpass"; then
+		if test -n "$(echo \"$lpass\" | tr -d [!-~])"; then
+			echo "Use only ASCII characters and no spaces for the password: allowed are\n\
 letters, numbers and ! \\\" # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\\ ] ^ _ \` { | } ~"
 			return 1
 		else
 			echo $lpass
 			return 0
 		fi
+	else
+		echo "Password can't be empty"
+		return 1
 	fi
 }
 
@@ -78,16 +81,21 @@ checkname() {
 	echo "$1" | grep -v -q -e '^[^a-zA-Z]' -e '[^a-zA-Z0-9-].*'
 }
 
-check_folder() {
-	if ! test -d "$1"; then
-		echo "\"$1\" does not exists or is not a folder."
-		return 1
-	fi
 
+find_mp() {
+	if ! test -d "$1"; then return 1; fi
 	tmp=$(readlink -f "$1")
 	while ! mountpoint -q "$tmp"; do
 		tmp=$(dirname "$tmp")
 	done
+	echo $tmp
+}
+
+check_folder() {
+	if ! tmp=$(find_mp "$1"); then
+		echo "\"$1\" does not exists or is not a folder."
+		return 1
+	fi
 
 	if test "$tmp" = "/" -o "$tmp" = "."; then
 		echo "\"$1\" is not on a filesystem."
@@ -166,8 +174,9 @@ html_header() {
 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<style type="text/css">html { height: 100%; }</style>
-		<title>$1</title></head><body style="height: 100%; font-family: arial,verdana">
+		<style type="text/css">html { height: 100%; }</style><title></title>
+		</head><body style="height: 100%; font-family: arial,verdana">
+		<center><h2>$1</h2></center>
 	EOF
 }
 
@@ -381,7 +390,7 @@ gotopage() {
 }
 
 js_gotopage() {
-	if test -z "$HTML_HEADER_DONE"; then html_header; fi
+	html_header
 	cat<<-EOF
 		<script type="text/javascript">
 			window.location.assign("$1")
@@ -413,7 +422,7 @@ check_cookie() {
 }
 
 busy_cursor_start() {
-	if test -z "$HTML_HEADER_DONE"; then html_header; fi
+	html_header
 	cat<<-EOF
 		<script type="text/javascript">
 			document.body.style.cursor = 'wait';
@@ -484,8 +493,8 @@ embed_page() {
 drawbargraph() {
 
 	linewidth="$1"
-	if test "$linewidth" -gt 99; then
-		linewidth="99"
+	if test "$linewidth" -gt 100; then
+		linewidth="100"
 	fi
 
 	if [ "$2" == "" ]; then
@@ -508,9 +517,7 @@ drawbargraph() {
 	cat <<-EOF
 	<div class="meter-wrap">
 		<div class="meter-value" style="background-color: $bgcolor; width: $linewidth%;">
-			<div class="meter-text" style="color: $fgcolor;">
-		   		$text
-			</div>
+			<div class="meter-text" style="color: $fgcolor;">$text</div>
 		</div>
 	</div>
 	EOF
@@ -602,7 +609,7 @@ cat<<EOF
 
 	<style type="text/css">
 	.ttip {
-		font-family: sans-serif;
+		font-family: arial,verdana;
 		border: solid 1px black;
 		padding: 2px;
 
@@ -703,7 +710,7 @@ cat<<EOF
 		background: #8F8F8F;		
 		color: #F0F0F0;
 		text-align: center;
-		font-family: Sans-Sherif;
+		font-family: arial,verdana;
 		font-size: 0.9em;
 		font-weight: 900;
 		text-decoration: none;
@@ -763,7 +770,7 @@ write_header() {
 		warn="<center><h5>
 			<a href=\"/cgi-bin/settings.cgi\" $(ttip tt_settings)
 			style=\"text-decoration: none; color: red\">
-			When done you should save settings
+			When done you should <u>save settings</u>
 			<img src=\"../help.png\" width=11 height=11 alt=\"help\" border=0>
 			</a></h5></center>"
 	fi
