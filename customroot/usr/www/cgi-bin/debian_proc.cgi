@@ -51,7 +51,7 @@ if test "$submit" = "Install"; then
 		msg "Debian is already installed in this filesystem."
 	fi
 
-	CDEBOOT=$(wget -q -O - $DEBMIRROR/pool/main/c/cdebootstrap/ | sed -n 's/.*>\(cdebootstrap-static_.*_armel.deb\)<.*/\1/p' | head -1)
+	CDEBOOT=$(wget -q -O - $DEBMIRROR/pool/main/c/cdebootstrap/ | sed -n 's/.*>\(cdebootstrap-static_.*_armel.deb\)<.*/\1/p' | tail -1)
 
 	write_header "Installing Debian"
 
