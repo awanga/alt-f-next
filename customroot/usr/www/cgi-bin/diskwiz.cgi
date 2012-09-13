@@ -102,11 +102,10 @@ if test -n "$huge_disk"; then
 it will be partitioned using GPT partitioning."
 fi
 
+notouch_chk="checked"
 if isflashed; then
-	std_chk="checked"
 	ext4_chk="checked"
 else
-	notouch_chk="checked"
 	ext3_chk="checked"
 	ext4_dis="disabled"
 	raid5_dis="disabled"
