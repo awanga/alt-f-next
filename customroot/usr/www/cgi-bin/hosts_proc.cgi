@@ -11,9 +11,12 @@ CONF_MISC=/etc/misc.conf
 
 if test -n "$Submit"; then
 
-	. $CONF_MISC
+	if test -s $CONF_MISC; then 
+		. $CONF_MISC
+	fi
 
-	net=$(hostname -d)
+	net=$(hostname -d 2>/dev/null)
+	if test -z "$net"; then net="localnet"; fi
 
 	TF=$(mktemp)
 	echo "127.0.0.1	localhost" > $TF
@@ -50,6 +53,7 @@ if test -n "$Submit"; then
 	done
 
 	mv $TF $CONF_HOSTS
+	chmod a+r $CONF_HOSTS
 
 	if rcdnsmasq status >& /dev/null; then
 		rcdnsmasq reload >& /dev/null
