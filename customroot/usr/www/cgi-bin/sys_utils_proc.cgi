@@ -114,7 +114,7 @@ case "$action" in
 		fi
 
 		passwd="$(httpd -d $passwd)"
-		if test -n "$passwd" -a "$passwd" = $(cat $SECR); then
+		if test -n "$passwd" -a "$passwd" = "$(cat $SECR)"; then
 			rm -f $SECR
 			rm -f /tmp/cookie
 		else
