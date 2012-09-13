@@ -6,12 +6,11 @@
 
 NUTS_VERSION = 2.6.1
 NUTS_SOURCE = nut-$(NUTS_VERSION).tar.gz
-NUTS_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/nut
+NUTS_SITE = http://www.networkupstools.org/source/2.6
 NUTS_AUTORECONF = NO
 NUTS_INSTALL_STAGING = NO
 NUTS_INSTALL_TARGET = YES
 NUTS_LIBTOOL_PATCH = NO
-	
 NUTS_DEPENDENCIES = uclibc libusb netsnmp openssl libgd neon
 NUTS_CONF_ENV = LIBS=-lm
 NUTS_CONF_OPT = --with-user=ups --with-group=nut \
