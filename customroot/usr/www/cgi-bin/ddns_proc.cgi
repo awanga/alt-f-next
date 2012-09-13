@@ -20,13 +20,13 @@ case $provider in
 	*) ddns="" ;;
 esac
 
-passwd=$(checkpass $passwd)
+passwd=$(checkpass "$passwd")
 if test $? != 0; then
 	msg "$passwd"
 fi
 
 if test -n "$ddns" -a -n "$host"; then
-	host="$(httpd -d $host)"
+	host=$(httpd -d "$host")
 
 	cat<<-EOF > $CONFF
 		dyndns_system $ddns
