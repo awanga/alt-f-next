@@ -27,7 +27,7 @@ if test "$auth" != "off" -a \( -z "$user" -o -z "$password" \); then
 	msg "Username and Password must be filled"
 fi
 
-password=$(checkpass $password)
+password=$(checkpass "$password")
 if test $? != 0; then
     msg "$password"
 fi
