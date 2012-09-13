@@ -126,16 +126,13 @@ else
 fi
 
 ifdown eth0 >& /dev/null
+start-stop-daemon -K -x udhcpc >& /dev/null # ifdown used to kill udhcp...
 sleep 1
 ifup eth0 >& /dev/null
 sleep 3
 
-
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
-
-# ifdown stops udhcpc, no need to kill it
-# start-stop-daemon -K -x udhcpc >& /dev/null
 
 if rcsmb status >& /dev/null; then
 	# samba-3.5.12 does not change workgroup or server string on reload...

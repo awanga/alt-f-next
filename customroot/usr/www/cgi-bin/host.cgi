@@ -43,7 +43,7 @@ fi
 if ifconfig eth0 | grep -q inet6; then
 	ipv6_inuse="(currently in use)"
 elif test -n "$ipv6_chk"; then
-		ipv6_inuse="(not loaded)"
+	ipv6_inuse="(not loaded)"
 fi
 
 if test -e $RESOLV; then
@@ -65,14 +65,17 @@ fi
 
 ifconfig eth0 >/dev/null 2>&1
 if test $? = 0; then
-	hostname=$(hostname -s)
-	domain=$(hostname -d)
+	hostname=$(hostname -s 2> /dev/null)
+	domain=$(hostname -d 2> /dev/null)
 	hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 	netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 	bcast=$(ifconfig eth0 | awk '/inet addr/ { print substr($3, 7) }')
 	gateway=$(route -n | awk '$1 == "0.0.0.0" { print $2 }')
 	mtu=$(ifconfig eth0 | awk '/MTU/{print substr($0, match($a,"MTU")+4,4)}')
 fi
+
+if test -z "$hostname"; then hostname="DNS-323"; fi
+if test -z "$domain"; then domain="localnet"; fi
 
 mktt mtu_tt "Also called jumbo frames"
 
