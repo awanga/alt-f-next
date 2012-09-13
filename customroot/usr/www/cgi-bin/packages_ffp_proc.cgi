@@ -95,16 +95,15 @@ if test "$install" = "Install"; then
 
 	if test -d $ffpdir; then
 		effp=$ffpdir
-	elif test -d $ffpdir-0.5; then
-		effp=$ffpdir-0.5
-	elif test -d $ffpdir-0.7; then
-		effp=$ffpdir-0.7
+	elif test -d $ffpdir-$ffpver; then
+		effp=$ffpdir-$ffpver
 	fi
 
 	if test -n "$effp" -a -f $effp/etc/ffp-version; then
 		mv $effp $ffpdir >& /dev/null
 		ln -sf $ffpdir /ffp
-		msg "A ffp installation was found in $part and reused."
+		. /ffp/etc/ffp-version
+		msg "A ffp-$FFP_VERSION installation was found in $part and reused."
 	fi
 
 	TMPF=/tmp/fun_plug.tgz
