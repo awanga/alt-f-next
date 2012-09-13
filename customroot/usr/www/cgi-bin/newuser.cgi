@@ -66,7 +66,7 @@ parse_qstring
 if test "$act" = "changepass"; then
 	uname=$(httpd -d "$uname")
 	if ! id -u "$nick" >& /dev/null; then msg "User doesn't exists."; fi
-	gid=$(id -u "$nick")
+	uid=$(id -u "$nick")
 	gid=$(id -g "$nick")
 	chpass="readonly"
 	subbut='<input type="submit" name="chpass" value="ChangePass">'

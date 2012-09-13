@@ -24,12 +24,12 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		msg "The passwords does not match"
 	fi
 
-	pass=$(checkpass $pass)
+	pass=$(checkpass "$pass")
 	if test $? != 0; then
 		msg "$pass"
 	fi
 
-	passa=$(checkpass $passa)
+	passa=$(checkpass "$passa")
 	if test $? != 0; then
 		msg "$passa"
 	fi
