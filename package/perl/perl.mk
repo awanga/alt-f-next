@@ -49,6 +49,15 @@ $(PERL_DIR)/.stamp_build: $(PERL_DIR)/.stamp_configured
 
 $(PERL_DIR)/.stamp_installed: $(PERL_DIR)/.stamp_build
 	make -C $(PERL_DIR) DESTDIR=$(TARGET_DIR) install.perl
+	chmod +w $(TARGET_DIR)/usr/lib/perl/arm-linux/Config.pm $(TARGET_DIR)/usr/lib/perl/arm-linux/Config_heavy.pl
+	sed -i "s/cc *=> *'arm-linux-gcc'/cc => 'gcc'/" $(TARGET_DIR)/usr/lib/perl/arm-linux/Config.pm
+	sed -i -e "s/'arm-linux-\(.*\)'/'\1'/" \
+		-e "s/myuname='uclibc'/myuname='arm-linux-uclibc'/" \
+		-e "s|-I/.*include ||" \
+		-e "s|--sysroot=.*staging_dir/ ||" \
+		-e "s|-isysroot.*staging_dir ||" \
+		$(TARGET_DIR)/usr/lib/perl/arm-linux/Config_heavy.pl
+	touch $@
 
 perl-source: $(DL_DIR)/$(PERL_SOURCE)
 
@@ -58,9 +67,7 @@ perl-configure: $(PERL_DIR)/.stamp_configured
 
 perl-build: $(PERL_DIR)/.stamp_build
 
-perl: $(PERL_DIR)/.stamp_installed
-
-#perl-: $(PERL_DIR)/.stamp_
+perl: uclibc gdbm $(PERL_DIR)/.stamp_installed
 
 #############################################################
 #
