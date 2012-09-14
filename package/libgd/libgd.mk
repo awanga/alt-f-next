@@ -29,3 +29,7 @@ $(eval $(call AUTOTARGETS,package,libgd))
 $(LIBGD_HOOK_POST_CONFIGURE):
 	sed -i 's|^CPPFLAGS.*||' $(LIBGD_DIR)/$(LIBGD_SUBDIR)/Makefile
 	touch $@
+
+$(LIBGD_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/bin/gdlib-config
+	touch $@
