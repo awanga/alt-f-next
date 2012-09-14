@@ -38,7 +38,7 @@ config BR2_PACKAGE_PYTHON_BSDDB
 	select BR2_PACKAGE_DB
 	bool "bsddb module"
 	help
-	  bsddb module for Python.
+	  bsddb module for Python. Deprecated since 2.6
 
 config BR2_PACKAGE_PYTHON_GDBM
 	depends on BR2_PACKAGE_PYTHON
