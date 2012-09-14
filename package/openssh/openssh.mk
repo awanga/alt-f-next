@@ -9,7 +9,7 @@ OPENSSH_SITE=ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable
 OPENSSH_CONF_ENV = LD=$(TARGET_CC)
 #OPENSSH_CONF_OPT = --libexecdir=/usr/lib --sysconfdir=/etc/ssh 
 OPENSSH_CONF_OPT = --sysconfdir=/etc/ssh \
-	-disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx --without-x
+	-disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx
 OPENSSH_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
 # The bellow dependency on dropbear is a fake. Dropbear installs ssh,scp, etc as a link
@@ -22,8 +22,7 @@ $(eval $(call AUTOTARGETS,package,openssh))
 ifneq ($(BR2_PACKAGE_OPENSSH_SFTP_ONLY),y)
 
 $(OPENSSH_HOOK_POST_INSTALL):
-	#$(INSTALL) -D -m 755 package/openssh/S50sshd $(TARGET_DIR)/etc/init.d/S50sshd
-	sed 's/#.*Ciphers /Ciphers aes128-cbc,/' $(TARGET_DIR)/etc/ssh/ssh_config
+	sed -i 's/#.*Ciphers /Ciphers aes128-cbc,/' $(TARGET_DIR)/etc/ssh/ssh_config
 	touch $@
 
 else
