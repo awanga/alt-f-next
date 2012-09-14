@@ -3,7 +3,7 @@
 # cups
 #
 ################################################################################
-#CUPS_VERSION = 1.4.6
+
 CUPS_VERSION = 1.4.8
 CUPS_NAME = cups-$(CUPS_VERSION)
 CUPS_DIR = $(BUILD_DIR)/$(CUPS_NAME)
