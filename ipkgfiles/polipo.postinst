@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mkdir -p /var/spool/polipo
+ln -sf /usr/sbin/rcscript /sbin/rcpolipo
