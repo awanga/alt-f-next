@@ -47,6 +47,8 @@ $(SUDO_DIR)/.configured: $(SUDO_DIR)/.unpacked $(SUDO_CONFIG_FILE)
 		--mandir=/usr/man \
 		--infodir=/usr/info \
 		$(DISABLE_LARGEFILE) \
+		--with-editor=/bin/vi \
+		--with-env-editor \
 		--without-lecture \
 		--without-sendmail \
 		--without-umask \
@@ -55,7 +57,6 @@ $(SUDO_DIR)/.configured: $(SUDO_DIR)/.unpacked $(SUDO_CONFIG_FILE)
 		--disable-authentication \
 		$(SUDO_EXTRA_CONFIG) \
 	)
-
 	touch $@
 
 $(SUDO_DIR)/sudo: $(SUDO_DIR)/.configured
