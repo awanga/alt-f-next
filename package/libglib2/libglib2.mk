@@ -3,9 +3,10 @@
 # libglib2
 #
 #############################################################
-LIBGLIB2_VERSION_MAJOR = 2.20
-LIBGLIB2_VERSION_MINOR = 4
-LIBGLIB2_VERSION = $(LIBGLIB2_VERSION_MAJOR).$(LIBGLIB2_VERSION_MINOR)
+#LIBGLIB2_VERSION_MAJOR = 2.20
+#LIBGLIB2_VERSION_MINOR = 4
+#LIBGLIB2_VERSION = $(LIBGLIB2_VERSION_MAJOR).$(LIBGLIB2_VERSION_MINOR)
+LIBGLIB2_VERSION = 2.20.4
 LIBGLIB2_SOURCE = glib-$(LIBGLIB2_VERSION).tar.bz2
 LIBGLIB2_SITE = http://ftp.gtk.org/pub/glib/$(LIBGLIB2_VERSION_MAJOR)
 
@@ -63,6 +64,13 @@ LIBGLIB2_DEPENDENCIES+=libiconv
 endif
 
 $(eval $(call AUTOTARGETS,package,libglib2))
+
+$(LIBGLIB2_HOOK_POST_INSTALL):
+	rm -rf $(TARGET_DIR)/usr/share/gtk-doc \
+	$(TARGET_DIR)/usr/share/aclocal/ \
+	$(TARGET_DIR)/usr/lib/glib-2.0 \
+	$(TARGET_DIR)/usr/share/glib-2.0
+	touch $@
 
 # libglib2 for the host
 LIBGLIB2_HOST_DIR:=$(BUILD_DIR)/libglib2-$(LIBGLIB2_VERSION)-host
