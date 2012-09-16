@@ -52,7 +52,7 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
 BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
-BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD"
+BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO"
 
 BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
@@ -69,7 +69,7 @@ BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
 BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs"
 
 BR2_PACKAGE_DBUS="etc/init.d/S20dbus"
-
+BR2_PACKAGE_POLIPO="etc/init.d/S45polipo"
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
 
 # FIXME: netatalk files are deleted, as they are the same in
@@ -93,8 +93,12 @@ usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
 
 BR2_PACKAGE_PHP="etc/php.ini"
 
-BR2_PACKAGE_SICKBEARD="etc/sickbeard.conf etc/init.d/S81sickbeard usr/www/cgi-bin/sickbeard.cgi"
-BR2_PACKAGE_SABNZBD="etc/sabnzbd.conf etc/init.d/S81sabnzbd usr/www/cgi-bin/sabnzbd.cgi"
+BR2_PACKAGE_SICKBEARD="etc/sickbeard.conf etc/init.d/S81sickbeard usr/www/cgi-bin/sickbeard.cgi usr/www/cgi-bin/sickbeard_proc.cgi"
+BR2_PACKAGE_SABNZBD="etc/sabnzbd.conf etc/init.d/S81sabnzbd usr/www/cgi-bin/sabnzbd.cgi usr/www/cgi-bin/sabnzbd_proc.cgi"
+BR2_PACKAGE_COUCHPOTATO="etc/couchpotato.conf etc/init.d/S81couchpotato usr/www/cgi-bin/couchpotato.cgi usr/www/cgi-bin/couchpotato_proc.cgi"
+BR2_PACKAGE_COUCHPOTATO2="etc/couchpotato2.conf etc/init.d/S81couchpotato2 usr/www/cgi-bin/couchpotato2.cgi usr/www/cgi-bin/couchpotato2_proc.cgi"
+BR2_PACKAGE_NZBGET="etc/nzbget.conf etc/nzbget-pp.conf usr/bin/nzbget-pp.sh etc/init.d/S81nzbget usr/www/cgi-bin/nzbget.cgi usr/www/cgi-bin/nzbget_proc.cgi" 
+BR2_PACKAGE_NZBGETWEB="etc/nzbget-example.conf etc/nzbget-pp-example.conf"
 
 # see above comment
 if test -n "$BR2_PACKAGE_NETATALK2" -a \
