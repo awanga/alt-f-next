@@ -53,7 +53,13 @@ istart() {
 		if test -z "$id" -o -z "$type" -o -z "$runas" -o -z "$srcpath" \
 			-o -z "$dstpath" -o -z "$when" -o -z "$at" -o -z "$log"; then continue; fi
 		if test "${id:0:1}" = "#"; then continue; fi
-		echo "0 $at * * $when /usr/bin/backup $id #!# Alt-F cron" >> $TF
+		if test "${when:0:1}" = "d"; then
+			mday=${when:1}
+			when='*'
+		else
+			mday='*'
+		fi
+		echo "0 $at $mday * $when /usr/bin/backup $id #!# Alt-F cron" >> $TF
 	done < $CONF
 
 	crontab $TF 2> /dev/null

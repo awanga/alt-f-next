@@ -8,7 +8,27 @@ CONF=/etc/backup.conf
 
 #debug
 
-if test -n "$BackupNow"; then
+if test -n "$Change"; then
+	bdir=$(httpd -d "$bdir")
+	if ! bdir=$(find_mp "$bdir"); then msg "You have to select a filesystem root"; fi
+	if test -d "$bdir/Backup"; then  msg "A folder named $bdir/Backup already exists"; fi
+
+	obdir=$(readlink -f /Backup)
+	nbdir=$obdir
+	cnt=0
+	while test -d $nbdir; do
+		nbdir=$obdir-$cnt
+		cnt=$((cnt+1))
+	done
+	mv $obdir $nbdir
+
+	mkdir -p "$bdir"/Backup
+	chown backup:backup "$bdir"/Backup
+	chmod g+rwx,o+rx "$bdir"/Backup
+	rm /Backup
+	ln -sf "$bdir"/Backup /Backup
+
+elif test -n "$BackupNow"; then
 
 	backup $BackupNow &
 
@@ -60,7 +80,7 @@ elif test -n "$Submit"; then
 
 elif test -n "$CreateDir"; then
 	if test "$part" = "none"; then
-        	msg "You must select a partition"
+        	msg "You must select a filesystem"
 	fi
 
 	part=/dev/$(httpd -d $part)

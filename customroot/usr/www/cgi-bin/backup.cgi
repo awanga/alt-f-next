@@ -24,7 +24,7 @@ mktt type_tt "Backup source."
 mktt runas_tt "Run the backup as the selected user.<br><br>Should be the \"root\" user for local folders, or the<br> user owning the files when the folder is mounted by NFS or Samba." 
 mktt host_tt "Computer to backup from."
 mktt src_tt "Folder to backup from."
-mktt when_tt "Week day(s) to perform the backup.<br><br>0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br>No spaces allowed, no checks done"
+mktt when_tt "Week or Month day(s) to perform the backup.<br><br><strong>Week day</strong>: 0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br><br><strong>Month day:</strong> first character must be a 'd',<br> 1 to 31 allowed, same rules as above applies,<br> e.g., 'd1,15' or 'd1-5' or 'd28' are valid.<br><br>No spaces allowed, no checks done"
 mktt at_tt "Hour of the day to perform the backup, 0..23.<br><br>Use the same format as in the \"When\" field.<br>You can schedule several backup for the same hour,<br> they will be performed one at a time, sequentially."
 mktt rot_tt "After doing this number of backups, start removing the oldest, as needed.<br>0 disables rotation."
 mktt log_tt "After doing a backup generates a log with added, removed and changed files.<br>If no changes were detected, the backup is removed.<br>It is too sloow, use only for special folders."
@@ -46,6 +46,10 @@ cat<<EOF
 				document.getElementById(browse_id).disabled = true
 			} else
 				document.getElementById(browse_id).disabled = false
+		}
+		function browse_dir(eid, sdir) {
+			window.open("browse_dir.cgi?id=" + eid + "?browse=" + sdir, "Browse", "scrollbars=yes, width=500, height=500");
+			return false
 		}
 		function browse_popup(type_id, input_id, host_id) {
 			obj = document.getElementById(type_id)
@@ -87,8 +91,15 @@ while read nick d1 uid d2 uname rest; do
 	fi
 done < /etc/passwd
 
+bdir=$(readlink -f /Backup)
 cat<<-EOF
-	<form name=hosts action="/cgi-bin/backup_proc.cgi" method="post">
+	<form name=backup action="/cgi-bin/backup_proc.cgi" method="post">
+	<fieldset><legend><strong>Backup Destination Folder</strong></legend>
+	Current: <input type=text id="bdir_id" name=bdir value="$bdir">
+	<input type=button onclick="browse_dir('bdir_id','$bdir')" value=Browse>
+	<input type=submit name=change onclick="return confirm('You current backup folder will be renamed $bdir-N and a new one created.'+'\n\n' + 'Proceed?')" value=Change>
+	</fieldset><br>
+	<fieldset><legend><strong>Backup Setup</strong></legend>
 	<table>
 	<tr align=center><th>Disable</th><th>ID</th><th>Type</th><th>Run As</th><th>Host</th>
 	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th></tr>
@@ -195,5 +206,5 @@ cat<<EOF
 	<input type=hidden name=cnt_know value="$i">
 	<input type=submit name=submit value=Submit>$(back_button)
 	</td></tr>
-	</table></form></body></html>
+	</table></fieldset></form></body></html>
 EOF
