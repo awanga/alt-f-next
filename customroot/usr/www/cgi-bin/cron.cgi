@@ -6,7 +6,7 @@ write_header "cron Setup"
 
 #CONF_CRON=/var/spool/cron/crontabs/root
 
-mktt wday_tt "Week day(s) to execute the command.<br><br>0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br>No spaces allowed, no checks done"
+mktt wday_tt "Week or Month day(s) to perform the backup.<br><br><strong>Week day</strong>: 0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br><br><strong>Month day:</strong> first character must be a 'd',<br> 1 to 31 allowed, same rules as above applies,<br> e.g., 'd1,15' or 'd1-5' or 'd28' are valid.<br><br>No spaces allowed, no checks done"
 mktt hour_tt "Hour of the day to execute the command, 0..23.<br><br>Use the same format as in the \"When\" field."
 
 if ! rccron status >& /dev/null; then
@@ -27,6 +27,10 @@ while read min hour monthday month weekday cmd; do
 	if test "${min:0:1}" = "#"; then
 		chkdis="checked"
 	fi
+	if test "$monthday" != '*'; then
+		weekday="d$monthday"
+	fi
+
 	inp="<input type=checkbox $chkdis name=dis_$i>"
 
 	altf_cron=""

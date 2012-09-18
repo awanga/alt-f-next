@@ -12,6 +12,12 @@ for i in $(seq 1 $cron_cnt); do
 
 	eval weekday="\$weekday_$i"
 	weekday=$(httpd -d "$weekday")
+	if test "${weekday:0:1}" = "d"; then
+		mday=${weekday:1}
+		weekday='*'
+	else
+		mday='*'
+	fi
 
 	eval hour="\$hour_$i"
 	hour=$(httpd -d "$hour")
@@ -31,7 +37,7 @@ for i in $(seq 1 $cron_cnt); do
 		cmt="#!# Alt-F cron"
 	fi
 
-	echo "${dis}0 $hour * * $weekday $cmd $cmt" >> $TF
+	echo "${dis}0 $hour $mday * $weekday $cmd $cmt" >> $TF
 done
 
 crontab $TF
