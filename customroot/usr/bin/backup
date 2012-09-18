@@ -75,11 +75,12 @@ do_log() {
 
 clean_logs() {
 	clogs=$(find $ddname -maxdepth 1 -type d | wc -l)
-	if test "$((clogs - 1))" -gt "$nlogs"; then
+	while test "$((clogs - 1))" -gt "$nlogs"; do
+		clogs=$((clogs-1))
 		last=$(ls $ddname | grep '^....-..-.._..-..-..$' | head -1)
-		logger -st backup "backup $id with more than $nlogs backups, removing oldest $last"
+		logger -st backup "backup $id with $clogs backups ($nlogs configured), removing oldest $last"
 		rm -rf "$last"
-	fi
+	done
 }
 
 wakeup() {
@@ -125,11 +126,29 @@ do_backup() {
 	if test -z "$first_time"; then
 		# the '/' in "$srcpath" is to copy directory contents, not directory
 		res=$(su -c "nice rsync -ax $rsync_opt \"${rsync_host}${srcpath}/\" \"$destname/$date\" " ${runas} )
+		st=$?
 	else
-# FIXME: 4GB cpio issue, see dir_proc.cgi
-		res=$(su -c "cd \"$srcpath\"; find . -depth | nice cpio -pdm \"$destname/$date\" " ${runas}; cd )
+		tf=$(mktemp -t)
+		xtra="cat"
+
+# test		(cd "$srcpath"; find . -size +4294967c > $tf) # test
+		(cd "$srcpath"; find . -size +4294967295c > $tf)
+		if test -s $tf; then
+			xtra="grep -v -f $tf"
+		fi
+		res=$(su -c "cd \"$srcpath\"; find . -depth | $xtra | nice cpio -pdm \"$destname/$date\" " ${runas}; cd )
+		st=$?
+		if test "$st" = 0; then
+			while read -r fn; do
+				td=$(dirname "$fn")
+#				echo "$fn"
+				res=$(su -c "cp -dp \"$srcpath/$fn\" \"$destname/$date/$td\" " ${runas})
+				st=$?
+				if test "$st" != 0; then break; fi
+			done < $tf
+		fi
+		rm -f $tf
 	fi
-	st=$?
 	if test "$st" != 0; then
 		logger -st backup "Backup $id failed, err=$st: $res"
 		return 1
