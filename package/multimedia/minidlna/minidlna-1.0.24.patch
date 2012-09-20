@@ -99,7 +99,7 @@
  
  echo "/* Enable if the system libintl.h exists for NLS support. */" >> ${CONFIGFILE}
 -if [ -f /usr/include/libintl.h ]; then
-+if [ -f $STAGING_DIR/usr/include/libintl.h ]; then
++if [ -z "$DISABLE_NLS" -a -f $STAGING_DIR/usr/include/libintl.h ]; then
  echo "#define ENABLE_NLS" >> ${CONFIGFILE}
  else
  echo "/*#define ENABLE_NLS*/" >> ${CONFIGFILE}
@@ -183,7 +183,7 @@
 +++ minidlna-1.0.19/configure	2011-03-16 22:15:58.300340013 +0000
 @@ -0,0 +1,9 @@
 +#!/bin/sh
-+make depend
++make DISABLE_NLS="$DISABLE_NLS" depend
 +echo >> Makefile
 +echo "CC = $CC_FOR_TARGET" >> Makefile
 +echo "CFLAGS =  $CFLAGS -I ${STAGING_DIR}/usr/include/ffmpeg" >> Makefile
