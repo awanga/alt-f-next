@@ -22,6 +22,15 @@ showlog() {
 		exit 0
 	fi
 
+	if test -n "$Clear"; then
+		echo -n > $1
+		gotopage /cgi-bin/sys_utils.cgi
+	fi
+
+	if test "$2" != "SystemLog" -a "$2" != "Processes" -a "$2" != "KernelLog"; then 
+		clearbutton="<input type=submit name=\"$2\" value=\"Clear\">"
+	fi
+
 	write_header "$3"
 	mktt filter_tt "Enter a search string (or a grep regular expression)"
 
@@ -41,6 +50,7 @@ showlog() {
 		<input type=submit name=$1 value="Download">
 		Filter: <input type=text name=filter_str value="$pat" onkeypress="return event.keyCode != 13" $(ttip filter_tt)>
 		<input type=submit name=$2 value="Refresh">
+		$clearbutton
 		<input type=hidden name=logfile value="$2">
 		</form></body></html>
 	EOF
@@ -48,6 +58,8 @@ showlog() {
 
 if test -n "$Refresh"; then
 	action="$Refresh"
+elif test -n "$Clear"; then
+	action="$Clear"
 elif test -n "$Download"; then
 	action="$logfile"
 elif test -n "$logaction" -a "$logaction" != "Select+one"; then
