@@ -62,7 +62,9 @@ systems_st() {
 	cpu="$(top -bn1 | awk '/^CPU:/ {printf "%d", 100 - $8}')"
 	loadv=$(cut -f1 -d" " /proc/loadavg)
 	load=$(awk '{printf "%d", 50 * $1 }' /proc/loadavg)
-	eval $(free | awk '/Swap/{printf "swap=\"%.1f/%d MB\"", $3/1024, $4/1024}')
+
+	eval $(free | awk '/Swap/{if ($2 == 0) printf "swap=0; swapv=None"; \
+			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3/$2*1024, $3/1024, $4/1024}}')
 
 	board="$(cat /tmp/board)"
 
@@ -105,16 +107,22 @@ systems_st() {
 	eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
 		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
 
+	if test -s $SERRORL; then
+		serror="<strong><font color=red>Errors</font></strong><ul><pre>$(cat $SERRORL)</pre></ol>"
+	fi
+
 	cat<<-EOF
 		<fieldset><legend><strong>System</strong></legend>
+		$serror
 		<table><tr>
 			<td><strong>Temperature</strong> $(drawbargraph $temp $tempv )</td>
 			<td><strong>Fan speed</strong> $(drawbargraph $fan $fanv)</td>
 			<td><strong>Load</strong> $(drawbargraph $load $loadv)</td>
 			<td><strong>CPU</strong> $(drawbargraph $cpu)</td>
+			<td><strong>Swap</strong> $(drawbargraph $swap $swapv)</td>
 		</tr><tr><td><br></td></tr><tr>
-			<td><strong>Swap:</strong> $swap</td>
-			<td><strong>Uptime:</strong> $up</td>
+			<td><strong>Name:</strong> $(hostname -s)</td>
+			<td colspan=2><strong>Uptime:</strong> $up</td>
 			<td colspan=2><strong>Date:</strong> $(date)</td>
 		</tr></table></fieldset><br>
 	EOF
@@ -127,11 +135,12 @@ network_st() {
 			'/RX bytes/ {printf "Rx=\"%s %s\";", $3, $4} \
 			/TX bytes/ {printf "Tx=\"%s %s\";", $7, $8} \
 			/MTU/ {printf "MTU=%s;", substr($0, match($a,"MTU")+4,5)} \
-			/inet6/ {printf "ipv6=%s;", $3} \
-			/HWaddr/{printf "MAC=\"%s\";", $5}' | tr "()" "  ")
+			/inet6/ { if (! match($3, "^fe80:")) ipv6=$3"; "ipv6} \
+			/HWaddr/{printf "MAC=\"%s\";", $5} \
+			END {printf "ipv6=\"%s\"", ipv6}' | tr "()" "  ")
 
 	if test -n "$ipv6"; then
-		IPV6="<strong> IPv6: </strong> $ipv6"
+		IPV6="<br><strong> IPv6: </strong> $ipv6"
 	fi
 
 	cat<<-EOF
@@ -533,6 +542,8 @@ if test -n "$refresh"; then
 	echo "</body></html>"
 	exit 0
 fi
+
+SERRORL=/var/log/systemerror.log
 
 ver="$(cat /etc/Alt-F)"
 write_header "Alt-F $ver Status Page"
