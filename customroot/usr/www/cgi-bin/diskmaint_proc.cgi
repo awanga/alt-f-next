@@ -64,11 +64,14 @@ check() {
 		echo \$$ > \$0.pid
 		res=\$(nice fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
 		st=\$?
-		logger "Checking $1 finished with status code \$st: \$res"
 		if test "\$st" = 0 -o "\$st" = 1; then
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
-			exit 0
+#			exit 0
+#		else
+			emsg="Checking $1 finished with status code \$st: \$res"
+			logger "\$emsg"
+			echo "<li>\$emsg" >> $SERRORL
 		fi
 	EOF
 
@@ -94,7 +97,9 @@ format() {
 		nice mkfs.$2 $opts -v /dev/$1 > $logf 2>&1
 		st=\$?
 		if test \$st != 0; then
-			logger "Formating /dev/$1 with $2 failed with code \$st: \$(cat $logf)"
+			emsg="Formating $1 with $2 failed with code \$st: \$(cat $logf)"
+			logger "\$emsg"
+			echo "<li>\$emsg" >> $SERRORL
 			exit 1
 		fi
 		if test "$2" = "ext3"; then
@@ -151,14 +156,18 @@ resize() {
 		nice fsck -fy -C /dev/$1 > $logf 2>&1
 		st=\$?
 		if ! test "\$st" = 0 -o "\$st" = 1; then
-			logger "Checking /dev/$1 failed with error code \$st: \$(cat $logf)"
+			emsg="Checking $1 failed with error code \$st: \$(cat $logf)"
+			logger "\$emsg"
+			echo "<li>\$emsg" >> $SERRORL
 			exit 1
 		fi
 		logger "Checking /dev/$1 OK"
 		
 		nice resize2fs -p /dev/$1 $nsz > $logf 2>&1
 		if test $? != 0; then
-			logger "${2}ing /dev/$1 failed: \$(cat $logf)"
+			emsg="${2}ing $1 failed: \$(cat $logf)"
+			logger "\$emsg"
+			echo "<li>\$emsg" >> $SERRORL
 			exit 1
 		fi
 		logger "${2}ing /dev/$1 succeeded"
@@ -182,7 +191,9 @@ wipe() {
 			logger "Wiped /dev/$1 OK"
 			exit 0
 		fi
-		logger "Wiping /dev/$1 failed with error code \$st. \$res"
+		emsg="Wiping $1 failed with error code \$st. \$res"
+		logger "\$emsg"
+		echo "<li>\$emsg" >> $SERRORL
 	EOF
 
 	chmod +x /tmp/wip-$1
@@ -197,6 +208,7 @@ read_args
 #debug
 
 CONFT=/etc/misc.conf
+SERRORL=/var/log/systemerror.log
 
 if test "$Submit" = "tune"; then
 	sed -i '/^TUNE_DAYS/d' $CONFT
