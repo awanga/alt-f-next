@@ -661,6 +661,7 @@ EOF
 menu_setup() {
 cat<<EOF
 	<script type="text/javascript">
+	top.document.title = "($(hostname)) Alt-F " + document.title;
 	function MenuShow() {
 		var menu = document.getElementById(this["m_id"])
 		var smenu = document.getElementById(this["sm_id"])
