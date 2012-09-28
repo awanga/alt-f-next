@@ -10,6 +10,10 @@ CONFF=/etc/sabnzbd/sabnzbd.conf
 
 maindir=$(sed -n 's|^dirscan_dir *= *\(.*\)|\1|p' $CONFF)
 
+if ! rcsabnzbd status >& /dev/null; then
+	webbut_dis=disabled
+fi
+
 cat<<-EOF
 	<script type="text/javascript">
 		function browse_dir_popup(input_id) {
@@ -29,6 +33,6 @@ cat<<-EOF
 	</tr>
 	<tr><td></td><td>
 	<input type=submit name=submit value=Submit> $(back_button)
-	<input type="submit" name=webPage value=WebPage>
+	<input type="submit" $webbut_dis name=webPage value=WebPage>
 	</td></tr></table></form></body></html>
 EOF
