@@ -4,13 +4,35 @@
 check_cookie
 read_args
 
-CONF=/etc/couchpotato.conf
+write_header "CouchPotato Setup"
 
-PORT=$(sed -n '/\[global\]/,/\[.*\]/s/^port.*= *\([0-9]*\)/\1/p' $CONF)
-PROTO="http"
+CPCONF=/etc/couchpotato.conf
+
+maindir=$(sed -n 's/^destination[[:space:]]*=[[:space:]]*\(.*\)/\1/p' $CPCONF)
 
 if ! rccouchpotato status >& /dev/null; then
-	rccouchpotato start >& /dev/null
+	webbut_dis="disabled"
 fi
 
-embed_page "$PROTO://${HTTP_HOST%%:*}:$PORT"
+cat<<-EOF
+	<script type="text/javascript">
+		function browse_dir_popup(input_id) {
+			start_dir = document.getElementById(input_id).value;
+			if (start_dir == "")
+				start_dir="/mnt";
+			window.open("browse_dir.cgi?id=" + input_id + "?browse=" + start_dir, "Browse", "scrollbars=yes, width=500, height=500");
+			return false;
+		}
+	</script>
+
+	<form name=cpf action=couchpotato_proc.cgi method="post" >
+	<table>
+	<tr><td>CouchPotato Folder</td>
+	<td><input type=text size=32 id="conf_dir" name="conf_dir" value="$(httpd -e "$maindir")"></td>
+	<td><input type=button onclick="browse_dir_popup('conf_dir')" value=Browse></td>
+	</tr>
+	<tr><td></td><td>
+	<input type=submit name=submit value=Submit> $(back_button)
+	<input type="submit" $webbut_dis name=webPage value=WebPage>
+	</td></tr></table></form></body></html>
+EOF
