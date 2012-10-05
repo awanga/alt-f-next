@@ -108,12 +108,15 @@ systems_st() {
 		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
 
 	if test -s $SERRORL; then
-		serror="<strong><font color=red>Errors</font></strong><ul><pre>$(cat $SERRORL)</pre></ol>"
+		cat<<-EOF
+			<fieldset><legend><font color=red><strong>Errors</strong></legend>
+			<ul><pre>$(cat $SERRORL)</pre></ul>
+			</font></fieldset><br>
+		EOF
 	fi
 
 	cat<<-EOF
 		<fieldset><legend><strong>System</strong></legend>
-		$serror
 		<table><tr>
 			<td><strong>Temperature</strong> $(drawbargraph $temp $tempv )</td>
 			<td><strong>Fan speed</strong> $(drawbargraph $fan $fanv)</td>
