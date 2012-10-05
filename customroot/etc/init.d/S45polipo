@@ -1,0 +1,31 @@
+#! /bin/sh
+
+DESC="Polipo is a small and fast caching web proxy"
+TYPE=net
+NAME=polipo
+CONF=/etc/polipo/config
+
+# SIGUSR1 signal, it will write out all the in-memory data to disk (but
+# won't discard them), reopen the log file, and then reload the forbidden
+# URLs file (see Forbidden). 
+#
+# SIGUSR2 signal, it will write out all the in-memory data to disk and
+# discard as much of the memory cache as possible.  It will then reopen
+# the log file and reload the forbidden URLs file. 
+
+. $(dirname $0)/common
+
+case "$1" in
+	start)
+		if ! test -f $CONF; then
+			echo "Starting $NAME: No $CONF configuration file, fail"
+			exit 1
+		fi
+		start $NAME
+		;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
