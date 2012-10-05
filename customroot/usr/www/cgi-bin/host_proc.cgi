@@ -32,6 +32,7 @@ if test -z "$ipv6"; then
 else
 	echo "MODLOAD_IPV6=y" >> $CONF_MISC
 	modprobe ipv6 >& /dev/null
+	if ! grep -q ipv6-localhost $CONFH; then
 	cat<<-EOF >> $CONFH
 		::1	localhost ipv6-localhost ipv6-loopback
 		fe00::0	ipv6-localnet
@@ -40,6 +41,7 @@ else
 		ff02::2	ipv6-allrouters
 		ff02::3	ipv6-allhosts
 	EOF
+	fi
 fi
 
 if test "$iptype" = "static"; then
@@ -56,6 +58,12 @@ hostdesc=$(httpd -d "$hostdesc")
 workgp=$(httpd -d "$workgp")
 domain=$(httpd -d "$domain")
 hostname=$(httpd -d "$hostname")
+
+if test -z "$mtu"; then mtu=1500; fi
+if test -z "$hostname"; then hostname=DNS-323; fi
+if test -z "$workgp"; then workgp=Workgroup; fi
+if test -z "$hostdesc"; then hostdesc="DNS-323 NAS"; fi
+if test -z "$domain"; then domain=localnet; fi
 
 hostname $hostname
 echo $hostname > /etc/hostname
