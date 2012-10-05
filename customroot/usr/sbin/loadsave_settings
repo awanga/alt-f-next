@@ -47,13 +47,13 @@ status() {
 createdef() {
 
 	for i in /etc/init.d/S*; do
-		if test -x $i; then
+		if test -x $i -o -n "$(grep ^TYPE=required $i)"; then
 			echo $i
 		fi
 	done > $initscript_perms
 
-	# special case, only save nfs and cifs mounts, as other entries are hotpluged
-	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0}' /etc/fstab > /tmp/xfstab
+	# special case, only save nfs, cifs and davfs mounts, as other entries are hotpluged
+	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0} $3 == "davfs" {print $0}' /etc/fstab > /tmp/xfstab
 
 	# another special case, only save user cron entries, not Alt-F ones
 	sed '/#!# Alt-F cron/d' /var/spool/cron/crontabs/root > /tmp/ucron 2> /dev/null
@@ -150,7 +150,7 @@ loadflashdef() {
 	else
 		tar -C / -xzf $last
 		res=$?
-		# special nfs and cifs cases
+		# special nfs, cifs, davfs cases
 		TF=$(mktemp)
 		cat /tmp/xfstab /etc/fstab | sort -u > $TF
 		mv $TF /etc/fstab
@@ -176,7 +176,9 @@ loadflashdef() {
 
 	if test -s $initscript_perms; then
 		for i in /etc/init.d/S*; do
-			chmod -x $i
+			if ! grep -q ^TYPE=required $i; then
+				chmod -x $i
+			fi
 		done
 		for i in $(cat $initscript_perms ); do
 			if test -f $i; then
@@ -367,6 +369,12 @@ files="
 
 # those are also used only when mounting/unmounting the aufs branch
 xfiles="/etc/fstab /etc/bay /var/spool/cron/crontabs/root"
+
+brd=$(cat /tmp/board)
+if test "$brd" = "Unknown"; then
+	echo "Unsupported $brd board"
+	exit 1
+fi
 
 if test $# = 0; then
 	usage
