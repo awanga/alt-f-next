@@ -40,6 +40,7 @@ check() {
 MISCC=/etc/misc.conf
 FSTAB=/etc/fstab
 USERLOCK=/var/lock/userscript
+SERRORL=/var/log/systemerror.log
 
 fsckcmd=$1
 fsopt=$2
@@ -71,8 +72,14 @@ if test "$fsckcmd" != "echo"; then
 
 	echo heartbeat > "/sys/class/leds/power:blue/trigger"
 	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> $logf)"
-	if test $? -ge 2; then mopts="ro"; fi
-	logger -t hot "Finish fscking $MDEV: $res"
+	if test $? -ge 2; then
+		mopts="ro"
+		emsg="Unable to automatically fix $MDEV, mounting Read Only: $res"
+		echo "<li>$emsg" >> $SERRORL
+	else
+		emsg="Finish fscking $MDEV: $res"
+	fi
+	logger -t hot "$emsg"
 	rm -f $xf $logf $pidf 
 
 	if test -z "$(ls /tmp/check-* 2>/dev/null)"; then

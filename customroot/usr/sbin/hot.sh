@@ -46,6 +46,7 @@ MISCC=/etc/misc.conf
 BAYC=/etc/bay
 MDADMC=/etc/mdadm.conf
 USERLOCK=/var/lock/userscript
+SERRORL=/var/log/systemerror.log
 
 if test -s $MISCC; then
 	. $MISCC
@@ -143,7 +144,9 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 				vgscan --mknodes 
 				vgchange -a y
 			else
-				logger -st hot "No LVM support found for partition type \"$fstype\" in \"$MDEV\""
+				emsg="No LVM support found for partition type \"$fstype\" in \"$MDEV\""
+				logger -st hot "$emsg"
+				echo "<li>$emsg" >> $SERRORL
 			fi
 			return 0
 			;;
@@ -167,7 +170,9 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 					fi
 				fi
 			else
-				logger -st hot "No cryptsetup support found for partition type \"$fstype\" in \"$MDEV\""
+				emsg="No cryptsetup support found for partition type \"$fstype\" in \"$MDEV\""
+				logger -st hot "$emsg"
+				echo "<li>$emsg" >> $SERRORL
 			fi
 			return 0
 			;;
