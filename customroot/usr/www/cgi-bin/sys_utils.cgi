@@ -17,7 +17,7 @@ logsel="<select name=\"logaction\" onchange=\"return submit()\">
 <option value=\"Processes\">Running Processes</option>"
 
 for i in $(find /var/log/ -name \*.log\* -o -name log.\* -o -name \*_log); do
-	logsel="$logsel<option>$i</option>"
+	logsel="$logsel<option value=$i>$(basename $i | sed -r 's/(\.log|log\.|_log)//g')</option>"
 done
 logsel="$logsel</select>"
 
