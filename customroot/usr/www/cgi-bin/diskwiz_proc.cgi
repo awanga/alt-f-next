@@ -266,7 +266,7 @@ create_fs() {
 		eval $(awk '{ printf "min=%.0f", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
 		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
 		wait_count_start "$min minute(s)"
-		res="$(mke2fs -m 1 -T $wish_fs ${1} 2>&1)"
+		res="$(mke2fs -m 0 -T $wish_fs ${1} 2>&1)"
 		st=$?
 		wait_count_stop
 		if test $st != 0; then
