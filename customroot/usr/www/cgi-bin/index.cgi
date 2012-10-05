@@ -13,32 +13,20 @@ cat<<-EOF
 	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 	<html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<style type="text/css">
-	p.Menu {
-		display: block;
-		width: 100px;
-		padding: 2px 5px;
-		background: #8F8F8F;		
-		color: #F0F0F0;
-		text-align: center;
-		font-family: arial,verdana;
-		font-size: 0.9em;
-		font-weight: 900;
-		text-decoration: none;
-	}	
-	</style><title>Index</title></head><body style="font-family: arial,verdana">
+	<title>Index</title></head><body style="font-family: arial,verdana">
 	$(bookmf)
 EOF
 
+menu_setup
+
 if test -s bookmarks.html; then
-	menu_setup
 	echo "<table cellspacing=0><tr>"
 	bookmark_fill
 	cat bookmarks.html
 fi
 
 cat<<EOF
-	<p class="Menu">Menu</p>
+	<div class="Menu">Menu</div>
 	<a href="/cgi-bin/logout.cgi" target="content">Logout</a><br>
 	<a href="/cgi-bin/status.cgi" target="content">Status</a><br>
 EOF
