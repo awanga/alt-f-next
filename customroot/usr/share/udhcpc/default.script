@@ -37,6 +37,8 @@ case "$1" in
 			MTU="mtu $mtu"
 		elif test -n "$IF_MTU"; then
 			MTU="mtu $IF_MTU"
+		else
+			MTU="mtu 1500"
 		fi
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK $MTU
 
