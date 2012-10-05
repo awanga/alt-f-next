@@ -15,6 +15,11 @@ If the disks are already spindown they will not spinup when the page is displaye
 <p>There are several Status sections, not all will be shown if there are no status to display for them:
 
 <ul>
+<li>Errors: shows some system errors.<br>
+	To clear goto <a href="/cgi-bin/sys_utils.cgi">System-&gt;Utilities</a>, &gt;View Logs systemerror.log and hit the Clear button.<br>
+	More details can eventually be found at the System Log, Kernel Log
+	or other application specific log.
+
 <li>System: shows the box system status.
 	<ul>
 	<li>Temperature: is the box internal temperature. It will be affected by ambient temperature and by disks temperature.
@@ -73,7 +78,7 @@ If the disks are already spindown they will not spinup when the page is displaye
 	<li>Label: a filesystem can have an human-readable label, such a Pictures, or Videos.
 	<li>Capacity: the filesystem capacity
 	<li>Available: the filesystem capacity still available for use, and a bar showing the percentage already used.
-	li>FS: the kind of filesystem, can be ext2/3/4, fat or NTFS
+	<li>FS: the kind of filesystem, can be ext2/3/4, fat or NTFS
 	<li>Mode: can be RO (Read-only) or RW (Read and Write). A filesystem is RO if when it was checked at power-up or at plug-time some errors couldn't be fixed -- to fix them a manual operation is needed.
 	<li>Dirty: the filesystem is in an inconsistent state, you should go to
 	Disk->Filesystem->FS Operation and select "Check". "ext2" filesystems are marked as dirty
