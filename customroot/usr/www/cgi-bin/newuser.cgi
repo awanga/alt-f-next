@@ -32,9 +32,9 @@ if ! test -h /home -a -d "$(readlink -f /home)"; then
 fi
 
 mktt ttuname "Full user name. Used as login name on MS"
-mktt ttnick	"User nick name. Used as login name on linux"
-mktt ttuid	"User id. Change only if revelant for NFS"
-mktt ttgid "Main users group id. Change only if revelant for NFS"
+mktt ttnick	"User nick name, only letters and digits. Used as login name on linux"
+mktt ttuid	"User id, should be greater than 99. Change only if revelant for NFS"
+mktt ttgid "Main users group id, should be greater than 99. Change only if revelant for NFS"
 mktt ttpass "User password. Used as password on linux and MS"
 mktt ttpassa "Repeat the entered password above."
 

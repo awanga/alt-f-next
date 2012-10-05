@@ -15,6 +15,9 @@ CONFSMB=/etc/samba/smb.conf
 if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	uname="$(httpd -d "$uname")"
 	nick="$(httpd -d "$nick")"
+	if test -n "$(echo $nick | tr -d [:alnum:])"; then
+		msg "The nick name \'$nick\' has illegal characters,\n only letters and digits are allowed."
+	fi
 
 	if test -z "$pass" -o -z "$passa"; then
 		msg "The passwords can't be empty"
@@ -46,15 +49,16 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 		elif test -z "$uid" -o "$(awk -F: '$3 == "'$uid'" {print $3}' $CONFP)"; then
 			msg "A user with that user id already exists"
 		fi
-		#uname=$(echo "$uname" | tr ' ' '_')
-		#adduser -D -G users -u $uid -g "$uname" -h "/home/$nick" $nick > /dev/null 2>&1
 		if test "$gid" != 100; then
 			addgroup -g $gid $nick >& /dev/null
 			grp="-G $nick"
 		else
 			grp="-G users"
 		fi
-		adduser -D $grp -u $uid -g "$uname" -h "/home/$uname" $nick > /dev/null 2>&1
+		res=$(adduser -D $grp -u $uid -g "$uname" -h "/home/$uname" $nick 2>&1)
+		if test $? != 0; then
+			msg "$res"
+		fi
 		chmod og-rw "/home/$uname"
 		addgroup $nick backup
 
