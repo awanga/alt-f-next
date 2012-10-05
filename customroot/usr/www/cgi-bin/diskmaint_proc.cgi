@@ -67,8 +67,8 @@ check() {
 		if test "\$st" = 0 -o "\$st" = 1; then
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
-#			exit 0
-#		else
+			exit 0
+		else
 			emsg="Checking $1 finished with status code \$st: \$res"
 			logger "\$emsg"
 			echo "<li>\$emsg" >> $SERRORL
@@ -83,7 +83,7 @@ check() {
 format() {
 
 	case $2 in
-		ext2|ext3|ext4) opts="-m 1"; id=83 ;;
+		ext2|ext3|ext4) opts="-m 0"; id=83 ;;
 		vfat) opts="-v"; id=c ;; # c Win95 FAT32 (LBA)
 		ntfs) opts="-f"; id=7 ;; # 7 HPFS/NTFS
 		*) msg "Wrong filesystem type." ;;
