@@ -25,6 +25,9 @@
 ./usr/lib/php5/extensions/soap.so
 ./usr/lib/php5/extensions/sockets.so
 ./usr/lib/php5/extensions/sqlite3.so
+./usr/lib/php5/extensions/sysvmsg.so
+./usr/lib/php5/extensions/sysvsem.so
+./usr/lib/php5/extensions/sysvshm.so
 ./usr/lib/php5/extensions/tokenizer.so
 ./usr/lib/php5/extensions/xmlreader.so
 ./usr/lib/php5/extensions/xml.so
