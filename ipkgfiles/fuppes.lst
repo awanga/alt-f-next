@@ -27,6 +27,9 @@
 ./usr/lib/fuppes/libmetadata_taglib.so
 ./usr/lib/fuppes/libmetadata_taglib.so.0
 ./usr/lib/fuppes/libmetadata_taglib.so.0.0.0
+./usr/lib/fuppes/libtranscoder_ffmpeg.so
+./usr/lib/fuppes/libtranscoder_ffmpeg.so.0
+./usr/lib/fuppes/libtranscoder_ffmpeg.so.0.0.0
 ./usr/lib/libfuppes.so
 ./usr/lib/libfuppes.so.0
 ./usr/lib/libfuppes.so.0.0.0
