@@ -43,12 +43,26 @@ check_folder() {
 }
 # ----------------------------------------
 
-sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
-if test "$sroot" = "/Public"; then
-	msg "You have to configure lighttpd first"
-fi
+nzbgw() {
+	if test -f $NZBWCONF; then
+		NZBT=$NZBWCONF
+	elif test -f $NZBWCONFT; then
+		NZBT=$NZBWCONFT
+	fi
+
+	if test -n "$NZBT"; then
+		sed -i -e "s|^\$NzbDir=.*|\$NzbDir='$1/nzb';|" \
+			-e "s|^\$CheckSpaceDir.*|\$CheckSpaceDir='$conf_dir';|" $NZBT
+	fi
+}
 
 if test -f "$NZBWCONFT" -a ! -f "$NZBWCONF"; then # first time install
+
+	sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
+	if test "$(basename $sroot)" = "Public"; then
+		msg "You have to configure lighttpd first"
+	fi
+
 	rm -f "$sroot"/htdocs/nzbgetweb
 	ln -sf $NZBWDATA "$sroot"/htdocs/nzbgetweb
 
@@ -83,22 +97,19 @@ if test -n "$submit"; then
 		msg "$res"
 	fi
 
+	if rcnzbget status >& /dev/null; then
+		nzbworking=yes
+		rcnzbget stop >& /dev/null
+		while rcnzbget status >& /dev/null; do
+			usleep 200000
+		done
+	fi
+		
 	sed -i 's|^$MAINDIR=.*|$MAINDIR='"$conf_dir"'|' $NZBCONF
+	nzbgw "$conf_dir"
 
-	mkdir -p "$conf_dir"
 	chown -R nzbget:TV "$conf_dir"
 	chmod g+rwxs "$conf_dir"
-
-	if test -f $NZBWCONF; then
-		NZBT=$NZBWCONF
-	elif test -f $NZBWCONFT; then
-		NZBT=$NZBWCONFT
-	fi
-
-	if test -n "$NZBT"; then
-		sed -i -e "s|^\$NzbDir=.*|\$NzbDir='$conf_dir/nzb';|" \
-			-e "s|^\$CheckSpaceDir.*|\$CheckSpaceDir='$conf_dir';|" $NZBT
-	fi
 
 	if ! grep -q '\[NZBget\]' $SMBCF; then
 		cat <<EOF >> $SMBCF
@@ -118,30 +129,25 @@ EOF
 		rcsmb reload >& /dev/null
 	fi
 
-elif test -n "$webPage"; then
-
-	port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
-	sslport=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
-
-	PROTO="http"
-	PORT=$port
-	if echo $HTTP_REFERER | grep -q 'https://'; then
-		if grep -q '^include.*ssl.conf' $CONF_LIGHTY; then
-			PROTO="https"
-			PORT=$sslport
-		fi
-	fi
-
-	if ! rcnzbget status >& /dev/null; then
+	if test -n "$nzbworking"; then
 		rcnzbget start >& /dev/null
 	fi
 
-	if ! rclighttpd status >& /dev/null; then
-		rclighttpd start >& /dev/null
+elif test -n "$webPage"; then
+
+	nzbgw "$(sed -n 's|^$MAINDIR=\(.*\)|\1|p' $NZBCONF)"
+
+	PROTO="http"
+	PORT=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
+	
+	if echo $HTTP_REFERER | grep -q 'https://'; then
+		if grep -q '^include.*ssl.conf' $CONF_LIGHTY; then
+			PROTO="https"
+			PORT=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
+		fi
 	fi
 
-	embed_page "$PROTO://${HTTP_HOST%%:*}:$PORT/nzbgetweb"
-
+	embed_page "$PROTO://${HTTP_HOST%%:*}:$PORT/nzbgetweb" "NZBget Page"
 fi
 
 gotopage /cgi-bin/user_services.cgi

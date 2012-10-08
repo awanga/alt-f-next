@@ -11,9 +11,14 @@ NZBGW=/opt/nzbgetweb/index.php
 
 maindir=$(sed -n 's|^$MAINDIR=\(.*\)|\1|p' $NZBCONF)
 
-webbut="disable"
-if test -e $NZBGW; then
-	webbut=""
+rcnzbget status >& /dev/null
+nzbst=$?
+
+rclighttpd status >& /dev/null
+lightyst=$?
+
+if test "$nzbst" != 0 -o "$lightyst" != 0 -o ! -e $NZBGW; then
+		webbut="disabled"
 fi
 
 cat<<-EOF
