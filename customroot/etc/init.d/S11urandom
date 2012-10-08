@@ -6,6 +6,8 @@
 # Version:	@(#)urandom  1.33  22-Jun-1998  miquels@cistron.nl
 
 NAME=urandom
+TYPE=required
+
 RFILE=/var/lib/misc/random-seed
 
 . $(dirname $0)/common

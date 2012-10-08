@@ -2,6 +2,7 @@
 
 DESC="Load kernel modules"
 NAME=modload
+TYPE=required
 
 CONF_MISC=/etc/misc.conf
 
@@ -11,7 +12,7 @@ umask 077
 
 . $(dirname $0)/common
 
-if test -f "$CONF_MISC"; then
+if test -s $CONF_MISC; then
 	. $CONF_MISC
 fi
 
