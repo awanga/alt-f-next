@@ -16,6 +16,7 @@
 ./usr/lib/modules/2.6.35.14/kernel/crypto/async_tx/async_raid6_recov.ko
 ./usr/lib/modules/2.6.35.14/kernel/crypto/async_tx/async_tx.ko
 ./usr/lib/modules/2.6.35.14/kernel/crypto/async_tx/async_xor.ko
+./usr/lib/modules/2.6.35.14/kernel/crypto/authenc.ko
 ./usr/lib/modules/2.6.35.14/kernel/crypto/blowfish.ko
 ./usr/lib/modules/2.6.35.14/kernel/crypto/camellia.ko
 ./usr/lib/modules/2.6.35.14/kernel/crypto/cbc.ko
@@ -160,6 +161,8 @@
 ./usr/lib/modules/2.6.35.14/kernel/net/bridge
 ./usr/lib/modules/2.6.35.14/kernel/net/bridge/bridge.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv4
+./usr/lib/modules/2.6.35.14/kernel/net/ipv4/ah4.ko
+./usr/lib/modules/2.6.35.14/kernel/net/ipv4/esp4.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv4/ipcomp.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv4/tunnel4.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv4/xfrm4_mode_beet.ko
@@ -167,11 +170,16 @@
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv4/xfrm4_mode_tunnel.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv4/xfrm4_tunnel.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv6
+./usr/lib/modules/2.6.35.14/kernel/net/ipv6/ah6.ko
+./usr/lib/modules/2.6.35.14/kernel/net/ipv6/esp6.ko
+./usr/lib/modules/2.6.35.14/kernel/net/ipv6/ipcomp6.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv6/ipv6.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv6/sit.ko
+./usr/lib/modules/2.6.35.14/kernel/net/ipv6/tunnel6.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv6/xfrm6_mode_beet.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv6/xfrm6_mode_transport.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/ipv6/xfrm6_mode_tunnel.ko
+./usr/lib/modules/2.6.35.14/kernel/net/ipv6/xfrm6_tunnel.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/key
 ./usr/lib/modules/2.6.35.14/kernel/net/key/af_key.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/llc
