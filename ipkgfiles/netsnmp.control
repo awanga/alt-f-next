@@ -1,7 +1,7 @@
 Package: netsnmp
 Description: Suite of applications used to implement SNMP v1, SNMP v2c, and SNMP v3 using both IPv4 and IPv6.
 Depends: ipkg
-Version: 5.5.2
+Version: 5.5.2-1
 Architecture: arm
 Priority: optional
 Section: admin

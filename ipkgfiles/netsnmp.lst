@@ -16,6 +16,7 @@
 ./etc/snmp/mib2c.notify.conf
 ./etc/snmp/mib2c.old-api.conf
 ./etc/snmp/mib2c.perl.conf
+./etc/snmp/mib2c.raw-table.conf
 ./etc/snmp/mib2c.scalar.conf
 ./etc/snmp/mib2c.table_data.conf
 ./etc/snmp/snmpd.conf
