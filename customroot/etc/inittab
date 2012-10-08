@@ -20,7 +20,7 @@
 ttyS0::respawn:/sbin/getty -n -l /bin/sh -L ttyS0 115200 vt100
 
 # Logging junk
-null::sysinit:/bin/touch /var/log/messages
+#null::sysinit:/bin/touch /var/log/messages
 
 # Stuff to do before reboot/shutdown
 null::shutdown:/etc/init.d/rcE
