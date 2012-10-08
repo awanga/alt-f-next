@@ -13,6 +13,8 @@ PROG=${PROG_DIR}/SABnzbd.py
 CONFF=/etc/sabnzbd/sabnzbd.conf
 
 PORT=$(awk '/[misc]/{ while (st = getline) { if ($1 == "port") {print $3; exit}}}' $CONFF)
+DL_DIR=$(sed -n 's|^dirscan_dir *= *\(.*\)|\1|p' $CONFF)
+
 PID_PATH=/var/run/sabnzbd
 PID_FILE=$PID_PATH/sabnzbd-$PORT.pid
 
@@ -36,6 +38,17 @@ if ! test -h /var/log/sabnzbd.log; then
 	ln -sf $DATA_DIR/logs/sabnzbd.error.log /var/log/sabnzbd-error.log
 fi
 
+if test "$(basename $DL_DIR)" = "Public"; then
+	echo "Fail: you have to configure SABnzbd first."
+	exit 1
+fi
+
+if ! test -d "$DL_DIR"; then
+	mkdir -p "$DL_DIR"
+	chown $USER:$GROUP "$DL_DIR"
+	chmod g+rwxs "$DL_DIR"
+fi
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
@@ -50,10 +63,10 @@ case "$1" in
 	status)
 		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
 			echo "$NAME running"
-			return 0
+			exit 0
 		else
 			echo "$NAME stopped"
-			return 1
+			exit 1
 		fi
 		;;
 	restart)
@@ -66,4 +79,3 @@ case "$1" in
 	*) usage $0 "start|stop|status|restart" ;;
 esac
 
-exit 0
