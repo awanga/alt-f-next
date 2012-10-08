@@ -7,8 +7,6 @@ write_header "Users and Groups Setup"
 CONFP=/etc/passwd
 CONFG=/etc/group
 
-BRD=0
-
 if ! test -h /home -a -d "$(readlink -f /home)"; then
 	cat<<-EOF
 		<h4>No users folder found, create it in:</h4>
@@ -21,12 +19,52 @@ if ! test -h /home -a -d "$(readlink -f /home)"; then
 	exit 0
 fi
 
+IFS=":" # WARNING: for all the script
+#account:password:UID:GID:GECOS:directory:shell
+ucnt=0; ujstr=""
+usel='<tr><td colspan=2><select style="width:100%" size="8" name="users" onChange="update_users()">'
+while read user upass uid ugid uname dir shell;do
+	if test "${user:0:1}" = "#" -o -z "$user" -o -z "$uid" -o -z "$uname"; then continue; fi
+	if test $shell = "/bin/false"; then continue; fi
+	if test $uid -lt 100; then continue; fi
+	usel="$usel <option>$uname</option>"
+	ujstr="$ujstr; users[$ucnt]=\"$user\"; groupsInUser[$ucnt]=\"$(id -Gn $user)\";"
+	ucnt=$((ucnt+1))
+done < $CONFP
+usel="$usel </select></td></tr>"
+
+#group_name:passwd:GID:user_list
+gcnt=0; gjstr=""
+gsel='<tr><td colspan=2><select style="width:100%" size="8" name="groups" onChange="update_groups()">'
+while read group gpass ggid userl; do
+	if test "${group:0:1}" = "#" -o "$gpass" = "!" -o -z "$group"; then continue; fi
+	if test $ggid -lt 100; then continue; fi
+	gsel="$gsel <option>$group</option>"
+
+	# primary group
+	ul=$(awk -F: '{if ($4 == '$ggid' && substr($0, 1, 1) != "#") printf "%s," $1}' $CONFP)
+
+	# plus suplementary groups, remove dups
+	ul=$(echo -e "$userl,$ul" | tr ',' '\n' | sort -u | tr '\n' ':')
+
+	un="" # get user name
+	for i in $ul; do 
+		un="$(awk -F: '/^'$i':/{printf "%s, ", $5}' $CONFP)${un}"
+	done
+
+	gjstr="$gjstr; groups[$gcnt]=\"$group\"; usersInGroup[$gcnt]=\"$un\";"
+	gcnt=$((gcnt+1))
+done < $CONFG
+gsel="$gsel </select></td></tr>"
+
 cat <<EOF
 	<script type="text/javascript">
 	var users = new Array();
 	var groups = new Array();
 	var groupsInUser = new Array();
 	var usersInGroup = new Array();
+	$ujstr
+	$gjstr
 	function update_users() {
 		document.frm.uname.value = document.frm.users.value;
 		document.frm.nick.value = users[document.frm.users.selectedIndex];
@@ -58,82 +96,38 @@ cat <<EOF
 	}
 	</script>
 	<form name=frm action="/cgi-bin/usersgroups_proc.cgi" method="post">
-	<table border=$BRD><tr><td>
+	<table><tr><td>
 	
 	<fieldset><legend><strong>Users</strong></legend>
-	<table border=$BRD>
-EOF
+	<table>
+	$usel
 
-IFS=":" # WARNING: for all the script
-#account:password:UID:GID:GECOS:directory:shell
-cnt=0; jstr=""
-echo "<tr><td colspan=2><select multiple style=\"width:40ex\" size=\"8\" name=\"users\" onChange=\"update_users()\">"
-while read user upass uid ugid uname dir shell;do
-	if test "${user:0:1}" = "#" -o -z "$user" -o -z "$uid" -o -z "$uname"; then continue; fi
-	if test $shell = "/bin/false"; then continue; fi
-	if test $uid -lt 100; then continue; fi
-	echo "<option>$uname</option>"
-	jstr="$jstr; users[$cnt]=\"$user\"; groupsInUser[$cnt]=\"$(id -Gn $user)\";"
-	cnt=$((cnt+1))
-done < $CONFP
-echo "</select></td></tr>"
-num_users=$cnt
-
-cat<<-EOF
-	<tr><td>User name</td><td><input type=text size=12 name=uname></td></tr>
+	<tr><td>User name</td><td><input type=text style="width:100%" size=12 name=uname></td></tr>
 	<tr><td>Groups this user belongs to:</td>
-		<td><textarea cols=12 rows=2 name=groupsInUser readonly></textarea></td></tr>
+		<td><textarea style="width:100%" rows=2 cols=20 name=groupsInUser readonly></textarea></td></tr>
 	<tr><td><input type=submit name=new_user value=NewUser>
 		<input type=submit name=change_pass value=ChangePass onclick="return check_user()">
 		<td><input type=submit name=del_user value=DelUser onclick="return check_user()"></td>
 	</tr></table></fieldset>
-	<input type=hidden size=12 name=nick>
+	<input type=hidden name=nick>
 	</td><td>
-<script type="text/javascript"> $jstr </script>
 	<fieldset><legend><strong>Groups</strong></legend>
-	<table border=$BRD>
-EOF
+	<table>
+	$gsel
 
-#group_name:passwd:GID:user_list
-cnt=0; jstr=""
-echo "<tr><td colspan=2><select multiple style=\"width:40ex\" size=\"8\" name=\"groups\" onChange=\"update_groups()\">"
-while read group gpass ggid userl; do
-	if test "${group:0:1}" = "#" -o "$gpass" = "!" -o -z "$group"; then continue; fi
-	if test $ggid -lt 100; then continue; fi
-	echo "<option>$group</option>"
-
-	# primary group
-	ul=$(awk -F: '{if ($4 == '$ggid' && substr($0, 1, 1) != "#") printf "%s," $1}' $CONFP)
-
-	# plus suplementary groups, remove dups
-	ul=$(echo -e "$userl,$ul" | tr ',' '\n' | sort -u | tr '\n' ':')
-
-	un="" # get user name
-	for i in $ul; do 
-		un="$(awk -F: '/^'$i':/{printf "%s, ", $5}' $CONFP)${un}"
-	done
-
-	jstr="$jstr; groups[$cnt]=\"$group\"; usersInGroup[$cnt]=\"$un\";"
-	cnt=$((cnt+1))
-done < $CONFG
-echo "</select></td></tr>"
-num_groups=$cnt
-
-cat <<-EOF
-	<tr><td>Group name</td><td><input type=text size=12 name=gname></td></tr>
+	<tr><td>Group name</td><td><input type=text style="width:100%" size=12 name=gname></td></tr>
 	<tr><td>Users belonging to this group:</td>
-		<td><textarea cols=12 rows=2 name=usersInGroup readonly></textarea></td></tr>
+		<td><textarea style="width:100%" rows=2 cols=20 name=usersInGroup readonly></textarea></td></tr>
 	<tr><td><input type=submit name=new_group value=NewGroup onclick="return check_group()"></td>
 	    <td><input type=submit name=del_group value=DelGroup onclick="return check_group()"></td></tr>
 	</table></fieldset>
 	</td></tr></table><br>
-<script type="text/javascript"> $jstr </script>	
-	<fieldset><legend><strong>Users and Groups</strong></legend><table border=$BRD>
+
+	<fieldset><legend><strong>Users and Groups</strong></legend><table>
 		<tr><td>Add selected user to selected group</td>
 			<td><input type=submit name=addToGroup value=AddToGroup onclick="return check_usergroup()"></td></tr>
 		<tr><td>Remove selected user from selected group</td>
 			<td><input type=submit name=delFromGroup value=DelFromGroup onclick="return check_usergroup()"></td></tr>
 	</table></fieldset>
+	</form></body></html>
 EOF
-
-echo "</form></body></html>"
