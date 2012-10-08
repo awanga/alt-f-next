@@ -1,7 +1,7 @@
 Package: python
 Description: The python language interpreter.
-Version: 2.7.2-1
-Depends: ncurses,readline,expat,sqlite,db
+Version: 2.7.2-2
+Depends: ncurses,readline,expat,sqlite,db,gdbm
 Architecture: arm
 Priority: optional
 Section: admin
