@@ -17,13 +17,5 @@ MC_DEPENDENCIES = libglib2
 
 MC_CONF_ENV = fu_cv_sys_stat_statfs2_bsize=yes
 MC_CONF_OPT = --disable-doxygen-doc --with-screen=ncurses
-# --without-x --disable-vfs --without-gpm-mouse
 
 $(eval $(call AUTOTARGETS,package,mc))
-
-#$(MC_HOOK_POST_EXTRACT):
-#	touch $@
-
-#$(MC_HOOK_POST_INSTALL):
-#	touch $@
-
