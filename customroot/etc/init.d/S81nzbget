@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 DESC="NZBGet is a binary newsgrabber for nzb files"
 NAME=nzbget
@@ -11,7 +11,7 @@ CONFF=/etc/nzbget.conf
 LOG_PATH=/var/log/nzbget
 PID_PATH=/var/run/nzbget
 PID_FILE=$PID_PATH/nzbget.pid
-DATA_DIR=$(sed -n '/^$MAINDIR=/s/$MAINDIR=\(.*\)/\1/p' /etc/nzbget.conf)
+DATA_DIR=$(sed -n '/^$MAINDIR=/s/$MAINDIR=\(.*\)/\1/p' $CONFF)
 
 OPTS="--daemon -c $CONFF"
 
@@ -36,7 +36,7 @@ if test -e $PID_FILE; then
 	fi
 fi
 
-if test "$DATA_DIR" = "/Public"; then
+if test "$(basename $DATA_DIR)" = "Public"; then
 	echo "Fail: you have to configure NZBget first."
 	exit 1
 fi
@@ -57,10 +57,10 @@ case "$1" in
 	status)
 		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
 			echo "$NAME running"
-			return 0
+			exit 0
 		else
 			echo "$NAME stopped"
-			return 1
+			exit 1
 		fi
 		;;
 	restart)
@@ -73,4 +73,3 @@ case "$1" in
 	*) usage $0 "start|stop|status|restart" ;;
 esac
 
-exit 0
