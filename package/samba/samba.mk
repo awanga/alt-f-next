@@ -143,7 +143,12 @@ ifeq ($(BR2_PACKAGE_SAMBA_MODULES),y)
 SAMBA_INSTALL_TARGETS += installmodules
 endif
 
-#DESTDIR="${TARGET_DIR}" \
+# override the above SAMBA_TARGETS. FIXME, remove all those.
+# findsmb depends on perl, smbtar depends on smbclient
+ifeq ($(BR2_PACKAGE_SAMBA_EXTRA),y)
+SAMBA_TARGETS_ := 
+SAMBA_TARGETS_y := /usr/bin/net /usr/bin/rpcclient /usr/bin/smbget /usr/bin/smbclient /usr/bin/smbcacls /usr/bin/smbcquotas /usr/bin/smbspool /usr/bin/ntlm_auth /usr/bin/pdbedit /usr/bin/eventlogadm /usr/bin/smbcontrol /usr/bin/nmblookup /usr/bin/ldbsearch /usr/bin/ldbedit /usr/bin/ldbmodify /usr/bin/ldbadd /usr/bin/ldbrename /usr/bin/ldbdel /usr/bin/testparm /usr/bin/sharesec /usr/bin/profiles /usr/bin/tdbtool /usr/bin/tdbbackup /usr/bin/tdbdump
+endif
 
 $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) \
@@ -160,8 +165,10 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 	# jc: 	
 	-cp $(SAMBA_DIR)/bin/libsmbcommon.so $(TARGET_DIR)/usr/lib/
 	-chmod +w $(TARGET_DIR)/usr/lib/libsmbcommon.so
+ifneq ($(BR2_PACKAGE_SAMBA_EXTRA),y)
 	# Do not install the LDAP-like embedded database tools
 	rm -f $(addprefix $(TARGET_DIR)/usr/bin/ldb, add del edit modify rename search)
+endif
 	# Remove not used library by Samba binaries
 	rm -f $(TARGET_DIR)/usr/lib/libnetapi*
 	rm -f $(TARGET_DIR)/usr/lib/libsmbclient*
