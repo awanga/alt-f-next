@@ -4,7 +4,8 @@
 #
 #############################################################
 
-NFS_UTILS_VERSION:=1.2.5
+#NFS_UTILS_VERSION:=1.2.5
+NFS_UTILS_VERSION:=1.2.6
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
 NFS_UTILS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/nfs/nfs-utils/$(NFS_UTILS_VERSION)
 NFS_UTILS_CAT:=$(BZCAT)
@@ -35,6 +36,7 @@ $(NFS_UTILS_DIR)/.configured: $(NFS_UTILS_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		CFLAGS="$(TARGET_CFLAGS) $(BR2_NFS_UTILS_CFLAGS)" \
+		CONFIG_SQLITE3_FALSE='#' CONFIG_NFSDCLD_FALSE='#' \
 		knfsd_cv_bsd_signals=no \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
