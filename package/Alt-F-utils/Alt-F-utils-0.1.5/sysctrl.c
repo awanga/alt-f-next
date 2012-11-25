@@ -81,7 +81,7 @@ args_t args =
     { 2000, 5000, 40, 50, 1, 1, 38, 5500, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum Boards { A1, B1, C1};
+enum Boards { A1, B1, C1, D1};
 enum FanSpeed { FAN_OFF = 0, FAN_LOW = 127, FAN_FAST = 255 };
 enum RPMSpeed { RPM_OFF = 0, RPM_LOW = 400, RPM_FAST = 2000 };
 enum Leds { right_led = 1, left_led = 2 };
@@ -531,6 +531,10 @@ void check_board() {
 		board = C1;
 		args.lo_temp = 45;	// redefine defaults for C1. At temp > lo_temp, fan goes fast 
 	}
+	else if (strncmp("D1", res, 2) == 0) {
+		board = D1;
+		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+	}
 	else {
 		syslog(LOG_CRIT, "sysctrl: Hardware board %s not supported, exiting", res);
 		exit(1);
@@ -579,7 +583,7 @@ void fanctl(void) {
 	float temp = (read_temp() / 1000. + last_temp) / 2.;
 	int fan = read_fan();
 	
-	if (board != C1) {
+	if (board == A1 || board == B1 ) {
 		float m = (args.hi_fan - args.lo_fan) * 1. / (args.hi_temp - args.lo_temp);
 		float b = args.lo_fan - m * args.lo_temp;
 		
