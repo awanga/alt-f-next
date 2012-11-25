@@ -8,7 +8,7 @@ GIT_SOURCE = git-$(GIT_VERSION).tar.gz
 GIT_SITE = http://git-core.googlecode.com/files/
 GIT_INSTALL_STAGING = NO
 GIT_INSTALL_TARGET = YES
-GIT_DEPENDENCIES = uclibc openssl libcurl expat
+GIT_DEPENDENCIES = uclibc openssl libcurl expat perl
 
 GIT_CONF_ENV = ac_cv_c_c99_format=no ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=yes 
 
