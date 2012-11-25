@@ -10,6 +10,7 @@
 ./usr/lib/php5/extensions/ftp.so
 ./usr/lib/php5/extensions/gd.so
 ./usr/lib/php5/extensions/hash.so
+./usr/lib/php5/extensions/iconv.so
 ./usr/lib/php5/extensions/json.so
 ./usr/lib/php5/extensions/mbstring.so
 ./usr/lib/php5/extensions/mysql.so
