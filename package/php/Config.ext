@@ -18,6 +18,9 @@ config BR2_PACKAGE_PHP_EXT_CTYPE
 config BR2_PACKAGE_PHP_EXT_FILEINFO
 	bool "fileinfo"
 
+config BR2_PACKAGE_PHP_EXT_LIBICONV
+	bool "libiconv"
+	select BR2_PACKAGE_LIBICONV
 
 config BR2_PACKAGE_PHP_EXT_SNMP
 	bool "snmp"

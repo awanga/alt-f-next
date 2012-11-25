@@ -13,7 +13,7 @@ PHP_INSTALL_TARGET_OPT = INSTALL_ROOT=$(TARGET_DIR) install
 PHP_LIBTOOL_PATCH = NO
 PHP_DEPENDENCIES = uclibc
 
-PHP_CONF_ENV = ac_cv_func_dlopen=yes ac_cv_lib_dl_dlopen=yes EXTENSION_DIR=/usr/lib/php5/extensions
+PHP_CONF_ENV = ac_cv_func_dlopen=yes ac_cv_lib_dl_dlopen=yes ac_cv_func_libiconv=yes EXTENSION_DIR=/usr/lib/php5/extensions
 
 PHP_CONF_OPT = $(DISABLE_IPV6) \
 		--mandir=/usr/share/man \
@@ -28,7 +28,6 @@ PHP_CONF_OPT = $(DISABLE_IPV6) \
 		--with-png-dir=${STAGING_DIR}/usr \
 		--with-openssl-dir=${STAGING_DIR}/usr \
 		--with-libxml-dir=${STAGING_DIR}/usr \
-		--with-iconv-dir=${STAGING_DIR}/usr
 
 ifneq ($(BR2_PACKAGE_PHP_CLI),y)
 	PHP_CONF_OPT += --disable-cli
@@ -43,6 +42,11 @@ else
 endif
 
 ### Extensions
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_ICONV),y)
+	PHP_CONF_OPT += --with-iconv=shared,${STAGING_DIR}/usr
+	PHP_DEPENDENCIES += libiconv
+endif
 
 # PHP has its own version of libgd! Better if they changed its name!
 ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
