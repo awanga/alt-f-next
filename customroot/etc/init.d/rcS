@@ -31,17 +31,18 @@ done
 
 # what board revision? (Should be available in /proc/cpuinfo!)
 brd=$(dmesg | awk '/Identified HW revision/{print $5}')
+case $brd in
+	A1|B1|C1|D1) ;;
+	*) brd="Unknown"
+esac
 echo $brd > /tmp/board
 
 # start fan because the disks might have to be fsck
 # and might warm up a lot in the process
 if test "$brd" = "A1" -o "$brd" = "B1"; then
 	echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
-elif test "$brd" = "C1"; then
+elif test "$brd" = "C1" -o "$brd" = "D1"; then
 	echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
-else
-	brd="Unknown"
-	echo $brd > /tmp/board
 fi
 
 # stop blinking power-led
