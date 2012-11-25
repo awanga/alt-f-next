@@ -48,9 +48,11 @@ typedef struct {
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 
-unsigned char *signatures[] = { "\x55\xAA" "FrodoII" "\x00\x55\xAA", 
-					   "\x55\xAA" "Chopper" "\x00\x55\xAA",
-					   "\x55\xAA" "Gandolf" "\x00\x55\xAA"};
+unsigned char *signatures[] = { 
+	"\x55\xAA" "FrodoII" "\x00\x55\xAA", 
+	"\x55\xAA" "Chopper" "\x00\x55\xAA",
+	"\x55\xAA" "Gandolf" "\x00\x55\xAA"
+};
 
 #define BLOCK_SIZE	0x10000
 
@@ -60,7 +62,7 @@ unsigned char *signatures[] = { "\x55\xAA" "FrodoII" "\x00\x55\xAA",
 #define MTD3_FSYS	0x00630000
 
 char *kernel = NULL, *initramfs = NULL, *defaults = NULL, *fw = NULL;
-unsigned char product = 1, custom = 2, model = 3, sub = 4, version = 5, quiet = 0;
+unsigned char product = 1, custom = 2, model = 3, sub = 4, version = 5, type = 0, quiet = 0;
 
 int readwrite(int fdo, int fdi, ulong off, ulong sz, uint32_t *chk) {
 
@@ -124,11 +126,10 @@ int check_sig(CONTROL_HEADER * hd) {
   int i;
   for(i=0; i<3; i++) {
 	if (memcmp(signatures[i], hd->magic_num, 12) == 0) {
-	  if (!quiet) printf("signature is \"%s\"\n", signatures[i]+2);
-	  return 1;
+	  return i;
 	}
   }
-  return 0;
+  return -1;
 }
 
 int size_ok(int fd, CONTROL_HEADER * hd) {
@@ -147,9 +148,9 @@ void usage() {
 		  "\t[-d defaults_file] firmware_file\n");
 		
   fprintf(stderr, "Merge a kernel and initramfs into a firmware compatible vendor firmware file:\n"
-		  "\tdns323-fw -m [-q (quiet)] -k kernel_file -i initramfs_file \n"
-		  "\t[-d defaults_file] [-p product_id]  [-c custom_id] [-l model_id ]\n"
-		  "\t[-u sub_id] [-v new_version] firmware_file\n");
+		  "\tdns323-fw -m [-q (quiet)] -k kernel_file -i initramfs_file [-d defaults_file]\n"
+		  "\t[-p product_id]  [-c custom_id] [-l model_id ] [-u sub_id] [-v new_version]\n"
+		  "\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf] firmware_file\n");
   exit(1);
 }
 			
@@ -256,7 +257,7 @@ int merge() {
   hd.defaults_len = fsize;
   hd.defaults_checksum = chks;
 
-  memcpy(&hd.magic_num, signatures[0], 12);
+  memcpy(&hd.magic_num, signatures[type], 12);
   hd.product_id = product;
   hd.custom_id = custom;
   hd.model_id = model;
@@ -270,8 +271,8 @@ int merge() {
   close(fo);
 
   if (!quiet) { 
-	printf("product_id=%x\ncustom_id=%x\nmodel_id=%x\nsub_id=%x\nNewVersion=%x\n",
-		 hd.product_id, hd.custom_id, hd.model_id, hd.sub_id, hd.NewVersion);
+	printf("product_id=%x\ncustom_id=%x\nmodel_id=%x\nsub_id=%x\nNewVersion=%x\ntype=%x\n",
+		 hd.product_id, hd.custom_id, hd.model_id, hd.sub_id, hd.NewVersion, type);
 	printf("signature is \"%s\n", hd.magic_num+2);
 	printf("kernel has %lu bytes\n", hd.kernel_len);
 	printf("initramfs has %lu bytes\n", hd.initramfs_len);
@@ -305,8 +306,10 @@ int split() {
 	exit(1);
   }
  
-  printf("product_id=%x;\ncustom_id=%x;\nmodel_id=%x;\nsub_id=%x;\nNewVersion=%x;\n",
-		 hd.product_id, hd.custom_id, hd.model_id, hd.sub_id, hd.NewVersion);
+  type = check_sig(& hd);
+  
+  printf("product_id=%x;\ncustom_id=%x;\nmodel_id=%x;\nsub_id=%x;\nNewVersion=%x;\ntype=%x;\n",
+		 hd.product_id, hd.custom_id, hd.model_id, hd.sub_id, hd.NewVersion, type);
 
   if (!quiet) {
 	printf("Reserved (hex)=");
@@ -315,7 +318,6 @@ int split() {
 	printf("\nReserved (ascii)=");
 	for (i=0; i<7; i++)
 	  printf("%c", hd.reserved[i]);
-	
 	printf("\nNext_offset=%lu\n", hd.Next_offset);
   }
 
@@ -332,10 +334,11 @@ int split() {
 	exit(1);
   }
 
-  if (check_sig(& hd) == 0) {
+  if (type == -1) {
 	if (!quiet) printf("Signature does not match known signatures, exiting\n");
 	exit(1);
-  }
+  } else
+	if (!quiet) printf("signature is \"%s\"\n", signatures[type]+2);
 
   if (is_uboot(fd, hd.kernel_off) == 0) {
 	if (!quiet) printf("kernel doesn't have uboot format, exiting\n");
@@ -398,7 +401,7 @@ int main(int argc, char *argv[]) {
   Oper op = NONE;
   int opt;
   
-  while ((opt = getopt(argc, argv, "smqk:i:d:p:c:l:u:v:")) != -1) {
+  while ((opt = getopt(argc, argv, "smqk:i:d:p:c:l:u:v:t:")) != -1) {
 	switch (opt) {
 	case 's': op = SPLIT; break;
 	case 'm': op = MERGE; break;
@@ -411,6 +414,7 @@ int main(int argc, char *argv[]) {
 	case 'l': model = atoi(optarg); break;
 	case 'u': sub = atoi(optarg); break;		
 	case 'v': version = atoi(optarg); break;
+	case 't': type = atoi(optarg); break;
 	default: /* '?' */usage();
 	}
   }
