@@ -72,8 +72,8 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	# Kirkwood based SoCs
 	# DNS-320: 2.6.22.18, reloaded does not seems to work
 
-	#kvers="2.6.12.6 2.6.15"
-	kvers="2.6.12.6"
+	kvers="2.6.12.6 2.6.22.7"
+	#kvers="2.6.12.6"
 
 	karch_2_6_12_6="2.6.12.6-arm1"
 	vermagic_2_6_12_6="#define VERMAGIC_STRING \"$karch_2_6_12_6 ARMv5 gcc-3.3\""
@@ -102,7 +102,7 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 			if test -n "$kmagic"; then
 				echo "$kmagic" >> include/linux/vermagic.h
 			fi
-			make CROSS_COMPILE=arm-linux-uclibcgnueabi- ARCH=arm defconfig modules_prepare
+			make-3.81 CROSS_COMPILE=arm-linux-uclibcgnueabi- ARCH=arm defconfig modules_prepare
 			if test $? != 0; then exit 1; fi
 			cd ..
 		fi
@@ -128,8 +128,8 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 			echo "Building reloaded for linux-$i"
 			rm linux
 			ln -sf ../linux-$i linux
-			make clean
-			FUN_TARGET=arm-linux-uclibcgnueabi make
+			make-3.81 clean
+			FUN_TARGET=arm-linux-uclibcgnueabi make-3.81
 			mv reloaded.ko reloaded-${karch}.ko
 			cp reloaded-${karch}.ko ../alt-f/
 		fi
