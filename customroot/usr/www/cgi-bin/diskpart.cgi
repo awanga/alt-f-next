@@ -245,7 +245,7 @@ for i in $disks; do
 	optd=$(echo $opt_disks | sed 's|<option>'$disk'</option>||')
 
 	conv_gpt_dis=""; conv_mbr_dis=""
-	if fdisk -lu $i | grep -q "Found valid GPT with protective MBR; using GPT"; then
+	if fdisk -lu $i 2> /dev/null | grep -q "Found valid GPT with protective MBR; using GPT"; then
 		conv_gpt_dis="disabled"
 	else
 		conv_mbr_dis="disabled"
@@ -286,7 +286,7 @@ rawcap=$(cat /sys/block/$ddsk/size) # sectors
 
 disk_details $ddsk
 
-fout=$(fdisk -lu $dsk | tr '*' ' ') # *: the boot flag...
+fout=$(fdisk -lu $dsk 2> /dev/null | tr '*' ' ') # *: the boot flag...
 
 npart=4
 keepchk="checked"

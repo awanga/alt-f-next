@@ -341,7 +341,7 @@ elif test -n "$Partition" -a "$in_use" = "MBR"; then
 elif test -n "$Partition" -a "$in_use" = "GPT"; then
 	dsk="$Partition"
 
-	fout=$(fdisk -lu /dev/$dsk)
+	fout=$(fdisk -lu /dev/$dsk 2> /dev/null)
 
 	maxsect=$(echo "$fout" | awk '/First/ {print $10}')
 	parts=$(echo "$fout" | awk '/Device/ { while (getline) printf " %d", substr($1,9)}')
