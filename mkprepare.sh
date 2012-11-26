@@ -44,7 +44,7 @@ fi
 
 if ! test -d "$BLDDIR/dl"; then
 	echo "Linking $BLDDIR/dl to dl, to only download sources once"
-	if ! ln -s $(pwd)/dl "$BLDDIR/dl"; then
+	if ! ln -sf $(pwd)/dl "$BLDDIR/dl"; then
 		echo "Unable to link, exiting."
 		exit 1
 	fi
