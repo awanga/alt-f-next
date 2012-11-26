@@ -114,7 +114,7 @@ format() {
 		if test "${1:0:2}" = "sd"; then
 			p=${1:0:3}
 			pn=${1:3}
-			if ! fdisk -l /dev/\$p | grep -q "Found valid GPT"; then # non GPT disk
+			if ! fdisk -l /dev/\$p 2> /dev/null | grep -q "Found valid GPT"; then # non GPT disk
 				if test "\$pn" -ge 1 -a "\$pn" -le 4; then
 					sfdisk --change-id /dev/\$p \$pn $id -O /tmp/mbr-\$p
 					if test \$? != 0; then
