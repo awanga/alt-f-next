@@ -771,7 +771,7 @@ write_header() {
 		warn="<center><h5>
 			<a href=\"/cgi-bin/settings.cgi\" $(ttip tt_settings)
 			style=\"text-decoration: none; color: red\">
-			When done you should <u>save settings</u>
+			When done you must <u>save settings</u>
 			<img src=\"../help.png\" width=11 height=11 alt=\"help\" border=0>
 			</a></h5></center>"
 	fi
