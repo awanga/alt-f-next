@@ -61,6 +61,7 @@ raid() {
 
 	esac
 
+	metad="0.9"
 	for i in $pair1 $pair2 $pair3; do
 		part=$(basename $i)
 		if find /sys/block/md*/slaves/$part >& /dev/null ; then
@@ -75,12 +76,19 @@ if you want all its data to be lost."
 			#lumount $i "creating RAID"
 			#sed -i '\|^'$i'|d' $CONFT
 		fi
+
+		if test $i = "missing"; then continue; fi
+		j=$(basename $i)
+		k=${j:0:3}
+		if test "$(cat /sys/block/$k/$j/size)" -gt 4294967296; then # 2^32, 2.2 TB
+			metad=1.2
+		fi
 	done
 
-	res=$(mdadm --create --run --level=$level --metadata=0.9 $opts \
-		--raid-devices=$ndevices /dev/$md $pair1 $pair2 $pair3 2>&1)
+	res=$(mdadm --create /dev/$md --run --level=$level --metadata=$metad $opts \
+		--raid-devices=$ndevices $pair1 $pair2 $pair3 2>&1)
 	if test $? != 0; then
-		msg "Creating RAID on $md failed:\n\n$res"
+		msg "Creating RAID on $md failed:\n\nError $?: $res"
 	fi
 
 	mdadm --examine --scan > /etc/mdadm.conf
