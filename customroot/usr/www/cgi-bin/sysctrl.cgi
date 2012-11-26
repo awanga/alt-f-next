@@ -16,10 +16,10 @@ board="$(cat /tmp/board)"
 # keep in sync with sysctrl.c, args_t args, line ~84
 lo_fan=2000
 hi_fan=5000
-if test "$board" = "C1"; then 
+if test "$board" = "C1" -o "$board" = "D1"; then 
 	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	lo_temp=45
-else
+elif test "$board" = "A1" -o "$board" = "B1"; then 
 	mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
 	lo_temp=40
 fi
@@ -60,7 +60,7 @@ cat<<-EOF
 		</legend><table>
 EOF
 
-if test "$board" = "C1"; then
+if test "$board" = "C1" -o "$board" = "D1"; then
 	cat<<-EOF
 		<tr><td>Fan Off Temp.</td>
 			<td><input type=text size=2 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
