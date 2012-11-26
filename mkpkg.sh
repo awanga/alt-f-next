@@ -48,7 +48,7 @@ usage() {
 	-setroot (creates rootfs base file list) |
 	-cleanroot (remove all files not in rootfs base file list) |
 	-diffroot (show new files since last -setroot) |
-	-index (create ipkg package index) |
+	-index <pkg_dir> (create ipkg package index) |
 	-html (output packages info in html format)
 	-all (recreates all packages in ipkfiles dir) |
 	-rmall (remove from rootfs files from all packages) |
@@ -184,7 +184,9 @@ case "$1" in
 		;;
 
 	-index)
-		ipkg-make-index pkgs/ > pkgs/Packages
+		if test "$#" != 2; then usage; fi
+		shift
+		ipkg-make-index $1 > $1/Packages
 		exit 0
 		;;
 
@@ -258,13 +260,12 @@ if test "$force" != "y"; then
 		PKGDIR=toolchain/gdb
 		eval $(grep '^BR2_GDB_VERSION=' .config)
 		version=$BR2_GDB_VERSION
-		
 	else
 		PKGMK=$(find $CDIR/package -name $pkg.mk)
 		if test -z "$PKGMK"; then
 			#echo Package $pkg not found, is it a sub-package?
 			
-			if $(grep -q ^BR2_PACKAGE_$PKG .config); then
+			if grep -q ^BR2_PACKAGE_$PKG .config; then
 				MPKG=$(echo $PKG | cut -f1 -d "_")
 				mpkg=$(echo $MPKG | tr '[:upper:]_' '[:lower:]-' )
 				MPKGMK=$(find $CDIR/package -name $mpkg.mk)
@@ -281,10 +282,13 @@ if test "$force" != "y"; then
 			PKGDIR=$(dirname $MPKGMK)
 			eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
 			version=$(eval echo \$${MPKG}_VERSION)	
-		else
+		elif grep -q ^BR2_PACKAGE_$PKG .config; then
 			PKGDIR=$(dirname $PKGMK)
 			eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
 			version=$(eval echo \$${PKG}_VERSION)
+		else
+			echo Package $pkg is not configured, exiting.
+			exit 1
 		fi
 	fi
 fi
