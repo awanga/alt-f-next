@@ -51,8 +51,10 @@ minsize() {
 # remove raid superblock to avoid auto rebuild on partially created arrays
 # if by hazard the new partition table fits a previous one
 cleanraid() {
-	for i in $(fdisk -l $disks | awk '$5 == "da" || $5 == "fd" || $5 == "fd00" {printf "%s ", $1}'); do
-		mdadm --zero-superblock $i >& /dev/null
+	for i in $disks; do
+		for j in $(sgdisk -p $i | awk '$6 == "DA00" || $6 == "FD00" {printf "%s ", $1}'); do
+			mdadm --zero-superblock $i$j >& /dev/null
+		done
 	done
 }
 
@@ -324,11 +326,22 @@ create_raid() {
 			;;
 	esac
 
+	metad="0.9"
+	for i in $pair1 $pair2 $spare; do
+		if test $i = "missing"; then continue; fi
+		j=$(basename $i)
+		k=${j:0:3}
+		if test "$(cat /sys/block/$k/$j/size)" -gt 4294967296; then # 2^32, 2.2 TB
+			metad=1.2
+			break
+		fi
+	done
+
 	echo "<p>Creating $1 $MD..."
-	res="$(mdadm --create --run --level=$1 --metadata=0.9 $opts --raid-devices=$ndisks \
-		/dev/$MD $pair1 $pair2 $spare 2>&1)"
+	res="$(mdadm --create /dev/$MD --run --level=$1 --metadata=$metad $opts \
+		--raid-devices=$ndisks $pair1 $pair2 $spare 2>&1)"
 	if test $? != 0; then
-		err "$res"
+		err "Error $?: $res"
 	else
 		echo " done.</p>"
 	fi
