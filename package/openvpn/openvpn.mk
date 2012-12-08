@@ -32,9 +32,3 @@ $(OPENVPN_TARGET_INSTALL_TARGET):
 	mkdir -p $(TARGET_DIR)/usr/share/openvpn
 	(cd $(OPENVPN_DIR); cp -a easy-rsa sample-scripts sample-config-files $(TARGET_DIR)/usr/share/openvpn)
 	touch $@
-
-#$(OPENVPN_TARGET_UNINSTALL):
-#	$(call MESSAGE,"Uninstalling")
-#	rm -f $(TARGET_DIR)/usr/sbin/openvpn
-#	rm -f $(TARGET_DIR)/etc/init.d/openvpn
-#	rm -f $(OPENVPN_TARGET_INSTALL_TARGET) $(OPENVPN_HOOK_POST_INSTALL)
