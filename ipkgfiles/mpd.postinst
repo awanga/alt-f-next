@@ -1,0 +1,15 @@
+#!/bin/sh
+
+MHOME=/var/lib/mpd
+CONFF=/etc/mpd.conf
+
+addgroup -S -g 80 multimedia
+if id mpd >& /dev/null; then
+	deluser mpd
+fi
+adduser -S -g "MPD user" -G multimedia -u 23 -h $MHOME mpd
+
+sed -i "s/^zeroconf_name.*/zeroconf_name \"Music Player on $(hostname)\"/" $CONFF
+
+chown -R mpd:multimedia $MHOME
+ln -sf /usr/sbin/rcscript /sbin/rcmpd

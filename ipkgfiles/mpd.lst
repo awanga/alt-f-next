@@ -1,0 +1,3 @@
+./etc/init.d/S81mpd
+./etc/mpd.conf
+./usr/bin/mpd
