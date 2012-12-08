@@ -1,0 +1,18 @@
+ config BR2_PACKAGE_MPD
+	bool "mpd"
+	select BR2_PACKAGE_LIBCURL
+	select BR2_PACKAGE_SQLITE
+	select BR2_PACKAGE_ALSA-LIB
+	select BR2_PACKAGE_LIBGLIB2
+	select BR2_PACKAGE_LIBID3TAG
+	select BR2_PACKAGE_FLAC
+	select BR2_PACKAGE_LIBVORBIS
+	select BR2_PACKAGE_LIBOGG
+	select BR2_PACKAGE_LIBMAD
+	select BR2_PACKAGE_FFMPEG
+	select BR2_PACKAGE_LAME
+	select BR2_PACKAGE_TWOLAME
+	help
+	  A flexible, powerful, server-side application for playing music
+
+	  http://sourceforge.net/projects/musicpd
