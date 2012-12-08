@@ -1,0 +1,10 @@
+config BR2_PACKAGE_SVN
+	bool "svn"
+	select BR2_PACKAGE_APR
+	select BR2_PACKAGE_APR_UTIL
+	select BR2_PACKAGE_NEON
+	select BR2_PACKAGE_NEON_ZLIB
+	help
+	  Enterprise-class centralized version control for the masses
+
+	  http://subversion.apache.org
