@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sed -i '/allow_writeable_chroot/d' /etc/vsftpd.conf

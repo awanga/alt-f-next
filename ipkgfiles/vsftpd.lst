@@ -1,0 +1,5 @@
+./etc/init.d/S63vsftpd
+./etc/vsftpd.conf
+./usr/sbin/vsftpd
+./usr/www/cgi-bin/ftp.cgi
+./usr/www/cgi-bin/ftp_proc.cgi
