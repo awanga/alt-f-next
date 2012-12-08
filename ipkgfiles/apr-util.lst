@@ -1,0 +1,9 @@
+./usr/lib/apr-util-1/apr_crypto_openssl-1.so
+./usr/lib/apr-util-1/apr_crypto_openssl.so
+./usr/lib/apr-util-1/apr_dbd_sqlite3-1.so
+./usr/lib/apr-util-1/apr_dbd_sqlite3.so
+./usr/lib/apr-util-1/apr_dbm_db-1.so
+./usr/lib/apr-util-1/apr_dbm_db.so
+./usr/lib/libaprutil-1.so
+./usr/lib/libaprutil-1.so.0
+./usr/lib/libaprutil-1.so.0.5.1
