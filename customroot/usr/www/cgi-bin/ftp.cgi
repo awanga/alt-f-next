@@ -4,8 +4,11 @@
 check_cookie
 write_header "vsftpd server Setup"
 
-mktt tt_jail "If checked, the user will be restricted to use only its own folder."
-mktt tt_dusers "list of space separated usernames to deny ftp access"
+mktt tt_jail "If checked, the user will be restricted to use only its own home folder."
+mktt tt_wchroot "If checked, the user home folder is allowed to be writable<br>(except for the anonymous user)."
+mktt tt_dusers "Space separated list of usernames to deny ftp access"
+mktt tt_anon "Allow anonymous access (the password-less 'ftp' user)." 
+mktt tt_anonf "Folder for the anonymous user.<br>Must not be writable (sub folders can be, but must be previously created.)"
 
 CONFF=/etc/vsftpd.conf
 CONFU=/etc/vsftpd.user_list
@@ -47,8 +50,15 @@ if test "$anon_upload_enable" = "yes"; then
 fi
 
 jail_en_chk=""
+wchroot_en=disabled
 if test "$chroot_local_user" = "yes"; then
 	jail_en_chk=checked
+	wchroot_en=""
+fi
+
+wchroot_chk=""
+if test "$allow_writeable_chroot" = "yes"; then
+	wchroot_chk=checked
 fi
 
 cat<<-EOF
@@ -67,9 +77,11 @@ cat<<-EOF
 				document.ftpf.anon_upload_enable.disabled = st
 				document.ftpf.anon_root.disabled = st
 				document.ftpf.browse.disabled = st
-			} else {
+			} else if (obj.name == 'ssl_enable') {
 				document.ftpf.force_local_logins_ssl.disabled = st
 				document.ftpf.force_local_data_ssl.disabled = st
+			} else if (obj.name == 'chroot_local_user') {
+				document.ftpf.allow_writeable_chroot.disabled = st
 			}
 		}
 	</script>
@@ -78,13 +90,14 @@ cat<<-EOF
 	<form name="ftpf" action="/cgi-bin/ftp_proc.cgi" method="post">
 	<table>
 
-	<tr><td>Restrict folders:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" $(ttip tt_jail)></td></tr>
+	<tr><td>Restrict folders:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" onchange="toogle('jail')" $(ttip tt_jail)></td></tr>
+	<tr><td>Writable folders:</td><td><input type=checkbox $wchroot_en $wchroot_chk id=wchroot name=allow_writeable_chroot value="yes" $(ttip tt_wchroot)></td></tr>
 	<tr><td>Disallow users:</td><td><input type=text name=denyusers value="$denyusers" $(ttip tt_dusers)></td></tr>
 	<tr><td><br></td></tr>
 
-	<tr><td>Enable Anonymous:</td><td><input type=checkbox $anon_en_chk id=anon name=anonymous_enable value="yes" onchange="toogle('anon')"></td></tr>
+	<tr><td>Enable Anonymous:</td><td><input type=checkbox $anon_en_chk id=anon name=anonymous_enable value="yes" onchange="toogle('anon')" $(ttip tt_anon)></td></tr>
 	<tr><td>Anonymous uploads:</td><td><input type=checkbox $anon $anon_up_chk name=anon_upload_enable value="yes"></td></tr>
-	<tr><td>Anonymous folder:</td><td><input type=text $anon id=anon_dir name=anon_root value="$anon_root"></td>
+	<tr><td>Anonymous folder:</td><td><input type=text $anon id=anon_dir name=anon_root value="$anon_root" $(ttip tt_anonf)></td>
 		<td><input type=button name=browse onclick="browse_dir_popup('anon_dir')" value=Browse></td></tr>
 
 	<tr><td><br></td></tr>

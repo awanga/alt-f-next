@@ -6,8 +6,8 @@ check_cookie
 CONFF=/etc/vsftpd.conf
 CONFU=/etc/vsftpd.user_list
 
-vars="chroot_local_user anonymous_enable anon_upload_enable ssl_enable \
-force_local_logins_ssl force_local_data_ssl userlist_enable"
+vars="chroot_local_user allow_writeable_chroot anonymous_enable anon_upload_enable \
+ssl_enable force_local_logins_ssl force_local_data_ssl userlist_enable"
 
 for i in $vars; do eval $i=no; done
 
