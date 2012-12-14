@@ -100,6 +100,7 @@ elif test "$create_dir" = "CreateDir"; then
 	ln -sf "$mp"/Users /home
 
 	mkdir -p "$mp"/Public
+	chmod a-w "$mp"/Public"
 	ln -sf "$mp"/Public /Public
 
 	mkdir -p "$mp"/Public/RO
