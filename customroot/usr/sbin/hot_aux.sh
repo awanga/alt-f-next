@@ -145,7 +145,7 @@ if test -d "/mnt/$lbl/ffp"; then
 	fi
 fi
 
-if test -d /mnt/$lbl/Alt-F; then
+if test -d /mnt/$lbl/Alt-F -a "$mopts" != "ro"; then
 	if ! test -h /Alt-F -a -d "$(readlink -f /Alt-F)"; then
 		logger -t hot "Alt-F directory found in $lbl"
 		rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
