@@ -31,7 +31,7 @@ check_folder() {
 }
 # ----------------------------------------
 
-SBCONF=/etc/sickbeard.conf
+SBCONF=/etc/sickbeard/sickbeard.conf
 SBPROG=/Alt-F/opt/SickBeard
 
 SABHOME=/var/lib/sabnzbd

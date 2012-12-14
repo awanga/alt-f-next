@@ -6,7 +6,7 @@ read_args
 
 write_header "SickBeard Setup"
 
-SBCONF=/etc/sickbeard.conf
+SBCONF=/etc/sickbeard/sickbeard.conf
 SABPROG=/opt/SABnzbd/SABnzbd.py
 NZBGETPROG=/usr/bin/nzbget
 
