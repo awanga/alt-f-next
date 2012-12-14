@@ -1,8 +1,8 @@
 #!/bin/sh
 
-VER=0.7.3
+VER=0.7.6
 TBALL=SABnzbd-$VER-src.tar.gz
-SITE=http://sourceforge.net/projects/sabnzbdplus/files/sabnzbdplus/$VER
+SITE=http://master.dl.sourceforge.net/project/sabnzbdplus/sabnzbdplus/$VER
 
 SABPROG=/Alt-F/opt/SABnzbd
 SABHOME=/var/lib/sabnzbd
