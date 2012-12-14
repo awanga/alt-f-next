@@ -50,10 +50,24 @@ require() {
 # to use at stop
 # don't stop if it is required by running services
 requiredby() {
-	name=$1; shift
-	for i in $*; do
-		if rc$i status >& /dev/null; then
-			echo \'$name\' can\'t be stopped, as it is needed by \'$i\' which is running.
+
+# relies on REQUIREDBY setup on the top service, which is stupid
+#	name=$1; shift
+#	for i in $*; do
+#		if rc$i status >& /dev/null; then
+#			echo \'$name\' can\'t be stopped, as it is needed by \'$i\' which is running.
+#			exit 1
+#		fi
+#	done
+
+# relies on REQUIRE (or 'require' direct call) on dependants
+# obsoletes REQUIREDBY. FIXME: remove it on all services after RC3
+	srv=${0#*S??} # current service name. Beware on services such as dbus/dbus-daemon
+	for i in $(grep -lE "(require |REQUIRE=).*$srv" /etc/init.d/S*); do
+		dep=${i#*S??} # service that depends on this service
+		if test "$dep" = "$1"; then continue; fi
+		if rc$dep status >& /dev/null; then
+			echo \'$srv\' can\'t be stopped, as it is needed by \'$dep\' which is running.
 			exit 1
 		fi
 	done
@@ -132,22 +146,34 @@ start() {
 	fi
 
  	echo -n "Starting $1: "
-	start-stop-daemon -S -q -o -x $*
+	if test -n "$START_CMD"; then
+		$START_CMD
+	else
+		start-stop-daemon -S -q -o -x $*
+	fi
 	omsg $?
 }
 
 # FIXME: add support for --pidfile
 stop() {
-	if test -n "$REQUIREDBY"; then
-		requiredby $1 $REQUIREDBY
-	fi
+
+#	if test -n "$REQUIREDBY"; then
+#		requiredby $1 $REQUIREDBY
+#	fi
+
+	requiredby $1
 
 	sig=""
 	echo -n "Stopping $1: "
 	if test -n "$2"; then
 		sig="-s $2"
 	fi	
-	start-stop-daemon -K -q -o $sig $START_STOP $1
+
+	if test -n "$STOP_CMD"; then
+		$STOP_CMD
+	else
+		start-stop-daemon -K -q -o $sig $START_STOP $1
+	fi
 	st=$?
 
 	if test -n "$REQUIRE"; then
