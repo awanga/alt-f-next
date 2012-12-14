@@ -16,7 +16,7 @@ if test -z "$BLDDIR"; then
 fi
 
 if test "$#" != 1; then
-	echo "Usage: mkinitramfs gz | lzma | sqfs"
+	echo "Usage: mkinitramfs gz | lzma | sqfs | sqmtd"
 	exit
 fi
 
@@ -54,10 +54,6 @@ elif test "$1" = "lzma"; then
 	chown $ME:$MG rootfs.arm.cpio.lzma
 
 elif test "$1" = "sqfs"; then
-	# everything squasehed
-	# mount -o loop rootfs.arm.ext2 tmp
-	# mksquashfs tmp/ rootfs.arm.squashfs -comp lzma -noappend
-
 	# only /usr
 	cp rootfs.arm.ext2 rootfs.arm.ext2.tmp
 	mount -o loop rootfs.arm.ext2.tmp tmp
@@ -84,8 +80,23 @@ elif test "$1" = "sqfs"; then
 	rm rootfs.arm.ext2.tmp
 
 	chown $ME:$MG rootfs.arm.cpio-sq.lzma
+	
+elif test "$1" = "sqmtd"; then
+	# everything squasehed
+	mount -o ro,loop rootfs.arm.ext2 tmp
+
+	# lzma or gzip
+	COMP=lzma
+
+	# block sizes: 131072 262144 524288 1048576
+	mksquashfs tmp rootfs.arm.sqmtd -comp $COMP -noappend -b 262144 \
+		-always-use-fragments
+
+	umount tmp
+	chown $ME:$MG rootfs.arm.sqmtd
+	
 else
-	echo "Usage: mkinitramfs gz | lzma | sqfs"
+	echo "Usage: mkinitramfs gz | lzma | sqfs | sqmtd"
 fi
 
 

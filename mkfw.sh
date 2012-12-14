@@ -22,10 +22,11 @@ if test -z "$BLDDIR"; then
 fi
 
 case $1 in
+	sqmtd) rootfs="rootfs.arm.sqmtd" ;;
 	sqfs) rootfs="rootfs.arm.cpio-sq.lzma" ;;
 	gz) rootfs="rootfs.arm.cpio.gz" ;;
 	lzma) rootfs="rootfs.arm.cpio.lzma" ;;
-	*)	echo "Usage: mkfw gz | lzma | sqfs"
+	*)	echo "Usage: mkfw gz | lzma | sqfs | sqmtd"
 		exit
 		;;
 esac
