@@ -2,6 +2,9 @@
 
 DAEMON=rcsickbeard
 
+SBCONFF=/etc/sickbeard.conf # old config
+SBCONFD=/etc/sickbeard
+
 if test -e /sbin/$DAEMON; then
 	$DAEMON stop
 
@@ -10,3 +13,9 @@ if test -e /sbin/$DAEMON; then
 		sleep 1
 	done
 fi
+
+if test -f $SBCONFF; then
+	mkdir -p $SBCONFD
+	cp $SBCONFF $SBCONFD
+fi
+
