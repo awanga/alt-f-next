@@ -1,0 +1,61 @@
+#! /bin/sh
+
+DESC="A flexible, powerful, server-side application for playing music"
+NAME=mpd
+TYPE=user
+REQUIRE="avahi_daemon"
+
+USER=mpd
+GROUP=multimedia
+
+DATA_DIR=/var/lib/mpd
+CONFF=/etc/mpd.conf
+
+PID_PATH=/var/run/mpd
+PID_FILE=$PID_PATH/mpd.pid
+
+LOG_PATH=/var/log/mpd
+
+OPTS="--no-daemon"
+START_CMD="start-stop-daemon -S -q -o -b -x $NAME -- $OPTS"
+STOP_CMD="mpd --kill"
+
+MUSIC_DIR=$(sed -n 's|^music_directory.*"\(.*\)"|\1|p' $CONFF)
+
+. $(dirname $0)/common
+
+if ! test -d $PID_PATH; then
+	mkdir -p $PID_PATH
+	chown $USER:$GROUP $PID_PATH
+fi
+
+if ! test -d $LOG_PATH; then 
+	mkdir -p $LOG_PATH
+	chown $USER:$GROUP $LOG_PATH
+fi
+
+if test "$(basename $MUSIC_DIR)" = "Public"; then
+	echo "Fail: you have to configure MPD first."
+	exit 1
+fi
+
+if ! test -d "$MUSIC_DIR"; then
+	mkdir -p "$MUSIC_DIR"
+	chown $USER:$GROUP "$MUSIC_DIR"
+	chmod g+rwxs "$MUSIC_DIR"
+fi
+
+case "$1" in
+	start)	start $NAME	;;
+	stop)
+		if test -e $PID_FILE; then 
+			stop $NAME
+		else
+			echo "Stopping $NAME: OK"
+		fi
+		;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
