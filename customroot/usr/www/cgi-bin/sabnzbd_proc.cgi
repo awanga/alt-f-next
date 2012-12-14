@@ -49,7 +49,55 @@ daemon_stop() {
     done
 }
 
-if test -n "$submit"; then
+if test -n "$update"; then
+	if test -z $version; then
+		msg "You have to supply the SABnzbd version to update to."
+	else
+		VER=$(httpd -d $version)
+		if test "$VER" = "$(httpd -d $curver)"; then
+			msg "You are already using version $VER"
+		fi
+
+		TBALL=SABnzbd-$VER-src.tar.gz
+		SITE=http://master.dl.sourceforge.net/project/sabnzbdplus/sabnzbdplus/$VER
+
+		html_header "SABnzbd update"
+		echo "<p>Downloading SABnzbd...<pre>"
+		if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+			rm -f /tmp/$TBALL
+			echo "</pre><p>Downloading failed.<br>$(back_button)"
+			exit 1
+		fi
+
+		echo "</pre><p>Stopping SABnzbd..."
+		rcsabnzbd stop >& /dev/null
+		while rcsabnzbd status >& /dev/null; do usleep 200000; done
+
+		aufs.sh -n
+		SABPROG=/Alt-F/opt/SABnzbd
+		mkdir -p $SABPROG
+		echo "<p>Extracting SABnzbd..."
+		if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
+			rm -f /tmp/$TBALL
+			echo "<p>Extraction of SABnzbd failed.<br>$(back_button)"
+			aufs.sh -r
+			exit 1
+		fi
+		rm -f /tmp/$TBALL
+
+		cp -a $SABPROG-$VER/* $SABPROG
+		rm -rf $SABPROG-$VER
+		chown -R sabnzbd:TV $SABPROG
+		aufs.sh -r
+
+		echo "<p>Starting SABnzbd..."
+		rcsabnzbd start >& /dev/null
+		while ! rcsabnzbd status >& /dev/null; do usleep 200000; done
+	fi
+
+	js_gotopage /cgi-bin/user_services.cgi
+
+elif test -n "$submit"; then
 
 	if test -n "$conf_dir"; then
 		conf_dir=$(httpd -d $conf_dir)
