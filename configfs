@@ -62,6 +62,7 @@ BR2_PACKAGE_FUPPES="etc/fuppes etc/init.d/S80fuppes usr/www/cgi-bin/fuppes.cgi u
 BR2_PACKAGE_MINIDLNA="etc/minidlna.conf etc/init.d/S80minidlna usr/www/cgi-bin/minidlna.cgi usr/www/cgi-bin/minidlna_proc.cgi usr/www/minidlna_hlp.html"
 BR2_PACKAGE_MT_DAAPD="etc/mt-daapd.conf etc/mt-daapd.playlist etc/init.d/S80mt_daapd usr/www/cgi-bin/mt_daapd.cgi usr/www/cgi-bin/mt_daapd_proc.cgi usr/www/mt_daapd_hlp.html"
 BR2_PACKAGE_FORKED_DAAPD="etc/forked-daapd.conf etc/init.d/S80forked_daapd usr/www/cgi-bin/forked_daapd.cgi usr/www/cgi-bin/forked_daapd_proc.cgi usr/www/forked_daapd_hlp.html"
+BR2_PACKAGE_MPD="etc/mpd.conf etc/init.d/S81mpd"
 
 BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
 BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
@@ -93,7 +94,7 @@ usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
 
 BR2_PACKAGE_PHP="etc/php.ini"
 
-BR2_PACKAGE_SICKBEARD="etc/sickbeard.conf etc/init.d/S81sickbeard usr/www/cgi-bin/sickbeard.cgi usr/www/cgi-bin/sickbeard_proc.cgi"
+BR2_PACKAGE_SICKBEARD="etc/sickbeard/sickbeard.conf etc/init.d/S81sickbeard usr/www/cgi-bin/sickbeard.cgi usr/www/cgi-bin/sickbeard_proc.cgi"
 BR2_PACKAGE_SABNZBD="etc/sabnzbd.conf etc/init.d/S81sabnzbd usr/www/cgi-bin/sabnzbd.cgi usr/www/cgi-bin/sabnzbd_proc.cgi"
 BR2_PACKAGE_COUCHPOTATO="etc/couchpotato.conf etc/init.d/S81couchpotato usr/www/cgi-bin/couchpotato.cgi usr/www/cgi-bin/couchpotato_proc.cgi"
 BR2_PACKAGE_COUCHPOTATO2="etc/couchpotato2.conf etc/init.d/S81couchpotato2 usr/www/cgi-bin/couchpotato2.cgi usr/www/cgi-bin/couchpotato2_proc.cgi"
