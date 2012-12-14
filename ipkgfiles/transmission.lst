@@ -21,6 +21,7 @@
 ./usr/share/transmission/web/javascript/jquery/jquery.transmenu.min.js
 ./usr/share/transmission/web/javascript/jquery/jqueryui-1.8.16.min.js
 ./usr/share/transmission/web/javascript/jquery/json2.min.js
+./usr/share/transmission/web/javascript/notifications.js
 ./usr/share/transmission/web/javascript/prefs-dialog.js
 ./usr/share/transmission/web/javascript/remote.js
 ./usr/share/transmission/web/javascript/torrent.js
