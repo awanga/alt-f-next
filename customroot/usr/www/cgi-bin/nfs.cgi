@@ -229,9 +229,9 @@ fi
 mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages folder becomes available"
 
 cat<<-EOF
-	<br>Delay NFS start on boot <input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)>
-	<br><input type="submit" name="submit" value="Submit">
-	$(back_button)
+	<table><tr><td>Delay NFS start on boot</td><td><input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)></td></tr>
+	<!--tr><td>Clean rmtab entries</td><td><input type=checkbox name=clean_rmtab value=yes $(ttip rmtab_tt)></td></tr-->
+	<tr><td><input type="submit" name="submit" value="Submit">$(back_button)</td></tr><table>
 	</form></body></html>
 EOF
 
