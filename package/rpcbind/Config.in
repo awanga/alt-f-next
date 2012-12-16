@@ -1,0 +1,6 @@
+config BR2_PACKAGE_RPCBIND
+	bool "rpcbind"
+	help
+	  A server that converts RPC program numbers into universal addresses.
+
+	  http://sourceforge.net/projects/rpcbind
