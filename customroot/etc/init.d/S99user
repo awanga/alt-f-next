@@ -44,8 +44,10 @@ writelog() {
 	echo -e "\n\n$SEP BOOTLOG $SEP\n" >> $1
 	cat /var/log/boot.log >> $1
 
-	echo -e "\n\n$SEP ETHTOOL $SEP\n" >> $1
-	ethtool eth0 >> $1
+	if test -f /usr/sbin/ethtool; then
+		echo -e "\n\n$SEP ETHTOOL $SEP\n" >> $1
+		ethtool eth0 >> $1
+	fi
 
 	echo -e "\n\n$SEP IFCONFIG $SEP\n" >> $1
 	ifconfig >> $1
