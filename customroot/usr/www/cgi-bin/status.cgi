@@ -132,11 +132,17 @@ systems_st() {
 }
 
 network_st() {
-	eval $(ethtool eth0 | awk '/Speed/{printf "Speed=%s", $2}')
+	#eval $(ethtool eth0 | awk '/Speed/{printf "Speed=%s", $2}')
+
+#	Mode=$(cat /sys/class/net/eth0/duplex)
+#	MTU=$(cat /sys/class/net/eth0/mtu)
+#	MAC=$(cat /sys/class/net/eth0/address)
+#	Tx=$(cat /sys/class/net/eth0/statistics/tx_bytes)
+#	Rx=$(cat /sys/class/net/eth0/statistics/rx_bytes)
 
 	eval $(ifconfig eth0 | awk \
-			'/RX bytes/ {printf "Rx=\"%s %s\";", $3, $4} \
-			/TX bytes/ {printf "Tx=\"%s %s\";", $7, $8} \
+			'/RX bytes/ {printf "Rx=\"%s%s\";", $3, $4} \
+			/TX bytes/ {printf "Tx=\"%s%s\";", $7, $8} \
 			/MTU/ {printf "MTU=%s;", substr($0, match($a,"MTU")+4,5)} \
 			/inet6/ { if (! match($3, "^fe80:")) ipv6=$3"; "ipv6} \
 			/HWaddr/{printf "MAC=\"%s\";", $5} \
@@ -148,7 +154,7 @@ network_st() {
 
 	cat<<-EOF
 		<fieldset><legend><strong>Network</strong></legend>
-		<strong> Speed: </strong> $Speed
+		<strong> Speed: </strong> $(cat /sys/class/net/eth0/speed)Mbps
 		<strong> MTU: </strong> $MTU
 		<strong> TX: </strong> $Tx
 		<strong> Rx: </strong> $Rx
