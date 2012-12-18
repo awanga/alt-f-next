@@ -2,7 +2,9 @@ config BR2_PACKAGE_NETATALK
 	bool "netatalk"
 	select BR2_PACKAGE_DB
 	select BR2_PACKAGE_LIBGCRYPT
+	select BR2_PACKAGE_LIBEVENT2
+	select BR2_PACKAGE_AVAHI
 	help
-	 Apple Filling Protocol, netatalk version 2.1
+	 A freely-available Open Source AFP (Apple Filling Protocol) fileserver
 
 	  http://netatalk.sourceforge.net/
