@@ -1,4 +1,4 @@
- config BR2_PACKAGE_MPD
+config BR2_PACKAGE_MPD
 	bool "mpd"
 	select BR2_PACKAGE_LIBCURL
 	select BR2_PACKAGE_SQLITE
