@@ -8,6 +8,7 @@ LOG_DIR=/var/log/lighttpd
 HOME_DIR=/var/lib/lighttpd
 SECR_DIGST=/etc/lighttpd/lighttpd-digest.user
 SECR_RSYNC=/etc/rsyncd.secrets 
+VSFTPD_PEM=/etc/ssl/certs/vsftpd.pem
 LIGHTY_PEM=/etc/ssl/certs/lighttpd.pem
 BOX_PEM=/etc/ssl/certs/server.pem
 
@@ -38,6 +39,10 @@ istart() {
 		digs_pass > $SECR_DIGST
 		chown lighttpd $SECR_DIGST
 		chmod go-rwx $SECR_DIGST
+	fi
+
+	if ! test -e $BOX_PEM; then
+		ln $VSFTPD_PEM $BOX_PEM
 	fi
 
 	if ! test -e $LIGHTY_PEM; then
