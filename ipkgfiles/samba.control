@@ -1,0 +1,9 @@
+Package: samba
+Description: This is an updated on-disk version of Samba shipped on the firmware.
+Depends: ipkg
+Version: 3.5.19
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.samba.org
+Maintainer: jcard

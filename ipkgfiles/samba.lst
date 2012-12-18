@@ -1,0 +1,11 @@
+./usr/bin/smbpasswd
+./usr/bin/smbstatus
+./usr/bin/smbtree
+./usr/lib/libsmbcommon.so
+./usr/sbin/mount.cifs
+./usr/sbin/nmbd
+./usr/sbin/smbd
+./usr/sbin/swat
+./usr/sbin/umount.cifs
+./usr/www/cgi-bin/smb.cgi
+./usr/www/cgi-bin/smb_proc.cgi
