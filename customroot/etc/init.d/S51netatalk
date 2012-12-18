@@ -1,0 +1,19 @@
+#! /bin/sh
+
+DESC="AFP (Apple Filling Protocol) fileserver"
+TYPE=net
+NAME=netatalk
+REQUIRE=avahi_daemon
+CONF=/etc/afp.conf
+
+. $(dirname $0)/common
+
+case "$1" in
+	start)	start $NAME	;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	reload) reload $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
+esac
+
