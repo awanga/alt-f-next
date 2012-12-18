@@ -101,7 +101,11 @@ case $1 in
 			exit 1
 		fi
 		loadsave_settings -fa
-		cp -a /Alt-F/var/* /var				
+		if ! cp -a /Alt-F/var/lib/atjobs /Alt-F/var/lib/atspool /Alt-F/var/lib/nfs \
+			/Alt-F/var/lib/misc /var/lib/; then
+			exit $?
+		fi
+		cp -a /Alt-F/var/spool/cron /Alt-F/var/spool/lpd /Alt-F/var/spool/samba /var/spool/
 		exit $?
 		;;
 
