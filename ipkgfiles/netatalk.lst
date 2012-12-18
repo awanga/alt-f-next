@@ -1,4 +1,5 @@
 ./etc/afp.conf
+./etc/init.d/S51netatalk
 ./usr/bin/ad
 ./usr/bin/afpldaptest
 ./usr/bin/afppasswd
@@ -24,7 +25,7 @@
 ./usr/sbin/cnid_dbd
 ./usr/sbin/cnid_metad
 ./usr/sbin/netatalk
-./usr/var/netatalk
-./usr/var/netatalk/CNID
-./usr/var/netatalk/CNID/README
-./usr/var/netatalk/README
+./var/lib/netatalk
+./var/lib/netatalk/CNID
+./var/lib/netatalk/CNID/README
+./var/lib/netatalk/README
