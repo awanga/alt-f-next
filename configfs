@@ -79,8 +79,8 @@ BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
 # Perhaps creating a config netatalk suboption?
 # meanwhile this is tested bellow
 
-#BR2_PACKAGE_NETATALK="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
-BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
+BR2_PACKAGE_NETATALK="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
+#BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
 
 BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
