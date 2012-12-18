@@ -15,14 +15,19 @@ NETATALK_LIBTOOL_PATCH = NO
 #		LIBEVENT_CFLAGS="-I$(STAGING_DIR)/libevent2/include" \
 #		LIBEVENT_LDFLAGS="-L$(STAGING_DIR)/libevent2/lib -levent2"
         
-NETATALK_CONF_OPT = --with-bdb=$(STAGING_DIR)/usr \
+NETATALK_CONF_OPT = \
+		--localstatedir=/var/lib \
+		--with-sysroot=$(STAGING_DIR)/usr \
+		--with-bdb=$(STAGING_DIR)/usr \
 		--with-ssl-dir=$(STAGING_DIR)/usr \
 		--with-libiconv=$(STAGING_DIR)/usr \
 		--with-libgcrypt-dir=$(STAGING_DIR)/usr \
 		--with-bdb=$(STAGING_DIR)/usr \
 		--with-libevent-header=$(STAGING_DIR)/libevent2/include \
 		--with-libevent-lib=$(STAGING_DIR)/libevent2/lib \
+		--enable-zeroconf \
 		--disable-cups \
+		--without-acls \
 		--without-pam \
 		--without-kerberos \
 		--without-gssapi \
