@@ -1,0 +1,9 @@
+Package: netatalk
+Version: 3.0.1
+Depends: db,libgcrypt,avahi,libevent2,ipkg
+Description: A freely-available Open Source AFP (Apple Filling Protocol) fileserver
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://netatalk.sourceforge.net/
+Maintainer: jcard
