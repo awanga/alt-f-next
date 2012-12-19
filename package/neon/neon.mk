@@ -52,5 +52,7 @@ ifeq ($(BR2_ENABLE_DEBUG),)
 $(NEON_HOOK_POST_INSTALL): $(NEON_TARGET_INSTALL_TARGET)
 	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libneon.so
 	rm -f $(TARGET_DIR)/usr/bin/neon-config
+	sed -i 's|includedir=.*|includedir=$(STAGING_DIR)/usr/include|' \
+		$(STAGING_DIR)/usr/bin/neon-config
 	touch $@
 endif
