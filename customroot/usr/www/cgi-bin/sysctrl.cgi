@@ -69,7 +69,7 @@ if test "$board" = "C1" -o "$board" = "D1"; then
 			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
 		</table></fieldset><br>
 	EOF
-else 
+elif test "$board" = "A1" -o "$board" = "B1"; then
 	cat<<-EOF
 		<tr><td>Low Temp.</td>
 			<td><input type=text size=2 name=lo_temp value="$lo_temp">&deg;C</td>

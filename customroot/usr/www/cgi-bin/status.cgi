@@ -66,46 +66,50 @@ systems_st() {
 	eval $(free | awk '/Swap/{if ($2 == 0) printf "swap=0; swapv=None"; \
 			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3/$2*1024, $3/1024, $4/1024}}')
 
-	board="$(cat /tmp/board)"
-
-	if test $board != "C1"; then 
-		temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
-		fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
-	else
-		temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
-		fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
-	fi
-
-	if test -f /etc/sysctrl.conf; then
-		. /etc/sysctrl.conf
-	else
-		max_fan_speed=5500
-		crit_temp=54
-	fi
-
-	eval $(awk '{printf "tempt=\"%.1f\"; temp=\"%d\"", $1 / 1000, $1 / 10 / '$crit_temp'}' $temp_dev)
-	tempv="${tempt}&deg;C/$(celtofar $tempt)&deg;F"
-
-	fan=$(cat $fan_dev)
-
-	if test $board != "C1"; then
-		fanv=$fan
-		fan=$(expr $fanv \* 100 / $max_fan_speed)
-	else
-		if test "$fan" -eq 0; then
-			fan=0
-			fanv="Off"
-		elif test "$fan" -le 400; then
-			fan=50
-			fanv="Low"
-		else
-			fan=100
-			fanv="High"
-		fi
-	fi
-
 	eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
 		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
+
+	board="$(cat /tmp/board)"
+
+	if test $board = "Unknown"; then
+		fan=0; 	fanv="Unknown"
+		temp=0; tempv="Unknown"
+	else
+		if test $board = "A1" -o $board = "B1"; then 
+			temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
+			fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
+		elif $board = "C1" -o $board = "D1"; then
+			temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
+			fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
+		fi
+
+		if test -f /etc/sysctrl.conf; then
+			. /etc/sysctrl.conf
+		else
+			max_fan_speed=5500
+			crit_temp=54
+		fi
+
+		eval $(awk '{printf "tempt=\"%.1f\"; temp=\"%d\"", $1 / 1000, $1 / 10 / '$crit_temp'}' $temp_dev)
+		tempv="${tempt}&deg;C/$(celtofar $tempt)&deg;F"
+		fan=$(cat $fan_dev)
+
+		if test $board = "A1" -o $board = "B1"; then
+			fanv=$fan
+			fan=$(expr $fanv \* 100 / $max_fan_speed)
+		elif $board = "C1" -o $board = "D1"; then
+			if test "$fan" -eq 0; then
+				fan=0
+				fanv="Off"
+			elif test "$fan" -le 400; then
+				fan=50
+				fanv="Low"
+			else
+				fan=100
+				fanv="High"
+			fi
+		fi
+	fi
 
 	if test -s $SERRORL; then
 		cat<<-EOF
