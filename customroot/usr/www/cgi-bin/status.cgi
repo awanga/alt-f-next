@@ -71,16 +71,22 @@ systems_st() {
 
 	board="$(cat /tmp/board)"
 
-	if test $board = "Unknown"; then
+	if test "$board" = "Unknown"; then
 		fan=0; 	fanv="Unknown"
 		temp=0; tempv="Unknown"
 	else
-		if test $board = "A1" -o $board = "B1"; then 
+		if test "$board" = "A1" -o "$board" = "B1"; then 
 			temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
 			fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
-		elif $board = "C1" -o $board = "D1"; then
+		elif test "$board" = "C1" -o "$board" = "D1"; then
 			temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
 			fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
+		fi
+
+		if test "$board" = "A1" -o "$board" = "B1" -o "$board" = "C1"; then
+			device="DNS-323 rev-$board"
+		elif test "$board" = "D1"; then
+			device="DNS-321 rev-A1"
 		fi
 
 		if test -f /etc/sysctrl.conf; then
@@ -94,10 +100,10 @@ systems_st() {
 		tempv="${tempt}&deg;C/$(celtofar $tempt)&deg;F"
 		fan=$(cat $fan_dev)
 
-		if test $board = "A1" -o $board = "B1"; then
+		if test "$board" = "A1" -o "$board" = "B1"; then
 			fanv=$fan
 			fan=$(expr $fanv \* 100 / $max_fan_speed)
-		elif $board = "C1" -o $board = "D1"; then
+		elif test "$board" = "C1" -o "$board" = "D1"; then
 			if test "$fan" -eq 0; then
 				fan=0
 				fanv="Off"
@@ -129,8 +135,9 @@ systems_st() {
 			<td><strong>Swap</strong> $(drawbargraph $swap $swapv)</td>
 		</tr><tr><td><br></td></tr><tr>
 			<td><strong>Name:</strong> $(hostname -s)</td>
+			<td colspan=2><strong>Device:</strong> $device</td>
 			<td colspan=2><strong>Uptime:</strong> $up</td>
-			<td colspan=2><strong>Date:</strong> $(date)</td>
+			<td><strong>Date:</strong> $(date)</td>
 		</tr></table></fieldset><br>
 	EOF
 }
