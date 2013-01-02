@@ -95,6 +95,8 @@ elif test "$board" = "A1" -o "$board" = "B1"; then
 			</tr>
 		</table></fieldset><br>
 	EOF
+else
+	echo "Unknown board</table></fieldset><br>"
 fi
 
 cat<<-EOF
