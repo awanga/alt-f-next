@@ -4,6 +4,7 @@ DESC="vsftpd"
 NAME=vsftpd
 
 CONF=/etc/vsftpd.conf
+CONFU=/etc/vsftpd.user_list
 
 BOX_PEM=/etc/ssl/certs/server.pem
 
@@ -18,6 +19,9 @@ sinit() {
  		if test "$ssl_enable" = "yes" -a -n "$rsa_cert_file" -a ! -e "$rsa_cert_file"; then
 			ln $BOX_PEM $rsa_cert_file
 			chmod og-r $rsa_cert_file
+		fi
+		if test "$userlist_enable" = "yes" -a ! -f "$CONFU"; then
+			touch $CONFU
 		fi
 	fi
 }
