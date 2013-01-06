@@ -22,15 +22,17 @@ cat<<-EOF
 	<tr align=center><th>Feed URL</th><th>Private Cookie</th></tr>
 EOF
 
+TF=$(mktemp)
 cnt=0
-for i in $(sed -n '/^feed/Ns/.*url.*"\(.*\)".*cookie.*"\(.*\)".*/feed="\1";cookie="\2"/p' $CONF_AUTO); do
+sed -n '/^feed/Ns/.*url.*"\(.*\)".*cookie.*"\(.*\)".*/feed="\1";cookie="\2"/p' $CONF_AUTO > $TF
+while read i; do
 	eval $i
 	cat<<-EOF
 		<tr><td><input type=text size=40 name="feed_$cnt" value="$feed"></td>
 		<td><input type=text size=20 name="cookie_$cnt" value="$cookie"></td></tr>
 	EOF
 	cnt=$((cnt+1))
-done
+done < $TF
 
 for i in $(seq $cnt $((cnt+2))); do
 	cat<<-EOF
@@ -48,15 +50,18 @@ cat<<EOF
 EOF
 
 cnt=0
-for i in $(sed -n '/^filter/Ns/.*pattern.*"\(.*\)".*folder.*"\(.*\)".*/pattern="\1";folder="\2"/p' $CONF_AUTO); do
+sed -n '/^filter/Ns/.*pattern.*"\(.*\)".*folder.*"\(.*\)".*/pattern="\1";folder="\2"/p' $CONF_AUTO > $TF
+while read i; do
 	eval $i
-	cat<<-EOF
-		<tr><td><input type=text size=40 name="pattern_$cnt" value="$pattern"></td>
-		<td><input type=text size=20 id="folder_$cnt" name="folder_$cnt" value="$folder"></td>
-		<td><input type=button value=Browse onclick="browse_dir_popup('folder_$cnt')"></td></tr>
-	EOF
+	echo "
+		<tr><td><input type=text size=40 name=\"pattern_$cnt\" value=\"$pattern\"></td>
+		<td><input type=text size=20 id=\"folder_$cnt\" name=\"folder_$cnt\" value=\"$folder\"></td>
+		<td><input type=button value=Browse onclick=\"browse_dir_popup('folder_$cnt')\"></td></tr>
+	"
 	cnt=$((cnt+1))
-done
+done < $TF
+
+rm $TF
 
 for i in $(seq $cnt $((cnt+2))); do
 	cat<<-EOF
