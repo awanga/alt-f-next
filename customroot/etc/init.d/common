@@ -1,3 +1,4 @@
+#set -x
 
 # Add "enable" and "disable" options for all scripts.
 # Notice that S42inetd also uses enable/disable, but with arguments
@@ -38,10 +39,12 @@ avahi() {
 require() {
 	name=$1; shift
 	for i in $*; do
-		if ! rc$i status >& /dev/null; then
-			if ! rc$i start; then
-				echo \'$name\' can\'t be started, as \'$i\' is needed and can\'t be started.
-				exit 1
+		if test $name != $i; then # don't recursively start services that mark itself as 'required'
+			if ! rc$i status >& /dev/null; then
+				if ! rc$i start; then
+					echo \'$name\' can\'t be started, as \'$i\' is needed and can\'t be started.
+					exit 1
+				fi
 			fi
 		fi
 	done
@@ -65,7 +68,9 @@ requiredby() {
 	srv=${0#*S??} # current service name. Beware on services such as dbus/dbus-daemon
 	for i in $(grep -lE "(require |REQUIRE=).*$srv" /etc/init.d/S*); do
 		dep=${i#*S??} # service that depends on this service
-		if test "$dep" = "$1"; then continue; fi
+		if test "$dep" = "$1"; then
+			exit 0 # don't stop services that marked themself as 'required'
+		fi
 		if rc$dep status >& /dev/null; then
 			echo \'$srv\' can\'t be stopped, as it is needed by \'$dep\' which is running.
 			exit 1
