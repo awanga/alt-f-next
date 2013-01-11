@@ -396,8 +396,8 @@ mounted_remote_filesystems_st() {
 		<fieldset><legend><strong>Mounted Remote Filesystems</strong></legend>
 		<table><tr align=center>
 		<th>Host</th>
-		<th>Remote Dir/Share</th>
-		<th>Local Dir</th>
+		<th>Remote Folder/Share</th>
+		<th>Local Folder</th>
 		<th>Capacity</th><th>Available</th>
 		<th>FS</th>
 		</tr>
@@ -438,7 +438,7 @@ remotely_mounted_filesystems_st() {
 		<fieldset><legend><strong>Remotely Mounted Filesystems</strong></legend>
 		<table><tr align=center>
 		<th>Host</th>
-		<th>Dir/Share</th>
+		<th>Folder/Share</th>
 		<th>FS</th>
 		</tr>
 	EOF
