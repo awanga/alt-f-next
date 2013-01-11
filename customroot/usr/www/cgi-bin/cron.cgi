@@ -7,7 +7,7 @@ write_header "cron Setup"
 #CONF_CRON=/var/spool/cron/crontabs/root
 
 mktt wday_tt "Week or Month day(s) to perform the backup.<br><br><strong>Week day</strong>: 0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br><br><strong>Month day:</strong> first character must be a 'd',<br> 1 to 31 allowed, same rules as above applies,<br> e.g., 'd1,15' or 'd1-5' or 'd28' are valid.<br><br>No spaces allowed, no checks done"
-mktt hour_tt "Hour of the day to execute the command, 0..23.<br><br>Use the same format as in the \"When\" field."
+mktt hour_tt "'Hour' or 'Hour:Minute' or ':Minute' of the day to execute the command, 0..23:0..59.<br><br>Use the same format for hour and minute as in the \"When\" field."
 
 if ! rccron status >& /dev/null; then
 	rccron start >& /dev/null
@@ -26,6 +26,7 @@ while read min hour monthday month weekday cmd; do
 	chkdis=""
 	if test "${min:0:1}" = "#"; then
 		chkdis="checked"
+		min=${min:1}
 	fi
 	if test "$monthday" != '*'; then
 		weekday="d$monthday"
@@ -42,8 +43,8 @@ while read min hour monthday month weekday cmd; do
 
 	cat<<-EOF
 		<tr><td>$inp<input type=hidden name=altf_$i value=$altf_cron></td>
-		<td><input type=text $altf_cron size=6 name=weekday_$i value="$weekday" $(ttip wday_tt)></td>
-		<td><input type=text $altf_cron size=6 name=hour_$i value="$hour" $(ttip hour_tt)></td>
+		<td><input type=text $altf_cron size=10 name=weekday_$i value="$weekday" $(ttip wday_tt)></td>
+		<td><input type=text $altf_cron size=10 name=hour_$i value="$hour:$min" $(ttip hour_tt)></td>
 		<td><input type=text $altf_cron size=40 name=cmd_$i value="$cmd"></td></tr>
 	EOF
 	i=$((i+1))
@@ -52,8 +53,8 @@ done < $TF
 for j in $(seq $i $((i+2))); do 
 	cat<<-EOF
 		<tr><td><input type=checkbox name=dis_$j></td>
-		<td><input type=text size=6 name=weekday_$j value="" $(ttip wday_tt)></td>
-		<td><input type=text size=6 name=hour_$j value="" $(ttip hour_tt)></td>
+		<td><input type=text size=10 name=weekday_$j value="" $(ttip wday_tt)></td>
+		<td><input type=text size=10 name=hour_$j value="" $(ttip hour_tt)></td>
 		<td><input type=text size=40 name=cmd_$j value=""></td></tr>
 	EOF
 	j=$((j+1))

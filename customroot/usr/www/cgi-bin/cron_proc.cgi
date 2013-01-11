@@ -20,7 +20,16 @@ for i in $(seq 1 $cron_cnt); do
 	fi
 
 	eval hour="\$hour_$i"
-	hour=$(httpd -d "$hour")
+	hourmin=$(httpd -d "$hour")
+	if echo $hourmin | grep -q ':'; then
+		hour=${hourmin%%:*}
+		if test -z "$hour"; then hour='*'; fi
+		min=${hourmin##*:}
+		if test -z "$min"; then min='0'; fi
+	else
+		hour=$hourmin
+		min=0
+	fi
 
 	eval cmd="\$cmd_$i"
 	cmd=$(httpd -d "$cmd")
@@ -37,7 +46,7 @@ for i in $(seq 1 $cron_cnt); do
 		cmt="#!# Alt-F cron"
 	fi
 
-	echo "${dis}0 $hour $mday * $weekday $cmd $cmt" >> $TF
+	echo "${dis}$min $hour $mday * $weekday $cmd $cmt" >> $TF
 done
 
 crontab $TF
