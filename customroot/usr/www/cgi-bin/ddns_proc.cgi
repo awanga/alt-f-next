@@ -20,9 +20,11 @@ case $provider in
 	*) ddns="" ;;
 esac
 
-passwd=$(checkpass "$passwd")
-if test $? != 0; then
-	msg "$passwd"
+if test "$ddns" != "default@freedns.afraid.org"; then
+	passwd=$(checkpass "$passwd")
+	if test $? != 0; then
+		msg "$passwd"
+	fi
 fi
 
 if test -n "$ddns" -a -n "$host"; then
