@@ -122,7 +122,7 @@ path_unescape() {
 
 # usefull for filepaths that might have non-ASCII chars (UTF-8 to UCS2 to html numeric entity) 
 http_encode() {
-	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%d;"'
+	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%u;"'
 }
 
 urlencode() {
