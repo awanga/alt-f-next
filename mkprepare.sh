@@ -154,6 +154,8 @@ fi
 rm -rf mklibs_0.1.31
 tar xzf mklibs_0.1.31.tar.gz
 mv mklibs mklibs_0.1.31
+# needed on 64-bit Archlinux, submited by neosisani under issue 127
+sed -i '/#include <fcntl.h>/i#include <unistd.h>' mklibs_0.1.31/src/mklibs-readelf/elf.cpp
 cd mklibs_0.1.31
 ./configure
 make

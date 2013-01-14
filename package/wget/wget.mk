@@ -37,6 +37,7 @@ $(WGET_DIR)/.configured: $(WGET_DIR)/.unpacked
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
+		--with-libssl-prefix=$(STAGING_DIR) \
 		--prefix=/ \
 		$(DISABLE_IPV6) \
 		$(DISABLE_NLS) \
