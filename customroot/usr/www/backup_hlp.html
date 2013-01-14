@@ -115,7 +115,12 @@ As</strong> is <em>Joao Cardoso</em>, and <strong>Folder</strong> is
 <em>Users/Joao Cardoso/Music</em> then the backup will be located in
 <code>/Backup/MONO_Users_Joao_Cardoso_Music/</code><br>
 
-As in the NFS mode of operation the remote host is sent a WOL packet if necessary.
+If you try to backup a whole users folder, as above, the backup will
+fail, as some files are owned by the System Administrator and the user
+does not has permission to use them.<br>
+
+As in the NFS mode of operation the remote host is sent a WOL packet if
+necessary. 
 
 <p><li><strong>HTTP</strong> this mode of operation keeps a local mirror
 of the remote host folder, using the <em>wget</em> program, than
