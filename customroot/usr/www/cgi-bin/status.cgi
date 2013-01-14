@@ -396,7 +396,7 @@ mounted_remote_filesystems_st() {
 		<fieldset><legend><strong>Mounted Remote Filesystems</strong></legend>
 		<table><tr align=center>
 		<th>Host</th>
-		<th>Remote Folder/Share</th>
+		<th>Remote Share</th>
 		<th>Local Folder</th>
 		<th>Capacity</th><th>Available</th>
 		<th>FS</th>
@@ -412,9 +412,8 @@ mounted_remote_filesystems_st() {
 				rrhost=${rhost%:*}
 				rrdir=${rhost#*:/}
 			fi
-			# "df" breaks lines when are long nfs host:dir 
-			eval $(df -h "$mnt" | awk '{if (NF == 6) printf "sz=%sB; avai=%sB; perc=%d", $2, $4, $5
-				if (NF == 5) printf "sz=%sB; avai=%sB; perc=%d", $1, $3, $4}')
+			# "df" breaks lines when they are long, usernames can have spaces
+			eval $(df -h "$mnt" | grep -v Filesystem | tr -d '\n' | awk '{bs=NF-4; printf "sz=%sB; avai=%sB; perc=%d", $bs, $(bs+2), $(bs+3)}')
 			echo "<tr><td>$rrhost</td>
 				<td>$rrdir</td>
 				<td>$mnt</td>
@@ -438,7 +437,7 @@ remotely_mounted_filesystems_st() {
 		<fieldset><legend><strong>Remotely Mounted Filesystems</strong></legend>
 		<table><tr align=center>
 		<th>Host</th>
-		<th>Folder/Share</th>
+		<th>Share</th>
 		<th>FS</th>
 		</tr>
 	EOF
@@ -469,32 +468,35 @@ remotely_mounted_filesystems_st() {
 }
 
 backup_st() {
-	pso=$(ps | grep "backup *[0-9]" | sort -un -k5)
-	if test -z "$pso"; then
-		return 0
-	fi
+	if ! test -e /var/run/backup.pid; then return; fi
 
-	if test -e /var/run/backup.pid; then
-		bpid=$(cat /var/run/backup.pid)
-		if kill -USR1 $bpid >& /dev/null; then
-			active=$(echo "$pso" | grep $bpid | awk '{print $5}')
-		fi
+	bpid=$(cat /var/run/backup.pid)
+	if ! kill -0 $bpid >& /dev/null; then
+		rm /var/run/backup.pid
+		return
 	fi
 
 	cat<<-EOF
 		<fieldset><legend><strong>Backup</strong></legend>
-		<table><tr><th>ID</th><th>Folder</th><th>State</th></tr>
+		<table><tr><th>ID</th><th>Type</th><th>Folder</th><th>State</th></tr>
 	EOF
 
-	for i in $(echo "$pso" | awk '{print $5}'); do
-		if ! isnumber $i; then continue; fi
-		bdir=$(grep ^$i /etc/backup.conf | cut -d";" -f4)
-		st="Queued"
-		if test "$i" = "$active"; then
+	for i in /tmp/backup-state.*; do
+		id=${i##*.}
+		if ! grep -q "^$id;" /etc/backup.conf; then
+			rm $i
+			continue
+		fi
+
+		st=$(cat $i)
+		bdir=$(grep ^$id /etc/backup.conf | cut -d";" -f6)
+		type=$(grep ^$id /etc/backup.conf | cut -d";" -f2)
+		if test "$st" = "In progress"; then
 			st="<font color=red>In progress</font>"
 		fi
-		echo "<tr><td>$i</td><td>$bdir</td><td align=center>$st</td></tr>"
+		echo "<tr><td>$id</td><td>$type</td><td>$bdir</td><td align=center>$st</td></tr>"
 	done
+
 	echo "</table></fieldset><br>"
 }
 
