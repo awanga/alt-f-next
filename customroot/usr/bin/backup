@@ -1,16 +1,17 @@
 #!/bin/sh
 
+exec >> /var/log/backup.log 2>&1
 #set -x
+echo -e "\nDATE=$(date)"
 
 # backup.conf
 # structure for type=dir, when/at should be crontab compatible, at least for now
 #id;type;runas;host;mac;srcdir;dstdir;when;at;log;nlogs
 
 CONF_BACKUP=/etc/backup.conf
+SERRORL=/var/log/systemerror.log
 
 lockfile=/var/lock/backup.lockdir
-
-trap "" USR1
 
 lock() {
 	while ! mkdir $lockfile >& /dev/null; do
@@ -25,8 +26,9 @@ unlock() {
 exclusive() {
 	lock
 	while test -e /var/run/backup.pid; do
-		if kill -USR1 $(cat /var/run/backup.pid) >& /dev/null; then
-			logger -st backup "backup $id waiting a minute, other backup is occurring."
+		if kill -0 $(cat /var/run/backup.pid) >& /dev/null; then
+			# logger -st backup "backup $id waiting a minute, other backup is occurring."
+			echo "Queued" > /tmp/backup-state.$id
 			unlock
 			sleep 60
 			lock
@@ -36,6 +38,7 @@ exclusive() {
 	done
 
 	echo $$ > /var/run/backup.pid
+	echo "In progress" > /tmp/backup-state.$id
 	unlock
 }
 
@@ -128,30 +131,15 @@ do_backup() {
 		res=$(su -c "nice rsync -ax $rsync_opt \"${rsync_host}${srcpath}/\" \"$destname/$date\" " ${runas} )
 		st=$?
 	else
-		tf=$(mktemp -t)
-		xtra="cat"
-
-# test		(cd "$srcpath"; find . -size +4294967c > $tf) # test
-		(cd "$srcpath"; find . -size +4294967295c > $tf)
-		if test -s $tf; then
-			xtra="grep -v -f $tf"
-		fi
-		res=$(su -c "cd \"$srcpath\"; find . -depth | $xtra | nice cpio -pdm \"$destname/$date\" " ${runas}; cd )
+		res=$(su -c "cd \"$srcpath\"; cp -a ./ \"$destname/$date/\" " ${runas})
 		st=$?
-		if test "$st" = 0; then
-			while read -r fn; do
-				td=$(dirname "$fn")
-#				echo "$fn"
-				res=$(su -c "cp -dp \"$srcpath/$fn\" \"$destname/$date/$td\" " ${runas})
-				st=$?
-				if test "$st" != 0; then break; fi
-			done < $tf
-		fi
-		rm -f $tf
 	fi
+
 	if test "$st" != 0; then
-		logger -st backup "Backup $id failed, err=$st: $res"
-		return 1
+		msg="$id failed but continuing nevertheless, err=$st: $res"
+		logger -st backup "$msg"
+		echo "<li>Backup $msg" >> $SERRORL
+		#return 1
 	fi
 
 	cd $destname
@@ -187,7 +175,9 @@ dir_backup() {
 	fi
 
 	if ! test -d "$srcpath"; then
-		logger -st backup "ID $id: $srcpath does not exists, exiting."
+		msg="ID $id: $srcpath does not exists, exiting."
+		logger -st backup "$msg"
+		echo "<li>Backup $msg" >> $SERRORL
 		return 1
 	fi
 	
@@ -207,7 +197,7 @@ nfs_mount() {
 		if test "$cnt" = 6; then return 1; fi
 	done
 
-	mount -t nfs -o ro,hard,intr,proto=tcp $host:$srcpath $mtddir
+	mount -t nfs -o ro,hard,intr,proto=tcp "$host:$srcpath" $mtddir
 }
 
 cifs_mount() {
@@ -219,8 +209,9 @@ cifs_mount() {
 		if test "$cnt" = 6; then return 1; fi
 	done
 
-	mount -t cifs -o ro,iocharset=utf8,noserverino,credentials=/etc/samba/credentials.$runas \
-		//$host/$srcpath $mtddir
+	uid=$(id -u $runas); gid=$(id -g $runas)
+	mount -t cifs -o ro,iocharset=utf8,noserverino,credentials=/etc/samba/credentials.$runas,uid=$uid,gid=$gid \
+		"//$host/$srcpath" $mtddir
 	st=$?
 	if test "$st" = 16; then st=0; fi # /etc/mtab issue (linked to /proc/mounts)
 	if test "$st" = 0; then
@@ -231,13 +222,16 @@ cifs_mount() {
 
 cifs_nfs_backup() {
 	if ! wakeup; then
-		logger -st backup "ID $id: host $host not answering, exiting."
+		msg="ID $id: host $host not answering, exiting."
+		logger -st backup "$msg"
+		echo "<li>Backup $msg" >> $SERRORL
 		return 1
 	fi
 
 	save_srcpath="$srcpath"
 
-	mtddir=$(mktemp -td backup-XXXXXX)
+	mtddir=/tmp/backup-$id
+	mkdir -p $mtddir
 
 	if test "$type" = "NFS"; then
 		destname="$dstpath/${host}$(echo "${srcpath}" | tr -s "/ " "_")" 
@@ -253,7 +247,9 @@ cifs_nfs_backup() {
 		st=$?
 		umount $mtddir
 	else
-		logger -st backup "ID ${id}: unable to $type mount $host:$save_srcpath, err=$st, exiting."
+		msg="ID ${id}: unable to $type mount $host:$save_srcpath, err=$st, exiting."
+		logger -st backup "$msg"
+		echo "<li>Backup $msg" >> $SERRORL
 	fi
 
 	rmdir $mtddir
@@ -284,7 +280,9 @@ ftp_http_backup() {
 	st=$?
 	if ! test $st = 0 -o $st = 8; then
 		rmdir $destname/mirror $destname
-		logger -st backup "ID ${id}: $type://$host/$srcpath failed, err=$st, res:$res"
+		msg="ID ${id}: $type://$host/$srcpath failed, err=$st, res:$res"
+		logger -st backup "$msg"
+		echo "<li>Backup $msg" >> $SERRORL
 		return $st
 	fi
 
@@ -294,7 +292,9 @@ ftp_http_backup() {
 
 rsync_backup() {
 	if ! wakeup; then
-		logger -st backup "ID $id: host $host not answering, exiting."
+		msg="ID $id: host $host not answering, exiting."
+		logger -st backup "$msg"
+		echo "<li>Backup $msg" >> $SERRORL
 		return 1
 	fi
 
@@ -323,7 +323,7 @@ rsync_backup() {
 			mkdir -p "$bdir"
 			dropbearkey -t rsa -f "$ident"
 			cp "$ident" "$bdir"/id_rsa
-		dropbearkey -t rsa -y -f "$ident" | grep ssh-rsa > "$bdir"/id_rsa.pub
+			dropbearkey -t rsa -y -f "$ident" | grep ssh-rsa > "$bdir"/id_rsa.pub
 			chown -R $runas:$(id -gn $runas) "$bdir"
 			msg="ssh keys have been created for you.
 You must now setup a trusted password-less connection from host $(hostname)
@@ -336,6 +336,7 @@ to host $host. This can't be automated, manual intervention is needed:
 	ssh $host # this will make $(hostname) a trusted host to host $host
 After accepting, you can logout."
 			logger -st backup "ID $id: $msg"
+			echo "<li>Backup ID $id: $msg" >> $SERRORL
 			echo "$msg" > ${bdir}/../Backup-rsync-ssh.txt
 			chmod a+rw ${bdir}/../Backup-rsync-ssh.txt
 			return 1		
@@ -392,7 +393,7 @@ esac
 st=$?
 
 lock
-rm /var/run/backup.pid
+rm /var/run/backup.pid /tmp/backup-state.$id
 unlock
 
 return $st
