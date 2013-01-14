@@ -72,8 +72,10 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	# Kirkwood based SoCs
 	# DNS-320: 2.6.22.18, reloaded does not seems to work
 
-	kvers="2.6.12.6 2.6.22.7"
-	#kvers="2.6.12.6"
+	#kvers="2.6.12.6 2.6.22.7"
+	# don't compile the 2.6.22.7 kernel module, needed by the DNS-321, see issue 127
+	# DNS-321 users will have to flash Alt-F, as I don't have a DNS-321 to experiment the reloaded mode myself. 
+	kvers="2.6.12.6"
 
 	karch_2_6_12_6="2.6.12.6-arm1"
 	vermagic_2_6_12_6="#define VERMAGIC_STRING \"$karch_2_6_12_6 ARMv5 gcc-3.3\""
