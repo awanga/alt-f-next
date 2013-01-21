@@ -1,0 +1,25 @@
+diff -ru /home/jcard/tmp/portmap_6.0//Makefile portmap_6.0//Makefile
+--- /home/jcard/tmp/portmap_6.0//Makefile	2007-05-11 04:02:10.000000000 +0100
++++ portmap_6.0//Makefile	2010-09-05 02:30:08.905678359 +0100
+@@ -17,6 +17,7 @@
+ # that will require portmap access, hence deadlock.  If you are sure the
+ # target system will never user NIS for hostname lookup, you can define
+ # USE_DNS to add hostname tests in hosts.allow/deny.
++NO_TCP_WRAPPER=y
+ 
+ ifeq ($(NO_TCP_WRAPPER),)
+ CPPFLAGS += -DHOSTS_ACCESS
+diff -ru /home/jcard/tmp/portmap_6.0//pmap_check.c portmap_6.0//pmap_check.c
+--- /home/jcard/tmp/portmap_6.0//pmap_check.c	2007-05-11 04:02:10.000000000 +0100
++++ portmap_6.0//pmap_check.c	2010-09-05 02:12:15.961804532 +0100
+@@ -44,7 +44,9 @@
+ #include <netinet/in.h>
+ #include <rpc/rpcent.h>
+ #endif
++#ifdef HOSTS_ACCESS
+ #include <tcpd.h>
++#endif
+ #include <arpa/inet.h>
+ #include <grp.h>
+ 
+

@@ -3,15 +3,13 @@
 # portmap
 #
 #############################################################
-#PORTMAP_VERSION:=5b
-#PORTMAP_SOURCE:=portmap_$(PORTMAP_VERSION)eta.tar.gz
-#PORTMAP_DIR:=$(BUILD_DIR)/portmap_$(PORTMAP_VERSION)eta
-#PORTMAP_SITE:=ftp://ftp.porcupine.org/pub/security/
 
-PORTMAP_VERSION:=6.0
-PORTMAP_SOURCE:=portmap-$(PORTMAP_VERSION).tgz
-PORTMAP_SITE:=http://neil.brown.name/portmap/
-PORTMAP_DIR:=$(BUILD_DIR)/portmap_$(PORTMAP_VERSION)
+PORTMAP_VERSION:=6.0.0
+PORTMAP_SOURCE:=portmap_$(PORTMAP_VERSION).orig.tar.gz
+# Neil Brown site is down. Use debian pool instead
+# PORTMAP_SITE:=http://neil.brown.name/portmap/
+PORTMAP_SITE:=http://ftp.debian.org/debian/pool/main/p/portmap
+PORTMAP_DIR:=$(BUILD_DIR)/portmap-$(PORTMAP_VERSION)
 PORTMAP_CAT:=$(ZCAT)
 PORTMAP_BINARY:=portmap
 PORTMAP_TARGET_BINARY:=sbin/portmap
