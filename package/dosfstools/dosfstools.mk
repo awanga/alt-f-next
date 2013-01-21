@@ -3,10 +3,15 @@
 # dosfstools
 #
 #############################################################
-#DOSFSTOOLS_VERSION:=3.0.11
+
 DOSFSTOOLS_VERSION:=3.0.12
 DOSFSTOOLS_SOURCE:=dosfstools-$(DOSFSTOOLS_VERSION).tar.gz
-DOSFSTOOLS_SITE:=http://www.daniel-baumann.ch/software/dosfstools
+
+# DOSFSTOOLS_SITE:=http://www.daniel-baumann.ch/software/dosfstools
+# original site inactive. Alternatives:
+# http://sources.buildroot.net, http://fossies.org/linux/misc/
+DOSFSTOOLS_SITE:=http://sources.buildroot.net
+
 DOSFSTOOLS_DIR:=$(BUILD_DIR)/dosfstools-$(DOSFSTOOLS_VERSION)
 DOSFSTOOLS_CAT:=$(ZCAT)
 MKDOSFS_BINARY:=mkdosfs

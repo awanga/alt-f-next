@@ -3,7 +3,7 @@ config BR2_PACKAGE_DOSFSTOOLS
 	help
 	  Tools for creating and checking DOS FAT filesystems.
 
-	  http://www.daniel-baumann.ch/software/dosfstools/
+	  http://sources.buildroot.net
 
 config BR2_PACKAGE_DOSFSTOOLS_MKDOSFS
 	bool "mkdosfs"
