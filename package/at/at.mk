@@ -8,7 +8,7 @@ AT_SOURCE:=at_$(AT_VERSION).tar.gz
 AT_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/a/at
 AT_DIR:=$(BUILD_DIR)/at-$(AT_VERSION)
 AT_CAT:=$(ZCAT)
-AT_TARGET_SCRIPT:=etc/init.d/S99at
+AT_TARGET_SCRIPT:=etc/init.d/S27at
 AT_BINARY:=at
 
 $(DL_DIR)/$(AT_SOURCE):
@@ -26,6 +26,7 @@ $(AT_DIR)/.configured: $(AT_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_ENV) \
+		SENDMAIL=/usr/sbin/sendmail \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -58,7 +59,11 @@ endif
 	echo 'rm -rf $(TARGET_DIR)/var/lib/at*' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
 	$(INSTALL) -m 0755 -D $(AT_DIR)/debian/rc $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
 
-at: uclibc host-fakeroot $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
+at: uclibc host-fakeroot msmtp $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
+
+at-configure: $(AT_DIR)/.configured
+
+at-build: $(AT_DIR)/$(AT_BINARY)
 
 at-clean:
 	-$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(AT_DIR) uninstall

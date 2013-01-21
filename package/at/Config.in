@@ -1,5 +1,6 @@
 config BR2_PACKAGE_AT
 	bool "at"
+	select BR2_PACKAGE_MSMTP
 	help
 	 At and batch read shell commands from standard input and
 	 store them as jobs to be scheduled for execution in the
