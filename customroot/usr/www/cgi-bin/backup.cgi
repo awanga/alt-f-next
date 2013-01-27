@@ -97,7 +97,7 @@ cat<<-EOF
 	<fieldset><legend><strong>Backup Destination Folder</strong></legend>
 	Current: <input type=text id="bdir_id" name=bdir value="$bdir">
 	<input type=button onclick="browse_dir('bdir_id','$bdir')" value=Browse>
-	<input type=submit name=change onclick="return confirm('You current backup folder will be renamed $bdir-N and a new one created.'+'\n\n' + 'Proceed?')" value=Change>
+	<input type=submit name=change onclick="return confirm('Your current backup folder will be renamed $bdir-N and a new one created.'+'\n\n' + 'Proceed?')" value=Change>
 	</fieldset><br>
 	<fieldset><legend><strong>Backup Setup</strong></legend>
 	<table>
