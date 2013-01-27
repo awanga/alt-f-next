@@ -47,6 +47,6 @@ ALSA_LIB_CONF_ENV = CFLAGS="$(ALSA_LIB_CFLAGS)" \
 
 $(eval $(call AUTOTARGETS,package/multimedia,alsa-lib))
 
-$(ALSA_LIB_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/share/alsa $(TARGET_DIR)/usr/share/aclocal
-	touch $@
+#$(ALSA_LIB_HOOK_POST_INSTALL):
+#	rm -rf $(TARGET_DIR)/usr/share/alsa $(TARGET_DIR)/usr/share/aclocal
+#	touch $@
