@@ -1,0 +1,9 @@
+Package: dialog
+Description: dialog - display dialog boxes from shell scripts
+Version: 1.1-20070704
+Depends: ncurses, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard
