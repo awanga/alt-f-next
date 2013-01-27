@@ -40,9 +40,9 @@ echo $brd > /tmp/board
 # start fan because the disks might have to be fsck
 # and might warm up a lot in the process
 if test "$brd" = "A1" -o "$brd" = "B1"; then
-	echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
+	echo 100 > /sys/class/hwmon/hwmon0/device/pwm1
 elif test "$brd" = "C1" -o "$brd" = "D1"; then
-	echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
+	echo 127 > /sys/class/hwmon/hwmon1/device/pwm1
 fi
 
 # stop blinking power-led
