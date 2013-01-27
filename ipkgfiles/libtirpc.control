@@ -1,0 +1,9 @@
+Package: libtirpc
+Description: Libtirpc is a port of Sun's Transport-Independent RPC library to Linux.
+Version: 0.2.2
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sourceforge.net/projects/libtirpc
+Maintainer: jcard
