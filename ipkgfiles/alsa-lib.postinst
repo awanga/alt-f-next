@@ -1,0 +1,13 @@
+#!/bin/sh
+
+MDEV_CONF=/etc/mdev.conf
+
+if ! grep -q ^pcmC $MDEV_CONF; then
+	cat <<-EOF >> $MDEV_CONF
+
+	controlC[0-9] 0:0 0664 >snd/
+	pcmC[0-9]D[0-9][cp] 0:0 0664 >snd/
+	timer 0:0 0664 >snd/
+	seq 0:0 0664 >snd/
+	EOF
+fi
