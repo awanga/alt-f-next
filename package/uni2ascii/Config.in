@@ -1,0 +1,6 @@
+config BR2_PACKAGE_UNI2ASCII
+	bool "uni2ascii"
+	help
+	  convert UTF-8 Unicode to various 7-bit ASCII representations and vice-versa
+
+	 http://billposer.org/Software/uni2ascii.html
