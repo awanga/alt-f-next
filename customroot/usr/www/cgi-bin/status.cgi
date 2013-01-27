@@ -64,7 +64,7 @@ systems_st() {
 	load=$(awk '{printf "%d", 50 * $1 }' /proc/loadavg)
 
 	eval $(free | awk '/Swap/{if ($2 == 0) printf "swap=0; swapv=None"; \
-			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3/$2*1024, $3/1024, $4/1024}}')
+			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3*100/$2, $3/1024, $4/1024}}')
 
 	eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
 		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
