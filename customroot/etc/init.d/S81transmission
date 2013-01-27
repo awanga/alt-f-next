@@ -52,8 +52,10 @@ case "$1" in
 		fi
 
 		network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
-		sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
-			"$CONFF/$JSON"
+		if ! grep -q $(echo $network | sed 's/[.*]/\\&/g') "$CONFF/$JSON"; then
+			sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
+				"$CONFF/$JSON"
+		fi
 
 		chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
 
