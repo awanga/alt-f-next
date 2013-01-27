@@ -13,11 +13,11 @@ adduser -S -g "Transmission daemon" -G BT -u 13 -h $THOME transmission
 
 if ! test -f $THOME/$JSON; then
 	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir ""  >& $THOME/$JSON
-	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' \
-		-e 's|.*"umask":.*|    "umask": 2, |' $THOME/$JSON
-else
-	sed -i 's|.*"umask":.*|    "umask": 2, |' $THOME/$JSON
+	sed -i 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' $THOME/$JSON
 fi
+
+sed -i -e 's|.*"umask":.*|    "umask": 2, |' \
+	-e 's|.*"message-level":.*|    "message-level": 1, |' $THOME/$JSON
 
 if grep -q "^\[Transmission\]" $SMBCONF; then
 	sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMBCONF
