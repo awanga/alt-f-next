@@ -1,7 +1,7 @@
 Package: alsa-lib
 Description: The Advanced Linux Sound Architecture (ALSA) provides audio and MIDI functionality.
-Version: 1.0.26
-Depends: ipkg
+Version: 1.0.26-1
+Depends: ipkg, kernel-modules
 Architecture: arm
 Priority: optional
 Section: admin

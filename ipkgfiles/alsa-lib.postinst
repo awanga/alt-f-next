@@ -10,4 +10,7 @@ if ! grep -q ^pcmC $MDEV_CONF; then
 	timer 0:0 0664 >snd/
 	seq 0:0 0664 >snd/
 	EOF
+
+	mkdir -p /Alt-F/etc
+	cp $MDEV_CONF /Alt-F/etc/
 fi
