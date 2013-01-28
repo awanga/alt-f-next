@@ -8,7 +8,8 @@ for i in $(find /var/log/ -name \*.log\* -o -name log.\* -o -name \*_log); do
 	if test "$(stat -t $i 2>/dev/null | cut -d" " -f2)" -gt $maxsize; then
 		tf=$(mktemp -t)
 		tail -c $(expr $maxsize \* 3 / 4) $i > $tf
-		mv $tf $i
+		cat $tf > $i
+		rm $tf
 	fi
 done
 
