@@ -103,6 +103,7 @@ case $1 in
 		loadsave_settings -fa
 		if ! cp -a /Alt-F/var/lib/atjobs /Alt-F/var/lib/atspool /Alt-F/var/lib/nfs \
 			/Alt-F/var/lib/misc /var/lib/; then
+			echo "Copying from /Alt-F/var/lib to /var/lib failed."
 			exit $?
 		fi
 		cp -a /Alt-F/var/spool/cron /Alt-F/var/spool/lpd /Alt-F/var/spool/samba /var/spool/
