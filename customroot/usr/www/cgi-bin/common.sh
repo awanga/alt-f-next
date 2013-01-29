@@ -1,18 +1,18 @@
 
-# sed removes any ' that would upset quoted assignment
+# sed removes any ' or " that would upset quoted assignment
 # awk ensures that 
 #	- all variables passed have legal names
 #	- special characters are not interpreted by sh
 read_args() {
 	read -r args
-	eval $(echo -n $args | tr '\r' '\n' | sed -e 's/'"'"'/%27/g' | \
+	eval $(echo -n $args | tr '\r' '\n' | sed -e 's/'"'"'/%27/g;s/"/%22/g' | \
 		awk 'BEGIN{RS="&";FS="="}
 			$1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 			printf "%s=%c%s%c\n",$1,39,$2,39}')
 
 	# some forms needs key=value evaluated as value=key,
 	# so reverse and evaluate them
-	eval $(echo -n $args |  sed -e 's/'"'"'/%27/g' | \
+	eval $(echo -n $args |  sed -e 's/'"'"'/%27/g;s/"/%22/g' | \
 		awk 'BEGIN{RS="&";FS="="}
 			$2~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 			printf "%s=%c%s%c\n",$2,39,$1,39}' )                
@@ -22,7 +22,7 @@ read_args() {
 # split tok[&tok]*, where tok has form "<key=value>"
 # notice that QUERY_STRING does not has spaces at its end (busybox httpd bug?)
 parse_qstring() {
-	eval $(echo -n $QUERY_STRING | sed -e 's/'"'"'/%27/g' |
+	eval $(echo -n $QUERY_STRING | sed -e 's/'"'"'/%27/g;s/"/%22/g' |
 		awk 'BEGIN{RS="?";FS="="} $1~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
 			printf "%s=%c%s%c\n",$1,39,substr($0,index($0,$2)),39}')
 }
@@ -112,6 +112,7 @@ eatspaces() {
 	echo "$*" | tr -d ' \t'
 }
 
+# mainly for fstab usage, where spaces are '\040' coded
 path_escape() {
 	echo $(echo "$1" | sed 's/ /\\040/g')
 }
@@ -120,20 +121,74 @@ path_unescape() {
 	echo $(echo "$1" | sed 's/\\040/ /g')
 }
 
-# usefull for filepaths that might have non-ASCII chars (UTF-8 to UCS2 to html numeric entity) 
+# deprecated, too slow and does unnecessary UTF-8 encoding (the doctype charset is UTF-8)
 http_encode() {
 	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%u;"'
 }
 
+# for http only <>&"' needs to be encoded, but possible clash with some linux utilities
+# quoting and special chars meaning and javascript quoting advises doing it
+# characters in the hexadecimal ranges 0-08, 0B-0C, 0E-1F, 7F, and 80-9F cannot be used in HTML
+#
+# in the bellow httpencode() the following is missing
+# s/	/\&#x09;/g
+# s/!/\&#x21;/g
+# s/#/\&#x23;/g
+# s/\\$/\&#x24;/g
+# s/%/\&#x25;/g
+# s/;/&#x3b;/g
+
+httpencode() {
+echo "$1" | sed "
+s/\&/\&#x26;/g
+s/ /\&#x20;/g
+s/\"/\&#x22;/g
+s/'/\&#x27;/g
+s/(/\&#x28;/g
+s/)/\&#x29;/g
+s/\*/\&#x2a;/g
+s/+/\&#x2b;/g
+s/,/\&#x2c;/g
+s/-/\&#x2d;/g
+s/\./\&#x2e;/g
+s/\//\&#x2f;/g
+s/:/\&#x3a;/g
+s/</\&#x3c;/g
+s/=/\&#x3d;/g
+s/>/\&#x3e;/g
+s/?/\&#x3f;/g
+s/@/\&#x40;/g
+s/\[/\&#x5b;/g
+s/\\\/\&#x5c;/g
+s/\]/\&#x5d;/g
+s/\^/\&#x5e;/g
+s/_/\&#x5f;/g
+s/\`/\&#x60;/g
+s/{/\&#x7b;/g
+s/|/\&#x7c;/g
+s/}/\&#x7d;/g
+s/~/\&#x7e;/g
+"
+}
+
+# "Characters from the unreserved set never need to be percent-encoded". But is much faster to do.
+# Reserved chars: !*'();:@&=+$,/?#[]
+#
+# FIXME: howto make hexdump to output a '%'?
+url_encode() {
+	echo -n "$1" | hexdump -ve '/1 "-%X"' | tr '-' '%'
+}
+
+# deprecated, as it does not encodes UTF-8
 urlencode() {
 echo "$1" | sed " 
-s/%/%25/g
-s/ /%20/g
 s/	/%09/g
+s/ /%20/g
 s/!/%21/g
 s/\"/%22/g
 s/#/%23/g
 s/\\$/%24/g
+s/%/%25/g
 s/\&/%26/g
 s/'/%27/g
 s/(/%28/g
@@ -168,6 +223,9 @@ s/~/%7e/g
 html_header() {
 	if test -n "$HTML_HEADER_DONE"; then return; fi
 	HTML_HEADER_DONE="yes"
+	if test "$#" != 0; then
+		center="<center><h2>$1</h2></center>"
+	fi
 
 	cat<<-EOF
 		Content-Type: text/html; charset=UTF-8
@@ -176,7 +234,7 @@ html_header() {
 		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<style type="text/css">html { height: 100%; }</style><title></title>
 		</head><body style="height: 100%; font-family: arial,verdana">
-		<center><h2>$1</h2></center>
+		$center
 	EOF
 }
 
@@ -190,8 +248,7 @@ enddebug() {
 }
 
 msg() {
-	txt=$(echo "$1" | tr -d "\"" | awk '{printf "%s\\n", $0}')
-
+	txt=$(echo "$1" | sed 's|"|\\"|g')
 	html_header
 	echo "<script type=text/javascript>
 	alert(\"$txt\")

@@ -5,7 +5,7 @@
 # Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
 # Modified and adapted by Joao Cardoso
 launch() {
-	echo "<div id=\"$1\">"
+	echo "<div style=\"margin-bottom: 1.5em;\" id=\"$1\">"
 	eval ${1}_st
 	echo "</div>"
 	return 0;
@@ -138,7 +138,7 @@ systems_st() {
 			<td colspan=2><strong>Device:</strong> $device</td>
 			<td colspan=2><strong>Uptime:</strong> $up</td>
 			<td><strong>Date:</strong> $(date)</td>
-		</tr></table></fieldset><br>
+		</tr></table></fieldset>
 	EOF
 }
 
@@ -171,7 +171,7 @@ network_st() {
 		<strong> Rx: </strong> $Rx
 		<strong> MAC: </strong> $MAC
 		$IPV6
-		</fieldset><br>
+		</fieldset>
 	EOF
 }
 
@@ -231,7 +231,7 @@ disks_st() {
 		EOF
 
 	done
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 raid_st() {
@@ -288,7 +288,7 @@ raid_st() {
 			</tr>
 		EOF
 	done
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 filesys() {
@@ -384,7 +384,7 @@ mounted_filesystems_st() {
 		filesys $dsk
 	done
 
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 mounted_remote_filesystems_st() {
@@ -422,7 +422,7 @@ mounted_remote_filesystems_st() {
 				<td>$fs</td></tr>"
 		fi
 	done < /proc/mounts
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 remotely_mounted_filesystems_st() {
@@ -464,7 +464,7 @@ remotely_mounted_filesystems_st() {
 		done
 		IFS=" "
 	fi
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 backup_st() {
@@ -497,7 +497,7 @@ backup_st() {
 		echo "<tr><td>$id</td><td>$type</td><td>$bdir</td><td align=center>$st</td></tr>"
 	done
 
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 filesystem_maintenance_st() {
@@ -521,7 +521,7 @@ filesystem_maintenance_st() {
 			EOF
 		fi
 	done
-	echo "</table></fieldset><br>"
+	echo "</table></fieldset>"
 }
 
 printers_st() {
@@ -558,14 +558,14 @@ if test -n "$QUERY_STRING"; then
 	parse_qstring
 fi
 
+SERRORL=/var/log/systemerror.log
+
 if test -n "$refresh"; then
 	html_header
 	eval ${refresh}_st
 	echo "</body></html>"
 	exit 0
 fi
-
-SERRORL=/var/log/systemerror.log
 
 ver="$(cat /etc/Alt-F)"
 write_header "Alt-F $ver Status Page"
