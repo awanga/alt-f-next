@@ -132,12 +132,12 @@ case "$1" in
 		;;
 
 	-clean)
-		tf=$(mktemp -t)
+		#tf=$(mktemp -t)
 		cd $ROOTFSDIR
-		find . | cat $TFILES - | sort | \
-			uniq -u | xargs rm >& $tf
-		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r | xargs rmdir
-		rm $tf
+		find . | cat $TFILES - | sort | uniq -u | xargs rm >& /dev/null # $tf
+		#awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r | xargs rmdir
+		find . | cat $ROOTFSFILES - | sort -r | uniq -u | xargs rmdir
+		#rm $tf
 		exit 0
 		;;
 
@@ -164,12 +164,12 @@ case "$1" in
 	-cleanroot)
 		# remove all files found in the rootfs after the last "-setroot"
 		# to recreate the rootfs.ext2, a make with the base system configured must be done
-		tf=$(mktemp -t)
+		#tf=$(mktemp -t)
 		cd $ROOTFSDIR
-		find . | cat $ROOTFSFILES - | sort | \
-			uniq -u | xargs rm >& $tf
-		awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
-		rm $tf
+		find . | cat $ROOTFSFILES - | sort | uniq -u | xargs rm >& /dev/null # $tf
+		#awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
+		find . | cat $ROOTFSFILES - | sort -r | uniq -u | xargs rmdir
+		#rm $tf
 		exit 0
 		;;
 
