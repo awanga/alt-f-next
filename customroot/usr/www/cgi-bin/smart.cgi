@@ -90,7 +90,17 @@ if test -e $CONFO; then
 	if test -z "$SENDTO"; then NOMAILF=disabled; fi
 fi
 
+if ! test "$MAILF" = "checked"; then
+	MAILTF="disabled"
+fi
+
 cat<<-EOF
+	<script type="text/javascript">
+    function toogle() {
+		document.getElementById("mail_test").disabled = ! document.getElementById("mail_error").checked
+    }
+	</script>
+
 	<form id="smartf" action="/cgi-bin/smart_proc.cgi" method="post">
 	<table>
 	<tr><td><input type=checkbox $STF name="shorttest" value="yes">
@@ -111,10 +121,10 @@ cat<<-EOF
 	<tr><td><br>Send mail to <input type=text readonly name=sendto value="$SENDTO">
 	Use "Setup Mail" to change</td></tr>
 
-	<tr><td><input type=checkbox $MAILF $NOMAILF name="mailerror" value="yes">
+	<tr><td><input type=checkbox id="mail_error" $MAILF $NOMAILF name="mailerror" value="yes" onclick="toogle()">
 	Send e-mail when an error is detected</td></tr>
 
-	<tr><td><input type=checkbox $MAILTF $NOMAILF name="mailtest" value="yes">
+	<tr><td><input type=checkbox id="mail_test" $MAILTF $NOMAILF name="mailtest" value="yes">
 	Send test e-mail when started</td></tr>
 
 	<tr><td><br>Check disks every <input type=text name=interval size=4 value="$SMARTD_INTERVAL">
