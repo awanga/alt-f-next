@@ -12,7 +12,7 @@ CONF_SMB=/etc/samba/smb.conf
 if test "$submit" = "Advanced"; then
 	if echo $HTTP_REFERER | grep -q '^https://'; then
 		embed_page "https://${HTTP_HOST%%:*}:902" "SWAT Page"
-    else
+	else
 		embed_page "http://${HTTP_HOST%%:*}:901" "SWAT Page"
 	fi
 
