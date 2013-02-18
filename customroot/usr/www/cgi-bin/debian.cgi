@@ -50,7 +50,7 @@ password is the same as Alt-F web password, and use the command line.\n\nProceed
 fi
 
 cat<<-EOF
-	<fieldset><legend><strong>Install Debian</strong></legend>
+	<fieldset><legend><strong>Install Debian on disk</strong></legend>
 	<table>
 	<tr><td>Debian mirror:</td>
 	<td><input type=text size=30 name=mirror value="$mirror"></td>
