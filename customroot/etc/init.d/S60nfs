@@ -31,6 +31,10 @@ istart() {
 		fi
 	fi
 
+	if test -n "$CLEAN_STALE_NFS" -a ! -f /var/lib/nfs/.rmtab.lock; then
+		rm -f /var/lib/nfs/rmtab
+	fi
+
 	# Don't fail if /etc/exports doesn't exist;
 	# create a bare-bones version and continue.
 

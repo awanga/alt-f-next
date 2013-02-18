@@ -74,10 +74,14 @@ elif test -n "$Submit"; then
 		fi
 	done >> $CONFT
 
-	sed -i '/^DELAY_NFS=/d' $CONFM
+	sed -i '/^DELAY_NFS=/d;/^CLEAN_STALE_NFS=/d' $CONFM
 
 	if test -n "$delay_nfs"; then
 		echo DELAY_NFS=y >> $CONFM
+	fi
+
+	if test -n "$clean_rmtab"; then
+		echo CLEAN_STALE_NFS=y >> $CONFM
 	fi
 
 fi
