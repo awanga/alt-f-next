@@ -4,8 +4,8 @@
 #
 #############################################################
 
-#SMARTMONTOOLS_VERSION:=5.41
-SMARTMONTOOLS_VERSION:=5.42
+#SMARTMONTOOLS_VERSION:=5.42
+SMARTMONTOOLS_VERSION:=6.0
 SMARTMONTOOLS_SOURCE:=smartmontools-$(SMARTMONTOOLS_VERSION).tar.gz
 SMARTMONTOOLS_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/smartmontools
 SMARTMONTOOLS_DIR:=$(BUILD_DIR)/smartmontools-$(SMARTMONTOOLS_VERSION)
