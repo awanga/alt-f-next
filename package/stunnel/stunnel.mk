@@ -4,8 +4,8 @@
 #
 #############################################################
 
-#STUNNEL_VERSION:=4.44
-STUNNEL_VERSION:=4.53
+#STUNNEL_VERSION:=4.53
+STUNNEL_VERSION:=4.54
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
 STUNNEL_SITE:=ftp://ftp.stunnel.org/stunnel/archive/4.x/
 STUNNEL_CAT:=$(ZCAT)
