@@ -3,7 +3,7 @@
 # alsa-lib
 #
 #############################################################
-#ALSA_LIB_VERSION = 1.0.18
+
 ALSA_LIB_VERSION = 1.0.26
 ALSA_LIB_SOURCE = alsa-lib-$(ALSA_LIB_VERSION).tar.bz2
 ALSA_LIB_SITE = ftp://ftp.alsa-project.org/pub/lib
@@ -47,6 +47,6 @@ ALSA_LIB_CONF_ENV = CFLAGS="$(ALSA_LIB_CFLAGS)" \
 
 $(eval $(call AUTOTARGETS,package/multimedia,alsa-lib))
 
-#$(ALSA_LIB_HOOK_POST_INSTALL):
-#	rm -rf $(TARGET_DIR)/usr/share/alsa $(TARGET_DIR)/usr/share/aclocal
-#	touch $@
+$(ALSA_LIB_HOOK_POST_INSTALL):
+	rm -rf $(TARGET_DIR)/usr/share/aclocal
+	touch $@
