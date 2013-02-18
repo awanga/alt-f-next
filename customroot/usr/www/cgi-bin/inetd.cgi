@@ -11,39 +11,51 @@ CONFF=/etc/inetd.conf
 cat<<-EOF
 	<form action="/cgi-bin/inetd_proc.cgi" method="post">
 	<table><tr>
-	<td><strong> Service </strong></td>
-	<td align=center><strong> Enable </strong></td>
-	<td></td>
+	<th>Service</th><th>Program</th>
+	<th align=center>Enable</th>
+	<th></th>
 	</tr>
 EOF
 
 # FIXME: add service description
-ssrv=$(awk '{if (substr($1,1,1) == "#") $1=substr($1,2); print $1}' $CONFF)
+#ssrv=$(awk '{if (substr($1,1,1) == "#") $1=substr($1,2); print $1}' $CONFF)
+#for i in $ssrv; do
+#	chkf=""
+#	if $(grep -q -e "^$i[[:space:]]" $CONFF); then
+#		chkf="checked"
+#	fi
 
-for i in $ssrv; do
-	chkf=""
-	if $(grep -q -e "^$i[[:space:]]" $CONFF); then
-		chkf="checked"
+while read srv tp nt wt ow exep exe args; do
+	#echo $srv:$tp:$nt:$wt:$ow:$exep:exe:$args:$args1
+	if test -z "$srv" -o -z "$tp" -o -z "$nt" -o -z "$wt" -o \
+		-z "$ow" -o -z "$exep" -o -z "$exe"; then
+		continue
+	fi
+
+	chkf="checked"
+	if test "${srv:0:1}" = "#"; then
+		srv=${srv:1}
+		chkf=""
 	fi
 	
-	if test -f $PWD/${i}.cgi; then
-		conf="<td><input type="submit" name=$i value="Configure"></td>"
+	if test -f $PWD/${srv}.cgi; then
+		conf="<td><input type="submit" name=$srv value="Configure"></td>"
 	else
 		conf="<td></td>"
 	fi
 
 	cat<<-EOF
-		<tr><td>$i</td>
-		<td align=center><input type=checkbox $chkf name=$i value=enable></td>
+		<tr><td>$srv</td><td><em>$exe</em></td>
+		<td align=center><input type=checkbox $chkf name=$srv value=enable></td>
 		$conf
 		</tr>
 	EOF
-done
+done < $CONFF
 
 cat<<-EOF
-	<tr><td></td><td><input type="submit" name=submit value="Submit"></td>
-	<td>$(back_button)</td></tr>	
-	</table></form></body></html>
+	<tr><td></td><td></td>
+	<td><input type="submit" name=submit value="Submit"></td><td>$(back_button)</td>	
+	</tr></table></form></body></html>
 EOF
 
 #enddebug
