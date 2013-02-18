@@ -154,7 +154,7 @@ function parse(share_name, line) {
 
 cat<<EOF
 	</fieldset><br>
-	$(back_button)<input type=submit name=submit value="Submit">
+	<input type=submit name=submit value="Submit">$(back_button)
 	</form></body></html>
 EOF
 

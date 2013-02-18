@@ -252,11 +252,11 @@ cat<<EOF
 	</table><input type=hidden name=import_cnt value=$i>
 	</fieldset>
 	$swat
-	$(back_button)<input type=submit name=submit value="Submit">
+	<input type=submit name=submit value="Submit">
 	<input type=submit name=submit value="Advanced" onClick="return confirm('\
 On the next SWAT Authentication dialogue you have to enter' + '\n' +
 '\'root\' for the \'User Name\' and the web password for \'Password\'.' + '\n\n' +
 'Changes made might not be recognized latter in this web page.' + '\n\n' + 'Continue?')">
-	</form></body></html>
+	$(back_button)</form></body></html>
 EOF
 

@@ -115,7 +115,7 @@ cat <<-EOF
 	<tr><td colspan=2>Apply recursively to sub-folders</td><td><input type=checkbox name=recurse value=yes></td></tr>
 	<tr><td colspan=2>Apply also to files</td><td><input type=checkbox name=toFiles value=yes></td></tr>
 	<tr><td><br></td></tr>
-	<tr><td></td><td colspan=2>$(back_button)<input type=submit name=Permissions value="Submit"></td></tr>
+	<tr><td></td><td colspan=2><input type=submit name=Permissions value="Submit">$(back_button)</td></tr>
 	</table>
 	<input type=hidden name=newdir value="$esc_browse">
 	<input type=hidden name=goto value="$HTTP_REFERER">
