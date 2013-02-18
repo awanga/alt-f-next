@@ -30,9 +30,6 @@ case $action in
 esac
 
 write_header "$title"
-	
-s="<strong>"
-es="</strong>"
 
 if test -z "$srv"; then
 	echo "<center><h4>No services available</h4></center></body></html>"
@@ -84,7 +81,7 @@ done
 
 cat<<-EOF
 	<tr><td></td>
-	<td><input type="submit" name="$srv" value="Submit"></td></tr>
+	<td align=center><input type="submit" name="$srv" value="Submit"></td></tr>
 	</table>
 	</form></body></html>
 EOF
