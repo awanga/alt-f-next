@@ -4,7 +4,8 @@
 #
 #############################################################
 
-OPENSSH_VERSION=5.9p1
+#OPENSSH_VERSION=5.9p1
+OPENSSH_VERSION=6.1p1
 OPENSSH_SITE=ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable
 OPENSSH_CONF_ENV = LD=$(TARGET_CC)
 #OPENSSH_CONF_OPT = --libexecdir=/usr/lib --sysconfdir=/etc/ssh 
@@ -12,7 +13,7 @@ OPENSSH_CONF_OPT = --sysconfdir=/etc/ssh \
 	-disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx
 OPENSSH_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
-# The bellow dependency on dropbear is a fake. Dropbear installs ssh,scp, etc as a link
+# The bellow dependency on dropbear is a fake. Dropbear installs ssh, scp, etc as a link
 # to dropbear, so if it is installed after openssh it will override those binaries
 
 OPENSSH_DEPENDENCIES = zlib openssl dropbear
