@@ -46,11 +46,11 @@ showlog() {
 	cat<<-EOF
 		</small></pre>
 		<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-		$(back_button)
 		<input type=submit name=$1 value="Download">
 		Filter: <input type=text name=filter_str value="$pat" onkeypress="return event.keyCode != 13" $(ttip filter_tt)>
 		<input type=submit name=$2 value="Refresh">
 		$clearbutton
+		$(back_button)
 		<input type=hidden name=logfile value="$2">
 		</form></body></html>
 	EOF
@@ -148,7 +148,7 @@ case "$action" in
 		LIGHTY_PEM=/etc/ssl/certs/lighttpd.pem
 		STUNNEL_CERT=/etc/ssl/certs/stunnel.pem
 
-		rm $BOX_PEM $VSFTP_CERT $STUNNEL_CERT $LIGHTY_PEM $CUPS_CRT $CUPS_KEY
+		rm -f $BOX_PEM $VSFTP_CERT $STUNNEL_CERT $LIGHTY_PEM $CUPS_CRT $CUPS_KEY
 
 		rcsslcert start >& /dev/null
 
