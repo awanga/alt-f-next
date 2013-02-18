@@ -6,6 +6,9 @@ MT_PIDFILE="/var/run/mediatomb.pid"
 MT_CFG="/var/lib/mediatomb/config.xml"
 
 addgroup -S -g 80 multimedia
+if id mediatomb >& /dev/null; then
+	deluser mediatomb
+fi
 adduser -D -h $MT_HOME/$MT_DIR -g "mediatomb daemon" -G multimedia -u 14 mediatomb
 
 ln -sf /usr/sbin/rcscript /sbin/rcmediatomb

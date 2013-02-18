@@ -27,6 +27,9 @@ rm -rf /Alt-F/opt/RuudBurger-CouchPotatoServer-*
 ln -sf /usr/sbin/rcscript /sbin/rccouchpotato2
 
 addgroup -S -g 200 TV
+if id couchpotato2 >& /dev/null; then
+	deluser couchpotato2
+fi
 adduser -S -g "CouchPotato2 user" -G TV -u 22 -h $CPHOME couchpotato2
 
 chown -R couchpotato2:TV $CBPROG $CPCONF

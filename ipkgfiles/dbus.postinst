@@ -1,5 +1,8 @@
 #!/bin/sh
 
+if id dbus >& /dev/null; then   
+	deluser dbus
+fi
 adduser -S -g "DBUS Daemon" -G sys -u 6 -h /var/lib/dbus dbus
 
 ln -sf /usr/sbin/rcscript /sbin/rcdbus

@@ -1,6 +1,9 @@
 #!/bin/sh 
 
 addgroup -S -g 84 nut
+if id ups >& /dev/null; then
+	deluser ups
+fi
 adduser -S -g "NUT daemon" -G nut -u 69 -h /var/lib/ups ups
 
 mkdir -p /var/state/ups

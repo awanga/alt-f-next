@@ -26,6 +26,9 @@ cp -a $SABPROG-$VER/* $SABPROG
 rm -rf $SABPROG-$VER
 
 addgroup -S -g 200 TV
+if id sabnzbd >& /dev/null; then
+	deluser sabnzbd
+fi
 adduser -S -g "SABnzbd user" -G TV -u 19 -h $SABHOME sabnzbd
 
 chown -R sabnzbd:TV $SABPROG $SABCONFD

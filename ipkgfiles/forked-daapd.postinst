@@ -1,6 +1,9 @@
 #!/bin/sh
 
 addgroup -S -g 80 multimedia
+if id  daapd >& /dev/null; then   
+	deluser daapd
+fi
 adduser -S -g "forked-daapd user" -G multimedia -u 16 -h /var/lib/daapd daapd
 
 chown -R daapd:multimedia /etc/forked-daapd.conf

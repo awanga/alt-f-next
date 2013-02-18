@@ -1,6 +1,9 @@
 #!/bin/sh
 
 addgroup -S -g 80 multimedia
+if id ushare >& /dev/null; then
+	deluser ushare
+fi
 adduser -S -g "uShare daemon" -G multimedia -u 10 -h /var/lib/ushare ushare
 
 chown ushare:multimedia /etc/ushare.conf

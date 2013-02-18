@@ -1,6 +1,9 @@
 #!/bin/sh
 
 addgroup -S -g 80 multimedia
+if id mt-daapd >& /dev/null; then
+	deluser mt-daapd
+fi
 adduser -S -g "mt-daapd daemon" -G multimedia -u 15 -h /var/lib/mt-daapd  mt-daapd
 
 mkdir -p /var/lib/mt-daapd/mp3_dir

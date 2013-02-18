@@ -1,6 +1,9 @@
 #!/bin/sh
 
 addgroup -S -g 80 multimedia
+if id fuppes  >& /dev/null; then   
+	deluser fuppes
+fi
 adduser -S -g "Fuppes user" -G multimedia -u 12 -h /var/lib/fuppes fuppes
 
 chown -R fuppes:multimedia /etc/fuppes

@@ -30,6 +30,9 @@ cp -a /Alt-F/opt/midgetspy-Sick-Beard-*/* $SBPROG
 rm -rf /Alt-F/opt/midgetspy-Sick-Beard-*
 
 addgroup -S -g 200 TV
+if id sickbeard >& /dev/null; then
+	deluser sickbeard
+fi
 adduser -S -g "Sick Beard user" -G TV -u 18 -h $SBHOME sickbeard
 
 chown -R sickbeard:TV $SBPROG $SBCONFD

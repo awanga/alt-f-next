@@ -3,6 +3,9 @@
 LIGHTYHOME=/var/lib/lighttpd
 
 addgroup -S -g 81 network
+if id lighttpd >& /dev/null; then   
+	deluser lighttpd
+fi
 adduser -S -g "Lighttpd daemon" -G network -u 35 -h $LIGHTYHOME lighttpd
 
 ln -sf /usr/sbin/rcscript /sbin/rclighttpd

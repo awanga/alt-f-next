@@ -3,6 +3,9 @@
 DIRS="/var/spool/cups /var/cache/cups /var/run/cups /var/log/cups"
 
 addgroup -S -g 9 lpadmin
+if id cups >& /dev/null; then
+	deluser cups
+fi
 adduser -S -g "CUPS Daemon" -G lpadmin -u 9 -h /var/lib/cups cups
 
 mkdir -p $DIRS

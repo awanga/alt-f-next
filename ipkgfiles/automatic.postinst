@@ -1,6 +1,9 @@
 #!/bin/sh 
 
 addgroup -S -g 81 network
+if id automatic >& /dev/null; then
+	deluser automatic
+fi
 adduser -S -g "automatic daemon" -G network -u 17 -h /var/lib/automatic automatic
 
 ln -sf /usr/sbin/rcscript /sbin/rcautomatic
