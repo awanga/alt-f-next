@@ -114,21 +114,17 @@ eatspaces() {
 
 # mainly for fstab usage, where spaces are '\040' coded
 path_escape() {
-	echo $(echo "$1" | sed 's/ /\\040/g')
+	echo "$1" | sed 's/ /\\040/g'
 }
 
 path_unescape() {
-	echo $(echo "$1" | sed 's/\\040/ /g')
-}
-
-# deprecated, too slow and does unnecessary UTF-8 encoding (the doctype charset is UTF-8)
-http_encode() {
-	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%u;"'
+	echo "$1" | sed 's/\\040/ /g'
 }
 
 # for http only <>&"' needs to be encoded, but possible clash with some linux utilities
 # quoting and special chars meaning and javascript quoting advises doing it
 # characters in the hexadecimal ranges 0-08, 0B-0C, 0E-1F, 7F, and 80-9F cannot be used in HTML
+# Wouldn't be faster doing it as in url_encode() bellow?
 #
 # in the bellow httpencode() the following is missing
 # s/	/\&#x09;/g
@@ -138,7 +134,7 @@ http_encode() {
 # s/%/\&#x25;/g
 # s/;/&#x3b;/g
 
-httpencode() {
+http_encode() {
 echo "$1" | sed "
 s/\&/\&#x26;/g
 s/ /\&#x20;/g
@@ -179,7 +175,12 @@ url_encode() {
 	echo -n "$1" | hexdump -ve '/1 "-%X"' | tr '-' '%'
 }
 
-# deprecated, as it does not encodes UTF-8
+# deprecated, too slow and does unnecessary UTF-8 encoding (the doctype charset is UTF-8)
+httpencode() {
+	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%u;"'
+}
+
+# deprecated, use url_encode above (but is it faster?)
 urlencode() {
 echo "$1" | sed " 
 s/	/%09/g
@@ -248,7 +249,8 @@ enddebug() {
 }
 
 msg() {
-	txt=$(echo "$1" | sed 's|"|\\"|g')
+	txt=$(echo "$1" | sed 's|"|\\"|g' | awk '{printf "%s\\n", $0}')
+
 	html_header
 	echo "<script type=text/javascript>
 	alert(\"$txt\")
