@@ -7,3 +7,11 @@ if ! test -f /etc/ssh/ssh_host_rsa_key; then
 	dropbearconvert dropbear openssh \
 		/etc/dropbear/dropbear_dss_host_key /etc/ssh/ssh_host_dsa_key 
 fi
+
+if ! test -f /etc/ssh/ssh_host_ecdsa_key; then
+	ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ""
+fi
+
+if ! grep -q /usr/sbin/sshd /etc/inetd.conf; then
+	echo -e "ssh_alt\tstream\ttcp\tnowait\troot\t/usr/sbin/sshd\tsshd\t-i" >> /etc/inetd.conf
+fi

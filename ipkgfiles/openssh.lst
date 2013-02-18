@@ -13,3 +13,5 @@
 ./usr/lib/ssh-keysign
 ./usr/lib/ssh-pkcs11-helper
 ./usr/sbin/sshd
+./usr/www/cgi-bin/sshd.cgi
+./usr/www/cgi-bin/sshd_proc.cgi
