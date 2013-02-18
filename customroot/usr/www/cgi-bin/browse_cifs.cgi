@@ -4,7 +4,6 @@
 check_cookie
 
 html_header "Samba Browse"
-echo "<center><h2>Samba Browse</h2></center>"
 
 if test -n "$QUERY_STRING"; then		
 	parse_qstring
