@@ -19,7 +19,7 @@ for i in $(seq 1 $cnt); do
 	d="$(eval echo \$sdir_$i)"
 	if test -z "$d"; then continue; fi
 	if test -n "$d"; then
-		s=$(httpd -d $d)
+		s=$(httpd -d "$d")
 		if ! test -d "$s"; then
 			sed -i -e '/^!#!.*<directory .*$/d' \
 				-e 's/^#!#\(.*<directory .*$\)/\1/' $CONFF
@@ -36,7 +36,12 @@ sed -i -e '/^#!#.*<directory .*$/d' -e 's/^!#!\(.*<directory .*$\)/\1/' $CONFF
 if test -z "$ENABLE_WEB"; then ENABLE_WEB="no"; fi
 sed -i 's/<ui enabled=.*>/<ui enabled="'$ENABLE_WEB'" show-tooltips="yes">/' $CONFF
 
-sed -i 's|<name>.*</name>|<name>'"$(httpd -d $sname)"'</name>|' $CONFF
+if test -z "$sname"; then
+	sname=MediaTomb
+else
+	sname=$(httpd -d "$sname")
+fi
+sed -i 's|<name>.*</name>|<name>'"$sname"'</name>|' $CONFF
 
 rcmediatomb status >& /dev/null
 if test $? = 0; then
