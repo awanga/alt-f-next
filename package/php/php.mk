@@ -43,7 +43,7 @@ endif
 
 ### Extensions
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_ICONV),y)
+ifeq ($(BR2_PACKAGE_PHP_EXT_LIBICONV),y)
 	PHP_CONF_OPT += --with-iconv=shared,${STAGING_DIR}/usr
 	PHP_DEPENDENCIES += libiconv
 endif
@@ -223,6 +223,8 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
 	# configure can't check for some C types (cross-compiling)
 	touch $(PHP_DIR)/ext/mysqlnd/php_mysqlnd_config.h
 endif
+	# install-programs target sometimes fails (build/shtool mkdir -p concurrency issue?)
+	mkdir -p $(TARGET_DIR)/usr/share/man/man1
 	touch $@
 
 $(PHP_HOOK_POST_INSTALL):
