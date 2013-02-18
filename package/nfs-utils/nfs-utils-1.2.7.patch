@@ -28,3 +28,22 @@
  #include <stdbool.h>
  #include <sys/socket.h>
  #include <netinet/in.h>
+--- nfs-utils-1.2.7/utils/Makefile.in-orig	2013-02-15 17:57:40.969195383 +0000
++++ nfs-utils-1.2.7/utils/Makefile.in	2013-02-15 17:58:03.975753940 +0000
+@@ -106,7 +106,7 @@
+ 	distdir
+ ETAGS = etags
+ CTAGS = ctags
+-DIST_SUBDIRS = exportfs mountd nfsd nfsstat showmount statd osd_login \
++DIST_SUBDIRS = exportfs mountd nfsd nfsstat showmount statd \
+ 	idmapd nfsidmap blkmapd gssd mount nfsdcltrack
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ am__relativize = \
+@@ -315,7 +315,6 @@
+ 	nfsstat \
+ 	showmount \
+ 	statd \
+-	osd_login \
+ 	$(OPTDIRS)
+ 
+ MAINTAINERCLEANFILES = Makefile.in
