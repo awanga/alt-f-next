@@ -1,5 +1,5 @@
 #!/bin/sh
 
 deluser avahi
-delgroup avahi
+delgroup avahi >& /dev/null
 rm -rf /sbin/rcavahi_daemon /var/run/avahi-daemon
