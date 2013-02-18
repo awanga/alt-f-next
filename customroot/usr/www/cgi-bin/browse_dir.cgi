@@ -1,32 +1,98 @@
 #!/bin/sh
 
-# recursive function to transverse directories.
+# spaces at pathnames end are not properly handled 
+# as QUERY_STRING doesn't has them (busybox httpd bug?) 
+# also 'basename' and 'dirname' strips all but one leading/trailing space
+
+# there is url-encode, for URLs, that use %<2hex>
+# there are http-entities (either &<entity>; or &#<number>;) for html text
+# text is UTF-8, multibyte for > 127, need to convert to UCS-2 and code 2 bytes as a single entity
+
+tree() {
+	echo "<table><tr><th align=left>&emsp;Folder</th><th>Owner</th><th>Group</th><th>Permissions</th></tr>"
+	traverse /mnt "$(echo $1 | cut -d/ -f3-)"
+}
+
+# recursive function to traverse directories.
 # $1-start directory $2-path of end directory
-transverse() {
+traverse() {
 	local sp
 	sp="${sp}&emsp;"
 
-	start=$1
+	start="$1"
 	dir=$(echo "$2" | cut -d'/' -f1)	# $2 can't start with /
 	end=$(echo "$2" | cut -d'/' -f2-)
 
-#echo "<tr><td>1=\"$1\" 2=\"$2\" start=\"$start\" dir=\"$dir\" end=\"$end\"</td></tr>"
+	a=$(find "$start" -maxdepth 1 -type d 2>/dev/null | tail +2 | sort -d)
 
-	a=$(find "$start" -maxdepth 1 -type d 2>/dev/null | tail +2 | sort -d | tr '\n' ';')
+	turl="<tr><td><a style=\"text-decoration: none\"
+	    href=\"/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_vmode}${url_op}${url_srcdir}browse"
 
-	IFS=";"
+	IFS="
+"
 	for i in $a; do
 		bn=$(basename "$i")
-		tbn=$(httpd -e "$bn")
-		tbi=$(httpd -e "$i")
+		if test ${bn:0:1} = "." -o "$bn" = "lost+found"; then continue; fi
+
+		tbn=$(http_encode "$bn")
+		tbi=$(url_encode "$i")
+
 		eval $(ls -ld "$i" | awk '{printf "user=%s; group=%s; perm=%s", $3, $4, substr($1,2)}')
-			echo "<tr><td><a style=\"text-decoration: none\" 
-	href=\"/cgi-bin/browse_dir.cgi?${url_op}${url_srcdir}${url_wind}${url_id}browse=${tbi}\">${sp}${tbn}</a></td>
-	<td>$user</td><td>$group</td><td style="font-family:courier">$perm</td></tr>"
+		echo "$turl=${tbi}\">${sp}${tbn}</a></td>
+			<td>$user</td><td>$group</td><td style=\"font-family:courier\">$perm</td></tr>"
 		if test "$bn" = "$dir" -a -d "$start/$dir"; then
-			transverse "$start/$dir" "$end"
+			traverse "$start/$dir" "$end"
 		fi
 	done
+}
+
+# flat view of directories
+# $1-path of end directory
+flat() {
+	turl="<a style=\"text-decoration: none\"
+		href=\"/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_vmode}${url_op}${url_srcdir}browse"
+
+	echo "<strong>Folder:</strong> "
+	i=2
+	while true; do
+		tp=$(echo "$1" | cut -d/ -f$i)
+		acc="$acc/$tp"
+		if test -z "$tp"; then break; fi
+		#if test "$tp" = "$ep"; then break; fi
+
+		tp=$(http_encode "$tp")
+		tacc=$(url_encode "$acc")
+
+		echo -n "$turl=$tacc\">/$tp</a>"
+		i=$((i+1))
+	done
+
+	echo " (hit path component to visit it)"
+	echo "<table><tr><th align=left></th><th>Owner</th><th>Group</th><th>Permissions</th></tr>"
+
+	a=$(find "$1" -maxdepth 1 -type d 2>/dev/null | tail +2 | sort -d)
+	turl="<tr><td><a style=\"text-decoration: none\"
+	    href=\"/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_vmode}${url_op}${url_srcdir}browse"
+
+	t=$(dirname "$1")
+	t=$(url_encode "$t")
+	echo "$turl=$t\"><em>Up Folder</em></a></td></tr>"
+
+	IFS="
+"
+	for i in $a; do
+		bn=$(basename "$i")
+		#if test ${bn:0:1} = "." -o "$bn" = "lost+found"; then continue; fi
+		if test "$bn" = "lost+found"; then continue; fi
+
+		tbn=$(http_encode "$bn")
+		tbi=$(url_encode "$i")
+
+		eval $(ls -ld "$i" | awk '{printf "user=%s; group=%s; perm=%s", $3, $4, substr($1,2)}')
+		echo "$turl=${tbi}\">${tbn}</a></td>
+			<td>$user</td><td>$group</td><td style=\"font-family:courier\">$perm</td></tr>"
+	done
+	
 }
 
 . common.sh
@@ -42,62 +108,84 @@ if test "$wind" = "no"; then
 	ok_sel="disabled"
 	write_header "$hdr"
 else
-	html_header "$hdr"
-	mktt() { # no tooltips...
-		true
-	}
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
 		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
-	echo "<center><h2>$hdr $hlp</h2></center>"
+	html_header "$hdr $hlp"
+	mktt() { # no tooltips...
+		true
+	}
 fi
 
 mktt curdir "The currently selected folder.<br>
-Can be edited to create a folder using the Create button bellow."
-mktt cpdir "Mark the above selected folder for copying."
-mktt cpdircont "Mark the above selected folder contents (not the folder itself) for copying."
-mktt cutdir "Mark the above selected folder for moving."
-mktt pastedir "Paste the previously marked folder into the above selected folder."
-mktt mkdir "Create the folder whose name is in the above field."
-mktt rmdir "Delete the above selected folder."
-mktt perms "Change permissions and ownership of the selected folder."
+Can be edited to create or rename a folder using the Create or Rename buttons."
+mktt cpdir "Mark the currently selected folder for copying."
+mktt cpdircont "Mark the currently selected folder contents (not the folder itself) for copying."
+mktt cutdir "Mark the currently selected folder for moving."
+mktt pastedir "Paste the previously marked folder into the currently selected folder."
+mktt mkdir "Create a folder with the name present in the edited Selected field."
+mktt mvdir "Rename the currently selected folder to the edited name in the Selected field."
+mktt rmdir "Delete the currently selected folder."
+mktt perms "Change permissions and ownership of the currently selected folder."
 
-if test -n "$browse"; then
-	browse="$(httpd -d $browse)"
-fi
+if test -n "$wind"; then url_wind="wind=${wind}?"; fi
 
-if test -n "$wind"; then
-	url_wind="wind=${wind}?"
-fi
+if test -n "$id"; then url_id="id=${id}?"; fi
 
-if test -n "$id"; then
-	url_id="id=${id}?"
-fi
+if test -n "$op"; then url_op="op=${op}?"; fi
 
-if test -n "$op"; then
-	url_op="op=${op}?"
+if test "$vmode" = "tree"; then
+	url_vmode="vmode=tree?"
+	tree_sel=checked
+else
+	url_vmode="vmode=flat?"
+	flat_sel=checked
 fi
 
 if test -n "$srcdir"; then
-	srcdir=$(httpd -d $srcdir)
-	esc_srcdir=$(httpd -e "$srcdir")
-	url_srcdir="srcdir=${esc_srcdir}?"
+	perce_srcdir=$srcdir
+	url_srcdir="srcdir=${perce_srcdir}?"
+	srcdir=$(httpd -d "$srcdir")
+	urle_srcdir=$(http_encode "$srcdir")
+fi
+
+if test -n "$browse"; then
+	perce_browse=$browse
+	browse=$(httpd -d $browse)
+	dece_browse=$(http_encode "$browse")
+
+	if ! test -d "$browse"; then
+		echo "<h3><font color=blue>Warning: Folder \"$dece_browse\" does not exists.</font></h3>"
+	fi
+
+	while ! readlink -f "$browse" >& /dev/null; do
+		browse=$(dirname "$browse")
+	done
+	browse=$(readlink -f "$browse")
+fi
+
+if ! echo "$browse" | grep -q '^/mnt'; then
+	echo "<h3><font color=blue>Warning: Only sub folders of /mnt are allowed.</font></h3>"
+	browse="/mnt"
+	dece_browse=$(http_encode "$browse")
+	perce_browse=$(url_encode "$browse")
+fi
+
+fop_dis=""
+fop=$(ls /tmp/folders_op.* 2> /dev/null)
+if test -f "$fop"; then
+	fpid=$(echo $fop | sed "s|/tmp/folders_op.\(.*\)|\1|")
+	if kill -0 $fpid >& /dev/null; then
+		fop_dis="disabled"
+		fop_msg='<tr><td></td><td><font color=red>Folder operation currently in progress</font></td></tr>'
+	else
+		rm -f $fop
+	fi
 fi
 
 #debug
-
-browse=$(readlink -f "$browse")
-
-if ! echo "$browse" | grep -q '^/mnt'; then
-	browse="/mnt"
-elif ! test -d "$browse"; then
-	echo "<h3>Warning: Folder \"$browse\" does not exist.</h3>"
-	browse="/mnt"
-fi
-
-esc_browse=$(httpd -e "$browse")
 
 cat <<-EOF
 	<script type="text/javascript">
@@ -105,14 +193,39 @@ cat <<-EOF
 			window.opener.document.getElementById(inp).value = adir;
 			window.close();
 		}
+		function renameask(dir) {
+			edir = window.decodeURIComponent(dir);
+			document.getElementById("oldname").value = edir;
+			return true
+		}
+		function deleteask(dir) {
+			edir = window.decodeURIComponent(dir);
+			if (edir == "/mnt") {
+				alert("Refusing to delete all disks data!")
+				return false
+			}
+			if (edir.charAt(edir.length-1) == "/")
+				edir = edir.substr(0, edir.length-2)
+			pcomp = edir.split("/")
+			if (pcomp.length == 3)
+				return confirm("ARE YOU REALLY SURE THAT YOU WANT TO DELETE ALL THE\n\n   " 
++ pcomp[2] + "\n\nFILESYSTEM DATA? REALLY?")
+			return confirm("Delete folder\n\n   " + edir + "\n\nand all its files and sub-folders?");
+		}
+		function vmode(mode, dir) {
+			window.location.assign("/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_op}vmode=" + mode + "?${url_srcdir}browse=" + dir)
+		}
 		function perms(dir) {
 			window.location.assign("/cgi-bin/perms.cgi?${url_wind}browse=" + dir)
 		}
 		function ops(op, dir, id, wind) {
+			//edir = window.encodeURIComponent(dir);
 			window.location.assign("/cgi-bin/browse_dir.cgi?" +
-wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
+wind + id + "op=" + op + "?srcdir=" + dir + "?browse=" + dir) 
 		}
 		function op_paste(op, srcdir, destdir) {
+			srcdir = window.decodeURIComponent(srcdir);
+			destdir = window.decodeURIComponent(destdir);
 			ret = false;
 			if ( op == "")
 				alert("No copy or move operation has been previously selected.")
@@ -120,42 +233,53 @@ wind + id + "browse=" + dir + "?op=" + op + "?srcdir=" + dir)
 				alert("No source or destination folder has been selected.")
 			else if (srcdir == destdir)
 				alert("Source and destination folder are the same.")
+			else if (op == 'Move')
+				msg = "Move folder"	
 			else if (op == 'Copy')
 				msg = "Copy folder"	
 			else if (op == 'CopyContent')
 				msg = "Copy all files and folders from"	
 
-			ret = confirm(msg + '\n\n' +
-"   " + srcdir + '\n' + "to" + '\n' + "   " + destdir + '\n\n' +
-"This operation can take a long time to accomplish," + '\n' +
-"depending on the amount of data to " + op + '\n\n' + "Proceed?")
+			ret = confirm(msg + "\n\n   " + srcdir + "\n\nto\n\n   " +
+				 destdir + "\n\nThis operation can take a long time to accomplish,\n" +
+				"depending on the amount of data to transfer.\n\nProceed?")
 			return ret
 		}
 	</script>
 
 	<form action="/cgi-bin/dir_proc.cgi" method="post">
 	<table><tr>
-		<td>Selected: </td>
-		<td colspan=4><input type=text size=30 name=newdir value="$esc_browse" $(ttip curdir)></td>
-		<td><input type=submit $ok_sel value=OK onclick="ret_val('$id', '$esc_browse')"></td>
+		<th>Selected: </th>
+		<td colspan=4><input type=text size=30 id=newdir name=newdir value="$dece_browse" $(ttip curdir)></td>
+		<td><input type=submit $ok_sel value=OK onclick="ret_val('$id', '$dece_browse')"></td>
 		<td><input type=submit $ok_sel value=Cancel onclick="window.close()"></td>
-	</tr><tr><td></td><td>
-		<input type=button name=copyDir value=Copy $(ttip cpdir) onclick="ops('Copy','$esc_browse','$url_id','$url_wind')">
-		<input type=button name=copyDirContent value=CopyContent $(ttip cpdircont) onclick="ops('CopyContent','$esc_browse','$url_id','$url_wind')">
-		<input type=button name=cutDir value=Cut $(ttip cutdir) onclick="ops('Move','$esc_browse','$url_id','$url_wind')">
-		<input type=submit name=PasteDir value=Paste $(ttip pastedir) onclick="return op_paste('$op','$esc_srcdir','$esc_browse')">
-	</td></tr><tr><td></td><td>
-		<input type=submit name=CreateDir value=Create $(ttip mkdir)>
-		<input type=submit name=DeleteDir value=Delete $(ttip rmdir) onclick="return confirm('Remove folder $esc_browse and all its files and sub-folders?')">
-		<input type=button value=Permissions $(ttip perms) onclick="perms('$esc_browse')">
-	</td></tr></table>
-		<input type=hidden name=op value="$op">
-		<input type=hidden name=srcdir value="$esc_srcdir">
-	</form>
+	</tr>$fop_msg<tr><td></td><td>
 
-	<br><table><tr><th></th><th>Owner</th><th>Group</th><th>Permissions</th></tr>
+		<input type=button $fop_dis name=copyDir value=Copy $(ttip cpdir) onclick="ops('Copy','$perce_browse','$url_id','$url_wind')">
+		<input type=button $fop_dis name=copyDirContent value=CopyContent $(ttip cpdircont) onclick="ops('CopyContent','$perce_browse','$url_id','$url_wind')">
+		<input type=button $fop_dis name=cutDir value=Cut $(ttip cutdir) onclick="ops('Move','$perce_browse','$url_id','$url_wind')">
+		<input type=submit  $fop_dis name=PasteDir value=Paste $(ttip pastedir) onclick="return op_paste('$op','$perce_srcdir','$perce_browse')">
+
+	</td></tr><tr><td></td><td>
+		<input type=submit $fop_dis name=CreateDir value=Create $(ttip mkdir)>
+		<input type=submit $fop_dis name=DeleteDir value=Delete $(ttip rmdir) onclick="return deleteask('$perce_browse')">
+		<input type=submit $fop_dis name=RenameDir value=Rename $(ttip mvdir) onclick="return renameask('$perce_browse')">
+		<input type=button value=Permissions $(ttip perms) onclick="perms('$perce_browse')">
+	</td></tr><tr>
+<td></td><td>Tree view<input type=radio $tree_sel onclick="vmode('tree','$perce_browse')">
+Flat view<input type=radio $flat_sel onclick="vmode('flat','$perce_browse')"></td>
+	</tr><tr><td><br></td></tr></table>
+		<input type=hidden name=op value="$op">
+		<input type=hidden name=srcdir value="$urle_srcdir">
+		<input type=hidden name=oldname id=oldname value="">
+	</form>
 EOF
 
-transverse /mnt "$(echo $browse | cut -d/ -f3-)"
+set -f # avoid pathname expansion, or '?' and '*' in filenames will be expanded!
+if test "$vmode" = "tree"; then
+	tree "$browse"
+else
+	flat "$browse"
+fi
 
 echo "</table></body></html>"

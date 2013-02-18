@@ -2,7 +2,6 @@
 
 m2g() {
     if test "$1" -ge 1000; then
-        #echo "$(expr $1 / 1000)GB"
 		echo $1 | awk '{printf "%.1fGB", $1/1000}'
     else
         echo "${1}MB"
@@ -16,38 +15,67 @@ read_args
 wdir=$(httpd -d "$newdir")
 wdir=$(echo "$wdir" | sed -n 's/^ *//;s/ *$//p')
 bdir=$(dirname "$wdir")
-#nbdir=$(echo "$bdir" | sed 's|\([\&\|]\)|\\\1|g')
-nbdir=$(urlencode "$bdir")
-
-#echo -e "$0: HTTP_REFERER=$HTTP_REFERER\nnbdir=$nbdir" >> /tmp/foo
+nbdir=$(url_encode "$bdir")
 
 #debug
 #set -x
 
 if ! echo "$wdir" | grep -q '^/mnt'; then
-	msg "Only operations on /mnt sub-folders are allowed"
+	msg "Only operations on /mnt sub-folders are allowed."
 fi
 
 if test -n "$srcdir"; then
 	srcdir=$(httpd -d "$srcdir")
 fi
 
+if test -n "$oldname"; then
+	oldname=$(httpd -d "$oldname")
+fi
+
 if test -n "$CreateDir"; then
 	if test -d "$wdir"; then
-		msg "Can't create, folder \"$wdir\" already exists."
+		msg "Can't create, folder\n\n   $wdir\n\nalready exists."
 	elif test -d "$bdir"; then
 		res=$(mkdir "$wdir" 2>&1 )
 		if test $? != 0; then
-			msg "$res"
+			msg "Creating failed:\n\n $res"
 		fi
 		HTTP_REFERER=$(echo "$HTTP_REFERER" | sed "s|?browse=.*|?browse=$newdir|")
 	else
-		msg "Can't create, parent folder \"$bdir\" does not exists."
+		msg "Can't create, parent folder\n\n   $bdir\n\ndoes not exists."
 	fi
 	
+elif test -n "$RenameDir"; then
+	if test "$oldname" = "$wdir"; then
+		msg "The new and old names are identical."
+	fi
+
+	if ! test -d "$oldname"; then
+		msg "Can't rename, folder\n\n   $oldname\n\ndoesn't exists."
+	fi
+
+	if test -d "$wdir"; then
+		msg "Can't rename, folder\n\n   $wdir\n\nalready exists."
+	fi
+	
+	if ! test -d "$bdir"; then
+		msg "Can't rename, parent folder\n\n   $bdir\n\ndoesn't exists."
+	fi
+
+	bname=$(dirname "$oldname")
+	if test "$bdir" != "$bname"; then
+		msg "Can't rename, parent folders must be the same, use Cut/Paste instead."
+	fi
+
+	res=$(mv "$oldname" "$wdir" 2>&1)
+	if test $? != 0; then
+		msg "Renaming failed:\n\n $res"
+	fi
+	HTTP_REFERER=$(echo "$HTTP_REFERER" | sed "s|?browse=.*|?browse=$newdir|")
+
 elif test -n "$DeleteDir"; then
 	if ! test -d "$wdir"; then
-		msg "Can't delete, folder \"$wdir\" does not exists."
+		msg "Can't delete, folder\n\n   $wdir\n\ndoes not exists."
 	fi
 
 	src_sz=$(du -sm "$wdir" | cut -f1)
@@ -70,7 +98,7 @@ elif test -n "$DeleteDir"; then
 	while kill -0 $bpid >& /dev/null; do
 		usleep $sleep_time
 		rm_sz=$(du -sm "$wdir" 2>/dev/null | cut -f1)
-		if test -z "$rm_sz"; then continue; fi
+		if test -z "$rm_sz" -o "$src_sz" = 0; then continue; fi
 		el=$(expr $rm_sz \* 100 / $src_sz)
 		cat<<-EOF
 		<script type="text/javascript">
@@ -86,23 +114,21 @@ elif test -n "$DeleteDir"; then
 	rm -f /tmp/folders_op.$bpid
 	res=$(cat $terr)
 	rm -f $terr
-#echo "</body></html>"
-#exit 1
-	if test $? != 0; then
-		msg "$res"
+	if test $st != 0; then
+		msg "Deleting failed:\n\n $res"
 	fi
 
 	HTTP_REFERER=$(echo "$HTTP_REFERER" | sed 's|?browse=.*$|?browse='"$nbdir"'|')
 	js_gotopage "$HTTP_REFERER"
 
 elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
-	sbn=$(basename "$srcdir")
 	if ! test -d "$srcdir"; then
-		msg "Folder \"$srcdir\" does not exists."
+		msg "Failed, folder\n\n   $srcdir\n\n does not exists."
 	fi
 
+	sbn=$(basename "$srcdir")
 	if test -d "${wdir}/${sbn}" -a -z "$CopyContent"; then
-		msg "Folder \"$wdir\" already contains a folder named \"$sbn\""
+		msg "Failed, folder\n\n $wdir\n\n already contains a folder named\n\n   $sbn"
 	fi
 
 	src_mp=$(find_mp "$srcdir")
@@ -117,11 +143,11 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 
 	if test -n "$Copy" -o -n "$CopyContent"; then
 		if test $src_sz -gt $dst_free; then
-			msg "Can't $op, $(m2g $src_sz) needed $(m2g $dst_free) available."
+			msg "Can't $op, $(m2g $src_sz) needed and only $(m2g $dst_free) are available."
 		fi
 	elif test $src_mp != dst_mp; then
 		if test $src_sz -gt $dst_free; then
-			msg "Can't $op, $(m2g $src_sz) needed $(m2g $dst_free) available."
+			msg "Can't $op, $(m2g $src_sz) needed and only $(m2g $dst_free) are available."
 		fi
 	fi
 
@@ -186,7 +212,7 @@ fi
 	while kill -0 $bpid >& /dev/null; do
 		sleep $sleep_time
 		td="$wdir/$(basename "$srcdir")"
-		if ! test -d "$td"; then continue; fi
+		if test ! -d "$td" -o "$src_sz" = 0; then continue; fi
 		mv_sz=$(nice du -sm "$td" | cut -f1)
 		el=$(expr $mv_sz \* 100 / $src_sz)
 		cat<<-EOF
@@ -203,13 +229,11 @@ fi
 	rm -f /tmp/folders_op.$bpid
 	res=$(cat $terr)
 	rm -f $terr
-#echo "</body></html>"
-#exit 1
+
 	if test $st != 0; then
-		msg "$res"
+		msg "Failed:\n\n$res"
 	fi
 
-	HTTP_REFERER=$(echo "$HTTP_REFERER" | sed -n 's|browse=.*$|browse='"$nbdir"'|p')
 	js_gotopage "$HTTP_REFERER"
 
 elif test -n "$Permissions"; then
@@ -235,6 +259,5 @@ elif test -n "$Permissions"; then
 fi
 
 #enddebug
-#echo -e "$0: HTTP_REFERER2=$HTTP_REFERER" >> /tmp/foo
 gotopage "$HTTP_REFERER"
 
