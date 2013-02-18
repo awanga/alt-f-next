@@ -1,6 +1,6 @@
 #/bin/sh
 
-DAEMON=rcafpd
+DAEMON=rcnetatalk
 
 $DAEMON stop
 
