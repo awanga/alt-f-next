@@ -4,11 +4,18 @@
 #
 #############################################################
 
-OPENSSL_VERSION:=1.0.0g
+#OPENSSL_VERSION:=1.0.0g
+OPENSSL_VERSION:=1.0.1e
 OPENSSL_SITE:=http://www.openssl.org/source
-OPENSSL_TARGET_ARCH=generic32
+
+OPENSSL_CFLAGS = $(TARGET_CFLAGS)
+# compiling the base firmware, but be gentle with openssl
+ifeq ($(BR2_OPTIMIZE_S),y)
+	OPENSSL_CFLAGS = $(TARGET_CFLAGS) -O2
+endif
 
 # Some architectures are optimized in OpenSSL
+OPENSSL_TARGET_ARCH=generic32
 ifeq ($(ARCH),avr32)
 OPENSSL_TARGET_ARCH=avr32
 endif
@@ -31,6 +38,7 @@ OPENSSL_DEPENDENCIES = zlib
 ifeq ($(BR2_PACKAGE_CRYPTODEV),y)
 	OPENSSL_DEPENDENCIES += cryptodev
 	OPENSSL_CRYPTO_OPT = -DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS -DHASH_MAX_LEN=64
+	OPENSSL_CFLAGS += $(OPENSSL_CRYPTO_OPT)
 endif
 
 $(eval $(call AUTOTARGETS,package,openssl))
@@ -49,7 +57,7 @@ $(OPENSSL_TARGET_CONFIGURE):
 			no-krb5 no-jpake no-store no-hw no-zlib \
 			linux-$(OPENSSL_TARGET_ARCH) \
 	)
-	$(SED) "s:-O[0-9]:$(TARGET_CFLAGS):" $(OPENSSL_DIR)/Makefile
+	$(SED) "s:-O[0-9]:$(OPENSSL_CFLAGS):" $(OPENSSL_DIR)/Makefile
 	#$(SED) "s:-march=[-a-z0-9] ::" -e "s:-mcpu=[-a-z0-9] ::g" $(OPENSSL_DIR)/Makefile
 	touch $@
 
