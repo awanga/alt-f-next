@@ -274,6 +274,8 @@ coda_aux2	1433/udp			# coda auxiliary service (Coda fs)
 coda_aux3	1435/tcp			# coda auxiliary service (Coda fs)
 coda_aux3	1435/udp			# coda auxiliary service (Coda fs)
 cfinger		2003/tcp			# GNU Finger
+ssh_alt		2222/tcp				# SSH Remote Login Protocol
+ssh_alt		2222/udp				# SSH Remote Login Protocol
 afbackup	2988/tcp			# Afbackup system
 afbackup	2988/udp			# Afbackup system
 icp		3130/tcp			# Internet Cache Protocol (Squid)
