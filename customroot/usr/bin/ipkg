@@ -63,31 +63,7 @@ install() {
 	echo Installing ipkg
 	
 	CONFF=/etc/ipkg.conf
-	IPKG=ipkg_0.99.163_arm.ipk
-	# FIXME: download 'Packages' and parse ipkg version from it:
-	# Package: ipkg
-	# Version: 0.99.163-2
-
-	FEED=$(awk '/^src.*unstable/{print $3}' $CONFF)
-	if test -z "$FEED"; then
-		FEED=$(awk '/^src.*feed_1/{print $3}' $CONFF)
-	fi
-	HOST=$(echo $FEED | sed -n 's|.*://\([^/]*\).*|\1|p')
 	DESTD=$(awk '/^dest/{print $3}' $CONFF)
-
-	if ! wget $FEED/Packages -P /tmp; then
-		if ! nslookup $HOST >& /dev/null; then
-			if ! test -e /tmp/$IPKG; then
-				msg "You don't seem to have a name server configured,
-or a working internet connection,
-and no /tmp/$IPKG file found. Exiting"
-			else
-				local="true"
-			fi
-		fi
-	else
-		rm /tmp/Packages
-	fi
 
 	if test "$DESTD" != "/Alt-F"; then
 		msg "Package destination directory must be /Alt-F"
@@ -96,16 +72,47 @@ and no /tmp/$IPKG file found. Exiting"
 	if ! test -d "$DESTD"; then
 		msg "Package destination directory not found."
 	fi
-			
+
 	TMPD=$(mktemp -d -t)
-	if test -z "$local"; then
-		wget -nv -P $TMPD $FEED/$IPKG >& /dev/null
-		if test $? != 0; then
-			rm -rf $TMPD
-			msg "Downloading of $IPKG from $FEED failed."
-		fi
-	else
+
+	if test -e /tmp/ipkg_*_arm.ipk; then
+		IPKG=$(basename /tmp/ipkg_*_arm.ipk)
 		mv /tmp/$IPKG $TMPD
+		local="yes"
+	else
+		while read type name feed; do
+			if test "$type" != "src" -o -z "$feed"; then continue; fi
+			host=$(echo $feed | sed -n 's|.*://\([^/]*\).*|\1|p')
+			echo -n "Trying $host... "
+			if ! nslookup $host >& /dev/null; then
+				echo "fail, no such host."
+				continue
+			fi
+			if ! wget -q $feed/Packages -P $TMPD; then
+				echo "fail, no Packages file."
+				continue
+			fi
+			if ! grep -q 'Package:[[:space:]]*ipkg' $TMPD/Packages; then
+				rm $TMPD/Packages
+				echo "fail, no ipkg package."
+				continue
+			fi
+			version=$(sed -n '/Package:[[:space:]]*ipkg/,/Package:/s/Version:[[:space:]]*\(.*\)/\1/p}' $TMPD/Packages)
+			if ! wget -q -P $TMPD $feed/ipkg_${version}_arm.ipk; then
+				rm $TMPD/Packages
+				echo "fail, no ipkg_${version}_arm.ipk file."
+				continue
+			fi
+			IPKG=ipkg_${version}_arm.ipk
+			break
+		done < $CONFF
+	fi
+
+	if ! test -e $TMPD/ipkg_*_arm.ipk; then
+		rm -rf $TMPD
+		msg "You don't seem to have a name server configured,
+or a working internet connection,
+and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 	fi
 
 	cd $TMPD
