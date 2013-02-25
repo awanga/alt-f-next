@@ -225,6 +225,7 @@ case $cip in
 			auto eth0
 			iface eth0 inet dhcp
 			client udhcpc
+			hostname $(hostname)
 		EOF
 		
 		ifup eth0

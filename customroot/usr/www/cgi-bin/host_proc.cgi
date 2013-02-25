@@ -130,6 +130,7 @@ else
 	iface eth0 inet dhcp
 	  client udhcpc
 	  mtu $mtu
+	  hostname $hostname
 	EOF
 fi
 
