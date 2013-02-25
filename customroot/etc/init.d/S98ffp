@@ -1,7 +1,7 @@
 #! /bin/sh
 
 DESC="Run ffp initialization script"
-TYPE=sys
+#TYPE=sys
 NAME=ffp
 
 . $(dirname $0)/common
