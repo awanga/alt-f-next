@@ -1,0 +1,8 @@
+config BR2_PACKAGE_OCAML
+	bool "ocaml"
+	help
+	  Caml is a general-purpose programming language,
+	  designed with program safety and reliability in mind.
+
+	  http://caml.inria.fr/
+

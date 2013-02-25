@@ -1,0 +1,389 @@
+From 460babae63ceae8a0516c33b539c49ac51ea5546 Mon Sep 17 00:00:00 2001
+From: Eric Cooper <ecc@cmu.edu>
+Date: Sat, 17 Jul 2010 21:30:28 -0400
+Subject: [PATCH] Cross-compiler for ARM target
+
+---
+ Makefile                |   77 +++++++++++++++++++++++++++++++++++++----------
+ README.cross            |   66 ++++++++++++++++++++++++++++++++++++++++
+ config/auto-aux/runtest |   34 ++++++++++++++++----
+ configure               |   28 +++++++++++-----
+ 4 files changed, 173 insertions(+), 32 deletions(-)
+ create mode 100644 README.cross
+
+diff --git a/Makefile b/Makefile
+index 7b777da..f331a43 100644
+--- a/Makefile
++++ b/Makefile
+@@ -17,17 +17,18 @@
+ include config/Makefile
+ include stdlib/StdlibModules
+ 
+-CAMLC=boot/ocamlrun boot/ocamlc -nostdlib -I boot
+-CAMLOPT=boot/ocamlrun ./ocamlopt -nostdlib -I stdlib -I otherlibs/dynlink
++CROSSCC=$(CROSS)$(BYTECC)
++CAMLC=ocamlc.opt -nostdlib -I stdlib
++CAMLOPT=ocamlrun ./ocamlopt -nostdlib -I stdlib -I otherlibs/dynlink
+ COMPFLAGS=-strict-sequence -warn-error A $(INCLUDES)
+ LINKFLAGS=
+ 
+-CAMLYACC=boot/ocamlyacc
++CAMLYACC=ocamlyacc
+ YACCFLAGS=-v
+-CAMLLEX=boot/ocamlrun boot/ocamllex
+-CAMLDEP=boot/ocamlrun tools/ocamldep
++CAMLLEX=ocamllex
++CAMLDEP=ocamldep
+ DEPFLAGS=$(INCLUDES)
+-CAMLRUN=byterun/ocamlrun
++CAMLRUN=ocamlrun
+ SHELL=/bin/sh
+ MKDIR=mkdir -p
+ 
+@@ -271,6 +272,38 @@ base.opt: checkstack runtime core ocaml opt-core ocamlc.opt otherlibraries \
+ 	 ocamlbuild.byte camlp4out $(DEBUGGER) ocamldoc ocamlopt.opt \
+ 	 otherlibrariesopt
+ 
++# Native-code cross-compiler, libraries, and tools
++
++cross: cross-start cross-ocamlc.opt runtimeopt ocamlopt \
++       cross-ocamlopt.opt libraryopt otherlibrariesopt
++
++cross-start:
++	cd tools; $(MAKE) CAMLC=ocamlc.opt ocamlmklib
++	cd stdlib; $(MAKE) RUNTIME= COMPILER=$$(which ocamlc.opt) all
++	@sed -e 's|@compiler@|ocamlc.opt|' \
++	  driver/ocamlcomp.sh.in > ocamlcomp.sh
++	@chmod +x ocamlcomp.sh
++
++cross-ocamlc.opt:
++	$(MAKE) NATIVECC="$(BYTECC)" CAMLC=ocamlc.opt CAMLOPT=ocamlopt.opt ocamlc.opt
++	rm -f asmrun/meta.o asmrun/dynlink.o
++	@sed -e 's|@compiler@|$$topdir/ocamlc.opt|' \
++	  driver/ocamlcomp.sh.in > ocamlcomp.sh
++	@chmod +x ocamlcomp.sh
++
++cross-ocamlopt.opt:
++	@sed -e 's|@compiler@|ocamlopt.opt -nopervasives|' \
++	  driver/ocamlcomp.sh.in > ocamlcomp.sh
++	@chmod +x ocamlcomp.sh
++	$(MAKE) CAMLC=ocamlc.opt CAMLOPT=ocamlopt.opt ocamlopt.opt
++	rm -f $(OPTOBJS:.cmo=.cmx)
++	@sed -e 's|@compiler@|ocamlc.opt|' \
++	  driver/ocamlcomp.sh.in > ocamlcomp.sh
++	@chmod +x ocamlcomp.sh
++	@sed -e 's|@compiler@|$$topdir/ocamlopt.opt|' \
++	  driver/ocamlcomp.sh.in > ocamlcompopt.sh
++	@chmod +x ocamlcompopt.sh
++
+ # Installation
+ install:
+ 	if test -d $(BINDIR); then : ; else $(MKDIR) $(BINDIR); fi
+@@ -321,12 +354,24 @@ installopt:
+ 	if test -f lex/ocamllex.opt; \
+ 	  then cp lex/ocamllex.opt $(BINDIR)/ocamllex.opt$(EXE); else :; fi
+ 
++# Installation of the cross-compiler
++installcross:
++	if test -d $(BINDIR); then : ; else $(MKDIR) $(BINDIR); fi
++	if test -d $(LIBDIR); then : ; else $(MKDIR) $(LIBDIR); fi
++	cd asmrun; $(MAKE) install
++	cd byterun; $(MAKE) -i install
++	ln -sf $(LIBDIR)/caml $(PREFIX)/include
++	cd stdlib; cp *.cmi *.mli *.ml $(LIBDIR); $(MAKE) installopt
++	for i in $(OTHERLIBRARIES); \
++	  do (cd otherlibs/$$i; $(MAKE) -i install; $(MAKE) installopt) || exit $$?; done
++	cp ocamlopt ocamlopt.opt tools/ocamlmklib $(BINDIR)
++
+ clean:: partialclean
+ 
+ # The compiler
+ 
+ ocamlc: $(COMPOBJS)
+-	$(CAMLC) $(LINKFLAGS) -o ocamlc $(COMPOBJS)
++	ocamlc.opt $(LINKFLAGS) -o ocamlc $(COMPOBJS)
+ 	@sed -e 's|@compiler@|$$topdir/boot/ocamlrun $$topdir/ocamlc|' \
+ 	  driver/ocamlcomp.sh.in > ocamlcomp.sh
+ 	@chmod +x ocamlcomp.sh
+@@ -337,8 +382,8 @@ partialclean::
+ # The native-code compiler
+ 
+ ocamlopt: $(OPTOBJS)
+-	$(CAMLC) $(LINKFLAGS) -o ocamlopt $(OPTOBJS)
+-	@sed -e 's|@compiler@|$$topdir/boot/ocamlrun $$topdir/ocamlopt|' \
++	ocamlc.opt $(LINKFLAGS) -o ocamlopt $(OPTOBJS)
++	@sed -e 's|@compiler@|ocamlrun $$topdir/ocamlopt|' \
+ 	  driver/ocamlcomp.sh.in > ocamlcompopt.sh
+ 	@chmod +x ocamlcompopt.sh
+ 
+@@ -376,12 +421,12 @@ utils/config.ml: utils/config.mlp config/Makefile
+ 	sed -e 's|%%LIBDIR%%|$(LIBDIR)|' \
+ 	    -e 's|%%BYTERUN%%|$(BINDIR)/ocamlrun|' \
+ 	    -e 's|%%CCOMPTYPE%%|cc|' \
+-	    -e 's|%%BYTECC%%|$(BYTECC) $(BYTECCCOMPOPTS) $(SHAREDCCCOMPOPTS)|' \
+-	    -e 's|%%NATIVECC%%|$(NATIVECC) $(NATIVECCCOMPOPTS)|' \
++	    -e 's|%%BYTECC%%|$(CROSSCC) $(BYTECCCOMPOPTS) $(SHAREDCCCOMPOPTS)|' \
++	    -e 's|%%NATIVECC%%|$(CROSSCC) $(NATIVECCCOMPOPTS)|' \
+ 	    -e 's|%%PACKLD%%|$(PACKLD)|' \
+ 	    -e 's|%%BYTECCLIBS%%|$(BYTECCLIBS)|' \
+ 	    -e 's|%%NATIVECCLIBS%%|$(NATIVECCLIBS)|' \
+-	    -e 's|%%RANLIBCMD%%|$(RANLIBCMD)|' \
++	    -e 's|%%RANLIBCMD%%|$(CROSS)$(RANLIBCMD)|' \
+ 	    -e 's|%%CC_PROFILE%%|$(CC_PROFILE)|' \
+ 	    -e 's|%%ARCH%%|$(ARCH)|' \
+ 	    -e 's|%%MODEL%%|$(MODEL)|' \
+@@ -474,7 +519,7 @@ beforedepend:: bytecomp/opcodes.ml
+ # The predefined exceptions and primitives
+ 
+ byterun/primitives:
+-	cd byterun; $(MAKE) primitives
++	cd byterun; $(MAKE) BYTECC="$(CROSSCC)" primitives
+ 
+ bytecomp/runtimedef.ml: byterun/primitives byterun/fail.h
+ 	(echo 'let builtin_exceptions = [|'; \
+@@ -545,7 +590,7 @@ beforedepend:: asmcomp/emit.ml
+ 
+ tools/cvt_emit: tools/cvt_emit.mll
+ 	cd tools; \
+-	$(MAKE) CAMLC="../$(CAMLRUN) ../boot/ocamlc -I ../stdlib" cvt_emit
++	$(MAKE) CAMLC="ocamlc.opt -I ../stdlib" CAMLLEX=ocamllex cvt_emit
+ 
+ # The "expunge" utility
+ 
+@@ -594,7 +639,7 @@ library-cross:
+ 	cd stdlib; $(MAKE) RUNTIME=../byterun/ocamlrun all
+ 
+ libraryopt:
+-	cd stdlib; $(MAKE) allopt
++	cd stdlib; $(MAKE) RUNTIME=ocamlrun COMPILER=$$(which ocamlc) allopt
+ 
+ partialclean::
+ 	cd stdlib; $(MAKE) clean
+@@ -659,7 +704,7 @@ otherlibraries: ocamltools
+ 
+ otherlibrariesopt:
+ 	for i in $(OTHERLIBRARIES); do \
+-	  (cd otherlibs/$$i; $(MAKE) allopt) || exit $$?; \
++	  (cd otherlibs/$$i; $(MAKE) CC="$(CROSSCC)" BYTECC="$(CROSSCC)" CAMLC="../../ocamlcomp.sh -I ../unix" CAMLRUN= allopt) || exit $$?; \
+ 	done
+ 
+ partialclean::
+diff --git a/README.cross b/README.cross
+new file mode 100644
+index 0000000..9255de3
+--- /dev/null
++++ b/README.cross
+@@ -0,0 +1,66 @@
++Building OCaml cross-compilers for ARM targets
++
++Eric Cooper <ecc@cmu.edu>
++October 2010
++
++
++INTRODUCTION
++
++This patch modifies the OCaml 3.12 build system to generate OCaml
++cross-compilers and related tools and libraries for arm-linux targets.
++
++
++STATUS AND LIMITATIONS
++
++I have built and tested OCaml cross-compilers on an amd64 host running
++Debian with the following targets:
++  * an ARM-based router running OpenWrt
++  * a Seagate DockStar (similar to a Marvell Sheevaplug) running Debian
++
++I have not built cross-versions of the dbm, graphics, or labltk libraries.
++
++I have done only limited testing of the cross-tools and libraries.  Any
++suggestions for a test suite would be welcome.
++
++
++PREREQUISITES
++
++You need to be able to cross-compile a "Hello, world!" C program and
++run it on your target system before going any further.
++
++You will need cross-versions of the gcc and binutils packages
++(specifically, gcc, as, objcopy, nm, and ranlib), as well as the basic
++C libraries and headers.  The tools must be on your PATH.
++
++You also need the OCaml source tarball:
++    http://caml.inria.fr/pub/distrib/ocaml-3.12/ocaml-3.12.0.tar.gz
++or
++    http://caml.inria.fr/pub/distrib/ocaml-3.12/ocaml-3.12.0.tar.bz2
++
++
++CONFIGURING
++
++1. Un-tar the source tarball.
++2. Apply the cross-arm patch.
++3. Edit the "configure" script:
++   a. Specify the desired value for the "prefix" variable (the
++      directory under which the cross-compilers and cross-libraries
++      will be installed).  You must have permission to create files
++      and directories there.
++   b. Specify the prefix for your ARM cross tools.  For example, if
++      your cross-versions of gcc, as, etc. are "arm-linux-gcc",
++      "arm-linux-as", etc., then specify
++          cross=arm-linux-
++      (note the trailing '-')
++
++
++BUILDING
++
++1. Run "./configure"
++2. Run "make cross"
++
++
++INSTALLING
++
++If the build finishes without errors, you can install the resulting
++tools by running "make installcross".
+diff --git a/config/auto-aux/runtest b/config/auto-aux/runtest
+index ce65bd0..11dad60 100755
+--- a/config/auto-aux/runtest
++++ b/config/auto-aux/runtest
+@@ -1,8 +1,28 @@
+ #!/bin/sh
+-if test "$verbose" = yes; then
+-echo "runtest: $cc -o tst $* $cclibs" >&2
+-$cc -o tst $* $cclibs || exit 100
+-else
+-$cc -o tst $* $cclibs 2> /dev/null || exit 100
+-fi
+-exec ./tst
++
++# "oracle" for ARM target
++
++output=""
++ret=0
++
++case $(basename $1 .c) in
++
++    ansi)	;;
++    async_io)	;;
++    dblalign)	;;
++    divmod)	;;
++    endian)	ret=1 ;;
++    getgroups)	;;
++    initgroups)	;;
++    int64align) ;;
++    longlong)	ret=1 ;;
++    setgroups)	;;
++    signals)	;;
++    sizes)	output="4 4 4 2" ;;
++
++    *)	echo $0: unexpected test $1 1>&2
++	exit 99
++esac
++
++[ "$output" ] && echo "$output"
++exit $ret
+diff --git a/configure b/configure
+index 66ccda9..80507e8 100755
+--- a/configure
++++ b/configure
+@@ -16,12 +16,13 @@
+ # $Id: configure 10636 2010-07-28 13:18:22Z doligez $
+ 
+ configure_options="$*"
+-prefix=/usr/local
++prefix=/opt/cross/arm
+ bindir=''
+ libdir=''
+ mandir=''
+ manext=1
+-host_type=unknown
++host_type=arm-linux
++cross=arm-linux-gnueabi-
+ ccoption=''
+ asoption=''
+ asppoption=''
+@@ -1249,6 +1250,8 @@ fi
+ x11_include="not found"
+ x11_link="not found"
+ 
++if false; then  # skip X11
++
+ for dir in \
+     $x11_include_dir          \
+                               \
+@@ -1371,6 +1374,7 @@ do
+   fi
+ done
+ 
++fi # end skip X11
+ 
+ if test "$x11_include" = "not found" || test "$x11_link" = "not found"
+ then
+@@ -1395,6 +1399,8 @@ dbm_include="not found"
+ dbm_link="not found"
+ use_gdbm_ndbm=no
+ 
++if false; then  # skip dbm
++
+ for dir in /usr/include /usr/include/db1 /usr/include/gdbm; do
+   if test -f $dir/ndbm.h; then
+     dbm_include=$dir
+@@ -1420,6 +1426,9 @@ for dir in /usr/include /usr/include/db1 /usr/include/gdbm; do
+     break
+   fi
+ done
++
++fi # end skip dbm
++
+ if test "$dbm_include" = "not found" || test "$dbm_link" = "not found"; then
+   echo "NDBM not found, the \"dbm\" library will not be supported."
+ else
+@@ -1593,6 +1602,7 @@ esac
+ 
+ cclibs="$cclibs $mathlib"
+ 
++echo "CROSS=$cross" >> Makefile
+ echo "BYTECC=$bytecc" >> Makefile
+ echo "BYTECCCOMPOPTS=$bytecccompopts" >> Makefile
+ echo "BYTECCLINKOPTS=$bytecclinkopts" >> Makefile
+@@ -1614,14 +1624,14 @@ EOF
+ echo "ARCH=$arch" >> Makefile
+ echo "MODEL=$model" >> Makefile
+ echo "SYSTEM=$system" >> Makefile
+-echo "NATIVECC=$nativecc" >> Makefile
++echo "NATIVECC=$cross$nativecc" >> Makefile
+ echo "NATIVECCCOMPOPTS=$nativecccompopts" >> Makefile
+ echo "NATIVECCPROFOPTS=$nativeccprofopts" >> Makefile
+ echo "NATIVECCLINKOPTS=$nativecclinkopts" >> Makefile
+ echo "NATIVECCRPATH=$nativeccrpath" >> Makefile
+ echo "NATIVECCLIBS=$cclibs $dllib" >> Makefile
+-echo "ASM=$as" >> Makefile
+-echo "ASPP=$aspp" >> Makefile
++echo "ASM=$cross$as" >> Makefile
++echo "ASPP=$cross$aspp" >> Makefile
+ echo "ASPPPROFFLAGS=$asppprofflags" >> Makefile
+ echo "PROFILING=$profiling" >> Makefile
+ echo "DYNLINKOPTS=$dllib" >> Makefile
+@@ -1629,7 +1639,7 @@ echo "OTHERLIBRARIES=$otherlibraries" >> Makefile
+ echo "DEBUGGER=$debugger" >> Makefile
+ echo "CC_PROFILE=$cc_profile" >> Makefile
+ echo "SYSTHREAD_SUPPORT=$systhread_support" >> Makefile
+-echo "PARTIALLD=$partialld" >> Makefile
++echo "PARTIALLD=$cross$partialld" >> Makefile
+ echo "PACKLD=\$(PARTIALLD) \$(NATIVECCLINKOPTS) -o " \
+   | sed -e 's/ $/\\ /' >> Makefile
+ echo "DLLCCCOMPOPTS=$dllccompopts" >> Makefile
+@@ -1646,9 +1656,9 @@ echo "CCOMPTYPE=cc" >> Makefile
+ echo "TOOLCHAIN=cc" >> Makefile
+ echo "NATDYNLINK=$natdynlink" >> Makefile
+ echo "CMXS=$cmxs" >> Makefile
+-echo "MKEXE=$mkexe" >> Makefile
+-echo "MKDLL=$mksharedlib" >> Makefile
+-echo "MKMAINDLL=$mkmaindll" >> Makefile
++echo "MKEXE=$cross$mkexe" >> Makefile
++echo "MKDLL=$cross$mksharedlib" >> Makefile
++echo "MKMAINDLL=$cross$mkmaindll" >> Makefile
+ 
+ rm -f tst hasgot.c
+ rm -f ../m.h ../s.h ../Makefile
+-- 
+1.7.4.1
+
