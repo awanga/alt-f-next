@@ -8,6 +8,19 @@ CONFF=/etc/ipkg.conf
 
 #debug
 
+change_feeds() {
+	if ! grep -q '^#!#src Alt-F-' $CONFF; then
+		sed -i '/^src Alt-F-/s|^.*$|#!#&|' $CONFF
+	fi
+	sed -i '/src feed_/d' $CONFF
+	for i in $(seq 1 $nfeeds); do
+		eval $(echo feed=\$feed_$i)
+		if test -z "$feed"; then continue; fi
+		feed=$(httpd -d "$feed")
+		echo "src feed_$i $feed" >> $CONFF
+	done
+}
+
 ipkg_cmd() {
 
 	if test $1 = "-install"; then
@@ -63,6 +76,8 @@ if test "$install" = "Install"; then
 	part=$(httpd -d $part)
 	mp=$(cat /proc/mounts | grep $part | cut -d" " -f2)
 
+	change_feeds
+
 	ipkg_cmd -install $mp 
 
 elif test -n "$RemoveAll"; then
@@ -79,6 +94,7 @@ elif test -n "$RemoveAll"; then
 	EOF
 
 	busy_cursor_start
+	rcall stop
 	ipkg -clean
 	if test $? != 0; then
 		cat<<-EOF
@@ -102,16 +118,7 @@ elif test -n "$RemoveAll"; then
 	exit 0
 
 elif test -n "$ChangeFeed"; then
-	if ! grep -q '^#!#src Alt-F-' $CONFF; then
-		sed -i '/^src Alt-F-/s|^.*$|#!#&|' $CONFF
-	fi
-	sed -i '/src feed_/d' $CONFF
-	for i in $(seq 1 $nfeeds); do
-		eval $(echo feed=\$feed_$i)
-		if test -z "$feed"; then continue; fi
-		feed="$(httpd -d $feed)"
-		echo "src feed_$i $feed" >> $CONFF
-	done
+	change_feeds
 
 elif test -n "$DefaultFeed"; then
 	if grep -q '^#!#src Alt-F-' $CONFF; then

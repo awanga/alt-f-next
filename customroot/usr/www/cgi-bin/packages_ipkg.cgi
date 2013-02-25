@@ -9,10 +9,28 @@ write_header "Alt-F Package Manager"
 if ! ipkg status >/dev/null; then
 	has_disks
 
+	
+	CONFF=/etc/ipkg.conf
 	cat<<-EOF
-		<h4>No ipkg instalation found, install ipkg in:</h4>
 		<form action="/cgi-bin/packages_ipkg_proc.cgi" method=post>
+		<fieldset><legend><strong>Package Feeds</strong></legend><table>
 	EOF
+
+	cnt=1
+	while read type name feed; do
+		if test "$type" != "src" -o -z "$feed"; then continue; fi
+		echo "<tr><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
+		cnt=$((cnt+1))
+	done < $CONFF
+
+	cat<<-EOF
+		<tr><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
+		</table>
+		<input type=hidden name=nfeeds value="$cnt">
+		</fieldset>
+		<h4>No ipkg instalation found, install ipkg in:</h4>
+	EOF
+
 	select_part
 	echo "</select><input type=submit name=install value=Install>
 	</form></body></html>"
