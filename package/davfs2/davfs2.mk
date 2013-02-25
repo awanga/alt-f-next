@@ -14,13 +14,6 @@ DAVFS2_INSTALL_STAGING = NO
 DAVFS2_INSTALL_TARGET = YES
 DAVFS2_DEPENDENCIES = uclibc neon libiconv
 
-#DAVFS2_CONF_OPT = --with-libiconv-prefix=$(STAGING_DIR)/usr
-#	--with-neon=$(STAGING_DIR)/usr/lib
-
 DAVFS2_CONF_ENV = LIBS=-liconv
 
 $(eval $(call AUTOTARGETS,package,davfs2))
-
-$(DAVFS2_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/share/davfs2
-	touch $@
