@@ -1,11 +1,11 @@
---- busybox-1.20.2/networking/ifupdown.c-orig	2013-02-25 00:19:03.000000000 +0000
-+++ busybox-1.20.2/networking/ifupdown.c	2013-02-25 00:22:39.000000000 +0000
+--- busybox-1.20.2/networking/ifupdown.c-orig	2013-02-28 17:09:32.755795935 +0000
++++ busybox-1.20.2/networking/ifupdown.c	2013-02-28 17:09:47.706494661 +0000
 @@ -540,7 +540,7 @@
  		"pump -i %iface% -k",
  	},
  	{ "udhcpc",
 -		"udhcpc " UDHCPC_CMD_OPTIONS " -p /var/run/udhcpc.%iface%.pid -i %iface%[[ -H %hostname%]][[ -c %client%]]"
-+		"udhcpc " UDHCPC_CMD_OPTIONS " -p /var/run/udhcpc.%iface%.pid -i %iface%[[ -x hostname:%hostname%]]"
++		"udhcpc " UDHCPC_CMD_OPTIONS " -p /var/run/udhcpc.%iface%.pid -i %iface%[[ -r %address%]][[ -x hostname:%hostname%]]"
  				"[[ -s %script%]][[ %udhcpc_opts%]]",
  		"kill `cat /var/run/udhcpc.%iface%.pid` 2>/dev/null",
  	},
@@ -14,7 +14,7 @@
  #  endif
  	return execute("udhcpc " UDHCPC_CMD_OPTIONS " -p /var/run/udhcpc.%iface%.pid "
 -			"-i %iface%[[ -H %hostname%]][[ -c %client%]][[ -s %script%]][[ %udhcpc_opts%]]",
-+			"-i %iface%[[ -x hostname:%hostname%]][[ -s %script%]][[ %udhcpc_opts%]]",
++			"-i %iface%[[ -r %address%]][[ -x hostname:%hostname%]][[ -s %script%]][[ %udhcpc_opts%]]",
  			ifd, exec);
  }
  # else
