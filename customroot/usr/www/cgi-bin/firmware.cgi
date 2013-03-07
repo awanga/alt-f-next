@@ -3,6 +3,13 @@
 . common.sh
 check_cookie
 write_header "Firmware Update"
+
+brd=$(cat /tmp/board)
+if test "$brd" = "Unknown"; then
+	echo "<center><h3><font color=red>Unsupported unknown board</font></h3></center></body></html>"
+	exit 1
+fi
+
 cat<<-EOF
 	<center><h3><font color=red>By following this procedure you can
 	<a href="http://en.wikipedia.org/wiki/Brick_%28electronics%29">brick</a>

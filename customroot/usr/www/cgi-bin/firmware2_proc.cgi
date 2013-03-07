@@ -38,14 +38,26 @@ if test "$flash_defaults" = "flash" -a ! -s $defaults_file; then
 	exit 0
 fi
 
-if test "$flash" = "TryIt"; then
-
-	dd if=$kernel_file of=/root/zImage bs=64 skip=1 >& /dev/null
-	dd if=$initramfs_file of=/root/rootfs.arm.cpio bs=64 skip=1 >& /dev/null
+if test "$flash" = "SpecialReboot"; then
 	rm -f $initramfs_file $kernel_file $defaults_file
+	dd if=/dev/mtdblock2 of=/root/zImage bs=64 skip=1 >& /dev/null
+	dd if=/dev/mtdblock3 of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+
+elif test "$flash" = "TryIt"; then
+	dd if=$kernel_file of=/root/zImage bs=64 skip=1 >& /dev/null
+	dd if=$initramfs_file of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+	rm -f $initramfs_file $kernel_file $defaults_file
+	# is it a initrd or a initramfs?
+	#TF=$(mktemp -d)
+	#mount -o loop /root/rootfs.arm.sqmtd $TF >& /dev/null
+	#st=$?
+	#umount $TF >& /dev/null
+	#if test $st != 0; then # mount fails, it is a initramfs
+	#	echo "console=ttyS0,115200" > /root/cmdline
+	#	# or mv /root/rootfs.arm.sqmtd /root/rootfs.arm.cpio.lzma
+	#fi
 
 elif test "$flash" = "FlashIt"; then
-
 	rcall stop >& /dev/null
 
 	echo timer > "/sys/class/leds/power:blue/trigger"
@@ -96,7 +108,7 @@ fi
 cat<<-EOF
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 	The new firmware will only be active after a reboot.
-	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 45 seconds.\n\nProceed?')">
+	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 60 seconds.\n\nProceed?')">
 	</form></body></html>
 EOF
 
