@@ -1,8 +1,8 @@
 #!/bin/sh
 
-mount_squashfs() {
+mount_usr_squashfs() {
  	if test -f /usr.squashfs -a -n "$(grep squashfs /proc/filesystems)"; then
-		echo "pre-init: squashfs"
+		echo "pre-init: usr-squashfs"
 		mknod /dev/loop0 b 7 0
 		mkdir -p /tmp/tmpusr
 		mount /usr.squashfs /tmp/tmpusr
@@ -22,37 +22,37 @@ mount -t proc proc /proc
 # -runs inetd to telnet the box if networking is up (ip=... in the kernel cmd line)
 if grep -q "initdbg" /proc/cmdline; then
 	echo "pre-init: initdbg"
-	/bin/mount -t sysfs sysfs /sys
-	/bin/mount -t tmpfs tmpfs /tmp
-	/bin/mount -t devpts devpts /dev/pts
-	mount_squashfs
-	/sbin/mdev -s				# create device nodes
+	mount -t sysfs sysfs /sys
+	mount -t tmpfs tmpfs /tmp
+	mount -t devpts devpts /dev/pts
+	mount_usr_squashfs
+	mdev -s	# create device nodes
 
 	if ifconfig eth0 | grep -q UP; then
 		mkdir -p /var/run/vsftpd	# ftp needs it
-		/usr/sbin/inetd				# telnet or ftp the box
+		inetd	# telnet or ftp the box
 		cmd="sleep 2" 
 	fi
 
-	for i in left right; do		# signal the user
+	for i in left right; do	# signal the user
 		echo timer > /sys/class/leds/$i\:amber/trigger
 		echo 2000 > /sys/class/leds/$i\:amber/delay_on
 		echo 2000 > /sys/class/leds/$i\:amber/delay_off
 		eval $cmd
 	done
 
-	exec /bin/sh				# enter iterative shell on serial line
+	exec /bin/sh	# enter iterative shell on serial line
 
-# don't create aufs union branches -- can't install or use packages!
+# don't create aufs union branches. no use for it.
 elif test -n "$(grep noaufs /proc/cmdline)" -o -z "$(grep aufs /proc/filesystems)"; then
 	echo "pre-init: no-aufs"
-	mount_squashfs
-	umount /proc	
-	exec /bin/busybox chroot / /sbin/init
+	mount_usr_squashfs
+	umount /proc
+	exec chroot / /sbin/init
 
-# normal boot, create aufs union branches
-else
-	echo "pre-init: aufs"
+# run from initramfs setup by kernel. Used until RC3
+elif grep -q squashcpio /proc/cmdline; then
+	echo "pre-init: squash-cpio"
 	# don't overlay, enable access to the union branches 
 	mkdir /tmproot
 	mount -t tmpfs tmpfs /tmproot
@@ -60,24 +60,69 @@ else
 	umount /proc # /proc must not be mounted during the next "cp -a"
 	cp -a / /tmproot/root >& /dev/null
 	mount -t proc proc /proc
-	mkdir /newroot
+	mkdir -p /newroot
 	mount -t aufs -o dirs=/tmproot/root aufs /newroot
 	if test -f /usr.squashfs -a -n "$(grep squashfs /proc/filesystems)"; then
-		echo "pre-init: squashfs"
+		echo "pre-init: usr-squashfs"
 		mknod /dev/loop0 b 7 0
 		mv /tmproot/root/usr.squashfs /tmproot
 		mkdir -p /tmproot/rootsq
 		mount -o loop /tmproot/usr.squashfs /tmproot/rootsq
 		mount -t aufs -o remount,append:/tmproot/rootsq=rr aufs /newroot
 	fi
-	mkdir /newroot/rootmnt
-	mount --move /tmproot /newroot/rootmnt	
+	mkdir -p /newroot/rootmnt
+	mount --move /tmproot /newroot/rootmnt
 	umount /proc
 	rmdir /tmproot
 	cd /newroot
-	exec switch_root . sbin/init	
+	exec switch_root . /sbin/init
+
+# RC3 and after: runs from squashfs (initrd) in mtdblock3, saves 6.6MB of RAM:
+#   rcall stop; echo 3 > /proc/sys/vm/drop_caches; free
+#                           total         used         free       shared      buffers
+# squashmtd:   Mem:         61960         7352        54608            0           76
+# squashcpio:  Mem:         61956        14040        47916            0           84
+# squashrd:#   Mem:         61952        13984        47968            0           92
+#
+# needs kernel cmdline with "init=/init root=/dev/ram0" but makes flashing harder,
+# as one can't flash the device the rootfs is running from.
+# one has to kexec a new system running from RAM before flashing, see bellow
+#   dd if=/dev/mtdblock2 of=/root/zImage bs=64 skip=1
+#   dd if=/dev/mtdblock3 of=/root/rootfs.arm.sqmtd bs=64 skip=1
+#   reboot
+elif grep -qE 'squashmtd|egiga0' /proc/cmdline; then # boot from u-boot
+	echo "pre-init: squash-mtd"
+	mount -t tmpfs tmpfs /rootmnt
+	mkdir -p /rootmnt/ro /rootmnt/rw
+	cp -a /dev /rootmnt/
+	mknod /rootmnt/dev/ram0 b 1 0
+	mknod /rootmnt/dev/loop0 b 7 0
+	# FIXME, test mode
+	#mknod /rootmnt/dev/mtdblock3 b 8 20 # really sdb4, test
+	mknod /rootmnt/dev/mtdblock3 b 31 3 # real mtdblock3
+	losetup -o64 /rootmnt/dev/loop0 /rootmnt/dev/mtdblock3
+	mount -r /rootmnt/dev/loop0 /rootmnt/ro
+	mount -t aufs -o br:/rootmnt/rw:/rootmnt/ro aufs /newroot
+	mount --move /rootmnt /newroot/rootmnt
+	umount /proc
+	cd /newroot
+	pivot_root . boot
+	exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; rm -rf /rootmnt/dev;  exec /sbin/init'
+
+# same as above, but don't use mtd, use instead squashfs from ramdisk (initrd).
+# Mainly for development and flashing
+else # squashrd is the default
+	echo "pre-init: squash-rd"
+	mount -t tmpfs tmpfs /rootmnt
+	mkdir -p /rootmnt/ro /rootmnt/rw
+	mount --bind / /rootmnt/ro
+	mount -t aufs -o br:/rootmnt/rw:/rootmnt/ro aufs /newroot
+	mount --move /rootmnt /newroot/rootmnt
+	umount /proc
+	cd /newroot
+	exec chroot . /sbin/init
 fi
 
 # enter iterative shell on serial line if above fails
 echo "pre-init: fail"
-exec /bin/sh	
+exec /bin/sh
