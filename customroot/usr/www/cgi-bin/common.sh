@@ -46,7 +46,7 @@ checkpass() {
 	if test -n "$lpass"; then
 		if test -n "$(echo \"$lpass\" | tr -d [!-~])"; then
 			echo "Use only ASCII characters and no spaces for the password: allowed are\n\
-letters, numbers and ! \\\" # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\\ ] ^ _ \` { | } ~"
+letters, numbers and ! \" # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\\ ] ^ _ \` { | } ~"
 			return 1
 		else
 			echo $lpass
@@ -427,18 +427,55 @@ download_file() {
 }
 
 firstboot() {
-	local curr next
-	curr=$(cat /tmp/firstboot 2> /dev/null)
-	case "$curr" in
-		host) next=time ;;
-		time) next=diskwiz ;;
-		diskwiz) next=newuser ;;
-		newuser) next=settings ;;
-		*) ;;
+	if ! test -f /tmp/firstboot; then return; fi
+
+	pg=${0%.cgi}
+	if test "$pg" = "login"; then return; fi
+
+	currst=$(cat /tmp/firstboot)
+	currpg=${currst%_?}
+
+	if echo $0 | grep -q '_proc\.cgi'; then
+		ppg=${0%_proc.cgi}
+	fi
+
+	if test -z "$ppg" -a "$pg" != "$currpg"; then
+		gotopage /cgi-bin/${currpg}.cgi
+		exit 0
+	fi
+
+msg1="Welcome to your first login to Alt-F.<br> Logout to skip this wizard.<br><br>"
+msg_host="You should now fill-in all the host details and Submit them."
+msg_time_1="You should now specify the Continent/City where you live and Submit it.<br>"
+msg_time_2="You should now adjust the current date and time, either through the internet or manually, and Submit it."
+msg_diskwiz="You should now select a disk configuration."
+msg_newuser_1="You should now specify the filesystem where users will login and store their personal data."
+msg_newuser_2="You should now create an user account."
+msg_smb="You can now create new folders and define them as network shares."
+msg_settings="You should now save in flash memory the changes that you have just made.<br>
+You should do it whenever you want your changes to survive a box reboot."
+
+	case "$currst" in
+		host) next=time_1;;
+		time_1) next=time_2;;
+		time_2) next=diskwiz;; 
+		diskwiz) next=newuser_1;;
+		newuser_1) next=newuser_2;; 
+		newuser_2) next=smb;;
+		smb) next=settings;; 
+		settings) next=status;; 
+		*) rm /tmp/firstboot; firstmsg=""; return ;;
 	esac
+
+	firstmsg="<center><h4><font color=blue>$msg1 $(eval echo \$msg_$currst)</font></h4></center>"
+
+	if test "$ppg" = "$currpg"; then
+		echo $next > /tmp/firstboot
+	fi
 }
 
 gotopage() {
+	if echo $0 | grep -q '_proc\.cgi'; then firstboot; fi
 	cat<<-EOF
 		HTTP/1.1 303
 		Content-Type: text/html; charset=UTF-8
@@ -449,6 +486,7 @@ gotopage() {
 }
 
 js_gotopage() {
+	if echo $0 | grep -q '_proc\.cgi'; then firstboot; fi
 	html_header
 	cat<<-EOF
 		<script type="text/javascript">
@@ -816,6 +854,7 @@ EOF
 
 # args: title [onload action]
 write_header() {
+	firstboot
 	HTML_HEADER_DONE="yes"
 	cat<<-EOF
 		Content-Type: text/html; charset=UTF-8
@@ -857,5 +896,6 @@ write_header() {
 		$(mktt tt_settings "$warn_tt")
 		<center><h2>$1 $hlp</h2></center>
 		$warn
+		$firstmsg
 	EOF
 }
