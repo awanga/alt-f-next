@@ -101,13 +101,12 @@ case $1 in
 			exit 1
 		fi
 		loadsave_settings -fa
-		if ! cp -a /Alt-F/var/lib/atjobs /Alt-F/var/lib/atspool /Alt-F/var/lib/nfs \
-			/Alt-F/var/lib/misc /var/lib/; then
-			echo "Copying from /Alt-F/var/lib to /var/lib failed."
-			exit $?
-		fi
-		cp -a /Alt-F/var/spool/cron /Alt-F/var/spool/lpd /Alt-F/var/spool/samba /var/spool/
-		exit $?
+		for i in atjobs atspool nfs misc; do
+			cp -a /Alt-F/var/lib/$i /var/lib/
+		done
+		for i in cron lpd samba; do
+			cp -a /Alt-F/var/spool/$i /var/spool/
+		done
 		;;
 
 	-n)
