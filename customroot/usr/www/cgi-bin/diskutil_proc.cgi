@@ -28,21 +28,6 @@ prog() {
 	esac
 }
 
-sleepnow() {
-	local dsk
-	dsk=/dev/$1
-
-	if ! test -b $dsk; then
-		return
-	fi
-
-	if test "$(disk_power $1)" != "standby"; then
-		sync	
-		/sbin/hdparm -y $dsk >/dev/null 2>&1
-	fi
-}
-
-
 health() {
 	local dsk
 	dsk=/dev/$1
@@ -88,11 +73,13 @@ read_args
 CONFT=/etc/misc.conf
 
 if test -n "$StandbyNow"; then
-	sleepnow $StandbyNow
+	sync
+	sleep 3
+	hdparm -y /dev/$StandbyNow >& /dev/null
 
 elif test -n "$WakeupNow"; then
-	blkid -c /dev/null /dev/${WakeupNow}* >& /dev/null
-	
+	hdparm -t /dev/$WakeupNow >& /dev/null
+
 elif test -n "$Eject"; then
 	bay_eject $Eject
 
