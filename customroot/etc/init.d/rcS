@@ -12,6 +12,8 @@
 #/bin/mount -a
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
+rmdir /newroot/rootmnt /newroot >& /dev/null
+
 for i in run log cache; do
 	mkdir -p /tmp/$i
 	ln -sf /tmp/$i /var/$i
@@ -220,12 +222,12 @@ case $cip in
 	"dhcp")
 		cat<<-EOF > /etc/network/interfaces
 			auto lo
-			iface lo inet loopback
+			  iface lo inet loopback
 
 			auto eth0
-			iface eth0 inet dhcp
-			client udhcpc
-			hostname $(hostname)
+			  iface eth0 inet dhcp
+			  client udhcpc
+			  hostname $(hostname)
 		EOF
 		
 		ifup eth0
