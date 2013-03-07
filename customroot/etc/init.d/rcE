@@ -79,15 +79,30 @@ ifconfig eth0 down
 mount / -o remount,ro
 
 # do a kexec to a new kernel/rootfs instead of a reboot
-if test -f /root/zImage; then
+if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	cd /root
 
-	initrfs=$(ls rootfs.arm.cpio*)
-	if test -f "$initrfs"; then 	# make sure that only one exists
-		echo "rcE: starting a new kernel and initramfs"
-		kexec -l zImage --command-line="console=ttyS0,115200" \
-			--initrd="$initrfs" && kexec -e
+	# no kernel image, use flashed kernel
+	if ! test -f zImage; then
+		dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
 	fi
+	
+	initrfs=$(ls rootfs.arm.*)
+	# no rootfs, use flashed rootfs
+	if ! test -f "$initrfs" ; then
+		dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
+	fi
+	
+	if test -s "cmdline"; then
+		cmdline=$(cat cmdline);
+	elif test "$initrfs" = "rootfs.arm.cpio-sq.lzma"; then
+		cmdline="! console=ttyS0,115200 squashcpio"
+	else # squashrd
+		cmdline="! console=ttyS0,115200 root=/dev/ram0 init=/init"
+	fi
+	
+	echo "rcE: starting a new kernel and root filesystem"
+	kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" && kexec -e
 fi
 
 echo "rcE: Poweroff NOW! "
