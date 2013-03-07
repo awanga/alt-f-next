@@ -10,6 +10,17 @@ usage() {
 	exit 1
 }
 
+# restore timestamp of modified file
+restore() {
+	if test -f /tmp/$(basename $CONFF); then
+		if awk '{last=curr; curr=$2} END {if (last != curr) exit 1}' $CONFF; then
+			touch -r /tmp/$(basename $CONFF) $CONFF
+			rm /tmp/$(basename $CONFF)
+		fi
+	fi
+	exit $1
+}
+
 if ! test -f $NTPD_CONF; then
 	echo "No $NTPD_CONF file, exiting"
 	exit 1
@@ -27,13 +38,11 @@ if test $# = 0; then
 	usage
 
 elif test "$1" = "-show"; then
-
 	echo "RTC:  $(hwclock -u | awk '{print $4}')"
 	echo "date: $(date | awk '{print $4}')"
 	echo "sntp: $(sntp $NTPD_SERVER | tail -1 | awk '{print $4 " " $5 $6}')"
 
 elif test "$1" = "-setrtc"; then
-
 	# wait for second change
 	o=$(date +%s)
 	while test $o = $(date +%s); do
@@ -44,6 +53,7 @@ elif test "$1" = "-setrtc"; then
 	hwclock -wu
 
 elif test "$1" = "-restart"; then
+	touch -r $CONFF /tmp/$(basename $CONFF)
 
 	adj=0
 	if test -f $CONFF; then
@@ -55,11 +65,12 @@ elif test "$1" = "-restart"; then
 	echo "$(date +%s) $adj" >> $CONFF
 	tail -20 $CONFF > /tmp/adjtime
 	mv /tmp/adjtime $CONFF
+	restore 0
 
 elif test "$1" = "-adjust"; then
+	touch -r $CONFF /tmp/$(basename $CONFF)
 	
 	if ! test -f $CONFF; then
-
 		echo "No config file."
 		adjtimex -f 0 > /dev/null 2>&1
 		#ntpd -qg
@@ -67,7 +78,6 @@ elif test "$1" = "-adjust"; then
 		echo "$(date +%s) 0" > $CONFF
 
 	else	
-
 		# drift (sec) --- delta (sec)
 		#   x (ppm)   --- 1000000
 		##
@@ -79,20 +89,19 @@ elif test "$1" = "-adjust"; then
 		delta=$(expr $(date +%s) - $(tail -1 $CONFF | cut -d" " -f1)) # time since last adjust
 		if test -z "$delta"; then
 			echo "adjtime file possibly corrupted, not adjusting."
-			exit 1
+			restore 1
 		fi
 	
-		#if test $delta -lt 86400; then
 		if test $delta -lt 21600; then
 			echo "Wait at least six hours between adjustments, not adjusting."
-			exit 1
+			restore 1
 		fi
 	
 		up=$(cat /proc/uptime | cut -d'.' -f1)
 		if test $up -lt $delta; then
 			echo "System has been rebooted since last adjustment, reuse last adjustment."
 			adjtime -restart
-			exit 0
+			restore 0
 		fi
 	
 		curr_adj=$(adjtimex | awk '/frequency/{print $3}')
@@ -115,6 +124,7 @@ elif test "$1" = "-adjust"; then
 	
 		adjtime -setrtc
 	fi
+	restore 0
 
 else
 	usage
