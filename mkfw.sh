@@ -2,7 +2,7 @@
 
 check() {
 	if test "$1" != 0; then
-		echo "Firmware creation FAILED at $2. exiting."
+		echo -e "\nFirmware creation FAILED at $2, exiting."
 		exit 1
 	fi
 }
@@ -54,7 +54,7 @@ fi
 
 # change machine ID
 devio > ${DESTD}/tImage 'wl 0xe3a01c06,4' 'wl 0xe3811006,4'
-check "$?" devio
+check $? devio
 
 cat ${DESTD}/zImage >> ${DESTD}/tImage
 
@@ -62,32 +62,60 @@ cat ${DESTD}/zImage >> ${DESTD}/tImage
 mkimage -A arm -O linux -T kernel -C none \
 	-e 0x00008000 -a 0x00008000 \
 	-n "Alt-F-${VER}, kernel ${KVER}" -d ${DESTD}/tImage ${DESTD}/uImage
-check "$?" "kernel mkimage"
+check $? "kernel mkimage"
 
 # create initramfs uboot image
 mkimage -A arm -O linux -T ramdisk -C none \
 	-e 0x00800000 -a 0x00800000 \
-	-n "Alt-F-${VER}, initramfs" -d ${DESTD}/$rootfs \
+	-n "Alt-F-${VER}, initrd" -d ${DESTD}/$rootfs \
 	${DESTD}/urootfs
-check "$?" "initramfs mkimage"
+check $? "initramfs mkimage"
 
-# merge kernel and initramfs
-dns323-fw -m -p 7  -c 1 -l 1 -u 1 -v 4 \
-	-k ${DESTD}/uImage -i ${DESTD}/urootfs ${DESTD}/Alt-F-${VER}.bin
-check "$?" merging
+# Model	product_id	custom_id	model_id	sub_id	NewVersion type
+# DNS321		a		1			1			2		1		1
+# DNS323		7		1			1			1		4		0
+# CH3SNAS		7		2			1			1		4		0
+# DUO 35-LR		7		3			1			1		4		0
+# Alt-F-0.1B	1		2			3			4		5		0
+# Alt-F-0.1RC	7		1			1			1		4		0
 
-# verification, check that splitint the created fw works fine
-dns323-fw -s ${DESTD}/Alt-F-${VER}.bin
-check "$?" split
+name=(DNS-321 DNS-323 Conceptronics-CH3SNAS Fujitsu-Siemens-DUO-35-LR)
+prod=(10 7 7 7)
+cust=(1 1 2 3)
+model=(1 1 1 1)
+sub=(2 1 1 1)
+nver=(1 4 4 4)
+type=(1 0 0 0)
 
-# paranoic, verify that the splited components equal the originals
-cmp kernel ${DESTD}/uImage
-check "$?" "paranoic kernel"
+num=${#name[*]}
+if test $num != ${#prod[*]} -o $num != ${#cust[*]} -o $num != ${#cust[*]} \
+	-o $num != ${#model[*]} -o $num != ${#sub[*]} -o $num != ${#nver[*]} 
+	-o $num != ${#type[*]}; then
+		check 1 "firmware descriptions"
+fi
 
-cmp initramfs ${DESTD}/urootfs
-check "$?" "paranoic initramfs"
+for i in $(seq 0 $((num-1))); do
+	# merge kernel and initramfs
+	echo -e "\n___ ${name[i]} ___"
+	dns323-fw -m -p ${prod[i]} -c ${cust[i]} -l ${model[i]} \
+		-u ${sub[i]} -v ${nver[i]} -t ${type[i]} \
+		-k ${DESTD}/uImage -i ${DESTD}/urootfs ${DESTD}/Alt-F-${VER}-${name[i]}.bin
+	check $? merging
+
+	# verification, check that splitint the created fw works fine
+	err=$(dns323-fw -s ${DESTD}/Alt-F-${VER}-${name[i]}.bin)
+	check $? "split, err:\n$err\n"
+
+	# paranoic, verify that the splited components equal the originals
+	cmp kernel ${DESTD}/uImage
+	check $? "paranoic kernel"
+
+	cmp initramfs ${DESTD}/urootfs
+	check $? "paranoic initramfs"
+done
 
 # report kernel and initramfs available flash space
+echo
 echo Available kernel flash space: $(expr $MAXK - $(stat --format=%s kernel)) bytes
 echo Available initramfs flash space: $(expr $MAXFS - $(stat --format=%s initramfs)) bytes
 
