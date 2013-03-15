@@ -11,7 +11,7 @@
 # the files to remove from root before creating the filesystem:
 # this should be fixed in buildroot and packages.mk
 
-RMF="etc/resolv.conf etc/default/ntpd etc/random-seed
+RMF="etc/default/ntpd etc/at.deny etc/random-seed
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
 var/spool var/log var/cache var/run var/pcmcia var/lib/pcmcia
 usr/doc usr/share/locale usr/swat/lang etc/init.d/S30dbus
@@ -31,7 +31,7 @@ kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL
 # so TWO makes have to be done the first time!!!
 
 # the kernel modules in the base firmware:
-KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/usb/serial/usbserial.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernl/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
+KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/usb/serial/usbserial.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
 
 if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 	OPWD=$PWD;
@@ -44,7 +44,7 @@ if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 	cd $OPWD
 fi
 
-# 2-customroot has some additional needed files, copy them to root
+# 2-customroot has additional needed files, copy them to root
 find customroot/ \( -name \*~ -o -name .directory \) -delete
 cp -a customroot/* $1/
 find $1 -depth -name .svn -exec rm -rf {} \;
@@ -52,7 +52,13 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
 BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
-BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO"
+BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD"
+
+# special case, BR2_PACKAGE_OPENSSH is always defined, but BR2_PACKAGE_OPENSSH_SFTP_ONLY
+# if only defined in the base firmware, so create a dummy openssh package for this case
+if grep -q '^BR2_PACKAGE_OPENSSH_SFTP_ONLY=' .config; then
+	BR2_PACKAGES="$BR2_PACKAGES BR2_PACKAGE_OPENSSH_EXTRA"
+fi
 
 BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
@@ -72,15 +78,9 @@ BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3
 BR2_PACKAGE_DBUS="etc/init.d/S20dbus"
 BR2_PACKAGE_POLIPO="etc/init.d/S45polipo"
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
-
-# FIXME: netatalk files are deleted, as they are the same in
-# BR2_PACKAGE_NETATALK and BR2_PACKAGE_NETATALK2,
-# which should not be configured simultaneously.
-# Perhaps creating a config netatalk suboption?
-# meanwhile this is tested bellow
-
 BR2_PACKAGE_NETATALK="etc/init.d/S51netatalk etc/afp.conf"
-#BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
+BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
+BR2_PACKAGE_OPENSSH_EXTRA="usr/www/cgi-bin/sshd.cgi usr/www/cgi-bin/sshd_proc.cgi"
 
 BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
@@ -94,16 +94,16 @@ usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
 
 BR2_PACKAGE_PHP="etc/php.ini"
 
-BR2_PACKAGE_SICKBEARD="etc/sickbeard/sickbeard.conf etc/init.d/S81sickbeard usr/www/cgi-bin/sickbeard.cgi usr/www/cgi-bin/sickbeard_proc.cgi"
-BR2_PACKAGE_SABNZBD="etc/sabnzbd.conf etc/init.d/S81sabnzbd usr/www/cgi-bin/sabnzbd.cgi usr/www/cgi-bin/sabnzbd_proc.cgi"
+BR2_PACKAGE_SICKBEARD="etc/sickbeard etc/init.d/S81sickbeard usr/www/cgi-bin/sickbeard.cgi usr/www/cgi-bin/sickbeard_proc.cgi"
+BR2_PACKAGE_SABNZBD="etc/sabnzbd etc/init.d/S81sabnzbd usr/www/cgi-bin/sabnzbd.cgi usr/www/cgi-bin/sabnzbd_proc.cgi"
 BR2_PACKAGE_COUCHPOTATO="etc/couchpotato.conf etc/init.d/S81couchpotato usr/www/cgi-bin/couchpotato.cgi usr/www/cgi-bin/couchpotato_proc.cgi"
 BR2_PACKAGE_COUCHPOTATO2="etc/couchpotato2.conf etc/init.d/S81couchpotato2 usr/www/cgi-bin/couchpotato2.cgi usr/www/cgi-bin/couchpotato2_proc.cgi"
 BR2_PACKAGE_NZBGET="etc/nzbget.conf etc/nzbget-pp.conf usr/bin/nzbget-pp.sh etc/init.d/S81nzbget usr/www/cgi-bin/nzbget.cgi usr/www/cgi-bin/nzbget_proc.cgi" 
 BR2_PACKAGE_NZBGETWEB="etc/nzbget-example.conf etc/nzbget-pp-example.conf"
 
-# see above comment
-if test -n "$BR2_PACKAGE_NETATALK2" -a \
-	-n "$BR2_PACKAGE_NETATALK"; then
+# BR2_PACKAGE_NETATALK and BR2_PACKAGE_NETATALK2 should not be configured simultaneously
+if grep -q '^BR2_PACKAGE_NETATALK=' .config-pkgs && \
+	grep -q '^BR2_PACKAGE_NETATALK2=' .config-pkgs; then
 	echo "Error: netatalk and netatalk2 packages can't be used at the same time"
 	exit 1
 fi
