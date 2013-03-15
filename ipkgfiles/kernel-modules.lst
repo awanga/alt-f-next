@@ -129,8 +129,6 @@
 ./usr/lib/modules/2.6.35.14/kernel/fs
 ./usr/lib/modules/2.6.35.14/kernel/fs/cifs
 ./usr/lib/modules/2.6.35.14/kernel/fs/cifs/cifs.ko
-./usr/lib/modules/2.6.35.14/kernel/fs/exportfs
-./usr/lib/modules/2.6.35.14/kernel/fs/exportfs/exportfs.ko
 ./usr/lib/modules/2.6.35.14/kernel/fs/fat
 ./usr/lib/modules/2.6.35.14/kernel/fs/fat/fat.ko
 ./usr/lib/modules/2.6.35.14/kernel/fs/fat/msdos.ko
@@ -139,12 +137,11 @@
 ./usr/lib/modules/2.6.35.14/kernel/fs/fuse/fuse.ko
 ./usr/lib/modules/2.6.35.14/kernel/fs/isofs
 ./usr/lib/modules/2.6.35.14/kernel/fs/isofs/isofs.ko
-./usr/lib/modules/2.6.35.14/kernel/fs/lockd
-./usr/lib/modules/2.6.35.14/kernel/fs/lockd/lockd.ko
 ./usr/lib/modules/2.6.35.14/kernel/fs/nfs
-./usr/lib/modules/2.6.35.14/kernel/fs/nfsd
-./usr/lib/modules/2.6.35.14/kernel/fs/nfsd/nfsd.ko
 ./usr/lib/modules/2.6.35.14/kernel/fs/nfs/nfs.ko
+./usr/lib/modules/2.6.35.14/kernel/fs/quota
+./usr/lib/modules/2.6.35.14/kernel/fs/quota/quota_tree.ko
+./usr/lib/modules/2.6.35.14/kernel/fs/quota/quota_v2.ko
 ./usr/lib/modules/2.6.35.14/kernel/lib
 ./usr/lib/modules/2.6.35.14/kernel/lib/lzo
 ./usr/lib/modules/2.6.35.14/kernel/lib/lzo/lzo_compress.ko
@@ -184,8 +181,6 @@
 ./usr/lib/modules/2.6.35.14/kernel/net/key/af_key.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/llc
 ./usr/lib/modules/2.6.35.14/kernel/net/llc/llc.ko
-./usr/lib/modules/2.6.35.14/kernel/net/sunrpc
-./usr/lib/modules/2.6.35.14/kernel/net/sunrpc/sunrpc.ko
 ./usr/lib/modules/2.6.35.14/kernel/net/xfrm
 ./usr/lib/modules/2.6.35.14/kernel/net/xfrm/xfrm_ipcomp.ko
 ./usr/lib/modules/2.6.35.14/kernel/sound
