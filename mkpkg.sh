@@ -48,6 +48,7 @@ usage() {
 	-setroot (creates rootfs base file list) |
 	-cleanroot (remove all files not in rootfs base file list) |
 	-diffroot (show new files since last -setroot) |
+	-debris (shows files not owned by any package) |
 	-index <pkg_dir> (create ipkg package index) |
 	-html (output packages info in html format)
 	-all (recreates all packages in ipkfiles dir) |
@@ -136,7 +137,7 @@ case "$1" in
 		cd $ROOTFSDIR
 		find . | cat $TFILES - | sort | uniq -u | xargs rm >& /dev/null # $tf
 		#awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r | xargs rmdir
-		find . | cat $ROOTFSFILES - | sort -r | uniq -u | xargs rmdir
+		find . | cat $TFILES - | sort -r | uniq -u | xargs rmdir >& /dev/null
 		#rm $tf
 		exit 0
 		;;
@@ -168,7 +169,7 @@ case "$1" in
 		cd $ROOTFSDIR
 		find . | cat $ROOTFSFILES - | sort | uniq -u | xargs rm >& /dev/null # $tf
 		#awk '/Is a directory/{print substr($4,2,length($4)-3)}' $tf | sort -r  | xargs rmdir
-		find . | cat $ROOTFSFILES - | sort -r | uniq -u | xargs rmdir
+		find . | cat $ROOTFSFILES - | sort -r | uniq -u | xargs rmdir >& /dev/null
 		#rm $tf
 		exit 0
 		;;
@@ -198,6 +199,29 @@ case "$1" in
 			#if test $? = 1; then exit 1; fi
 		done
 		ipkg-make-index pkgs/ > pkgs/Packages
+		exit 0
+		;;
+
+	-debris)
+		# create list of currently configured packages files.
+		# some package file list don't include directories, so debris dirs  are not displayed
+		TF=$(mktemp)
+		for i in $(ls $IPKGDIR/*.lst); do
+			p=$(basename $i .lst)
+			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_') .config; then
+				cat $i >> $TF 
+			fi
+		done
+
+		# remove base files and package files from current rootfs lst. Left files are debris
+		TF1=$(mktemp); TF2=$(mktemp)
+		(cd $ROOTFSDIR; find . > $TF1)
+		for i in $(sort $TF $TF1 $ROOTFSFILES | uniq -u); do
+			if test -f $ROOTFS/$i; then
+				echo $i
+			fi
+		done
+		rm $TF $TF1
 		exit 0
 		;;
 
