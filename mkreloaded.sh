@@ -20,7 +20,8 @@ case $1 in
 	sqfs) rootfs="rootfs.arm.cpio-sq.lzma" ;;
 	gz) rootfs="rootfs.arm.cpio.gz" ;;
 	lzma) rootfs="rootfs.arm.cpio.lzma" ;;
-	*)	echo "Usage: mkreloaded gz | lzma | sqfs"
+	sqmtd) rootfs="rootfs.arm.sqmtd" ;;
+	*)	echo "Usage: mkreloaded gz | lzma | sqfs | sqmtd"
 		exit
 		;;
 esac
@@ -71,16 +72,13 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 
 	# Kirkwood based SoCs
 	# DNS-320: 2.6.22.18, reloaded does not seems to work
+	# DNS-325: 2.6.22.18
 
-	#kvers="2.6.12.6 2.6.22.7"
-	# don't compile the 2.6.22.7 kernel module, needed by the DNS-321, see issue 127
-	# DNS-321 users will have to flash Alt-F, as I don't have a DNS-321 to experiment the reloaded mode myself. 
-	kvers="2.6.12.6"
-
+	kvers="2.6.12.6 2.6.22.7"
 	karch_2_6_12_6="2.6.12.6-arm1"
 	vermagic_2_6_12_6="#define VERMAGIC_STRING \"$karch_2_6_12_6 ARMv5 gcc-3.3\""
 
-	if ! test $(which arm-linux-uclibcgnueabi-gcc); then
+	if ! arm-linux-uclibcgnueabi-gcc -v >& /dev/null; then
 		echo "arm-linux-uclibcgnueabi-gcc is not in PATH"
 		exit 1
 	fi
@@ -88,7 +86,21 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	for i in $kvers; do
 		if ! test -f ../dl/linux-${i}.tar.bz2; then
 			echo "Downloading linux-$i"
-			wget -P ../dl http://www.kernel.org/pub/linux/kernel/v2.6/linux-${i}.tar.bz2
+
+			mj=${i%.*}
+			mirr="http://www.kernel.org/pub/linux/kernel/v2.6 https://launchpad.net/linux/$mj/$i/+download"
+
+			found=0
+			for j in $mirr; do
+				if wget -P ../dl $j/linux-${i}.tar.bz2; then
+					found=1
+					break
+				fi
+			done
+			if test $found = 0; then
+				echo Error downloading kernel $i
+				exit 1
+			fi
 		fi
 	done
 
