@@ -99,5 +99,7 @@ else
 	echo "Usage: mkinitramfs gz | lzma | sqfs | sqmtd"
 fi
 
+rmdir tmp
+
 
 
