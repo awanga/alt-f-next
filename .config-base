@@ -1,6 +1,6 @@
 #
 # Automatically generated make config: don't edit
-# Sat Dec 15 15:54:28 2012
+# Mon Feb 25 15:30:44 2013
 #
 BR2_HAVE_DOT_CONFIG=y
 BR2_VERSION="2009.08"
@@ -128,7 +128,7 @@ BR2_COPYTO=""
 #
 BR2_PRIMARY_SITE=""
 BR2_BACKUP_SITE="http://buildroot.net/downloads/sources/"
-BR2_SOURCEFORGE_MIRROR="kent"
+BR2_SOURCEFORGE_MIRROR="switch"
 BR2_KERNEL_MIRROR="http://www.kernel.org/pub/"
 BR2_GNU_MIRROR="http://ftp.gnu.org/pub/gnu"
 BR2_DEBIAN_MIRROR="http://ftp.debian.org"
@@ -474,6 +474,7 @@ BR2_PACKAGE_INADYN=y
 # BR2_PACKAGE_LIBOSIP2 is not set
 # BR2_PACKAGE_LIBPCAP is not set
 # BR2_PACKAGE_LIBSOUP is not set
+# BR2_PACKAGE_LIBTIRPC is not set
 # BR2_PACKAGE_LIBUPNP is not set
 # BR2_PACKAGE_LIGHTTPD is not set
 # BR2_PACKAGE_LINKS is not set
@@ -535,6 +536,7 @@ BR2_PACKAGE_PORTMAP=y
 # BR2_PACKAGE_QUAGGA_OSPF6D is not set
 # BR2_PACKAGE_QUAGGA_WATCHQUAGGA is not set
 # BR2_PACKAGE_QUAGGA_ISISD is not set
+# BR2_PACKAGE_RPCBIND is not set
 BR2_PACKAGE_RSYNC=y
 # BR2_PACKAGE_SABNZBD is not set
 BR2_PACKAGE_SAMBA=y
@@ -838,6 +840,7 @@ BR2_PACKAGE_ZLIB=y
 # BR2_PACKAGE_LIBANTLR is not set
 # BR2_PACKAGE_LUA is not set
 # BR2_PACKAGE_MICROPERL is not set
+# BR2_PACKAGE_OCAML is not set
 # BR2_PACKAGE_PERL is not set
 # BR2_PACKAGE_PHP is not set
 # BR2_PACKAGE_PYTHON is not set
