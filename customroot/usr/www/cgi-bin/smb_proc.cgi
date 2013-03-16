@@ -9,14 +9,7 @@ read_args
 CONF_FSTAB=/etc/fstab
 CONF_SMB=/etc/samba/smb.conf
 
-if test "$submit" = "Advanced"; then
-	if echo $HTTP_REFERER | grep -q '^https://'; then
-		embed_page "https://${HTTP_HOST%%:*}:902" "SWAT Page"
-	else
-		embed_page "http://${HTTP_HOST%%:*}:901" "SWAT Page"
-	fi
-
-elif test -n "$unMount"; then
+if test -n "$unMount"; then
 	mp=$(httpd -d "$unMount")
 	res="$(umount $mp 2>&1)"
 	st=$?
@@ -35,6 +28,7 @@ elif test -n "$Mount"; then
 
 elif test "$submit" = "Submit"; then
 
+	cp $CONF_FSTAB $CONF_FSTAB-
 	sed -i '/\(\t\| \)cifs\(\t\| \)/d' $CONF_FSTAB
 
 	for i in $(seq 1 $import_cnt); do
@@ -42,11 +36,23 @@ elif test "$submit" = "Submit"; then
 			-z "$(eval echo \$mdir_$i)" -o -z "$(eval echo \$mopts_$i)"; then continue; fi
 
 		rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
-		mdir=$(path_escape "$(httpd -d $(eval echo \$mdir_$i))")
+		mdir=$(httpd -d $(eval echo \$mdir_$i))
+		if test ! -d "$mdir" -o "$mdir" = "/mnt"; then
+			fstab_err=1
+			break
+		fi
+		mdir=$(path_escape "$mdir")
 
 		httpd -d "$(eval echo \$fstab_en_${i}//\$rhost_${i}/\"$rdir $mdir\" cifs \$mopts_$i 0 0)"
 		echo
 	done  >> $CONF_FSTAB
+
+	if test -n "$fstab_err"; then
+		mv $CONF_FSTAB- $CONF_FSTAB
+		msg "\"$mdir\" is not a folder or is inappropriate for a mount point."
+	else
+		rm $CONF_FSTAB-
+	fi
 
 	cp $CONF_SMB $CONF_SMB-
 	awk '
