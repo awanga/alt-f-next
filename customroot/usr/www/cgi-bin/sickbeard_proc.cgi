@@ -6,31 +6,6 @@ read_args
 
 #debug
 
-# this is to disappear after RC3 (included in common.sh)
-# -----------------------------------------------------
-check_folder() {
-	if ! test -d "$1"; then
-		echo "\"$1\" does not exists or is not a folder."
-		return 1
-	fi
-
-	tmp=$(readlink -f "$1")
-	while ! mountpoint -q "$tmp"; do
-		tmp=$(dirname "$tmp")
-	done
-
-	if test "$tmp" = "/" -o "$tmp" = "."; then
-		echo "\"$1\" is not on a filesystem."
-		return 1
-	fi
-
-	if test "$tmp" = "$1"; then
-		echo "\"$1\" is a filesystem root, not a folder."
-		return 1
-	fi
-}
-# ----------------------------------------
-
 SBCONF=/etc/sickbeard/sickbeard.conf
 SBPROG=/Alt-F/opt/SickBeard
 
