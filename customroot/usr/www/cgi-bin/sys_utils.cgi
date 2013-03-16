@@ -25,7 +25,7 @@ cat<<-EOF
 	<form name=sysutils action="/cgi-bin/sys_utils_proc.cgi" method="post">
 
 	<fieldset><legend><strong>Reboot or Poweroff</strong></legend>
-	<input type="submit" name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nWithin 45 seconds you will be connected again.\n\nProceed?')">
+	<input type="submit" name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
 	<input type="submit" name="action" value="Poweroff" onClick="return confirm('The box will poweroff now.\n\nProceed?')">
 	</fieldset><br>
 

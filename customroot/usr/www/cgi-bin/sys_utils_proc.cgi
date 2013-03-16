@@ -72,10 +72,10 @@ case "$action" in
 		cat<<-EOF
 			<br><br><fieldset><legend><strong>The box is rebooting</strong></legend>
 			<center><h4>
-			$(wait_count_start "Waiting 45 seconds")
+			$(wait_count_start "Waiting 60 seconds")
 			</h4></center></fieldset>
 			<script type=text/javascript>
-				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 45000)
+				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 60000)
 			</script></body></html>
 		EOF
 		/sbin/reboot
