@@ -5,7 +5,7 @@
 #############################################################
 
 SVN_VERSION = 1.7.7
-SVN_SITE = http://www.eu.apache.org/dist/subversion
+SVN_SITE = http://archive.apache.org/dist/subversion
 SVN_SOURCE = subversion-$(SVN_VERSION).tar.bz2
 
 SVN_AUTORECONF = NO
