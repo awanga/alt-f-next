@@ -16,12 +16,10 @@ fi
 # The /var/lib/nfs directory is actually on a tmpfs filesystem.
 # except when Alt-F is aufs mounted (just install ipkg for this to take effect)
 
-mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
-
-#touch /var/lib/nfs/etab /var/lib/nfs/rmtab \
-#	/var/lib/nfs/state /var/lib/nfs/xtab
-
-chown -R daemon /var/lib/nfs
+if ! test -d /var/lib/nfs/sm -a -d /var/lib/nfs/sm.bak; then
+	mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
+	chown -R daemon /var/lib/nfs
+fi
 
 istart() {
 	if test -n "$DELAY_NFS"; then

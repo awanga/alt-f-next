@@ -3,7 +3,6 @@
 DESC="Daemon to execute scheduled commands"
 NAME=crond
 TYPE=sys
-REQUIREDBY="backup ntp cleanup"
 
 . $(dirname $0)/common 
 

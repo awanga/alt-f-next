@@ -6,7 +6,6 @@ NAME=inetd
 CONFF=/etc/inetd.conf
 AVAHI_SRV="rsync ssh telnet ftp http printer swat"
 
-REQUIREDBY="stunnel inetd" # don't allow inetd to be stopped. deprecated in RC3. 
 REQUIRE="inetd" # don't allow inetd to be stopped
 
 . $(dirname $0)/common

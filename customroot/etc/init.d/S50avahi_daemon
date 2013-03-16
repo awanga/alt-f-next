@@ -8,7 +8,6 @@ TYPE=net
 AVAHI_OPTS="-D"
 
 REQUIRE="dbus"
-REQUIREDBY="forked_daapd afpd mpd"
 
 . $(dirname $0)/common
 

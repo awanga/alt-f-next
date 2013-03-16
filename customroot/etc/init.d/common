@@ -53,18 +53,7 @@ require() {
 # to use at stop
 # don't stop if it is required by running services
 requiredby() {
-
-# relies on REQUIREDBY setup on the top service, which is stupid
-#	name=$1; shift
-#	for i in $*; do
-#		if rc$i status >& /dev/null; then
-#			echo \'$name\' can\'t be stopped, as it is needed by \'$i\' which is running.
-#			exit 1
-#		fi
-#	done
-
 # relies on REQUIRE (or 'require' direct call) on dependants
-# obsoletes REQUIREDBY. FIXME: remove it on all services after RC3
 	srv=${0#*S??} # current service name. Beware on services such as dbus/dbus-daemon
 	for i in $(grep -lE "(require |REQUIRE=).*$srv" /etc/init.d/S*); do
 		dep=${i#*S??} # service that depends on this service

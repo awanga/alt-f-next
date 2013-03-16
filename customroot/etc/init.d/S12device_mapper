@@ -2,7 +2,6 @@
 
 DESC="Manges LVM device mapper modules"
 NAME=device-mapper
-REQUIREDBY="lvm cryptsetup"
 
 umask 077
 
@@ -22,7 +21,6 @@ case "$1" in
 			omsg 0
 			return 0
 		fi
-		requiredby $NAME $REQUIREDBY
 		echo -n "Stopping $NAME: "
 		modprobe -qr dm_snapshot dm_mirror dm_region_hash dm_log dm_mod
 		omsg $?

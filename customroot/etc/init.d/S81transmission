@@ -5,7 +5,6 @@ set -e
 DESC="A Fast, Easy and Free Bittorrent client"
 NAME=transmission-daemon
 TYPE=user
-REQUIREDBY="automatic"
 
 CONFF=/var/lib/transmission
 JSON=settings.json

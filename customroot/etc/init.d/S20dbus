@@ -13,8 +13,6 @@
 NAME=dbus-daemon
 NAME2=dbus-uuidgen
 
-REQUIREDBY="avahi_daemon"
-
 . $(dirname $0)/common
 
 # Sanity checks.

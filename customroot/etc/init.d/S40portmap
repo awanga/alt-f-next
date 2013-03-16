@@ -3,8 +3,6 @@
 DESC="DARPA port to RPC program number mapper"
 NAME=portmap
 
-REQUIREDBY="nfs nfs_client"
-
 PORTMAP_FLAG="" #-v
 
 . $(dirname $0)/common
