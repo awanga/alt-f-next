@@ -323,7 +323,7 @@ fs_progress() {
 	part=$1
 	ln=""
 	for k in check format convert shrink enlarg wip; do
-		if test -s /tmp/${k}-${part}; then
+		if test -f /tmp/${k}-${part}; then
 			if kill -1 $(cat /tmp/${k}-${part}.pid) 2> /dev/null; then
 				if test -s /tmp/${k}-${part}.log; then
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
