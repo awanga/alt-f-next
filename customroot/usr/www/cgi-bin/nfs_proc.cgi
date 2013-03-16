@@ -58,21 +58,35 @@ elif test -n "$Submit"; then
 		msg "$res"
 	fi
 
+	cp $CONFT $CONFT-
 	sed -i '/\(\t\| \)nfs\(\t\| \)/d' $CONFT
 
 	for i in $(seq 1 $((n_fstab+3))); do 
-		if test -n "$(eval echo \$rhost_$i)"; then
-			if test -z "$eval echo \$mopts_$i)"; then
-			# keep in sync with nfs.cgi
-				mopts_$i= "rw,hard,intr,proto=tcp" # keep in sync with nfs.cgi
-			fi
-			rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
-			mdir=$(path_escape "$(httpd -d $(eval echo \$mdir_$i))")
+		if test -z "$(eval echo \$rhost_$i)" -o -z "$(eval echo \$rdir_$i)" -o \
+			-z "$(eval echo \$mdir_$i)"; then continue; fi
 
-			httpd -d "$(eval echo \$fcmtd_$i)$(eval echo \$rhost_$i):$rdir $mdir nfs $(eval echo \$mopts_$i) 0 0"
-			echo
+		if test -z "$eval echo \$mopts_$i)"; then
+		# keep in sync with nfs.cgi
+			mopts_$i= "rw,hard,intr,proto=tcp" # keep in sync with nfs.cgi
 		fi
+		rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
+		mdir=$(httpd -d $(eval echo \$mdir_$i))
+		if test ! -d "$mdir" -o "$mdir" = "/mnt"; then
+			fstab_err=1
+			break
+		fi
+		mdir=$(path_escape "$mdir")
+
+		httpd -d "$(eval echo \$fcmtd_$i)$(eval echo \$rhost_$i):$rdir $mdir nfs $(eval echo \$mopts_$i) 0 0"
+		echo
 	done >> $CONFT
+
+	if test -n "$fstab_err"; then
+		mv $CONFT- $CONFT
+		msg "\"$mdir\" is not a folder or is inappropriate for a mountpoint."
+	else
+		rm $CONFT-
+	fi
 
 	sed -i '/^DELAY_NFS=/d;/^CLEAN_STALE_NFS=/d' $CONFM
 

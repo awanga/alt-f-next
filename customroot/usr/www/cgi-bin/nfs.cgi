@@ -177,7 +177,7 @@ cat<<-EOF
 	<th>Host</th>
 	<th>Folder</th>
 	<th>Discover</th>
-	<th>Local dir</th>
+	<th>Local Folder</th>
 	<th>Search</th>
 	<th>Mount Options</th>
 	<th>Options</th>
