@@ -111,4 +111,3 @@ cat<<-EOF
 	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 60 seconds.\n\nProceed?')">
 	</form></body></html>
 EOF
-

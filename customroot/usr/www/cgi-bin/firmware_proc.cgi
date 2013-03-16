@@ -24,13 +24,13 @@ if test $st != "0"; then
 fi
 
 # The dns323-fw program output identifies the firmware file, evaluate it
-# Model			product_id	custom_id	model_id	sub_id	NewVersion
-# DNS321		a			1			1			2		1
-# DNS323		7			1			1			1		4
-# CH3SNAS		7			2			1			1		4
-# DUO 35-LR		7			3			1			1		4
-# Alt-F-0.1B	1			2			3			4		5
-# Alt-F-0.1RC	7			1			1			1		4
+# Model	product_id	custom_id	model_id	sub_id	NewVersion type
+# DNS321		a		1			1			2		1		1
+# DNS323		7		1			1			1		4		0
+# CH3SNAS		7		2			1			1		4		0
+# DUO 35-LR		7		3			1			1		4		0
+# Alt-F-0.1B	1		2			3			4		5		0
+# Alt-F-0.1RC	7		1			1			1		4		0
 
 # Board/Firmware known compatibility.
 # It is not clear cut, as the Alt-F firmware has a DNS323 signature
@@ -58,7 +58,7 @@ case $sig in
 	"1234") ftype="Alt-F-0.1Bx" ;;
 	*) 
 		rm -f kernel initramfs defaults
-		msg "This firmware file has signature $sig and does not seems to be compatible with the\nD-Link DNS-321, D-Link DNS-323, Conceptronic CH3SNAS or Fujitsu DUO 35-LR."
+		msg "This firmware file has signature $sig and does not seems to be compatible with the\nD-Link DNS-321, D-Link DNS-323, Conceptronic CH3SNAS or Fujitsu-Siemens DUO 35-LR."
 		exit 0
 		;;
 esac
@@ -68,7 +68,7 @@ if test "$brd" = "D1" -a "$ftype" != "DNS-321" -a "$ftype" != "DNS-323"; then
 	msg "Your box is a DNS-321 and this firmware file was not designed for it".
 elif test "$ftype" = "DNS-321" -a $brd != "D1"; then
 	rm -f kernel initramfs defaults
-	msg "This firmware file not designed for a DNS-321 and your box is not a DNS-321.".
+	msg "This firmware file was designed for a DNS-321 and your box is not a DNS-321.".
 fi
 
 html_header
@@ -91,7 +91,7 @@ echo "<h4>Everything looks OK. The firmware file is for a $ftype and you have a 
 if losetup  | grep -q /dev/mtdblock3; then
 	runfromflash="disabled"
 	flmsg="<h4><font color=blue>Alt-F is running from flash memory,
-you have to reboot into a special mode before being able to flash.</font></h4>
+you have to reboot into a special mode before being able to flash.<br>You can however TryIt first.</font></h4>
 <input type=submit name=flash value=\"SpecialReboot\">"
 fi
 
