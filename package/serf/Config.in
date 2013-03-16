@@ -1,0 +1,6 @@
+config BR2_PACKAGE_SERF
+	bool "serf"
+	help
+	  A high performance C-based HTTP client library 
+
+	  http://code.google.com/p/serf
