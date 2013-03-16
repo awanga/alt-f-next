@@ -106,16 +106,6 @@ CONFNTP=/etc/ntp.conf
 check_cookie
 write_header "Time Setup"
 
-if test -f /tmp/firstboot; then
-	cat<<-EOF
-		<center><font color=blue>
-		<h3>Welcome to your first login to Alt-F</h3>
-		<h4>To continue setting up Alt-F, you should now specify where you live, Submit it,</h4>
-		<h4> and in the second step adjust the time though the internet or mannualy and Submit it.</h4>
-		</font></center>
-	EOF
-fi
-
 if test -r $CONFZ; then
     tz=$(cat $CONFZ)
 else
@@ -186,47 +176,48 @@ cat<<-EOF
 <form name=frm action="/cgi-bin/time_proc.cgi" method="post">
 
 <fieldset><legend><strong>Country</strong></legend>
-	Timezone: <input type=text size=30 name=tz value="$tz">
-	$(tzones)
-	<input type=hidden name=timezone value="$timezone">
-
 <table>
-	<tr><td>Fix Daylight Saving Time (DST)</td>
-	<td><input type=checkbox id=fixdst name=fixdst value=po onclick="toogle()"></td></tr>
-	<tr><td align=right>DST start date</td>
-	<td><select disabled id=fix1 name=dst_week_start onChange="update_tz2()">
-			$(opt_week $weeks)</select></td>
+	<tr><td>Timezone:</td><td><input type=text size=30 name=tz value="$tz">
+	$(tzones)
+	<input type=hidden name=timezone value="$timezone"></td></tr>
 
-	<td><select disabled id=fix2 name=dst_day_start onChange="update_tz2()">
-		$(opt_wday $days)</select>of</td>
+	<tr><td></td><td>Fix Daylight Saving Time (DST)
+	<input type=checkbox id=fixdst name=fixdst value=po onclick="toogle()"></td></tr>
 
-	<td><select disabled id=fix3 name=dst_mth_start onChange="update_tz2()">
-		$(opt_month $months)</select>at</td>
+	<tr><td></td><td>DST start date
+	<select disabled id=fix1 name=dst_week_start onChange="update_tz2()">
+			$(opt_week $weeks)</select>
 
-	<td><select disabled id=fix4 name=dst_hour_start onChange="update_tz2()">
-		$(opt_hour $hours)</select>:</td>
+	<select disabled id=fix2 name=dst_day_start onChange="update_tz2()">
+		$(opt_wday $days)</select>of
 
-	<td><select disabled id=fix5 name=dst_min_start onChange="update_tz2()">
+	<select disabled id=fix3 name=dst_mth_start onChange="update_tz2()">
+		$(opt_month $months)</select>at
+
+	<select disabled id=fix4 name=dst_hour_start onChange="update_tz2()">
+		$(opt_hour $hours)</select>:
+
+	<select disabled id=fix5 name=dst_min_start onChange="update_tz2()">
 		$(opt_min $mins)</select></td></tr>
 
-	<tr><td align=right>DST &nbsp;end date</td>
-	<td><select disabled id=fix6 name=dst_week_end onChange="update_tz2()">
-		$(opt_week $weeke)</select></td>
+	<tr><td></td><td>DST &nbsp;end date
+	<select disabled id=fix6 name=dst_week_end onChange="update_tz2()">
+		$(opt_week $weeke)</select>
 
-	<td><select disabled id=fix7 name=dst_day_end onChange="update_tz2()">
-		$(opt_wday $daye)</select>of</td>
+	<select disabled id=fix7 name=dst_day_end onChange="update_tz2()">
+		$(opt_wday $daye)</select>of
 
-	<td><select disabled id=fix8 name=dst_mth_end onChange="update_tz2()">
-	$(opt_month $monthe)</select>at</td>
+	<select disabled id=fix8 name=dst_mth_end onChange="update_tz2()">
+	$(opt_month $monthe)</select>at
 
-	<td><select disabled id=fix9 name=dst_hour_end onChange="update_tz2()">
-		$(opt_hour $houre)</select>:</td>
+	<select disabled id=fix9 name=dst_hour_end onChange="update_tz2()">
+		$(opt_hour $houre)</select>:
 
-	<td><select disabled id=fix10 name=dst_min_end onChange="update_tz2()">
+	<select disabled id=fix10 name=dst_min_end onChange="update_tz2()">
 		$(opt_min $mine)</select></td></tr>
-</table>
-<br><input type="submit" name="country" value="Submit">
-</fieldset><br>
+
+<tr><td></td><td><input type="submit" name="country" value="Submit"></td></tr>
+</table></fieldset><br>
 
 <fieldset>
 <legend><strong>Adjust time through internet</strong></legend>

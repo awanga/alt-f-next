@@ -7,8 +7,8 @@ read_args
 #debug
 
 if test "$Submit" = "country"; then
-	timezone=$(httpd -d $timezone)
-	if test -z "$tz" -o "$timezone" = "Select one Continent/City"; then
+	timezone=$(httpd -d "$timezone")
+	if test -z "$tz" -o -z "$timezone" -o "$timezone" = "Select one Continent/City"; then
 		msg "You have to supply a Continent/City and have a valid Timezone field."
 	fi
 	echo "$(httpd -d $tz)" > /etc/TZ
@@ -21,24 +21,14 @@ elif test "$Submit" = "manual"; then
 	hour=$(httpd -d $hour)
 	date=$(httpd -d $date)
 	date -s "$date $hour" >& /dev/null
-	next="true"
 
 elif test "$Submit" = "ntpserver"; then
 	if test -z "$ntps"; then ntps="pool.ntp.org"; fi
 	sntp -s $ntps >& /dev/null
-	next="true"
 fi
 
 hwclock -w -u >& /dev/null
 
 #enddebug
+gotopage /cgi-bin/time.cgi
 
-if test -n "$next" -a -f /tmp/firstboot; then
-	if test -d "$(readlink -f /home)"; then
-		gotopage /cgi-bin/settings.cgi
-	else
-		gotopage /cgi-bin/diskwiz.cgi
-	fi
-else
-	gotopage /cgi-bin/time.cgi
-fi
