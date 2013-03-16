@@ -129,6 +129,7 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 	if ! test -d dns323-reloaded-0.7.167; then
 		tar -xzf dns323-reloaded-0.7.167.tar.gz
 		patch -p0 < dns323-reloaded-0.7.167.patch
+		sed -i 's/make/make-3.81/' dns323-reloaded-0.7.167/Makefile
 	fi
 
 	cd dns323-reloaded-0.7.167
