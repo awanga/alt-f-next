@@ -40,10 +40,6 @@ case $action in
 		if test $? = 1; then
 			msg "$res"
 		fi
-		if test -f /tmp/firstboot; then
-			rm -f /tmp/firstboot
-			gotopage /cgi-bin/status.cgi
-		fi
 		;;
 
 	ClearSettings)

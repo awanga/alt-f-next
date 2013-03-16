@@ -9,17 +9,6 @@ if ! isflashed; then
 	clear_dis="disabled"
 fi
 
-if test -f /tmp/firstboot; then
-	cat<<-EOF
-		<center><font color=blue>
-		<h3>Welcome to your first login to Alt-F</h3>
-		<h4>To finish setting up Alt-F, you should now save the changes
-		that you have just made.</h4>
-		<h4>You should do it whenever you want your changes to survive a box reboot.</h4>
-		</font></center>
-	EOF
-fi
-
 res=$(loadsave_settings -ls)
 for i in $res; do
 	sets="$sets <option>$i</option>"
