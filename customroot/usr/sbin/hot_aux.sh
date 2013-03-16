@@ -100,10 +100,6 @@ rmdir /tmp/fstab_lock
 touch -r /tmp/fstab_date /etc/fstab
 rm /tmp/fstab_date
 
-if test -f "/mnt/$lbl/alt-f.fail"; then
-	rm -f "/mnt/$lbl/alt-f.fail"
-fi
-
 # don't mount if noauto is present in mount options
 if echo "$mopts" | grep -q noauto; then
 	logger -t hot "Not auto-mounting $lbl as 'noauto' is present in the mount options."
@@ -111,6 +107,10 @@ if echo "$mopts" | grep -q noauto; then
 fi
 
 mount $PWD/$MDEV
+
+if test -f "/mnt/$lbl/alt-f.fail"; then
+	rm -f "/mnt/$lbl/alt-f.fail"
+fi
 
 if test -d "/mnt/$lbl/Users"; then
 	if ! test -h /home -a -d "$(readlink -f /home)" ; then
