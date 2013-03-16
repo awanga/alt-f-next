@@ -202,7 +202,7 @@ cat<<-EOF
 	</tr></table></fieldset><br>
 EOF
 
-if test -e /proc/mdstat -a -n "$(grep ^md /proc/mdstat 2> /dev/null)"; then
+if mdadm --examine --brief /dev/sd?? | grep -q ARRAY; then
 	cat<<-EOF
 		<fieldset><Legend><strong>RAID Maintenance</strong></legend>
 		<table style="border-collapse:collapse">

@@ -9,7 +9,7 @@ raid() {
 	pair2=$4
 	pair3=$5
 
-	opts=""
+	opts="--chunk=512"
 	rspare=""
 
 	case "$level" in
@@ -32,7 +32,7 @@ raid() {
 			;;
 
 		raid1)
-			opts="--bitmap=internal"	
+			opts="$opts --bitmap=internal"	
 			if test "$pair2" = "none"; then
 				pair2="missing"
 			else
@@ -55,7 +55,7 @@ raid() {
 			else
 				pair3="/dev/$pair3"
 			fi
-			opts="--bitmap=internal"
+			opts="$opts --bitmap=internal"
 			ndevices=3
 			;;
 
@@ -232,6 +232,8 @@ elif test -n "$Destroy_raid"; then
 	for i in $comp; do
 		mdadm --zero-superblock /dev/$i >& /dev/null
 	done
+	sleep 3
+	rm /dev/$mdev
 	mdadm --examine --scan > /etc/mdadm.conf
 	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 
