@@ -259,8 +259,21 @@ create_fs() {
 		local dev sec sf
 		if ! test -b $1; then return; fi
 		dev=$(basename $1)
-		if test "${dev%%[0-9]}" = "md"; then
+		raidopts=""
+		if test "${dev:0:2}" = "md"; then
 			sf=/sys/block/${dev}/size
+			if test $wish_part = "raid0" -o $wish_part = "raid5"; then
+				if test $wish_part = "raid0"; then
+					nd=$ndisks
+				else
+					nd=2 # can start in degraded, but 3 (2 of data) has to be used
+				fi
+				blk=4096
+				chunk=$(cat /sys/block/${dev}/md/chunk_size)
+				stride=$((chunk / blk))
+				stripew=$((stride * nd))
+				raidopts="-b $blk -E stride=$stride,stripe-width=$stripew"
+			fi
 		else
 			sf=/sys/block/${dev:0:3}/${dev}/size
 		fi
@@ -268,7 +281,7 @@ create_fs() {
 		eval $(awk '{ printf "min=%.0f", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
 		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
 		wait_count_start "$min minute(s)"
-		res="$(mke2fs -m 0 -T $wish_fs ${1} 2>&1)"
+		res="$(mke2fs -m 0 -T $wish_fs $raidopts ${1} 2>&1)"
 		st=$?
 		wait_count_stop
 		if test $st != 0; then
@@ -302,14 +315,14 @@ create_raid() {
 		done
 	fi
 
-	opts=""; 
+	opts="--chunk=512"; 
 	case "$1" in
 		linear|raid0)
 			if test $ndisks = 3; then
 				spare="/dev/${usb}2"
 			fi
 			;;
-		raid1)  opts="--bitmap=internal"
+		raid1)  opts="$opts --bitmap=internal"
 			if test $ndisks = 1; then
 				pair2="missing"
 				ndisks=2
@@ -319,7 +332,7 @@ create_raid() {
 				ndisks=2
 			fi
 			;;
-		raid5)  opts="--bitmap=internal"
+		raid5)  opts="$opts --bitmap=internal"
 			if test $ndisks = 3; then
 				spare="/dev/${usb}2"
 			fi
@@ -424,12 +437,7 @@ done
 #echo "$ndisks $disks"
 
 if test "$ndisks" = "0" -o "$wish_part" = "notouch"; then
-	if test -f /tmp/firstboot; then
-		pg=newuser.cgi
-	else
-		pg=diskmaint.cgi
-	fi
-	gotopage /cgi-bin/$pg
+	gotopage /cgi-bin/diskmaint.cgi
 fi
 
 #exit 0
@@ -466,19 +474,13 @@ echo /sbin/mdev > /proc/sys/kernel/hotplug
 
 #enddebug
 
-if test -f /tmp/firstboot; then
-	pg=newuser.cgi
-else
-	pg=diskmaint.cgi
-fi
-
 busy_cursor_end
 
 cat<<-EOF
 	</pre><p><strong>Success!</strong></p>
 	<script type="text/javascript">
 		url = document.referrer
-		url = url.substr(0,url.lastIndexOf("/")) + "/$pg"
+		url = url.substr(0,url.lastIndexOf("/")) + "/diskmaint.cgi"
 		setTimeout("window.location.assign(url)", 3000);
 	</script></body></html>
 EOF

@@ -4,15 +4,6 @@
 check_cookie
 write_header "Disk Wizard"
 
-if test -f /tmp/firstboot; then
-	cat<<-EOF
-		<center><font color=blue>
-		<h3>Welcome to your first login to Alt-F</h3>
-		<h4>To continue setting up Alt-F, you should now choose a disk configuration.</h4>
-		</font></center>
-	EOF
-fi
-
 has_disks
 
 cat<<-EOF
