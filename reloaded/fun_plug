@@ -1,5 +1,25 @@
 #!/bin/sh
 
+# Tested with D-Link firmware 1.10, dated 4/6/2011
+#
+# This script uses fonz's "reloaded" kernel module.
+#
+# "reloaded" is very sensitive to memory condition, specially low and fragmented memory.
+# If it fails, try again after removing all D-Link addons and
+# disabling all servers such as iTunes, UPnP AV and ftp.
+# Stopping the BT client, DDNS client, LLTD, etc might also help.
+#
+# The file "alt-f-reloaded.log" might be useful for diagnosing,
+# specially the free: section. Look near the file end.
+#
+# With all services enabled and a medium set of multimedia files available,
+# "reloaded" failed for me once every two or three attempts, "free" reporting about 10MB.
+#
+# With all services disabled, "reloaded" never failed, with "free" reporting about 30MB.
+#
+# Alt-F is now mature enough to be flashed using D-Link "Firmware Upgrade" page.
+# The risk of something goes wrong is the same as upgrading the D-Link firmware itself.
+
 # disable recurring reboots,
 # comment if you want to go to Alt-F on every reboot
 ONCE=yes 
@@ -17,55 +37,77 @@ FFPRC=/ffp/etc/rc
 LOG_FILE=alt-f-reloaded.log
 FAILS=alt-f.fail
 
-exec > $TMP_DIR/$LOG_FILE
+exec > $TMP_DIR/$LOG_FILE 2>&1
+
+savelog() {
+	if test -f $BASE_DIR/$FAILS; then
+		cat $TMP_DIR/$LOG_FILE >> $BASE_DIR/$LOG_FILE
+		rm $TMP_DIR/$LOG_FILE
+	else
+		mv $TMP_DIR/$LOG_FILE $BASE_DIR/$LOG_FILE
+	fi
+	# allow everybody to remove the log file
+	chmod 666 $BASE_DIR/$LOG_FILE
+}
+
+lexit() {
+	echo "$1, exiting."
+	savelog
+	exit 1
+}
 
 check() {
-	if ! test -r "$1"; then
-		echo "$1 not found, exiting"
-		mv $TMP_DIR/$LOG_FILE $BASE_DIR
-		#chown -R nobody:501 $BASE_DIR/alt-f*
-		chmod -R 666 $BASE_DIR/alt-f*
-		exit 1
+	if ! test -r "$1" -o -d "$1"; then
+		lexit "$1 not found"
 	fi
 }
 
-if ! test -d $BASE_DIR; then
-	echo "No $BASE_DIR found, exiting"
-	exit 1
+killallbutme() {
+	fpchk=$(pidof chk_fun_plug)
+	for i in $(ps | sed -n 's/[[:space:]]*\([[:digit:]]*\).*/\1/p'); do
+		if test $i -gt 1000 -a $i != $$ -a $i != $$PID -a $i != "$fpchk"; then
+			if kill -0 $i; then kill $1 $i; fi
+		fi
+	done
+}
+
+echo -e "\n********************************
+$(date)
+********************************\n"
+
+check $BASE_DIR
+cd $BASE_DIR
+
+# allow everybody to remove this file
+chmod a+w fun_plug
+
+if test -f $FAILS; then # failsafe -- last reloaded failed?
+	lexit "Last reload failed, remove \"$FAILS\" to try again"
+fi
+
+if ! test -x fun_plug; then
+	lexit "The fun_plug file is not executable.
+If you want to continue using Alt-F, make the fun_plug file executable,
+then edit it and comment the top \"ONCE=yes\" line"
 fi
 
 # disable recurring reboots
 if test "$ONCE" = "yes"; then
-	if test "$(dirname $0)" = "."; then
-		chmod -x "$(basename $0)"
-	else 
-		chmod -x "$0"
-	fi
-elif test -f $BASE_DIR/$FAILS; then # failsafe -- last reloaded failed?
-	echo "Last reload failed, exiting. Remove $FAILS to try again."
-	mv $TMP_DIR/$LOG_FILE $BASE_DIR
-	#chown -R nobody:501 $BASE_DIR/alt-f*
-	chmod -R 666 $BASE_DIR/alt-f*
-	exit 1
+	chmod -x fun_plug
 fi
 
-cd $BASE_DIR
-
 if test -r $ALTF_TARBALL; then 
-#	if busybox --help | grep -q 1.11; then # 1.10b6 has busybox 1.11.2, that accepts 'tar xf'
-#		tar xf $ALTF_TARBALL
-#	else
-		# what the heck?! -x doesn't work, but -v does, so extract to stdout!
-		mkdir -p $ALTF_PATH
-		check $ALTF_PATH
-		for i in $(tar -tf $ALTF_TARBALL); do
-			if ! test -d $i; then
-				tar -xOf $ALTF_TARBALL $i > $i
-			fi
-		done
-		
-#	fi
+	# what the heck?! -x doesn't work, but -v does, so extract to stdout!
+	mkdir -p $ALTF_PATH
+	check $ALTF_PATH
+	for i in $(tar -tf $ALTF_TARBALL); do
+		if ! test -d $i; then
+			tar -xOf $ALTF_TARBALL $i > $i
+		fi
+	done
+
 	rm $ALTF_TARBALL
+	# allow everybody to remove created files
 	chmod -R 666 alt-f
 	chmod 777 alt-f
 fi
@@ -76,10 +118,8 @@ cd $ALTF_PATH
 KV=$(uname -r)
 kernel=zImage
 machtype=1542
-initrd=$(ls rootfs.arm.cpio*)
-cmdline="console=ttyS0,115200"
-#initrd=rootfs.arm.cpio.gz
-#cmdline="initdbg console=ttyS0,115200"
+initrd=$(ls rootfs.arm.*)
+cmdline="! console=ttyS0,115200 root=/dev/ram0 init=/init"
 
 check "$kernel"
 check "$initrd"
@@ -95,57 +135,64 @@ if test -n "$KIP"; then
 	cmdline="$cmdline ip=$ip::$gw:$mask:$(hostname).$domain:eth0:none"
 fi
 
+echo -e "\nps before: "; ps
+
 # stop ffp services
 if test -f $FFPRC; then
-	echo "ffp present"
+	echo "Stopping ffp services."
 	$FFPRC stop
 fi
 
-# stop processes
-smb stop
-proc="apkg atd crond wget smbclient pure-ftpd prescan upnp udhcpc \
-	mt-daapd lpd inotify_itune inotify_upnp btdog bt op_server \
-	inotifybt UpdateDB check_hotplug xmldb check_daemon mserver \
-	mDNSResponder openssl webs"
+if true; then # new way
+	kill_running_process
 
-for i in $proc; do
-	if test -n "$(pidof $i)"; then
-		kill -15 $(pidof $i)
-	fi
-done
-#sleep 3
-for i in $proc; do
-	if test -n "$(pidof $i)"; then
-		kill -9 $(pidof $i)
-	fi
-done
-kill_running_process
+	killallbutme -15
+	sleep 3
+	killallbutme -9
+
+else # old way
+	# stop processes
+	smb stop
+	proc="apkg atd crond wget smbclient pure-ftpd prescan upnp udhcpc \
+		mt-daapd lpd inotify_itune inotify_upnp btdog bt op_server \
+		inotifybt UpdateDB check_hotplug xmldb check_daemon mserver \
+		mDNSResponder openssl webs chkbutton"
+
+	for i in $proc; do
+		if test -n "$(pidof $i)"; then
+			kill -15 $(pidof $i)
+		fi
+	done
+	sleep 3
+	for i in $proc; do
+		if test -n "$(pidof $i)"; then
+			kill -9 $(pidof $i)
+		fi
+	done
+	kill_running_process
+fi
 
 # try to solve network problems in rev-C1 boards
 ifconfig egiga0 down
 
-# try to solve usb problems when reloading
-rmmod usblp
+# free some more memory
+rmmod usblp lltd
 
 sleep 3
-echo -e "\ncwd:"; pwd
-echo -e "\nps:"; ps
-echo -e "\nfree:" ;free
-echo -e "\nmount:"; mount
-echo -e "\ndf:"; df -h
-echo -e "\nlsmod:"; lsmod
+echo -e "\nset: "; set
+echo -e "\ncwd: "; pwd
+echo -e "\nps: "; ps
+echo -e "\nfree: " ;free
+echo -e "\nmount: "; mount
+echo -e "\ndf: "; df -h
+echo -e "\nlsmod: "; lsmod
 
-mv $TMP_DIR/$LOG_FILE $BASE_DIR
+savelog
 
 # Alt-F will remove it if boot succeeds, else next reboot will be aborted
-if test "$ONCE" != "yes"; then
-	touch ../$FAILS
-fi
+touch $BASE_DIR/$FAILS
 
-#chown -R nobody:501 $BASE_DIR/alt-f*
-chmod 777 $BASE_DIR/alt-f*
-
-# umount filesystems
+# unmount filesystems
 swapoff -a
 sync
 umount -a -r
