@@ -30,7 +30,6 @@ cat<<-EOF
 		<td><input type="submit" value="Submit"></td>
 	</tr>
 	</table>
-	<!--input type="hidden" name=from_url value="$(basename $REQUEST_URI)"-->
 	<input type="hidden" name=from_url value="$QUERY_STRING">
 	</form></center>
 	<script type="text/javascript">

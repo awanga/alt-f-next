@@ -36,7 +36,7 @@ if ! test -s "$SECR"; then
 	echo -e "root:$passwd" >> /etc/rsyncd.secrets
 
 	if test -z "$(loadsave_settings -ls)"; then
-		touch /tmp/firstboot
+		echo host > /tmp/firstboot
 		loc="/cgi-bin/host.cgi"
 	else
 		loc="/cgi-bin/status.cgi"
