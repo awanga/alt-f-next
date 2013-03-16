@@ -82,8 +82,26 @@ check() {
 # format $1=part $2=type $3=label
 format() {
 
+	raidopts=""
+	if test -d /sys/block/${part}/md; then
+		level=$(cat /sys/block/${part}/md/level)
+		ndisks=$(cat /sys/block/${part}/md/raid_disks)
+		if test $level = "raid0" -o $level = "raid5"; then
+			if test $level = "raid0"; then
+				nd=$ndisks
+			else
+				nd=2 # can start in degraded, but 3 (2 of data) has to be used
+			fi
+			blk=4096
+			chunk=$(cat /sys/block/${part}/md/chunk_size)
+			stride=$((chunk / blk))
+			stripew=$((stride * nd))
+			raidopts="-b $blk -E stride=$stride,stripe-width=$stripew"
+		fi
+	fi
+
 	case $2 in
-		ext2|ext3|ext4) opts="-m 0"; id=83 ;;
+		ext2|ext3|ext4) opts="-m 0 $raidopts"; id=83 ;;
 		vfat) opts="-v"; id=c ;; # c Win95 FAT32 (LBA)
 		ntfs) opts="-f"; id=7 ;; # 7 HPFS/NTFS
 		*) msg "Wrong filesystem type." ;;
