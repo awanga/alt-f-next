@@ -143,8 +143,6 @@ systems_st() {
 }
 
 network_st() {
-	#eval $(ethtool eth0 | awk '/Speed/{printf "Speed=%s", $2}')
-
 #	Mode=$(cat /sys/class/net/eth0/duplex)
 #	MTU=$(cat /sys/class/net/eth0/mtu)
 #	MAC=$(cat /sys/class/net/eth0/address)
@@ -203,7 +201,7 @@ disks_st() {
 		eval $(awk -v st=$? '
 			/^194/ { printf "temp=\"%d\";", $10}
 			/not support SMART|Device is in/ {
-				print "health_st=\"unknown\";"
+				print "health_st=\"--\";"
 				if (st == 2) print "pstatus=\"standby\";"}
 			/SMART overall-health/ {
 				if (st == 0) color="black"
@@ -235,7 +233,7 @@ disks_st() {
 }
 
 raid_st() {
-	if ! test -e /proc/mdstat -a -n "$(grep ^md /proc/mdstat 2> /dev/null)"; then
+	if ! grep -q ARRAY /etc/mdadm.conf; then
 		return 0
 	fi
 
@@ -364,7 +362,6 @@ filesys() {
 }
 
 mounted_filesystems_st() {
-
 	if ! grep -q '^/dev/\(sd\|md\|dm-\)' /proc/mounts; then
 		return 0
 	fi
@@ -456,7 +453,7 @@ remotely_mounted_filesystems_st() {
 		IFS=:
 		echo "$nfsm" | while read host dir; do
 			if checkip "$host"; then
-				if ! th=$(awk '/^'$host'/{print $3; exit 1}' /etc/hosts); then
+				if ! th=$(awk '/^'$host'[[:space:]]+/{print $3; exit 1}' /etc/hosts); then
 					host=$th
 				fi
 			fi
@@ -468,7 +465,9 @@ remotely_mounted_filesystems_st() {
 }
 
 backup_st() {
-	if ! test -e /var/run/backup.pid; then return; fi
+	if ! test -e /var/run/backup.pid; then
+		return 0
+	fi
 
 	bpid=$(cat /var/run/backup.pid)
 	if ! kill -0 $bpid >& /dev/null; then
