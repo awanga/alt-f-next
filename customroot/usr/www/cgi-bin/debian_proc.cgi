@@ -99,7 +99,7 @@ if test "$submit" = "Install"; then
 		umount $DEBDIR/dev
 	fi
 
-	vers="$(cat /etc/Alt-F) 0.1B7" # fallback
+	vers="$(cat /etc/Alt-F) 0.1RC2" # fallback
 	for ver in $vers; do
 		echo "</pre><h4>Downloading and installing Alt-F $ver in Debian...</h4><pre>"
 		wget --progress=dot:mega http://alt-f.googlecode.com/files/Alt-F-${ver}.tar 
@@ -115,7 +115,8 @@ if test "$submit" = "Install"; then
 
 	tar -xf Alt-F-${ver}.tar
 	if test $? != 0; then cleanup; fi
-	mv alt-f/rootfs.arm.cpio-sq.lzma $DEBDIR/boot/Alt-F-rootfs.arm.cpio-sq.lzma
+	rootfs=$(basename $(ls alt-f/rootfs.arm.*))
+	mv alt-f/$rootfs $DEBDIR/boot/Alt-F-$(rootfs)
 	mv alt-f/zImage $DEBDIR/boot/Alt-F-zImage
 	rm -rf alt-f Alt-F-${ver}.tar 
 
@@ -167,7 +168,7 @@ if false; then # not working
 
 	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
 	sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
-		-e 's|^INITRD.*|INITRD="/boot/Alt-F-rootfs.arm.cpio-sq.lzma"|' \
+		-e 's|^INITRD.*|INITRD="/boot/Alt-F-'$rootfs'"|' \
 		$DEBDIR/etc/default/kexec-alt-f
 
 	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
@@ -179,7 +180,7 @@ else
 	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-debian
 	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
 	sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
-		-e 's|^INITRD.*|INITRD="/boot/Alt-F-rootfs.arm.cpio-sq.lzma"|' \
+		-e 's|^INITRD.*|INITRD="/boot/Alt-F-'$rootfs'"|' \
 		$DEBDIR/etc/default/kexec-alt-f
 	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
 		#!/bin/bash
