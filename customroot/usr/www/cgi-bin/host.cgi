@@ -13,16 +13,6 @@ mktt tt_ipv6 "IPv6 is for the next generation internet, most users don't need it
 When enabling, after submiting it takes effect immediately<br>
 When disabling, submiting will schedule it for disable at next reboot."
 
-if test -f /tmp/firstboot; then
-	cat<<-EOF
-		<center>
-		<font color=blue><h3>Welcome to your first login to Alt-F</h3>
-		<h4>You should now fill all the host details
-		and Submit them</h4></font>
-		</center>
-	EOF
-fi
-
 FLG_MSG="#!in use by dnsmasq, don't change"
 if $(grep -q "$FLG_MSG" $RESOLV); then
 	stk="#!nameserver"; cflg=1
@@ -90,14 +80,14 @@ cat<<-EOF
 	}
 	function ipchange(oip) {
 		ret = true;
-		nip = document.getElementById("sip").value;
+		nip = document.getElementById("sip2").value;
 		stat = document.getElementById("static").checked;
 		if (stat == true && oip != nip)
 			ret = confirm("Your IP will change. Redirect your " +
 			'\n' + "browser to http://" + nip);
 		if (stat == false)
-			ret = confirm("Your IP will change. Consult your DHCP server to know" +
-			 '\n' + "the new IP and redirect your browser it.");
+			ret = confirm("The box IP might change. Consult your DHCP server to know" +
+			 '\n' + "the new IP and redirect your browser to it.");
 		return ret;
 	}
 	function mtu_warn() {

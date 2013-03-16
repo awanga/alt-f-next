@@ -60,10 +60,10 @@ domain=$(httpd -d "$domain")
 hostname=$(httpd -d "$hostname")
 
 if test -z "$mtu"; then mtu=1500; fi
-if test -z "$hostname"; then hostname=DNS-323; fi
-if test -z "$workgp"; then workgp=Workgroup; fi
+if test -z "$hostname"; then hostname="DNS-323"; fi
+if test -z "$workgp"; then workgp="Workgroup"; fi
 if test -z "$hostdesc"; then hostdesc="DNS-323 NAS"; fi
-if test -z "$domain"; then domain=localnet; fi
+if test -z "$domain"; then domain="localnet"; fi
 
 hostname $hostname
 echo $hostname > /etc/hostname
@@ -130,13 +130,13 @@ else
 	iface eth0 inet dhcp
 	  client udhcpc
 	  mtu $mtu
+	  address $oldip
 	  hostname $hostname
 	EOF
 fi
 
 ifdown eth0 >& /dev/null
-start-stop-daemon -K -x udhcpc >& /dev/null # ifdown used to kill udhcp...
-sleep 1
+sleep 3
 ifup eth0 >& /dev/null
 sleep 3
 
@@ -157,9 +157,4 @@ busy_cursor_end
 
 #enddebug
 
-if test "$(cat /etc/TZ)" = "NONE-0" -a -f /tmp/firstboot; then
-	js_gotopage /cgi-bin/time.cgi
-else
-	js_gotopage /cgi-bin/host.cgi
-fi
-
+js_gotopage /cgi-bin/host.cgi
