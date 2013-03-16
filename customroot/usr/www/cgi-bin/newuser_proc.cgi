@@ -80,11 +80,7 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 	echo "$uname:$pass" >> $CONFRS
 	chmod og-rw $CONFRS
 
-	if test -f /tmp/firstboot; then
-		gotopage /cgi-bin/settings.cgi
-	else
-		gotopage /cgi-bin/usersgroups.cgi
-	fi
+	gotopage /cgi-bin/usersgroups.cgi
 
 elif test "$cancel" = "Cancel"; then
 	gotopage /cgi-bin/usersgroups.cgi

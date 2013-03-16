@@ -6,17 +6,6 @@ write_header "New User Setup"
 
 CONFP=/etc/passwd
 
-if test -f /tmp/firstboot; then
-	cat<<-EOF
-		<center><font color=blue>
-		<h3>Welcome to your first login to Alt-F</h3>
-		<h4>To continue setting up Alt-F, you should now specify</h4>
-		 <h4>the filesystem where users will store their data</h4>
-		<h4>and create an user account</h4>
-		</font></center>
-	EOF
-fi
-
 has_disks
 
 if ! test -h /home -a -d "$(readlink -f /home)"; then
@@ -71,7 +60,8 @@ if test "$act" = "changepass"; then
 	chpass="readonly"
 	subbut='<input type="submit" name="chpass" value="ChangePass">'
 
-elif test "$act" = "newuser"; then
+#elif test "$act" = "newuser"; then
+else
 	cat<<-EOF
 		<script type="text/javascript">
 		setTimeout("upnick()", 500) // hack, the form is not yet created
