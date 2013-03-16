@@ -11,9 +11,10 @@ PERL_SITE:=http://www.cpan.org/src/$(PERL_MAJOR).0/
 PERL_DIR:=$(BUILD_DIR)/perl-$(PERL_VERSION)
 PERL_CAT:=$(ZCAT)
 
-PERL_CROSS_VERSION=0.7
+PERL_CROSS_VERSION=0.7.1
 PERL_CROSS_SOURCE=perl-$(PERL_VERSION)-cross-$(PERL_CROSS_VERSION).tar.gz
-PERL_CROSS_SITE=http://download.berlios.de/perlcross
+#PERL_CROSS_SITE=http://download.berlios.de/perlcross
+PERL_CROSS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/perlcross.berlios
 
 $(DL_DIR)/$(PERL_CROSS_SOURCE):
 	$(call DOWNLOAD,$(PERL_CROSS_SITE),$(PERL_CROSS_SOURCE))
