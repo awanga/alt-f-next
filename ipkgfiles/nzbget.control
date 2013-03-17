@@ -1,6 +1,6 @@
 Package: nzbget
 Description: NZBGet is a command-line based binary newsgrabber for nzb files
-Version: 0.8.0-1
+Version: 0.8.0-2
 Depends: ncurses, libxml2, libsigcpp, libpar2, unrar, ipkg
 Architecture: arm
 Priority: optional
