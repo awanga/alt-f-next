@@ -31,6 +31,7 @@
 ./usr/bin/mge-shut
 ./usr/bin/mge-utalk
 ./usr/bin/microdowell
+./usr/bin/netxml-ups
 ./usr/bin/newmge-shut
 ./usr/bin/oneac
 ./usr/bin/optiups
