@@ -4,3 +4,6 @@
 ./etc/davfs2/secrets
 ./usr/sbin/mount.davfs
 ./usr/sbin/umount.davfs
+./usr/share/davfs2
+./usr/share/davfs2/davfs2.conf
+./usr/share/davfs2/secrets
