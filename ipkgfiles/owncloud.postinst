@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# Upgrading
+#
+# from owncloud instructions:
+# To upgrade your ownCloud instance, just replace the files with the new set from the download.
+# Leave the config/ folder and data/ folder intact to preserve your data.
+# The upgrade will happen automatically when you first login.
+
+TBALL=owncloud-3.0.2.tar.bz2
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+CONF_LIGHTY2=/etc/lighttpd/modules.conf
+PHP_CONF=/etc/php.ini
+LIGHTY=/usr/sbin/lighttpd
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL http://owncloud.org/releases/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo -e "\n*****************************************************"
+	echo      "* Downloading of ownCloud from its homesite failed. *"
+	echo -e   "*****************************************************\n"
+	exit 1
+fi
+
+eval $(awk '/^var.server_root/{printf "sroot=%s", $3}' $CONF_LIGHTY)
+
+if ! tar -C $sroot/htdocs/ -xjf /tmp/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo -e "\n**********************************"
+	echo      "* Extraction of ownCloud failed. *"
+	echo   -e "**********************************\n"
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+chown -R lighttpd:network $sroot/htdocs/owncloud
+
+#calendar exif fileinfo ftp hash openssl posix readline 
+#snmp soap sockets sysvmsg sysvsem sysvshm tokenizer xmlreader xmlwriter zlib
+
+for i in json session sqlite3 xml mbstring zip gd curl ctype simplexml hash dom; do
+		sed -i "s|^;extension="$i".so|extension="$i".so|" $PHP_CONF
+done
+
+sed -i 's|.*\(include.*fastcgi.conf.*\)|\1|' $CONF_LIGHTY2
+sed -i 's|.*\(include.*owncloud.conf.*\)|\1|' $CONF_LIGHTY
+
+if rclighttpd status >& /dev/null; then
+        rclighttpd restart >& /dev/null
+fi
+
+# store the path where owncloud was installed,
+# as lighttpd <server-root> might be changed by the user latter
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+CONF_OWNCLOUD=/etc/owncloud.conf
+
+echo $sroot/htdocs/owncloud > $CONF_OWNCLOUD

@@ -1,48 +1,19 @@
 #!/bin/sh
 
-TBALL=owncloud-3.0.2.tar.bz2
 CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
-CONF_LIGHTY2=/etc/lighttpd/modules.conf
-PHP_CONF=/etc/php.ini
-LIGHTY=/usr/sbin/lighttpd
 
-if ! test -x $LIGHTY; then
-	echo -e "\n*****************************************************"
-	echo      "* lighttpd not yet installed or ready, please retry *"
-	echo -e "\n*****************************************************"
-	exit 1
-fi
-
-if ! test -f $PHP_CONF; then
-	echo -e "\n************************************************"
-	echo      "* php not yet installed or ready, please retry *"
-	echo -e "\n************************************************"
+if ! test -x /usr/bin/php -a -x /usr/sbin/lighttpd; then
+	echo -e "\n*********************************************************************"
+	echo      "* First you have to install lighttpd and php and configure lighttpd *"
+	echo -e   "*********************************************************************\n"
 	exit 1
 fi
 
 eval $(awk '/^var.server_root/{printf "sroot=%s", $3}' $CONF_LIGHTY)
-if test -z "$sroot" -o "$sroot" = "/mnt"; then
-    echo -e "\n*************************************************************"
-	echo      "* YOU HAVE TO CONFIGURE LIGHTTPD BEFORE INSTALLING OWNCLOUD *"
-	echo -e   "*************************************************************\n"
+
+if test "$sroot" = "/Public"; then
+	echo -e "\n****************************************"
+	echo      "* First you have to configure lighttpd *"
+	echo -e   "****************************************\n"
 	exit 1
-fi
-
-wget --progress=dot:mega -O /tmp/$TBALL http://owncloud.org/releases/$TBALL
-tar -C $sroot/htdocs/ -xjf /tmp/$TBALL
-chown -R lighttpd:network $sroot/htdocs/owncloud
-rm -f /tmp/$TBALL
-
-#calendar exif fileinfo ftp hash openssl posix readline 
-#snmp soap sockets sysvmsg sysvsem sysvshm tokenizer xmlreader xmlwriter zlib
-
-for i in json sqlite3 xml mbstring zip gd curl   session ctype simplexml hash dom; do
-		sed -i "s|^;extension="$i".so|extension="$i".so|" $PHP_CONF
-done
-
-sed -i 's|.*\(include.*fastcgi.conf.*\)|\1|' $CONF_LIGHTY2
-sed -i 's|.*\(include.*owncloud.conf.*\)|\1|' $CONF_LIGHTY
-
-if rclighttpd status >& /dev/null; then
-        rclighttpd restart >& /dev/null
 fi
