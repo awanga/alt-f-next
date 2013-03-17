@@ -1,6 +1,6 @@
 Package: lvm2-device-mapper
 Description: Device Mapper is the LVM implementation of a driver that handles volume management.
-Version: 2.02.88
+Version: 2.02.88-1
 Depends: kernel-modules, ipkg
 Architecture: arm
 Priority: optional
