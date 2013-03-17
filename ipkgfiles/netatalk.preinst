@@ -1,9 +1,9 @@
 #!/bin/sh 
 
 if $(ipkg status netatalk2 | grep -q installed); then
-	echo -e "\n	Netatalk and Netatalk2 are incompatible, and Netatalk2 is installed, uninstall it first.\n
-	Your current configuration is incompatible with this version.\n
-	Make sure to read the upgrade instructions from netatalk-2 in
-	http://netatalk.sourceforge.net/3.0/htmldocs/upgrade.html"
+
+	echo -e "\n********************************************************************************************"
+	echo "* Netatalk and Netatalk2 are incompatible, and Netatalk2 is installed, uninstall it first. *"
+	echo -e "********************************************************************************************\n"
 	exit 1
 fi
