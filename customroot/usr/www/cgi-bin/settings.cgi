@@ -17,13 +17,14 @@ done
 cat<<-EOF
 	<script type="text/javascript">
 	function ask() {
-		return confirm("If rebooted without settings, the box will first try to use a DHCP assigned IP," + '\n' +
-		 "and if not successful will try to find a free IP in the 192.168.1.254-240 range."); 
+		return confirm("Current in-use settings will not be cleared, only flash-saved settings will.\n" +
+		"You might want to SaveSettings afterwards.\n\n" + 
+		"If rebooted without settings, the box will first try to use a DHCP assigned IP,\n" +
+		"and if not successful it will try to find a free IP in the 192.168.1.254-240 range.");
 	}
 	function load_ask() {
-		return confirm("Loading settings might change the box name and IP." + '\n' +
-			"You should afterwards restart all running services, so they will apply changes." +
-			 '\n' + '\n' + "Continue?");
+		return confirm("Loading settings might change the box name and IP.\n" +
+			"You should afterwards restart all running services, so they will apply changes." + "\n\nContinue?");
 
 	}
 	</script>
