@@ -63,7 +63,7 @@ $(GS_DIR)/.hosttools: $(GS_DIR)/.configured
 		cp $(GS_DIR)/base/unix-aux.mak-safe $(GS_DIR)/base/unix-aux.mak; \
 		for i in genarch genconf mkromfs echogs gendev genht; do \
 			rm obj/$$i; \
-			$(MAKE) CC=$(HOSTCC) CCAUX="$(HOSTCC)" EXTRALIBS="" obj/$$i; \
+			$(MAKE1) CC=$(HOSTCC) CCAUX="$(HOSTCC)" EXTRALIBS="" obj/$$i; \
 		done; \
 		rm -f obj/*.o; \
 	)
@@ -74,11 +74,11 @@ $(GS_DIR)/.hosttools: $(GS_DIR)/.configured
 $(GS_DIR)/.compiled: $(GS_DIR)/.hosttools
 	cp package/gs/dns323-arch.h $(GS_DIR)/obj/arch.h
 	cp package/gs/unix-aux.mak $(GS_DIR)/base/
-	$(MAKE) -C $(GS_DIR)
+	$(MAKE1) -C $(GS_DIR)
 	touch $@
 
 $(TARGET_DIR)/$(GS_TARGET_BINARY): $(GS_DIR)/.compiled
-	$(MAKE) -C $(GS_DIR) DESTDIR=$(TARGET_DIR) install
+	$(MAKE1) -C $(GS_DIR) DESTDIR=$(TARGET_DIR) install
 	rm -rf $(TARGET_DIR)/usr/share/ghostscript/8.71/examples $(TARGET_DIR)/usr/share/ghostscript/8.71/doc
 	touch $@
 
