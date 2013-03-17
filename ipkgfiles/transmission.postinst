@@ -6,7 +6,7 @@ SMBCONF=/etc/samba/smb.conf
 
 addgroup -S -g 201 BT
 if id transmission >& /dev/null; then
-	delgroup transmission network
+	delgroup transmission network >& /dev/null
 	deluser transmission
 fi
 adduser -S -g "Transmission daemon" -G BT -u 13 -h $THOME transmission
