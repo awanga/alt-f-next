@@ -7,6 +7,4 @@ CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
 sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
 
 rm -rf $NZBWDATA  
-rm $sroot/htdocs/nzbgetweb
-
-delgroup lighttpd TV
+rm -f $sroot/htdocs/nzbgetweb
