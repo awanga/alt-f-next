@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm -rf /Alt-F/opt/CouchPotato
+
+deluser couchpotato >& /dev/null
+delgroup TV >& /dev/null
+rm -f /sbin/rccouchpotato
