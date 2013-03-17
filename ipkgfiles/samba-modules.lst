@@ -1,4 +1,6 @@
 ./usr/lib/auth/script.so
+./usr/lib/charset/CP437.so
+./usr/lib/charset/CP850.so
 ./usr/lib/vfs/acl_tdb.so
 ./usr/lib/vfs/acl_xattr.so
 ./usr/lib/vfs/audit.so
