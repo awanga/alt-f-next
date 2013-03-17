@@ -97,7 +97,7 @@ saveflashdef() {
 	rmdir $save_dir
 
 	if test "$res" != 0; then
-		echo "Error saving settings! No flash space available."
+		echo "Error saving settings, not enough flash space available.\nYou might want to clear settings first."
 		exit 1
 	fi
 
