@@ -1,0 +1,4 @@
+ #!/bin/sh
+
+deluser davfs2 >& /dev/null
+delgroup davfs2 >& /dev/null

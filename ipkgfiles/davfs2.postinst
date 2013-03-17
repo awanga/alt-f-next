@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DAVHOME=/var/lib/davfs2
+
+addgroup -S -g 202 davfs2
+if id davfs2 >& /dev/null; then
+	deluser davfs2
+fi
+adduser -S -g "davfs2 user" -G davfs2 -u 24 -h $DAVHOME davfs2
