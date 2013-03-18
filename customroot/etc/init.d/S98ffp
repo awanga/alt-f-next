@@ -6,26 +6,29 @@ NAME=ffp
 
 . $(dirname $0)/common
 
+iffp() {
+	if test -f /ffp/etc/rc; then
+		if test -x /ffp/etc/rc; then
+			/ffp/etc/rc $1
+			echo "OK."
+		else
+			echo "Fail."
+			exit 1
+		fi
+	else
+		echo "No ffp instalation found."
+		exit 1
+	fi
+}
+
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		if test -x /ffp/etc/rc; then
-			/ffp/etc/rc start
-			echo "OK."
-		else
-			echo "No ffp instalation found."
-			exit 1
-		fi
+		iffp start
 		;;
 	stop)
 		echo -n "Stopping $NAME: "
-		if test -x /ffp/etc/rc; then
-			/ffp/etc/rc stop
-			echo "OK."
-		else
-			echo "No ffp instalation found."
-			exit 1
-		fi		
+		iffp stop
 		;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
