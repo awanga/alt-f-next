@@ -60,6 +60,7 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 			msg "$res"
 		fi
 		chmod og-rw "/home/$uname"
+		chown -R $nick:$gid "/home/$uname"
 		addgroup $nick backup
 
 		# why doesn't rsync uses unix authorization mechanisms?!

@@ -70,7 +70,7 @@ else
 
 	eval $(awk -F: '{ if ($3 > uid) uid=$3}
 		{ if ($4 > gid) gid=$4}
-		END { if (uid < 1000) uid=1000; gid=100; printf "uid=%d; gid=%d", uid+1, gid}' $CONFP)
+		END { if (uid < 1000) uid=999; gid=100; printf "uid=%d; gid=%d", uid+1, gid}' $CONFP)
 
 	chpass=""
 	subbut='<input type="submit" name="submit" value="Submit">'
