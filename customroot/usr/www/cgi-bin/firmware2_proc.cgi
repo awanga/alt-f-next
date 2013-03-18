@@ -64,12 +64,14 @@ elif test "$flash" = "FlashIt"; then
 	echo 50 > "/sys/class/leds/power:blue/delay_off" 
 	echo 50 > "/sys/class/leds/power:blue/delay_on"
 
-	wait_count_start "<p>Flashing the kernel, it takes about 25 seconds"
+	tm=$(expr $(stat -t $kernel_file | cut -d" " -f2) / 75126 + 3)
+	wait_count_start "<p>Flashing the kernel, it takes about $tm seconds"
 	cat $kernel_file > /dev/mtdblock2 
 	sleep 3
 	wait_count_stop
 
-	wait_count_start "<p>Flashing the ramdisk, it takes about 110 seconds"
+	tm=$(expr $(stat -t $initramfs_file | cut -d" " -f2) / 75126 + 3)
+	wait_count_start "<p>Flashing the ramdisk, it takes about $tm seconds"
 	cat $initramfs_file > /dev/mtdblock3 
 	sleep 3
 	wait_count_stop
