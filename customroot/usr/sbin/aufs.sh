@@ -102,10 +102,14 @@ case $1 in
 		fi
 		loadsave_settings -fa
 		for i in atjobs atspool nfs misc; do
-			cp -a /Alt-F/var/lib/$i /var/lib/
+			if test -d /Alt-F/var/lib/$i; then
+				cp -a /Alt-F/var/lib/$i /var/lib/
+			fi
 		done
 		for i in cron lpd samba; do
-			cp -a /Alt-F/var/spool/$i /var/spool/
+			if test -d /Alt-F/var/spool/$i; then
+				cp -a /Alt-F/var/spool/$i /var/spool/
+			fi
 		done
 		;;
 
