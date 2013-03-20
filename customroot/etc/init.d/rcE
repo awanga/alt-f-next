@@ -17,18 +17,13 @@ killall5 -KILL
 
 sleep 1
 
-#if test -x /usr/sbin/lvm; then
-#	mkdir -p /tmp/lvm
-#	cp /lib/libdevmapper.so.1.02 /usr/sbin/lvm /tmp/lvm
-#fi
-
 echo "rcE: unmounting aufs "
 if aufs.sh -s >& /dev/null ; then
 	aufs.sh -u
 fi
 
 echo "rcE: unmounting all mounted filesystems"
-for i in nfs cifs iso9660 ext2 ext3 ext4 vfat ntfs; do
+for i in nfs cifs iso9660 davfs ext2 ext3 ext4 vfat ntfs; do
 		umount -t $i -rf -a 
 done
 
@@ -38,13 +33,6 @@ for i in /dev/md[0-9]; do
 	mdadm --stop $i
   fi
 done
-
-#if test -x /tmp/lvm; then
-#	echo "rcE: stopping LVM"
-#	mv /tmp/lvm/libdevmapper.so.1.02 /lib
-#	mv /tmp/lvm/lvm /usr/sbin/
-#	lvm vgchange -a n
-#fi
 
 echo "rcE: unmouting tmpfs /tmp"
 umount /tmp
