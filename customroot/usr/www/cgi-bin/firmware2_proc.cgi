@@ -13,8 +13,28 @@ if test "$flash" = "Abort"; then
 	gotopage /cgi-bin/firmware.cgi
 fi
 
-html_header
-echo "<center><h2>Firmware Updater</h2></center>"
+# $1-file, $2-device, $3-msg
+flash() {
+	sz=$(stat -t $1 | cut -d" " -f2)
+	tm=$(expr $sz / 75126 + 1)
+	wait_count_start "<p>Flashing the $3, it takes about $tm seconds"
+	cat $1 > /dev/$2
+	wait_count_stop
+	echo "<p>Verifying..."
+	sleep 3
+	TF=$(mktemp)
+	dd if=/dev/$2 of=$TF bs=$sz count=1 >& /dev/null
+	if ! cmp $1 $TF >& /dev/null; then
+		rm -f $TF $kernel_file $initramfs_file $defaults_file
+		echo none > "/sys/class/leds/power:blue/trigger"
+		echo "Failed!<p>You can use the Firmware Upgrade page to try again, or \"TryIt\" another firmware, but<br><strong><font color=red>don't reboot or poweroff the box until success</font></strong><br> or you will need to buy and solder a serial cable into the box to make it work again.</body></html>"
+		exit 1
+	fi
+	echo "OK"
+	rm $TF
+}
+
+html_header "Firmware Updater"
 
 if ! test -f $kernel_file -a -f $initramfs_file; then
 	rm -f $kernel_file $initramfs_file $defaults_file
@@ -58,23 +78,15 @@ elif test "$flash" = "TryIt"; then
 	#fi
 
 elif test "$flash" = "FlashIt"; then
+	echo "<center><h3><font color=red>Don't poweroff or reboot the box!</font></h3></center>"
 	rcall stop >& /dev/null
 
 	echo timer > "/sys/class/leds/power:blue/trigger"
 	echo 50 > "/sys/class/leds/power:blue/delay_off" 
 	echo 50 > "/sys/class/leds/power:blue/delay_on"
 
-	tm=$(expr $(stat -t $kernel_file | cut -d" " -f2) / 75126 + 3)
-	wait_count_start "<p>Flashing the kernel, it takes about $tm seconds"
-	cat $kernel_file > /dev/mtdblock2 
-	sleep 3
-	wait_count_stop
-
-	tm=$(expr $(stat -t $initramfs_file | cut -d" " -f2) / 75126 + 3)
-	wait_count_start "<p>Flashing the ramdisk, it takes about $tm seconds"
-	cat $initramfs_file > /dev/mtdblock3 
-	sleep 3
-	wait_count_stop
+	flash $kernel_file mtdblock2 kernel
+	flash $initramfs_file mtdblock3 rootfs
 
 	case "$flash_defaults" in
 		"none")
@@ -109,7 +121,7 @@ fi
 
 cat<<-EOF
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-	The new firmware will only be active after a reboot.
+	You can continue using the current firmware, but the newly flashed firmware will only be active after a reboot.
 	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 60 seconds.\n\nProceed?')">
 	</form></body></html>
 EOF

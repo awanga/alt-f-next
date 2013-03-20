@@ -16,7 +16,7 @@ cat<<-EOF
 	 your box.<br></font></h3></center>
 
 	However, it was used to successfully flash
-	DLink 1.07, 1.08, 1.09, 1.10b6 and Conceptronic 1.05b5<br>
+	DLink 1.07, 1.08, 1.09, 1.10 and Conceptronic 1.05b5<br>
 	and all Alt-F firmware versions on a <strong><u>Rev-B1 board</u></strong>.<br><br>
 
 	An option is offered latter to cancel the procedure, so you can safely proceed for now.
