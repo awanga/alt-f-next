@@ -146,7 +146,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			else
 				emsg="No LVM support found for partition type \"$fstype\" in \"$MDEV\""
 				logger -st hot "$emsg"
-				echo "<li>$emsg" >> $SERRORL
+				echo "<li><pre>$emsg</pre>" >> $SERRORL
 			fi
 			return 0
 			;;
@@ -172,7 +172,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			else
 				emsg="No cryptsetup support found for partition type \"$fstype\" in \"$MDEV\""
 				logger -st hot "$emsg"
-				echo "<li>$emsg" >> $SERRORL
+				echo "<li><pre>$emsg</pre>" >> $SERRORL
 			fi
 			return 0
 			;;

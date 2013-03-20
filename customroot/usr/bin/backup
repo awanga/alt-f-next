@@ -138,7 +138,7 @@ do_backup() {
 	if test "$st" != 0; then
 		msg="$id failed but continuing nevertheless, err=$st: $res"
 		logger -st backup "$msg"
-		echo "<li>Backup $msg" >> $SERRORL
+		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 		#return 1
 	fi
 
@@ -177,7 +177,7 @@ dir_backup() {
 	if ! test -d "$srcpath"; then
 		msg="ID $id: $srcpath does not exists, exiting."
 		logger -st backup "$msg"
-		echo "<li>Backup $msg" >> $SERRORL
+		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 		return 1
 	fi
 	
@@ -224,7 +224,7 @@ cifs_nfs_backup() {
 	if ! wakeup; then
 		msg="ID $id: host $host not answering, exiting."
 		logger -st backup "$msg"
-		echo "<li>Backup $msg" >> $SERRORL
+		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 		return 1
 	fi
 
@@ -249,7 +249,7 @@ cifs_nfs_backup() {
 	else
 		msg="ID ${id}: unable to $type mount $host:$save_srcpath, err=$st, exiting."
 		logger -st backup "$msg"
-		echo "<li>Backup $msg" >> $SERRORL
+		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 	fi
 
 	rmdir $mtddir
@@ -282,7 +282,7 @@ ftp_http_backup() {
 		rmdir $destname/mirror $destname
 		msg="ID ${id}: $type://$host/$srcpath failed, err=$st, res:$res"
 		logger -st backup "$msg"
-		echo "<li>Backup $msg" >> $SERRORL
+		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 		return $st
 	fi
 
@@ -294,7 +294,7 @@ rsync_backup() {
 	if ! wakeup; then
 		msg="ID $id: host $host not answering, exiting."
 		logger -st backup "$msg"
-		echo "<li>Backup $msg" >> $SERRORL
+		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 		return 1
 	fi
 
@@ -336,7 +336,7 @@ to host $host. This can't be automated, manual intervention is needed:
 	ssh $host # this will make $(hostname) a trusted host to host $host
 After accepting, you can logout."
 			logger -st backup "ID $id: $msg"
-			echo "<li>Backup ID $id: $msg" >> $SERRORL
+			echo "<li><pre>Backup ID $id: $msg</pre>" >> $SERRORL
 			echo "$msg" > ${bdir}/../Backup-rsync-ssh.txt
 			chmod a+rw ${bdir}/../Backup-rsync-ssh.txt
 			return 1		

@@ -75,7 +75,7 @@ if test "$fsckcmd" != "echo"; then
 	if test $? -ge 2; then
 		mopts="ro"
 		emsg="Unable to automatically fix $MDEV, mounting Read Only: $res"
-		echo "<li>$emsg" >> $SERRORL
+		echo "<li><pre>$emsg</pre>" >> $SERRORL
 	else
 		emsg="Finish fscking $MDEV: $res"
 	fi

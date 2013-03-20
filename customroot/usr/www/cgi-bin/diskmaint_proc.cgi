@@ -71,7 +71,7 @@ check() {
 		else
 			emsg="Checking $1 finished with status code \$st: \$res"
 			logger "\$emsg"
-			echo "<li>\$emsg" >> $SERRORL
+			echo "<li><pre>\$emsg</pre>" >> $SERRORL
 		fi
 	EOF
 
@@ -117,7 +117,7 @@ format() {
 		if test \$st != 0; then
 			emsg="Formating $1 with $2 failed with code \$st: \$(cat $logf)"
 			logger "\$emsg"
-			echo "<li>\$emsg" >> $SERRORL
+			echo "<li><pre>\$emsg</pre>" >> $SERRORL
 			exit 1
 		fi
 		if test "$2" = "ext3"; then
@@ -176,7 +176,7 @@ resize() {
 		if ! test "\$st" = 0 -o "\$st" = 1; then
 			emsg="Checking $1 failed with error code \$st: \$(cat $logf)"
 			logger "\$emsg"
-			echo "<li>\$emsg" >> $SERRORL
+			echo "<li><pre>\$emsg</pre>" >> $SERRORL
 			exit 1
 		fi
 		logger "Checking /dev/$1 OK"
@@ -185,7 +185,7 @@ resize() {
 		if test $? != 0; then
 			emsg="${2}ing $1 failed: \$(cat $logf)"
 			logger "\$emsg"
-			echo "<li>\$emsg" >> $SERRORL
+			echo "<li><pre>\$emsg</pre>" >> $SERRORL
 			exit 1
 		fi
 		logger "${2}ing /dev/$1 succeeded"
@@ -211,7 +211,7 @@ wipe() {
 		fi
 		emsg="Wiping $1 failed with error code \$st. \$res"
 		logger "\$emsg"
-		echo "<li>\$emsg" >> $SERRORL
+		echo "<li><pre>\$emsg</pre>" >> $SERRORL
 	EOF
 
 	chmod +x /tmp/wip-$1
