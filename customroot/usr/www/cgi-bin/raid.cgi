@@ -181,7 +181,7 @@ for i in $raidp; do
 done
 
 # THIS IS RIGHT! first non-existing md device
-curdev=$(mdadm --examine --scan | awk '{ print substr($2, match($2, "md"))}')
+curdev=$(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}')
 for dev in $(seq 0 9); do
 	if ! echo $curdev | grep -q md$dev; then break; fi
 done
@@ -202,7 +202,7 @@ cat<<-EOF
 	</tr></table></fieldset><br>
 EOF
 
-if mdadm --examine --brief /dev/sd?? | grep -q ARRAY; then
+if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 	cat<<-EOF
 		<fieldset><Legend><strong>RAID Maintenance</strong></legend>
 		<table style="border-collapse:collapse">
@@ -228,10 +228,7 @@ if mdadm --examine --brief /dev/sd?? | grep -q ARRAY; then
 	done
 
 	if ls /dev/md? >& /dev/null; then
-#		for mdev in $curdev; do
-		for i in /dev/md[0-9]*; do
-			mdev=$(basename $i)
-
+		for mdev in $curdev; do
 			if ! test -f /sys/block/$mdev/md/array_state; then continue; fi
 
 			state=$(cat /sys/block/$mdev/md/array_state)
