@@ -139,7 +139,7 @@ else # don't use panic() on fail, load initrd at 0x600000, putterboy
 		if test -z "$karch"; then
 			karch=$i
 		fi
-		if ! test -f reloaded-${i}.ko; then
+		if ! test -f reloaded-${karch}.ko; then
 			echo "Building reloaded for linux-$i"
 			rm linux
 			ln -sf ../linux-$i linux
