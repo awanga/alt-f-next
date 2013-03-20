@@ -17,10 +17,7 @@ done
 cat<<-EOF
 	<script type="text/javascript">
 	function ask() {
-		return confirm("Current in-use settings will not be cleared, only flash-saved settings will.\n" +
-		"You might want to SaveSettings afterwards.\n\n" + 
-		"If rebooted without settings, the box will first try to use a DHCP assigned IP,\n" +
-		"and if not successful it will try to find a free IP in the 192.168.1.254-240 range.");
+		return confirm("Clearing settings will erase all saved configuration changes that you have made to the system since you start using it.\n\nPlease read the on-line help first.\n\nProceed?");
 	}
 	function load_ask() {
 		return confirm("Loading settings might change the box name and IP.\n" +
