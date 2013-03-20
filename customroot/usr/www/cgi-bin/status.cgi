@@ -117,11 +117,17 @@ systems_st() {
 		fi
 	fi
 
+	mode="Reloaded"
+	if $(isflashed); then
+		mode="Flashed"	
+	fi
+
 	if test -s $SERRORL; then
 		cat<<-EOF
-			<fieldset><legend><font color=red><strong>Errors</strong></legend>
-			<ul><pre>$(cat $SERRORL)</pre></ul>
-			</font></fieldset><br>
+			<fieldset><legend><font color=red><strong>Errors</strong></font></legend>
+			<p>Clear the error messages by examining and clearing the <a href="sys_utils.cgi">systemerror</a> log.
+			<ul>$(cat $SERRORL)</ul>
+			</fieldset><br>
 		EOF
 	fi
 
@@ -133,18 +139,20 @@ systems_st() {
 			<td><strong>Load</strong> $(drawbargraph $load $loadv)</td>
 			<td><strong>CPU</strong> $(drawbargraph $cpu)</td>
 			<td><strong>Swap</strong> $(drawbargraph $swap $swapv)</td>
-		</tr><tr><td><br></td></tr><tr>
+		</tr><tr><td></td></tr><tr>
 			<td><strong>Name:</strong> $(hostname -s)</td>
 			<td colspan=2><strong>Device:</strong> $device</td>
+			<td><strong>Mode:</strong> $mode</td>
+		</tr><tr>
+			<td colspan=3><strong>Date:</strong> $(date)</td>
 			<td colspan=2><strong>Uptime:</strong> $up</td>
-			<td><strong>Date:</strong> $(date)</td>
 		</tr></table></fieldset>
 	EOF
 }
 
 network_st() {
-#	Mode=$(cat /sys/class/net/eth0/duplex)
-#	MTU=$(cat /sys/class/net/eth0/mtu)
+	Mode=$(cat /sys/class/net/eth0/duplex)
+	MTU=$(cat /sys/class/net/eth0/mtu)
 #	MAC=$(cat /sys/class/net/eth0/address)
 #	Tx=$(cat /sys/class/net/eth0/statistics/tx_bytes)
 #	Rx=$(cat /sys/class/net/eth0/statistics/rx_bytes)
@@ -152,9 +160,8 @@ network_st() {
 	eval $(ifconfig eth0 | awk \
 			'/RX bytes/ {printf "Rx=\"%s%s\";", $3, $4} \
 			/TX bytes/ {printf "Tx=\"%s%s\";", $7, $8} \
-			/MTU/ {printf "MTU=%s;", substr($0, match($a,"MTU")+4,5)} \
 			/inet6/ { if (! match($3, "^fe80:")) ipv6=$3"; "ipv6} \
-			/HWaddr/{printf "MAC=\"%s\";", $5} \
+			/inet addr/{printf "IP=\"%s\";", substr($2,6)} \
 			END {printf "ipv6=\"%s\"", ipv6}' | tr "()" "  ")
 
 	if test -n "$ipv6"; then
@@ -163,11 +170,12 @@ network_st() {
 
 	cat<<-EOF
 		<fieldset><legend><strong>Network</strong></legend>
-		<strong> Speed: </strong> $(cat /sys/class/net/eth0/speed)Mbps
-		<strong> MTU: </strong> $MTU
-		<strong> TX: </strong> $Tx
-		<strong> Rx: </strong> $Rx
-		<strong> MAC: </strong> $MAC
+		<strong>Speed: </strong> $(cat /sys/class/net/eth0/speed)Mbps
+		<strong>Duplex: </strong> $Mode
+		<strong>MTU: </strong> $MTU
+		<strong>TX: </strong> $Tx
+		<strong>Rx: </strong> $Rx
+		<strong>IP: </strong> $IP
 		$IPV6
 		</fieldset>
 	EOF
@@ -233,7 +241,7 @@ disks_st() {
 }
 
 raid_st() {
-	if ! grep -q ARRAY /etc/mdadm.conf; then
+	if ! grep -q ARRAY /etc/mdadm.conf 2>/dev/null; then
 		return 0
 	fi
 
