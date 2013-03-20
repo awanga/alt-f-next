@@ -8,23 +8,28 @@ write_header "Alt-F Package Manager"
 
 if ! ipkg status >/dev/null; then
 	has_disks
-
 	
 	CONFF=/etc/ipkg.conf
 	cat<<-EOF
 		<form action="/cgi-bin/packages_ipkg_proc.cgi" method=post>
 		<fieldset><legend><strong>Package Feeds</strong></legend><table>
+		<tr><th>Disabled</th><th>Feed</th></tr>
 	EOF
 
 	cnt=1
 	while read type name feed; do
-		if test "$type" != "src" -o -z "$feed"; then continue; fi
-		echo "<tr><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
-		cnt=$((cnt+1))
+		cmt=""
+		if test \( "$type" = "src" -o "$type" = "#!#src" \) -a -n "$feed"; then
+			 if test "$type" = "#!#src"; then
+				cmt=checked
+			fi 
+			echo "<tr><td align="center"><input type=checkbox $cmt name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
+			cnt=$((cnt+1))
+		fi
 	done < $CONFF
 
 	cat<<-EOF
-		<tr><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
+		<tr><td align="center"><input type=checkbox name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
 		</table>
 		<input type=hidden name=nfeeds value="$cnt">
 		</fieldset>
@@ -36,17 +41,32 @@ if ! ipkg status >/dev/null; then
 	</form></body></html>"
 
 else
-
-	feed=$(awk '/^src /{print $3}' /etc/ipkg.conf)
-
-	ipkg-cl -V0 info | awk -v confeeds="$feed" '
+	ipkg-cl -V0 info | awk '
 	BEGIN {
-		nfeeds = split(confeeds, feeds);
 		print "<script type=\"text/javascript\"> \
 				function ask() { \
-					return confirm(\"All files and configurations will be erased. You will have to reinstall ipkg.\"); \
+					return confirm(\"All packages files and configurations will be deleted.\\nYou will have to reinstall all Alt-F packages.\"); \
 				} \
-			</script>"
+			</script> \
+			<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=\"post\"> \
+			<fieldset><legend><strong>Configure Feeds</strong></legend> \
+			<table><tr><th>Disabled</th><th>Feed</th></tr>"
+		nf=1;
+		while (getline ln <"/etc/ipkg.conf") {
+			split(ln,a);
+			if (a[1] == "src")
+				a[1]=""
+			else if (a[1] == "#!#src")
+				a[1]="checked"
+			else
+				continue
+			printf "<tr><td align="center><input type=checkbox %s name=dis_%d></td>", a[1], nf;
+			printf "<td><input type=text size=50 name=feed_%d value=\"%s\"></td></tr>\n", nf, a[3];
+			nf++
+		}
+		printf "<tr><td><input type=checkbox name=dis_%d></td> \
+			<td><input type=text size=50 name=feed_%d value=\"\"></td></tr> \
+			<input type=hidden name=nfeeds value=\"%d\">", nf, nf, ++nf
 	}
 	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field 
 	/Version:/ { ver[i] = $2 } 
@@ -55,17 +75,11 @@ else
 	/Status:/ { if ($4 == "installed")
 			inst[nm] = i;
 		else { uinst[nm] = i; ucnt++;}
-	}  
+	}
 	END {
-		printf "<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=\"post\"> \
-			<fieldset><legend><strong> Configure Feeds </strong></legend> \
-			<input type=hidden name=nfeeds value=\"%d\"><table>", nfeeds
-		for (i=1; i<=nfeeds; i++) 
-			printf "<tr><td>Feed %d:</td><td><input type=text size=50 name=feed_%d value=\"%s\"></td></tr>", i, i, feeds[i];
-		print "<tr><td></td><td><input type=submit name=changeFeed value=ChangeFeed> \
-			<input type=submit name=defaultFeed value=DefaultFeed></td></tr></table><br> \
-			<strong>Update package list:</strong><input type=submit name=updatelist value=UpdateList> \
-			</fieldset><br> \
+		print "<tr><td></td><td><input type=submit name=Submit value=Submit> \
+			<input type=submit name=updatelist value=UpdatePackageList> \
+			</table></fieldset><br> \
 			<fieldset><legend><strong> Installed Packages </strong></legend> \
 			<table><tr> \
 				<th>Name</th><th>Version</th><th></th><th></th><th></th><th>Description</th> \

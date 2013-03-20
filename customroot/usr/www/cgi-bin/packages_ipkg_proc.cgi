@@ -9,16 +9,16 @@ CONFF=/etc/ipkg.conf
 #debug
 
 change_feeds() {
-	if ! grep -q '^#!#src Alt-F-' $CONFF; then
-		sed -i '/^src Alt-F-/s|^.*$|#!#&|' $CONFF
-	fi
-	sed -i '/src feed_/d' $CONFF
+	mv $CONFF $CONFF-
 	for i in $(seq 1 $nfeeds); do
 		eval $(echo feed=\$feed_$i)
 		if test -z "$feed"; then continue; fi
 		feed=$(httpd -d "$feed")
-		echo "src feed_$i $feed" >> $CONFF
+		eval $(echo cmt=\$dis_$i)
+		if test -n "$cmt"; then cmt="#!#"; fi
+		echo "${cmt}src feed_$i $feed" >> $CONFF
 	done
+	echo "dest /Alt-F /Alt-F" >> $CONFF
 }
 
 ipkg_cmd() {
@@ -117,14 +117,9 @@ elif test -n "$RemoveAll"; then
 	echo "</body></html>"
 	exit 0
 
-elif test -n "$ChangeFeed"; then
+elif test -n "$Submit"; then
 	change_feeds
 
-elif test -n "$DefaultFeed"; then
-	if grep -q '^#!#src Alt-F-' $CONFF; then
-		sed -i '/^src feed_/d' $CONFF
-		sed -i '/^#!#.*/s|^#!#||' $CONFF
-	fi
 fi
 
 res=$(ipkg update)
@@ -134,7 +129,7 @@ if test $? != 0; then
 fi
 
 if test -n "$Remove"; then
-	res=$(ipkg remove $Remove | sed -n '/^Package/,/^$/p' | tr '\n' ' ')
+	res=$(ipkg remove $Remove | sed -n '/^Package/,/^$/p')
 
 	if test -n "$res"; then
 		msg "$res"
