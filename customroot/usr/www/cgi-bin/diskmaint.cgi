@@ -15,7 +15,7 @@ cat<<-EOF
 		op = obj.options[opi].value
 
 		cmsg = "During the process the filesystem will be unavailable for usage\n\
-and the operation evolution can be verified in the status page.\n\n"
+but the operation evolution can be verified in the status page.\n\n"
 
 		res = false
 		if (opi == 0)
