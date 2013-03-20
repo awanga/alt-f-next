@@ -22,8 +22,23 @@ Depending on the current Alt-F and vendor's settings, there can be not enough fl
 <ul>
 <li><strong>SaveSettings</strong>: the current in-memory settings are saved into flash-memory. Several sets of Alt-F settings can coexist, tagged with the date and hour of the save operation; if necessary the older is deleted in order to provide space for the new set.
 <li><strong>LoadSettings</strong>: You have to select one of the available sets using the <strong>Select one</strong> button. The stored settings will be loaded in memory and become effective immediately; however, most running services will not recognize configuration changes until they are restarted. You might restart then all using System->Utilities->Services->RestartAll. The box IP and name might change.
-<li><strong>ClearSettings</strong>: the flash-memory used to store settings will be wiped, removing all vendor's and Alt-F settings. Current in-memory settings will not be cleared, and you might want to <strong>SaveSettings</strong> afterward, or on the next reboot the box will use Alt-F "factory" settings.
-</ul>
+
+<li><strong>ClearSettings</strong>: the flash-memory used to store
+settings will be wiped, removing all vendor's and Alt-F settings.<br>
+ 
+Current in-memory settings will not be cleared, and you might want to
+<strong>SaveSettings</strong> afterward, or on the next reboot the box
+will use Alt-F "factory" settings.<br>
+
+Clearing settings will also clear all created users and groups (but not
+their home folders), including system users and groups created by
+installed packages, so you might want to <strong>Download</strong> the
+current settings to your computer first, so you can examine them to
+help you restore any needed settings latter.<br>
+
+If rebooted without settings, the box will first try to use a DHCP
+assigned IP, and if not successful it will try to find a free IP in the
+192.168.1.254-240 range." </ul>
 
 <p>In the lower section, <strong>Computer Disk</strong>, you can
 <ul>
