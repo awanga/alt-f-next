@@ -70,13 +70,40 @@ case "$action" in
 	Reboot)
 		html_header
 		cat<<-EOF
+			<script type="text/javascript">
+
+			var count = 20;
+			var server = location.protocol + "//" + location.host
+			var page = server + "/cgi-bin/status.cgi"
+			var testimg = server + "/help.png?" + Math.random()
+
+			function testServer() {    
+				var img = new Image()
+
+				img.onload = function() {
+					if (img.naturalHeight > 0)
+						window.location.assign(page)
+				}
+
+				img.onerror = function() {
+					if (count) {
+						count--
+						setTimeout(testServer, 3000)
+					} else
+						window.location.assign(page)
+				}
+				img.src = testimg
+			}
+	
+			setTimeout(testServer, 20000)
+
+			</script>
+
 			<br><br><fieldset><legend><strong>The box is rebooting</strong></legend>
 			<center><h4>
 			$(wait_count_start "Waiting 60 seconds")
 			</h4></center></fieldset>
-			<script type=text/javascript>
-				setTimeout('window.location.assign("http://" + location.hostname + "/cgi-bin/status.cgi")', 60000)
-			</script></body></html>
+			</body></html>
 		EOF
 		/sbin/reboot
 		exit 0
