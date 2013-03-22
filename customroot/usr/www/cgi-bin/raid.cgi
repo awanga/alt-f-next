@@ -153,26 +153,16 @@ EOF
 
 has_disks
 
-cat<<-EOF
-	<form id="diskr" name="diskr" action="/cgi-bin/raid_proc.cgi" method="post">
-
-	<fieldset>
-	<legend><strong>RAID Creation</strong></legend>
-	<table>
-	<tr>
-	<th>Dev.</th>
-	<th>Type</th>
-	<th>Component 1</th>
-	<th>Component 2</th>
-	<th id="spare_hd">Spare</th>
-	</tr>
-EOF
-
 # THIS IS RIGHT!
 p1=$(fdisk -l /dev/sd? | awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
 	print substr($1, 6)}')
 p2=$(blkid -t TYPE="mdraid" | awk '{print substr($1, 6, 4)}')
 raidp=$(echo -e "$p1\n$p2" | sort -u)
+
+if test -z "$raidp"; then
+	echo "<p>No partitions of type RAID found, use the Disk Partitioner to create RAID partitions."
+	exit 0
+fi
 
 pairs="<option>none</option>"
 for i in $raidp; do
@@ -187,6 +177,19 @@ for dev in $(seq 0 9); do
 done
 
 cat<<-EOF
+	<form id="diskr" name="diskr" action="/cgi-bin/raid_proc.cgi" method="post">
+
+	<fieldset>
+	<legend><strong>RAID Creation</strong></legend>
+	<table>
+	<tr>
+	<th>Dev.</th>
+	<th>Type</th>
+	<th>Component 1</th>
+	<th>Component 2</th>
+	<th id="spare_hd">Spare</th>
+	</tr>
+
 	<tr align=center>
 	<td>md$dev</td>
 	<td><select name="level" onchange="return csubmit()">
