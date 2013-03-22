@@ -1,3 +1,57 @@
+=== March 23, 2013: Alt-F-0.1RC3 is released
+
+One year after 0.1RC2 and three years after 0.1B1, I'm pleased to announce 0.1RC3.
+This will be the last release before the final 1.0.
+
+This release has many bug fixes, some improvements and a few new things
+
+-Before upgrading to RC3, remove the stunnel package, now part of the
+ base firmware, as well as all packages that overrides the base firmware
+ in RC2, such as samba, samba-extra, vsftp, gptfdisk...
+
+-After upgrading to RC3, and if you are using DHCP, then use Setup->Host
+ to update the configuration for new DHCP features (always request the
+ same IP and supply the current host name to the DHCP server)   
+
+After one year I just don't remember all made changes. The most recent and noteworth:
+
+-The DNS-321 is now supported, thanks to Matt Hayden.
+ Instead of flashing Alt-F, you can try first to use the "reloaded" method (untested).
+
+-There is firmware available for the Conceptronics-CH3SNAS and the
+ Fujitsu-Siemens DUO35LR, ready to be flashed using the boxes Firmware
+ Upgrade pages. 
+
+-The linux kernel is now compiled for execution speed instead of space saving.
+
+-When Alt-F is flashed, the root filesystem runs directly from flash
+ memory, saving 6.5MB of memory (a 10% saving!)
+
+-Ethtool has been removed from the base firmware and is now an independent package.
+
+-The Folder Browser now can rename folders, has a faster Flat View mode,
+ supports non western languages, and has a progress meter for the copy
+ and move operations.
+
+-The Status page shows the box hardware Backup and fsck errors, and the box  
+
+-A few Backups fixes, creating log files that shows on the Status Page on error
+
+-SWAT is not embedded in frames anymore (security http://www.samba.org/samba/security/CVE-2013-0213)
+
+-Some fixes to the Alt-F and ffp Package Manager pages
+
+-The ffp Package Manager now supports installing both ffp-0.5 and ffp-0.7
+
+-Bookmarking now works for embedded pages
+
+-stunnel is now part of the base firmware, meaning that secure http is
+ now available of the shelf for the administrative web pages (including SWAT)
+
+-The httpd configuration web page now allows selecting between port 80 or 8080 for the
+ administrative web server for http, or between ports 443 or 8443 for https, so the default
+ 80 and 443 port will be keep free for usage with the lighttpd server.
+
 === February 21, 2012: Alt-F-0.1RC2 is released
 
 -All packages in the base firmware updated to the last version (but e2fsprogs and samba,

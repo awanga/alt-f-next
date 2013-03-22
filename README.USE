@@ -5,8 +5,8 @@
 To use Alt-F you can use its administering web pages, directing a
 web browser to the box default IP.
 
-The web pages were tested with firefox, if you are using another browser and
-find that something is not OK, try first with firefox and than report back or,
+The web pages were tested with Chrome and firefox, if you are using another browser
+and find that something is not OK, try first with firefox and than report back or,
 preferably, send a patch.
 
 With the web pages, which are very crude and rude, you can do most of
@@ -38,7 +38,7 @@ In detail, when Alt-F boots, it search:
 4-As a last resort, if no DHCP server is available, Alt-F will use the first
 	free IP in the 192.168.1.254 until 192.168.1.240 range.
 
-So, when booting using the fun_plug script, your box it will have the same IP,
+So, when booting using the fun_plug script, your box it will have the same IP
 and name as before.
 
 If booting after flashing Alt-F, and if your box was setup with a fixed IP
