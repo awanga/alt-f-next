@@ -45,7 +45,7 @@ if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 fi
 
 # 2-customroot has additional needed files, copy them to root
-find customroot/ \( -name \*~ -o -name .directory \) -delete
+find customroot/ \( -name \*~ -o -name .directory -o -name \*.kate-swp \) -delete
 cp -a customroot/* $1/
 find $1 -depth -name .svn -exec rm -rf {} \;
 
