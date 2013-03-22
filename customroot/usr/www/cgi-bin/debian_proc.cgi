@@ -100,23 +100,30 @@ if test "$submit" = "Install"; then
 	fi
 
 	vers="$(cat /etc/Alt-F) 0.1RC2" # fallback
+	echo "</pre><h4>Downloading and installing Alt-F into Debian...</h4><pre>"
 	for ver in $vers; do
-		echo "</pre><h4>Downloading and installing Alt-F $ver in Debian...</h4><pre>"
-		wget --progress=dot:mega http://alt-f.googlecode.com/files/Alt-F-${ver}.tar 
-		if test $? = 0; then
-			altf_down="ok"
-			break		
+		sites="http://sourceforge.net/projects/alt-f/files/Releases/$ver http://alt-f.googlecode.com/files"
+		for site in $sites; do
+			echo "</pre><h5>Try downloading Alt-F-$ver from $site...</h5><pre>"
+			wget --progress=dot:mega $site/Alt-F-${ver}.tar 
+			if test $? = 0; then
+				altf_down="ok"
+				break		
+			fi
+		done
+		if test -n "$altf_down"; then
+			break
 		fi
-		echo "</pre><h4>Downloading Alt-F $ver failed...</h4><pre>"
 	done
 	if test -z "$altf_down"; then
+		echo "</pre><h4>Downloading Alt-F $ver failed...</h4><pre>"
 		cleanup
 	fi
 
 	tar -xf Alt-F-${ver}.tar
 	if test $? != 0; then cleanup; fi
 	rootfs=$(basename $(ls alt-f/rootfs.arm.*))
-	mv alt-f/$rootfs $DEBDIR/boot/Alt-F-$(rootfs)
+	mv alt-f/$rootfs $DEBDIR/boot/Alt-F-$rootfs
 	mv alt-f/zImage $DEBDIR/boot/Alt-F-zImage
 	rm -rf alt-f Alt-F-${ver}.tar 
 
@@ -147,36 +154,6 @@ if test "$submit" = "Install"; then
 	chroot $DEBDIR /bin/bash -c "/bin/echo root:$(cat /etc/web-secret) | /usr/sbin/chpasswd"
 	if test $? != 0; then cleanup; fi
 
-if false; then # not working
-	echo "<p>Predate runlevel 4 to perform an Alt-F kexec, using runlevel 6 initscripts..."
-
- 	(
-	cd $DEBDIR/etc/rc4.d
-	rm *
-	for i in ../rc6.d/*; do
-		ln -s $i $(basename $i)
-	done
-	)
-
-	rm $DEBDIR/etc/rc4.d/K01kexec-load
-	cp $DEBDIR/etc/init.d/kexec-load $DEBDIR/etc/rc4.d/K01kexec-load
-	sed -i 's|default/kexec|default/kexec-alt-f|g' $DEBDIR/etc/rc4.d/K01kexec-load
-
-	rm $DEBDIR/etc/rc4.d/K09kexec
-	cp $DEBDIR/etc/init.d/kexec $DEBDIR/etc/rc4.d/K09kexec
-	sed -i 's|default/kexec|default/kexec-alt-f|g' $DEBDIR/etc/rc4.d/K09kexec
-
-	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
-	sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
-		-e 's|^INITRD.*|INITRD="/boot/Alt-F-'$rootfs'"|' \
-		$DEBDIR/etc/default/kexec-alt-f
-
-	cat<<-EOF > $DEBDIR/usr/sbin/alt-f
-		#!/bin/bash
-		init 4
-	EOF
-	chmod +x $DEBDIR/usr/sbin/alt-f
-else
 	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-debian
 	cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
 	sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
@@ -188,7 +165,6 @@ else
 		reboot
 	EOF
 	chmod +x $DEBDIR/usr/sbin/alt-f
-fi
 
 	clean
 
