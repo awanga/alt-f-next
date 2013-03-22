@@ -118,14 +118,17 @@ systems_st() {
 	fi
 
 	mode="Reloaded"
-	if $(isflashed); then
+	if isflashed; then
 		mode="Flashed"	
 	fi
 
 	if test -s $SERRORL; then
 		cat<<-EOF
 			<fieldset><legend><font color=red><strong>Errors</strong></font></legend>
-			<p>Clear the error messages by examining and clearing the <a href="sys_utils.cgi">systemerror</a> log.
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
+			<p>Examine and Clear the error messages:
+			<input type=submit name="logaction" value="/var/log/systemerror.log">
+			</form> 
 			<ul>$(cat $SERRORL)</ul>
 			</fieldset><br>
 		EOF
