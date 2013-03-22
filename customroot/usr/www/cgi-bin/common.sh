@@ -293,7 +293,7 @@ disk_power() {
 
 # returns true if Alt-F is flashed
 isflashed() {
-	flashed_firmware=$(dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings)
+	flashed_firmware=$(dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | grep -o 'Alt-F.*')
 	echo $flashed_firmware | grep -q Alt-F
 }
 
