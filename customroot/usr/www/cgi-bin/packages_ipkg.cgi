@@ -20,10 +20,10 @@ if ! ipkg status >/dev/null; then
 	while read type name feed; do
 		cmt=""
 		if test \( "$type" = "src" -o "$type" = "#!#src" \) -a -n "$feed"; then
-			 if test "$type" = "#!#src"; then
+			if test "$type" = "#!#src"; then
 				cmt=checked
-			fi 
-			echo "<tr><td align="center"><input type=checkbox $cmt name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
+			fi
+			echo "<tr><td align=\"center\"><input type=checkbox $cmt name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
 			cnt=$((cnt+1))
 		fi
 	done < $CONFF
@@ -50,28 +50,28 @@ else
 			</script> \
 			<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=\"post\"> \
 			<fieldset><legend><strong>Configure Feeds</strong></legend> \
-			<table><tr><th>Disabled</th><th>Feed</th></tr>"
+			<table><tr><th>Disabled</th><th>Feed</th></tr>";
 		nf=1;
 		while (getline ln <"/etc/ipkg.conf") {
 			split(ln,a);
 			if (a[1] == "src")
-				a[1]=""
+				a[1]="";
 			else if (a[1] == "#!#src")
-				a[1]="checked"
+				a[1]="checked";
 			else
-				continue
-			printf "<tr><td align="center><input type=checkbox %s name=dis_%d></td>", a[1], nf;
+				continue;
+			printf "<tr><td align=\"center\"><input type=checkbox %s name=dis_%d></td>", a[1], nf;
 			printf "<td><input type=text size=50 name=feed_%d value=\"%s\"></td></tr>\n", nf, a[3];
 			nf++
 		}
-		printf "<tr><td><input type=checkbox name=dis_%d></td> \
+		printf "<tr><td align=\"center\"><input type=checkbox name=dis_%d></td> \
 			<td><input type=text size=50 name=feed_%d value=\"\"></td></tr> \
 			<input type=hidden name=nfeeds value=\"%d\">", nf, nf, ++nf
 	}
 	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field 
-	/Version:/ { ver[i] = $2 } 
-	/Source:/ { url[i] = $2 } 
-	/Description:/ { des[i] = substr($0, index($0,$2)) } 
+	/Version:/ { ver[i] = $2 }
+	/Source:/ { url[i] = $2 }
+	/Description:/ { des[i] = substr($0, index($0,$2)) }
 	/Status:/ { if ($4 == "installed")
 			inst[nm] = i;
 		else { uinst[nm] = i; ucnt++;}
