@@ -21,8 +21,11 @@ flash() {
 	cat $1 > /dev/$2
 	wait_count_stop
 	echo "<p>Verifying..."
-	sleep 3
 	TF=$(mktemp)
+	# make sure that next read (dd) is from flash, not cache
+	sync
+	echo 3 > /proc/sys/vm/drop_caches
+	echo 3 > /proc/sys/vm/drop_caches
 	dd if=/dev/$2 of=$TF bs=$sz count=1 >& /dev/null
 	if ! cmp $1 $TF >& /dev/null; then
 		rm -f $TF $kernel_file $initramfs_file $defaults_file
@@ -67,15 +70,6 @@ elif test "$flash" = "TryIt"; then
 	dd if=$kernel_file of=/root/zImage bs=64 skip=1 >& /dev/null
 	dd if=$initramfs_file of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 	rm -f $initramfs_file $kernel_file $defaults_file
-	# is it a initrd or a initramfs?
-	#TF=$(mktemp -d)
-	#mount -o loop /root/rootfs.arm.sqmtd $TF >& /dev/null
-	#st=$?
-	#umount $TF >& /dev/null
-	#if test $st != 0; then # mount fails, it is a initramfs
-	#	echo "console=ttyS0,115200" > /root/cmdline
-	#	# or mv /root/rootfs.arm.sqmtd /root/rootfs.arm.cpio.lzma
-	#fi
 
 elif test "$flash" = "FlashIt"; then
 	echo "<center><h3><font color=red>Don't poweroff or reboot the box!</font></h3></center>"
@@ -121,7 +115,8 @@ fi
 
 cat<<-EOF
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-	You can continue using the current firmware, but the newly flashed firmware will only be active after a reboot.
+	You can continue using the current firmware,<br>
+	but the new firmware will only be active after a reboot.<br>
 	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 60 seconds.\n\nProceed?')">
 	</form></body></html>
 EOF

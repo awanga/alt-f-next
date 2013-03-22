@@ -10,6 +10,11 @@ if test "$brd" = "Unknown"; then
 	exit 1
 fi
 
+fw="still has the vendor's firmware"
+if isflashed; then
+	fw="its firmware is $flashed_firmware"
+fi
+
 cat<<-EOF
 	<center><h3><font color=red>By following this procedure you can
 	<a href="http://en.wikipedia.org/wiki/Brick_%28electronics%29">brick</a>
@@ -21,7 +26,7 @@ cat<<-EOF
 
 	An option is offered latter to cancel the procedure, so you can safely proceed for now.
 
-	<p>The box is currently running Alt-F $(cat /etc/Alt-F).</p>
+	<p>The box is currently running Alt-F $(cat /etc/Alt-F) and $fw.</p>
 
 	<form action="/cgi-bin/firmware_proc.cgi" method="post" enctype="multipart/form-data">
 	Firmware file to upload: 
