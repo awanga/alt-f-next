@@ -33,7 +33,7 @@ if ! test -d /ffp/var/packages -o -d /ffp/funpkg/installed; then
 	has_disks
 
 	cat<<-EOF
-		<h3>No ffp instalation found.</h3>
+		<h4>No ffp instalation found.</h4>
 		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
 		<table>
 		<tr><td>Install ffp-0.5 (stable)</td><td><input type=radio checked name=ffpver value=0.5></td></tr>
