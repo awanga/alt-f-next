@@ -475,12 +475,4 @@ echo /sbin/mdev > /proc/sys/kernel/hotplug
 #enddebug
 
 busy_cursor_end
-
-cat<<-EOF
-	</pre><p><strong>Success!</strong></p>
-	<script type="text/javascript">
-		url = document.referrer
-		url = url.substr(0,url.lastIndexOf("/")) + "/diskmaint.cgi"
-		setTimeout("window.location.assign(url)", 3000);
-	</script></body></html>
-EOF
+js_gotopage /cgi-bin/diskmaint.cgi
