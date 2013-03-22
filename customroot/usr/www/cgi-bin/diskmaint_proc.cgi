@@ -81,13 +81,15 @@ check() {
 
 # format $1=part $2=type $3=label
 format() {
-
 	raidopts=""
 	if test -d /sys/block/${part}/md; then
+		if test "$(cat /sys/block/${part}/md/array_state)" = "clear"; then
+			msg "Error, RAID device $part is not active."
+		fi
 		level=$(cat /sys/block/${part}/md/level)
 		ndisks=$(cat /sys/block/${part}/md/raid_disks)
-		if test $level = "raid0" -o $level = "raid5"; then
-			if test $level = "raid0"; then
+		if test "$level" = "raid0" -o "$level" = "raid5"; then
+			if test "$level" = "raid0"; then
 				nd=$ndisks
 			else
 				nd=2 # can start in degraded, but 3 (2 of data) has to be used
