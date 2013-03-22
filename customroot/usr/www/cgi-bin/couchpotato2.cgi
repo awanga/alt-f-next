@@ -8,7 +8,7 @@ write_header "CouchPotato2 Setup"
 
 CPCONF=/etc/couchpotato2.conf
 
-maindir=$(sed -n 's/^to[[:space:]]*=[[:space:]]*\(.*\)/\1/p' $CPCONF)
+maindir=$(sed -n '/renamer/,/updater/s/^to[[:space:]]*=[[:space:]]*\(.*\)/\1/p' $CPCONF)
 
 if ! rccouchpotato2 status >& /dev/null; then
 	webbut_dis="disabled"

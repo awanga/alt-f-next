@@ -44,7 +44,7 @@ if test -n "$submit"; then
 		fi
 	fi
 
-	sed -i "s|^to[[:space:]]*=.*|to = $conf_dir|" $CPCONF
+	sed -i "/renamer/,/updater/s|^to[[:space:]]*=.*|to = $conf_dir|" $CPCONF
 	# FIXME: SABdownload, /mnt/md0/SABnzbd/Complete/Movies
 	# sed -i "s|^download.*=.*|download = ???|" $CPCONF
 
