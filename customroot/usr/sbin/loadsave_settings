@@ -323,7 +323,9 @@ from_AltF() {
 	wfiles="$files $xfiles"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
-			cp /Alt-F/$i /$i	# dont remove, copy instead, in case of catastrophic failure
+			bd=$(dirname $i)
+			if ! test -d $bd; then mkdir -p $bd; fi
+			cp /Alt-F/$i $i # dont remove, copy instead, in case of catastrophic failure
 		fi
 	done
 }
