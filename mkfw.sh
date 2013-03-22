@@ -89,7 +89,7 @@ type=(1 0 0 0)
 
 num=${#name[*]}
 if test $num != ${#prod[*]} -o $num != ${#cust[*]} -o $num != ${#cust[*]} \
-	-o $num != ${#model[*]} -o $num != ${#sub[*]} -o $num != ${#nver[*]} 
+	-o $num != ${#model[*]} -o $num != ${#sub[*]} -o $num != ${#nver[*]} \
 	-o $num != ${#type[*]}; then
 		check 1 "firmware descriptions"
 fi
