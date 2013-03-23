@@ -5,31 +5,32 @@
 How to install:
 ===============
 
-The prefered way to use Alt-F is to flash it, using the same method used
-to upgrade the vendors's firmware.
+The preferred way to use Alt-F is to flash it, using the same method used
+to upgrade the vendor’s firmware.
 This method replaces the D-Link firmware and probably will void the box warranty,
-but is more reliable method.
+but it is the more reliable method.
 
 Or you can install Alt-F "on top" of D-Link firmware. This is like installing software
 on disk, does not flash anything on your box, and does not void your warranty.
-The inconvenients are decreased fiability, as for some setups this method often fails,
+The inconvenient are decreased reliability, as for some setups this method often fails,
 and augmented boot time, as two systems has to be booted: D-Link first followed by Alt-F.
 
 -For any of the methods start uninstalling ffp if you have it installed.
  That's enough to rename the 'ffp' folder to 'ffp-orig'.
- You can latter install ffp using Alt-F "ffp Package Manager".
+ You can latter install ffp using Alt-F "ffp Package Manager" and recover configuration
+ files from the previous 'ffp-orig' install.
  When Alt-F starts, if a ffp directory is found in the root directory of any filesystem,
  its init script will be executed, so all non needed ffp init scripts should be disable,
- and only keep services that Alt-F don't have.
+ and only services that Alt-F don't have should be kept.
 
 -If you intent to use the "on top"/"reloaded" method, you must disable all non-essential
  services and add-ons, as this method is very sensitive to memory condition.
- If the method fails for the first time, try again after removing all D-Link addons and
+ If "reloaded" fails for the first time, try again after removing all D-Link add-ons and
  disabling all servers such as iTunes, UPnP AV and ftp.
  Stopping the BT client, DDNS client, LLTD, etc might also help.
 
 -Clear the cache of the browser after rebooting, as this often causes problems.
- Also, try using Chrome or Firefox, as IE might also cause problems.
+ Also, try using Chrome or Firefox, as IE might also cause problems (and was not tested at all).
 
 Choose one the methods bellow to install Alt-F:
 
@@ -38,7 +39,7 @@ Choose one the methods bellow to install Alt-F:
   If you are already using Alt-F, download Alt-F-<version>.bin and use the Alt-F
   Firmware Upgrade web page to flash it.
  
-  Alt-F firmware upgrade web page can flash the vendor supplied firmware, so
+  Alt-F firmware upgrade web page can flash the vendor's supplied firmware, so
   you can always do a "downgrade".
   DLink 1.07, 1.08, 1.09 and 1.10, as well as Conceptronic 1.05b5 firmware was flashed this way
   *** ON A REV-B1 BOARD ***. Reports say that it also work on A1 and C1 boards.
@@ -49,10 +50,9 @@ Choose one the methods bellow to install Alt-F:
   Download "Alt-F-<version>.tar" and "fun_plug" into your box root directory,
   make sure that "fun_plug" has execution permission and reboot.
   -This will only work once; if you want to use it again, you must set the execution
-   permissions of fun_plug again.
-   This is deliberate, but you can override it by editing (with a unix-compatible editor)
-   fun_plug and commenting (add a # at the first column) the line near the top that says ONCE.
-   Without this feature, if something goes wrong your box would reboot endlessly!
+   permissions bits of the fun_plug file again.
+   This is deliberate, but you can override it by editing (with a UNIX-compatible editor)
+   fun_plug and commenting (adding a # at the first column) the line near the top that says ONCE.
 
 Installation Details
 ====================
@@ -97,7 +97,7 @@ Diagnosing Installation Problems
   This has changed with 0.1B7. Now fsck is done in the background and the
   boot procedure continues. However, the filesystems are not available until
   fsck finish.
-  On poweroff or reboot, Alt-F will properly unmount the disks, so the check/fix
+  On power-off or reboot, Alt-F will properly unmount the disks, so the check/fix
   step will not happens at the second and subsequent reboots.
 
 1-If the power led is not blinking with the heartbeat pace and you can't access
@@ -129,13 +129,13 @@ Then, after rebooting to the vendor's software:
   asking for help, post the file contents.
   One of the more common problems during the 1-b) step in the Installation
   Details above is lack of free memory. Stop all box services and vendor
-  supplied addons.
+  supplied ad-dons.
 
   If you are using ffp, run Alt-F right after rebooting your box;
   the fun_plug script stops all started ffp services by running
   "/ffp/etc/rc stop", but not any service that you might have started manually.
   Don't forget to disallow ffp from loading any kernel modules, such as usb_storage,
-  as they will conflict with Alt-F own kernel modules.
+  as they might conflict with Alt-F own kernel modules.
 
 3-If you find a file named alt-f.fail then the reloading process failed in the previous
   reloading attempt, and to avoid an endless boot cycle Alt-F inhibits itself from booting. 
@@ -166,7 +166,7 @@ When executed (read the fun_plug file, its readable, but DON'T CHANGE OR SAVE IT
 the Alt-F fun_plug script will look for a file named Alt-F-<version>.tar and will
 extract it to a directory named alt-f; it will then try to terminate all running 
 processes, unmount (or set as read-only) all filesystems, and load and run a new
-kernel and filesystem image, the zImage and rootfs.arm.cpio* files that you can
+kernel and filesystem image, the zImage and rootfs.arm.* files that you can
 find in the created alt-f directory).
 This critical process is done using fonz "reloaded" kernel modules,
 read http://wiki.dns323.info/howto:ffp-reloaded http://www.inreto.de/dns323/ or

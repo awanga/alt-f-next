@@ -5,6 +5,8 @@ This will be the last release before the final 1.0.
 
 This release has many bug fixes, some improvements and a few new things
 
+Use https://sourceforge.net/projects/alt-f to download it
+
 -Before upgrading to RC3, remove the stunnel package, now part of the
  base firmware, as well as all packages that overrides the base firmware
  in RC2, such as samba, samba-extra, vsftp, gptfdisk...
