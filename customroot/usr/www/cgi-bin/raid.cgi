@@ -160,7 +160,7 @@ p2=$(blkid -t TYPE="mdraid" | awk '{print substr($1, 6, 4)}')
 raidp=$(echo -e "$p1\n$p2" | sort -u)
 
 if test -z "$raidp"; then
-	echo "<p>No partitions of type RAID found, use the Disk Partitioner to create RAID partitions."
+	echo "<h4>No partitions of type RAID found, use the Disk Partitioner to create RAID partitions.</h4>"
 	exit 0
 fi
 

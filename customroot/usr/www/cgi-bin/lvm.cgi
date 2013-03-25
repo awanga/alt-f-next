@@ -27,7 +27,7 @@ devs=$(fdisk -l /dev/sd? 2> /dev/null | awk 'substr($1,1,5) == "/dev/" && ($5 ==
 no_part=$?
 
 if test $no_pv != 0 -a $no_part = 0; then
-	echo "No Physical Volumes nor LVM partitions found, use the Disk Partitioner to create LVM partitions."
+	echo "<h4>No Physical Volumes nor LVM partitions found, use the Disk Partitioner to create LVM partitions.</h4>"
 	exit 0
 fi
 
