@@ -10,21 +10,25 @@ FDIR="dns323/fun-plug"
 
 if test -s /ffp/etc/ffp-version; then
 	. /ffp/etc/ffp-version
-	if test "$FFP_VERSION" = "0.5"; then
-		ffpver="0.5"
-		FFP_DIR="0.5"
-		xtra_pkgs="$FSITE/$FDIR/0.5/extra-packages/All/"
-		arch_ext=tgz
-		spat='-*-*'
-		gpat='-[^-]*-[^-]*$'
-	else
-		ffpver="0.7"
-		FFP_DIR="0.7/oabi"
-		xtra_pkgs="$FSITE/$FDIR/0.7/oabi/extras/"
-		arch_ext=txz
-		spat='-*-oarm-*'
-		gpat='-[^-]*-oarm-[^-]*$'
-	fi
+else
+	FFP_VERSION=0.5
+	echo FFP_VERSION=0.5 > /ffp/etc/ffp-version
+fi
+
+if test "$FFP_VERSION" = "0.5"; then
+	ffpver="0.5"
+	FFP_DIR="0.5"
+	xtra_pkgs="$FSITE/$FDIR/0.5/extra-packages/All/"
+	arch_ext=tgz
+	spat='-*-*'
+	gpat='-[^-]*-[^-]*$'
+else
+	ffpver="0.7"
+	FFP_DIR="0.7/oabi"
+	xtra_pkgs="$FSITE/$FDIR/0.7/oabi/extras/"
+	arch_ext=txz
+	spat='-*-oarm-*'
+	gpat='-[^-]*-oarm-[^-]*$'
 fi
 
 write_header "ffp-$ffpver Package Manager"
@@ -57,8 +61,8 @@ else
 				return confirm("The ffp folder will be renamed ffp-0.7." + '\n\n' + "If a ffp-0.5 folder is found it will be renamed ffp and reused, otherwise you will have to reinstall and configure ffp.");
 			}
 		</script>
-		<h4 align=center>Warning: configuration files are
-		overwritten when updating</h4>
+		<h4 align=center><font color=blue>Warning: configuration files are
+		overwritten when updating</font></h4>
 	EOF
 
 	if test "$ffpver" = "0.5"; then

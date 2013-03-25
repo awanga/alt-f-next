@@ -39,14 +39,14 @@ download() {
 	rm -f $TMPDIR/$pname
 	if test $st = 0; then
 		cat<<-EOF
-			</pre><p> <strong> Success </strong> </p>
+			</pre><p><strong>Success</strong></p>
 			<script type="text/javascript">
 				setTimeout("err()", 2000);
 			</script>
 		EOF
 	else
 		cat<<-EOF
-			</pre><p> <strong> Error </strong> </p>
+			</pre><p><strong>Error</strong></p>
 			<input type="button" value="Back" onclick="err()"></p>
 		EOF
 	fi
