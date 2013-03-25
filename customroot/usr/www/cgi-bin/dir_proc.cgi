@@ -154,6 +154,9 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	terr=$(mktemp -t)
 
 	html_header "$op $(m2g $src_sz) from \"$srcdir\" to \"$wdir\""
+	if test -n "$CopyContent"; then
+		echo "<p><font color=blue><center>Displayed values are incorrect if files being copied already exists in the destination folder</center></font></p>"
+	fi
 	cat<<-EOF
 		<div id="ellapsed" style="position: relative; z-index: -1;
 		width: 30%; left: 30%; background-color: #bdbdbd;
@@ -161,60 +164,39 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	EOF
 	busy_cursor_start
 
-	(
+	exist_sz=0
 	if test -n "$Copy" -o -n "$CopyContent"; then
 		if test -n "$CopyContent"; then
 			cd "$srcdir"
 			srcdir="."
+			exist_sz=$(du -sm "$wdir" | cut -f1)
 		else
 			cd "$(dirname "$srcdir")"
 			srcdir=$(basename "$srcdir")
 		fi
-
-	# cp -a, piped tar and rsync uses too much memory (that keeps growing) for big trees and start swapping
-	# cpio has constante memory usage but is limited to 4GB files...
-	# cp -a makes 9MBps, cpio 6MBps on raid1 to raid1
-	# looks like busybox-1.20.2 'cp' don't suffer from this problem.
-if false; then
-		tf=$(mktemp -t)
-		xtra="cat"
-
-		# find "$srcdir" -size +4294967c > $tf # test
-		find "$srcdir" -size +4294967295c > $tf
-		if test -s $tf; then
-			xtra="grep -v -f $tf"
-		fi
-
-		find "$srcdir" -depth | $xtra | cpio -pdm "$wdir" 2> $terr
-		st=$?
-		if test "$st" = 0; then
-			while read -r fn; do
-				td=$(dirname "$fn")
-				#echo "$fn"
-				cp -dp "$fn" "$wdir/$td" 2> $terr
-				st=$?
-				if test "$st" != 0; then break; fi
-			done < $tf
-		fi
-		rm -f $tf
-else
-		cp -a "$srcdir" "$wdir"
-fi
+		cmd="cp -a \"$srcdir\" \"$wdir\""
 	else
-		mv -f "$srcdir" "$wdir" 2> $terr
+		cmd="mv -f \"$srcdir\" \"$wdir\" 2> $terr"
 	fi
-	) &
 
+	eval $cmd &
 	bpid=$!
+
 	touch /tmp/folders_op.$bpid
+	td="$wdir/$(basename "$srcdir")"
 	sleep_time=$(expr $src_sz / 100 + 1)
 	if test $sleep_time -gt 10; then sleep_time=10; fi
+		cat<<-EOF
+		<script type="text/javascript">
+			document.getElementById("ellapsed").innerHTML = '$(drawbargraph 1 0MB | tr "\n" " " )';
+		</script>
+		EOF
 	while kill -0 $bpid >& /dev/null; do
 		sleep $sleep_time
-		td="$wdir/$(basename "$srcdir")"
 		if test ! -d "$td" -o "$src_sz" = 0; then continue; fi
-		mv_sz=$(nice du -sm "$td" | cut -f1)
-		el=$(expr $mv_sz \* 100 / $src_sz)
+		curr_sz=$(nice du -sm "$td" | cut -f1)
+		mv_sz=$((curr_sz - exist_sz))
+		el=$((mv_sz * 100 / src_sz))
 		cat<<-EOF
 		<script type="text/javascript">
 			document.getElementById("ellapsed").innerHTML = '$(drawbargraph $el $(m2g $mv_sz) | tr "\n" " " )';
