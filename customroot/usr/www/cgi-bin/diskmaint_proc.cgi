@@ -157,10 +157,7 @@ format() {
 resize() {
 	nsz=""
 	if test "$2" = "shrink"; then
-		if ! ismount $1; then
-			lmount $1 "${2}ing"
-		fi
-		eval $(df -k /dev/$1 | awk '/'$1'/{printf "nsz=%dK", 1.1 * $3 }')
+		nsz="-M"
 	fi
 
 	if ismount $1; then
@@ -309,12 +306,13 @@ elif test -n "$Format"; then
 elif test -n "$Convert"; then
 	eval part=\$part_$Convert
 	eval type=\$type_$Convert
-	from=$(blkid -s TYPE -o value /dev/$part)
-	lumount "$part" "converting"
 
 	if test "$type" != "ext3" -a "$type" != "ext4"; then
 		msg "Can only convert upward from 'ext' filesystems."
 	fi 
+
+	from=$(blkid -s TYPE -o value /dev/$part)
+	lumount "$part" "converting"
 
 	if test "$from" = "ext2"; then # 2->3, perhaps intermediate step	
 		res="$(tune2fs -j /dev/$part)"
@@ -324,16 +322,18 @@ elif test -n "$Convert"; then
 	fi
 
 	if test "$from" = "ext2" -a "$type" = "ext3"; then # 2->3, final
-		res="$(tune2fs -o journal_data_ordered /dev/$part)"
+		res="$(tune2fs -m 0 -o journal_data_ordered /dev/$part)"
 		if test $? != 0; then
 			msg "$res"
 		fi
 	elif test "$type" = "ext4"; then # 3->4, final
-		res="$(tune2fs -O extents,uninit_bg,dir_index /dev/$part)"
+		res="$(tune2fs -m 0 -O extents,uninit_bg,dir_index /dev/$part)"
 		if test $? != 0; then
 			msg "$res"
 		fi
-		# FIXME: chattr -R +e /mnt/... # make existing files use extents (has to be mounted)
+		lmount "$part"
+		mp=$(awk '/'$part'/{print $2}' /proc/mounts)
+		chattr -R +e "$mp" # make existing files use extents
 	fi
 
 	check "$part" "$from" "convert"
