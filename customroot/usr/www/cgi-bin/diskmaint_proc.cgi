@@ -331,9 +331,6 @@ elif test -n "$Convert"; then
 		if test $? != 0; then
 			msg "$res"
 		fi
-		lmount "$part"
-		mp=$(awk '/'$part'/{print $2}' /proc/mounts)
-		chattr -R +e "$mp" # make existing files use extents
 	fi
 
 	check "$part" "$from" "convert"
