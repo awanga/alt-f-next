@@ -1,0 +1,9 @@
+Package: quota-tools
+Description: Tools and patches for the Linux Diskquota system
+Version: 4.01
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://sourceforge.net/projects/linuxquota
+Maintainer: jcard
