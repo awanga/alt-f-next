@@ -314,6 +314,7 @@ source "package/nuts/Config.in"
 source "package/parted/Config.in"
 source "package/pciutils/Config.in"
 source "package/pcmcia/Config.in"
+source "package/quota-tools/Config.in"
 source "package/sane/Config.in"
 source "package/setserial/Config.in"
 if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
