@@ -1,0 +1,57 @@
+#! /bin/sh
+
+DESC="Check for new or updated packages or releases twice a week."
+TYPE=sys
+NAME=news
+#REQUIRE="cron" doesn't work here
+
+. $(dirname $0)/common
+
+istatus() {
+	if ! rccron status >& /dev/null; then
+		echo "$1 stopped"
+		return 1
+	fi
+	
+	if crontab -l 2>/dev/null | grep -q /usr/bin/news.sh; then
+		echo "$1 running"
+		return 0
+	else
+		echo "$1 stopped"
+		return 1
+	fi
+}
+
+# clean cron backup entries, even if cron is currently stopped
+istop() {
+	echo -n "Stopping $1: "
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/bin/news.sh|d' $TF
+	crontab $TF 2> /dev/null
+	rm -f $TF
+	echo "OK."
+}
+
+istart() {
+	require $NAME cron
+	echo -n "Starting $1: "
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/bin/news.sh|d' $TF
+	hour=$(expr $(date +%s) % 24)
+	wday1=$(expr $(date +%s) % 7)
+	wday2=$(((wday1 + 3) % 7))
+	echo "0 $hour * * $wday1,$wday2 /usr/bin/news.sh #!# Alt-F cron" >> $TF
+	crontab $TF 2> /dev/null
+	rm -f $TF
+	echo "OK."
+}
+
+case "$1" in
+	start) istart $NAME ;;
+	stop) istop $NAME;;
+	restart) restart $NAME ;;
+	status) istatus $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

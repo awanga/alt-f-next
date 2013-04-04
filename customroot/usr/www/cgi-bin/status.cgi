@@ -122,14 +122,28 @@ systems_st() {
 		mode="Flashed"	
 	fi
 
+# FIXME: move out of status
 	if test -s $SERRORL; then
 		cat<<-EOF
 			<fieldset><legend><font color=red><strong>Errors</strong></font></legend>
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			<p>Examine and Clear the error messages:
-			<input type=submit name="logaction" value="/var/log/systemerror.log">
+			Examine and Clear the error messages:
+			<input type=submit name="logaction" value="$SERRORL">
 			</form> 
 			<ul>$(cat $SERRORL)</ul>
+			</fieldset><br>
+		EOF
+	fi
+
+# FIXME: move out of status
+	if test -s $NEWSL; then
+		cat<<-EOF
+			<fieldset><legend><strong>News</strong></legend>
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
+			Examine and Clear file release messages:
+			<input type=submit name="logaction" value="/var/log/news.log">
+			</form> 
+			<pre>$(cat $NEWSL)</pre>
 			</fieldset><br>
 		EOF
 	fi
@@ -569,6 +583,12 @@ if test -n "$QUERY_STRING"; then
 fi
 
 SERRORL=/var/log/systemerror.log
+NEWSL=/var/log/news.log
+MISCC=/etc/misc.conf
+
+if test -s $MISCC; then
+	. $MISCC
+fi
 
 if test -n "$refresh"; then
 	html_header
