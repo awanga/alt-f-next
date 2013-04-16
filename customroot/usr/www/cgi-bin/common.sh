@@ -228,9 +228,9 @@ html_header() {
 		center="<center><h2>$1</h2></center>"
 	fi
 
-	cat<<-EOF
-		Content-Type: text/html; charset=UTF-8
+	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
 
+	cat<<-EOF
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<style type="text/css">html { height: 100%; }</style><title></title>
@@ -241,7 +241,8 @@ html_header() {
 
 debug() {
 	HTML_HEADER_DONE="yes"
-	echo -e "Content-Type: text/html; charset=UTF-8\n\n<html><body><pre>$(set)</pre>"
+	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
+	echo "<html><body><pre>$(set)</pre>"
 }
 
 enddebug() {
@@ -421,8 +422,7 @@ upload_file() {
 download_file() {
 	echo -e "HTTP/1.1 200 OK\r"
 	echo -e "Content-Disposition: attachment; filename=\"$(basename $1)\"\r"
-	echo -e "Content-Type: application/octet-stream\r"
-	echo -e "\r"
+	echo -e "Content-Type: application/octet-stream\r\n\r"
 	cat $1
 }
 
@@ -476,12 +476,11 @@ You should do it whenever you want your changes to survive a box reboot."
 
 gotopage() {
 	if echo $0 | grep -q '_proc\.cgi'; then firstboot; fi
-	cat<<-EOF
-		HTTP/1.1 303
-		Content-Type: text/html; charset=UTF-8
-		Location: $1
 	
-	EOF
+	echo -e "HTTP/1.1 303\r"
+	echo -e "Content-Type: text/html; charset=UTF-8\r"
+	echo -e "Location: $1\r\n\r"
+
 	exit 0
 }
 
@@ -856,9 +855,9 @@ EOF
 write_header() {
 	firstboot
 	HTML_HEADER_DONE="yes"
-	cat<<-EOF
-		Content-Type: text/html; charset=UTF-8
 
+	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
+	cat<<-EOF
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 		<html><head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">

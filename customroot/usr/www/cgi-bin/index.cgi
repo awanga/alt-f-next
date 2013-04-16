@@ -7,9 +7,9 @@ if test -n "$QUERY_STRING"; then
 	pg="$(httpd -d "$pg")"
 fi
 
-cat<<-EOF
-	Content-Type: text/html; charset=UTF-8
+echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
 
+cat<<-EOF
 	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 	<html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">

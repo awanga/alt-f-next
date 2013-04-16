@@ -58,13 +58,10 @@ if test "$passwd" = "$(cat $SECR)"; then
 	echo $id > /tmp/cookie
 	chmod og-r /tmp/cookie
 
-	cat<<-EOF
-		HTTP/1.1 303
-		Content-Type: text/html
-		Set-Cookie: ALTFID=$id;
-		Location: $loc
-
-	EOF
+	echo -e "HTTP/1.1 303\r"
+	echo -e "Content-Type: text/html\r"
+	echo -e "Set-Cookie: ALTFID=$id;\r"
+	echo -e "Location: $loc\r\n\r"
 else
 	gotopage /cgi-bin/login.cgi
 fi
