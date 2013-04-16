@@ -13,20 +13,19 @@ if test "$flash" = "Abort"; then
 	gotopage /cgi-bin/firmware.cgi
 fi
 
-# $1-file, $2-device, $3-msg
+# $1-file, $2-device number, $3-msg
 flash() {
 	sz=$(stat -t $1 | cut -d" " -f2)
 	tm=$(expr $sz / 75126 + 1)
 	wait_count_start "<p>Flashing the $3, it takes about $tm seconds"
-	cat $1 > /dev/$2
+	cat $1 > /dev/mtdblock$2
 	wait_count_stop
 	echo "<p>Verifying..."
-	TF=$(mktemp)
-	# make sure that next read (dd) is from flash, not cache
+# FIXME -- calculate checksums of flash against u-boot headers?
 	sync
-	echo 3 > /proc/sys/vm/drop_caches
-	echo 3 > /proc/sys/vm/drop_caches
-	dd if=/dev/$2 of=$TF bs=$sz count=1 >& /dev/null
+	TF=$(mktemp)
+	# use the char device to make sure that next read is from flash, not cache
+	dd if=/dev/mtd$2 of=$TF bs=$sz count=1 >& /dev/null
 	if ! cmp $1 $TF >& /dev/null; then
 		rm -f $TF $kernel_file $initramfs_file $defaults_file
 		echo none > "/sys/class/leds/power:blue/trigger"
@@ -72,15 +71,16 @@ elif test "$flash" = "TryIt"; then
 	rm -f $initramfs_file $kernel_file $defaults_file
 
 elif test "$flash" = "FlashIt"; then
-	echo "<center><h3><font color=red>Don't poweroff or reboot the box!</font></h3></center>"
+	echo "<center><h3><font color=red>Don't poweroff or reboot the box until instructed to do it!<br>If you suspect that something went wrong, you can try to upgrade again after stopping all running processes.</font></h3></center>"
+# FIXME -- stop all running processes, not only Alt-F services
 	rcall stop >& /dev/null
 
 	echo timer > "/sys/class/leds/power:blue/trigger"
 	echo 50 > "/sys/class/leds/power:blue/delay_off" 
 	echo 50 > "/sys/class/leds/power:blue/delay_on"
 
-	flash $kernel_file mtdblock2 kernel
-	flash $initramfs_file mtdblock3 rootfs
+	flash $kernel_file 2 kernel
+	flash $initramfs_file 3 rootfs
 
 	case "$flash_defaults" in
 		"none")
