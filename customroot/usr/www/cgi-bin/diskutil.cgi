@@ -9,8 +9,8 @@ CONFT=/etc/misc.conf
 
 mktt power_tt "Advanced Power Management<br>
 (If grayed disk does not supported APM)<br> 
-Higher power savings, lower performance, can spindow<br>
-Medium power savings and performance, can spindow<br>
+Higher power savings, lower performance, can spindown<br>
+Medium power savings and performance, can spindown<br>
 Low power saving, higher performance, can't spindown."
 
 mktt spindown_tt "After this minutes of inactivity the disk will spin down,<br>
@@ -47,7 +47,7 @@ cat<<EOF
 	<th>Health</th>
 	<th>Power Mode</th>
 	<th>Power Sav.</th>
-	<th colspan=2>Spindow</th> 
+	<th colspan=2>Spindown</th> 
 EOF
 
 for disk in $disks; do

@@ -9,7 +9,7 @@ has_disks
 mktt tt_keep "If <strong>never</strong> unchecked, no changes will be made to this partition."
 mktt tt_psize "Partition size. Rounding can occur."
 mktt tt_pstart "Partition start sector."
-mktt tt_plen "Partition lenght, in sectors."
+mktt tt_plen "Partition length, in sectors."
 mktt tt_free "Free disk space. Rounding can occur."
 
 if ! isflashed; then
@@ -128,7 +128,7 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 				msg += "Start of partition " + i + " is not 4k aligned (by " + rem + " sectors)" + '\n'
 			rem = len % 8
 			if (rem != 0)
-				msg += "Lenght of partition " + i + " is not 4k aligned (by " + rem + " sectors)" + '\n'
+				msg += "Length of partition " + i + " is not 4k aligned (by " + rem + " sectors)" + '\n'
 
 			off = ostart - start 
 			if (off > 0 && type != 0)
@@ -309,7 +309,7 @@ cat<<EOF
 	<th> Keep </th>
 	<th> Dev </th>
 	<th><span $(ttip tt_pstart)> Start sector </span></th>
-	<th><span $(ttip tt_plen)> Lenght </span> </th>
+	<th><span $(ttip tt_plen)> Length </span> </th>
 	<th><span $(ttip tt_psize)> Size (GB)</span></th>
 	<th> Type </th>
 	</tr>
