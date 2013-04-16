@@ -4,6 +4,8 @@
 check_cookie
 write_header "Users and Groups Setup"
 
+has_disks
+
 CONFP=/etc/passwd
 CONFG=/etc/group
 

@@ -8,6 +8,23 @@ RSITE=www.inreto.de
 FSITE="http://$RSITE"
 FDIR="dns323/fun-plug"
 
+write_header "ffp Package Manager"
+has_disks
+
+if ! test -d /ffp/var/packages -o -d /ffp/funpkg/installed; then
+	cat<<-EOF
+		<h4>No ffp instalation found.</h4>
+		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
+		<table>
+		<tr><td>Install ffp-0.5 (stable)</td><td><input type=radio checked name=ffpver value=0.5></td></tr>
+		<tr><td>Install ffp-0.7 (recent)</td><td><input type=radio name=ffpver value=0.7></td></tr>
+		<tr><td>into</td><td>$(select_part)</select></td></tr>
+		<tr><td></td><td><input type=submit name=install value=Install></td></tr>
+		</table></form></body></html>
+	EOF
+	exit 0
+fi
+
 if test -s /ffp/etc/ffp-version; then
 	. /ffp/etc/ffp-version
 else
@@ -30,24 +47,6 @@ else
 	spat='-*-oarm-*'
 	gpat='-[^-]*-oarm-[^-]*$'
 fi
-
-write_header "ffp-$ffpver Package Manager"
-
-if ! test -d /ffp/var/packages -o -d /ffp/funpkg/installed; then
-	has_disks
-
-	cat<<-EOF
-		<h4>No ffp instalation found.</h4>
-		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
-		<table>
-		<tr><td>Install ffp-0.5 (stable)</td><td><input type=radio checked name=ffpver value=0.5></td></tr>
-		<tr><td>Install ffp-0.7 (recent)</td><td><input type=radio name=ffpver value=0.7></td></tr>
-		<tr><td>into</td><td>$(select_part)</select></td></tr>
-		<tr><td></td><td><input type=submit name=install value=Install></td></tr>
-		</table></form></body></html>
-	EOF
-
-else
 
 	cat<<-EOF
 		<script type="text/javascript">
@@ -121,10 +120,10 @@ else
 		<strong>Available ffp Packages</strong></a></legend><table>
 	EOF
 
-if ! nslookup $RSITE >& /dev/null; then
-	echo "<h3><center>You don't seem to have a working internet connection<br>
-or/and a name server configured.</center></h3>"
-fi
+	if ! nslookup $RSITE >& /dev/null; then
+		echo "<h3><center>You don't seem to have a working internet connection<br>
+	or/and a name server configured.</center></h3>"
+	fi
 	
 	for i in $avail_pkg; do
 		base_name=${i%$spat}
@@ -142,4 +141,3 @@ fi
 	done
 	
 	echo "</table></fieldset></form></body></html>"
-fi

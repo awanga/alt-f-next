@@ -119,6 +119,8 @@ else
 	}
 fi
 
+has_disks
+
 mktt curdir "The currently selected folder.<br>
 Can be edited to create or rename a folder using the Create or Rename buttons."
 mktt cpdir "Mark the currently selected folder for copying."

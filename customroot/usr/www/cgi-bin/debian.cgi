@@ -4,6 +4,8 @@
 check_cookie
 write_header "Debian Setup"
 
+has_disks
+
 mktt kexec_tt "When executed, Debian will replace Alt-F during its execution<br>
 and you will have to ssh the box and use the command line.<br>
 You can login using the 'root' username, without quotes, with the<br>
