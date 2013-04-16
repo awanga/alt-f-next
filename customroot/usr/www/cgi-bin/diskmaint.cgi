@@ -49,8 +49,10 @@ the vendors firmware, that might not recognize the new format.\n\n" + cmsg +
 		else if (op == "Check")
 			res = confirm("Cleaning a filesystems means verifying its consistency\n\
 and automatically repairing it if necessary and possible.\n\n\
-If a major problem is found, the filesystem will not be repaired,\n\
-will be remounted read-only and manual intervention will be needed.\n\n" + cmsg + "Proceed checking the " + part + " filesystem?");
+If a major problem is found, the filesystem will not be repaired\n\
+and will be mounted read-only.\n\
+If this happens, you must either select the \"Force Fix\" Operation\n\
+or fix the filesystem using the command line.\n\n" + cmsg + "Proceed checking the " + part + " filesystem?");
 		else if (op == "ForceFix")
 			res = confirm("Use ONLY if the Check operation failed and asked for manual intervention, as data loss might occur.\n\n" + cmsg + "Are you really sure that you want to force fix the " + part + " filesystem?");
 		else if (op == "setLabel")
