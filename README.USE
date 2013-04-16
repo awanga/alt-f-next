@@ -199,7 +199,7 @@ PRINTERS
 USB attached printers will also be recognized, and a rudimentary lpd
 spooler used for them. They can also be used with samba.
 
-DISK SPINDOW
+DISK SPINDOWN
 ============
 Disks can be set to sleep after a predetermine time of inactivity using the
 Disk->Utilities web page. When a disk spins down the corresponding orange
