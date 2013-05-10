@@ -118,7 +118,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			fsopt="-" # FIXME, hack for hot_aux arguments (can't be empty)
 			;; 
 		swap) # don't mount swap on usb devices
-			if readlink /sys/block/${MDEV:0:3}/device | grep -q /usb1/; then
+			if realpath /sys/block/${MDEV:0:3}/device | grep -q /usb1/; then
 				if test -z "$USB_SWAP" -o "$USB_SWAP" = "no"; then
 					return 0
 				fi
@@ -213,7 +213,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
 		# which bay?	
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
-		PHYSD=$(readlink /sys/block/$MDEV/device) 
+		PHYSD=$(realpath /sys/block/$MDEV/device) 
 		if echo $PHYSD | grep -q /host0/; then
 			bay="right"
 		elif echo $PHYSD | grep -q /host1/; then
