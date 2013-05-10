@@ -54,6 +54,13 @@ elif test "$submit" = "Submit"; then
 		rm $CONF_FSTAB-
 	fi
 
+	hostdesc=$(httpd -d "$hostdesc")
+	workgp=$(httpd -d "$workgp")
+	if test -z "$workgp"; then workgp="Workgroup"; fi
+	if test -z "$hostdesc"; then hostdesc="DNS-323 NAS"; fi
+	sed -i "s/workgroup =.*$/workgroup = $workgp/" $CONF_SMB
+	sed -i "s/server string =.*$/server string = $hostdesc/" $CONF_SMB
+
 	cp $CONF_SMB $CONF_SMB-
 	awk '
 		{ pshare($0) }

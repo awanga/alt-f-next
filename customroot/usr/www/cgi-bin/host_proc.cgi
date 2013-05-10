@@ -54,15 +54,11 @@ fi
 html_header
 busy_cursor_start
 
-hostdesc=$(httpd -d "$hostdesc")
-workgp=$(httpd -d "$workgp")
 domain=$(httpd -d "$domain")
 hostname=$(httpd -d "$hostname")
 
 if test -z "$mtu"; then mtu=1500; fi
 if test -z "$hostname"; then hostname="DNS-323"; fi
-if test -z "$workgp"; then workgp="Workgroup"; fi
-if test -z "$hostdesc"; then hostdesc="DNS-323 NAS"; fi
 if test -z "$domain"; then domain="localnet"; fi
 
 hostname $hostname
@@ -73,9 +69,6 @@ sed -i "/^[^#].*$oldnm$/d" $CONFH
 sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
 echo "$oldip $hostname.$domain $hostname" >> $CONFH
-
-sed -i "s/workgroup =.*$/workgroup = $workgp/" $CONFS
-sed -i "s/server string =.*$/server string = $hostdesc/" $CONFS
 
 if test "$iptype" = "static"; then
 	eval $(ipcalc -n "$hostip" "$netmask") # evaluate NETWORK

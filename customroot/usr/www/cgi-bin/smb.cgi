@@ -49,6 +49,16 @@ fstab_row() {
 	EOF
 }
 
+if test -e $CONF_SMB; then
+	eval $(awk '/server string/{split($0, a, "= ");
+		print "hostdesc=\"" a["2"] "\""}
+		/workgroup/{split($0, a, "= ");
+		print "workgp=\"" a["2"] "\""}' $CONF_SMB)
+else
+	hostdesc=""
+	workgp=""
+fi
+
 cat<<EOF
 	<script type="text/javascript">
 		function browse_dir_popup(input_id) {
@@ -97,8 +107,17 @@ cat<<EOF
 		}
 	</script>
 	<form id=smbf name=smbf action=smb_proc.cgi method="post">
-	<fieldset>
-	<legend><strong>Folders to export to other hosts</strong></legend>
+
+	<fieldset><legend><strong>Host details</strong></legend><table>
+	<tr><td>Host name:</td>
+		<td><input readonly type=text name=hostname value="$(hostname -s)">Use "Setup Host" to change</td></tr>
+	<tr><td>Host description:</td>
+		<td><input type=text name=hostdesc value="$hostdesc"></td></tr>
+	<tr><td>Workgroup:</td>
+		<td><input type=text name=workgp value="$workgp"></td></tr>
+	</table></fieldset><br>
+
+	<fieldset><legend><strong>Folders to export to other hosts</strong></legend>
 	<table>
 	<tr>
 		<th>Disable</th>
@@ -225,14 +244,13 @@ function parse(share_name, line) {
 cat<<-EOF
 	</fieldset><br>
 
-	<fieldset>
-	<legend><strong>Folders to import from other hosts</strong></legend>
+	<fieldset><legend><strong>Folders to import from other hosts</strong></legend>
 	<table>
 	<tr align=center>
 	<th>Disable</th>
 	<th></th>
 	<th>Host</th>
-	<th>Folder</th>
+	<th>Share</th>
 	<th>Discover</th>
 	<th>Local Folder</th>
 	<th>Search</th>
@@ -252,7 +270,6 @@ i=$cnt
 for i in $(seq $cnt $((cnt+2))); do
 	fstab_row "" $i	# ln cnt
 done
-
 
 if grep -q "# Samba config file created using SWAT" $CONF_SMB; then
 	swat="<font color=blue><h4>The Advanced SWAT configuration tool has been used.<br>

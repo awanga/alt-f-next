@@ -5,7 +5,6 @@ check_cookie
 write_header "Host Setup"
 
 RESOLV=/etc/resolv.conf
-CONFS=/etc/samba/smb.conf
 CONFINT=/etc/network/interfaces
 CONF_MODPROBE=/etc/modprobe.conf
 
@@ -41,16 +40,6 @@ if test -e $RESOLV; then
 else
 	ns1=""
 	ns2=""
-fi
-
-if test -e $CONFS; then
-	eval $(awk '/server string/{split($0, a, "= ");
-		print "hostdesc=\"" a["2"] "\""}
-		/workgroup/{split($0, a, "= ");
-		print "workgp=\"" a["2"] "\""}' $CONFS)
-else
-	hostdesc=""
-	workgp=""
 fi
 
 ifconfig eth0 >/dev/null 2>&1
@@ -101,22 +90,10 @@ cat<<-EOF
 	</script>
 
 	<form id="sipf" name=sipf action="/cgi-bin/host_proc.cgi" method="post">
-	<fieldset><legend><strong>Host details</strong></legend><table>
-	<tr><td>Host name:</td>
-		<td><input type=text name=hostname value="$hostname"></td></tr>
-	<tr><td>Host description:</td>
-		<td><input type=text name=hostdesc value="$hostdesc"></td></tr>
-	<tr><td>Workgroup:</td>
-		<td><input type=text name=workgp value="$workgp"></td></tr>
-
-	</table></fieldset><br>
-
-	<fieldset><legend><strong>IP settings</strong></legend><table>
-	<tr>
+	<table><tr>
 	<td>Static IP<input type=radio id="static" name="iptype" value="static" onclick="edisable(false)"></td>
-	<td>DHCP <input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td>
-	</tr>
-
+	<td>DHCP <input type=radio id="dhcp" name="iptype" value="dhcp" onclick="edisable(true)"></td></tr>
+	<tr><td>Host name:</td><td><input type=text name=hostname value="$hostname"></td></tr>
 	<tr><td>Domain:</td><td><input type=text id=sip1 name="domain" value="$domain"></td></tr>
 	<tr><td>Host IP:</td><td><input type=text id=sip2 name="hostip" value="$hostip"></td></tr>
 	<tr><td>Netmask:</td><td><input type=text id=sip3 name="netmask" value="$netmask"></td></tr>
@@ -125,7 +102,7 @@ cat<<-EOF
 	<tr><td>Name server 2:</td><td><input type=text name="ns2" value="$ns2"></tr>
 	<tr><td>Frame size:</td><td><input type=text name="mtu" value="$mtu" onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
 	<tr><td>Enable IPv6:</td><td><input type=checkbox $ipv6_dis $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
-	</table></fieldset><br>
+	</table><br>
 
 	<input type=hidden name=cflg value="$cflg">
 	<input type=hidden name=oldip value="$hostip">
