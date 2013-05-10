@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>ALT-F Help Page</title>
+</head><body>
+
+<center><h2>Samba Setup Help</h2></center>
+
+<p>In this page you can configure Samba, allowing MS-Windows computers
+to access box shares, and to make available to the box shares defined in
+other computers.<br>
+ 
+A share is a network offer of an existing folder.
+
+<ul>
+<li><p>In the upper <strong>Host details</strong> section you might
+configure how the box appears in the MS-Windows network browser:
+
+<ul>
+<li><strong>Host name </strong> the network name used to access the box.
+<li><strong>Host description</strong> the box description.
+<li><strong>Workgroup </strong> the MS-Windows workgroup the box will bellong to.
+</ul>
+
+<li><p>In the <strong>Folders to export to other hosts</strong> section you
+can create shares, one per line:
+
+<ul>
+<li><strong>Disable</strong> fast way to enable or disable a share.
+
+<li><strong>Folder</strong> local folder name that will be offered as a share.<br>
+If empty, the share (not the folder!) will be removed when the Submit button is hit.
+
+<li><strong>Browse</strong> opens the <em>Folders Browse</em> window,
+which allows selecting an existing folder (or creating a new one).<br>
+The selected folder will automaticaly fill-in the previous
+<strong>Folder</strong> entry field. 
+
+<li><strong>Share Name </strong> the name of the offered share; if empty
+the folder name will be used.
+
+<li><strong>Comment F</strong> text that will appear in the MS-Windows
+explorer near the share name; if empty the folder name will be used.
+
+<li><strong>Allow</strong> selects who can access the share.<br> Notice
+that Samba will not override the filesystem folder permissions, i.e.,
+the folder associated with a share also has to have the right
+permissions (Setup->Folders->Permissions, or just use the Browse button).<br>
+
+The Users and Public shares and folders, which are automatically created
+when the first user is created, have the correct permissions for the
+intended usage, use them as a pattern.<br>
+
+For further details read the "Folder Ownership and Access Permissions"
+<a href="perms_hlp.html">online</a> help.
+
+<ul>
+<li>anybody: everybody can access the share, even anonymous or guest users.
+
+<li>nonpublic: reserved for the Users home folder.<br>
+Each user's Home folder can only be accessed by himself when he is authenticated.
+
+<li>user: only the specified user will be able to access the share.
+<li>+group: only members of the specified group will be able to access the share.
+</ul>
+
+<li><strong>Browseable</strong> the share is browseable.
+<li><strong>Read Only</strong> no writing is allowed.
+
+<li><strong>Inherit Perms</strong> created files or folders inherit the
+base folder ownership and permissions. 
+
+</ul>
+
+<li><p>In the <strong>Folders to import from other hosts</strong> section
+you can make other computers shares available to the box.<br>
+
+After an entry is filled-in and the Submit button is hit, a
+<strong>Mount</strong> button will appear, which will make the remote
+share localy available; when <em>mounted</em>, an
+<strong>unMount</strong> button will appear instead, which if hitted will unmount
+(unmap) the remote share. 
+
+<ul>
+
+<li><strong>Host</strong> the computer name where the share is available.<br>
+If empty, the whole entry will be removed when the Submit button is hit.
+
+<li><strong>Share</strong> the remote share name.<br>
+If empty, the whole entry will be removed when the Submit button is hit.
+
+<li><strong>Discover</strong> opens a new window and performs a SMB/CIFS
+network scan, showing the existing computers and offered shares;
+clicking a share will fill-in the previous <strong>Host</strong> and
+<strong>Share</strong> entry fields.
+
+<li><strong>Local Folder</strong> the local folder where the remote
+share contents will be available.<br> If the folder is not empty, its contents
+will (temporarily) disappear while the remote share is mounted, and will
+reappear when the remote share is unmounted. 
+
+<li><strong>Search</strong> opens the <em>Folders Browse</em> window, which will
+fill-in the Local Folder entry field with the selected folder. 
+
+<li><strong>Mount Options</strong> specify the desired mount options;
+the default values will generally be OK. 
+
+</ul>
+
+<li><p>The <strong>Advanced</strong> button allows using SWAT, the
+<em>Samba Web Administration Tool</em>, which opens a new window after
+asking for the <em>root</em> credentials.<br> SWAT allows a Samba
+administrator to configure the complex <tt>smb.conf</tt> file, producing
+a configuration file that will not be fully recognized by the Alt-F
+webUI; you should thus use either SWAT or the Alt-F Samba webUI to
+configure Samba.<br> If you install the <tt>samba-doc</tt> Alt-F package
+you can then use the SWAT online help facilities. 
+
+
+</ul>
+
+<br><button type=button onclick="history.back()">Back</button></body>
