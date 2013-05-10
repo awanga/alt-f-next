@@ -1,6 +1,6 @@
 #! /bin/sh
 
-DESC="Cleanup (truncate) log files every hour."
+DESC="Cleanup log files every hour."
 TYPE=sys
 NAME=cleanup
 #REQUIRE="cron" doesn't not work here

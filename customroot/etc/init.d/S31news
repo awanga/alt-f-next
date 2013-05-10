@@ -1,6 +1,6 @@
 #! /bin/sh
 
-DESC="Check for new or updated packages or releases twice a week."
+DESC="Check for News, Files or Packages releases twice a week."
 TYPE=sys
 NAME=news
 #REQUIRE="cron" doesn't work here
