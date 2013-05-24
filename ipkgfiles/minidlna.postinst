@@ -6,5 +6,5 @@ if id minidlna >& /dev/null; then
 fi
 adduser -S -g "minidlna daemon" -G multimedia -u 11 -h /var/lib/minidlna minidlna
 
-chown -R minidlna:multimedia /etc/minidlna.conf
+chown -R minidlna:multimedia /etc/minidlna.conf /var/lib/minidlna
 ln -sf /usr/sbin/rcscript /sbin/rcminidlna
