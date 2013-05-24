@@ -29,6 +29,15 @@ SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/$(SAMBA_SUBDIR)
 SAMBA_CAT:=$(ZCAT)
 SAMBA_BINARY:=bin/smbd
 SAMBA_TARGET_BINARY:=usr/sbin/smbd
+SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS) -Os"
+
+# Optim Free
+# -O0: -303 KB
+# -O:    40 KB
+# -O1:   36 KB
+# -Os:    4 KB
+# -O2: -102 KB
+# -O3: -168 KB
 
 $(DL_DIR)/$(SAMBA_SOURCE):
 	$(call DOWNLOAD,$(SAMBA_SITE),$(SAMBA_SOURCE))
@@ -45,6 +54,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_ENV) \
+		$(SAMBA_CFLAGS) \
 		samba_cv_HAVE_GETTIMEOFDAY_TZ=yes \
 		samba_cv_USE_SETREUID=yes \
 		samba_cv_HAVE_KERNEL_OPLOCKS_LINUX=yes \
