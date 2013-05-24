@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#STUNNEL_VERSION:=4.53
 STUNNEL_VERSION:=4.54
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
 STUNNEL_SITE:=ftp://ftp.stunnel.org/stunnel/archive/4.x/
@@ -55,7 +54,7 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 	touch $(STUNNEL_DIR)/.configured
 
 $(STUNNEL_DIR)/src/stunnel: $(STUNNEL_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(STUNNEL_DIR)
+	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" -C $(STUNNEL_DIR)
 
 $(TARGET_DIR)/usr/bin/stunnel: $(STUNNEL_DIR)/src/stunnel
 	install -c $(STUNNEL_DIR)/src/stunnel $(TARGET_DIR)/usr/bin/stunnel
