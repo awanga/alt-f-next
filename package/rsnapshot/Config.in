@@ -1,0 +1,10 @@
+config BR2_PACKAGE_RSNAPSHOT
+	bool "rsnapshot"
+	select BR2_PACKAGE_PERL
+	select BR2_PACKAGE_RSYNC
+	help
+	 rsnapshot is a filesystem snapshot utility for making backups of local and remote systems. 
+	 Using rsync and hard links, it is possible to keep multiple, full backups instantly available.
+	 The disk space required is just a little more than the space of one full backup, plus incrementals.
+
+	 http://www.rsnapshot.org/
