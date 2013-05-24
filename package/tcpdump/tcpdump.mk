@@ -6,7 +6,8 @@
 # Copyright (C) 2001-2003 by Erik Andersen <andersen@codepoet.org>
 # Copyright (C) 2002 by Tim Riker <Tim@Rikers.org>
 
-TCPDUMP_VERSION:=3.9.5
+#TCPDUMP_VERSION:=3.9.5
+TCPDUMP_VERSION:=4.4.0
 TCPDUMP_DIR:=$(BUILD_DIR)/tcpdump-$(TCPDUMP_VERSION)
 TCPDUMP_SITE:=http://www.tcpdump.org/release
 TCPDUMP_SOURCE:=tcpdump-$(TCPDUMP_VERSION).tar.gz
@@ -32,6 +33,7 @@ $(TCPDUMP_DIR)/.unpacked: $(DL_DIR)/$(TCPDUMP_SOURCE)
 $(TCPDUMP_DIR)/.configured: $(TCPDUMP_DIR)/.unpacked
 	(cd $(TCPDUMP_DIR); rm -f config.cache; \
 		ac_cv_linux_vers=$(BR2_DEFAULT_KERNEL_HEADERS) \
+		td_cv_buggygetaddrinfo=no \
 		BUILD_CC=$(TARGET_CC) HOSTCC="$(HOSTCC)" \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
@@ -42,23 +44,28 @@ $(TCPDUMP_DIR)/.configured: $(TCPDUMP_DIR)/.unpacked
 		--prefix=/usr \
 		--mandir=/usr/share/man \
 		--infodir=/usr/share/info \
-		--without-crypto \
 		$(TCPDUMP_ENABLE_SMB) \
 		$(DISABLE_IPV6) \
 	)
 	$(SED) '/HAVE_PCAP_DEBUG/d' $(TCPDUMP_DIR)/config.h
 	touch $@
 
+#		--without-crypto \
+
 $(TCPDUMP_DIR)/tcpdump: $(TCPDUMP_DIR)/.configured
 	$(MAKE) CC="$(TARGET_CC)" \
 		LDFLAGS="-L$(STAGING_DIR)/usr/lib" \
-		LIBS="-lpcap" \
+		LIBS="-lpcap -lcrypto" \
 		INCLS="-I. -I$(STAGING_DIR)/usr/include" \
 		-C $(TCPDUMP_DIR)
 
 $(TARGET_DIR)/usr/sbin/tcpdump: $(TCPDUMP_DIR)/tcpdump
 	cp -f $< $@
 	$(STRIPCMD) $@
+
+tcpdump-configure: $(TCPDUMP_DIR)/.configured
+
+tcpdump-build: $(TCPDUMP_DIR)/tcpdump
 
 tcpdump: uclibc zlib libpcap $(TARGET_DIR)/usr/sbin/tcpdump
 
