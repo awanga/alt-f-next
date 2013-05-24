@@ -80,7 +80,7 @@ $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 CUPS_CONF_OPT = --without-perl --without-java --without-php	--without-python \
 	--disable-pam --disable-dnssd --disable-ldap \
 	--disable-gnutls --disable-dbus --disable-gssapi \
-	--with-cups-user=cups  --with-cups-group=lpadmin \
+	--with-cups-user=cups  --with-cups-group=lpadmin --with-system_groups="sys root" \
 	--enable-openssl --enable-libusb --with-pdftops=/usr/bin/gs \
 	--with-languages=none --with-docdir=/usr/share/cups/doc
 
