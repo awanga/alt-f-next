@@ -1,0 +1,8 @@
+config BR2_PACKAGE_IPTRAF
+	bool "iptraf"
+	select BR2_PACKAGE_NCURSES
+	help
+	  IPTraf is a console-based network statistics utility for Linux
+
+	  http://iptraf.seul.org/
+
