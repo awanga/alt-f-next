@@ -4,15 +4,16 @@
 #
 #############################################################
 
-#OPENSSL_VERSION:=1.0.0g
 OPENSSL_VERSION:=1.0.1e
 OPENSSL_SITE:=http://www.openssl.org/source
 
 OPENSSL_CFLAGS = $(TARGET_CFLAGS)
 # compiling the base firmware, but be gentle with openssl
-ifeq ($(BR2_OPTIMIZE_S),y)
-	OPENSSL_CFLAGS = $(TARGET_CFLAGS) -O2
-endif
+#ifeq ($(BR2_OPTIMIZE_S),y)
+#	OPENSSL_CFLAGS = $(TARGET_CFLAGS) -O2
+#endif
+
+OPENSSL_CFLAGS = $(TARGET_CFLAGS) -Os
 
 # Some architectures are optimized in OpenSSL
 OPENSSL_TARGET_ARCH=generic32
@@ -62,10 +63,10 @@ $(OPENSSL_TARGET_CONFIGURE):
 	touch $@
 
 $(OPENSSL_TARGET_BUILD):
-	$(MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
-	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
-	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
-	$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
+	$(MAKE1) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
+	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
+	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
+	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
 	#$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR)  all build-shared do_linux-shared
 	touch $@
 
