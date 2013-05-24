@@ -3,7 +3,8 @@ config BR2_PACKAGE_NETATALK
 	select BR2_PACKAGE_DB
 	select BR2_PACKAGE_LIBGCRYPT
 	select BR2_PACKAGE_LIBEVENT2
-	select BR2_PACKAGE_AVAHI
+	select BR2_PACKAGE_AVAHI_LIBCLIENT
+	select BR2_PACKAGE_AVAHI_DAEMON
 	help
 	 A AFP (Apple Filling Protocol) fileserver
 
