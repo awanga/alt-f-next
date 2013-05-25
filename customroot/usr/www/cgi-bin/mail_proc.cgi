@@ -23,13 +23,15 @@ if test -z "$host"; then
 	msg "Server Name must be filled"
 fi
 
-if test "$auth" != "off" -a \( -z "$user" -o -z "$password" \); then
-	msg "Username and Password must be filled"
-fi
-
-password=$(checkpass "$password")
-if test $? != 0; then
-    msg "$password"
+if test "$auth" != "off"; then
+	if test -z "$user" -o -z "$password"; then
+		msg "Username and Password must be filled"
+	else
+		password=$(checkpass "$password")
+		if test $? != 0; then
+			msg "$password"
+		fi
+	fi
 fi
 
 user=$(httpd -d "$user")
