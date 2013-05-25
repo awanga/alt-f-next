@@ -1,0 +1,9 @@
+Package: attr
+Description: utilities to administer the extended attributes on filesystem objects
+Version: 2.4.47
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://download.savannah.gnu.org/releases/attr
+Maintainer: jcard

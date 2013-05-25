@@ -1,0 +1,5 @@
+./usr/bin/attr
+./usr/bin/getfattr
+./usr/bin/setfattr
+./usr/lib/libattr.so.1
+./usr/lib/libattr.so.1.1.0
