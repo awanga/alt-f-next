@@ -29,7 +29,19 @@ SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/$(SAMBA_SUBDIR)
 SAMBA_CAT:=$(ZCAT)
 SAMBA_BINARY:=bin/smbd
 SAMBA_TARGET_BINARY:=usr/sbin/smbd
-SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS) -Os"
+
+SAMBA_ACL=--without-acl-support
+ifeq ($(BR2_PACKAGE_SAMBA_ACL),y)
+	SAMBA_ACL = --with-acl-support
+	SAMBA_DEPS = acl
+	SAMBA_LIBS = LIBS=-lacl
+endif
+
+# specific compiler optimization
+SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS)"
+ifeq ($(BR2_PACKAGE_SAMBA_SIZEOPTIM),y)
+	SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS) -Os"
+endif
 
 # Optim Free
 # -O0: -303 KB
@@ -54,7 +66,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_ENV) \
-		$(SAMBA_CFLAGS) \
+		$(SAMBA_CFLAGS) $(SAMBA_LIBS) \
 		samba_cv_HAVE_GETTIMEOFDAY_TZ=yes \
 		samba_cv_USE_SETREUID=yes \
 		samba_cv_HAVE_KERNEL_OPLOCKS_LINUX=yes \
@@ -84,7 +96,6 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--with-cifsumount \
 		--without-ldap \
 		--without-ads \
-		--without-acl-support \
 		--without-winbind \
 		--without-included-popt \
 		--without-cluster-support \
@@ -95,6 +106,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--enable-shared-libs \
 		--disable-cups --disable-avahi \
 		$(DISABLE_LARGEFILE) \
+		$(SAMBA_ACL) \
 	)
 	patch -p0 -b -d $(SAMBA_DIR) < package/samba/samba-$(SAMBA_VERSION)-Makefile.patch2
 	sed -i 's/-Wl,--as-needed//' $(SAMBA_DIR)/Makefile
@@ -208,7 +220,7 @@ endif
 	rm -rf $(TARGET_DIR)/var/lib/samba
 	find $(TARGET_DIR) -name \*.old -delete # jc:
 
-samba: popt libiconv $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) 
+samba: popt libiconv $(SAMBA_DEPS) $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) 
 
 samba-build: $(SAMBA_DIR)/$(SAMBA_BINARY)
 

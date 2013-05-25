@@ -13,6 +13,19 @@ config BR2_PACKAGE_SAMBA
 	  NOTE: A complete Samba install takes close to 40MB of space,
 		so choose only the components you need.
 
+config BR2_PACKAGE_SAMBA_SIZEOPTIM
+	bool "samba sizeoptim"
+	depends on BR2_PACKAGE_SAMBA
+	help
+	  Compile for space saving (-Os)
+
+config BR2_PACKAGE_SAMBA_ACL
+	bool "samba acl"
+	depends on BR2_PACKAGE_SAMBA
+	depends on BR2_PACKAGE_ACL
+	help
+	  Compile with ACL support
+
 menu "Samba tools selection"
 	depends on BR2_PACKAGE_SAMBA
 
