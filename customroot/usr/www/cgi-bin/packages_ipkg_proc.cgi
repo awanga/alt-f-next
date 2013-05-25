@@ -94,7 +94,25 @@ elif test -n "$RemoveAll"; then
 	EOF
 
 	busy_cursor_start
-	rcall stop
+	for i in  $(ls -r /Alt-F/etc/init.d/S*); do
+		if test -f $i; then
+			f=$(basename $i)
+			rcscript=rc${f:3}
+			$rcscript stop
+			for i in $(seq 1 60); do
+				if ! $rcscript status >& /dev/null; then
+					break
+				fi
+				usleep 500000
+			done
+			if test "$i" -eq 60; then
+				fail=yes
+			fi
+		fi
+	done
+	if test -n "$fail"; then
+		echo "<p><strong>It was not possible to stop some services, continuing anyway...</strong>"
+	fi
 	ipkg -clean
 	if test $? != 0; then
 		cat<<-EOF
