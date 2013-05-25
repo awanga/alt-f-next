@@ -1,0 +1,9 @@
+Package: acl
+Description: contains utilities to administer Access Control Lists, ACL.
+Version: 2.2.52
+Depends: gettext, attr, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://download.savannah.gnu.org/releases/acl
+Maintainer: jcard

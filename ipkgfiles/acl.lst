@@ -1,0 +1,5 @@
+./usr/bin/chacl
+./usr/bin/getfacl
+./usr/bin/setfacl
+./usr/lib/libacl.so.1
+./usr/lib/libacl.so.1.1.0
