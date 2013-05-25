@@ -105,7 +105,7 @@ elif test "$create_dir" = "CreateDir"; then
 	chown nobody:nobody "$mp"/Public/RW
 	chmod a+rwx "$mp"/Public/RW
 
-	IFS=":"
+	OIFS="$IFS"; IFS=":"
 	while read  nick x uid gid name hdir rest; do
 		if echo "$nick" | grep -q '^#'; then continue; fi
 		if test "$uid" -ge 1000; then
@@ -115,6 +115,7 @@ elif test "$create_dir" = "CreateDir"; then
 			fi
 		fi
 	done < $CONFP
+	IFS="$OIFS"
 
 	if ! grep -q "^\[Users\]" $CONFSMB; then
 		cat<<EOF >> $CONFSMB		
