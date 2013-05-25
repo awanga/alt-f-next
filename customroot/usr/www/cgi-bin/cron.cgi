@@ -52,7 +52,7 @@ done < $TF
 
 for j in $(seq $i $((i+2))); do 
 	cat<<-EOF
-		<tr><td><input type=checkbox name=dis_$j></td>
+		<tr><td align="center"><input type=checkbox name=dis_$j></td>
 		<td><input type=text size=10 name=weekday_$j value="" $(ttip wday_tt)></td>
 		<td><input type=text size=10 name=hour_$j value="" $(ttip hour_tt)></td>
 		<td><input type=text size=40 name=cmd_$j value=""></td></tr>
