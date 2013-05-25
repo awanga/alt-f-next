@@ -33,10 +33,9 @@ EOF
 
 for i in Setup Disk Services Packages System; do
 	echo "<a href=\"/cgi-bin/index.cgi?pg=$i\">$i</a><br>"
-	IFS=" "
 	if test "$i" = "$pg"; then
 		extra=$(cat $i*.men)
-		echo $extra | while read entry url; do
+		echo "$extra" | while read entry url; do
 			echo "&emsp;<a href=\"/cgi-bin/$url\" target=\"content\">$entry</a><br>"
 		done
 	fi
