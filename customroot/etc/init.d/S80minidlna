@@ -7,7 +7,7 @@ TYPE=user
 CONF_MINIDLNA=/etc/$NAME.conf
 MINIDLNA_USER=$NAME
 MINIDLNA_GROUP=multimedia
-MINIDLNA_ARGS=""
+MINIDLNA_ARGS="-u $MINIDLNA_USER"
 
 . $(dirname $0)/common
 
