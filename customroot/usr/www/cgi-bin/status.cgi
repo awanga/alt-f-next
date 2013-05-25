@@ -140,7 +140,7 @@ systems_st() {
 		cat<<-EOF
 			<fieldset><legend><strong>News</strong></legend>
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			Examine and Clear file release messages:
+			Examine and Clear News messages:
 			<input type=submit name="logaction" value="/var/log/news.log">
 			</form> 
 			<pre>$(cat $NEWSL)</pre>
@@ -475,7 +475,7 @@ remotely_mounted_filesystems_st() {
 	fi
 
 	if test -n "$nfsm"; then
-		IFS=:
+		IOIFS="$IFS"; FS=:
 		echo "$nfsm" | while read host dir; do
 			if checkip "$host"; then
 				if ! th=$(awk '/^'$host'[[:space:]]+/{print $3; exit 1}' /etc/hosts); then
@@ -484,7 +484,7 @@ remotely_mounted_filesystems_st() {
 			fi
 			echo "<tr><td>$host</td><td>$dir</td><td>nfs</td></tr>"
 		done
-		IFS=" "
+		IFS="$OIFS"
 	fi
 	echo "</table></fieldset>"
 }
