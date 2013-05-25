@@ -819,8 +819,7 @@ EOF
 fill_menu() {
 	echo "<td><div id=\"$1\" class=\"Menu\">$1</div><div id=\"$1_sub\">"
 	extra=$(cat $1*.men)
-	IFS=" "
-	echo $extra | while read entry url; do
+	echo "$extra" | while read entry url; do
 		echo "<a class=\"Menu\" href=\"/cgi-bin/$url\" target=\"content\">$entry</a>"
 	done
 	echo "</div><script type=\"text/javascript\">MenuEntry(\"$1\");</script></td>"
