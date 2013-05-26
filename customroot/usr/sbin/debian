@@ -107,7 +107,7 @@ cat<<-NEOF > /tmp/deb
 	eject -a
 
 	mkdir -p $debdir
-	if test "\$raid" = 0; then
+	if test "\$raid" -lt 2; then # allow degraded but working RAID
 		mdadm --assemble \$part
 		mdadm --readonly \$part
 	fi
@@ -127,6 +127,11 @@ cat<<-NEOF > /tmp/deb
 		--command-line="console=ttyS0,115200 root=\$part" && kexec -e
 
 	echo "Failed."
+
+	# try to recover
+	eject -r right
+	eject -r left
+
 	exit 1
 NEOF
 

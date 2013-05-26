@@ -84,7 +84,8 @@ if test "$submit" = "Install"; then
 
 	chroot $DEBDIR /usr/bin/apt-get update
 
-	if mdadm --detail --test /dev/$DEBDEV >& /dev/null; then
+	mdadm --detail --test /dev/$DEBDEV >& /dev/null
+	if test $? -lt 2; then # allow degraded but working RAID
 
 		echo "</pre><h4>Adding RAID boot support....</h4><pre>"
 
