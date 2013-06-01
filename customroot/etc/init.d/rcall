@@ -3,42 +3,43 @@
 case "$1" in
 	start)
 		for i in /etc/init.d/S* ;do		
-			 # Ignore dangling symlinks and non executable files
-			if test ! -f "$i" -o ! -x "$i"; then continue; fi
+			if ! test -f "$i" -a -x "$i"; then continue; fi
 			logger -s "$($i start)"
 		done
 		;;
 
 	stop)
 		for i in $(ls -r /etc/init.d/S*) ;do
-			 # dont ignore non executable files, in case user has started them manually
-			if test ! -f "$i"; then continue; fi
-			bn=$(basename $i)
-			nm=${bn:3}
-			if test "$nm" = "inetd" -o "$nm" = "sysctrl" -o "$nm" = "syslog"; then continue; fi
-			logger -s "$(/bin/sh $i stop)"
+			if ! test -f "$i"; then continue; fi
+			bn=$(basename $i); nm=rc${bn:3}
+			if test "$nm" = "rcinetd" -o "$nm" = "rcsysctrl" -o "$nm" = "rcsyslog"; then continue; fi
+			if $nm status >& /dev/null; then
+				logger -s $($nm stop)
+			fi
 		done
 		;;
 
 	restart)
 		lst=""
 		for i in $(ls -r /etc/init.d/S*) ;do
-			if test ! -f "$i"; then continue; fi		
-			if /bin/sh $i status >& /dev/null; then
-				lst="$i $lst"
-				logger -s "$(/bin/sh $i stop)"
+			if ! test -f "$i"; then continue; fi
+			bn=$(basename $i); nm=rc${bn:3}
+			if $nm status >& /dev/null; then
+				lst="$nm $lst"
+				logger -s "$($nm stop)"
 			fi
 		done
+		sleep 3
 		for i in $lst; do
-			logger -s "$(/bin/sh $i start)"
+			logger -s "$($i start)"
 		done
 		;;
 
 	status)
 		for i in $(ls -r /etc/init.d/S*) ;do
-			 # dont ignore non executable files, in case user has started them manually
-			if test ! -f "$i"; then continue; fi
-			logger -s "$(/bin/sh $i status)"
+			if ! test -f "$i"; then continue; fi
+			bn=$(basename $i); nm=rc${bn:3}
+			logger -s "$($nm status)"
 		done
 		;;
 
