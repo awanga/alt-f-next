@@ -1,15 +1,5 @@
 #!/bin/sh
 
-jsback() {
-	cat<<-EOF
-		<script type="text/javascript">
-			function err() {
-				window.location.assign(document.referrer)
-			}
-		</script>
-	EOF
-}
-
 # $1: funpkg arg (-i|-u) $2: package
 download() {
 
@@ -18,7 +8,6 @@ download() {
 	fi
 
 	write_header "Installing ffp package $2" 
-	jsback
 
 	pname=$2.$arch_ext
 
@@ -32,23 +21,17 @@ download() {
 	st=$?
 
 	if test $st = 0; then
-		funpkg $1 $TMPDIR/$pname
+		PATH=/ffp/bin:/ffp/sbin:$PATH funpkg $1 $TMPDIR/$pname
 		st=$?
 	fi
 
 	rm -f $TMPDIR/$pname
 	if test $st = 0; then
-		cat<<-EOF
-			</pre><p><strong>Success</strong></p>
-			<script type="text/javascript">
-				setTimeout("err()", 2000);
-			</script>
-		EOF
+		echo "</pre><p><strong>Success</strong>"
+		goto_button Continue /cgi-bin/packages_ffp.cgi
 	else
-		cat<<-EOF
-			</pre><p><strong>Error</strong></p>
-			<input type="button" value="Back" onclick="err()"></p>
-		EOF
+		echo "</pre><p><strong>Error</strong>"
+		goto_button Back /cgi-bin/packages_ffp.cgi
 	fi
 	echo "</body></html>"
 	exit 0
@@ -111,7 +94,6 @@ if test "$install" = "Install"; then
 #test	SITE=http://flash/~jcard/fun_plug-$ffpver.tgz
 
 	write_header "Installing FFP-$ffpver"
-	jsback
 
 	echo "<p><strong>Downloading...</strong></p><pre>"
 	wget --tries=3 --progress=dot:mega $SITE -O $TMPF
@@ -133,32 +115,28 @@ if test "$install" = "Install"; then
 			chmod 0755 /ffp/bin/busybox$bbext
 			chmod u+s /ffp/bin/busybox$bbext
 			chmod -x /ffp/start/*
-			echo "success.</strong></p>"
+			echo "success.</strong>"
 			st=0
 		else
-			echo "fail.</strong></p>"
+			echo "fail.</strong>"
 			st=1
 		fi
 	else
-		echo "<p><strong>Download failed.</strong></p>"
+		echo "<p><strong>Download failed.</strong>"
 		st=1
 	fi
 	rm -f $TMPF
 
 	if test $st = 0; then
-		cat<<-EOF
-			<script type="text/javascript">
-				setTimeout("err()", 2000);
-			</script>
-		EOF
+		goto_button Continue /cgi-bin/packages_ffp.cgi
 	else
-		echo "<input type=\"button\" value=\"Back\" onclick=\"err()\">"
+		goto_button Back /cgi-bin/packages_ffp.cgi
 	fi
 	echo "</body></html>"
 	exit 0
 
 elif test -n "$Remove"; then
-	funpkg -r $Remove >& /dev/null
+	PATH=/ffp/bin:/ffp/sbin:$PATH funpkg -r $Remove >& /dev/null
 
 elif test -n "$Install"; then
 	download -i $Install
