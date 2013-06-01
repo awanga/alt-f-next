@@ -278,6 +278,7 @@ create_fs() {
 			sf=/sys/block/${dev:0:3}/${dev}/size
 		fi
 		if test $(cat $sf) -lt $MIN_SIZE; then return; fi # don't create fs smaller than 10MB
+if false; then
 		eval $(awk '{ printf "min=%.0f", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
 		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
 		wait_count_start "$min minute(s)"
@@ -292,6 +293,56 @@ create_fs() {
 			fi
 			echo ". Done.</p>"
 		fi
+else
+		sid=$(basename $(mktemp -u))
+		echo "<p>Creating $wish_fs filesystem on $(basename $1)... <span id=\"$sid\">0</span>"
+		cat<<-EOF > /tmp/format-$dev
+			#!/bin/sh
+			trap "" 1
+			echo \$$ > \$0.pid
+			mke2fs -m 0 -T $wish_fs $raidopts -v $1 > /tmp/format-${dev}.log 2>&1
+			if test \$? != 0; then
+				cp /tmp/format-${dev}.log /tmp/${dev}.err
+			else
+				if test "$wish_fs" = "ext3"; then
+					tune2fs -o journal_data_ordered ${1} >& /dev/null
+				fi
+			fi
+		fi
+		EOF
+		chmod +x /tmp/format-$dev
+		/tmp/format-$dev < /dev/console > /dev/null 2> /dev/null &
+		
+		cat<<-EOF
+			<script type="text/javascript">
+			obj = document.getElementById("$sid");
+			</script>
+		EOF
+
+		pgr="-\|/"; i=0;
+		while test -f /tmp/format-$dev; do
+			i=$(((i+1)%4))
+			fs_progress $dev
+			cat<<-EOF
+				<script type="text/javascript">
+				obj.innerHTML = '$ln \\${pgr:$i:1}'
+				</script>
+			EOF
+			sleep 10
+		done
+
+		if test -f /tmp/${dev}.err; then
+			msg=$(cat /tmp/${dev}.err)
+			rm /tmp/${dev}.err
+			err "$msg" 
+		fi
+			
+		cat<<-EOF
+			<script type="text/javascript">
+			obj.innerHTML = " done."  
+			</script>
+		EOF
+fi
 }
 
 # $1=linear|raid0|raid1|raid5
@@ -425,7 +476,6 @@ if test "$advise" != "Abracadabra"; then
 	msg "Unknown operation"
 fi
 
-#has_disks
 ndisks=0
 for i in $(seq 1 $num_disks); do
 	dsk=$(eval echo \$disk_$i)
@@ -439,8 +489,6 @@ done
 if test "$ndisks" = "0" -o "$wish_part" = "notouch"; then
 	gotopage /cgi-bin/diskmaint.cgi
 fi
-
-#exit 0
 
 html_header
 echo "<center><h2>Disk Wizard</h2></center>"
@@ -471,8 +519,9 @@ rcall start >& /dev/null
 
 # restart hotplug
 echo /sbin/mdev > /proc/sys/kernel/hotplug
+echo " done.</p>"
 
 #enddebug
 
 busy_cursor_end
-js_gotopage /cgi-bin/diskmaint.cgi
+echo "<h4>Success.</h4>$(goto_button Continue /cgi-bin/diskmaint.cgi)</body></html>"
