@@ -12,6 +12,7 @@ Does not affects the ssh host key."
 
 logsel="<select name=\"logaction\" onchange=\"return submit()\">
 <option>Select one</option>
+<option value=\"SystemConf\">System Configuration</option>
 <option value=\"KernelLog\">Kernel Log</option>
 <option value=\"SystemLog\">System Log</option>
 <option value=\"Processes\">Running Processes</option>"

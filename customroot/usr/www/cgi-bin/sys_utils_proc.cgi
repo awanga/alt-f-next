@@ -27,8 +27,9 @@ showlog() {
 		gotopage /cgi-bin/sys_utils.cgi
 	fi
 
-	if test "$2" != "SystemLog" -a "$2" != "Processes" -a "$2" != "KernelLog"; then 
-		clearbutton="<input type=submit name=\"$2\" value=\"Clear\">"
+	if test "$2" != "SystemLog" -a "$2" != "Processes" -a \
+		"$2" != "KernelLog" -a "$2" != "SystemConf"; then 
+			clearbutton="<input type=submit name=\"$2\" value=\"Clear\">"
 	fi
 
 	write_header "$3"
@@ -213,6 +214,17 @@ case "$action" in
 		top -bn1 > $TF
 		showlog $TF Processes "Running Processes"
 		rm -f $TF
+		exit 0
+		;;
+
+	SystemConf)
+		for i in /mnt/*; do
+			if mountpoint -q $i; then
+				if test -f $i/alt-f.log; then
+					showlog $i/alt-f.log SystemConf "System Configuration"
+				fi
+			fi
+		done
 		exit 0
 		;;
 
