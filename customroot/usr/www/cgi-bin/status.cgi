@@ -50,12 +50,42 @@ jscripts() {
 					requestfromserver('backup', 19)
 					requestfromserver('filesystem_maintenance', 23)
 					requestfromserver('printers', 23)
+					requestfromserver('error', 31)
+					requestfromserver('news', 59)
 				}
 				else
 					arefresh = false
 			}
 		</script>
 	EOF
+}
+
+error_st() {
+	if test -s $SERRORL; then
+		cat<<-EOF
+			<fieldset><legend><font color=red><strong>Errors</strong></font></legend>
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
+			Examine and Clear the error messages:
+			<input type=submit name="logaction" value="$SERRORL">
+			</form> 
+			<ul>$(cat $SERRORL)</ul>
+			</fieldset>
+		EOF
+	fi
+}
+
+news_st() {
+	if test -s $NEWSL; then
+		cat<<-EOF
+			<fieldset><legend><strong>News</strong></legend>
+			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
+			Examine and Clear News messages:
+			<input type=submit name="logaction" value="/var/log/news.log">
+			</form> 
+			<pre>$(cat $NEWSL)</pre>
+			</fieldset>
+		EOF
+	fi
 }
 
 systems_st() {
@@ -120,32 +150,6 @@ systems_st() {
 	mode="Reloaded"
 	if isflashed; then
 		mode="Flashed"	
-	fi
-
-# FIXME: move out of status
-	if test -s $SERRORL; then
-		cat<<-EOF
-			<fieldset><legend><font color=red><strong>Errors</strong></font></legend>
-			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			Examine and Clear the error messages:
-			<input type=submit name="logaction" value="$SERRORL">
-			</form> 
-			<ul>$(cat $SERRORL)</ul>
-			</fieldset><br>
-		EOF
-	fi
-
-# FIXME: move out of status
-	if test -s $NEWSL; then
-		cat<<-EOF
-			<fieldset><legend><strong>News</strong></legend>
-			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			Examine and Clear News messages:
-			<input type=submit name="logaction" value="/var/log/news.log">
-			</form> 
-			<pre>$(cat $NEWSL)</pre>
-			</fieldset><br>
-		EOF
 	fi
 
 	cat<<-EOF
@@ -605,6 +609,8 @@ mktt st_tt "Checking this will refresh different sections in the page every 10 t
 This consumes CPU, so if you are waiting for something lengtly to accomplish<br>
 it will actually take more time if autorefresh is enabled."
 
+launch error
+launch news
 launch systems
 launch network
 launch disks
