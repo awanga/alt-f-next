@@ -93,7 +93,24 @@ if test -n "$huge_disk"; then
 it will be partitioned using GPT partitioning."
 fi
 
-notouch_chk="checked"
+if blkid | grep -qE 'TYPE="ext(2|3|4)"'; then
+	has_linuxfs=yes
+fi
+
+if test -z "$has_linuxfs" -a -f /tmp/firstboot; then
+	notouch_dis="disabled"
+	std_chk="checked"
+	cat<<-EOF
+		<script type="text/javascript">
+			alert("Your disks don't have linux filesystems," + '\n' +
+			"and at least one must exists to continue," + '\n' +
+			"disabling the \"Don't touch my disks\" option.")
+		</script>
+	EOF
+else
+	notouch_chk="checked"
+fi
+
 if isflashed; then
 	ext4_chk="checked"
 else
@@ -116,7 +133,7 @@ cat<<-EOF
 	<table>
 	<tr><td colspan=2>I want my disk as:</td></tr>
 	<tr><td align=center>
-		<input type=radio $notouch_chk name=wish_part value=notouch></td>
+		<input type=radio $notouch_chk $notouch_dis name=wish_part value=notouch></td>
 		<td>Don't touch my disks in any way!</td></tr>
 	<tr><td align=center>
 		<input type=radio $std_chk name=wish_part value=standard></td>
