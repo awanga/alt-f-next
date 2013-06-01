@@ -68,6 +68,19 @@ elif test $# != 0 -a "$1" = "-kexec"; then
 
 cat<<-NEOF > /tmp/deb	
 	#!/bin/sh
+
+	# try to recover
+	recover() {
+		echo \$1
+		umount \$part
+		for i in /dev/sd[a-z]; do
+			eject -r \$(basename \$i)
+		done
+		sleep 3
+		rcall start
+		exit 1
+	}
+
 	part=$debdir
 	if ! test -f /dev/\$(basename \$part); then
 		part="\$(awk '/'\$(basename \$part)'/{print \$1}' /proc/mounts)"
@@ -104,35 +117,33 @@ cat<<-NEOF > /tmp/deb
 
 	echo "Now leaving Alt-F..."
 	rcall stop
+	#if ! eject -a; then
+	#	recover "Failed, couldn't stop disks."
+	#fi
 	eject -a
 
 	mkdir -p $debdir
 	if test "\$raid" -lt 2; then # allow degraded but working RAID
 		mdadm --assemble \$part
-		mdadm --readonly \$part
 	fi
-	mount -o ro \$part $debdir 
+	if ! mount -o ro \$part $debdir; then
+		recover "Failed, couldn't mount \$part."
+	fi
 
 	rcsysctrl stop
 	brd=$(cat /tmp/board)
-	if test "$brd" = "A1" -o "$brd" = "B1"; then
+	if test "\$brd" = "A1" -o "\$brd" = "B1"; then
 		echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
-	elif test "$brd" = "C1" -o "$brd" = "D1"; then
+	elif test "\$brd" = "C1" -o "\$brd" = "D1"; then
 		echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
 	fi
 
 	echo "Executing Debian now..."
 
-	kexec --load $debdir/vmlinuz --initrd=$debdir/initrd.img \
+	kexec --atags --load $debdir/vmlinuz --initrd=$debdir/initrd.img \
 		--command-line="console=ttyS0,115200 root=\$part" && kexec -e
 
-	echo "Failed."
-
-	# try to recover
-	eject -r right
-	eject -r left
-
-	exit 1
+	recover "Failed to start Debian, trying to restart."
 NEOF
 
 chmod +x /tmp/deb

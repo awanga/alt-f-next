@@ -100,7 +100,7 @@ if test "$submit" = "Install"; then
 		umount $DEBDIR/dev
 	fi
 
-	vers="$(cat /etc/Alt-F) 0.1RC2" # fallback
+	vers="$(cat /etc/Alt-F) 0.1RC3 0.1RC2" # fallback
 	echo "</pre><h4>Downloading and installing Alt-F into Debian...</h4><pre>"
 	for ver in $vers; do
 		sites="http://sourceforge.net/projects/alt-f/files/Releases/$ver http://alt-f.googlecode.com/files"
@@ -135,11 +135,11 @@ if test "$submit" = "Install"; then
 	sed -i 's/^[1-6]:/#&/' $DEBDIR/etc/inittab
 	echo "T0:1235:respawn:/sbin/getty -n -l /bin/bash -L ttyS0 115200 vt100" >> $DEBDIR/etc/inittab
 
-	echo "<p>Changing Debian the message of the day..."
+	echo "<p>Changing Debian message of the day..."
 
 	echo -e "\nYou leaved Alt-F, you are now on your own.\nTo return to Alt-F, execute the command 'alt-f',\n" >> $DEBDIR/etc/motd.tail
 
-	echo "<p>Using same ssh host key as Alt-F is using now..."
+	echo "<p>Using same ssh host key as Alt-F is using now...<pre>"
 
 	for i in ssh_host_dsa_key ssh_host_rsa_key ssh_host_dsa_key.pub ssh_host_rsa_key.pub; do
 		mv $DEBDIR/etc/ssh/$i $DEBDIR/etc/ssh/${i}-orig
@@ -150,7 +150,7 @@ if test "$submit" = "Install"; then
 	chmod og-rw $DEBDIR/etc/ssh/*
 	chown root $DEBDIR/etc/ssh/*
 
-	echo "<p>Setting root password the same as Alt-F web admin password..."
+	echo "</pre><p>Setting root password the same as Alt-F web admin password..."
 
 	chroot $DEBDIR /bin/bash -c "/bin/echo root:$(cat /etc/web-secret) | /usr/sbin/chpasswd"
 	if test $? != 0; then cleanup; fi
@@ -169,13 +169,7 @@ if test "$submit" = "Install"; then
 
 	clean
 
-	echo "<h4>Success.</h4>"
-	cat<<-EOF
-		<script type="text/javascript">
-			setTimeout(function() {window.location.assign(document.referrer);}, 5000)
-		</script>
-	EOF
-	exit 0
+	echo "<h4>Success.</h4>$(goto_button Continue /cgi-bin/debian.cgi)</body></html>"
 
 elif test "$submit" = "Uninstall"; then
 
@@ -201,11 +195,11 @@ elif test "$submit" = "Execute"; then
 	part=/dev/$(basename $DEBDIR)
 
 	html_header 
-	echo "<h3><center>Executing Debian...</center></h3><pre>"
+	echo "<h3><center>Executing Debian.</center></h3>"
 
-	debian -kexec
+	debian -kexec > /dev/null
 	
-	echo "</pre><h4>failed.</h4> $(back_button)</body></html>"
+	echo "</body></html>"
 fi
 
 #enddebug
