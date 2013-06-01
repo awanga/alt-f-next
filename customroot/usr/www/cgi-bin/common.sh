@@ -351,6 +351,11 @@ back_button() {
 	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
 
+# $1-label $2-url
+goto_button() {
+	echo "<input type=button value=\"$1\" onclick=\"window.location.assign('$2')\">"
+}
+
 # $1=pre-select part (eg: sda4)
 select_part() {
 	if test -n "$1"; then presel=$1; fi
