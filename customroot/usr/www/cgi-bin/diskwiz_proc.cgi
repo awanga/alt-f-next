@@ -145,8 +145,9 @@ fi
 	sgdisk --zap-all $i >& /dev/null # start cleaning GPT data structures, if any
 	res=$(sfdisk --force -uS $i < $FMTFILE 2>&1)
 	if test $? != 0; then
+		st=$?
 		rm -f $FMTFILE
-		err "$res"
+		err "sfdisk error, st=$st: $res"
 	fi
 	rm -f $FMTFILE
 
@@ -174,7 +175,7 @@ gpt_partition() {
 	sgdisk --zap-all $i >& /dev/null
 	res=$(sgdisk --set-alignment=8 --new=1:64:+512M --typecode=1:8200 $i)
 	if test $? != 0; then
-		err "Error creating swap: $res"
+		err "Error creating swap, st=$? $res"
 	fi
 
 	firstend=$(sgdisk --set-alignment=8 --end-of-largest $i)
@@ -191,7 +192,7 @@ gpt_partition() {
 
 	res=$(sgdisk --set-alignment=8 $cmd $i)
 	if test $? != 0; then
-		err "Error creating first partition: $res"
+		err "Error creating first partition, st=$?: $res"
 	fi
 
 	nextstart=$(sgdisk --set-alignment=8 --first-in-largest $i)
@@ -200,7 +201,7 @@ gpt_partition() {
 	if test	$nextstart -gt 64 -a $nextleng -gt $MIN_SIZE; then
 		res=$(sgdisk --set-alignment=8 --new=3:$nextstart:$nextend --typecode=3:8300 $i)
 		if test $? != 0; then
-			err "Error creating second partition: $res"
+			err "Error creating second partition, st=$?: $res"
 		fi
 	fi
 
@@ -242,11 +243,11 @@ create_swap() {
 		echo "<p>Creating and activating swap in disk $(basename $i)..."
 		res="$(mkswap ${i}1 2>&1)"
 		if test $? != 0; then
-			err "$res"
+			err "mkswap error, st=$?: $res"
 		else
 			res="$(swapon -p 1 ${i}1 2>&1)"
 			if test $? != 0; then
-				err "$res"
+				err "swapon error, st=$?: $res"
 			else
 				echo " done.</p>"
 			fi
@@ -256,93 +257,77 @@ create_swap() {
 
 # $1=dev
 create_fs() {
-		local dev sec sf
-		if ! test -b $1; then return; fi
-		dev=$(basename $1)
-		raidopts=""
-		if test "${dev:0:2}" = "md"; then
-			sf=/sys/block/${dev}/size
-			if test $wish_part = "raid0" -o $wish_part = "raid5"; then
-				if test $wish_part = "raid0"; then
-					nd=$ndisks
-				else
-					nd=2 # can start in degraded, but 3 (2 of data) has to be used
-				fi
-				blk=4096
-				chunk=$(cat /sys/block/${dev}/md/chunk_size)
-				stride=$((chunk / blk))
-				stripew=$((stride * nd))
-				raidopts="-b $blk -E stride=$stride,stripe-width=$stripew"
+	local dev sec sf
+	if ! test -b $1; then return; fi
+	dev=$(basename $1)
+	raidopts=""
+	if test "${dev:0:2}" = "md"; then
+		sf=/sys/block/${dev}/size
+		if test $wish_part = "raid0" -o $wish_part = "raid5"; then
+			if test $wish_part = "raid0"; then
+				nd=$ndisks
+			else
+				nd=2 # can start in degraded, but 3 (2 of data) has to be used
 			fi
-		else
-			sf=/sys/block/${dev:0:3}/${dev}/size
+			blk=4096
+			chunk=$(cat /sys/block/${dev}/md/chunk_size)
+			stride=$((chunk / blk))
+			stripew=$((stride * nd))
+			raidopts="-b $blk -E stride=$stride,stripe-width=$stripew"
 		fi
-		if test $(cat $sf) -lt $MIN_SIZE; then return; fi # don't create fs smaller than 10MB
-if false; then
-		eval $(awk '{ printf "min=%.0f", ($1 * 512 / 1000000000 * 0.6 + 30) / 60}' $sf)
-		echo "<p>Creating $wish_fs filesystem on $(basename $1). It will take roughly "
-		wait_count_start "$min minute(s)"
-		res="$(mke2fs -m 0 -T $wish_fs $raidopts ${1} 2>&1)"
-		st=$?
-		wait_count_stop
-		if test $st != 0; then
-			err "$res"
+	else
+		sf=/sys/block/${dev:0:3}/${dev}/size
+	fi
+	if test $(cat $sf) -lt $MIN_SIZE; then return; fi # don't create fs smaller than 10MB
+
+	sid=$(basename $(mktemp -u))
+	echo "<p>Creating $wish_fs filesystem on $(basename $1)... <span id=\"$sid\">0</span>"
+	cat<<-EOF > /tmp/format-$dev
+		#!/bin/sh
+		trap "" 1
+		echo \$$ > \$0.pid
+		mke2fs -m 0 -T $wish_fs $raidopts -v $1 > /tmp/format-${dev}.log 2>&1
+		if test \$? != 0; then
+			cp /tmp/format-${dev}.log /tmp/${dev}.err
 		else
 			if test "$wish_fs" = "ext3"; then
 				tune2fs -o journal_data_ordered ${1} >& /dev/null
 			fi
-			echo ". Done.</p>"
 		fi
-else
-		sid=$(basename $(mktemp -u))
-		echo "<p>Creating $wish_fs filesystem on $(basename $1)... <span id=\"$sid\">0</span>"
-		cat<<-EOF > /tmp/format-$dev
-			#!/bin/sh
-			trap "" 1
-			echo \$$ > \$0.pid
-			mke2fs -m 0 -T $wish_fs $raidopts -v $1 > /tmp/format-${dev}.log 2>&1
-			if test \$? != 0; then
-				cp /tmp/format-${dev}.log /tmp/${dev}.err
-			else
-				if test "$wish_fs" = "ext3"; then
-					tune2fs -o journal_data_ordered ${1} >& /dev/null
-				fi
-			fi
-		fi
+	fi
+	EOF
+	chmod +x /tmp/format-$dev
+	/tmp/format-$dev < /dev/console > /dev/null 2> /dev/null &
+	
+	cat<<-EOF
+		<script type="text/javascript">
+		obj = document.getElementById("$sid");
+		</script>
+	EOF
+
+	pgr="-\|/"; i=0;
+	while test -f /tmp/format-$dev; do
+		i=$(((i+1)%4))
+		fs_progress $dev
+		cat<<-EOF
+			<script type="text/javascript">
+			obj.innerHTML = '$ln \\${pgr:$i:1}'
+			</script>
 		EOF
-		chmod +x /tmp/format-$dev
-		/tmp/format-$dev < /dev/console > /dev/null 2> /dev/null &
+		sleep 10
+	done
+
+	if test -f /tmp/${dev}.err; then
+		msg=$(cat /tmp/${dev}.err)
+		rm /tmp/${dev}.err
+		err "mk2efs error: $msg" 
+	fi
 		
-		cat<<-EOF
-			<script type="text/javascript">
-			obj = document.getElementById("$sid");
-			</script>
-		EOF
-
-		pgr="-\|/"; i=0;
-		while test -f /tmp/format-$dev; do
-			i=$(((i+1)%4))
-			fs_progress $dev
-			cat<<-EOF
-				<script type="text/javascript">
-				obj.innerHTML = '$ln \\${pgr:$i:1}'
-				</script>
-			EOF
-			sleep 10
-		done
-
-		if test -f /tmp/${dev}.err; then
-			msg=$(cat /tmp/${dev}.err)
-			rm /tmp/${dev}.err
-			err "$msg" 
-		fi
-			
-		cat<<-EOF
-			<script type="text/javascript">
-			obj.innerHTML = " done."  
-			</script>
-		EOF
-fi
+	cat<<-EOF
+		<script type="text/javascript">
+		obj.innerHTML = " done."  
+		</script>
+	EOF
 }
 
 # $1=linear|raid0|raid1|raid5
@@ -405,7 +390,7 @@ create_raid() {
 	res="$(mdadm --create /dev/$MD --run --level=$1 --metadata=$metad $opts \
 		--raid-devices=$ndisks $pair1 $pair2 $spare 2>&1)"
 	if test $? != 0; then
-		err "Error $?: $res"
+		err "mdadm error, st=$?: $res"
 	else
 		echo " done.</p>"
 	fi
@@ -496,7 +481,7 @@ busy_cursor_start
 
 echo "<p>Stopping all services and disks..."
 if ! eject -a; then
-	err ""
+	err "eject error, st=$?"
 fi
 
 # stop hotplug
