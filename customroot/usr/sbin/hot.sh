@@ -317,7 +317,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	echo "DEVICES /dev/sd*" >> $MDADMC
 
 	mpt=$(awk '/'$MDEV'/{print $2}' /proc/mounts )
-	if grep -q ^$PWD/$MDEV /proc/swaps; then
+	if grep -q ^$PWD/$MDEV' ' /proc/swaps; then
 		swapoff $PWD/$MDEV
 		ret=$?
 		ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
@@ -431,8 +431,29 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	fi
 	return $ret	
 
-elif test "$ACTION" = "add" -a "$PHYSDEVDRIVER" = "usblp"; then
-	sysd="/sys/class/usb/$MDEV/device/ieee1284_id"
+# linux-2.6.35.14:
+# DEVNAME=usb/lp0
+# ACTION=add
+# HOME=/
+# SEQNUM=321
+# MAJOR=180
+# MDEV=lp0
+# DEVPATH=/class/usb/lp0
+# SUBSYSTEM=usb
+# PATH=/sbin:/bin:/usr/sbin:/usr/bin
+# MINOR=0
+# PHYSDEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0
+# PHYSDEVDRIVER=usblp
+# PHYSDEVBUS=usb
+# PWD=/dev
+# elif test "$ACTION" = "add" -a "$PHYSDEVDRIVER" = "usblp"; then
+#	sysd="/sys/class/usb/$MDEV/device/ieee1284_id"
+#
+# linux-3.8.11 (usbfs deprecated and removed):
+#
+elif test "$ACTION" = "add" -a "$SUBSYSTEM" = "usbmisc" -a ${MDEV%[0-9]} = "lp"; then
+    sysd="/sys/class/usbmisc/$MDEV/device/ieee1284_id"
+
 	if test -f "$sysd"; then
 		eval $(awk -F':' 'BEGIN{RS=";"} {printf "%s=\"%s\";", $1,$2}' "$sysd") >& /dev/null
 		#eval $(sed -e 's/:/="/g' -e 's/;/";/g' "$sysd") >/dev/null 2>&1
@@ -445,7 +466,26 @@ elif test "$ACTION" = "add" -a "$PHYSDEVDRIVER" = "usblp"; then
 	echo "$MDEV|$mfg $model" >> $PCAP 
 	rcsmb reload
 
-elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
+# linux-2.6.35.14
+# DEVNAME=usb/lp0
+# ACTION=remove
+# HOME=/
+# SEQNUM=313
+# MAJOR=180
+# MDEV=lp0
+# DEVPATH=/class/usb/lp0
+# SUBSYSTEM=usb
+# PATH=/sbin:/bin:/usr/sbin:/usr/bin
+# MINOR=0
+# PHYSDEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0
+# PHYSDEVDRIVER=usblp
+# PHYSDEVBUS=usb
+# PWD=/dev
+# elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
+#
+# linux-3.8.11 (usbfs deprecated and removed):
+#
+elif test "$ACTION" = "remove" -a "$SUBSYSTEM" = "usbmisc" -a ${MDEV%[0-9]} = "lp"; then
 	rmdir /var/spool/lpd/$MDEV
 	sed -i '/^'$MDEV'|/d' $PCAP
 
