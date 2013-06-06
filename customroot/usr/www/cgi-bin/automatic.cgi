@@ -19,7 +19,7 @@ cat<<-EOF
 	<form name=hosts action=automatic_proc.cgi method=post>
 	<fieldset><legend><strong>RSS Feeds</strong></legend>
 	<table>
-	<tr align=center><th>Feed URL</th><th>Private Cookie</th></tr>
+	<tr><th>Feed URL</th><th>Private Cookie</th></tr>
 EOF
 
 TF=$(mktemp)
@@ -46,7 +46,7 @@ cat<<EOF
 	<input type=hidden name=feed_cnt value="$i">
 	<fieldset><legend><strong>Download Patterns</strong></legend>
 	<table>
-	<tr align=center><th>Pattern</th><th>Download to Folder</th></tr>
+	<tr><th>Pattern</th><th>Download to Folder</th><th></th></tr>
 EOF
 
 cnt=0

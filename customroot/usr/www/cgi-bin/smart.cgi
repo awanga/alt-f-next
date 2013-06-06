@@ -129,10 +129,7 @@ cat<<-EOF
 
 	<tr><td><br>Check disks every <input type=text name=interval size=4 value="$SMARTD_INTERVAL">
 	minutes</td></tr>
-
-	<tr><td><br><input type="submit" value="Submit">$(back_button)</td>		
-	</tr>
-
-	</table></form>
-	</body></html>
+	</table>
+	<p><input type="submit" value="Submit">$(back_button)
+	</form></body></html>
 EOF

@@ -71,6 +71,7 @@ cat<<-EOF
 		<td><input type="text" $updis value="$username" name="user"></td></tr>
 	<tr><td>password:</td>
 		<td><input type="password" $updis value="$password" name="passwd"></td></tr>
-	<tr><td></td><td><br><input type="submit" value="Submit">$(back_button)</tr>	
-	</table></form></body></html>
+	</table>
+	<p><input type="submit" value="Submit">$(back_button)
+	</form></body></html>
 EOF

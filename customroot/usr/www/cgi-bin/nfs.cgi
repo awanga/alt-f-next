@@ -234,9 +234,11 @@ mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages folder becomes av
 mktt rmtab_tt "Remove remote mount entries at service start."
 
 cat<<-EOF
-	<table><tr><td>Delay NFS start on boot</td><td><input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)></td></tr>
+	<table>
+	<tr><td>Delay NFS start on boot</td><td><input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)></td></tr>
 	<tr><td>Clean stale entries</td><td><input type=checkbox $rmtab_chk name=clean_rmtab value=yes $(ttip rmtab_tt)></td></tr>
-	<tr><td><input type="submit" name="submit" value="Submit">$(back_button)</td></tr><table>
+	</table>
+	<p><input type="submit" name="submit" value="Submit">$(back_button)
 	</form></body></html>
 EOF
 

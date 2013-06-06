@@ -93,6 +93,8 @@ fi
 		update_name=$(echo "$updates" | tail -1)
 		if test "$update_name" != $i; then
 			echo "<td><input type=submit name=\"$update_name\" value=\"Update\">to $update_name</td>"
+		else
+			echo "<td></td>"
 		fi
 		for j in $updates; do
 			avail_pkg=$(echo "$avail_pkg" | sed "/$j/d")
@@ -108,11 +110,11 @@ fi
 	fi
 
 	cat <<-EOF
-		<tr><td><br></td></tr>
+		<tr><td colspan=3><br></td></tr>
 		<tr><td><strong>Uninstall ffp-$ffpver</strong></td>
-			<td><input type=submit name=uninstall value="Uninstall" onclick="return ask_Uninstall()"></td></tr>
+			<td colspan=2><input type=submit name=uninstall value="Uninstall" onclick="return ask_Uninstall()"></td></tr>
 		<tr><td><strong>$op to $to</upgrade></td>
-			<td><input type=submit name=$op value="$op" onclick="return ask_$op()"></td></tr>
+			<td colspan=2><input type=submit name=$op value="$op" onclick="return ask_$op()"></td></tr>
 		</table></fieldset><br>
         
 		<fieldset><legend>

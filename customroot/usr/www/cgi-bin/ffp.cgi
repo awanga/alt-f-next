@@ -43,9 +43,8 @@ for srv in $(ls /ffp/start/*.sh); do
 done
 
 cat<<-EOF
-	<tr><td></td>
-	<td><input type="submit" name=submit value="Submit"></td><td>$(back_button)</td>	
-	</tr></table>
+	</table>
+	<p><input type="submit" name=submit value="Submit">$(back_button)
 	<input type=hidden name=cnt value=$cnt>
 	</form></body></html>
 EOF

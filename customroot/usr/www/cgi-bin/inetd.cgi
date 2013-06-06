@@ -10,7 +10,8 @@ CONFF=/etc/inetd.conf
 
 cat<<-EOF
 	<form action="/cgi-bin/inetd_proc.cgi" method="post">
-	<table><tr>
+	<table><colgroup span=2></colgroup><colgroup span=1 style="background:#ddd;"></colgroup>
+	<tr>
 	<th>Service</th><th>Program</th>
 	<th align=center>Enable</th>
 	<th></th>

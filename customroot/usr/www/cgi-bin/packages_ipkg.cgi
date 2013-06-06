@@ -105,13 +105,13 @@ else
 			}
 		}
 	
-		print "<tr><td><br></td></tr>"
+		print "<tr><td colspan=6><br></td></tr>"
 		if (update != 0)
 			print "<tr><td colspan=2><strong>UpdateAll</strong></td> \
 				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
 		print "<tr><td colspan=2><strong>Remove all installed</strong></td> \
-				<td><input type=submit name=removeall value=RemoveAll onclick=\"return ask()\"></td></tr> \
+				<td colspan=4><input type=submit name=removeall value=RemoveAll onclick=\"return ask()\"></td></tr> \
 			</table></fieldset> \
 			<br><fieldset><legend><strong> Available Packages </strong></legend><table>"
 
@@ -130,8 +130,8 @@ else
 					printf "<td>%s</td></tr>\n\n", des[i];
 				}
 			}
-		printf ("<tr><td><br></td></tr><tr><td colspan=2><strong>Install all available</strong></td> \
-			<td><input type=submit name=installall value=InstallAll></td></tr>\
+		printf ("<tr><td colspan=4><br></td></tr><tr><td colspan=2><strong>Install all available</strong></td> \
+			<td colspan=2><input type=submit name=installall value=InstallAll></td></tr>\
 		</table></fieldset></form>", pkgfeed)
 		}
 	}'

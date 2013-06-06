@@ -161,11 +161,9 @@ cat<<-EOF
 	<tr><td align=center>
 		<input type=radio $ext4_dis $ext4_chk name=wish_fs value=ext4></td>
 		<td>recent, faster cleaning time, best reliability, low fragmentation, big files support (ext4)</td></tr>
+	</table>
 
-	<tr><td align=center>
-		<input type=submit name=advise value=Abracadabra onclick="return validate('$ndisks')"></td></tr>
-
-	</table></fieldset>
-	</form></body></html>
+	<p><input type=submit name=advise value=Abracadabra onclick="return validate('$ndisks')">
+	</fieldset></form></body></html>
 EOF
 

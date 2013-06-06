@@ -45,7 +45,7 @@ cat<<-EOF
 	</script>
 
 	<form name=minidlna action=minidlna_proc.cgi method="post" >
-	<table><tr><th>Type</th><th>Share Directory</th></tr>
+	<table><tr><th>Type</th><th>Share Folder</th><th></th></tr>
 EOF
 
 OIFS="$IFS"; IFS=";"; k=1
@@ -94,16 +94,15 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
-	<tr><td></td></tr>
+	</table><p><table>
 	<tr><td>Server Name</td><td><input type=text name=friendly_name value="$friendly_name"></td></tr>
 	<tr><td>Rescan shares</td><td><input type=checkbox $RESCAN_CHK=checked name=force_rescan value=yes $(ttip rescan_tt)></td></tr>
 	<tr><td>Strict DLNA</td><td><input type=checkbox $STRICT_CHK name=strict_dlna value=yes></td></tr>
 	<tr><td>TiVo Support</td><td><input type=checkbox $TV_CHK name=enable_tivo value=yes></td></tr>
 	<tr><td>Xbox Support</td><td><input type=checkbox $XBOX_CHK name=enable_xbox value=yes></td></tr>
-	<tr><td></td><td>
-	<input type=submit value=Submit> $(back_button)
-	</td></tr></table>
+	</table>
 	<input type=hidden name=cnt value=$j>
 	<input type=hidden name=port value=$port>
+	<p><input type=submit value=Submit>$(back_button)
 	</form></body></html>
 EOF

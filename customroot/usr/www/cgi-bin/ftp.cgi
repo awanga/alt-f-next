@@ -89,24 +89,21 @@ cat<<-EOF
 
 	<form name="ftpf" action="/cgi-bin/ftp_proc.cgi" method="post">
 	<table>
-
 	<tr><td>Restrict folders:</td><td><input type=checkbox $jail_en_chk id=jail name=chroot_local_user value="yes" onchange="toogle('jail')" $(ttip tt_jail)></td></tr>
 	<tr><td>Writable folders:</td><td><input type=checkbox $wchroot_en $wchroot_chk id=wchroot name=allow_writeable_chroot value="yes" $(ttip tt_wchroot)></td></tr>
 	<tr><td>Disallow users:</td><td><input type=text name=denyusers value="$denyusers" $(ttip tt_dusers)></td></tr>
-	<tr><td><br></td></tr>
+	<tr><td colspan=2><br></td></tr>
 
 	<tr><td>Enable Anonymous:</td><td><input type=checkbox $anon_en_chk id=anon name=anonymous_enable value="yes" onchange="toogle('anon')" $(ttip tt_anon)></td></tr>
 	<tr><td>Anonymous uploads:</td><td><input type=checkbox $anon $anon_up_chk name=anon_upload_enable value="yes"></td></tr>
-	<tr><td>Anonymous folder:</td><td><input type=text $anon id=anon_dir name=anon_root value="$anon_root" $(ttip tt_anonf)></td>
-		<td><input type=button name=browse onclick="browse_dir_popup('anon_dir')" value=Browse></td></tr>
+	<tr><td>Anonymous folder:</td><td><input type=text $anon id=anon_dir name=anon_root value="$anon_root" $(ttip tt_anonf)>
+		<input type=button name=browse onclick="browse_dir_popup('anon_dir')" value=Browse></td></tr>
 
-	<tr><td><br></td></tr>
+	<tr><td colspan=2><br></td></tr>
 	<tr><td>Enable SSL:</td><td><input type=checkbox $ssl_en_chk id=ssl name=ssl_enable value="yes"  onchange="toogle('ssl')"></td></tr>
 	<tr><td>Force SSL logins:</td><td><input type=checkbox $ssl_en $ssl_fl_chk name=force_local_logins_ssl value="yes"></td></tr>
 	<tr><td>Force SSL data:</td><td><input type=checkbox $ssl_en $ssl_fd_chk name=force_local_data_ssl value="yes"></td></tr>
-
-	<tr><td><br></td></tr>
-	<tr><td></td><td><input type="submit" value="Submit">$(back_button)</td></tr>
-	</table></form>
-	</body></html>
+	</table>
+	<p><input type="submit" value="Submit">$(back_button)
+	</form></body></html>
 EOF

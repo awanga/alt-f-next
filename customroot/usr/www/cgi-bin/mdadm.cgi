@@ -31,9 +31,8 @@ cat<<-EOF
 	minutes</td></tr>
 	<tr><td>Send test message</td><td><input type=checkbox $testck name=test value="--test">
 	Mail a test message when started</td></tr>
-	<tr><td></td><td><br><input type="submit" name=submit value="Submit">
-		$(back_button)
-		</td></tr>
-	</table></form></body></html>
+	</table>
+	<p><input type="submit" name=submit value="Submit">$(back_button)
+	</form></body></html>
 EOF
 

@@ -95,7 +95,7 @@ cat<<-EOF
 	<table style="border-collapse:collapse">
 	<colgroup span=7></colgroup>
 	<colgroup span=2 style="background:#ddd;"></colgroup>
-	<tr align=center><th>Dev.</th><th>Size</th>
+	<tr><th>Dev.</th><th>Size</th>
 	<th>FS</th>
 	<th>Mnt</th>
 	<th>Label</th>

@@ -79,7 +79,7 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 			obj.selectedIndex = 0
 		} else {
 			ret = confirm("The partition table of the " + frompart + " disk will be copied" + '\n' + "to the " + topart + " disk, " + \
-", making all " +  topart + " disk data inacessible." + '\n' + "Success depends on disk sizes." + '\n' + '\n' + "Continue?")
+"making all " +  topart + " disk data inacessible." + '\n' + "Success depends on disk sizes." + '\n' + '\n' + "Continue?")
 		}
 
 		if (ret == false) {
@@ -306,12 +306,12 @@ cat<<EOF
 	<input type=hidden name=in_use value="$in_use">
 	<table>
 	<tr align=center>
-	<th> Keep </th>
-	<th> Dev </th>
-	<th><span $(ttip tt_pstart)> Start sector </span></th>
-	<th><span $(ttip tt_plen)> Length </span> </th>
-	<th><span $(ttip tt_psize)> Size (GB)</span></th>
-	<th> Type </th>
+	<th>Keep</th>
+	<th>Dev</th>
+	<th><span $(ttip tt_pstart)>Start sector</span></th>
+	<th><span $(ttip tt_plen)>Length</span> </th>
+	<th><span $(ttip tt_psize)>Size (GB)</span></th>
+	<th>Type</th>
 	</tr>
 EOF
 
@@ -390,15 +390,12 @@ done
 free=$(awk 'BEGIN {printf "%.3f", ('$rawcap' - '$used') * 512/1e9}')
 
 cat<<EOF
-	<tr><td colspan=3></td>
-	<td align=right>Free: </td>
-	<td><input type=text readonly id="free_id" size=6 value="$free" $(ttip tt_free)></td>
-	</tr>
-	<tr><td align=center colspan=2><input type=submit name=$ddsk value=Partition
-		onclick="return psubmit('$dcap', '$dbay', '$free')"></td>
-	<td><input type=button id=adv_id name=adv_bt value="Advanced" onclick="return advanced('$rawcap','$ddsk')"></td>
-	<td><input type=hidden id=adv_hid name=adv_fl value="Basic"></td>
-	</tr>
-	</table></fieldset><br>
-	</form></body></html>
+	<tr><td colspan=4 align=right>Free:</td>
+	<td colspan=2><input type=text readonly id="free_id" size=6 value="$free" $(ttip tt_free)></td>
+	</tr><table>
+
+	<input type=submit name=$ddsk value=Partition onclick="return psubmit('$dcap', '$dbay', '$free')">
+	<input type=button id=adv_id name=adv_bt value="Advanced" onclick="return advanced('$rawcap','$ddsk')">
+	<input type=hidden id=adv_hid name=adv_fl value="Basic">
+	</fieldset></form></body></html>
 EOF

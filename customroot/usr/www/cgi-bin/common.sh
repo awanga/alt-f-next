@@ -804,7 +804,11 @@ cat<<EOF
 
 	<style type="text/css">
 	html { height:95%; }
-
+/* table debugging /**/ 
+table { border: 1px solid black; }
+td {  background-color:#c0c0c0;}
+th { background-color:#606060; color:white;}
+/**/
 	a.Menu, div.Menu {
 		display: block;
 		width: 100px;

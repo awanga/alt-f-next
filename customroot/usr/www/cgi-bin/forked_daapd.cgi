@@ -33,12 +33,12 @@ cat<<-EOF
 
 	<form name=forked action=forked_daapd_proc.cgi method="post" >
 	<table>
+		<tr><th>Share Folder</th><th></th></tr>
 EOF
 
 k=1
 for i in $SHARE_DIRS; do
 	cat<<-EOF
-		<tr><td>Share directory</td>
 		<td><input type=text size=32 id="sdir_$k" name="sdir_$k" value=$(httpd -e "$i")></td>
 		<td><input type=button onclick="browse_dir_popup('sdir_$k')" value=Browse></td>
 		</tr>
@@ -48,7 +48,6 @@ done
 
 for j in $(seq $k $((k+2))); do
 	cat<<-EOF
-		<tr><td>Share directory</td>
 		<td><input type=text size=32 id="conf_dir_$j" name="sdir_$j" value=""></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$j')" value=Browse></td>
 		</tr>
@@ -56,8 +55,10 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	</table><br><table>
 	<tr><td>Server Name</td><td><input type=text name=sname value="$SNAME" $(ttip sname_tt)></td></tr>
-	<tr><td></td><td><input type=submit value=Submit> $(back_button)</td></tr></table>
-	<input type=hidden name=cnt value=$j>
+	</table>
+	<input type=hidden name="cnt" value="$j">
+	<p><input type=submit value=Submit>$(back_button)
 	</form></body></html>
 EOF

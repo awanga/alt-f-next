@@ -43,7 +43,6 @@ lmount() {
 
 # check $1=part $2=type $3=name
 check() {
-
 	case $2 in
 		ext2|ext3|ext4) 
 			if test "$3" = "fix"; then

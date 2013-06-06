@@ -26,8 +26,8 @@ cat<<-EOF
 	</tr>
 	<tr><td>Create diagnostics file:</td>
 	<td><input type=checkbox $log_chk name=create_log value="yes"></td></tr>
-	<tr><td><br></td></tr>
-	<tr><td></td><td><input type=submit name=submit value="Submit">$(back_button)</td></tr>
-	</table></form></body></html>
+	</table>
+	<p><input type=submit name=submit value="Submit">$(back_button)
+	</form></body></html>
 EOF
 

@@ -102,9 +102,9 @@ cat<<-EOF
 	<tr><td>Name server 2:</td><td><input type=text name="ns2" value="$ns2"></tr>
 	<tr><td>Frame size:</td><td><input type=text name="mtu" value="$mtu" onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
 	<tr><td>Enable IPv6:</td><td><input type=checkbox $ipv6_dis $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
-	</table><br>
+	</table>
 
-	<input type=hidden name=cflg value="$cflg">
+	<p><input type=hidden name=cflg value="$cflg">
 	<input type=hidden name=oldip value="$hostip">
 	<input type=hidden name=oldnm value="$hostname">
 	<input type="submit" value="Submit" onclick="return ipchange('$hostip')">

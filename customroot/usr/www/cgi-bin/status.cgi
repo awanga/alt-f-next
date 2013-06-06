@@ -160,10 +160,11 @@ systems_st() {
 			<td><strong>Load</strong> $(drawbargraph $load $loadv)</td>
 			<td><strong>CPU</strong> $(drawbargraph $cpu)</td>
 			<td><strong>Swap</strong> $(drawbargraph $swap $swapv)</td>
-		</tr><tr><td></td></tr><tr>
+		</tr><tr>
 			<td><strong>Name:</strong> $(hostname -s)</td>
 			<td colspan=2><strong>Device:</strong> $device</td>
 			<td><strong>Mode:</strong> $mode</td>
+			<td></td>
 		</tr><tr>
 			<td colspan=3><strong>Date:</strong> $(date)</td>
 			<td colspan=2><strong>Uptime:</strong> $up</td>
@@ -209,7 +210,7 @@ disks_st() {
 
 	cat<<-EOF
 		<fieldset><legend><strong>Disks</strong></legend>
-		<table><tr align=center><th align=left>Bay</th>
+		<table><tr><th align=left>Bay</th>
 		<th>Dev.</th>
 		<th>Model</th>
 		<th>Capacity</th>
@@ -559,7 +560,7 @@ printers_st() {
 
 	cat<<-EOF
 		<fieldset><legend><strong>Printers</strong></legend>
-		<table><tr align=center><th>Name</th><th>Model</th><th>Jobs</th></tr>
+		<table><tr><th>Name</th><th>Model</th><th>Jobs</th></tr>
 	EOF
 
 	while read ln; do

@@ -61,9 +61,10 @@ for j in $(seq $i $((i+2))); do
 done
 
 cat<<-EOF
-	<tr><td><input type=hidden name=cron_cnt value="$((j-1))"><br></td></tr>
-	<tr><td colspan=2><input type=submit name=submit value="Submit">$(back_button)</td></tr>
-	</table></form></body></html>
+	</table>
+	<p><input type=hidden name=cron_cnt value="$((j-1))">
+	<input type=submit name=submit value="Submit">$(back_button)
+	</form></body></html>
 EOF
 
 rm $TF

@@ -35,9 +35,9 @@ cat<<-EOF
 		<td><input type=text size=32 id="watch_dir" name="WATCH_DIR" value="$WATCH_DIR" $(ttip trdir_tt)>
 		<td><input type=button onclick="browse_dir_popup('watch_dir')" value="Browse"></td>
 		</tr>
-	<tr><td></td><td><input type=submit name="submit" value="Submit">
+	</table>
+	<p><input type=submit name="submit" value="Submit">
 		$(back_button)
 		<input type=submit name="webPage" value="WebPage"> 
-	</td></tr>
-	</table></form></body></html>
+	</form></body></html>
 EOF

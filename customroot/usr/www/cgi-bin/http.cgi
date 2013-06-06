@@ -75,11 +75,15 @@ cat<<-EOF
 	<form id="httpf" action="/cgi-bin/http_proc.cgi" method="post">
 	<fieldset><legend><strong>Ports</strong></legend>
 	<table><tr><th></th><th>Default</th><th>&emsp;</th><th>Alternative</th></tr>
-	<tr><td><strong>http:</strong></td><td align=right>80<input type=radio $DEF_PORT_DIS $DEF_PORT_CHK name=port value="80" $(ttip port_tt)></td>
-		<td></td><td>8080<input type=radio $ALT_PORT_DIS $ALT_PORT_CHK name=port value="8080" $(ttip port_tt)></td>
+	<tr><td><strong>http:</strong></td>
+		<td align=right>80<input type=radio $DEF_PORT_DIS $DEF_PORT_CHK name=port value="80" $(ttip port_tt)></td>
+		<td></td>
+		<td>8080<input type=radio $ALT_PORT_DIS $ALT_PORT_CHK name=port value="8080" $(ttip port_tt)></td>
 		<td>$port_msg</td></tr>
-	<tr><td><strong>https:</strong></td><td align=right>443<input type=radio $DEF_SPORT_DIS $DEF_SPORT_CHK name=sport value="443" $(ttip port_tt)></td>
-		<td></td><td>8443<input type=radio $ALT_SPORT_DIS $ALT_SPORT_CHK name=sport value="8443" $(ttip port_tt)></td>
+	<tr><td><strong>https:</strong></td>
+		<td align=right>443<input type=radio $DEF_SPORT_DIS $DEF_SPORT_CHK name=sport value="443" $(ttip port_tt)></td>
+		<td></td>
+		<td>8443<input type=radio $ALT_SPORT_DIS $ALT_SPORT_CHK name=sport value="8443" $(ttip port_tt)></td>
 		<td>$sport_msg</td></tr>
 	</table></fieldset><br>
 
@@ -102,20 +106,24 @@ for i in $(sed -n "s|A:\(.*\)#!# Allow remote.*$|\1|p" $CONFF); do
 		i=${i:1}
 	fi
 
-	echo "<tr><td align=center><input type=checkbox $dis name=dis_$cnt></td>
-	<td><input type=text name=remip_$cnt value=\"$i\" $(ttip rem_tt)></td></tr>"
+	cat<<-EOF
+		<tr><td align=center><input type=checkbox $dis name=dis_$cnt></td>
+		<td><input type=text name=remip_$cnt value="$i" $(ttip rem_tt)></td></tr>
+	EOF
 	cnt=$((cnt+1))
 done
 
 for j in $(seq $cnt $((cnt+2))); do
-	echo "<tr><td align=center><input type=checkbox name=dis_$j></td>
-	<td><input type=text name=remip_$j value=\"\" $(ttip rem_tt)></td></tr>"
+	cat<<-EOF
+		<tr><td align=center><input type=checkbox name=dis_$j></td>
+		<td><input type=text name=remip_$j value="" $(ttip rem_tt)></td></tr>
+	EOF
 	j=$((j+1))
 done
 
 cat<<-EOF
-	</table></fieldset><br>
-	<input type="submit" value="Submit">$(back_button)
+	</table></fieldset>
+	<p><input type="submit" value="Submit">$(back_button)
 	<input type=hidden name=oldremip value="$remip">
 	<input type=hidden name=httpd_cnt value="$j">
 	</form>

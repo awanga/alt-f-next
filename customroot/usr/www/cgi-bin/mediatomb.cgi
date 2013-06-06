@@ -41,12 +41,12 @@ cat<<-EOF
 
 	<form name=mediatomb action=mediatomb_proc.cgi method="post" >
 	<table>
+	<tr><th>Share Folder</th><th></th></tr>
 EOF
 
 OIFS=$IFS; IFS=: ; k=1
 for i in $(awk -F\" '/<directory /{printf "%s:", $2}' $CONFF); do
 	cat<<-EOF
-		<tr><td>Share directory</td>
 		<td><input type=text size=32 id="conf_dir_$k" name="sdir_$k" value="$i"></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$k')" value=Browse></td>
 		</tr>
@@ -57,7 +57,6 @@ IFS=$OIFS
 
 for j in $(seq $k $((k+2))); do
 	cat<<-EOF
-		<tr><td>Share directory</td>
 		<td><input type=text size=32 id="conf_dir_$j" name="sdir_$j" value=""></td>
 		<td><input type=button onclick="browse_dir_popup('conf_dir_$j')" value=Browse></td>
 		</tr>
@@ -65,11 +64,12 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	</table><p><table>
 	<tr><td>Server Name</td><td><input type=text name=sname value="$sname"></td></tr>
 	<tr><td>Enable Web</td><td><input type=checkbox id=chkweb $chkweb name="ENABLE_WEB" value="yes" onclick="edisable('chkweb','webbut', '$webbut')"></td></tr>
-	<tr><td></td><td>
+	</table>
 	<input type=hidden name=cnt value=$j>
-	<input type=submit value=Submit> $(back_button)
+	<p><input type=submit value=Submit> $(back_button)
 	<input type="submit" id=webbut $webbut name="webPage" value="WebPage">
-	</td></tr></table></form></body></html>
+	</form></body></html>
 EOF

@@ -38,7 +38,8 @@ fi
 
 cat<<-EOF
 	<form action="/cgi-bin/services_proc.cgi" method="post">
-	<table><tr>
+	<table><colgroup span=1></colgroup><colgroup span=1 style="background:#ddd;"></colgroup>
+	<tr>
 	<th>Service</th>
 	<th align=center>Boot Enabled</th>
 	<th align=center>Status</th>
@@ -81,7 +82,8 @@ done
 
 cat<<-EOF
 	<tr><td></td>
-	<td align=center><input type="submit" name="$srv" value="Submit"></td></tr>
+	<td align=center><input type="submit" name="$srv" value="Submit"></td>
+	<td colspan=4</td></tr>
 	</table>
 	</form></body></html>
 EOF

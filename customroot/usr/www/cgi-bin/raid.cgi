@@ -201,8 +201,9 @@ cat<<-EOF
 	<td><select name="comp1">$pairs</select></td>
 	<td><select name="comp2">$pairs</select></td>
 	<td><select name="comp3">$pairs</select></td>
-	<td><input type=submit name=md$dev value=Create onclick="return csubmit('submit', '$flashed')"></td>
-	</tr></table></fieldset><br>
+	</tr></table>
+	<br><input type=submit name=md$dev value=Create onclick="return csubmit('submit', '$flashed')">
+	</fieldset><br>
 EOF
 
 if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then

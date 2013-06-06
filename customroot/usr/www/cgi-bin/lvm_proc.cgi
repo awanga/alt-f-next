@@ -5,7 +5,7 @@
 check_cookie
 read_args
 
-debug
+#debug
 
 CONFF=/etc/misc.conf
 
@@ -160,5 +160,5 @@ elif test -n "$Shrink"; then
 
 fi
 
-enddebug
-#gotopage /cgi-bin/lvm.cgi
+#enddebug
+gotopage /cgi-bin/lvm.cgi

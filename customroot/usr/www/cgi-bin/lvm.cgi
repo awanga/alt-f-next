@@ -84,7 +84,8 @@ altfvg=$?
 
 if test $altfvg != 0; then
 	cat<<-EOF
-		<tr><td><br></td></tr><tr><td colspan=5>No Alt-F Volume Group detected
+		<tr><td><br></td></tr>
+		<tr><td colspan=5>No Alt-F Volume Group detected
 		<select name=pdev><option value=none>Select a Partition</option>$devs</select>
 		<input type="submit" name=action value="VGCreate"></td></tr>
 	EOF

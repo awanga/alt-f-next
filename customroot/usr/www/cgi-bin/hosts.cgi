@@ -8,8 +8,7 @@ CONF_HOSTS=/etc/hosts
 
 cat<<-EOF
 	<form name=hosts action=hosts_proc.cgi method=post>
-	<table>
-	<tr align=center><td> <strong> Name </strong> </td><td> <strong> IP </strong> </td></tr>
+	<table><tr><th>Name</th><th>IP</th></tr>
 EOF
 
 cnt=0
@@ -34,7 +33,7 @@ done
 
 cat <<EOF
 	</table>
-	<input type=hidden name=cnt_know value="$i">
+	<p><input type=hidden name=cnt_know value="$i">
 	<input type=submit name=submit value=Submit>
 	</form></body></html>
 EOF

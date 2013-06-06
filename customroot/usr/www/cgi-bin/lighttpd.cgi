@@ -60,20 +60,23 @@ fi
 if ! test -x /usr/bin/php; then
 	PHP_DIS="disabled"
 else
+	php_cols=4
 	php_maxupload=$(grep upload_max_filesize $CONF_PHP | cut -d" " -f3)
-	php_opt="<tr><td>&emsp;Max upload file size</td><td><input type=text size=4 name=php_maxupload value=\"$php_maxupload\"></td></tr>"
+	php_opt="<tr><td>&emsp;Max upload file size</td><td colspan=$((2*php_cols))><input type=text size=4 name=php_maxupload value=\"$php_maxupload\"></td></tr>"
 
-	cnt=0; php_opt="$php_opt<tr><td>&emsp;PHP extensions:</td></tr>"
+	cnt=0; php_opt="$php_opt<tr><td  colspan=$((2*php_cols+1))>&emsp;PHP extensions:</td></tr>"
 	for i in $(ls $PHP_EDIR); do
 		if test "$cnt" = "0"; then php_opt="$php_opt<tr><td></td>"; fi
 		bi=$(basename $i .so)
 		CHK=""; if grep -q "^extension=$i" $CONF_PHP; then CHK="checked"; fi
 		php_opt="$php_opt<td>$bi</td><td><input type=checkbox $CHK name=$bi value=yes>&emsp;&emsp;</td>"
 		cnt=$((cnt+1))
-		if test "$cnt" = "5"; then cnt=0; php_opt="$php_opt</tr>
+		if test "$cnt" = "$php_cols"; then cnt=0; php_opt="$php_opt</tr>
 "; fi
 	done
-	if test "$cnt" != "0"; then php_opt="$php_opt</tr>"; fi
+	if test "$cnt" != "0"; then
+		php_opt="$php_opt<td colspan=$((2*php_cols-cnt))></td></tr>"
+	fi
 fi
 
 selu=$(sed -n 's/^[^#]*auth.require.*webdav.*"require" *=> *"\(.*\)".*/\1/p' $CONF_AUTH)
@@ -118,22 +121,34 @@ cat<<-EOF
 	</script>
 	<form name="lighttpd" action="/cgi-bin/lighttpd_proc.cgi" method="post">
 	<table>
-	<tr><td>Server root</td><td colspan=3><input type=text style="width:100%;" id=root_id name=sroot value="$sroot" $(ttip sroot_tt)></td>
+	<tr><td>Server root</td>
+		<td colspan=3><input type=text style="width:100%;" id=root_id name=sroot value="$sroot" $(ttip sroot_tt)></td>
 		<td><input type=button onclick="browse_dir_popup('root_id')" value=Browse></td></tr>
-	<tr><td></td><td></td><td>on port</td><td><input type=text size=2 style="width:100%;" name=port value="$port" $(ttip sport_tt)></td></tr>
-	<tr><td>Enable IPv6</td><td><input type=checkbox $IPV6_DIS $IPV6_CHK name=ipv6 value=yes></td></tr>
-	<tr><td>Enable SSL</td><td><input type=checkbox $SSL_CHK name=ssl value=yes $(ttip ssl_tt)>
-		<td>on port</td><td><input type=text size=2 style="width:100%;" name=sslport value="$sslport" $(ttip sslport_tt)></td></tr>
-	<tr><td>Enable WebDAV</td><td><input type=checkbox $WDAV_DIS $WDAV_CHK id=wdav_id name=wdav value=yes $(ttip wdav_tt)>
-		<td>for user</td><td><select $WDAV_DIS id=user_id name=user style="width:100%;" $(ttip udav_tt)>$useropt</select></td></tr>
-	<tr><td>Enable User Pages</td><td><input type=checkbox $USERDIR_CHK name=userdir value=yes $(ttip udir_tt)></td></tr>
-	<tr><td>Enable Folder Listing</td><td><input type=checkbox $DIRLST_CHK name=dirlist value=yes $(ttip dlist_tt)></td></tr>
-	<tr><td>Enable Access Log</td><td><input type=checkbox $ACESSLOG_CHK name=accesslog value=yes $(ttip access_tt)></td>
+	<tr><td></td><td></td>
+		<td>on port</td>
+		<td><input type=text size=2 style="width:100%;" name=port value="$port" $(ttip sport_tt)></td>
+		<td></td></tr>
+	<tr><td>Enable IPv6</td>
+		<td colspan=4><input type=checkbox $IPV6_DIS $IPV6_CHK name=ipv6 value=yes></td></tr>
+	<tr><td>Enable SSL</td>
+		<td><input type=checkbox $SSL_CHK name=ssl value=yes $(ttip ssl_tt)>
+		<td>on port</td><td><input type=text size=2 style="width:100%;" name=sslport value="$sslport" $(ttip sslport_tt)></td>
+		<td></td></tr>
+	<tr><td>Enable WebDAV</td>
+		<td><input type=checkbox $WDAV_DIS $WDAV_CHK id=wdav_id name=wdav value=yes $(ttip wdav_tt)>
+		<td>for user</td><td><select $WDAV_DIS id=user_id name=user style="width:100%;" $(ttip udav_tt)>$useropt</select></td>
+		<td></td></tr>
+	<tr><td>Enable User Pages</td>
+		<td colspan=4><input type=checkbox $USERDIR_CHK name=userdir value=yes $(ttip udir_tt)></td></tr>
+	<tr><td>Enable Folder Listing</td>
+		<td colspan=4><input type=checkbox $DIRLST_CHK name=dirlist value=yes $(ttip dlist_tt)></td></tr>
+	<tr><td>Enable Access Log</td>
+		<td colspan=4><input type=checkbox $ACESSLOG_CHK name=accesslog value=yes $(ttip access_tt)></td>
 		<!--td>to syslog</td><td><input type=checkbox $SYSLOG_CHK name=syslog value=yes></td--></tr>
-	<tr><td>Enable PHP</td><td><input type=checkbox $PHP_DIS $PHP_CHK name=php value=yes onclick="php_toogle(this)" $(ttip php_tt)></td></tr>
-	</table>
+	<tr><td>Enable PHP</td><td colspan=4><input type=checkbox $PHP_DIS $PHP_CHK name=php value=yes onclick="php_toogle(this)" $(ttip php_tt)></td></tr>
+	</table><p>
 	<div id="php_id" $PHP_VIS><table>$php_opt</table></div>
-	<table><tr><td></td></tr>
-	<tr><td><input type="submit" value="Submit"></td><td>$(back_button)</td></tr>
-	</table></form></body></html>
+
+	<p><input type="submit" value="Submit">$(back_button)
+	</form></body></html>
 EOF

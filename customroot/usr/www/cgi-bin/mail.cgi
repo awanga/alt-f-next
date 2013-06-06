@@ -61,7 +61,7 @@ cat<<-EOF
 		<td><input type=text size=5 id=port name=port value="$port"></td></tr>
 	<tr><td>TLS/SSL</td><td><input type=checkbox $tlsf name=tls value="on"></td></tr>
 
-	<tr><td><br></td></tr>
+	<tr><td colspan=2><br></td></tr>
 	<tr><td>Authentication</td><td>
 	<select id="auth_id" name=auth onchange="authh()">
 	<option $auth_sel value=on>On</option>
@@ -75,7 +75,7 @@ cat<<-EOF
 	<tr><td>Password</td>
 		<td><input type=password size=20 id=sip2 $sipf name=password value="$password"></td></tr>
 
-	<tr><td><br></td></tr>
+	<tr><td colspan=2><br></td></tr>
 	<tr><td>From</td>
 		<td><input type=text size=20 name=from value="$from">
 		</td></tr>
@@ -84,10 +84,7 @@ cat<<-EOF
 		<td><input type=text size=20 name=to value="$MAILTO">
 		<input type=submit name=submit value=Test>	
 		</td></tr>
-
-	<tr><td><br></td></tr>
-	<tr><td></td>
-		<td><input type=submit name=submit value=Submit></td></tr>
-
-	</table></form></body></html>
+	</table>
+	<p><input type=submit name=submit value=Submit>
+	</form></body></html>
 EOF

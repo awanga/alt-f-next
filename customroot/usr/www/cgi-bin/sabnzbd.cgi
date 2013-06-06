@@ -62,10 +62,10 @@ cat<<-EOF
 	<td><input type=button onclick="browse_dir_popup('conf_dir')" value=Browse></td>
 	</tr>
 	<tr><td>Update to version</td><td><input type=text name=version value="$lastver" $(ttip tt_update)>(current is $curver)</td>
-	<td><input type=submit $update_dis name=update value=Update>
-	<input type=hidden name=curver value="$curver"></td></tr>
-	<tr><td></td><td>
-	<input type=submit name=submit value=Submit> $(back_button)
+	<td><input type=submit $update_dis name=update value=Update></td></tr></table>
+	
+	<input type=hidden name=curver value="$curver">
+	<p><input type=submit name=submit value=Submit> $(back_button)
 	<input type="submit" $webbut_dis name=webPage value=WebPage>
-	</td></tr></table></form></body></html>
+	</form></body></html>
 EOF

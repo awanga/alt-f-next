@@ -76,7 +76,7 @@ flat() {
 
 	t=$(dirname "$1")
 	t=$(url_encode "$t")
-	echo "$turl=$t\"><em>Up Folder</em></a></td></tr>"
+	echo "$turl=$t\"><em>Up Folder</em></a></td><td colspan=4></td></tr>"
 
 	IFS="
 "
@@ -187,6 +187,11 @@ if test -f "$fop"; then
 	fi
 fi
 
+if test -z "$ok_sel"; then
+	ok_cancel="<input type=submit value=OK onclick=\"ret_val('$id', '$dece_browse')\">
+		<input type=submit value=Cancel onclick=\"window.close()\">"
+fi
+
 #debug
 
 cat <<-EOF
@@ -253,9 +258,7 @@ wind + id + "op=" + op + "?srcdir=" + dir + "?browse=" + dir)
 	<table><tr>
 		<th>Selected: </th>
 		<td colspan=4><input type=text size=30 id=newdir name=newdir value="$dece_browse" $(ttip curdir)></td>
-		<td><input type=submit $ok_sel value=OK onclick="ret_val('$id', '$dece_browse')"></td>
-		<td><input type=submit $ok_sel value=Cancel onclick="window.close()"></td>
-	</tr>$fop_msg<tr><td></td><td>
+		</tr>$fop_msg<tr><td></td><td>
 
 		<input type=button $fop_dis name=copyDir value=Copy $(ttip cpdir) onclick="ops('Copy','$perce_browse','$url_id','$url_wind')">
 		<input type=button $fop_dis name=copyDirContent value=CopyContent $(ttip cpdircont) onclick="ops('CopyContent','$perce_browse','$url_id','$url_wind')">
@@ -268,9 +271,8 @@ wind + id + "op=" + op + "?srcdir=" + dir + "?browse=" + dir)
 		<input type=submit $fop_dis name=RenameDir value=Rename $(ttip mvdir) onclick="return renameask('$perce_browse')">
 		<input type=button value=Permissions $(ttip perms) onclick="perms('$perce_browse')">
 	</td></tr><tr>
-<td></td><td>Tree view<input type=radio $tree_sel onclick="vmode('tree','$perce_browse')">
-Flat view<input type=radio $flat_sel onclick="vmode('flat','$perce_browse')"></td>
-	</tr><tr><td><br></td></tr></table>
+		<td></td><td>$ok_cancel View: Tree<input type=radio $tree_sel onclick="vmode('tree','$perce_browse')">
+			Flat<input type=radio $flat_sel onclick="vmode('flat','$perce_browse')"></td></table><p>
 		<input type=hidden name=op value="$op">
 		<input type=hidden name=srcdir value="$urle_srcdir">
 		<input type=hidden name=oldname id=oldname value="">

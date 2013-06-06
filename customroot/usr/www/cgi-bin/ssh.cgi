@@ -42,9 +42,8 @@ cat<<-EOF
 	<tr><td>Disallow root logins</td><td><input type=checkbox $DB_NOROOT_CHK name=db_noroot value=yes></td></tr>
 	<tr><td>Disable password logins for root</td><td><input type=checkbox $DB_NOROOTPASS_CHK name=db_norootpass value=yes></td></tr>
 	<tr><td>Listen on port</td>
-	<td>22<input type=radio $DB_22 id="db_22" name=db_port value="22" onclick="toogle(this)"></td>
-	<td>2222<input type=radio $DB_2222 id="db_2222" name=db_port value="2222" onclick="toogle(this)"></td>
-	</tr><tr><td></td><td></td></tr>
+	<td>22<input type=radio $DB_22 id="db_22" name=db_port value="22" onclick="toogle(this)">
+	2222<input type=radio $DB_2222 id="db_2222" name=db_port value="2222" onclick="toogle(this)"></td>
 	</table>
 	</fieldset><br>
 EOF

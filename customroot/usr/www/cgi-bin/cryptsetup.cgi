@@ -45,7 +45,7 @@ devs="$(awk '/sd[a-z][1-9]/{printf "<option value=%s>%s (%.1f GB)</option>\n", $
 cat<<EOF
 	<form id="cryptf" action="/cgi-bin/cryptsetup_proc.cgi" method="post">
 	<fieldset><legend><strong>Encrypt</strong></legend>
-	<table><tr><th>Device</th><th>Cipher</th><th>Bits</th></tr>
+	<table><tr><th>Device</th><th>Cipher</th><th>Bits</th><th></td></tr>
 	<tr><td><select name=devto><option value=none>Select a Partition</option>$devs</select></td>
 		<td><input type=text name=cipher value="aes-cbc-essiv:sha256"></td>
 		<td><select name=nbits><option>128</option><option>192</option><option>256</option></select></td>
@@ -91,8 +91,8 @@ cat<<-EOF
 	<table>
 	<tr><td>Use hardware accelerator</td><td><input type=checkbox $cesa_chk name=use_cesa value="yes" $(ttip cesa_tt)></td></tr>
 	<tr><td>Password file:</td><td><input type=text name="keyfile" value="$CRYPT_KEYFILE" $(ttip crypt_tt)></td></tr>
-	<tr><td></td><td><input type="submit" name=action value="Submit">$(back_button)</td></tr>
-	</table></form>
+	</table>
+	<p><input type="submit" name=action value="Submit">$(back_button)
+	</form></body></html>
 EOF
 
-echo "</body></html>"

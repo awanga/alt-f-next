@@ -44,13 +44,6 @@ cat<<EOF
 	<fieldset>
 	<legend><strong>Folders to share</strong></legend>
 	<table>
-	<tr><td>Password encryption:</td>
-		<td colspan=3>None<input type=checkbox $clrtxt_chk name=clrtxt value="yes">
-		Strong<input type=checkbox $dhx_chk name=dhx value="yes">
-		Strongest<input type=checkbox $dhx2_chk name=dhx2 value="yes"></td></tr>
-	<tr><td>Share users home folder</td><td><input type=checkbox $user_chk name=want_homes value="yes"></td></tr>
-	<tr><td>Allow guest login</td><td><input type=checkbox $guest_chk name=allow_guest value="yes"></td></tr>
-
 	<tr>
 		<th>Folder</th>
 		<th>Browse</th>
@@ -120,7 +113,7 @@ function spit(cnt, opts) {
 			useropt = useropt "<option>" users[j] "</option>"
 	}
 
-	printf "<td><input type=text size=25 id=ldir_%d name=ldir_%d value=\"%s\"></td>\n", cnt, cnt, rdir
+	printf "<tr><td><input type=text size=25 id=ldir_%d name=ldir_%d value=\"%s\"></td>\n", cnt, cnt, rdir
 	printf "<td><input type=button onclick=\"browse_dir_popup(%cldir_%d%c)\" value=Browse></td>\n", 047, cnt, 047
 	printf "<td><input type=text size=12 name=shname_%d value=\"%s\"></td>\n", cnt, opts["share_name"]
 	printf "<td align=center><select name=user_%d>%s</select></td>\n", cnt, useropt
@@ -161,10 +154,16 @@ function parse(share_name, line) {
 }' $CONF_NETA
 
 cat<<-EOF
-	</fieldset><br>
-	</table>
-	</fieldset>
-	$(back_button)<input type=submit name=submit value="Submit">
+	<p><table>
+	<tr><td>Password encryption</td>
+		<td>None<input type=checkbox $clrtxt_chk name=clrtxt value="yes">
+		Strong<input type=checkbox $dhx_chk name=dhx value="yes">
+		Strongest<input type=checkbox $dhx2_chk name=dhx2 value="yes"></td></tr>
+	<tr><td>Share users home folder</td><td><input type=checkbox $user_chk name=want_homes value="yes"></td></tr>
+	<tr><td>Allow guest login</td><td><input type=checkbox $guest_chk name=allow_guest value="yes"></td></tr>
+
+	</table></fieldset>
+	<p><input type=submit name=submit value="Submit">$(back_button)
 	</form></body></html>
 EOF
 

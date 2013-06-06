@@ -49,5 +49,5 @@ if test $? = 0; then
 fi
 
 #enddebug
-gotopage /cgi-bin/fuppes.cgi
+gotopage /cgi-bin/user_services.cgi
 

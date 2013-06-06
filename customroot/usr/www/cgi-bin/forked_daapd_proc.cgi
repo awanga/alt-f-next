@@ -4,7 +4,7 @@
 check_cookie
 read_args
 
-debug
+#debug
 
 CONF_FORKED=/etc/forked-daapd.conf
 
@@ -25,7 +25,7 @@ s|\([]\",[]\)|\\\\\1|g
 
 done
 
-echo "<pre>$shares</pre>"
+#echo "<pre>$shares</pre>"
 
 sed -i -e 's|[^#]directories =.*$|\tdirectories = { '"$shares"' } |' -e 's/, }/ }/' $CONF_FORKED
 

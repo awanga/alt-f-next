@@ -72,17 +72,16 @@ cat<<-EOF
 	<table>
 	<tr><td>Use a Proxy</td><td><input type=checkbox $PRXCHK id="usepr" name="useproxy" value="yes" onclick="toogle()"></td></tr>
 
-	<tr><td>HTML Proxy Server:</td><td><input type=text $PRXEN id="usepr1" name="http_proxy" value="$http_srv"></td>
-		<td>Port:</td><td><input type=text $PRXEN id="usepr2" name="http_port" value="$http_port"></td></tr>
-	<tr><td>FTP Proxy Server:</td><td><input type=text $PRXEN id="usepr3" name="ftp_proxy" value="$ftp_srv"></td>
-		<td>Port:</td><td><input type=text $PRXEN id="usepr4" name="ftp_port" value="$ftp_port"></td></tr>
-	<tr><td><br></td></tr>
+	<tr><td>HTML Proxy Server:</td><td><input type=text $PRXEN id="usepr1" name="http_proxy" value="$http_srv">
+		Port:<input type=text size=6 $PRXEN id="usepr2" name="http_port" value="$http_port"></td></tr>
+	<tr><td>FTP Proxy Server:</td><td><input type=text $PRXEN id="usepr3" name="ftp_proxy" value="$ftp_srv">
+		Port:<input type=text size=6 $PRXEN id="usepr4" name="ftp_port" value="$ftp_port"></td></tr>
+	<tr><td colspan=2><br></td></tr>
 	<tr><td>Anonymous Proxy</td><td><input type=checkbox $APRXCHK id="anonpr" name="useproxy" value="yes" onclick="atoogle()"></td></tr>
 	<tr><td>Proxy Username:</td><td><input type=text $APRXEN $PRXEN  id="anonpr1" name="proxy_user" value="$proxy_user"></td></tr>
 	<tr><td>Proxy Password:</td><td><input type=password $APRXEN $PRXEN id="anonpr2" name="proxy_password" value="$proxy_password"></td></tr>
-	<tr><td></td><td><input type="submit" value="Submit"></td></tr>
 	</table>
-	</form>
-	</body></html>
+	<p><input type="submit" value="Submit">
+	</form></body></html>
 EOF
 

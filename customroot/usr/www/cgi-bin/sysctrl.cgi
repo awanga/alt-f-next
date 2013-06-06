@@ -117,9 +117,9 @@ cat<<-EOF
 			<tr><td>Send email</td>
 				<td><input type=checkbox $mailchk name=mail value="1"></td>
 				<td></td>
-				<td>Send mail to </td>
-				<td><input type=text readonly name=sendto value="$SENDTO"></td>
-				<td>Use "Setup Mail" to change</td>
+				<td>Send mail to</td>
+				<td><input type=text readonly name=sendto value="$SENDTO">
+				Use "Setup Mail" to change</td>
 			</tr>
 		</table></fieldset><br>
 
@@ -137,9 +137,8 @@ cat<<-EOF
 			<tr><td>Enable Recovery</td>
 				<td><input type=checkbox $recovchk name=recovery value="1"></td>
 			</tr>
-		</table></fieldset><br>
+		</table></fieldset>
 
-	<table><tr><td><input type="submit" value="Submit">	$(back_button)</td>
-		<td></td><td></td><td></td></tr>
-		</table></form></body></html>
+	<p><input type="submit" value="Submit">	$(back_button)
+	</form></body></html>
 EOF

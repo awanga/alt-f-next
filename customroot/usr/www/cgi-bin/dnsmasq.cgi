@@ -153,13 +153,13 @@ else
 fi
 
 cat<<-EOF
-	<br><fieldset><legend><strong> Time Servers </strong></legend><table>
+	<br><fieldset><legend><strong>Time Servers</strong></legend><table>
 	<tr>
 		<td><input type=radio $chknntp name=ntp value=no onchange="toogle_ntp('true')"></td>
-		<td>Don't advertise any server</td></tr>
+		<td colspan=2>Don't advertise any server</td></tr>
 	<tr>
 		<td><input type=radio $chklntp $dislntp name=ntp value=local onchange="toogle_ntp('true')"></td>
-		<td>Advertise local NTP server</td></tr>
+		<td colspan=2>Advertise local NTP server</td></tr>
 	<tr>
 		<td><input type=radio $chksntp name=ntp value=server onchange="toogle_ntp('false')"></td>
 		<td>Advertise NTP server</td>
@@ -173,8 +173,6 @@ tftproot=$(httpd -e "$tftproot")
 if test -z "$tftp"; then
 	tftpdis=disabled
 fi
-
-
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -205,8 +203,8 @@ cat<<EOF
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>
 	<tr><td>Log DHCP queries</td>
 		<td><input type=checkbox $dhcplog name=dhcplog value=true></td></tr>
-	</table></fieldset><br>
-	<input type=hidden name=cnt_dns value="$i">
+	</table></fieldset>
+	<p><input type=hidden name=cnt_dns value="$i">
 	<input type=submit name=submit value=Submit>$(back_button)
 	</form></body></html>
 EOF

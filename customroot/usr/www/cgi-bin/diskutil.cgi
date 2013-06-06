@@ -35,11 +35,10 @@ cat<<EOF
 	</script>
 
 	<form id=disku name=disku action="/cgi-bin/diskutil_proc.cgi" method="post">
-	<fieldset><Legend><strong> Disks </strong></legend>
 	<table style="border-collapse:collapse">
 	<colgroup span=8></colgroup>
     <colgroup span=2 style="background:#ddd;"></colgroup>
-	<tr align=center><th>Bay</th>
+	<tr><th>Bay</th>
 	<th>Dev.</th>
 	<th>Capacity</th>
 	<th>Disk Model</th>
@@ -114,7 +113,7 @@ fi
 cat<<-EOF
 	<tr><td colspan=8></td>
 	<td colspan=1 align=center><input type="submit" name="standby" value="Submit"></td></tr>        
-	</table></fieldset><br>
+	</table><p>
 	Swapping on USB devices: <input type="submit" name=usb_swap value="$usb_swap_val">
 	</form></body></html>
 EOF

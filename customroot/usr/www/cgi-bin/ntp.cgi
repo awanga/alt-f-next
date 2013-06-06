@@ -56,7 +56,7 @@ for i in $(seq $cnt 3); do
 done
 
 cat<<-EOF
-	<tr><td></td><td><br><input type=submit value=Submit>
-	$(back_button)</td></tr>
-	</table></form></body></html>
+	</table>
+	<p><input type=submit value=Submit>$(back_button)
+	</form></body></html>
 EOF

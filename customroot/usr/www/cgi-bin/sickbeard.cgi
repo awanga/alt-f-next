@@ -44,10 +44,9 @@ cat<<-EOF
 	<tr><td>Downloaders:</td><td>
 	SABnzbd<input type=radio $sab_dis $sab_chk name=downld value="sabnzbd">
 	NZBget<input type=radio $nzbget_dis $nzbget_chk name=downld value="nzbget">
-	$dlmsg</td></tr>
-	<tr><td></td></tr>
-	<tr><td></td><td>
-	<input type=submit name=submit value=Submit> $(back_button)
+	$dlmsg</td><td></td></tr>
+	</table>
+	<p><input type=submit name=submit value=Submit> $(back_button)
 	<input type="submit" $webbut_dis name=webPage value=WebPage>
-	</td></tr></table></form></body></html>
+	</form></body></html>
 EOF

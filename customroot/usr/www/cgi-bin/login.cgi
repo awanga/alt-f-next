@@ -28,15 +28,14 @@ EOF
 
 if ! test -s $SECR; then
 	cat<<-EOF
-		</tr>
+		<td></td></tr>
 		<tr><td>Again:</td>
 			<td><input type="password" autocomplete="off" name="passwd_again" $(ttip tt_again)></td>
 	EOF
 fi
 
 cat<<-EOF
-		<td><input type="submit" value="Submit"></td>
-	</tr>
+	<td><input type="submit" value="Submit"></td></tr>
 	</table>
 	<input type="hidden" name=from_url value="$QUERY_STRING">
 	</form></center>

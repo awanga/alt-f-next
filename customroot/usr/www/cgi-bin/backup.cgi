@@ -101,8 +101,8 @@ cat<<-EOF
 	</fieldset><br>
 	<fieldset><legend><strong>Backup Setup</strong></legend>
 	<table>
-	<tr align=center><th>Disable</th><th>ID</th><th>Type</th><th>Run As</th><th>Host</th>
-	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th></tr>
+	<tr><th>Disable</th><th>ID</th><th>Type</th><th>Run As</th><th>Host</th>
+	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th><th></th></tr>
 EOF
 
 max_id=0
@@ -195,16 +195,14 @@ for i in $(seq $cnt $((cnt+2))); do
 			<td><input type=text size=4 name="when_$i" value="" $(ttip when_tt)></td>
 			<td><input type=text size=4 name="at_$i" value="" $(ttip at_tt)></td>
 			<td><input type=text size=4 name="nlogs_$i" value="0"  $(ttip rot_tt)></td>
-			<td><input type=checkbox name="log_$i" value="yes" $(ttip log_tt)></td>
+			<td><input type=checkbox name="log_$i" value="yes" $(ttip log_tt)></td><td></td>
 		</tr>
 	EOF
 done
 
 cat<<EOF
-	<tr><td><br></td></tr>
-	<tr><td colspan=2></td><td colspan=2>
-	<input type=hidden name=cnt_know value="$i">
+	</table>
+	<br><input type=hidden name=cnt_know value="$i">
 	<input type=submit name=submit value=Submit>$(back_button)
-	</td></tr>
-	</table></fieldset></form></body></html>
+	</fieldset></form></body></html>
 EOF
