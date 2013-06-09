@@ -5,7 +5,7 @@
 # Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
 # Modified and adapted by Joao Cardoso
 launch() {
-	echo "<div style=\"margin-bottom: 1.5em;\" id=\"$1\">"
+	echo "<div id=\"$1\">"
 	eval ${1}_st
 	echo "</div>"
 	return 0;
@@ -77,7 +77,7 @@ error_st() {
 news_st() {
 	if test -s $NEWSL; then
 		cat<<-EOF
-			<fieldset><legend><strong>News</strong></legend>
+			<fieldset><legend>News</legend>
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 			Examine and Clear News messages:
 			<input type=submit name="logaction" value="/var/log/news.log">
@@ -153,13 +153,13 @@ systems_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>System</strong></legend>
+		<fieldset><legend>System</legend>
 		<table><tr>
-			<td><strong>Temperature</strong> $(drawbargraph $temp $tempv )</td>
-			<td><strong>Fan speed</strong> $(drawbargraph $fan $fanv)</td>
-			<td><strong>Load</strong> $(drawbargraph $load $loadv)</td>
-			<td><strong>CPU</strong> $(drawbargraph $cpu)</td>
-			<td><strong>Swap</strong> $(drawbargraph $swap $swapv)</td>
+			<td><div class="bgl">Temperature</div> $(drawbargraph $temp $tempv )</td>
+			<td><div class="bgl">Fan speed</div> $(drawbargraph $fan $fanv)</td>
+			<td><div class="bgl">Load</div> $(drawbargraph $load $loadv)</td>
+			<td><div class="bgl">CPU</div> $(drawbargraph $cpu)</td>
+			<td><div class="bgl">Swap</div> $(drawbargraph $swap $swapv)</td>
 		</tr><tr>
 			<td><strong>Name:</strong> $(hostname -s)</td>
 			<td colspan=2><strong>Device:</strong> $device</td>
@@ -187,11 +187,11 @@ network_st() {
 			END {printf "ipv6=\"%s\"", ipv6}' | tr "()" "  ")
 
 	if test -n "$ipv6"; then
-		IPV6="<br><strong> IPv6: </strong> $ipv6"
+		IPV6="<br><strong>IPv6:</strong> $ipv6"
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Network</strong></legend>
+		<fieldset><legend>Network</legend>
 		<strong>Speed: </strong> $(cat /sys/class/net/eth0/speed)Mbps
 		<strong>Duplex: </strong> $Mode
 		<strong>MTU: </strong> $MTU
@@ -209,7 +209,7 @@ disks_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Disks</strong></legend>
+		<fieldset><legend>Disks</legend>
 		<table><tr><th align=left>Bay</th>
 		<th>Dev.</th>
 		<th>Model</th>
@@ -268,7 +268,7 @@ raid_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>RAID</strong></legend>
+		<fieldset><legend>RAID</legend>
 		<table><tr align=center>
 		<th align=left>Dev.</th> 
 		<th>Capacity</th>
@@ -397,7 +397,7 @@ mounted_filesystems_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Mounted Filesystems</strong></legend>
+		<fieldset><legend>Mounted Filesystems</legend>
 		<table><tr align=center>
 		<th>Dev.</th>
 		<th>Label</th>
@@ -420,7 +420,7 @@ mounted_remote_filesystems_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Mounted Remote Filesystems</strong></legend>
+		<fieldset><legend>Mounted Remote Filesystems</legend>
 		<table><tr align=center>
 		<th>Host</th>
 		<th>Remote Share</th>
@@ -461,7 +461,7 @@ remotely_mounted_filesystems_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Remotely Mounted Filesystems</strong></legend>
+		<fieldset><legend>Remotely Mounted Filesystems</legend>
 		<table><tr align=center>
 		<th>Host</th>
 		<th>Share</th>
@@ -506,7 +506,7 @@ backup_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Backup</strong></legend>
+		<fieldset><legend>Backup</legend>
 		<table><tr><th>ID</th><th>Type</th><th>Folder</th><th>State</th></tr>
 	EOF
 
@@ -536,7 +536,7 @@ filesystem_maintenance_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Filesystem Maintenance</strong></legend>
+		<fieldset><legend>Filesystem Maintenance</legend>
 		<table><tr><th>Dev.</th><th>Label</th><th>Operation</th></tr>
 	EOF
 
@@ -559,7 +559,7 @@ printers_st() {
 	fi
 
 	cat<<-EOF
-		<fieldset><legend><strong>Printers</strong></legend>
+		<fieldset><legend>Printers</legend>
 		<table><tr><th>Name</th><th>Model</th><th>Jobs</th></tr>
 	EOF
 
@@ -603,6 +603,7 @@ if test -n "$refresh"; then
 fi
 
 ver="$(cat /etc/Alt-F)"
+LOCAL_STYLE='.bgl {text-align: center; font-weight: bold; width: 100px; }' 
 write_header "Alt-F $ver Status Page"
 jscripts
 

@@ -33,17 +33,15 @@ fi
 
 cat<<EOF
 	<form id="lvmf" action="/cgi-bin/lvm_proc.cgi" method="post">
-	<fieldset><legend><strong>Volume Group</strong></legend>
-	<table style="border-collapse:collapse">
-	<colgroup span=4></colgroup>
-	<colgroup span=4 style="background:#ddd;"></colgroup>
+	<fieldset><legend>Volume Group</legend>
+	<table>
 EOF
 
 vg=$(vgs --noheadings --units g 2>&1)
 
 if ! echo $vg | grep -qi 'No volume groups'; then
 	echo "<tr><th>Group</th><th>Capacity</th><th>Free</th><th></th>
-		<th colspan=4>Manage Physical Volumes</th></tr>"
+		<th class="highcol" colspan=4>Manage Physical Volumes</th></tr>"
 
 	i=1
 	echo "$vg" | while read vgname pvcount lvcount t1 attr cap free; do
@@ -68,10 +66,10 @@ if ! echo $vg | grep -qi 'No volume groups'; then
 			<tr><td align=center>$dvgname</td>
 			<td align=center>${cap%g}GB</td><td align=center>${free%g}GB</td>
 			<td><input type="submit" name=$vgname value="Destroy"></td>
-			<td><select name=pdev_$i><option value=none>Select a Partition</option>$devs</select></td>
-			<td><input type="submit" name=$i value="Add"></td>
-			<td><input type="submit" name=$i value="Remove"></td>
-			<td><input type="submit" name=$i value="Empty"></td>
+			<td class="highcol"><select name=pdev_$i><option value=none>Select a Partition</option>$devs</select></td>
+			<td class="highcol"><input type="submit" name=$i value="Add"></td>
+			<td class="highcol"><input type="submit" name=$i value="Remove"></td>
+			<td class="highcol"><input type="submit" name=$i value="Empty"></td>
 		EOF
 		echo "</tr>"
 		i=$((i+1))
@@ -84,7 +82,6 @@ altfvg=$?
 
 if test $altfvg != 0; then
 	cat<<-EOF
-		<tr><td><br></td></tr>
 		<tr><td colspan=5>No Alt-F Volume Group detected
 		<select name=pdev><option value=none>Select a Partition</option>$devs</select>
 		<input type="submit" name=action value="VGCreate"></td></tr>
@@ -96,12 +93,11 @@ IFS=';'
 
 if test -n "$pvd"; then
 	cat<<-EOF
-		</table></fieldset><br>
-		<fieldset><legend><strong>Physical Volumes</strong></legend>
-		<table style="border-collapse:collapse">
-		<colgroup span=4></colgroup>
-		<colgroup span=1 style="background:#ddd;"></colgroup>
-		<tr><th>Dev</th><th>Group</th><th>Capacity</th><th>Free</th><th>In use by</th></tr>
+		</table></fieldset>
+		<fieldset><legend>Physical Volumes</legend>
+		<table>
+		<tr><th>Dev</th><th>Group</th><th>Capacity</th><th>Free</th>
+		<th class="highcol">In use by</th></tr>
 	EOF
 
 	echo "$pvd" | while read pdev vg fmt attr cap free; do
@@ -120,7 +116,7 @@ if test -n "$pvd"; then
 		cat<<-EOF
 			<tr><td>$pdev</td><td align=center>$vg</td>
 			<td align=center>${cap}GB</td><td align=center>${free}GB</td>
-			<td>$inuse</td></tr>
+			<td class="highcol">$inuse</td></tr>
 		EOF
 	done
 	
@@ -128,23 +124,21 @@ if test -n "$pvd"; then
 	if echo "$pvd" | grep -q "unknown device"; then
 		echo "<p>Missing volumes:<input type=submit name=rmMissing value=\"Force Removal\">"
 	fi
-	echo "</fieldset><br>"
+	echo "</fieldset>"
 fi
 
 lvd=$(lvs -a --separator ';' --noheading -o +segtype --units g 2>/dev/null)
 
 if test "$altfvg" = 0 -o -n "$lvd"; then
 	cat<<-EOF
-		<fieldset><legend><strong>Logical Volumes</strong></legend>
-		<table style="border-collapse:collapse">
-		<colgroup span=6></colgroup>
-		<colgroup span=3 style="background:#ddd;"></colgroup>
+		<fieldset><legend>Logical Volumes</legend>
+		<table>
 	EOF
 
 	if test -n "$lvd"; then
 		i=1
 		echo "<tr><th>Dev</th><th>Group</th><th>Type</th><th>Capacity</th><th></th>
-			<th>Operations</th><th colspan=3>Manage Capacity</th></tr>"
+			<th>Operations</th><th class="highcol" colspan=3>Manage Capacity</th></tr>"
 
 		echo "$lvd" | while read ldev vg attr cap orig snap move log copy conv type; do
 
@@ -203,9 +197,9 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 						<option $dis_msnap value=msnap>Merge Snapshot</option>
 						<option $dis_split value=split>Split</option>
 					</select></td>
-				<td><input $all_dis type=submit name=$i value="Enlarge"></td>
-				<td><input $all_dis type=submit name=$i value="Shrink"></td>
-				<td>&nbsp; <em>by</em> <input $all_dis type=text size=4 name=ncap_$i value="">GB</td>
+				<td class="highcol"><input $all_dis type=submit name=$i value="Enlarge"></td>
+				<td class="highcol"><input $all_dis type=submit name=$i value="Shrink"></td>
+				<td class="highcol">&nbsp; <em>by</em> <input $all_dis type=text size=4 name=ncap_$i value="">GB</td>
 				</tr>
 			EOF
 			i=$((i+1))
@@ -214,7 +208,7 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 
 	if test "$altfvg" = 0; then
 		cat<<-EOF
-			</table><br> New 
+			</table><br>New 
 			<select name=type><option>Linear</option><option>Mirror</option>
 			<option>Stripped</option></select> volume with
 			<input type=text size=4 name=lvsize> GB
@@ -222,7 +216,6 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 			</fieldset>
 		EOF
 	fi
-
 fi
 
 echo "</form></body></html>"

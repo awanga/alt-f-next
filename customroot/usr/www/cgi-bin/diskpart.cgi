@@ -221,17 +221,15 @@ fi
 
 cat<<EOF
 	<fieldset>
-	<legend><strong>Select the disk you want to partition</strong></legend>
-	<table style="border-collapse:collapse">
-	<colgroup span=5></colgroup>
-	<colgroup span=2 style="background:#ddd;"></colgroup>
+	<legend>Select the disk you want to partition</legend>
+	<table>
 	<tr>
 	<th>Partition</th>
 	<th>Bay</th>
 	<th>Device</th>
 	<th>Capacity</th>
 	<th>Model</th>
-	<th colspan=2>Partition Table</th>
+	<th class="highcol" colspan=2>Partition Table</th>
 	</tr>
 EOF
 
@@ -261,7 +259,7 @@ for i in $disks; do
 		<td align=center>$disk</td>
 		<td align=right>$dcap</td>
 		<td>$dmod</td>
-		<td><select id=op_$disk name=op_$disk onChange="opsubmit('$disk','$dbay','$dcap')">
+		<td class="highcol"><select id=op_$disk name=op_$disk onChange="opsubmit('$disk','$dbay','$dcap')">
 			<option>Operation</option>
 			<option>Erase</option>
 			<option>Save</option>
@@ -275,7 +273,7 @@ EOF
 done
 
 cat<<EOF
-	</table></fieldset><br>
+	</table></fieldset>
 	<input type=hidden name=cp_from>
 EOF
 
@@ -300,7 +298,7 @@ fi
 
 cat<<EOF
 	<fieldset>
-	<legend><strong>Partition $dbay disk, $dcap, $dmod </strong></legend>
+	<legend>Partition $dbay disk, $dcap, $dmod </legend>
 	<p>Using <strong>$in_use</strong> partitioning.</p>
 	<p>Every disk must have a swap partition as its first partition, 0.5GB is generally enough.</p>
 	<input type=hidden name=in_use value="$in_use">
@@ -392,10 +390,10 @@ free=$(awk 'BEGIN {printf "%.3f", ('$rawcap' - '$used') * 512/1e9}')
 cat<<EOF
 	<tr><td colspan=4 align=right>Free:</td>
 	<td colspan=2><input type=text readonly id="free_id" size=6 value="$free" $(ttip tt_free)></td>
-	</tr><table>
+	</tr></table></fieldset>
 
 	<input type=submit name=$ddsk value=Partition onclick="return psubmit('$dcap', '$dbay', '$free')">
 	<input type=button id=adv_id name=adv_bt value="Advanced" onclick="return advanced('$rawcap','$ddsk')">
 	<input type=hidden id=adv_hid name=adv_fl value="Basic">
-	</fieldset></form></body></html>
+	</form></body></html>
 EOF

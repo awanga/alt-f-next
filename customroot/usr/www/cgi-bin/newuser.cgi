@@ -2,6 +2,8 @@
 
 . common.sh
 check_cookie
+
+LOCAL_STYLE='.dim {background-color: #dddddd;}'
 write_header "New User Setup"
 
 CONFP=/etc/passwd
@@ -81,8 +83,8 @@ cat <<EOF
 	<table>
 	<tr><td>Full name</td><td><input type=text $chpass name=uname value="$uname" onChange="upnick()" $(ttip ttuname)></td></tr>
 	<tr><td>Nick name<td><input type=text $chpass name=nick value="$nick" $(ttip ttnick)></td></tr>
-	<tr><td>User id<td><input style="background-color: #dddddd" type=text $chpass name=uid value="$uid" $(ttip ttuid)></td></tr>
-	<tr><td>Group id<td><input style="background-color: #dddddd" type=text $chpass name=gid value="$gid" $(ttip ttgid)></td></tr>
+	<tr><td>User id<td><input class="dim" type=text $chpass name=uid value="$uid" $(ttip ttuid)></td></tr>
+	<tr><td>Group id<td><input class="dim" type=text $chpass name=gid value="$gid" $(ttip ttgid)></td></tr>
 	<tr><td>Password<td><input type=password name=pass $(ttip ttpass)></td></tr>
 	<tr><td>Again<td><input type=password name=passa $(ttip ttpassa)></td></tr>
 	</table><p>

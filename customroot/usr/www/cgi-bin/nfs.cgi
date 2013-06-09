@@ -136,7 +136,7 @@ cat<<-EOF
 
 	<form name=expdir action=nfs_proc.cgi method="post" >
 		<fieldset>
-		<legend><strong>Folders to export to other hosts</strong></legend>
+		<legend>Folders to export to other hosts</legend>
 		<table>
 		<tr align=center>
 		<th>Disable</th>
@@ -167,9 +167,9 @@ done
 
 cat<<-EOF
 	</table><input type=hidden name="n_exports" value="$cnt">
-	</fieldset><br>
+	</fieldset>
 	<fieldset>
-	<legend><strong>Folders to import from other hosts</strong></legend>
+	<legend>Folders to import from other hosts</legend>
 	<table>
 	<tr align=center>
 	<th>Disable</th>

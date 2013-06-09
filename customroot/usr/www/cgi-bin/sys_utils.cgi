@@ -25,39 +25,39 @@ logsel="$logsel</select>"
 cat<<-EOF
 	<form name=sysutils action="/cgi-bin/sys_utils_proc.cgi" method="post">
 
-	<fieldset><legend><strong>Reboot or Poweroff</strong></legend>
+	<fieldset><legend>Reboot or Poweroff</legend>
 	<input type="submit" name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
 	<input type="submit" name="action" value="Poweroff" onClick="return confirm('The box will poweroff now.\n\nProceed?')">
-	</fieldset><br>
+	</fieldset>
 
-	<fieldset><legend><strong>View Logs</strong></legend>
+	<fieldset><legend>View Logs</legend>
 	$logsel
-	</fieldset><br>
+	</fieldset>
 	
-	<fieldset><legend><strong>Services</strong></legend>
+	<fieldset><legend>Services</legend>
 	<input type="submit" name="action" value="StartAll">
 	<input type="submit" name="action" value="StopAll">
 	<input type="submit" name="action" value="RestartAll">
-	</fieldset><br>
+	</fieldset>
 
-	<fieldset><legend><strong>Administering password</strong></legend>
+	<fieldset><legend>Administering password</legend>
 	Current Password:<input type="password" autocomplete="off" name="passwd" value="" onkeypress="return event.keyCode != 13">
 	<input type="submit" name="action" value="ChangePassword">
-	</fieldset><br>
+	</fieldset>
 EOF
 
 if test -s /etc/printcap; then
 	cat<<-EOF
-		<fieldset><legend><strong>Printers</strong></legend>
+		<fieldset><legend>Printers</legend>
 		<input type=submit name="action" value="ClearPrintQueues">
-		</fieldset><br>
+		</fieldset>
 	EOF
 fi
 
 cat<<-EOF
-	<fieldset><legend><strong>SSL Certificate</strong></legend>
+	<fieldset><legend>SSL Certificate</legend>
 	<input type=submit name="action" value="createNew" $(ttip ssl_tt)>
-	</fieldset><br>
+	</fieldset>
 	</form></body></html>
 EOF
 

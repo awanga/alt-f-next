@@ -39,10 +39,9 @@ if test "$tmp" != "/"; then
 
 	if test "$TYPE" != "ext2" -a "$TYPE" != "ext3" -a "$TYPE" != "ext4" -a "$TYPE" != "nfs"; then
 		cat<<-EOF
-		<h4><font color=blue>
-		Filesystem is of type $TYPE, not a linux native filesystem.<br>
+		<h4 class="warn">Filesystem is of type $TYPE, not a linux native filesystem.<br>
 		Only ext2, ext3, ext4 or NFS filesystems can use UNIX permissions.
-		</font></h4>$(back_button)</body></html>
+		</h4>$(back_button)</body></html>
 		EOF
 	exit 0
 	fi

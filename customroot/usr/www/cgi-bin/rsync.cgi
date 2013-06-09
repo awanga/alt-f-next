@@ -42,7 +42,7 @@ cat<<EOF
 	</script>
 	<form id=rsyncf name=rsync action=rsync_proc.cgi method="post">
 	<fieldset>
-	<legend><strong>Folder Modules</strong></legend>
+	<legend>Folder Modules</legend>
 	<table>
 	<tr>
 		<th>Disable</th>
@@ -153,7 +153,7 @@ function parse(share_name, line) {
 }' $CONF_RSYNC
 
 cat<<EOF
-	</fieldset><br>
+	</fieldset>
 	<input type=submit name=submit value="Submit">$(back_button)
 	</form></body></html>
 EOF

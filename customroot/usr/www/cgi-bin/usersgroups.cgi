@@ -2,6 +2,14 @@
 
 . common.sh
 check_cookie
+
+LOCAL_STYLE='
+.fill { width: 100%; }
+.almostfill {width: 95%; }
+.halffill { float: left; width: 50%; }
+.center { clear:both; margin-left:auto; margin-right:auto; width:50%;}
+'
+
 write_header "Users and Groups Setup"
 
 has_disks
@@ -24,7 +32,7 @@ fi
 IFS=":" # WARNING: for all the script
 #account:password:UID:GID:GECOS:directory:shell
 ucnt=0; ujstr=""
-usel='<tr><td colspan=2><select style="width:100%" size="8" name="users" onChange="update_users()">'
+usel='<tr><td colspan=2><select class="fill" size="8" name="users" onChange="update_users()">'
 while read user upass uid ugid uname dir shell;do
 	if test "${user:0:1}" = "#" -o -z "$user" -o -z "$uid" -o -z "$uname"; then continue; fi
 	if test $shell = "/bin/false"; then continue; fi
@@ -37,7 +45,7 @@ usel="$usel </select></td></tr>"
 
 #group_name:passwd:GID:user_list
 gcnt=0; gjstr=""
-gsel='<tr><td colspan=2><select style="width:100%" size="8" name="groups" onChange="update_groups()">'
+gsel='<tr><td colspan=2><select class="fill" size="8" name="groups" onChange="update_groups()">'
 while read group gpass ggid userl; do
 	if test "${group:0:1}" = "#" -o "$gpass" = "!" -o -z "$group"; then continue; fi
 	if test $ggid -lt 100; then continue; fi
@@ -98,38 +106,43 @@ cat <<EOF
 	}
 	</script>
 	<form name=frm action="/cgi-bin/usersgroups_proc.cgi" method="post">
-	<table><tr><td>
-	
-	<fieldset><legend><strong>Users</strong></legend>
-	<table>
+
+	<div class="fill">
+
+	<div class="halffill">
+	<fieldset><legend>Users</legend>
+	<table class="fill">
 	$usel
 
-	<tr><td>User name</td><td><input type=text style="width:100%" size=12 name=uname></td></tr>
+	<tr><td>User name</td><td><input class="almostfill" type=text size=12 name=uname></td></tr>
 	<tr><td>Groups this user belongs to:</td>
-		<td><textarea style="width:100%" rows=2 cols=20 name=groupsInUser readonly></textarea></td></tr>
+		<td><textarea class="almostfill" rows=2 cols=20 name=groupsInUser readonly></textarea></td></tr>
 	<tr><td><input type=submit name=new_user value=NewUser>
 		<input type=submit name=change_pass value=ChangePass onclick="return check_user()">
 		<td><input type=submit name=del_user value=DelUser onclick="return check_user()"></td>
 	</tr></table></fieldset>
-	<input type=hidden name=nick>
-	</td><td>
-	<fieldset><legend><strong>Groups</strong></legend>
-	<table>
+
+	</div><div class="halffill">
+	<fieldset><legend>Groups</legend>
+	<table class="fill">
 	$gsel
 
-	<tr><td>Group name</td><td><input type=text style="width:100%" size=12 name=gname></td></tr>
+	<tr><td>Group name</td><td><input class="almostfill" type=text size=12 name=gname></td></tr>
 	<tr><td>Users belonging to this group:</td>
-		<td><textarea style="width:100%" rows=2 cols=20 name=usersInGroup readonly></textarea></td></tr>
+		<td><textarea class="almostfill" rows=2 cols=20 name=usersInGroup readonly></textarea></td></tr>
 	<tr><td><input type=submit name=new_group value=NewGroup onclick="return check_group()"></td>
 	    <td><input type=submit name=del_group value=DelGroup onclick="return check_group()"></td></tr>
 	</table></fieldset>
-	</td></tr></table><br>
+	</div></div>
 
-	<fieldset><legend><strong>Users and Groups</strong></legend><table>
+	<div class="center">
+	<fieldset><legend>Users and Groups</legend><table class="fill">
 		<tr><td>Add selected user to selected group</td>
 			<td><input type=submit name=addToGroup value=AddToGroup onclick="return check_usergroup()"></td></tr>
 		<tr><td>Remove selected user from selected group</td>
 			<td><input type=submit name=delFromGroup value=DelFromGroup onclick="return check_usergroup()"></td></tr>
 	</table></fieldset>
+	</div>
+	<input type=hidden name=nick>
 	</form></body></html>
 EOF

@@ -73,7 +73,7 @@ eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
 
 cat<<-EOF
 	<form id="httpf" action="/cgi-bin/http_proc.cgi" method="post">
-	<fieldset><legend><strong>Ports</strong></legend>
+	<fieldset><legend>Ports</legend>
 	<table><tr><th></th><th>Default</th><th>&emsp;</th><th>Alternative</th></tr>
 	<tr><td><strong>http:</strong></td>
 		<td align=right>80<input type=radio $DEF_PORT_DIS $DEF_PORT_CHK name=port value="80" $(ttip port_tt)></td>
@@ -85,16 +85,16 @@ cat<<-EOF
 		<td></td>
 		<td>8443<input type=radio $ALT_SPORT_DIS $ALT_SPORT_CHK name=sport value="8443" $(ttip port_tt)></td>
 		<td>$sport_msg</td></tr>
-	</table></fieldset><br>
+	</table></fieldset>
 
-	<fieldset><legend><strong>The stunnel program provides https and can be run in</strong></legend>
+	<fieldset><legend>The stunnel program provides https and can be run in</legend>
 	<table>
 		<tr><td>inetd mode</td><td><input type=radio $STUNNEL_INETD name=stunnel value="inetd" $(ttip stunneli_tt)></td></tr>
 		<tr><td>server mode</td><td><input type=radio $STUNNEL_SERVER name=stunnel value="server" $(ttip stunnels_tt)></td></tr>
 	</table>
-	</fieldset><br>
+	</fieldset>
 
-	<fieldset><legend><strong>Remote Administration</strong></legend>
+	<fieldset><legend>Remote Administration</legend>
 	<table><tr><th>Disable</th><th>Allowed IPs</th></tr>
 EOF
 

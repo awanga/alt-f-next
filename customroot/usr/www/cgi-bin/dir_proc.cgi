@@ -12,6 +12,16 @@ m2g() {
 check_cookie
 read_args
 
+LOCAL_STYLE='
+#ellapsed {
+	position: relative;
+	z-index: -1;  
+	margin-left: auto;
+	margin-right: auto;
+	width: 33%;
+	font-size: 1.5em;
+'
+
 wdir=$(httpd -d "$newdir")
 wdir=$(echo "$wdir" | sed -n 's/^ *//;s/ *$//p')
 bdir=$(dirname "$wdir")
@@ -83,9 +93,7 @@ elif test -n "$DeleteDir"; then
 
 	html_header "Deleting $(m2g $src_sz) \"$wdir\" folder"
 	cat<<-EOF
-		<div id="ellapsed" style="position: relative; z-index: -1;
-		width: 30%; left: 30%; background-color: #bdbdbd;
-		text-align: right; font-size: 1.5em;"></div>
+		<div id="ellapsed"></div>
 	EOF
 
 	busy_cursor_start
@@ -155,13 +163,9 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 
 	html_header "$op $(m2g $src_sz) from \"$srcdir\" to \"$wdir\""
 	if test -n "$CopyContent"; then
-		echo "<p><font color=blue><center>Displayed values are incorrect if files being copied already exists in the destination folder</center></font></p>"
+		echo "<p class="warn">Displayed values are incorrect if files being copied already exists in the destination folder</p>"
 	fi
-	cat<<-EOF
-		<div id="ellapsed" style="position: relative; z-index: -1;
-		width: 30%; left: 30%; background-color: #bdbdbd;
-		text-align: right; font-size: 1.5em;"></div>
-	EOF
+	echo "<div id=\"ellapsed\"></div>"
 	busy_cursor_start
 
 	exist_sz=0

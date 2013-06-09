@@ -100,7 +100,7 @@ case "$action" in
 
 			</script>
 
-			<br><br><fieldset><legend><strong>The box is rebooting</strong></legend>
+			<br><br><fieldset><legend>The box is rebooting</legend>
 			<center><h4>
 			$(wait_count_start "Waiting 60 seconds")
 			</h4></center></fieldset>

@@ -10,8 +10,7 @@ if ! test -f /ffp/etc/rc; then
 fi
 
 cat<<-EOF
-	<h4 align=center><font color=blue>
-	You must <strong>NOT</strong> enable services that might conflict with Alt-F services!</font></h4>
+	<h4 class="warn">You must <strong>NOT</strong> enable services that might conflict with Alt-F services!</h4>
 	<form action="/cgi-bin/ffp_proc.cgi" method="post">
 	<table><tr>
 	<th>Service</th>

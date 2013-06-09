@@ -175,7 +175,7 @@ cat<<-EOF
 
 <form name=frm action="/cgi-bin/time_proc.cgi" method="post">
 
-<fieldset><legend><strong>Country</strong></legend>
+<fieldset><legend>Country</legend>
 <table>
 	<tr><td>Timezone:</td><td><input type=text size=30 name=tz value="$tz">
 	$(tzones)
@@ -217,10 +217,10 @@ cat<<-EOF
 		$(opt_min $mine)</select></td></tr>
 
 <tr><td></td><td><input type="submit" name="country" value="Submit"></td></tr>
-</table></fieldset><br>
+</table></fieldset>
 
 <fieldset>
-<legend><strong>Adjust time through internet</strong></legend>
+<legend>Adjust time through internet</legend>
 <table>
 	<tr><td>Local time:</td>
 	<td colspan=2><input type=text size=30 READONLY value="$ltime"></td>
@@ -240,10 +240,10 @@ cat<<-EOF
 	</tr>
 	<tr><td></td><td><input type=submit name=ntpserver value="Submit"></td><td></td></tr>
 </table>
-</fieldset><br>
+</fieldset>
 
 <fieldset>
-<legend><strong>Adjust time manually</strong></legend>	
+<legend>Adjust time manually</legend>	
 <table>	
 	<tr><td>Set Hour:</td>
 		<td><input type=text name=hour value="$hour"></td>

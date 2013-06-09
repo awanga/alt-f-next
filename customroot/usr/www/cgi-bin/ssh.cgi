@@ -36,7 +36,7 @@ cat<<-EOF
 	}
 	</script>
 	<form name="ssh" action="/cgi-bin/ssh_proc.cgi" method="post">
-	<fieldset><legend><strong>Configure Dropbear</strong></legend>
+	<fieldset><legend>Configure Dropbear</legend>
 	<table>
 	<tr><td>Disable password logins</td><td><input type=checkbox $DB_NOPASS_CHK name=db_nopass value=yes></td></tr>
 	<tr><td>Disallow root logins</td><td><input type=checkbox $DB_NOROOT_CHK name=db_noroot value=yes></td></tr>
@@ -45,7 +45,7 @@ cat<<-EOF
 	<td>22<input type=radio $DB_22 id="db_22" name=db_port value="22" onclick="toogle(this)">
 	2222<input type=radio $DB_2222 id="db_2222" name=db_port value="2222" onclick="toogle(this)"></td>
 	</table>
-	</fieldset><br>
+	</fieldset>
 EOF
 
 if test -f sshd.cgi; then

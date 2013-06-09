@@ -2,7 +2,6 @@
 
 . common.sh
 check_cookie
-write_header "Lighttpd Setup"
 
 CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
 CONF_LIGHTY2=/etc/lighttpd/modules.conf
@@ -20,6 +19,35 @@ fi
 sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
 port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
 sslport=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
+
+# enable access/error log through syslog?
+#accesslog.use-syslog       = "enable" access_log.conf
+#server.errorlog-use-syslog = "enable" lighttpd.conf
+
+if grep -q '^include.*access_log.conf' $CONF_LIGHTY; then ACESSLOG_CHK="checked"; fi
+if grep -q '^include.*dirlisting.conf' $CONF_LIGHTY; then DIRLST_CHK="checked"; fi
+if grep -q '^include.*ssl.conf' $CONF_LIGHTY; then SSL_CHK="checked"; fi
+if grep -q '^include.*webdav.conf' $CONF_LIGHTY2; then WDAV_CHK="checked"; fi
+if grep -q '^include.*userdir.conf' $CONF_LIGHTY2; then	USERDIR_CHK="checked"; fi
+if grep -q '^include.*fastcgi.conf' $CONF_LIGHTY2; then
+	PHP_CHK="checked"
+	PHP_VIS="visible"
+	PHP_DIS="block"
+else
+	PHP_VIS="hidden"
+	PHP_DIS="none"
+fi
+
+LOCAL_STYLE="
+#php_id {
+	visibility: $PHP_VIS;
+	display: $PHP_DIS;
+}
+.cellfill {
+	width: 100%;
+}" 
+
+write_header "Lighttpd Setup"
 
 mktt sroot_tt "Serve files from this folder.<br>
 You have to create one, such as /mnt/sda2/WebData"
@@ -40,22 +68,6 @@ mktt udir_tt "Serve users web pages from them "public_html" home folder."
 mktt dlist_tt "Generate a folder listing on folders without an index file."
 mktt access_tt "Generate server access loggs"
 mktt php_tt "Enable PHP. Due to memory constrains enable only if needed and only the needed modules."
-
-# enable access/error log through syslog?
-#accesslog.use-syslog       = "enable" access_log.conf
-#server.errorlog-use-syslog = "enable" lighttpd.conf
-
-if grep -q '^include.*access_log.conf' $CONF_LIGHTY; then ACESSLOG_CHK="checked"; fi
-if grep -q '^include.*dirlisting.conf' $CONF_LIGHTY; then DIRLST_CHK="checked"; fi
-if grep -q '^include.*ssl.conf' $CONF_LIGHTY; then SSL_CHK="checked"; fi
-if grep -q '^include.*webdav.conf' $CONF_LIGHTY2; then WDAV_CHK="checked"; fi
-if grep -q '^include.*userdir.conf' $CONF_LIGHTY2; then	USERDIR_CHK="checked"; fi
-if grep -q '^include.*fastcgi.conf' $CONF_LIGHTY2; then
-	PHP_CHK="checked"
-	PHP_VIS='style="visibility: visible; display: block"' 
-else
-	PHP_VIS='style="visibility: hidden; display: none"' 
-fi
 
 if ! test -x /usr/bin/php; then
 	PHP_DIS="disabled"
@@ -122,21 +134,21 @@ cat<<-EOF
 	<form name="lighttpd" action="/cgi-bin/lighttpd_proc.cgi" method="post">
 	<table>
 	<tr><td>Server root</td>
-		<td colspan=3><input type=text style="width:100%;" id=root_id name=sroot value="$sroot" $(ttip sroot_tt)></td>
+		<td colspan=3><input class="cellfill" type=text id=root_id name=sroot value="$sroot" $(ttip sroot_tt)></td>
 		<td><input type=button onclick="browse_dir_popup('root_id')" value=Browse></td></tr>
 	<tr><td></td><td></td>
 		<td>on port</td>
-		<td><input type=text size=2 style="width:100%;" name=port value="$port" $(ttip sport_tt)></td>
+		<td><input class="cellfill" type=text size=2 name=port value="$port" $(ttip sport_tt)></td>
 		<td></td></tr>
 	<tr><td>Enable IPv6</td>
 		<td colspan=4><input type=checkbox $IPV6_DIS $IPV6_CHK name=ipv6 value=yes></td></tr>
 	<tr><td>Enable SSL</td>
 		<td><input type=checkbox $SSL_CHK name=ssl value=yes $(ttip ssl_tt)>
-		<td>on port</td><td><input type=text size=2 style="width:100%;" name=sslport value="$sslport" $(ttip sslport_tt)></td>
+		<td>on port</td><td><input class="cellfill" type=text size=2 name=sslport value="$sslport" $(ttip sslport_tt)></td>
 		<td></td></tr>
 	<tr><td>Enable WebDAV</td>
 		<td><input type=checkbox $WDAV_DIS $WDAV_CHK id=wdav_id name=wdav value=yes $(ttip wdav_tt)>
-		<td>for user</td><td><select $WDAV_DIS id=user_id name=user style="width:100%;" $(ttip udav_tt)>$useropt</select></td>
+		<td>for user</td><td><select class="cellfill" $WDAV_DIS id=user_id name=user $(ttip udav_tt)>$useropt</select></td>
 		<td></td></tr>
 	<tr><td>Enable User Pages</td>
 		<td colspan=4><input type=checkbox $USERDIR_CHK name=userdir value=yes $(ttip udir_tt)></td></tr>
@@ -147,7 +159,7 @@ cat<<-EOF
 		<!--td>to syslog</td><td><input type=checkbox $SYSLOG_CHK name=syslog value=yes></td--></tr>
 	<tr><td>Enable PHP</td><td colspan=4><input type=checkbox $PHP_DIS $PHP_CHK name=php value=yes onclick="php_toogle(this)" $(ttip php_tt)></td></tr>
 	</table><p>
-	<div id="php_id" $PHP_VIS><table>$php_opt</table></div>
+	<div id="php_id"><table>$php_opt</table></div>
 
 	<p><input type="submit" value="Submit">$(back_button)
 	</form></body></html>

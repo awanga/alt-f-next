@@ -17,7 +17,7 @@ cat<<-EOF
 		}
 	</script>
 	<form name=hosts action=automatic_proc.cgi method=post>
-	<fieldset><legend><strong>RSS Feeds</strong></legend>
+	<fieldset><legend>RSS Feeds</legend>
 	<table>
 	<tr><th>Feed URL</th><th>Private Cookie</th></tr>
 EOF
@@ -42,9 +42,9 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 cat<<EOF
-	</table></fieldset><br>
+	</table></fieldset>
 	<input type=hidden name=feed_cnt value="$i">
-	<fieldset><legend><strong>Download Patterns</strong></legend>
+	<fieldset><legend>Download Patterns</legend>
 	<table>
 	<tr><th>Pattern</th><th>Download to Folder</th><th></th></tr>
 EOF
@@ -76,7 +76,7 @@ eval $(awk '/^interval/ { printf "interval=%d;", $3 }
 	}' $CONF_AUTO)
 
 cat <<EOF
-	</table></fieldset><br>
+	</table></fieldset>
 	<input type=hidden name=pattern_cnt value="$i">
 	<table>
 	<tr><td>Start downloading new torrents automatically

@@ -26,7 +26,7 @@ cat<<-EOF
 	}
 	</script>
 
-	<fieldset><legend><strong>Flash Memory</strong></legend>
+	<fieldset><legend>Flash Memory</legend>
 	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	<input type=submit name=action value=SaveSettings><br><br>
 	<select name=settings>
@@ -34,9 +34,9 @@ cat<<-EOF
 	<input type=submit name=action value=LoadSettings onclick="return load_ask()"><br><br>
 	<input type=submit $clear_dis name=action value=ClearSettings onclick="return ask()">
 	</form>
-	</fieldset><br>
+	</fieldset>
 
-	<fieldset><legend><strong>Computer Disk</strong></legend>
+	<fieldset><legend>Computer Disk</legend>
 	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	Save current settings to file: <input type=submit name=action value="Download">
 	</form>

@@ -35,9 +35,7 @@ cat<<EOF
 	</script>
 
 	<form id=disku name=disku action="/cgi-bin/diskutil_proc.cgi" method="post">
-	<table style="border-collapse:collapse">
-	<colgroup span=8></colgroup>
-    <colgroup span=2 style="background:#ddd;"></colgroup>
+	<table>
 	<tr><th>Bay</th>
 	<th>Dev.</th>
 	<th>Capacity</th>
@@ -46,7 +44,7 @@ cat<<EOF
 	<th>Health</th>
 	<th>Power Mode</th>
 	<th>Power Sav.</th>
-	<th colspan=2>Spindown</th> 
+	<th class="highcol">Spindown</th> 
 EOF
 
 for disk in $disks; do
@@ -101,7 +99,7 @@ for disk in $disks; do
 			<option $medpower_sel value=127>Medium</option>
 			<option $lowpower_sel value=254>Low</option>
 			</select></td>
-		<td><input type="text" size=2 $hdtimeout_dis name="$hdtimeout" value="$hdtimeout_val" $(ttip spindown_tt)> min.</td></tr>
+		<td class="highcol"><input type="text" size=2 $hdtimeout_dis name="$hdtimeout" value="$hdtimeout_val" $(ttip spindown_tt)> min.</td></tr>
 	EOF
 done
 
@@ -112,8 +110,8 @@ fi
 
 cat<<-EOF
 	<tr><td colspan=8></td>
-	<td colspan=1 align=center><input type="submit" name="standby" value="Submit"></td></tr>        
-	</table><p>
-	Swapping on USB devices: <input type="submit" name=usb_swap value="$usb_swap_val">
+	<td class="highcol"><input type="submit" name="standby" value="Submit"></td></tr>        
+	</table>
+	<p>Swapping on USB devices: <input type="submit" name=usb_swap value="$usb_swap_val">
 	</form></body></html>
 EOF

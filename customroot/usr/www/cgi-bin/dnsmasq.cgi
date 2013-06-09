@@ -56,7 +56,7 @@ cat <<-EOF
 	<tr><td> From IP</td><td><input type=text size=12 name=low_rg value="$lrg"></td></tr>
 	<tr><td>To IP</td><td><input type=text size=12 name=high_rg value="$hrg"></td></tr>
 	<tr><td>Lease Time: </td><td><input type=text size=4 name=lease value="$lease"></td></tr>
-	</table></fieldset><br>
+	</table></fieldset>
 
 	<fieldset><Legend> <strong> Serve fixed IPs based on MAC </strong></legend>
 	<table><tr align=center>
@@ -91,10 +91,10 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 cat<<-EOF
-	</table></fieldset><br>
+	</table></fieldset>
 	<input type=hidden name=cnt_din value="$i">
 
-	<fieldset><legend><strong> Current Leases </strong></legend>
+	<fieldset><legend>Current Leases</legend>
 EOF
 
 	if ! test -s /tmp/dnsmasq.leases; then
@@ -114,7 +114,7 @@ cat <<EOF
 EOF
 
 if false; then
-	echo "<br><fieldset><legend> <strong> Forward DNS Servers </strong> </legend>"
+	echo "<fieldset><legend> <strong> Forward DNS Servers </strong> </legend>"
 
 	FLG_MSG="#!in use by dnsmasq, don't change"
 	if $(grep -q "$FLG_MSG" $RESOLV); then
@@ -153,7 +153,7 @@ else
 fi
 
 cat<<-EOF
-	<br><fieldset><legend><strong>Time Servers</strong></legend><table>
+	<fieldset><legend>Time Servers</legend><table>
 	<tr>
 		<td><input type=radio $chknntp name=ntp value=no onchange="toogle_ntp('true')"></td>
 		<td colspan=2>Don't advertise any server</td></tr>
@@ -164,7 +164,7 @@ cat<<-EOF
 		<td><input type=radio $chksntp name=ntp value=server onchange="toogle_ntp('false')"></td>
 		<td>Advertise NTP server</td>
 		<td><input type=text $chkentp name=ntp_entry size=12 value="$host"></td></tr>
-	</table></fieldset><br>
+	</table></fieldset>
 EOF
 
 eval $(awk -F= '/enable-tftp/{print "tftp=checked"} \
@@ -191,14 +191,14 @@ cat<<-EOF
 		<td><input id=tftproot $tftpdis type=text size=20 name=tftproot value="$tftproot">
 		<input type=button $tftpdis name=ftpbrowse onclick="browse_dir_popup('tftproot')" value=Browse>
 		</td></tr>
-	</table></fieldset><br>
+	</table></fieldset>
 EOF
 
 eval $(awk '/log-queries/{print "dnslog=CHECKED"} \
 		/log-dhcp/{print "dhcplog=CHECKED"}' $CONF_F)
 
 cat<<EOF	
-	<fieldset><legend><strong> Logging </strong></legend><table>
+	<fieldset><legend> Logging </legend><table>
 	<tr><td>Log DNS queries</td>
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>
 	<tr><td>Log DHCP queries</td>

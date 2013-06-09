@@ -12,7 +12,7 @@ if ! ipkg status >/dev/null; then
 	CONFF=/etc/ipkg.conf
 	cat<<-EOF
 		<form action="/cgi-bin/packages_ipkg_proc.cgi" method=post>
-		<fieldset><legend><strong>Package Feeds</strong></legend><table>
+		<fieldset><legend>Package Feeds</legend><table>
 		<tr><th>Disabled</th><th>Feed</th></tr>
 	EOF
 
@@ -49,7 +49,7 @@ else
 				} \
 			</script> \
 			<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=\"post\"> \
-			<fieldset><legend><strong>Configure Feeds</strong></legend> \
+			<fieldset><legend>Configure Feeds</legend> \
 			<table><tr><th>Disabled</th><th>Feed</th></tr>";
 		nf=1;
 		while (getline ln <"/etc/ipkg.conf") {
@@ -79,8 +79,8 @@ else
 	END {
 		print "<tr><td></td><td><input type=submit name=Submit value=Submit> \
 			<input type=submit name=updatelist value=UpdatePackageList> \
-			</table></fieldset><br> \
-			<fieldset><legend><strong> Installed Packages </strong></legend> \
+			</table></fieldset> \
+			<fieldset><legend> Installed Packages </legend> \
 			<table><tr> \
 				<th>Name</th><th>Version</th><th></th><th></th><th></th><th>Description</th> \
 			</tr>"
@@ -113,7 +113,7 @@ else
 		print "<tr><td colspan=2><strong>Remove all installed</strong></td> \
 				<td colspan=4><input type=submit name=removeall value=RemoveAll onclick=\"return ask()\"></td></tr> \
 			</table></fieldset> \
-			<br><fieldset><legend><strong> Available Packages </strong></legend><table>"
+			<fieldset><legend> Available Packages </legend><table>"
 
 		if (ucnt == 0) {
 			print "None"

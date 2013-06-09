@@ -92,16 +92,14 @@ cat<<-EOF
 EOF
 	
 cat<<-EOF
-	<table style="border-collapse:collapse">
-	<colgroup span=7></colgroup>
-	<colgroup span=2 style="background:#ddd;"></colgroup>
+	<table>
 	<tr><th>Dev.</th><th>Size</th>
 	<th>FS</th>
 	<th>Mnt</th>
 	<th>Label</th>
 	<th>Mount Options</th>
 	<th>FS Operations</th>
-	<th colspan=2>New FS Operations</th>
+	<th class="highcol" colspan=2>New FS Operations</th>
 	</tr>
 EOF
 
@@ -221,7 +219,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 				<option $resize_en>Enlarge</option>
 				<option>Wipe</option>
 			</select></td>
-			<td><select id="fs_$i" name="type_$i">
+			<td class="highcol"><select id="fs_$i" name="type_$i">
 				<option>New FS</option>
 				<option>ext2</option>
 				<option>ext3</option>
@@ -229,7 +227,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 				<option>vfat</option>
 				<option $ntfs_dis>ntfs</option>
 			</select></td>
-			<td><select id="fsfs_$i" name="$i" onChange="msubmit('fsfs_$i', '$part', '$flashed')">
+			<td class="highcol"><select id="fsfs_$i" name="$i" onChange="msubmit('fsfs_$i', '$part', '$flashed')">
 				<option>Operation</option>
 				<option>Format</option>
 				<option $all_dis $conv_en >Convert</option>
@@ -252,7 +250,7 @@ if test -z "$TUNE_DAYS"; then
 fi
 
 cat<<-EOF
-	</table></fieldset><br>
+	</table></fieldset>
 
 	<fieldset><Legend><strong> Set mounted filesystems to be checked every </strong></legend>
 	<input type=text size=4 name=TUNE_MOUNTS value="$TUNE_MOUNTS"> mounts

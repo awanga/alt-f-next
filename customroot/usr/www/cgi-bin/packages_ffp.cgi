@@ -60,8 +60,7 @@ fi
 				return confirm("The ffp folder will be renamed ffp-0.7." + '\n\n' + "If a ffp-0.5 folder is found it will be renamed ffp and reused, otherwise you will have to reinstall and configure ffp.");
 			}
 		</script>
-		<h4 align=center><font color=blue>Warning: configuration files are
-		overwritten when updating</font></h4>
+		<h4 class="warn">Warning: configuration files are overwritten when updating</h4>
 	EOF
 
 	if test "$ffpver" = "0.5"; then
@@ -78,7 +77,7 @@ fi
 	cat <<-EOF
 		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
 		<input type=hidden name=ffpver value="$ffpver">
-		<fieldset><legend><strong>Installed Packages</strong></legend><table>
+		<fieldset><legend>Installed Packages</legend><table>
 	EOF
 	
 	for i in $inst_pkg; do
@@ -115,7 +114,7 @@ fi
 			<td colspan=2><input type=submit name=uninstall value="Uninstall" onclick="return ask_Uninstall()"></td></tr>
 		<tr><td><strong>$op to $to</upgrade></td>
 			<td colspan=2><input type=submit name=$op value="$op" onclick="return ask_$op()"></td></tr>
-		</table></fieldset><br>
+		</table></fieldset>
         
 		<fieldset><legend>
 		<a href="$FSITE/$FDIR/$FFP_DIR/">

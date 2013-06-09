@@ -38,12 +38,11 @@ fi
 
 cat<<-EOF
 	<form action="/cgi-bin/services_proc.cgi" method="post">
-	<table><colgroup span=1></colgroup><colgroup span=1 style="background:#ddd;"></colgroup>
-	<tr>
+	<table><tr>
 	<th>Service</th>
-	<th align=center>Boot Enabled</th>
-	<th align=center>Status</th>
-	<th align=center>Action</th>
+	<th class="highcol">Boot Enabled</th>
+	<th>Status</th>
+	<th>Action</th>
 	<th></th>
 	<th align=left>Description</th></tr>
 EOF
@@ -72,7 +71,7 @@ for i in $srv; do
 
 	cat<<-EOF
 		<tr><td> $i </td>
-		<td align=center><input type=checkbox $chkf name=$i value=enable></td>
+		<td class="highcol"><input type=checkbox $chkf name=$i value=enable></td>
 		<td>$st</td>
 		<td><input type="submit" name=$i value="$act"></td>
 		$conf
@@ -82,10 +81,9 @@ done
 
 cat<<-EOF
 	<tr><td></td>
-	<td align=center><input type="submit" name="$srv" value="Submit"></td>
-	<td colspan=4</td></tr>
-	</table>
-	</form></body></html>
+	<td class="highcol"><input type="submit" name="$srv" value="Submit"></td>
+	<td colspan=4></td></tr>
+	</table></form></body></html>
 EOF
 
 #enddebug

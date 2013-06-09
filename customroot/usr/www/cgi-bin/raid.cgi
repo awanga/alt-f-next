@@ -180,7 +180,7 @@ cat<<-EOF
 	<form id="diskr" name="diskr" action="/cgi-bin/raid_proc.cgi" method="post">
 
 	<fieldset>
-	<legend><strong>RAID Creation</strong></legend>
+	<legend>RAID Creation</legend>
 	<table>
 	<tr>
 	<th>Dev.</th>
@@ -203,24 +203,22 @@ cat<<-EOF
 	<td><select name="comp3">$pairs</select></td>
 	</tr></table>
 	<br><input type=submit name=md$dev value=Create onclick="return csubmit('submit', '$flashed')">
-	</fieldset><br>
+	</fieldset>
 EOF
 
 if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 	cat<<-EOF
 		<fieldset><Legend><strong>RAID Maintenance</strong></legend>
-		<table style="border-collapse:collapse">
-		<colgroup span=7></colgroup>
-		<colgroup span=2 style="background:#ddd;"></colgroup>
-		<tr align=center>
-		<th align=left>Dev.</th> 
+		<table>
+		<tr>
+		<th>Dev.</th> 
 		<th>Capacity</th>
 		<th>Level</th>
 		<th>Components</th>
 		<th></th>
 		<th>Array</th>
 		<th>RAID Operations</th>
-		<th colspan=2>Component Operations</th>
+		<th class="highcol" colspan=2>Component Operations</th>
  		</tr>
 	EOF
 
@@ -263,7 +261,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 			fi
 	
 			cat<<-EOF
-				<tr align=center>
+				<tr>
 				<td align=left>$mdev</td> 
 				<td>$pcap</td>
 				<td>$otype</td>
@@ -293,7 +291,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 				cat<<-EOF
 					<td><font color=RED> ${action}ing </font>
 					$abort</td>
-					<td><input type=submit name=$mdev value="Stop"</td>
+					<td colspan="3"><input type=submit name=$mdev value="Stop"</td>
 					</tr>
 				EOF
 			else
@@ -314,8 +312,8 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 				if test -n "$remops"; then continue; fi
 
 				cat<<-EOF
-					<td><select id=rdev_$mdev name=rdev_$mdev>$raid_devs</select></td>
-					<td><select id=rops_$mdev name=$mdev onChange="msubmit('rops_$mdev', '$mdev')">
+					<td class="highcol"><select id=rdev_$mdev name=rdev_$mdev>$raid_devs</select></td>
+					<td class="highcol"><select id=rops_$mdev name=$mdev onChange="msubmit('rops_$mdev', '$mdev')">
 						<option value=none>Operation</option>
 						<option value=Fail_part>Fail</option>
 						<option value=Remove_part>Remove</option>

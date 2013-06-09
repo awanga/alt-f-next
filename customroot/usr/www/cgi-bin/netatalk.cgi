@@ -42,7 +42,7 @@ cat<<EOF
 	</script>
 	<form id=netaf name=netaf action=netatalk_proc.cgi method="post">
 	<fieldset>
-	<legend><strong>Folders to share</strong></legend>
+	<legend>Folders to share</legend>
 	<table>
 	<tr>
 		<th>Folder</th>

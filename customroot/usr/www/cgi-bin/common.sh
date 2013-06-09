@@ -225,7 +225,7 @@ html_header() {
 	if test -n "$HTML_HEADER_DONE"; then return; fi
 	HTML_HEADER_DONE="yes"
 	if test "$#" != 0; then
-		center="<center><h2>$1</h2></center>"
+		center="<h2 class="title">$1</h2>"
 	fi
 
 	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
@@ -233,8 +233,16 @@ html_header() {
 	cat<<-EOF
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<style type="text/css">html { height: 100%; }</style><title></title>
-		</head><body style="height: 100%; font-family: arial,verdana">
+		<script type="text/javascript">
+		$(cat base.js)
+		</script>
+        <style type="text/css">
+		html { height: 100%; }
+		$(cat base.css)
+		$(echo "$LOCAL_STYLE")
+		</style>
+		<title></title></head>
+		<body style="height: 100%; font-family: arial,verdana">
 		$center
 	EOF
 }
@@ -624,29 +632,6 @@ drawbargraph() {
 	EOF
 }
 
-drawbargraph_setup() {
-cat<<EOF
-	<style type="text/css">
-		.meter-wrap {
-			position: relative; z-index: -1;
-		}
-		.meter-wrap, .meter-value, .meter-text {
-			width: 100px; height: 1em;
-		}	
-		.meter-wrap, .meter-value {
-			background: #bdbdbd top left no-repeat;
-		}		   
-		.meter-text {
-			position: absolute;
-			top:0; left:0;
-			text-align: center;
-			width: 100%;
-			font-size: .8em;
-		}
-	</style>
-EOF
-}
-
 # usage: mktt tt_id "tooltip msg" 
 mktt () {
 	echo "<div id=\"$1\" class=\"ttip\">$2</div>"
@@ -657,172 +642,6 @@ mktt () {
 # <input ... $(ttip tt_id)>
 ttip() {
 	echo "onmouseover=\"popUp(event,'$1')\" onmouseout=\"popDown('$1')\""
-}
-
-tooltip_setup() {
-cat<<EOF
-	<script type="text/javascript">
-
-	var stat_id
-	var stat_ev
-
-	function popDown(id) {
-		if (stat_id)
-			clearTimeout(stat_id);
-		stat_id = null;
-		document.getElementById(id).style.visibility = "hidden";
-	}
-
-	function popUp(ev, id) {
-		if (stat_id)
-			clearTimeout(stat_id);
-		stat_ev = ev;
-		stat_id = id;
-		setTimeout("iPopUp()", 1000)
-	}
-
-	function iPopUp() {
-		if (! stat_id)
-			return;
-
-		obj = document.getElementById(stat_id);
-		stat_id = null
-
-		objWidth = obj.offsetWidth;
-		objHeight = obj.offsetHeight;
-
-		y = stat_ev.pageY + 20;
-		x = stat_ev.pageX - objWidth/4;
-
-		if (x + objWidth > window.innerWidth)
-			x -= objWidth/2;
-		else if (x < 2)
-			x = 2;
-
-		if (y + objHeight > window.innerHeight)
-			y -= 2*objHeight;
-
-		obj.style.left = x + 'px';
-		obj.style.top = y + 'px';
-		obj.style.visibility = "visible";
-	}
-	</script>
-
-	<style type="text/css">
-	.ttip {
-		font-family: arial,verdana;
-		border: solid 1px black;
-		padding: 2px;
-
-		color: #333333;
-		background-color: #ffffaa;
-
-		position: absolute;
-		visibility: hidden;
-	}
-	</style>
-EOF
-}
-
-bookmf() {
-cat<<EOF
-	<script type="text/javascript">
-		function commonbookmark() {
-			try {
-				x = parent.content.document.embedf
-				title = x.ifname.value
-				url = x.ifsrc.value
-			} catch(err) {
-				title = parent.content.document.title
-				url = parent.content.document.location.pathname
-			}
-			return title + "&url=" + url
-		}
-		function addbookmark() {			
-			parent.content.document.location.assign("/cgi-bin/bookmark.cgi?add=" + commonbookmark())
-			return false
-		}
-		function rmbookmark() {
-			parent.content.document.location.assign("/cgi-bin/bookmark.cgi?rm=" + commonbookmark())
-			return false
-		}
-		function rmall() {
-			try {
-				url = parent.content.document.embedf.ifsrc.value
-			} catch(err) {
-				url = parent.content.document.location.pathname
-			}
-			parent.content.document.location.assign("/cgi-bin/bookmark.cgi?rm=all&url=" + url)
-			return false
-		}
-	</script>
-EOF
-}
-
-menu_setup() {
-cat<<EOF
-	<script type="text/javascript">
-	top.document.title = "($(hostname)) Alt-F " + document.title;
-	function MenuShow() {
-		var menu = document.getElementById(this["m_id"])
-		var smenu = document.getElementById(this["sm_id"])
-
-		var top  = menu.offsetHeight
-		var left = 0
-
-		while(menu) {
-			top += menu.offsetTop
-			left += menu.offsetLeft
-			menu = menu.offsetParent
-		}
-		smenu.style.position = "absolute"
-		smenu.style.top = top + 'px'
-		smenu.style.left = left + 'px'
-		smenu.style.visibility = "visible"
-	}
-	function MenuHide() {
-		var smenu = document.getElementById(this["sm_id"])
-		smenu.style.visibility = "hidden"
-	}
-	function MenuEntry(menu_id) {
-		var menu = document.getElementById(menu_id)
-		var smenu = document.getElementById(menu_id + "_sub")
-
-		menu["m_id"] = menu.id
-		menu["sm_id"] = smenu.id
-		menu.onmouseover = MenuShow
-		menu.onmouseout = MenuHide
-
-		smenu["m_id"] = menu.id 
-		smenu["sm_id"] = smenu.id
-		smenu.style.position = "absolute"
-		smenu.style.visibility = "hidden"
-		smenu.onmouseover = MenuShow
-		smenu.onmouseout = MenuHide
-	}
-	</script>
-
-	<style type="text/css">
-	html { height:95%; }
-/* table debugging /**/ 
-table { border: 1px solid black; }
-td {  background-color:#c0c0c0;}
-th { background-color:#606060; color:white;}
-/**/
-	a.Menu, div.Menu {
-		display: block;
-		width: 100px;
-		padding: 2px 5px;
-		background: #8F8F8F;		
-		color: #F0F0F0;
-		text-align: center;
-		font-family: arial,verdana;
-		font-size: 0.9em;
-		font-weight: 900;
-		text-decoration: none;
-	}	
-	</style>
-EOF
 }
 
 fill_menu() {
@@ -859,6 +678,14 @@ EOF
 	bookmark_fill
 }
 
+#bookmf() {
+#	:
+#}
+
+#menu_setup() {
+#	:
+#}
+
 # args: title [onload action]
 write_header() {
 	firstboot
@@ -892,16 +719,19 @@ write_header() {
 	
 	cat<<-EOF
 		<title>$1</title>
-		$(menu_setup)
-		$(tooltip_setup)
-		$(drawbargraph_setup)
-		$(bookmf)
+		<script type="text/javascript">
+		$(cat base.js)
+		</script>
+		<style type="text/css">
+		$(cat base.css)
+		$(echo "$LOCAL_STYLE")
+		</style>
 		</head>
 		<body style="height: 95%; font-family: arial,verdana" $act>
 		$(menu_setup2 "$1" "/cgi-bin/$0") 
 		$(mktt tt_help "Get a descriptive help")
 		$(mktt tt_settings "$warn_tt")
-		<center><h2>$1 $hlp</h2></center>
+		<h2 class="title">$1 $hlp</h2>
 		$warn
 		$firstmsg
 	EOF

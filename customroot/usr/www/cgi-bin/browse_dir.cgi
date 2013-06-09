@@ -25,7 +25,7 @@ traverse() {
 
 	a=$(find "$start" -maxdepth 1 -type d 2>/dev/null | tail +2 | sort -d)
 
-	turl="<tr><td><a style=\"text-decoration: none\"
+	turl="<tr><td><a class=\"nodecor\"
 	    href=\"/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_vmode}${url_op}${url_srcdir}browse"
 
 	IFS="
@@ -39,7 +39,7 @@ traverse() {
 
 		eval $(ls -ld "$i" | awk '{printf "user=%s; group=%s; perm=%s", $3, $4, substr($1,2)}')
 		echo "$turl=${tbi}\">${sp}${tbn}</a></td>
-			<td>$user</td><td>$group</td><td style=\"font-family:courier\">$perm</td></tr>"
+			<td>$user</td><td>$group</td><td class=\"monospace\">$perm</td></tr>"
 		if test "$bn" = "$dir" -a -d "$start/$dir"; then
 			traverse "$start/$dir" "$end"
 		fi
@@ -49,7 +49,7 @@ traverse() {
 # flat view of directories
 # $1-path of end directory
 flat() {
-	turl="<a style=\"text-decoration: none\"
+	turl="<a class=\"nodecor\"
 		href=\"/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_vmode}${url_op}${url_srcdir}browse"
 
 	echo "<strong>Folder:</strong> "
@@ -71,7 +71,7 @@ flat() {
 	echo "<table><tr><th align=left></th><th>Owner</th><th>Group</th><th>Permissions</th></tr>"
 
 	a=$(find "$1" -maxdepth 1 -type d 2>/dev/null | tail +2 | sort -d)
-	turl="<tr><td><a style=\"text-decoration: none\"
+	turl="<tr><td><a class=\"nodecor\"
 	    href=\"/cgi-bin/browse_dir.cgi?${url_wind}${url_id}${url_vmode}${url_op}${url_srcdir}browse"
 
 	t=$(dirname "$1")
@@ -90,7 +90,7 @@ flat() {
 
 		eval $(ls -ld "$i" | awk '{printf "user=%s; group=%s; perm=%s", $3, $4, substr($1,2)}')
 		echo "$turl=${tbi}\">${tbn}</a></td>
-			<td>$user</td><td>$group</td><td style=\"font-family:courier\">$perm</td></tr>"
+			<td>$user</td><td>$group</td><td class=\"monospace\">$perm</td></tr>"
 	done
 	
 }
@@ -103,6 +103,11 @@ if test -n "$QUERY_STRING"; then
 fi
 
 hdr="Folders Browse"
+
+LOCAL_STYLE='
+.nodecor { text-decoration: none; }
+.monospace { font-family: courier; }
+'
 
 if test "$wind" = "no"; then
 	ok_sel="disabled"
@@ -159,7 +164,7 @@ if test -n "$browse"; then
 	dece_browse=$(http_encode "$browse")
 
 	if ! test -d "$browse"; then
-		echo "<h3><font color=blue>Warning: Folder \"$dece_browse\" does not exists.</font></h3>"
+		echo "<h3 class="warn">Warning: Folder \"$dece_browse\" does not exists.</h3>"
 	fi
 
 	while ! readlink -f "$browse" >& /dev/null; do
@@ -169,7 +174,7 @@ if test -n "$browse"; then
 fi
 
 if ! echo "$browse" | grep -q '^/mnt'; then
-	echo "<h3><font color=blue>Warning: Only sub folders of /mnt are allowed.</font></h3>"
+	echo "<h3 class="warn">Warning: Only sub folders of /mnt are allowed.</h3>"
 	browse="/mnt"
 	dece_browse=$(http_encode "$browse")
 	perce_browse=$(url_encode "$browse")

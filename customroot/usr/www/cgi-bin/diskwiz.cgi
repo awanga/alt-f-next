@@ -48,7 +48,7 @@ Continue?")
 	</script>
 	<form name=wizf action="/cgi-bin/diskwiz_proc.cgi" method="post">	
 	<fieldset>
-	<legend><strong>Select the disks you want to format</strong></legend>
+	<legend>Select the disks you want to format</legend>
 	<table><tr>
 	<th>Format</th>
 	<th>Bay</th>
@@ -79,7 +79,7 @@ for i in $disks; do
 	EOF
 	j=$((j+1))
 done
-echo "</table></fieldset><input type=hidden name=num_disks value=$((j-1))><br>"	
+echo "</table></fieldset><input type=hidden name=num_disks value=$((j-1))>"	
 
 nusb="$(cat /etc/bay | grep =usb | wc -l)"
 if test  "$nusb" -ge 2; then
@@ -128,7 +128,7 @@ fi
 
 cat<<-EOF
 	<fieldset>
-	<legend><strong>Whirl your magic wand...</strong></legend>
+	<legend>Whirl your magic wand...</legend>
 	$fmsg
 	<table>
 	<tr><td colspan=2>I want my disk as:</td></tr>
@@ -161,9 +161,9 @@ cat<<-EOF
 	<tr><td align=center>
 		<input type=radio $ext4_dis $ext4_chk name=wish_fs value=ext4></td>
 		<td>recent, faster cleaning time, best reliability, low fragmentation, big files support (ext4)</td></tr>
-	</table>
+	</table></fieldset>
 
-	<p><input type=submit name=advise value=Abracadabra onclick="return validate('$ndisks')">
-	</fieldset></form></body></html>
+	<input type=submit name=advise value=Abracadabra onclick="return validate('$ndisks')">
+	</form></body></html>
 EOF
 

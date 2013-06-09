@@ -13,11 +13,15 @@ cat<<-EOF
 	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 	<html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>Index</title></head><body style="font-family: arial,verdana">
-	$(bookmf)
+	<script type="text/javascript">
+	$(cat base.js)
+	</script>
+	<style type="text/css">
+	$(cat base.css)
+	body { font-family: arial,verdana;}
+	</style>
+	<title>Index</title></head><body>
 EOF
-
-menu_setup
 
 if test -s bookmarks.html; then
 	echo "<table cellspacing=0><tr>"

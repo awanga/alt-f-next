@@ -94,12 +94,12 @@ done < /etc/passwd
 bdir=$(readlink -f /Backup)
 cat<<-EOF
 	<form name=backup action="/cgi-bin/backup_proc.cgi" method="post">
-	<fieldset><legend><strong>Backup Destination Folder</strong></legend>
+	<fieldset><legend>Backup Destination Folder</legend>
 	Current: <input type=text id="bdir_id" name=bdir value="$bdir">
 	<input type=button onclick="browse_dir('bdir_id','$bdir')" value=Browse>
 	<input type=submit name=change onclick="return confirm('Your current backup folder will be renamed $bdir-N and a new one created.'+'\n\n' + 'Proceed?')" value=Change>
-	</fieldset><br>
-	<fieldset><legend><strong>Backup Setup</strong></legend>
+	</fieldset>
+	<fieldset><legend>Backup Setup</legend>
 	<table>
 	<tr><th>Disable</th><th>ID</th><th>Type</th><th>Run As</th><th>Host</th>
 	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th><th></th></tr>
@@ -201,8 +201,8 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 cat<<EOF
-	</table>
-	<br><input type=hidden name=cnt_know value="$i">
+	</table></fieldset>
+	<input type=hidden name=cnt_know value="$i">
 	<input type=submit name=submit value=Submit>$(back_button)
-	</fieldset></form></body></html>
+	</form></body></html>
 EOF

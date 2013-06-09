@@ -44,13 +44,13 @@ devs="$(awk '/sd[a-z][1-9]/{printf "<option value=%s>%s (%.1f GB)</option>\n", $
 
 cat<<EOF
 	<form id="cryptf" action="/cgi-bin/cryptsetup_proc.cgi" method="post">
-	<fieldset><legend><strong>Encrypt</strong></legend>
+	<fieldset><legend>Encrypt</legend>
 	<table><tr><th>Device</th><th>Cipher</th><th>Bits</th><th></td></tr>
 	<tr><td><select name=devto><option value=none>Select a Partition</option>$devs</select></td>
 		<td><input type=text name=cipher value="aes-cbc-essiv:sha256"></td>
 		<td><select name=nbits><option>128</option><option>192</option><option>256</option></select></td>
 		<td><input type="submit" name=action value="Format" onClick="return confirm('All data in partition will be lost.\nNo check will be done to see if the partition is currently in use.\n\nProceed?')"></td></tr>
-	</table></fieldset><br>
+	</table></fieldset>
 EOF
 
 curr=$(blkid -t TYPE=crypt_LUKS | awk -F: '{print $1}')
@@ -58,7 +58,7 @@ action="none"
 
 if test -n "$curr"; then
 	cat<<-EOF
-		<fieldset><legend><strong>Encrypted devices</strong></legend>
+		<fieldset><legend>Encrypted devices</legend>
 		<table><tr><th>Dev</th><th>Size (GB)</th><th>Cipher</th>
 		<th>Mode</th><th>Bits</th><!--th>Hash</th--><th>State</th></tr>
 	EOF

@@ -43,16 +43,16 @@ EOF
 
 if test -n "$mirror" -a -n "$dbpart"; then
 	cat<<-EOF
-		<fieldset><legend><strong>Found a $(cat $dbpart/etc/issue.net) installation in $dbpart</strong></legend>
+		<fieldset><legend>Found a $(cat $dbpart/etc/issue.net) installation in $dbpart</legend>
 		<input type="submit" name="submit" value="Execute" $(ttip kexec_tt) onClick="return confirm('Executing Debian will stop Alt-F and all its services.\n\n\
 You will have to use a ssh client to login as user root,\n\
 password is the same as Alt-F web password, and use the command line.\n\nProceed?')">
-		<input type="submit" name="submit" value="Uninstall" $(ttip rm_tt)></fieldset><br>
+		<input type="submit" name="submit" value="Uninstall" $(ttip rm_tt)></fieldset>
 	EOF
 fi
 
 cat<<-EOF
-	<fieldset><legend><strong>Install Debian on disk</strong></legend>
+	<fieldset><legend>Install Debian on disk</legend>
 	<table>
 	<tr><td>Debian mirror:</td>
 	<td><input type=text size=30 name=mirror value="$mirror"></td>

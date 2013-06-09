@@ -10,10 +10,10 @@ CONFF=/etc/inetd.conf
 
 cat<<-EOF
 	<form action="/cgi-bin/inetd_proc.cgi" method="post">
-	<table><colgroup span=2></colgroup><colgroup span=1 style="background:#ddd;"></colgroup>
-	<tr>
-	<th>Service</th><th>Program</th>
-	<th align=center>Enable</th>
+	<table><tr>
+	<th>Service</th>
+	<th>Program</th>
+	<th class="highcol">Enable</th>
 	<th></th>
 	</tr>
 EOF
@@ -47,7 +47,7 @@ while read srv tp nt wt ow exep exe args; do
 
 	cat<<-EOF
 		<tr><td>$srv</td><td><em>$exe</em></td>
-		<td align=center><input type=checkbox $chkf name=$srv value=enable></td>
+		<td class="highcol"><input type=checkbox $chkf name=$srv value=enable></td>
 		$conf
 		</tr>
 	EOF
@@ -55,7 +55,7 @@ done < $CONFF
 
 cat<<-EOF
 	<tr><td></td><td></td>
-	<td><input type="submit" name=submit value="Submit"></td><td>$(back_button)</td>	
+	<td class="highcol"><input type="submit" name=submit value="Submit"></td><td>$(back_button)</td>	
 	</tr></table></form></body></html>
 EOF
 

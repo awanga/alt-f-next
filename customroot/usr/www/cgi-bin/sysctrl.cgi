@@ -67,7 +67,7 @@ if test "$board" = "C1" -o "$board" = "D1"; then
 			</td></tr>
 		<tr><td>Low Fan Speed Temp.</td>
 			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
-		</table></fieldset><br>
+		</table></fieldset>
 	EOF
 elif test "$board" = "A1" -o "$board" = "B1"; then
 	cat<<-EOF
@@ -83,7 +83,7 @@ elif test "$board" = "A1" -o "$board" = "B1"; then
 			<td>High Fan Speed </td>
 			<td><input type=text size=4 name=hi_fan value="$hi_fan">RPM</td>
 		</tr>
-		</table></fieldset><br>
+		</table></fieldset>
 
 	<fieldset><Legend><strong>Maximum ratings</strong>
 		</legend><table>
@@ -93,10 +93,10 @@ elif test "$board" = "A1" -o "$board" = "B1"; then
 			<tr><td>Max Fan Speed </td>
 				<td><input type=text size=4 name=max_fan_speed value="$max_fan_speed">RPM</td>
 			</tr>
-		</table></fieldset><br>
+		</table></fieldset>
 	EOF
 else
-	echo "Unknown board</table></fieldset><br>"
+	echo "Unknown board</table></fieldset>"
 fi
 
 cat<<-EOF
@@ -121,7 +121,7 @@ cat<<-EOF
 				<td><input type=text readonly name=sendto value="$SENDTO">
 				Use "Setup Mail" to change</td>
 			</tr>
-		</table></fieldset><br>
+		</table></fieldset>
 
 	<fieldset><Legend><strong>Action to execute on Button press</strong>
 		</legend><table>

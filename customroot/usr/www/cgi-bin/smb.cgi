@@ -108,16 +108,16 @@ cat<<EOF
 	</script>
 	<form id=smbf name=smbf action=smb_proc.cgi method="post">
 
-	<fieldset><legend><strong>Host details</strong></legend><table>
+	<fieldset><legend>Host details</legend><table>
 	<tr><td>Host name:</td>
 		<td><input readonly type=text name=hostname value="$(hostname -s)">Use "Setup Host" to change</td></tr>
 	<tr><td>Host description:</td>
 		<td><input type=text name=hostdesc value="$hostdesc"></td></tr>
 	<tr><td>Workgroup:</td>
 		<td><input type=text name=workgp value="$workgp"></td></tr>
-	</table></fieldset><br>
+	</table></fieldset>
 
-	<fieldset><legend><strong>Folders to export to other hosts</strong></legend>
+	<fieldset><legend>Folders to export to other hosts</legend>
 	<table>
 	<tr>
 		<th>Disable</th>
@@ -242,9 +242,9 @@ function parse(share_name, line) {
 }' $CONF_SMB
 
 cat<<-EOF
-	</fieldset><br>
+	</fieldset>
 
-	<fieldset><legend><strong>Folders to import from other hosts</strong></legend>
+	<fieldset><legend>Folders to import from other hosts</legend>
 	<table>
 	<tr align=center>
 	<th>Disable</th>
@@ -272,8 +272,8 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 if grep -q "# Samba config file created using SWAT" $CONF_SMB; then
-	swat="<font color=blue><h4>The Advanced SWAT configuration tool has been used.<br>
-	If you Submit changes, then SWAT changes applied to shares will be lost</h4></font>"
+	swat="<h4 class="warn">The Advanced SWAT configuration tool has been used.<br>
+	If you Submit changes, then SWAT changes applied to shares will be lost</h4>"
 else
 	swat="<p>"
 fi
@@ -284,6 +284,7 @@ cat<<EOF
 	$swat
 	<input type=submit name=submit value="Submit">
 	<input type=button value="Advanced" onClick="return swat_popup()">
-	$(back_button)</form></body></html>
+	$(back_button)
+	</form></body></html>
 EOF
 

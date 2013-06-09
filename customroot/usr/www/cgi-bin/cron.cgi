@@ -2,6 +2,8 @@
 
 . common.sh
 check_cookie
+
+LOCAL_STYLE='.cron {color:gray;}'
 write_header "cron Setup"
 
 #CONF_CRON=/var/spool/cron/crontabs/root
@@ -36,7 +38,7 @@ while read min hour monthday month weekday cmd; do
 
 	altf_cron=""
 	if echo $cmd | grep -q "#!#"; then
-		altf_cron="readonly style=\"color:gray;\""
+		altf_cron="readonly class=\"cron\""
 		cmd=$(echo $cmd | sed -n 's/#.*$//p')
 		inp=""		 
 	fi
