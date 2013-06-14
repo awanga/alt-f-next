@@ -17,6 +17,7 @@ elif test -n "$add"; then
 	title=$(httpd -d $add)
 	if ! grep -q "$title" bookmarks.html; then
 		echo "<a href=\"$url\" target=\"content\">$title</a><br>" >> bookmarks.html
+		echo $title:$url >> Shortcuts.men
 	fi
 
 	html_header
@@ -36,6 +37,7 @@ elif test -n "$rm"; then
 			echo -n > bookmarks.html
 		else
 			sed -i "\|$title|d" bookmarks.html
+			sed -i "\|$title|d" Shortcuts.men
 		fi
 	fi
 

@@ -220,55 +220,6 @@ s/~/%7e/g
 "
 }
 
-# $1-title (optional)
-html_header() {
-	if test -n "$HTML_HEADER_DONE"; then return; fi
-	HTML_HEADER_DONE="yes"
-	if test "$#" != 0; then
-		center="<h2 class="title">$1</h2>"
-	fi
-
-	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
-
-	cat<<-EOF
-		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<script type="text/javascript">
-		$(cat base.js)
-		</script>
-        <style type="text/css">
-		html { height: 100%; }
-		$(cat base.css)
-		$(echo "$LOCAL_STYLE")
-		</style>
-		<title></title></head>
-		<body style="height: 100%; font-family: arial,verdana">
-		$center
-	EOF
-}
-
-debug() {
-	HTML_HEADER_DONE="yes"
-	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
-	echo "<html><body><pre>$(set)</pre>"
-}
-
-enddebug() {
-	echo "</body></html>"
-}
-
-msg() {
-	txt=$(echo "$1" | sed 's|"|\\"|g' | awk '{printf "%s\\n", $0}')
-
-	html_header
-	echo "<script type=text/javascript>
-	alert(\"$txt\")
-	window.location.assign(document.referrer)
-	</script>
-	</body></html>"
-	exit 1
-}
-
 has_disks() {
 	disks=$(ls /dev/sd?) >/dev/null 2>&1
 	ndisks=$(echo "$disks" | grep /dev/ | wc -l)
@@ -355,6 +306,102 @@ fs_progress() {
 	done
 }
 
+
+firstboot() {
+	if ! test -f /tmp/firstboot; then return; fi
+
+	pg=${0%.cgi}
+	if test "$pg" = "login"; then return; fi
+
+	currst=$(cat /tmp/firstboot)
+	currpg=${currst%_?}
+
+	if echo $0 | grep -q '_proc\.cgi'; then
+		ppg=${0%_proc.cgi}
+	fi
+
+	if test -z "$ppg" -a "$pg" != "$currpg"; then
+		gotopage /cgi-bin/${currpg}.cgi
+		exit 0
+	fi
+
+msg1="Welcome to your first login to Alt-F.<br> Logout to skip this wizard.<br><br>"
+msg_host="You should now fill-in all the host details and Submit them."
+msg_time_1="You should now specify the Continent/City where you live and Submit it.<br>"
+msg_time_2="You should now adjust the current date and time, either through the internet or manually, and Submit it."
+msg_diskwiz="You should now select a disk configuration."
+msg_newuser_1="You should now specify the filesystem where users will login and store their personal data."
+msg_newuser_2="You should now create an user account."
+msg_smb="You can now create new folders and define them as network shares."
+msg_settings="You should now save in flash memory the changes that you have just made.<br>
+You should do it whenever you want your changes to survive a box reboot."
+
+	case "$currst" in
+		host) next=time_1;;
+		time_1) next=time_2;;
+		time_2) next=diskwiz;; 
+		diskwiz) next=newuser_1;;
+		newuser_1) next=newuser_2;; 
+		newuser_2) next=smb;;
+		smb) next=settings;; 
+		settings) next=status;; 
+		*) rm /tmp/firstboot; firstmsg=""; return ;;
+	esac
+
+	firstmsg="<h4 class=\"warn\">$msg1 $(eval echo \$msg_$currst)</h4>"
+
+	if test "$ppg" = "$currpg"; then
+		echo $next > /tmp/firstboot
+	fi
+}
+
+# $1-title (optional)
+html_header() {
+	if test -n "$HTML_HEADER_DONE"; then return; fi
+	HTML_HEADER_DONE="yes"
+	if test "$#" != 0; then
+		center="<h2 class="title">$1</h2>"
+	fi
+
+	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
+
+	cat<<-EOF
+		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<style type="text/css">
+			$(echo "$LOCAL_STYLE")
+			html { height: 100%; }
+			body { height: 100%; font-family: arial,verdana; }
+		</style>
+		$(load_thm default.thm)	
+		<title></title></head>
+		<body>
+		$center
+	EOF
+}
+
+debug() {
+	HTML_HEADER_DONE="yes"
+	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
+	echo "<html><body><pre>$(set)</pre>"
+}
+
+enddebug() {
+	echo "</body></html>"
+}
+
+msg() {
+	txt=$(echo "$1" | sed 's|"|\\"|g' | awk '{printf "%s\\n", $0}')
+
+	html_header
+	echo "<script type=text/javascript>
+	alert(\"$txt\")
+	window.location.assign(document.referrer)
+	</script>
+	</body></html>"
+	exit 1
+}
+
 back_button() {
 	echo "<input type=button value=\"Back\" onclick=\"history.back()\">"
 }
@@ -437,54 +484,6 @@ download_file() {
 	echo -e "Content-Disposition: attachment; filename=\"$(basename $1)\"\r"
 	echo -e "Content-Type: application/octet-stream\r\n\r"
 	cat $1
-}
-
-firstboot() {
-	if ! test -f /tmp/firstboot; then return; fi
-
-	pg=${0%.cgi}
-	if test "$pg" = "login"; then return; fi
-
-	currst=$(cat /tmp/firstboot)
-	currpg=${currst%_?}
-
-	if echo $0 | grep -q '_proc\.cgi'; then
-		ppg=${0%_proc.cgi}
-	fi
-
-	if test -z "$ppg" -a "$pg" != "$currpg"; then
-		gotopage /cgi-bin/${currpg}.cgi
-		exit 0
-	fi
-
-msg1="Welcome to your first login to Alt-F.<br> Logout to skip this wizard.<br><br>"
-msg_host="You should now fill-in all the host details and Submit them."
-msg_time_1="You should now specify the Continent/City where you live and Submit it.<br>"
-msg_time_2="You should now adjust the current date and time, either through the internet or manually, and Submit it."
-msg_diskwiz="You should now select a disk configuration."
-msg_newuser_1="You should now specify the filesystem where users will login and store their personal data."
-msg_newuser_2="You should now create an user account."
-msg_smb="You can now create new folders and define them as network shares."
-msg_settings="You should now save in flash memory the changes that you have just made.<br>
-You should do it whenever you want your changes to survive a box reboot."
-
-	case "$currst" in
-		host) next=time_1;;
-		time_1) next=time_2;;
-		time_2) next=diskwiz;; 
-		diskwiz) next=newuser_1;;
-		newuser_1) next=newuser_2;; 
-		newuser_2) next=smb;;
-		smb) next=settings;; 
-		settings) next=status;; 
-		*) rm /tmp/firstboot; firstmsg=""; return ;;
-	esac
-
-	firstmsg="<center><h4><font color=blue>$msg1 $(eval echo \$msg_$currst)</font></h4></center>"
-
-	if test "$ppg" = "$currpg"; then
-		echo $next > /tmp/firstboot
-	fi
 }
 
 gotopage() {
@@ -633,58 +632,67 @@ drawbargraph() {
 }
 
 # usage: mktt tt_id "tooltip msg" 
-mktt () {
+mktt() {
 	echo "<div id=\"$1\" class=\"ttip\">$2</div>"
 }
 
-# usage:
-# mktt tt_id "tooltip message"
+# usage: mktt tt_id "tooltip message"
 # <input ... $(ttip tt_id)>
 ttip() {
 	echo "onmouseover=\"popUp(event,'$1')\" onmouseout=\"popDown('$1')\""
 }
 
-fill_menu() {
-	echo "<td><div id=\"$1\" class=\"Menu\">$1</div><div id=\"$1_sub\">"
-	extra=$(cat $1*.men)
-	echo "$extra" | while read entry url; do
-		echo "<a class=\"Menu\" href=\"/cgi-bin/$url\" target=\"content\">$entry</a>"
-	done
-	echo "</div><script type=\"text/javascript\">MenuEntry(\"$1\");</script></td>"
-}
-
-bookmark_fill() {
+shortcuts_fill() {
 cat<<EOF
-	<td><div id="Bookmark" class="Menu">Bookmark</div><div id="Bookmark_sub">
+	<td><div id="Shortcuts" class="Menu">Shortcuts</div><div id="Shortcuts_sub">
 	<a class="Menu" href="" onclick="return addbookmark()">Add</a>
 	<a class="Menu" href="" onclick="return rmbookmark()">Remove</a>
 	<a class="Menu" href="" onclick="return rmall()">Remove All</a>
-	</div><script type="text/javascript">MenuEntry("Bookmark")</script>
+	</div><script type="text/javascript">MenuEntry("Shortcuts")</script>
 	</td></tr></table>
 EOF
 }
 
-# $1-page title $2-script
-menu_setup2() {
-cat<<EOF
-	<table cellspacing=0><tr>
-		<td><a class="Menu" href="/cgi-bin/logout.cgi" target="content">Logout</a></td>
-		<td><a class="Menu" href="/cgi-bin/status.cgi" target="content">Status</a></td>
-EOF
-
-	for i in Setup Disk Services Packages System; do
-		fill_menu $i
+menu_setup() {
+	cat<<-EOF
+		<script type="text/javascript">
+		menu = new Array();
+		men = {label:"Logout", url:"/cgi-bin/logout.cgi"};
+		menu.push(men);
+		men = {label:"Status", url:"/cgi-bin/status.cgi"};
+		menu.push(men);
+	EOF
+	for i in $(cat Main.men) Shortcuts; do
+		echo -n "men = {label:\"$i\", smenu:["
+		awk -F: '{printf("{item:\"%s\", url:\"%s\"},\n", $1, $2)}' $i*.men
+		cat<<-EOF
+			]};
+			menu.push(men);
+		EOF
 	done
-	bookmark_fill
+	cat<<-EOF
+		MenuSetup();
+		</script>
+	EOF
 }
 
-#bookmf() {
-#	:
-#}
-
-#menu_setup() {
-#	:
-#}
+load_thm() {
+	SCRIPTS=/scripts
+	if test -f ../$SCRIPTS/$1; then
+		while read ln; do
+			if test "${ln:0:1}" = "#"; then 
+				echo "<!--${ln:1}-->"
+			elif echo $ln | grep -q .js; then
+				echo "<script type=\"text/javascript\" src=\"$SCRIPTS/$ln\"></script>"
+			elif echo $ln | grep -q .css; then
+				echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$SCRIPTS/$ln\">"
+			elif echo $ln | grep -q .thm; then
+				echo "<!-- loading $ln -->"
+				load_thm $ln
+			fi
+		done < ../$SCRIPTS/$1
+	fi
+}
 
 # args: title [onload action]
 write_header() {
@@ -700,12 +708,12 @@ write_header() {
 
 	if ! loadsave_settings -st >/dev/null; then
 		warn_tt="The following files have changed since the last save:<br>$(loadsave_settings -lc | sed -n 's/ /<br>/gp')"
-		warn="<center><h5>
-			<a href=\"/cgi-bin/settings.cgi\" $(ttip tt_settings)
-			style=\"text-decoration: none; color: red\">
+		warn=$(cat<<-EOF
+			<h5 class="error"><a  class="error" href="/cgi-bin/settings.cgi" $(ttip tt_settings)>
 			When done you must <u>save settings</u>
-			<img src=\"../help.png\" width=11 height=11 alt=\"help\" border=0>
-			</a></h5></center>"
+			<img src="../help.png" width="11" height="11" alt="help"></a></h5>
+			EOF
+			)
 	fi
 
 	if test "$#" = 2; then
@@ -716,19 +724,17 @@ write_header() {
 	if test -f /usr/www/$hf; then
 		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
-	
+
 	cat<<-EOF
 		<title>$1</title>
-		<script type="text/javascript">
-		$(cat base.js)
-		</script>
 		<style type="text/css">
-		$(cat base.css)
-		$(echo "$LOCAL_STYLE")
+			$(echo "$LOCAL_STYLE")
+			body {height: 95%; font-family: arial,verdana; } 
 		</style>
+		$(load_thm default.thm)
 		</head>
-		<body style="height: 95%; font-family: arial,verdana" $act>
-		$(menu_setup2 "$1" "/cgi-bin/$0") 
+		<body $act>
+		$(menu_setup)
 		$(mktt tt_help "Get a descriptive help")
 		$(mktt tt_settings "$warn_tt")
 		<h2 class="title">$1 $hlp</h2>

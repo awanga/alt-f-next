@@ -1,8 +1,8 @@
-Host host.cgi 
-Time time.cgi
-Mail mail.cgi
-Proxy proxy.cgi
-Hosts hosts.cgi
-Users usersgroups.cgi
-Debian debian.cgi
-Folders browse_dir.cgi?wind=no?browse=/mnt
+Host:host.cgi 
+Time:time.cgi
+Mail:mail.cgi
+Proxy:proxy.cgi
+Hosts:hosts.cgi
+Users:usersgroups.cgi
+Debian:debian.cgi
+Folders:browse_dir.cgi?wind=no?browse=/mnt

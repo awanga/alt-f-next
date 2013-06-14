@@ -1,47 +1,36 @@
 
 html { height: 95%; }
-
 body {font-size: 100%; }
-
 select, input[type="text"], input[type="button"], input[type="submit"] {
 	font-size: 0.8em;
 }
-
-.title {
+.title, .warn, .error {
 	text-align: center;
 } 
-
 .warn {
 	color: blue;
-	text-align: center;
 }
-
 .error {
 	color: red;
-	text-align: center;
+	text-decoration: none;
 }
-
 .highcol {
 	background: #d0d0d0;
 	text-align: center;
 }
-
 table, th, td {
 	border-collapse: collapse;
 }
-
 fieldset {
 	margin-bottom: 1em;
 	border-radius: 8px;
 }
-
 legend {
 	font-weight: bold;
 	font-style: italic;
 }
 
 /* Menus */
-
 a.Menu, div.Menu {
 	display: block;
 	width: 100px;
@@ -56,7 +45,6 @@ a.Menu, div.Menu {
 }
 
 /* tooltips */
-
 .ttip {
 	font-family: arial,verdana;
 	border: 0px;
@@ -69,21 +57,17 @@ a.Menu, div.Menu {
 }
 
 /* bargraphs */
-	
 .meter-wrap {
 	position: relative;
-	z-index: -1;
+	z-index: 100;
 }
-
 .meter-wrap, .meter-value, .meter-text {
 	width: 100%;
 	height: 1em;
 }	
-
 .meter-wrap, .meter-value {
 	background: #bdbdbd top left no-repeat;
 }		   
-
 .meter-text {
 	position: absolute;
 	top: 0;
@@ -94,11 +78,8 @@ a.Menu, div.Menu {
 }
 
 /* debugging /*
-
 table, td, th { border: 1px solid black; }
-td { background-color: #c0c0c0; }
+td { background-color: #d0d0d0; }
 th { background-color: #606060; color: white; }
-fieldset { background-color: #ddd }
-
+fieldset { background-color: #f0f0f0 }
 /**/
-

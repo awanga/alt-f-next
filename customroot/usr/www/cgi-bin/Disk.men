@@ -1,5 +1,5 @@
-Utilities diskutil.cgi
-Filesystems diskmaint.cgi
-RAID raid.cgi
-Partitioner diskpart.cgi
-Wizard diskwiz.cgi
+Utilities:diskutil.cgi
+Filesystems:diskmaint.cgi
+RAID:raid.cgi
+Partitioner:diskpart.cgi
+Wizard:diskwiz.cgi
