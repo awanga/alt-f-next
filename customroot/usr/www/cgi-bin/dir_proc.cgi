@@ -20,6 +20,7 @@ LOCAL_STYLE='
 	margin-right: auto;
 	width: 33%;
 	font-size: 1.5em;
+}
 '
 
 wdir=$(httpd -d "$newdir")
