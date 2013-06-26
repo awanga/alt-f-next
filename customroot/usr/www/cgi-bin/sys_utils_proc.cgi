@@ -5,6 +5,7 @@ check_cookie
 read_args
 
 CONFM=/etc/misc.conf
+SCRIPTS=/usr/www/scripts
     
 #debug
 
@@ -57,7 +58,9 @@ showlog() {
 	EOF
 }
 
-if test -n "$Refresh"; then
+if test -n "$theme"; then
+	action="Theme"
+elif test -n "$Refresh"; then
 	action="$Refresh"
 elif test -n "$Clear"; then
 	action="$Clear"
@@ -187,6 +190,23 @@ case "$action" in
 
 		busy_cursor_end
 		js_gotopage /cgi-bin/sys_utils.cgi
+		;;
+
+	Theme)
+		if test -n "$notop_menu" -a -n "$noside_menu"; then
+			msg "You can't disable both menus."
+		fi
+		if test -s $CONFM; then . $CONFM; fi
+		was=$SIDE_MENU
+		sed -i -e '/^TOP_MENU/d' -e '/^SIDE_MENU/d' $CONFM
+		if test -n "$notop_menu"; then echo 'TOP_MENU=no' >> $CONFM; fi
+		if test -n "$noside_menu"; then echo 'SIDE_MENU=no' >> $CONFM; fi
+		if test "$was" != "$noside_menu"; then 
+			html_header
+			echo "<script type="text/javascript">parent.location.reload(true)</script></body></html>"
+			exit 0
+		fi
+		(cd $SCRIPTS; ln -sf $(httpd -d "$set_thm") default.thm)
 		;;
 
 	KernelLog)

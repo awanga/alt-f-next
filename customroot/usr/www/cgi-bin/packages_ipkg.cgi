@@ -97,8 +97,8 @@ else
 					j = i; v = ver[i];
 					upd="<td></td><td></td>";
 				}
-				printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
-					url[j], nm, v;
+				printf "<tr><td><a href=\"/cgi-bin/embed.cgi?name=%s?site=%s\">%s</a></td><td>%s</td>",
+					nm, url[j], nm, v;
 				printf "<td><input type=submit name=%s value=Remove></td>", nm;
 				print upd;
 				printf "<td>%s</td></tr>\n\n", des[j];
@@ -124,8 +124,8 @@ else
 			for (i=1; pkg[i] != ""; i++) {
 				nm = pkg[i];
 				if (nm in uinst) {
-					printf "<tr><td><a href=\"%s\">%s</a></td><td>%s</td>",
-					url[i], nm, ver[i];
+					printf "<tr><td><a href=\"/cgi-bin/embed.cgi?name=%s?site=%s\">%s</a></td><td>%s</td>",
+					nm, url[i], nm, ver[i];
 					printf "<td><input type=submit name=%s value=Install></td>", nm;
 					printf "<td>%s</td></tr>\n\n", des[i];
 				}
@@ -135,5 +135,4 @@ else
 		</table></fieldset></form>", pkgfeed)
 		}
 	}'
-
 fi

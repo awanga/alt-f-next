@@ -366,7 +366,7 @@ files="
 /etc/sysctrl.conf	/etc/msmtprc		/etc/msmtprc.alias
 /etc/smartd.conf	/etc/wgetrc			/etc/ssl/certs/server.pem
 /etc/backup.conf	/etc/syslog.conf	/etc/sysctl.conf
-/etc/modprobe.conf	/usr/www/cgi-bin/bookmarks.html
+/etc/modprobe.conf	/usr/www/cgi-bin/Shortcuts.men
 "
 
 # those are also used only when mounting/unmounting the aufs branch

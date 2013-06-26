@@ -1,6 +1,4 @@
-Add:\"\" onclick=\"return addbookmark()\"
-Remove:\"\" onclick=\"return rmbookmark()\"
-Remove All:\"\" onclick=\"return rmall()\"
-<hr>:
-Alt-F Package Manager:/cgi-bin/packages_ipkg.cgi
-Mail Setup:/cgi-bin/mail.cgi
+Add|\"\" onclick=\"return addbookmark()\"
+Remove|\"\" onclick=\"return rmbookmark()\"
+Remove All|\"\" onclick=\"return rmall()\"
+<hr>|#

@@ -1,7 +1,13 @@
 
-html { height: 95%; }
-body {font-size: 100%; }
-select, input[type="text"], input[type="button"], input[type="submit"] {
+html {
+	height: 95%;
+}
+body {
+	font-size: 100%;
+	font-family: sans-serif;
+	height: 95%;
+}
+select, input {
 	font-size: 0.8em;
 }
 .title, .warn, .error {
@@ -15,7 +21,7 @@ select, input[type="text"], input[type="button"], input[type="submit"] {
 	text-decoration: none;
 }
 .highcol {
-	background: #d0d0d0;
+	background: #e0e0e0;
 	text-align: center;
 }
 table, th, td {
@@ -24,29 +30,79 @@ table, th, td {
 fieldset {
 	margin-bottom: 1em;
 	border-radius: 8px;
+	background-color: #f0f0f0;
 }
 legend {
 	font-weight: bold;
 	font-style: italic;
 }
 
-/* Menus */
-a.Menu, div.Menu {
+.menu {
+	font-weight: bold;
+	background-color: #8f8f8f;
+}
+.menu a, .menu label {
 	display: block;
-	width: 100px;
-	padding: 2px 5px;
-	background: #8F8F8F;		
-	color: #F0F0F0;
-	text-align: center;
-	font-family: arial,verdana;
-	font-size: 0.9em;
-	font-weight: 900;
 	text-decoration: none;
+	color: #F0F0F0;
+}
+.menu a:hover, .menu label:hover {
+	background-color: #aaaaaa;
+}
+.menu ul, ul.menu {
+	padding: 0px;
+	margin: 0px;
+}
+.menu li {
+	display: block;
+	position: relative;
+	list-style: none;
+}
+.menu li ul, .menu input {
+	display: none;
+}
+
+/* vertical menu */
+.vmenu li:hover ul {
+	margin-left: 1em;
+}
+.vmenu input:checked ~ ul {
+	display: block;
+	margin-left: 1em;
+}
+
+/* horizontal menu */
+.hmenu li {
+	float: left;
+	width: 6em;
+	background-color: #8f8f8f;
+	z-index: 1000;
+}
+.hmenu .short li {
+	width: 12em;
+}
+.hmenu li ul {
+	position: absolute;
+}
+.hmenu li:hover ul {
+	display: block;
+}
+
+/* Shortcuts */
+.short {
+	padding: 0px;
+	margin: 0px;
+	font-weight: normal;
+}
+.short a {
+	text-decoration: underline;
+	background: #f0f0f0;
+	color: black;
 }
 
 /* tooltips */
 .ttip {
-	font-family: arial,verdana;
+	font-family: sans-serif;
 	border: 0px;
 	padding: 2px;
 	color: #333333;
@@ -54,6 +110,7 @@ a.Menu, div.Menu {
 	position: absolute;
 	visibility: hidden;
 	border-radius: 8px;
+	z-index: 200;
 }
 
 /* bargraphs */
@@ -77,9 +134,8 @@ a.Menu, div.Menu {
 	font-size: .8em;
 }
 
-/* debugging /*
+/* table debugging /*
 table, td, th { border: 1px solid black; }
 td { background-color: #d0d0d0; }
 th { background-color: #606060; color: white; }
-fieldset { background-color: #f0f0f0 }
 /**/

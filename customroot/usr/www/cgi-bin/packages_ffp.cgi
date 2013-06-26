@@ -82,9 +82,8 @@ fi
 	
 	for i in $inst_pkg; do
 		base_name=${i%$spat}
-
 		cat<<-EOF
-			<tr><td><a href="$FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name">$i</a></td>
+			<tr><td><a href="/cgi-bin/embed.cgi?name=ffp+$base_name?site=$(url_encode $FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name)">$i</a></td>
 			<td><input type=submit name="$i" value="Remove"></td>
 		EOF
 
@@ -136,7 +135,7 @@ fi
 			avail_pkg=$(echo "$avail_pkg" | sed "/$j/d")
 		done
 		cat<<-EOF
-			<tr><td><a href="$FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name">$update_name</a></td>
+			<tr><td><a href="/cgi-bin/embed.cgi?name=ffp+$base_name?site=$(url_encode $FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name)">$update_name</a></td>
 			<td><input type=submit name="$update_name" value="Install"></td></tr>
 		EOF
 	done

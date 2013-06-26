@@ -1,9 +1,12 @@
 #!/bin/sh
 
+CONFM=/etc/misc.conf
+THM_DIR=/usr/www/scripts
+
 . common.sh
 check_cookie
 
-write_header "System utilities" "document.sysutils.reset()"
+write_header "System utilities" "document.sysutilsf.reset()"
 
 mktt ssl_tt "Erases current SSL certificate for https and creates a new one.<br>
 WARNING: your browser will complain and you will have to delete<br>
@@ -22,8 +25,24 @@ for i in $(find /var/log/ -name \*.log\* -o -name log.\* -o -name \*_log); do
 done
 logsel="$logsel</select>"
 
+if test -f $CONFM; then
+	. $CONFM
+fi
+
+if test "$TOP_MENU" = "no"; then notop_chk="checked"; fi
+if test "$SIDE_MENU" = "no"; then noside_chk="checked"; fi
+
+def_thm=$(basename $(readlink -f $THM_DIR/default.thm))
+for i in $THM_DIR/*.thm; do
+	if ! test -h $i; then
+		thm=$(basename $i)
+		sel=""; if test "$thm" = "$def_thm"; then sel="selected"; fi
+		opt="$opt <option $sel value=\"$thm\">$(basename $thm .thm): $(sed -n '/^#/s/^#[[:space:]]*//p' $i)</option>"
+	fi
+done
+
 cat<<-EOF
-	<form name=sysutils action="/cgi-bin/sys_utils_proc.cgi" method="post">
+	<form id="sysutilsf" name="sysutilsf" action="/cgi-bin/sys_utils_proc.cgi" method="post">
 
 	<fieldset><legend>Reboot or Poweroff</legend>
 	<input type="submit" name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
@@ -43,6 +62,13 @@ cat<<-EOF
 	<fieldset><legend>Administering password</legend>
 	Current Password:<input type="password" autocomplete="off" name="passwd" value="" onkeypress="return event.keyCode != 13">
 	<input type="submit" name="action" value="ChangePassword">
+	</fieldset>
+
+	<fieldset><legend>Theme</legend>
+	<select name="set_thm" onchange="document.sysutilsf.theme.value='theme'; return submit()">$opt</select>
+	Disable top menu:<input $notop_chk type="checkbox" name="notop_menu" value="no" onchange="document.sysutilsf.theme.value='theme'; return submit()">
+	Disable side menu:<input $noside_chk type="checkbox" name="noside_menu" value="no" onchange="document.sysutilsf.theme.value='theme'; return submit()">
+	<input type="hidden" name="theme" value="">
 	</fieldset>
 EOF
 

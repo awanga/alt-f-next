@@ -1,4 +1,6 @@
 
+CONF_MISC=/etc/misc.conf
+
 # sed removes any ' or " that would upset quoted assignment
 # awk ensures that 
 #	- all variables passed have legal names
@@ -642,52 +644,36 @@ ttip() {
 	echo "onmouseover=\"popUp(event,'$1')\" onmouseout=\"popDown('$1')\""
 }
 
-shortcuts_fill() {
-cat<<EOF
-	<td><div id="Shortcuts" class="Menu">Shortcuts</div><div id="Shortcuts_sub">
-	<a class="Menu" href="" onclick="return addbookmark()">Add</a>
-	<a class="Menu" href="" onclick="return rmbookmark()">Remove</a>
-	<a class="Menu" href="" onclick="return rmall()">Remove All</a>
-	</div><script type="text/javascript">MenuEntry("Shortcuts")</script>
-	</td></tr></table>
-EOF
-}
-
 menu_setup() {
 	cat<<-EOF
 		<script type="text/javascript">
-		menu = new Array();
-		men = {label:"Logout", url:"/cgi-bin/logout.cgi"};
+		var menu = new Array();
+		var men = {label:"Logout", url:"/cgi-bin/logout.cgi"};
 		menu.push(men);
 		men = {label:"Status", url:"/cgi-bin/status.cgi"};
 		menu.push(men);
 	EOF
-	for i in $(cat Main.men) Shortcuts; do
+	for i in Shortcuts $(cat Main.men); do
 		echo -n "men = {label:\"$i\", smenu:["
-		awk -F: '{printf("{item:\"%s\", url:\"%s\"},\n", $1, $2)}' $i*.men
+		awk -F\| '{printf("{item:\"%s\", url:\"%s\"},\n", $1, $2)}' $i*.men
 		cat<<-EOF
 			]};
 			menu.push(men);
 		EOF
 	done
-	cat<<-EOF
-		MenuSetup();
-		</script>
-	EOF
+	echo "menuSetup(\"$1\",\"$2\");"
+	echo "</script>"
 }
 
 load_thm() {
 	SCRIPTS=/scripts
 	if test -f ../$SCRIPTS/$1; then
 		while read ln; do
-			if test "${ln:0:1}" = "#"; then 
-				echo "<!--${ln:1}-->"
-			elif echo $ln | grep -q .js; then
+			if echo $ln | grep -q .js; then
 				echo "<script type=\"text/javascript\" src=\"$SCRIPTS/$ln\"></script>"
 			elif echo $ln | grep -q .css; then
 				echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$SCRIPTS/$ln\">"
 			elif echo $ln | grep -q .thm; then
-				echo "<!-- loading $ln -->"
 				load_thm $ln
 			fi
 		done < ../$SCRIPTS/$1
@@ -716,25 +702,24 @@ write_header() {
 			)
 	fi
 
-	if test "$#" = 2; then
-		act="onLoad=\"$2\""
-	fi
+	if test "$#" = 2; then act="onLoad=\"$2\""; fi
 
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
 		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
+	if test -s "$CONF_MISC"; then . $CONF_MISC; fi
+
 	cat<<-EOF
 		<title>$1</title>
 		<style type="text/css">
 			$(echo "$LOCAL_STYLE")
-			body {height: 95%; font-family: arial,verdana; } 
 		</style>
 		$(load_thm default.thm)
 		</head>
 		<body $act>
-		$(menu_setup)
+		$(menu_setup "top" "$TOP_MENU")
 		$(mktt tt_help "Get a descriptive help")
 		$(mktt tt_settings "$warn_tt")
 		<h2 class="title">$1 $hlp</h2>

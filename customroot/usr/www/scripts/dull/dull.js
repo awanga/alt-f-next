@@ -1,68 +1,77 @@
-top.document.title = "(" + location.hostname + ") Alt-F " + document.title;
+top.document.title = "(" + location.hostname + ") Alt-F " + document.title
 
 /* menus */
 
-function MenuSetup() {
-	document.writeln('<table cellspacing="0" cellpadding="0"><tr>')
+function side_shortcuts(obj) {
+	var sc = '<ul class="menu vmenu">'
+	sc += '<li><label for="vmenu_' + obj.label + '"<a href="#">' + obj.label +
+		'...</a></label><input type="checkbox" name="vmenu_radio" id="vmenu_' +
+		obj.label + '"><ul>'
+
+	while (sm = obj.smenu.shift()) {
+		if (sm.item == "<hr>") {
+			sc += '</ul></li></ul><ul class="short">'
+			continue;
+		}
+		sc += '<li><a href="' + sm.url + '" target="content">' + sm.item + '</a></li>'
+	}
+	return sc += '</ul>'
+}
+
+function top_shortcuts(obj) {
+	var sc = '<li><a href="#">' + obj.label + '</a><ul>'
+	while (sm = obj.smenu.shift()) {
+		if (sm.item == "<hr>") {
+			sc += '<li><div><ul style="border:1px solid black" class="short">'
+			continue;
+		}
+		sc += '<li><a href="' + sm.url + '" target="content">' + sm.item + '</a></li>'
+	}
+	return sc += '</ul></div></li></ul></li>'
+}
+
+function menuSetup(where, display) {
+	var cl, frm, sc
+	if (where == "side") {
+		if (display == "no") {
+			top.altf.cols="0,*" // hide nav frame
+			return
+		} else
+			top.altf.cols="15%,*"
+		frm = parent.nav.document
+		cl = "vmenu"
+	} else {
+		if (display == "no")
+			return
+		frm = document
+		cl = "hmenu"
+	}
+
+	frm.writeln('<div class="menu ', cl, '" id="sc_id"></div>')
+	frm.writeln('<div class="menu ', cl, '"><ul>')
 	while (obj = menu.shift()) {
-		if (typeof(obj.url) != "undefined") {
-			document.writeln('<td><a class="Menu" href="', obj.url, '" target="content">',
-				 obj.label, '</a></td>')
+		if (typeof(obj.url) != "undefined") { // no submenu, i.e., Logout, Status
+			frm.writeln('<li><a href="', obj.url, '" target="content">', obj.label, '</a></li>')
 		} else {
-			document.writeln('<td><div id="', obj.label, '" class="Menu">', obj.label,
-				'</div><div id="', obj.label, '_sub">')
-			while (sm = obj.smenu.shift()) {
-				document.writeln('<a class="Menu" href="', sm.url,
-					'" target="content">', sm.item, '</a>')
+			if (obj.label == "Shortcuts") {
+				if (where == "side")
+					sc = side_shortcuts(obj)
+				else
+					sc = top_shortcuts(obj)
+				document.getElementById("sc_id").innerHTML = sc
+			} else {
+				/* use 'radio' instead of 'checkbox' bellow to auto-close menus */
+				frm.writeln('<li><label for="vmenu_', obj.label, '"<a href="#">', obj.label,
+					'...</a></label><input type="checkbox" name="vmenu_radio" id="vmenu_',
+					obj.label, '"><ul>')
+
+				while (sm = obj.smenu.shift())
+					frm.writeln('<li><a href="', sm.url, '" target="content">', sm.item, '</a></li>')
+				frm.writeln('</ul></li>')
 			}
-			document.writeln('</div></td>')
-			MenuEntry(obj.label)
 		}
 	}
-	document.write('</tr></table>')
-}
-
-function MenuShow() {
-	var menu = document.getElementById(this["m_id"])
-	var smenu = document.getElementById(this["sm_id"])
-
-	var top  = menu.offsetHeight - 1
-	var left = 0
-
-	while(menu) {
-		top += menu.offsetTop
-		left += menu.offsetLeft
-		menu = menu.offsetParent
-	}
-	smenu.style.position = "absolute"
-	smenu.style.top = top + 'px'
-	smenu.style.left = left + 'px'
-	smenu.style.visibility = "visible"
-	smenu.style.display = "block"
-}
-
-function MenuHide() {
-	var smenu = document.getElementById(this["sm_id"])
-	smenu.style.visibility = "hidden"
-	smenu.style.display = "none"
-}
-
-function MenuEntry(menu_id) {
-	var menu = document.getElementById(menu_id)
-	var smenu = document.getElementById(menu_id + "_sub")
-
-	menu["m_id"] = menu.id
-	menu["sm_id"] = smenu.id
-	menu.onmouseover = MenuShow
-	menu.onmouseout = MenuHide
-
-	smenu["m_id"] = menu.id 
-	smenu["sm_id"] = smenu.id
-	smenu.style.position = "absolute"
-	smenu.style.visibility = "hidden"
-	smenu.style.display = "none"
-	smenu.onmouseover = MenuShow
-	smenu.onmouseout = MenuHide
+	frm.writeln('</ul></div><br>')
 }
 
 /* tooltips */
@@ -71,43 +80,43 @@ var stat_id, stat_ev
 
 function popDown(id) {
 	if (stat_id)
-		clearTimeout(stat_id);
-	stat_id = null;
-	document.getElementById(id).style.visibility = "hidden";
+		clearTimeout(stat_id)
+	stat_id = null
+	document.getElementById(id).style.visibility = "hidden"
 }
 
 function popUp(ev, id) {
 	if (stat_id)
-		clearTimeout(stat_id);
-	stat_ev = ev;
-	stat_id = id;
+		clearTimeout(stat_id)
+	stat_ev = ev
+	stat_id = id
 	setTimeout("iPopUp()", 1000)
 }
 
 function iPopUp() {
 	if (! stat_id)
-		return;
+		return
 
-	obj = document.getElementById(stat_id);
+	obj = document.getElementById(stat_id)
 	stat_id = null
 
-	objWidth = obj.offsetWidth;
-	objHeight = obj.offsetHeight;
+	objWidth = obj.offsetWidth
+	objHeight = obj.offsetHeight
 
-	y = stat_ev.pageY + 20;
-	x = stat_ev.pageX - objWidth/4;
+	y = stat_ev.pageY + 20
+	x = stat_ev.pageX - objWidth/4
 
 	if (x + objWidth > window.innerWidth)
-		x -= objWidth/2;
+		x -= objWidth/2
 	else if (x < 2)
-		x = 2;
+		x = 2
 
 	if (y + objHeight > window.innerHeight)
-		y -= 2*objHeight;
+		y -= 2*objHeight
 
-	obj.style.left = x + 'px';
-	obj.style.top = y + 'px';
-	obj.style.visibility = "visible";
+	obj.style.left = x + 'px'
+	obj.style.top = y + 'px'
+	obj.style.visibility = "visible"
 }
 
 /* bookmarks */
@@ -121,10 +130,10 @@ function commonbookmark() {
 		title = parent.content.document.title
 		url = parent.content.document.location.pathname
 	}
-	return title + "&url=" + url
+	return title + "&url=" + encodeURIComponent(url)
 }
 
-function addbookmark() {			
+function addbookmark() {
 	parent.content.document.location.assign("/cgi-bin/bookmark.cgi?add=" + commonbookmark())
 	return false
 }
