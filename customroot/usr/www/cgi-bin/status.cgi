@@ -480,7 +480,7 @@ remotely_mounted_filesystems_st() {
 	fi
 
 	if test -n "$nfsm"; then
-		IOIFS="$IFS"; FS=:
+		IOIFS="$IFS"; IFS=:
 		echo "$nfsm" | while read host dir; do
 			if checkip "$host"; then
 				if ! th=$(awk '/^'$host'[[:space:]]+/{print $3; exit 1}' /etc/hosts); then
