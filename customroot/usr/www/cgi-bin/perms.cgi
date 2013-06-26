@@ -9,7 +9,6 @@ if test -n "$QUERY_STRING"; then
 	parse_qstring
 fi
 
-#if test -z "$wind" -o "$wind" = "no"; then
 if test "$wind" = "no"; then
 	write_header "$hdr"
 else
