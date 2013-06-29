@@ -15,8 +15,6 @@
 ./usr/share/transmission/web/javascript/formatter.js
 ./usr/share/transmission/web/javascript/inspector.js
 ./usr/share/transmission/web/javascript/jquery/jquery.contextmenu.min.js
-./usr/share/transmission/web/javascript/jquery/jquery.form.js
-./usr/share/transmission/web/javascript/jquery/jquery.form.min.js
 ./usr/share/transmission/web/javascript/jquery/jquery.min.js
 ./usr/share/transmission/web/javascript/jquery/jquery.transmenu.min.js
 ./usr/share/transmission/web/javascript/jquery/jqueryui-1.8.16.min.js
