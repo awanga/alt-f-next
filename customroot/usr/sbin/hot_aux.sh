@@ -32,7 +32,7 @@ check() {
 		if ! echo "$inuse" | grep -q -E "$we"; then
 			break
 		fi
-		logger -t hot "$MDEV waiting to be fscked"
+		logger -t hot_aux "$MDEV waiting to be fscked"
 		sleep 10
 	done
 }
@@ -57,7 +57,7 @@ if test "$fsckcmd" != "echo"; then
 	trap "" 1
 
 	check
-	logger -t hot "Start fscking $MDEV"
+	logger -t hot_aux "Start fscking $MDEV"
 
 	xf=/tmp/check-$MDEV
 	logf=${xf}.log
@@ -79,7 +79,7 @@ if test "$fsckcmd" != "echo"; then
 	else
 		emsg="Finish fscking $MDEV: $res"
 	fi
-	logger -t hot "$emsg"
+	logger -t hot_aux "$emsg"
 	rm -f $xf $logf $pidf 
 
 	if test -z "$(ls /tmp/check-* 2>/dev/null)"; then
@@ -87,7 +87,7 @@ if test "$fsckcmd" != "echo"; then
 	fi
 
 else
-	logger -t hot "No fsck command for $fstype, $MDEV not fscked."
+	logger -t hot_aux "No fsck command for $fstype, $MDEV not fscked."
 fi
 
 # record fstab date, don't change it
@@ -102,11 +102,18 @@ rm /tmp/fstab_date
 
 # don't mount if noauto is present in mount options
 if echo "$mopts" | grep -q noauto; then
-	logger -t hot "Not auto-mounting $lbl as 'noauto' is present in the mount options."
+	logger -t hot_aux "Not auto-mounting $lbl as 'noauto' is present in the mount options."
 	exit 0
 fi
 
 mount $PWD/$MDEV
+
+if test -f /usr/sbin/quotaon; then
+	if echo "$mopts" | grep -qE '(grpjquota|usrjquota)'; then
+		logger -t hot_aux "Activating quotas on $MDEV"
+		quotaon -ug $PWD/$MDEV
+	fi
+fi
 
 if test -f "/mnt/$lbl/alt-f.fail"; then
 	rm -f "/mnt/$lbl/alt-f.fail"
@@ -114,21 +121,21 @@ fi
 
 if test -d "/mnt/$lbl/Users"; then
 	if ! test -h /home -a -d "$(readlink -f /home)" ; then
-		logger -t hot "Users directory found in $lbl"
+		logger -t hot_aux "Users directory found in $lbl"
 		ln -s "/mnt/$lbl/Users" /home
 	fi
 fi
 
 if test -d "/mnt/$lbl/Public"; then
 	if ! test -h /Public -a -d "$(readlink -f /Public)" ; then
-		logger -t hot "Public directory found in $lbl"
+		logger -t hot_aux "Public directory found in $lbl"
 		ln -s "/mnt/$lbl/Public" /Public
 	fi
 fi
 
 if test -d "/mnt/$lbl/Backup"; then
 	if ! test -h /Backup -a -d "$(readlink -f /Backup)" ; then
-		logger -t hot "Backup directory found in $lbl"
+		logger -t hot_aux "Backup directory found in $lbl"
 		ln -s "/mnt/$lbl/Backup" /Backup
 	fi
 fi
@@ -136,14 +143,14 @@ fi
 if test -n "$USER_SCRIPT" -a ! -f $USERLOCK; then
 	if test "/mnt/$lbl" = "$(dirname $USER_SCRIPT)" -a -x "/mnt/$lbl/$(basename $USER_SCRIPT)"; then
 		touch $USERLOCK
-		logger -t hot "Executing \"$USER_SCRIPT start\" in background"
+		logger -t hot_aux "Executing \"$USER_SCRIPT start\" in background"
 		$USER_SCRIPT start &
 	fi
 fi
 
 if test -d "/mnt/$lbl/ffp"; then
 	if ! test -h /ffp -a -d "$(readlink -f /ffp)" ; then
-		logger -t hot "ffp directory found in $lbl"
+		logger -t hot_aux "ffp directory found in $lbl"
 		ln -s "/mnt/$lbl/ffp" /ffp
 		if test $? = 0 -a -x /etc/init.d/S??ffp; then
 				/etc/init.d/S??ffp start
@@ -151,28 +158,31 @@ if test -d "/mnt/$lbl/ffp"; then
 	fi
 fi
 
-if test -d /mnt/$lbl/Alt-F -a "$mopts" != "ro"; then
-	if ! test -h /Alt-F -a -d "$(readlink -f /Alt-F)"; then
-		logger -t hot "Alt-F directory found in $lbl"
-		rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
-		ln -s /mnt/$lbl/Alt-F /Alt-F
-		echo "DONT'T ADD, REMOVE OR CHANGE ANY FILE ON THIS DIRECTORY
+if test -d /mnt/$lbl/Alt-F; then
+	if test "$mopts" != "ro"; then
+		if ! test -h /Alt-F -a -d "$(readlink -f /Alt-F)"; then
+			logger -t hot_aux "Alt-F directory found in $lbl"
+			rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
+			ln -s /mnt/$lbl/Alt-F /Alt-F
+			echo "DONT'T ADD, REMOVE OR CHANGE ANY FILE ON THIS DIRECTORY
 OR IN ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG." > /Alt-F/README.txt
-		for i in /Alt-F/etc/init.d/S??*; do
-			f=$(basename $i)
-			ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
-			if test -x $i; then
-				tostart="$tostart rc${f#S??}"
+			for i in /Alt-F/etc/init.d/S??*; do
+				f=$(basename $i)
+				ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
+				if test -x $i; then
+					tostart="$tostart rc${f#S??}"
+				fi
+			done
+			if test -n "$DELAY_NFS" -a -x /etc/init.d/S60nfs; then
+				tostart="$tostart rcnfs"
 			fi
-		done
-		if test -n "$DELAY_NFS" -a -x /etc/init.d/S60nfs; then
-			tostart="$tostart rcnfs"
+			loadsave_settings -ta
+			mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw /
+			for i in $tostart; do
+				logger -st hot_aux "$($i start)"
+			done
 		fi
-		loadsave_settings -ta
-		mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw /
-		for i in $tostart; do
-			logger -s "$($i start)"
-		done
+	else
+		logger -t hot_aux "Alt-F directory found in $lbl but not used, as fs is read-only!"
 	fi
 fi
-

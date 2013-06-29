@@ -355,12 +355,16 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 			if test $? = "0"; then
 				loadsave_settings -fa
 				rm -f /Alt-F
-				rm -f /$mpt/Alt-F//README.txt
+				rm -f /$mpt/Alt-F/README.txt
 			else
 				return 1	# busy?
 			fi
  		fi
 		
+		if test -f /usr/sbin/quotaoff; then
+			quotaoff -ug $PWD/$MDEV
+		fi
+
 		umount $mpt
 		ret=$?
 		if test "$ret" = "0"; then
