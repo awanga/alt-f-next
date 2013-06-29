@@ -29,6 +29,10 @@ if ! test -h /home -a -d "$(readlink -f /home)"; then
 	exit 0
 fi
 
+if ! test -f /usr/bin/quota; then
+	quota_dis="disabled"
+fi
+
 IFS=":" # WARNING: for all the script
 #account:password:UID:GID:GECOS:directory:shell
 ucnt=0; ujstr=""
@@ -116,10 +120,11 @@ cat <<EOF
 
 	<tr><td>User name</td><td><input class="almostfill" type=text size=12 name=uname></td></tr>
 	<tr><td>Groups this user belongs to:</td>
-		<td><textarea class="almostfill" rows=2 cols=20 name=groupsInUser readonly></textarea></td></tr>
-	<tr><td><input type=submit name=new_user value=NewUser>
-		<input type=submit name=change_pass value=ChangePass onclick="return check_user()">
-		<td><input type=submit name=del_user value=DelUser onclick="return check_user()"></td>
+		<td><textarea class="almostfill" rows=2 cols=20 name="groupsInUser" readonly></textarea></td></tr>
+	<tr><td colspan=2><input type=submit name=new_user value="New">
+		<input type=submit name=change_pass value="Password" onclick="return check_user()">
+		<input $quota_dis type=submit name=user_quota value="Quota" onclick="return check_user()">
+		<input type=submit name=del_user value="Delete" onclick="return check_user()"></td>
 	</tr></table></fieldset>
 
 	</div><div class="halffill">
@@ -129,18 +134,19 @@ cat <<EOF
 
 	<tr><td>Group name</td><td><input class="almostfill" type=text size=12 name=gname></td></tr>
 	<tr><td>Users belonging to this group:</td>
-		<td><textarea class="almostfill" rows=2 cols=20 name=usersInGroup readonly></textarea></td></tr>
-	<tr><td><input type=submit name=new_group value=NewGroup onclick="return check_group()"></td>
-	    <td><input type=submit name=del_group value=DelGroup onclick="return check_group()"></td></tr>
+		<td><textarea class="almostfill" rows=2 cols=20 name="usersInGroup" readonly></textarea></td></tr>
+	<tr><td colspan=2><input type=submit name=new_group value="New" onclick="return check_group()">
+		<input $quota_dis type=submit name=grp_quota value="Quota" onclick="return check_group()">
+	    <input type=submit name=del_group value="Delete" onclick="return check_group()"></td></tr>
 	</table></fieldset>
 	</div></div>
 
 	<div class="center">
 	<fieldset><legend>Users and Groups</legend><table class="fill">
 		<tr><td>Add selected user to selected group</td>
-			<td><input type=submit name=addToGroup value=AddToGroup onclick="return check_usergroup()"></td></tr>
+			<td><input type=submit name=addToGroup value=Add onclick="return check_usergroup()"></td></tr>
 		<tr><td>Remove selected user from selected group</td>
-			<td><input type=submit name=delFromGroup value=DelFromGroup onclick="return check_usergroup()"></td></tr>
+			<td><input type=submit name=delFromGroup value=Delete onclick="return check_usergroup()"></td></tr>
 	</table></fieldset>
 	</div>
 	<input type=hidden name=nick>

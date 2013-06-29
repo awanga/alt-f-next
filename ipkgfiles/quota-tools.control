@@ -1,6 +1,6 @@
 Package: quota-tools
 Description: Tools and patches for the Linux Diskquota system
-Version: 4.01
+Version: 4.01-1
 Depends: ipkg
 Architecture: arm
 Priority: optional

@@ -19,40 +19,54 @@ sbin/fsck.ext4dev sbin/mkfs.ext4dev
 usr/bin/ntpdate lib/udev"
 
 . .config 2> /dev/null
-kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL
+board=$BR2_PROJECT
 
-# if BRIDGE is not set as a kernel module in the base firmware kernel, it will not load
-# the bridge module from kernel-modules.
-# So, build the kernel with BRIDGE module enabled, then remove the aditional modules.
-# to diferentiate between the base kernel and the pkg kernel, use BR2_PACKAGE_KERNEL_MODULES
-# The same as above applies to IPV6 and other modules
+if test -z "$BR2_KERNEL_none"; then
+	if test -n "$BR2_KERNEL_THIS_VERSION"; then
+		kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL	
+	else
+		kver=$BR2_CUSTOM_LINUX26_VERSION
+	fi
 
-# FIXME HOWEVER, THE FIRST make will reinstall modules (linux26 is a late target),
-# so TWO makes have to be done the first time!!!
+	# if BRIDGE is not set as a kernel module in the base firmware kernel, it will not load
+	# the bridge module from kernel-modules.
+	# So, build the kernel with BRIDGE module enabled, then remove the aditional modules.
+	# to diferentiate between the base kernel and the pkg kernel, use BR2_PACKAGE_KERNEL_MODULES
+	# The same as above applies to IPV6 and other modules
 
-# the kernel modules in the base firmware:
-KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/usb/serial/usbserial.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
+	# FIXME HOWEVER, THE FIRST make will reinstall modules (linux26 is a late target),
+	# so TWO makes have to be done the first time!!!
 
-if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
-	OPWD=$PWD;
-	cd $BLDDIR/project_build_arm/dns323/root/lib/modules/$kver
-	for i in $(find . -name \*.ko); do
-		if ! echo $KMOD | grep -q $i; then
-			RMF="$RMF usr/lib/modules/$kver/$i"
+	# the kernel modules in the base firmware:
+# 	KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/usb/serial/usbserial.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
+
+	KMOD="./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
+
+	if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
+		if ! test -d $BLDDIR/project_build_arm/$board/root/lib/modules/$kver; then
+			echo "configfs: kernel modules dir does not exists!"
+		else
+			OPWD=$PWD;
+			cd $BLDDIR/project_build_arm/$board/root/lib/modules/$kver
+			for i in $(find . -name \*.ko); do
+				if ! echo $KMOD | grep -q $i; then
+					RMF="$RMF usr/lib/modules/$kver/$i"
+				fi
+			done
+			cd $OPWD
 		fi
-	done
-	cd $OPWD
+	fi
 fi
 
 # 2-customroot has additional needed files, copy them to root
-find customroot/ \( -name \*~ -o -name .directory -o -name \*.kate-swp \) -delete
+find customroot/ \( -name \*~ -o -name .directory -o -name \.*kate-swp \) -delete
 cp -a customroot/* $1/
 find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
 BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
-BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD"
+BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD BR2_PACKAGE_QUOTA_TOOLS"
 
 # special case, BR2_PACKAGE_OPENSSH is always defined, but BR2_PACKAGE_OPENSSH_SFTP_ONLY
 # if only defined in the base firmware, so create a dummy openssh package for this case
@@ -87,6 +101,7 @@ BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
 BR2_PACKAGE_LVM2="etc/init.d/S14lvm usr/www/cgi-bin/Disk_lvm.men usr/www/cgi-bin/lvm.cgi usr/www/cgi-bin/lvm_proc.cgi usr/www/lvm_hlp.html"
 BR2_PACKAGE_CRYPTSETUP="etc/init.d/S14cryptsetup usr/www/cryptsetup_hlp.html usr/www/cgi-bin/Disk_cryptsetup.men usr/www/cgi-bin/cryptsetup.cgi usr/www/cgi-bin/cryptsetup_proc.cgi"
 BR2_PACKAGE_STUNNEL="etc/stunnel etc/init.d/S41stunnel"
+BR2_PACKAGE_QUOTA_TOOLS="etc/init.d/S19quota usr/www/cgi-bin/quota.cgi usr/www/cgi-bin/quota_proc.cgi usr/www/cgi-bin/Disk_quotas.men"
 BR2_PACKAGE_KERNEL_MODULES="etc/init.d/S13modload"
 
 BR2_PACKAGE_LIGHTTPD="etc/init.d/S52lighttpd usr/www/cgi-bin/lighttpd.cgi

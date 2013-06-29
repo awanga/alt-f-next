@@ -4,19 +4,31 @@
 check_cookie
 read_args
 
+#debug
+
 CONFP=/etc/passwd
 CONFG=/etc/group
 CONFS=/etc/samba/smbusers
 CONFR=/etc/rsyncd.conf
 CONFRS=/etc/rsyncd.secrets
 
-if test -n "$NewUser"; then
+if test -n gname; then
+	gname=$(httpd -d "$gname")
+fi
+
+if test -n "$new_user"; then
 	gotopage /cgi-bin/newuser.cgi?act=newuser
 
-elif test -n "$ChangePass"; then
+elif test -n "$user_quota"; then
+	gotopage /cgi-bin/quota.cgi?user=$nick
+
+elif test -n "$grp_quota"; then
+	gotopage /cgi-bin/quota.cgi?group=$gname
+
+elif test -n "$change_pass"; then
 	gotopage /cgi-bin/newuser.cgi?act=changepass?uname=$uname?nick=$nick
 
-elif test -n "$DelUser"; then
+elif test -n "$del_user"; then
 	udir=$(awk -F : '/'$nick'/{print $6}' $CONFP)
 	uname=$(awk -F : '/'$nick'/{print $5}' $CONFP)
 #	rm -rf $(readlink -f "$udir")
@@ -46,8 +58,7 @@ elif test -n "$DelUser"; then
 		fi
 	fi
 
-elif test -n "$NewGroup"; then
-	gname="$(httpd -d "$gname")"
+elif test -n "$new_group"; then
 	if test $(eatspaces $gname) != "$gname"; then
 		msg "Group name must not contain spaces"
 	fi
@@ -57,8 +68,7 @@ elif test -n "$NewGroup"; then
 		msg "Can't create group $gname: $res"
 	fi
 
-elif test -n "$DelGroup"; then
-	gname="$(httpd -d "$gname")"
+elif test -n "$del_group"; then
 	if test $(eatspaces $gname) != "$gname"; then
 		msg "Group name must not contain spaces"
 	fi
@@ -69,10 +79,10 @@ elif test -n "$DelGroup"; then
 	fi
 	delgroup "$gname"
 
-elif test -n "$AddToGroup"; then
+elif test -n "$addToGroup"; then
 	addgroup $nick "$gname"
 
-elif test -n "$DelFromGroup"; then
+elif test -n "$delFromGroup"; then
 	# delgroup $nick $gname # not working, busybox bug
 	sed -i  -e '/^'$gname':/s/,'$nick'$//'  \
 		-e '/^'$gname':/s/:'$nick',/:/' \

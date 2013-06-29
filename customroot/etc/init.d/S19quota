@@ -1,0 +1,23 @@
+#!/bin/sh
+
+DESC="User/Group Disk Quotas"
+NAME=quota
+
+. $(dirname $0)/common
+
+icommon() {
+	fs=$(grep -E '(ext2|ext3|ext4)' /proc/mounts | cut -d" " -f1)
+	for i in $fs; do
+		if grep -qE "^$i.*(grpjquota|usrjquota)" /proc/mounts; then
+			eval $1
+		fi
+	done
+}
+
+case "$1" in
+	start) icommon 'if quotaon -p $i >& /dev/null; then quotaon -ug $i; fi' ;;
+	stop) icommon 'if ! quotaon -p $i >& /dev/null; then quotaon -ugf $i; fi' ;;
+	status) if quotaon -pa; then return 1; else return 0; fi ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart" ;;
+esac
