@@ -9,3 +9,4 @@
 ./usr/sbin/umount.cifs
 ./usr/www/cgi-bin/smb.cgi
 ./usr/www/cgi-bin/smb_proc.cgi
+./usr/www/smb_hlp.html

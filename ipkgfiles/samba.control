@@ -1,7 +1,7 @@
 Package: samba
 Description: This is an updated on-disk version of Samba shipped on the firmware.
-Depends: ipkg
-Version: 3.5.21
+Depends: ipkg,acl
+Version: 3.5.21-2
 Architecture: arm
 Priority: optional
 Section: admin
