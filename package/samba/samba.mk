@@ -34,7 +34,7 @@ SAMBA_ACL=--without-acl-support
 ifeq ($(BR2_PACKAGE_SAMBA_ACL),y)
 	SAMBA_ACL = --with-acl-support
 	SAMBA_DEPS = acl
-	SAMBA_LIBS = LIBS=-lacl
+	SAMBA_LIBS = LIBS="-lacl -lintl"
 endif
 
 # specific compiler optimization
@@ -100,7 +100,7 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		--without-included-popt \
 		--without-cluster-support \
 		--without-dmapi \
-		--without-pam \
+		--without-pam \ \
 		--disable-netapi \
 		--with-included-iniparser \
 		--enable-shared-libs \
@@ -108,14 +108,20 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 		$(DISABLE_LARGEFILE) \
 		$(SAMBA_ACL) \
 	)
-	patch -p0 -b -d $(SAMBA_DIR) < package/samba/samba-$(SAMBA_VERSION)-Makefile.patch2
-	sed -i 's/-Wl,--as-needed//' $(SAMBA_DIR)/Makefile
 	touch $@
 
-$(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
+$(SAMBA_DIR)/.mkcommon : $(SAMBA_DIR)/.configured
+ifeq ($(BR2_PACKAGE_SAMBA_SMBCOMMON),y)
+	patch -p0 -b -d $(SAMBA_DIR) < package/samba/samba-$(SAMBA_VERSION)-Makefile.patch2
+	sed -i 's/-Wl,--as-needed//' $(SAMBA_DIR)/Makefile
+endif
+	touch $@
+
+$(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.mkcommon
 	# make proto must be done before make to be parallel safe
 	$(MAKE) -C $(SAMBA_DIR) proto
 	$(MAKE) -C $(SAMBA_DIR)
+ifeq ($(BR2_PACKAGE_SAMBA_SMBCOMMON),y)
 	(cd $(SAMBA_DIR)/bin; \
 	mkdir -p tmp; rm -f tmp/*; \
 	mklibs -v -D -d tmp/ \
@@ -125,6 +131,10 @@ $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
 	smbd nmbd smbtree smbstatus swat; \
 	cp tmp/libsmbcommon.so libsmbcommon.so; \
 	)
+else
+	touch $(SAMBA_DIR)/bin/libsmbcommon.so
+endif
+	touch $@
 
 SAMBA_TARGETS_ := usr/bin/sharesec
 SAMBA_TARGETS_y :=

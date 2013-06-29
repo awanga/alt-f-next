@@ -19,10 +19,18 @@ config BR2_PACKAGE_SAMBA_SIZEOPTIM
 	help
 	  Compile for space saving (-Os)
 
+config BR2_PACKAGE_SAMBA_SMBCOMMON
+	bool "samba smbcommon"
+	default y
+	depends on BR2_PACKAGE_SAMBA
+	help
+	  Remove common object files in binaries and create libsmbcommon, reducing code size.
+	  Not usable with shared modules
+
 config BR2_PACKAGE_SAMBA_ACL
 	bool "samba acl"
 	depends on BR2_PACKAGE_SAMBA
-	depends on BR2_PACKAGE_ACL
+	select BR2_PACKAGE_ACL
 	help
 	  Compile with ACL support
 
@@ -83,6 +91,7 @@ config BR2_PACKAGE_SAMBA_MODULES
 	bool "modules"
 	default n
 	depends on BR2_PACKAGE_SAMBA
+	depends on !BR2_PACKAGE_SAMBA_SMBCOMMON
 	help
 	  Samba VFS modules
 
