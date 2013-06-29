@@ -1,0 +1,6 @@
+config BR2_PACKAGE_NETPERF
+	bool "netperf"
+	help
+	  Netperf is a benchmark that can be used to measure the performance of many different types of networking.
+
+	  http://www.netperf.org/netperf/
