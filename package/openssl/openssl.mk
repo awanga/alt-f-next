@@ -7,13 +7,11 @@
 OPENSSL_VERSION:=1.0.1e
 OPENSSL_SITE:=http://www.openssl.org/source
 
+# specific compiler optimization
 OPENSSL_CFLAGS = $(TARGET_CFLAGS)
-# compiling the base firmware, but be gentle with openssl
-#ifeq ($(BR2_OPTIMIZE_S),y)
-#	OPENSSL_CFLAGS = $(TARGET_CFLAGS) -O2
-#endif
-
+ifeq ($(BR2_PACKAGE_OPENSSL_SIZEOPTIM),y)
 OPENSSL_CFLAGS = $(TARGET_CFLAGS) -Os
+endif
 
 # Some architectures are optimized in OpenSSL
 OPENSSL_TARGET_ARCH=generic32
