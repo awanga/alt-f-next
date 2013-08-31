@@ -130,6 +130,9 @@ fi
 
 ifdown eth0 >& /dev/null
 sleep 3
+if test -f /var/run/udhcpc.eth0.pid; then
+	kill $(cat /var/run/udhcpc.eth0.pid) >& /dev/null
+fi
 ifup eth0 >& /dev/null
 sleep 3
 
