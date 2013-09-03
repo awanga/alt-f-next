@@ -154,7 +154,7 @@ EOF
 has_disks
 
 # THIS IS RIGHT!
-p1=$(fdisk -l /dev/sd? | awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
+p1=$(fdisk -l /dev/sd? 2>/dev/null | awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
 	print substr($1, 6)}')
 p2=$(blkid -t TYPE="mdraid" | awk '{print substr($1, 6, 4)}')
 raidp=$(echo -e "$p1\n$p2" | sort -u)
@@ -171,7 +171,16 @@ for i in $raidp; do
 done
 
 # THIS IS RIGHT! first non-existing md device
-curdev=$(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}')
+#curdev=$(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}')
+# for metadata 1.2 mdadm reports /dev/md/0, /dev/md/1... which are simlinks to /dev/md0, /dev/md1...
+curdev=$(for i in $(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}'); do
+	if test -h /dev/$i; then
+		basename $(readlink -f /dev/$i)
+	else
+		echo $i
+	fi
+done)
+
 for dev in $(seq 0 9); do
 	if ! echo $curdev | grep -q md$dev; then break; fi
 done
@@ -208,7 +217,7 @@ EOF
 
 if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 	cat<<-EOF
-		<fieldset><Legend><strong>RAID Maintenance</strong></legend>
+		<fieldset><legend>RAID Maintenance</legend>
 		<table>
 		<tr>
 		<th>Dev.</th> 
@@ -247,9 +256,9 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 			devs=""
 			for j in $(ls /sys/block/$mdev/slaves); do
 				if test $(cat /sys/block/$mdev/md/dev-$j/state) = "faulty"; then
-					devs="$devs <font color=RED>$j</font>"
+					devs="$devs <span class=\"red\">$j</span>"
 				elif test $(cat /sys/block/$mdev/md/dev-$j/state) = "spare"; then
-					devs="$devs <font color=GREEN>$j</font>"
+					devs="$devs <span class=\"green\">$j</span>"
 				else
 					devs="$devs $j"
 				fi
@@ -257,7 +266,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 	
 			otype=$type
 			if test "$(cat /sys/block/$mdev/md/degraded 2>/dev/null )" = 1; then
-				otype="<font color=RED>$type</font>"
+				otype="<span class=\"red\">$type</span>"
 			fi
 	
 			cat<<-EOF
@@ -289,7 +298,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 					abort="<input type=submit name=$mdev value=\"Abort\">"
 				fi
 				cat<<-EOF
-					<td><font color=RED> ${action}ing </font>
+					<td><span class="red"> ${action}ing </span>
 					$abort</td>
 					<td colspan="3"><input type=submit name=$mdev value="Stop"</td>
 					</tr>
