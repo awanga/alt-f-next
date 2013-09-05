@@ -21,7 +21,7 @@ status() {
 	if ! test -e $stamp; then
 		save=1
 	else
-		for i in $files /etc/fstab; do
+		for i in $files /etc/fstab /var/spool/cron/crontabs/root; do
 			if test $i -nt $stamp; then
 				save=1
 				break
