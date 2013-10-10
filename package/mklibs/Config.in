@@ -1,0 +1,11 @@
+config BR2_PACKAGE_MKLIBS_HOST
+	bool "mklibs"
+	help
+	  Shared library reduction script (for the host).
+	  mklibs produces cut-down shared libraries that contain only the
+	  routines required by a particular set of executables.  This is
+	  useful when building closed systems where disk space is at a premium,
+	  such as the Debian installer.
+
+	  http://snapshot.debian.org/archive/debian/20101225T025119Z/pool/main/m/mklibs
+
