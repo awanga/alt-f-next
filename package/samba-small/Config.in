@@ -1,0 +1,16 @@
+config BR2_PACKAGE_SAMBA_SMALL
+	bool "samba-small"
+	depends on ! BR2_PACKAGE_SAMBA
+	select BR2_PACKAGE_LIBICONV
+	select BR2_PACKAGE_POPT
+	help
+	  Provides (a minimum Samba), file an print services to all manner of SMB/CIFS clients,
+	  including the numerous versions of MS-Windows operating systems.
+
+	  http://www.samba.org/
+
+config BR2_PACKAGE_SAMBA_SMALL_OPTIM
+	string "samba optim"
+	depends on BR2_PACKAGE_SAMBA_SMALL
+	help
+	  Compile optimization options (-Os, -O2)
