@@ -3,19 +3,17 @@
 # iptables
 #
 #############################################################
-IPTABLES_VERSION = 1.4.2
+
+#http://www.netfilter.org/projects/iptables/files/iptables-1.4.19.1.tar.bz2
+#ftp://ftp.netfilter.org/pub/iptables/iptables-1.4.2.tar.bz2
+
+IPTABLES_VERSION = 1.4.19.1
 IPTABLES_SOURCE = iptables-$(IPTABLES_VERSION).tar.bz2
 IPTABLES_SITE = http://ftp.netfilter.org/pub/iptables
 
+IPTABLES_LIBTOOL_PATCH = NO
+
 IPTABLES_CONF_OPT = --libexecdir=/usr/lib --with-kernel=$(LINUX_HEADERS_DIR)
-ifneq ($(BR2_INET_IPV6),y)
-IPTABLES_CONF_OPT += --enable-ipv6=no
-endif
-
-IPTABLES_INSTALL_TARGET = YES
-
-IPTABLES_AUTORECONF = YES
-IPTABLES_DEPENDENCIES =
 
 $(eval $(call AUTOTARGETS,package,iptables))
 
