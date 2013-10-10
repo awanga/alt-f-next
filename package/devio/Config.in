@@ -1,0 +1,6 @@
+config BR2_PACKAGE_DEVIO_HOST
+	bool "devio"
+	help
+	  devio (for the host) is a command line program intended to read and write from block devices.
+
+	  http://sourceforge.net/projects/devio
