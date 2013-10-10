@@ -1,0 +1,7 @@
+config BR2_PACKAGE_TCSH
+	bool "tcsh"
+	select BR2_PACKAGE_NCURSES
+	help
+	  Tcsh is an enhanced, but completely compatible version of the Berkeley UNIX C shell (csh).
+
+	  http://www.tcsh.org/Welcome
