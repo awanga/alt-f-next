@@ -1,0 +1,9 @@
+Package: pppd
+Description: An implementation of the Point-to-point protocol.
+Version: 2.4.5
+Depends: kernel-modules,ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.samba.org/ppp
+Maintainer: jcard

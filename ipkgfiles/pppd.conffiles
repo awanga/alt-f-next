@@ -1,0 +1,3 @@
+./etc/ppp/options
+./etc/ppp/chap-secrets
+./etc/ppp/pap-secrets
