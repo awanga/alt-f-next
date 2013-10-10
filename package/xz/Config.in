@@ -1,0 +1,19 @@
+config BR2_PACKAGE_XZ
+	bool "xz"
+	help
+	  XZ Utils provide a general-purpose data-compression library plus command-line tools.
+
+	  http://tukaani.org/xz/
+
+config BR2_PACKAGE_XZ_HOST
+	bool "Install xz/lzma for the host/build system"
+	depends on BR2_PACKAGE_XZ
+	help
+	  xz utils on the host
+
+config BR2_PACKAGE_XZ_TARGET
+	bool "Install xz/lzma for the target"
+	depends on BR2_PACKAGE_XZ
+	help
+	  xz utils on the target
+
