@@ -54,6 +54,7 @@ $(VIM_DIR)/.configured: $(VIM_DIR)/.patched
 		--disable-gui \
 		--without-x \
 		--with-tlib=ncurses \
+		--disable-acl \
 	)
 	touch $@
 
@@ -74,6 +75,10 @@ ifeq ($(BR2_PACKAGE_VIM_RUNTIME),y)
 		$(MAKE) DESTDIR=$(TARGET_DIR) installmacros; \
 	)
 endif
+
+vim-configure: $(VIM_DIR)/.configured
+
+vim-build: $(VIM_DIR)/.build
 
 vim: uclibc host-pkgconfig ncurses vim-source $(TARGET_DIR)/usr/bin/vim
 
