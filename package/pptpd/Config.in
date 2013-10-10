@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PPTPD
+	bool "pptpd"
+	select BR2_PACKAGE_PPPD
+	help
+	  pptpd is an open source implementation of a PPTP server providing full interoperability with the Microsoft PPTP VPN client.
+
+	  https://sourceforge.net/projects/poptop
