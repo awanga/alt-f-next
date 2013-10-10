@@ -1,0 +1,6 @@
+config BR2_PACKAGE_UBOOT_MKIMAGE_HOST
+	bool "uboot-mkimage"
+	help
+	  host utility to generate kernel image for U-Boot
+
+	  http://ftp.de.debian.org/debian/pool/main/u/uboot-mkimage
