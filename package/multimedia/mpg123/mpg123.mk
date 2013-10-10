@@ -3,10 +3,25 @@
 # mpg123
 #
 #############################################################
-MPG123_VERSION=0.66
+#MPG123_VERSION=0.66
+MPG123_VERSION=1.14.4
 MPG123_SOURCE=mpg123-$(MPG123_VERSION).tar.bz2
-MPG123_CAT:=$(BZCAT)
-MPG123_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/mpg123
+MPG123_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/mpg123/$(MPD_VERSION)
+
+#MPG123_CAT:=$(BZCAT)
+#MPG123_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/mpg123
+
+MPG123_AUTORECONF = NO
+MPG123_INSTALL_STAGING = NO
+MPG123_INSTALL_TARGET = YES
+MPG123_LIBTOOL_PATCH = NO
+
+#MPG123_CONF_OPT = --with-default-audio=dummy --with-cpu=arm_nofpu
+#MPG123_CONF_OPT = --enable-modules=yes
+
+$(eval $(call AUTOTARGETS,package,mpg123))
+
+ifeq (y,n)
 MPG123_DIR:=$(BUILD_DIR)/mpg123-$(MPG123_VERSION)
 MPG123_BIN:=src/mpg123
 MPG123_TARGET_BIN:=usr/bin/mpg123
@@ -72,4 +87,5 @@ mpg123-source: $(DL_DIR)/$(MPG123_SOURCE)
 #############################################################
 ifeq ($(BR2_PACKAGE_MPG123),y)
 TARGETS+=mpg123
+endif
 endif
