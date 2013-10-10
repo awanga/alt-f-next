@@ -1,0 +1,9 @@
+config BR2_PACKAGE_GNUPG
+	bool "gnupg"
+	select BR2_PACKAGE_READLINE
+	select BR2_PACKAGE_LIBICONV
+	select BR2_PACKAGE_LIBUSB
+	help
+	  GnuPG allows to encrypt and sign your data and communication
+
+	  http://www.gnupg.org
