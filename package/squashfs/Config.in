@@ -1,0 +1,21 @@
+config BR2_PACKAGE_SQUASHFS
+	bool "squashfs"
+	help
+	  Squashfs is a highly compressed read-only filesystem for Linux.
+
+	  http://sourceforge.net/squashfs
+
+config BR2_PACKAGE_SQUASHFS_HOST
+	bool "Install squashfs for the host/build system"
+	depends on BR2_PACKAGE_SQUASHFS
+	select BR2_PACKAGE_XZ_HOST
+	help
+	  squashfs utils on the host
+
+config BR2_PACKAGE_SQUASHFS_TARGET
+	bool "Install squashfs for the target"
+	depends on BR2_PACKAGE_SQUASHFS
+	select BR2_PACKAGE_XZ_TARGET
+	help
+	  squashfs utils on the target
+
