@@ -26,6 +26,7 @@ endif
 SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
 SAMBA_SITE:=http://samba.org/samba/ftp/stable/
 SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/$(SAMBA_SUBDIR)
+SAMBA_DEPS = mklibs-host popt libiconv 
 SAMBA_CAT:=$(ZCAT)
 SAMBA_BINARY:=bin/smbd
 SAMBA_TARGET_BINARY:=usr/sbin/smbd
@@ -33,14 +34,14 @@ SAMBA_TARGET_BINARY:=usr/sbin/smbd
 SAMBA_ACL=--without-acl-support
 ifeq ($(BR2_PACKAGE_SAMBA_ACL),y)
 	SAMBA_ACL = --with-acl-support
-	SAMBA_DEPS = acl
+	SAMBA_DEPS += acl
 	SAMBA_LIBS = LIBS="-lacl -lintl"
 endif
 
 # specific compiler optimization
 SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS)"
-ifeq ($(BR2_PACKAGE_SAMBA_SIZEOPTIM),y)
-	SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS) -Os"
+ifneq ($(BR2_PACKAGE_SAMBA_OPTIM),)
+	SAMBA_CFLAGS = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_SAMBA_OPTIM)"
 endif
 
 # Optim Free
@@ -117,7 +118,7 @@ ifeq ($(BR2_PACKAGE_SAMBA_SMBCOMMON),y)
 endif
 	touch $@
 
-$(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.mkcommon
+$(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
 	# make proto must be done before make to be parallel safe
 	$(MAKE) -C $(SAMBA_DIR) proto
 	$(MAKE) -C $(SAMBA_DIR)
@@ -128,7 +129,7 @@ ifeq ($(BR2_PACKAGE_SAMBA_SMBCOMMON),y)
 	--target arm-linux-uclibcgnueabi \
 	-L .:$(TARGET_DIR)/lib:$(TARGET_DIR)/usr/lib \
 	--ldlib $(TARGET_DIR)/lib/ld-uClibc.so.0 \
-	smbd nmbd smbtree smbstatus swat; \
+	smbd nmbd smbtree smbstatus smbpasswd swat; \
 	cp tmp/libsmbcommon.so libsmbcommon.so; \
 	)
 else
@@ -230,7 +231,7 @@ endif
 	rm -rf $(TARGET_DIR)/var/lib/samba
 	find $(TARGET_DIR) -name \*.old -delete # jc:
 
-samba: popt libiconv $(SAMBA_DEPS) $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) 
+samba: $(SAMBA_DEPS) $(TARGET_DIR)/$(SAMBA_TARGET_BINARY) 
 
 samba-build: $(SAMBA_DIR)/$(SAMBA_BINARY)
 
