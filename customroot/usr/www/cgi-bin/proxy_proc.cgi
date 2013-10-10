@@ -31,7 +31,7 @@ if test "$useproxy" = "yes"; then
 	if test -n "$http_port"; then prt=":$(httpd -d $http_port)"; fi
 	if test -z "$http_proxy"; then
 		uncomment
-		msg "If you have to use a proxy,\n you must specify the http proxy server"
+		msg "If you have to use a proxy,\n you must specify the http proxy server."
 	else
 		echo http_proxy=$(httpd -d ${http_proxy}$prt) >> $CONFF
 	fi
@@ -41,17 +41,21 @@ if test "$useproxy" = "yes"; then
 		echo ftp_proxy=$(httpd -d ${ftp_proxy}$prt) >> $CONFF
 	fi
 
-	if test -n "$proxy_user"; then
-		echo proxy_user=$(httpd -d $proxy_user) >> $CONFF
-	fi
+	if test -z "$anonproxy"; then
+		if test -n "$proxy_user"; then
+			echo proxy_user=$(httpd -d $proxy_user) >> $CONFF
+		else
+			uncomment
+			msg "The Username can't be empty."
+		fi
 
-	proxy_password=$(checkpass "$proxy_password")
-	if test $? != 0; then
-    	msg "$proxy_password"
-	fi
-
-	if test -n "$proxy_password"; then
-		echo proxy_password=$proxy_password  >> $CONFF
+		proxy_password=$(checkpass "$proxy_password")
+		if test $? != 0; then
+			uncomment
+			msg "$proxy_password"
+		else
+			echo proxy_password=$proxy_password >> $CONFF
+		fi
 	fi
 	echo use_proxy=on >> $CONFF
 	remove

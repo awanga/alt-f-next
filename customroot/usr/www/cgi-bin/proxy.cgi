@@ -22,8 +22,8 @@ PRXEN=disabled
 PRXCHK=""
 if test -e $WGETCONF; then
 	while read -r ln; do
-		if echo "$ln" | grep -q proxy_password; then
-			pass=$(echo $ln | sed -n '/proxy_password/s/proxy_password=//p')
+		if echo "$ln" | grep -q ^proxy_password; then
+			pass=$(echo $ln | sed -n '/^proxy_password/s/proxy_password=//p')
 			proxy_password=$(httpd -e "$pass")
 		else
 			eval $(eatspaces "$ln")
@@ -77,7 +77,7 @@ cat<<-EOF
 	<tr><td>FTP Proxy Server:</td><td><input type=text $PRXEN id="usepr3" name="ftp_proxy" value="$ftp_srv">
 		Port:<input type=text size=6 $PRXEN id="usepr4" name="ftp_port" value="$ftp_port"></td></tr>
 	<tr><td colspan=2><br></td></tr>
-	<tr><td>Anonymous Proxy</td><td><input type=checkbox $APRXCHK id="anonpr" name="useproxy" value="yes" onclick="atoogle()"></td></tr>
+	<tr><td>Anonymous Proxy</td><td><input type=checkbox $APRXCHK id="anonpr" name="anonproxy" value="yes" onclick="atoogle()"></td></tr>
 	<tr><td>Proxy Username:</td><td><input type=text $APRXEN $PRXEN  id="anonpr1" name="proxy_user" value="$proxy_user"></td></tr>
 	<tr><td>Proxy Password:</td><td><input type=password $APRXEN $PRXEN id="anonpr2" name="proxy_password" value="$proxy_password"></td></tr>
 	</table>
