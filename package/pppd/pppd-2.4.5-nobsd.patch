@@ -1,0 +1,31 @@
+--- ppp-2.4.5/pppd/plugins/rp-pppoe/discovery.c-orig	2013-07-25 00:53:10.000000000 +0100
++++ ppp-2.4.5/pppd/plugins/rp-pppoe/discovery.c	2013-07-25 00:56:14.000000000 +0100
+@@ -15,6 +15,10 @@
+ #include "pppoe.h"
+ #include "pppd/pppd.h"
+ 
++#ifdef HAVE_SYSLOG_H
++#include <syslog.h>
++#endif
++
+ #include <string.h>
+ #include <stdlib.h>
+ #include <errno.h>
+@@ -539,7 +543,7 @@
+     do {
+ 	padiAttempts++;
+ 	if (padiAttempts > MAX_PADI_ATTEMPTS) {
+-	    warn("Timeout waiting for PADO packets");
++	    syslog(LOG_WARNING, "Timeout waiting for PADO packets");
+ 	    close(conn->discoverySocket);
+ 	    conn->discoverySocket = -1;
+ 	    return;
+@@ -555,7 +559,7 @@
+     do {
+ 	padrAttempts++;
+ 	if (padrAttempts > MAX_PADI_ATTEMPTS) {
+-	    warn("Timeout waiting for PADS packets");
++	    syslog(LOG_WARNING, "Timeout waiting for PADS packets");
+ 	    close(conn->discoverySocket);
+ 	    conn->discoverySocket = -1;
+ 	    return;
