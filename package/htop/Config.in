@@ -1,0 +1,7 @@
+config BR2_PACKAGE_HTOP
+	bool "htop"
+	select BR2_PACKAGE_NCURSES
+	help
+	  An interactive process viewer for Linux
+
+	  http://htop.sourceforge.net
