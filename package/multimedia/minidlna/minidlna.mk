@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#MINIDLNA_VERSION = 1.0.25
 MINIDLNA_VERSION = 1.1.0
 MINIDLNA_SOURCE = minidlna-$(MINIDLNA_VERSION).tar.gz
 MINIDLNA_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/minidlna

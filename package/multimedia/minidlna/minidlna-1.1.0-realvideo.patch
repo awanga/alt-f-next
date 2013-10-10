@@ -1,0 +1,33 @@
+--- minidlna-1.1.0/metadata.c-orig	2013-06-29 16:53:07.915081131 +0100
++++ minidlna-1.1.0/metadata.c	2013-06-29 16:55:53.005938087 +0100
+@@ -903,6 +903,8 @@
+ 			xasprintf(&m.mime, "video/x-matroska");
+ 		else if( strcmp(ctx->iformat->name, "flv") == 0 )
+ 			xasprintf(&m.mime, "video/x-flv");
++		else if( strcmp(ctx->iformat->name, "rm") == 0 )
++			xasprintf(&m.mime, "video/x-pn-realvideo");
+ 		if( m.mime )
+ 			goto video_no_dlna;
+ 
+--- minidlna-1.1.0/upnpglobalvars.h-orig	2013-06-29 16:53:07.918081127 +0100
++++ minidlna-1.1.0/upnpglobalvars.h	2013-06-29 16:54:07.834940605 +0100
+@@ -168,7 +168,8 @@
+ 	"http-get:*:audio/mp4:*," \
+ 	"http-get:*:audio/x-wav:*," \
+ 	"http-get:*:audio/x-flac:*," \
+-	"http-get:*:application/ogg:*"
++	"http-get:*:application/ogg:*,"\
++	"http-get:*:video/x-pn-realvideo:*"
+ 
+ #define DLNA_FLAG_DLNA_V1_5      0x00100000
+ #define DLNA_FLAG_HTTP_STALLING  0x00200000
+--- minidlna-1.1.0/utils.c-orig	2013-06-29 16:53:07.914081132 +0100
++++ minidlna-1.1.0/utils.c	2013-06-29 16:54:07.833940626 +0100
+@@ -375,6 +375,7 @@
+ 		ends_with(file, ".m2t") || ends_with(file, ".mkv")   ||
+ 		ends_with(file, ".vob") || ends_with(file, ".ts")    ||
+ 		ends_with(file, ".flv") || ends_with(file, ".xvid")  ||
++		ends_with(file, ".rm") || ends_with(file, ".rmvb")  ||
+ #ifdef TIVO_SUPPORT
+ 		ends_with(file, ".TiVo") ||
+ #endif
