@@ -1,0 +1,7 @@
+config BR2_PACKAGE_IPKG_UTILS_HOST
+	bool "ipkg-utils"
+	help
+	  Scripts (for the host) for building .ipk packages for the ipkg system.
+
+	  http://handhelds.org/moin/moin.cgi/Ipkg
+
