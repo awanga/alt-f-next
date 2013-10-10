@@ -1,0 +1,9 @@
+Package: pptp
+Description: An implementation of the Point-to-point protocol client.
+Version: 1.7.2
+Depends: pppd,perl,ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://pptpclient.sourceforge.net/
+Maintainer: jcard
