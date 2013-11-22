@@ -73,6 +73,18 @@ $(TARGET_DIR)/usr/lib/libz.a: $(STAGING_DIR)/usr/lib/libz.a
 	$(INSTALL) -D $(STAGING_DIR)/usr/lib/libz.a $(TARGET_DIR)/usr/lib/libz.a
 	touch -c $@
 
+$(eval $(call AUTOTARGETS_HOST,package,zlib))
+
+$(ZLIB_HOST_CONFIGURE):
+	(cd $(ZLIB_HOST_DIR); rm -rf config.cache; \
+		./configure \
+		--prefix=/usr \
+		--eprefix=/usr/bin \
+		--libdir=/usr/lib \
+		--includedir=/usr/include \
+	)
+	touch $@
+
 zlib-headers: $(TARGET_DIR)/usr/lib/libz.a
 
 zlib: uclibc $(ZLIB_TARGET)
