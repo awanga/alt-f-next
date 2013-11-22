@@ -1,0 +1,9 @@
+Package: iptables
+Description: Linux kernel firewall, NAT, and packet mangling tools.
+Version: 1.4.19.1
+Depends: kernel-modules, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.iptables.org
+Maintainer: jcard
