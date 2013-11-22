@@ -5,13 +5,16 @@
 #############################################################
 
 NETSNMP_VERSION:=5.5.2
+#NETSNMP_VERSION:=5.7.2
 NETSNMP_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/net-snmp/net-snmp/$(NETSNMP_VERSION)
 NETSNMP_DIR:=$(BUILD_DIR)/net-snmp-$(NETSNMP_VERSION)
 NETSNMP_SOURCE:=net-snmp-$(NETSNMP_VERSION).tar.gz
 NETSNMP_INSTALL_STAGING = YES
 NETSNMP_LIBTOOL_PATCH = NO
+NETSNMP_MAKE = $(MAKE1)
+
 NETSNMP_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) installprogs installlibs installsubdirs
-NETSNMP_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) installprogs installlibs installheaders
+NETSNMP_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) installprogs installlibs installsubdirs installheaders
 
 NETSNMP_WO_TRANSPORT:=
 ifneq ($(BR2_INET_IPX),y)
@@ -29,6 +32,7 @@ endif
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
 NETSNMP_CONFIGURE_OPENSSL:=--with-openssl=$(STAGING_DIR)/usr
+NETSNMP_DEPENDENCIES = openssl
 else
 NETSNMP_CONFIGURE_OPENSSL:=--without-openssl
 endif
