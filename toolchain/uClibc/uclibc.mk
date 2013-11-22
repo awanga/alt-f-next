@@ -428,6 +428,7 @@ $(UCLIBC_DIR)/.config: $(UCLIBC_DIR)/.oldconfig
 	touch $@
 
 $(UCLIBC_DIR)/.configured: $(LINUX_HEADERS_DIR)/.configured $(UCLIBC_DIR)/.config
+	@echo target_uclibc_configure
 	set -x && $(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX=$(TOOL_BUILD_DIR)/uClibc_dev/ \
 		DEVEL_PREFIX=/usr/ \
@@ -455,14 +456,17 @@ else
 endif
 	touch $@
 
-$(UCLIBC_DIR)/lib/libc.a: $(UCLIBC_DIR)/.configured $(gcc_initial) $(LIBFLOAT_TARGET)
+##$(UCLIBC_DIR)/lib/libc.a: $(UCLIBC_DIR)/.configured $(gcc_initial) $(LIBFLOAT_TARGET)
+$(UCLIBC_DIR)/.build: $(UCLIBC_DIR)/.configured $(gcc_initial) $(LIBFLOAT_TARGET)
+	@echo target_uclibc_build
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX= \
 		DEVEL_PREFIX=/ \
 		RUNTIME_PREFIX=/ \
 		HOSTCC="$(HOSTCC)" \
 		all
-	touch -c $@
+##	touch -c $@
+	touch $@
 
 uclibc-menuconfig: host-sed $(UCLIBC_DIR)/.config
 	$(MAKE1) -C $(UCLIBC_DIR) \
@@ -473,8 +477,9 @@ uclibc-menuconfig: host-sed $(UCLIBC_DIR)/.config
 		menuconfig && \
 	touch -c $(UCLIBC_DIR)/.config
 
-
-$(STAGING_DIR)/usr/lib/libc.a: $(UCLIBC_DIR)/lib/libc.a
+##$(STAGING_DIR)/usr/lib/libc.a: $(UCLIBC_DIR)/lib/libc.a
+$(UCLIBC_DIR)/.staging_installed: $(UCLIBC_DIR)/.build
+	@echo target_uclibc_staging
 ifneq ($(BR2_TOOLCHAIN_SYSROOT),y)
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX= \
@@ -520,15 +525,33 @@ endif
 		ln -sf ldconfig $(STAGING_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-ldconfig; \
 		ln -sf ldconfig $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-ldconfig; \
 	fi
-	touch -c $@
+##	touch -c $@
+	touch $@
 
 ifneq ($(TARGET_DIR),)
-$(TARGET_DIR)/lib/libc.so.0: $(STAGING_DIR)/usr/lib/libc.a
+$(UCLIBC_DIR)/.target_build: $(UCLIBC_DIR)/.staging_installed
+	@echo target_uclibc_target
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX=$(TARGET_DIR) \
 		DEVEL_PREFIX=/usr/ \
 		RUNTIME_PREFIX=/ \
 		install_runtime
+ifeq ($(BR2_UCLIBC_VERSION_0_9_28_3),y)
+ifneq ($(BR2_PTHREAD_DEBUG),y)
+	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(@D)/libpthread*.so*
+endif
+endif
+	touch $@
+endif
+
+ifneq ($(TARGET_DIR),)
+$(TARGET_DIR)/lib/libc.so.0: $(UCLIBC_DIR)/.target_build
+	@echo target_uclibc_target
+	$(MAKE1) -C $(UCLIBC_DIR) \
+		PREFIX=$(TARGET_DIR) \
+		DEVEL_PREFIX=/usr/ \
+		RUNTIME_PREFIX=/ \
+		install_build
 ifeq ($(BR2_UCLIBC_VERSION_0_9_28_3),y)
 ifneq ($(BR2_PTHREAD_DEBUG),y)
 	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(@D)/libpthread*.so*
@@ -554,7 +577,8 @@ UCLIBC_TARGETS+=uclibc-test
 endif
 endif
 
-uclibc: $(cross_compiler) $(STAGING_DIR)/usr/lib/libc.a $(UCLIBC_TARGETS)
+##uclibc: $(cross_compiler) $(STAGING_DIR)/usr/lib/libc.a $(UCLIBC_TARGETS)
+uclibc: $(cross_compiler) $(UCLIBC_DIR)/.staging_installed $(UCLIBC_TARGETS)
 
 uclibc-source: $(DL_DIR)/$(UCLIBC_SOURCE)
 
@@ -613,6 +637,7 @@ uclibc-test-dirclean:
 #############################################################
 
 $(TARGET_DIR)/usr/lib/libc.a: $(STAGING_DIR)/usr/lib/libc.a
+	@echo target_quatro
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX=$(TARGET_DIR) \
 		DEVEL_PREFIX=/usr/ \
@@ -636,6 +661,7 @@ else
 		fi; \
 	fi
 endif
+	@echo quatro_
 	touch -c $@
 
 uclibc_target: cross_compiler uclibc $(TARGET_DIR)/usr/lib/libc.a $(TARGET_DIR)/usr/bin/ldd
