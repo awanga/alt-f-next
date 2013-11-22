@@ -283,6 +283,17 @@ if ! which flex > /dev/null ; then
 fi;
 echo "flex installed:					Ok"
 
+#############################################################
+#
+# check build system 'patch'
+#
+#############################################################
+if ! which patch > /dev/null ; then
+	echo "patch installed:		    FALSE"
+	/bin/echo -e "\n\nYou must install 'patch' on your build machine\n";
+	exit 1;
+fi;
+echo "patch installed:				Ok"
 
 #############################################################
 #
