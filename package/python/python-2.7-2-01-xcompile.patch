@@ -45,7 +45,7 @@ diff -urN Python-2.7.2/Makefile.pre.in ltib/rpm/BUILD/Python-2.7.2/Makefile.pre.
  	@case $$MAKEFLAGS in \
 -	*s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' ./$(BUILDPYTHON) -E $(srcdir)/setup.py -q build;; \
 -	*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' ./$(BUILDPYTHON) -E $(srcdir)/setup.py build;; \
-+	*s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' PYTHONXCPREFIX='$(DESTDIR)$(prefix)' $(HOSTPYTHON) -E $(srcdir)/setup.py -q build;; \
++	*s*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' PYTHONXCPREFIX='$(DESTDIR)$(prefix)' $(HOSTPYTHON) -E $(srcdir)/setup.py build;; \
 +	*) $(RUNSHARED) CC='$(CC)' LDSHARED='$(BLDSHARED)' OPT='$(OPT)' PYTHONXCPREFIX='$(DESTDIR)$(prefix)' $(HOSTPYTHON) -E $(srcdir)/setup.py build;; \
  	esac
  
@@ -121,7 +121,7 @@ diff -urN Python-2.7.2/setup.py ltib/rpm/BUILD/Python-2.7.2/setup.py
              return
 +
 +        # Import check will not work when cross-compiling.
-+        if os.environ.has_key('PYTHONXCPREFIX'):
++        if self.cross_compile:
 +            self.announce(
 +                'WARNING: skipping import check for cross-compiled: "%s"' %
 +                ext.name)

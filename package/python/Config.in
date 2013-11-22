@@ -57,14 +57,19 @@ config BR2_PACKAGE_PYTHON_SQLITE3
 config BR2_PACKAGE_PYTHON_UNICODEDATA
 	depends on BR2_PACKAGE_PYTHON
 	bool "unicodedata module"
-	default y
 	help
 	  Unicode character database (used by stringprep module) (large).
+
+config BR2_PACKAGE_PYTHON_LOCALE
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_GETTEXT
+	bool "locale module"
+	help
+	  Support for POSIX locales
 
 config BR2_PACKAGE_PYTHON_CODECSCJK
 	depends on BR2_PACKAGE_PYTHON
 	bool "codecscjk module"
-	default y
 	help
 	  Chinese/Japanese/Korean codecs module for Python (large).
 
@@ -102,6 +107,13 @@ config BR2_PACKAGE_PYTHON_SSL
 	bool "ssl"
 	help
 	  _ssl module for Python (required for https in urllib etc).
+
+config BR2_PACKAGE_PYTHON_BZIP2
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_BZIP2
+	bool "bzip2"
+	help
+	  bzip2 module for Python
 
 config BR2_PACKAGE_PYTHON_ZLIB
 	depends on BR2_PACKAGE_PYTHON

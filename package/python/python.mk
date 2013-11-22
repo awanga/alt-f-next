@@ -25,7 +25,7 @@ else
 	DISABLE_IPV6= --enable-ipv6
 endif
 
-BR2_PYTHON_DISABLED_MODULES = ossaudiodev linuxaudiodev
+BR2_PYTHON_DISABLED_MODULES:= 
 
 ifeq ($(BR2_PACKAGE_PYTHON_READLINE),y)
 PYTHON_DEPS += readline
@@ -64,6 +64,12 @@ else
 BR2_PYTHON_DISABLED_MODULES += _sqlite3
 endif
 
+ifeq ($(BR2_PACKAGE_PYTHON_BZIP2),y)
+PYTHON_DEPS += bzip2
+else
+BR2_PYTHON_DISABLED_MODULES += bz2
+endif
+
 ifeq ($(BR2_PACKAGE_PYTHON_ZLIB),y)
 PYTHON_DEPS += zlib
 else
@@ -94,6 +100,12 @@ ifneq ($(BR2_PACKAGE_PYTHON_UNICODEDATA),y)
 BR2_PYTHON_DISABLED_MODULES += unicodedata
 endif
 
+ifeq ($(BR2_PACKAGE_PYTHON_LOCALE),y)
+PYTHON_DEPS += gettext
+else
+BR2_PYTHON_DISABLED_MODULES += _locale
+endif
+
 $(DL_DIR)/$(PYTHON_SOURCE):
 	 $(call DOWNLOAD,$(PYTHON_SITE),$(PYTHON_SOURCE))
 
@@ -106,6 +118,7 @@ $(PYTHON_DIR)/.patched: $(PYTHON_DIR)/.unpacked
 	touch $@
 
 $(PYTHON_DIR)/.hostpython: $(PYTHON_DIR)/.patched
+	$(call MESSAGE,"Building python for the host")
 	(cd $(PYTHON_DIR); rm -rf config.cache; \
 		./configure --prefix=/usr --libdir=/usr/lib --sysconfdir=/etc --disable-shared; \
 		$(MAKE) python Parser/pgen; \
@@ -117,6 +130,7 @@ $(PYTHON_DIR)/.hostpython: $(PYTHON_DIR)/.patched
 	touch $@
 
 $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
+	$(call MESSAGE,"Configuring python for the target")
 	(cd $(PYTHON_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
@@ -140,8 +154,9 @@ $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
 	touch $@
 
 $(PYTHON_DIR)/$(PYTHON_BINARY): $(PYTHON_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(PYTHON_DIR) DESTDIR=$(TARGET_DIR) \
-		PYTHON_MODULES_INCLUDE=$(STAGING_DIR)/usr/include \
+	$(call MESSAGE,"Building python for the target")
+	$(MAKE) CC="$(TARGET_CC)" -C $(PYTHON_DIR) DESTDIR=$(TARGET_DIR) \
+		PYTHON_MODULES_INCLUDE="$(STAGING_DIR)/usr/include" \
 		PYTHON_MODULES_LIB="$(STAGING_DIR)/lib $(STAGING_DIR)/usr/lib" \
 		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
 		HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen \
@@ -150,13 +165,16 @@ $(PYTHON_DIR)/$(PYTHON_BINARY): $(PYTHON_DIR)/.configured
 		BLDSHARED="$(TARGET_CC) -shared"
 
 $(TARGET_DIR)/$(PYTHON_TARGET_BINARY): $(PYTHON_DIR)/$(PYTHON_BINARY)
-	rm -rf $(PYTHON_DIR)/Lib/test
-	$(MAKE) CC=$(TARGET_CC) -C $(PYTHON_DIR) install \
-		DESTDIR=$(TARGET_DIR) CROSS_COMPILE=yes \
+	$(call MESSAGE,"Installing python on the target")
+	rm -rf $(PYTHON_DIR)/Lib/test $(STAGING_DIR)/$(LIBPYTHON_BINARY).* $(TARGET_DIR)/$(LIBPYTHON_BINARY).*
+	$(MAKE) CC=$(TARGET_CC) -C $(PYTHON_DIR) install DESTDIR=$(TARGET_DIR) \
 		PYTHON_MODULES_INCLUDE=$(STAGING_DIR)/usr/include \
 		PYTHON_MODULES_LIB="$(STAGING_DIR)/lib $(STAGING_DIR)/usr/lib" \
 		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
-		HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen
+		PYTHONHOME=$(HOST_DIR)/usr \
+		HOSTPYTHON=./hostpython HOSTPGEN=./Parser/hostpgen \
+		CROSS_COMPILE=$(GNU_TARGET_NAME)- CROSS_COMPILE_TARGET=yes \
+		BLDSHARED="$(TARGET_CC) -shared"
 	(cd $(TARGET_DIR)/usr/bin; ln -sf python$(PYTHON_VERSION_MAJOR) python )
 	rm $(TARGET_DIR)/usr/bin/idle $(TARGET_DIR)/usr/bin/pydoc
 	cp -dpr $(TARGET_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR) $(STAGING_DIR)/usr/include
