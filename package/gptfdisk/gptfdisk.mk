@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#GPTFDISK_VERSION:=0.8.5
 GPTFDISK_VERSION:=0.8.6
 GPTFDISK_SOURCE:=gptfdisk-$(GPTFDISK_VERSION).tar.gz
 GPTFDISK_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/gptfdisk
@@ -12,24 +11,28 @@ GPTFDISK_DIR:=$(BUILD_DIR)/gptfdisk-$(GPTFDISK_VERSION)
 GPTFDISK_INSTALL_STAGING = NO
 GPTFDISK_LIBTOOL_PATCH = NO
 
-GPTFDISK_DEPENDENCIES = popt
+GPTFDISK_DEPENDENCIES = popt libuuid ncurses
 
-ifeq ($(BR2_PACKAGE_GPTFDISK_CGDISK),y)
-	GPTFDISK_DEPENDENCIES += ncurses
-endif
+# everything has to be built, even if not installed
 
-ifeq ($(BR2_PACKAGE_GPTFDISK_SGDISK),y)
-GPTFDISK_MAKE_OPT = sgdisk
-endif
-ifeq ($(BR2_PACKAGE_GPTFDISK_GDISK),y)
-GPTFDISK_MAKE_OPT += gdisk
-endif
-ifeq ($(BR2_PACKAGE_GPTFDISK_CGDISK),y)
-GPTFDISK_MAKE_OPT += cgdisk
-endif
-ifeq ($(BR2_PACKAGE_GPTFDISK_FIXPARTS),y)
-GPTFDISK_MAKE_OPT += fixparts
-endif
+#ifeq ($(BR2_PACKAGE_GPTFDISK_CGDISK),y)
+#	GPTFDISK_DEPENDENCIES += ncurses
+#endif
+#
+#ifeq ($(BR2_PACKAGE_GPTFDISK_SGDISK),y)
+#GPTFDISK_MAKE_OPT = sgdisk
+#endif
+#ifeq ($(BR2_PACKAGE_GPTFDISK_GDISK),y)
+#GPTFDISK_MAKE_OPT += gdisk
+#endif
+#ifeq ($(BR2_PACKAGE_GPTFDISK_CGDISK),y)
+#GPTFDISK_MAKE_OPT += cgdisk
+#endif
+#ifeq ($(BR2_PACKAGE_GPTFDISK_FIXPARTS),y)
+#GPTFDISK_MAKE_OPT += fixparts
+#endif
+
+GPTFDISK_MAKE_OPT = sgdisk gdisk cgdisk fixparts
 
 $(eval $(call AUTOTARGETS,package,gptfdisk))
 

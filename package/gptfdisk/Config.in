@@ -1,6 +1,7 @@
 config BR2_PACKAGE_GPTFDISK
 	bool "gptfdisk"
 	select BR2_PACKAGE_POPT
+	select BR2_PACKAGE_LIBUUID
 	help
 	  The gdisk and sgdisk programs work on Globally Unique Identifier (GUID) Partition Table (GPT) disks
 	  http://www.rodsbooks.com/gdisk/
@@ -17,6 +18,7 @@ config BR2_PACKAGE_GPTFDISK_GDISK
 config BR2_PACKAGE_GPTFDISK_CGDISK
 	bool "cgdisk"
 	depends on BR2_PACKAGE_GPTFDISK
+	select BR2_PACKAGE_NCURSES
 
 config BR2_PACKAGE_GPTFDISK_FIXPARTS
 	bool "fixparts"
