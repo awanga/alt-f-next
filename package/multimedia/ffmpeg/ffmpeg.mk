@@ -20,7 +20,7 @@ FFMPEG_TARGET_BINARY = usr/bin/$(FFMPEG_BINARY)
 FFMPEG_CONF_OPT = --enable-libmp3lame
 # --enable-libtheora --enable-libvorbis 
 
-FFMPEG_DEPENDENCIES = uclibc lame
+FFMPEG_DEPENDENCIES = uclibc bzip2 lame
 
 $(DL_DIR)/$(FFMPEG_SOURCE):
 	$(call DOWNLOAD,$(FFMPEG_SITE),$(FFMPEG_SOURCE))
