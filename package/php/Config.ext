@@ -80,6 +80,13 @@ config BR2_PACKAGE_PHP_EXT_LIBXML2
 	help
 	  libxml2 support
 
+config BR2_PACKAGE_PHP_EXT_MCRYPT
+        bool "mcrypt"
+        select BR2_PACKAGE_LIBMCRYPT
+        default y
+        help
+          mcrypt support
+
 config BR2_PACKAGE_PHP_EXT_SIMPLEXML
 	bool "simplexml"
 	select BR2_PACKAGE_PHP_EXT_LIBXML2

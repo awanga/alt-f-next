@@ -54,6 +54,11 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
 	PHP_DEPENDENCIES += libpng
 endif
 
+ifeq ($(BR2_PACKAGE_PHP_EXT_MCRYPT),y)
+	PHP_CONF_OPT += --with-mcrypt=shared,${STAGING_DIR}/usr
+	PHP_DEPENDENCIES += libmcrypt
+endif
+
 ifeq ($(BR2_PACKAGE_PHP_EXT_CURL),y)
 	PHP_CONF_OPT += --with-curl=shared,${STAGING_DIR}/usr
 	PHP_DEPENDENCIES += libcurl
