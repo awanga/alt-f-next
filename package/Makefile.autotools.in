@@ -110,6 +110,7 @@
 UPPERCASE = $(shell echo $(1) | tr "a-z.-" "A-Z__")
 
 # Define extrators for different archive suffixes
+INFLATE.xz = $(XZCAT)
 INFLATE.bz2 = $(BZCAT)
 INFLATE.gz  = $(ZCAT)
 INFLATE.tbz = $(BZCAT)
@@ -255,6 +256,7 @@ $(BUILD_DIR)/%/.stamp_configured:
 		$(DISABLE_DOCUMENTATION) \
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
+		$(DISABLE_IPV6) \
 		$(QUIET) $($(PKG)_CONF_OPT)
 	$(Q)touch $@
 
@@ -304,7 +306,6 @@ $(BUILD_DIR)/%/.stamp_uninstalled:
 
 $(BUILD_DIR)/%/.stamp_dircleaned:
 	rm -Rf $(@D)
-
 
 ################################################################################
 # AUTOTARGETS -- the target generator macro; define a set of human-readable
@@ -430,7 +431,7 @@ $$($(2)_TARGET_INSTALL_TARGET):		PKG=$(2)
 $$($(2)_TARGET_INSTALL_STAGING):	PKG=$(2)
 $$($(2)_TARGET_BUILD):			PKG=$(2)
 $$($(2)_TARGET_CONFIGURE):		PKG=$(2)
-$$($(2)_TARGET_LIBTOOL_PATCH):	PKG=$(2)
+$$($(2)_TARGET_LIBTOOL_PATCH):		PKG=$(2)
 $$($(2)_TARGET_AUTORECONF):		PKG=$(2)
 $$($(2)_TARGET_PATCH):			PKG=$(2)
 $$($(2)_TARGET_EXTRACT):		PKG=$(2)
@@ -439,7 +440,7 @@ $$($(2)_TARGET_UNINSTALL):		PKG=$(2)
 $$($(2)_TARGET_CLEAN):			PKG=$(2)
 $$($(2)_TARGET_DIRCLEAN):		PKG=$(2)
 $$($(2)_HOOK_POST_EXTRACT):		PKG=$(2)
-$$($(2)_HOOK_POST_CONFIGURE):	PKG=$(2)
+$$($(2)_HOOK_POST_CONFIGURE):		PKG=$(2)
 $$($(2)_HOOK_POST_BUILD):		PKG=$(2)
 $$($(2)_HOOK_POST_INSTALL):		PKG=$(2)
 
@@ -454,6 +455,165 @@ $$($(2)_HOOK_POST_INSTALL):
 # configuration
 ifeq ($$(BR2_PACKAGE_$(2)),y)
 TARGETS += $(1)
+endif
+endef
+
+#############################################################################
+# identical to (subset of) AUTOTARGETS,
+# but configured and build for the host and installed in HOST_DIR
+#############################################################################
+
+# host Configuring
+$(BUILD_DIR)/%/.stamp_host_configured:
+	$(call MESSAGE,"Host Configuring")
+	cd $(@D)/$($(PKG)_SUBDIR) && rm -f config.cache && \
+	$(HOST_CONFIGURE_OPTS) \
+	$(HOST_CONFIGURE_ARGS) \
+	$(HOST_CONFIGURE_ENV) \
+	$($(PKG)_HOST_CONF_ENV) \
+	$(if $(THIS_SRCDIR),$(THIS_SRCDIR)/,./)configure \
+		--prefix=/usr \
+		--exec-prefix=/usr \
+		--libdir=/usr/lib \
+		--libexecdir=/usr/lib \
+		--sysconfdir=/etc \
+		$(DISABLE_DOCUMENTATION) \
+		$(DISABLE_NLS) \
+		$(DISABLE_LARGEFILE) \
+		$(DISABLE_IPV6) \
+		$(QUIET) $($(PKG)_HOST_CONF_OPT)
+	$(Q)touch $@
+
+# host Build
+$(BUILD_DIR)/%/.stamp_host_built:
+	$(call MESSAGE,"Host Building")
+	PATH=$(TARGET_PATH) $($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE) $($(PKG)_HOST_MAKE_OPT) -C $(@D)/$($(PKG)_SUBDIR)
+	$(Q)touch $@
+
+# Install to host dir
+$(BUILD_DIR)/%/.stamp_host_installed:
+	$(call MESSAGE,'Installing to host dir')
+	$($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE) $($(PKG)_HOST_INSTALL_OPT) -C $(@D)/$($(PKG)_SUBDIR)
+	touch $@
+
+$(BUILD_DIR)/%/.stamp_host_cleaned:
+	$(call MESSAGE,"Cleaning up host dir")
+	-$($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE)  $($(PKG)_HOST_CLEAN_OPT) -C $(@D)/$($(PKG)_SUBDIR)
+	rm -f $(@D)/.stamp_built
+
+$(BUILD_DIR)/%/.stamp_host_uninstalled:
+	$(call MESSAGE,"Uninstalling host dir")
+	$($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE) $($(PKG)_HOST_UNINSTALL_OPT) -C $(@D)/$($(PKG)_SUBDIR)
+	rm -f $(@D)/.stamp_staging_installed
+
+################################################################################
+# AUTOTARGETS -- the target generator macro; define a set of human-readable
+# make targets, stamps, and default per-package variables.
+# Argument 1 is the package directory prefix.
+# Argument 2 is the (lowercase) package name.
+################################################################################
+
+define AUTOTARGETS_HOST
+$(call AUTOTARGETS_HOST_INNER,$(2),$(call UPPERCASE,$(2)),$(1))
+endef
+
+# AUTOTARGETS_INNER -- does the job for AUTOTARGETS; argument 1 is the
+# lowercase package name, argument 2 the uppercase package name,
+# argument 3 the package directory prefix
+define AUTOTARGETS_HOST_INNER
+
+# define package-specific variables to default values
+$(2)_NAME		=  $(1)
+$(2)_VERSION		?= undefined
+$(2)_HOST_DIR		=  $$(BUILD_DIR)/$(1)-$$($(2)_VERSION)-host
+$(2)_SOURCE		?= $(1)-$$($(2)_VERSION).tar.gz
+$(2)_SITE		?= \
+	http://$$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/$(1)
+$(2)_HOST_DEPENDENCIES		?=
+$(2)_HOST_CONF_ENV		?=
+$(2)_HOST_CONF_OPT		?=
+$(2)_HOST_MAKE			?= $(MAKE)
+$(2)_HOST_MAKE_ENV		?=
+$(2)_HOST_MAKE_OPT		?=
+$(2)_HOST_INSTALL_OPT		?= DESTDIR=$$(HOST_DIR) install
+$(2)_HOST_CLEAN_OPT		?= clean
+$(2)_HOST_UNINSTALL_OPT		?= DESTDIR=$$(HOST_DIR) uninstall
+$(2)_HOST_SUBDIR		?=
+$(2)_DIR_PREFIX		=  $(if $(3),$(3),$(TOP_SRCDIR)/package)
+
+# define sub-target stamps
+# targets which affect $(TARGET_DIR) must use a unique stamp for each $(PROJECT)
+$(2)_HOST_INSTALL =		$$($(2)_HOST_DIR)/.stamp_host_installed
+$(2)_HOST_BUILD =		$$($(2)_HOST_DIR)/.stamp_host_built
+$(2)_HOST_CONFIGURE =		$$($(2)_HOST_DIR)/.stamp_host_configured
+$(2)_HOST_EXTRACT =		$$($(2)_HOST_DIR)/.stamp_extracted
+$(2)_HOST_SOURCE =		$$($(2)_HOST_DIR)/.stamp_downloaded
+$(2)_HOST_UNINSTALL =		$$($(2)_HOST_DIR)/.stamp_host_uninstalled
+$(2)_HOST_CLEAN =		$$($(2)_HOST_DIR)/.stamp_host_cleaned
+$(2)_HOST_DIRCLEAN =		$$($(2)_HOST_DIR)/.stamp_dircleaned
+
+$(2)_HOST_HOOK_POST_EXTRACT =	$$($(2)_HOST_DIR)/.stamp_host_hook_post_extract
+$(2)_HOST_HOOK_POST_CONFIGURE =	$$($(2)_HOST_DIR)/.stamp_host_hook_post_configure
+$(2)_HOST_HOOK_POST_BUILD =	$$($(2)_HOST_DIR)/.stamp_host_hook_post_build
+$(2)_HOST_HOOK_POST_INSTALL =	$$($(2)_HOST_DIR)/.stamp_host_hook_post_install
+
+# human-friendly targets and target sequencing
+$(1)-host:		$(1)-host-install
+
+$(1)-host-install:	$(1)-host-build \
+			$$($(2)_HOST_INSTALL) \
+			$$($(2)_HOST_HOOK_POST_INSTALL)
+
+$(1)-host-build:	$(1)-host-configure \
+			$$($(2)_HOST_BUILD) \
+			$$($(2)_HOST_HOOK_POST_BUILD)
+
+$(1)-host-configure:	$(1)-host-extract \
+			$$($(2)_HOST_CONFIGURE) \
+			$$($(2)_HOST_HOOK_POST_CONFIGURE)
+
+$(1)-host-extract:	$(1)-host-depends \
+			$$($(2)_HOST_EXTRACT) \
+			$$($(2)_HOST_HOOK_POST_EXTRACT)
+
+$(1)-host-depends:	$(1)-host-source $$($(2)_HOST_DEPENDENCIES)
+
+$(1)-host-source:	$$($(2)_HOST_SOURCE)
+
+# non-build targets
+$(1)-host-uninstall:	$(1)-host-configure $$($(2)_HOST_UNINSTALL)
+
+$(1)-host-clean:	$(1)-host-uninstall \
+			$$($(2)_HOST_CLEAN)
+
+$(1)-host-dirclean:	$$($(2)_DIRCLEAN)
+
+# define the PKG variable for all targets, containing the
+# uppercase package variable prefix
+$$($(2)_HOST_INSTALL):			PKG=$(2)
+$$($(2)_HOST_BUILD):			PKG=$(2)
+$$($(2)_HOST_CONFIGURE):		PKG=$(2)
+$$($(2)_HOST_EXTRACT):			PKG=$(2)
+$$($(2)_HOST_SOURCE):			PKG=$(2)
+$$($(2)_HOST_UNINSTALL):		PKG=$(2)
+$$($(2)_HOST_CLEAN):			PKG=$(2)
+$$($(2)_HOST_DIRCLEAN):			PKG=$(2)
+$$($(2)_HOST_HOOK_POST_EXTRACT):	PKG=$(2)
+$$($(2)_HOST_HOOK_POST_CONFIGURE):	PKG=$(2)
+$$($(2)_HOST_HOOK_POST_BUILD):		PKG=$(2)
+$$($(2)_HOST_HOOK_POST_INSTALL):	PKG=$(2)
+
+# define hook targets
+# default hook behaviour: do nothing
+$$($(2)_HOST_HOOK_POST_EXTRACT):
+$$($(2)_HOST_HOOK_POST_CONFIGURE):
+$$($(2)_HOST_HOOK_POST_BUILD):
+$$($(2)_HOST_HOOK_POST_INSTALL):
+
+# add package to the general list of targets if requested by the buildroot
+# configuration
+ifeq ($$(BR2_PACKAGE_$(2)_HOST),y)
+TARGETS += $(1)-host
 endif
 endef
 
