@@ -1,0 +1,9 @@
+Package: libmcrypt
+Description: Replacements for the old Unix crypt, under the GPL and support an ever-wider range of algorithms and modes.
+Version: 2.5.8
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sourceforge.net/projects/mcrypt
+Maintainer: jcard

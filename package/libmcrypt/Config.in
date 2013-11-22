@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBMCRYPT
+	bool "libmcrypt"
+	help
+	  Replacements for the old Unix crypt, under the GPL and support an ever-wider range of algorithms and modes.
+
+	  http://sourceforge.net/projects/mcrypt
