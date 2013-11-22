@@ -9,7 +9,6 @@ config BR2_PACKAGE_SQLITE
 config BR2_PACKAGE_SQLITE_READLINE
 	bool "Command-line editing"
 	depends on BR2_PACKAGE_SQLITE
-	select BR2_PACKAGE_NCURSES
 	select BR2_PACKAGE_READLINE
 	help
 	  Enable command-line editing. This requires ncurses and readline.
