@@ -21,7 +21,7 @@ SAMBA_SMALL_SOURCE:=samba-$(SAMBA_SMALL_VERSION).tar.gz
 SAMBA_SMALL_SITE:=http://samba.org/samba/ftp/stable/
 SAMBA_SMALL_DIRM:=$(BUILD_DIR)/samba-small-$(SAMBA_SMALL_VERSION)
 SAMBA_SMALL_DIR:=$(SAMBA_SMALL_DIRM)/$(SAMBA_SMALL_SUBDIR)
-SAMBA_SMALL_DEPS = mklibs-host popt libiconv 
+SAMBA_SMALL_DEPS = mklibs-host popt libiconv zlib
 SAMBA_SMALL_CAT:=$(ZCAT)
 SAMBA_SMALL_TARGET_BINARY:=usr/sbin/smbd
 
