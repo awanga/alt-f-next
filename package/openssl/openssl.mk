@@ -7,6 +7,8 @@
 OPENSSL_VERSION:=1.0.1e
 OPENSSL_SITE:=http://www.openssl.org/source
 
+OPENSSL_MAKE = $(MAKE1)
+
 # specific compiler optimization
 OPENSSL_CFLAGS = $(TARGET_CFLAGS)
 ifeq ($(BR2_PACKAGE_OPENSSL_SIZEOPTIM),y)
@@ -61,11 +63,12 @@ $(OPENSSL_TARGET_CONFIGURE):
 	touch $@
 
 $(OPENSSL_TARGET_BUILD):
-	$(MAKE1) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
-	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
-	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
-	$(MAKE1) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
-	#$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR)  all build-shared do_linux-shared
+	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend build_crypto build_ssl build_engines build_apps
+	#$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
+	#$(OPENSSL_MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
+	#$(OPENSSL_MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
+	#$(OPENSSL_MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
+	##$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) all build-shared do_linux-shared
 	touch $@
 
 $(OPENSSL_HOOK_POST_INSTALL):
