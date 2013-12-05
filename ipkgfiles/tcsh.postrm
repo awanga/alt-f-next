@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if ! test -f /etc/shells; then
+	echo /bin/sh > /etc/shells
+fi
+
+sed -i '\|/usr/bin/tcsh|d' /etc/shells
+
