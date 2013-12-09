@@ -88,7 +88,7 @@ elif test "$cancel" = "Cancel"; then
 
 elif test "$create_dir" = "CreateDir"; then
 	if test "$part" = "none"; then
-        	msg "You must select a partition"
+        msg "You must select a filesystem"
 	fi
 
 	part=/dev/$(httpd -d $part)
