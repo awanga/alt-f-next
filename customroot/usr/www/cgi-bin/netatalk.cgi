@@ -58,8 +58,9 @@ EOF
 awk -F = 'BEGIN {
 		t = FS; FS= ":"
 		i = 0; users[i++] = "anybody";
-		while (getline <"/etc/samba/smbpasswd")
-			users[i++] = $1
+		if (system("test -f /etc/samba/smbpasswd") == 0)
+			while (getline <"/etc/samba/smbpasswd")
+				users[i++] = $1
 		while (getline <"/etc/group")
 			if ($3 >= 100 || $3 == 34 || $3 == 80) 
 				users[i++] = "@" $1
