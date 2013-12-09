@@ -35,6 +35,7 @@ elif test -n "$Mount"; then
     fi
 
 elif test -n "$Submit"; then
+	TF=$(mktemp)
 	for i in $(seq 1 $((n_exports+3))); do 
 		if test -n "$(eval echo \$exp_$i)"; then
 			if test -z "$(eval echo \$xopts_$i)"; then
@@ -50,7 +51,22 @@ elif test -n "$Submit"; then
 			httpd -d "$(eval echo \$xcmtd_$i)$expd $(eval echo \"\$ip_$i\")($(eval echo \$xopts_$i))"
 			echo
 		fi
-	done  > $CONFX
+	done | sort -r > $TF # reverse sort to put commented entries at bottom
+
+	while read share rest; do
+		if test -z "$pshare"; then
+			echo -n "$share $rest" > $CONFX
+		elif test "${share:0:1}" = "#"; then
+			echo -e "\n$share $rest" >> $CONFX
+		elif test "$share" = "$pshare"; then
+			echo -ne " \\\\\n   $rest" >> $CONFX
+		else
+			echo -ne "\n$share $rest" >> $CONFX
+		fi
+		pshare=$share
+		prest=$rest
+	done < $TF
+	rm $TF
 
 	#if test $? != 0; then # exportfs always return 0!
 	res="$(exportfs -r 2>&1 )"

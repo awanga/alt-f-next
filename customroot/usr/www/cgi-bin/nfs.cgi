@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # edir ln cnt
-exports_row() {
+exports_row2() {
 	local edir ln cnt aip opts lopts
 	edir=$1; ln=$2; cnt=$3
  
@@ -27,6 +27,65 @@ exports_row() {
 EOF
 }
 
+# cnt, share, host, opts
+spit_exports() {
+	cnt=$1
+	share=$2
+	host=$3
+	opts=$4
+	cat<<-EOF
+		<tr><td align=center><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
+		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value="$share"></td>
+		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
+		<td><input type=text size=10 id=aip_$cnt name=ip_$cnt value="$host" onclick="def_aip('aip_$cnt','$def_ip')"></td>
+		<td><input type=text size=40 id=expopts_$cnt name=xopts_$cnt value="$opts" onclick="def_opts('xpt', 'expopts_$cnt')"></td>
+		<td><input type=button value=Browse onclick="opts_popup('expopts_$cnt', 'nfs_exp_opt')"></td>
+		</tr>
+	EOF
+}
+
+# cnt, line
+exports_row() {
+	cnt=$1
+	ln=$2
+
+	# read continuation line, if necessary (read -r can't be used at main, path_escaped chars)
+	lnl=$((${#ln}-1))
+    if test "${ln:$lnl}" = "\\"; then
+        read t
+        ln="${ln:0:$lnl} $t"
+    fi
+
+	# remove spaces after comment sign
+	ln=$(echo $ln | sed 's/#[[:space:]]*/#/')
+
+	echo "$ln" | while read -r share rest; do
+
+		# global share comment
+		if test "${share:0:1}" = "#"; then
+			sel="checked"
+			share=${share:1}
+		else
+			sel=""
+		fi
+		
+		share=$(path_unescape $share)
+		share=$(httpd -e "$share")
+
+		for i in $rest; do
+			cnt=$((cnt+1))
+			host=$(echo $i | sed -e 's/\(.*\)(.*/\1/') # FIXME: no (opts)
+			opts=$(echo $i | sed -e 's/.*(\(.*\))/\1/') # FIXME: no (opts)
+			if test "${host:0:1}" = "#"; then
+				sel="checked"
+				host=${host:1}
+			fi
+			spit_exports "$cnt" "$share" "$host" "$opts"
+		done
+		return $cnt # trick to return value from subshell
+	done    
+}
+
 # fstab_rows ln cnt
 fstab_row() {
 	local ln cnt hostdir mdir rhost rdir opts nfs
@@ -35,19 +94,20 @@ fstab_row() {
 	eval $(echo $ln | awk '$3 == "nfs" {printf "nfs=1; hostdir=\"%s\"; mdir=\"%s\"; opts=%s", $1, $2, $4}')
 	eval $(echo "$hostdir" | awk -F":" '{printf "rhost=\"%s\"; rdir=\"%s\"", $1, $2}')
 
-	rdir="$(path_unescape $rdir)"
+	rdir=$(path_unescape $rdir)
 	rdir=$(httpd -e "$rdir")
-	mdir="$(path_unescape $mdir)"
+	mdir=$(path_unescape $mdir)
+	smdir=$mdir
 	mdir=$(httpd -e "$mdir")
 
 	rrhost=${rhost#\#} # remove possible comment char FIXME more than one and space
-	cmtd=${rhost%%[!#]*}	# get possible comment char FIXME more than one and space
+	cmtd=${rhost%%[!#]*} # get possible comment char FIXME more than one and space
 	if test -n "$cmtd"; then sel=checked; else sel=""; fi
 
 	mntfld="<td></td>"
 	if test -n "$mdir"; then
 		op="Mount"
-		if mount -t nfs | grep -q "$mdir"; then
+		if mount -t nfs | grep -q "$smdir"; then
 			op="unMount"
 		fi
 		mntfld="<td><input type=submit value=\"$op\" name=\"$mdir\" onclick=\"return check_dis('$sel','$op')\"></td>"
@@ -153,16 +213,17 @@ netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
 def_ip="$NETWORK/$netmask"
 
-cnt=1
+cnt=0
 if test -e $CONFX; then
-  while read -r edir ln; do
-    exports_row $edir $ln $cnt	# edir ln cnt
-    cnt=$((cnt+1))
+  while read -r ln; do
+	if test -z "$ln"; then continue; fi
+    exports_row $cnt "$ln"
+    cnt=$?
   done < $CONFX
 fi
 
-for i in $(seq $cnt $((cnt+2))); do
-	exports_row "" "" $i	# edir ln cnt
+for i in $(seq $((cnt+1)) $((cnt+3))); do
+	spit_exports $i
 done
 
 cat<<-EOF
