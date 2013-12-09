@@ -44,7 +44,7 @@ while read min hour monthday month weekday cmd; do
 	fi
 
 	cat<<-EOF
-		<tr><td>$inp<input type=hidden name=altf_$i value=$altf_cron></td>
+		<tr><td align="center">$inp<input type=hidden name=altf_$i value=$altf_cron></td>
 		<td><input type=text $altf_cron size=10 name=weekday_$i value="$weekday" $(ttip wday_tt)></td>
 		<td><input type=text $altf_cron size=10 name=hour_$i value="$hour:$min" $(ttip hour_tt)></td>
 		<td><input type=text $altf_cron size=40 name=cmd_$i value="$cmd"></td></tr>
