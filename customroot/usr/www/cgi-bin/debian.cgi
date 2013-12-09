@@ -19,14 +19,16 @@ It is recommended, although not necessary, to dedicate the selected filesystem t
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
 After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
 
+if grep -qE 'DNS-320|DNS-325' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+
 # check installed:
 
-inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-orion5x)
+inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-$SoC)
 
 for i in $inst; do
 	dn=$(dirname $i)
 	dbpart=$(dirname $dn)
-	if test -f ${dn}/vmlinuz-*-orion5x -a -f ${dbpart}/etc/apt/sources.list; then
+	if test -f ${dn}/vmlinuz-*-$SoC -a -f ${dbpart}/etc/apt/sources.list; then
 		mirror=$(cut -d" " -f2 ${dbpart}/etc/apt/sources.list)
 		break;
 	fi

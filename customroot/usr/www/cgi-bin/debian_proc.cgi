@@ -45,9 +45,11 @@ if test "$submit" = "Install"; then
 		msg "You have to specify a mirror near you in order to download Debian"
 	fi
 
+	if grep -qE 'DNS-320|DNS-325' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+
 	DEBMIRROR=$(httpd -d $mirror)
 
-	if test -f $DEBDIR/boot/vmlinuz-*-orion5x -a -f $DEBDIR/boot/initrd.img-*-orion5x; then
+	if test -f $DEBDIR/boot/vmlinuz-*-$SoC -a -f $DEBDIR/boot/initrd.img-*-$SoC; then
 		msg "Debian is already installed in this filesystem."
 	fi
 
@@ -74,8 +76,8 @@ if test "$submit" = "Install"; then
 
 	mkdir -p $DEBDIR 
 	cdebootstrap-static --allow-unauthenticated --arch=armel \
-		--include=linux-image-2.6.32-5-orion5x,openssh-server,kexec-tools,mdadm \
-		squeeze $DEBDIR $DEBMIRROR
+		--include=linux-image-$SoC,openssh-server,kexec-tools,mdadm \
+		wheezy $DEBDIR $DEBMIRROR
 	if test $? != 0; then cleanup; fi
 
 	echo "</pre><h4>Debian installed successfully.</h4>"
