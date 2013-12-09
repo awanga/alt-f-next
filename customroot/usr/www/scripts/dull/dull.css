@@ -13,10 +13,13 @@ select, input {
 .title, .warn, .error {
 	text-align: center;
 } 
-.warn {
+.warn, .blue {
 	color: blue;
 }
-.error {
+.green {
+	color: green;
+}
+.error, .red {
 	color: red;
 	text-decoration: none;
 }
@@ -103,10 +106,10 @@ legend {
 /* tooltips */
 .ttip {
 	font-family: sans-serif;
-	border: 0px;
+	border: solid 1px black;
 	padding: 2px;
 	color: #333333;
-	background-color: #aaaaff;
+	background-color: #ffffaa;
 	position: absolute;
 	visibility: hidden;
 	border-radius: 8px;
