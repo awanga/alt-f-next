@@ -9,7 +9,7 @@ write_header "Dynamic DNS Setup"
 
 CONFF=/etc/inadyn.conf
 
-mktt tt_host "Registered hostname.<br>For freedns.afraid.org, use "host,hash"<br>
+mktt tt_host "Registered hostname.<br>For freedns.afraid.org, use \"host,hash\"<br>
 where "hash" is everything after the ? in the Direct URL."
 
 cat<<EOF
@@ -31,6 +31,16 @@ cat<<EOF
 	</script>
 EOF
 
+sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org"
+
+sites2="default@easydns.com dyndns@3322.org default@sitelutions.com default@dnsomatic.com
+ipv6tb@he.net default@tzo.com default@dynsip.org default@dhis.org default@majimoto.net
+default@zerigo.com"
+
+if test -x /usr/bin/inadyn-mt; then
+	sites="$sites $sites2"
+fi
+
 if test -f $CONFF; then
 	while read -r key value; do
 		if test -n "$key" -a -n "$value" -a "${key###}" = "$key"; then
@@ -41,17 +51,16 @@ if test -f $CONFF; then
 			fi
 		fi
 	done < $CONFF
-
-	case $dyndns_system in
-		dyndns@dyndns.org) dyndns=selected ;;
-		default@zoneedit.com) zoneedit=selected ;;
-		default@no-ip.com)  noip=selected ;;
-		default@freedns.afraid.org)
-			updis=disabled
-			freedns=selected
-			;;
-	esac
 fi
+
+options="<option>Select one</option>"
+
+for i in $sites; do
+	site=$(echo $i | cut -d"@" -f2)
+	sel=""
+	if test "$dyndns_system" = $i; then sel=selected; fi
+	options="$options <option $sel>$site</option>"
+done
 
 cat<<-EOF
 	<form name="formd" action="/cgi-bin/ddns_proc.cgi" method="post">
@@ -59,11 +68,7 @@ cat<<-EOF
 	<table><tr>
 		<td> provider:</td>
 		<td><select name="provider" onchange="val()">
-			<option> Select one
-			<option $dyndns> dyndns.org
-			<option $freedns> freedns.afraid.org
-			<option $zoneedit> zoneedit.com
-			<option $noip> no-ip.com
+		$options
 		</select></td></tr>
 	<tr><td><div id=host_id>hostname:</div></td>
 		<td><input type="text" value="$alias" name="host" $(ttip tt_host)></td></tr>

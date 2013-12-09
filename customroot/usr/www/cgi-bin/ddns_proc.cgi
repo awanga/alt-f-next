@@ -12,13 +12,22 @@ check_cookie
 CONFF=/etc/inadyn.conf
 SSCRIPT=/etc/init.d/S44ddns
 
-case $provider in
-	dyndns.org) ddns=dyndns@dyndns.org ;;
-	zoneedit.com) ddns=default@zoneedit.com ;;
-	no-ip.com) ddns=default@no-ip.com ;;
-	freedns.afraid.org) ddns=default@freedns.afraid.org ;;
-	*) ddns="" ;;
-esac
+sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org"
+
+sites2="default@easydns.com dyndns@3322.org default@sitelutions.com default@dnsomatic.com
+ipv6tb@he.net default@tzo.com default@dynsip.org default@dhis.org default@majimoto.net
+default@zerigo.com"
+
+if test -x /usr/bin/inadyn-mt; then
+	sites="$sites $sites2"
+fi
+
+provider=$(httpd -d "$provider")
+
+for i in $sites; do
+	site=$(echo $i | cut -d"@" -f2)
+	if test "$provider" = "$site"; then ddns=$i; fi
+done
 
 if test "$ddns" != "default@freedns.afraid.org"; then
 	passwd=$(checkpass "$passwd")
@@ -35,7 +44,6 @@ if test -n "$ddns" -a -n "$host"; then
 		alias $host
 		username $user
 		password $passwd
-		background
 		syslog
 		verbose 0
 		update_period_sec 60
