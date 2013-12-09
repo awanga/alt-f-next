@@ -1,20 +1,20 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>ALT-F Help Page</title>
+<title>Samba Help Page</title>
 </head><body>
 
 <center><h2>Samba Setup Help</h2></center>
 
 <p>In this page you can configure Samba, allowing MS-Windows computers
-to access box shares, and to make available to the box shares defined in
+to access this box shares, and to make available to the box shares defined in
 other computers.<br>
  
 A share is a network offer of an existing folder.
 
 <ul>
-<li><p>In the upper <strong>Host details</strong> section you might
-configure how the box appears in the MS-Windows network browser:
+<li><h4>Host details</h4>
+You might configure how the box appears in the MS-Windows network browser:
 
 <ul>
 <li><strong>Host name </strong> the network name used to access the box.
@@ -22,8 +22,8 @@ configure how the box appears in the MS-Windows network browser:
 <li><strong>Workgroup </strong> the MS-Windows workgroup the box will bellong to.
 </ul>
 
-<li><p>In the <strong>Folders to export to other hosts</strong> section you
-can create shares, one per line:
+<li><h4>Folders to export to other hosts</h4>
+You can create shares to be accessed from other computers, one per line:
 
 <ul>
 <li><strong>Disable</strong> fast way to enable or disable a share.
@@ -72,8 +72,8 @@ base folder ownership and permissions.
 
 </ul>
 
-<li><p>In the <strong>Folders to import from other hosts</strong> section
-you can make other computers shares available to the box.<br>
+<li><h4>Folders to import from other hosts</h4>
+You can make other computers shares available to the box.<br>
 
 After an entry is filled-in and the Submit button is hit, a
 <strong>Mount</strong> button will appear, which will make the remote
@@ -107,7 +107,7 @@ the default values will generally be OK.
 
 </ul>
 
-<li><p>The <strong>Advanced</strong> button allows using SWAT, the
+<li><h4>Advanced Button</h4> allows using SWAT, the
 <em>Samba Web Administration Tool</em>, which opens a new window after
 asking for the <em>root</em> credentials.<br> SWAT allows a Samba
 administrator to configure the complex <tt>smb.conf</tt> file, producing
@@ -115,7 +115,6 @@ a configuration file that will not be fully recognized by the Alt-F
 webUI; you should thus use either SWAT or the Alt-F Samba webUI to
 configure Samba.<br> If you install the <tt>samba-doc</tt> Alt-F package
 you can then use the SWAT online help facilities. 
-
 
 </ul>
 
