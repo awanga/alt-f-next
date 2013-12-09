@@ -186,7 +186,7 @@ if test -f "$fop"; then
 	fpid=$(echo $fop | sed "s|/tmp/folders_op.\(.*\)|\1|")
 	if kill -0 $fpid >& /dev/null; then
 		fop_dis="disabled"
-		fop_msg='<tr><td></td><td><font color=red>Folder operation currently in progress</font></td></tr>'
+		fop_msg='<tr><td></td><td class="red">Folder operation currently in progress</td></tr>'
 	else
 		rm -f $fop
 	fi
