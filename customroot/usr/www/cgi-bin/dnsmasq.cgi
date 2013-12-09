@@ -52,13 +52,13 @@ cat <<-EOF
 	</script>
 
 	<form name=dnsmasq action="/cgi-bin/dnsmasq_proc.cgi" method="post">
-	<fieldset><Legend><strong> Dynamically serve IPs </strong></legend><table>
+	<fieldset><legend>Dynamically serve IPs</legend><table>
 	<tr><td> From IP</td><td><input type=text size=12 name=low_rg value="$lrg"></td></tr>
 	<tr><td>To IP</td><td><input type=text size=12 name=high_rg value="$hrg"></td></tr>
 	<tr><td>Lease Time: </td><td><input type=text size=4 name=lease value="$lease"></td></tr>
 	</table></fieldset>
 
-	<fieldset><Legend> <strong> Serve fixed IPs based on MAC </strong></legend>
+	<fieldset><legend>Serve fixed IPs based on MAC</legend>
 	<table><tr align=center>
 	<td> <strong> Name </strong> </td><td> <strong> IP </strong> </td><td> <strong> Get MAC </strong> </td>
 	<td> <strong> MAC </strong> </td><td> <strong> Lease </strong> </td></tr>
@@ -114,7 +114,7 @@ cat <<EOF
 EOF
 
 if false; then
-	echo "<fieldset><legend> <strong> Forward DNS Servers </strong> </legend>"
+	echo "<fieldset><legend>Forward DNS Servers</legend>"
 
 	FLG_MSG="#!in use by dnsmasq, don't change"
 	if $(grep -q "$FLG_MSG" $RESOLV); then
@@ -184,7 +184,7 @@ cat<<-EOF
 			return false;
 		}
 	</script>
-	<fieldset><legend> <strong> TFTP server </strong> </legend>
+	<fieldset><legend>TFTP server</legend>
 	<table>
 	<tr><td>Enable TFTP</td><td><input type=checkbox $tftp value=tftp name=tftp onchange="toogle_tftp()"></td></tr>
 	<tr><td>Root Folder</td>
@@ -198,7 +198,7 @@ eval $(awk '/log-queries/{print "dnslog=CHECKED"} \
 		/log-dhcp/{print "dhcplog=CHECKED"}' $CONF_F)
 
 cat<<EOF	
-	<fieldset><legend> Logging </legend><table>
+	<fieldset><legend>Logging</legend><table>
 	<tr><td>Log DNS queries</td>
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>
 	<tr><td>Log DHCP queries</td>
