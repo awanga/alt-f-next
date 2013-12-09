@@ -15,13 +15,12 @@ fi
 
 case $kind in
 	nfs_mnt_opt)
-		opts="sync,async,soft,hard,intr,nointr,lock,nolock,
-			auto,defaults,users,user,ro,rw"
+		opts="proto=,sync,async,soft,hard,intr,nointr,lock,nolock,auto,defaults,users,user,rw,ro"
 		title="NFS mount options"
 		;;
 	nfs_exp_opt)
-		opts="ro,rw,sync,async,nohide,no_subtree_check,crossmnt,mountpoint,
-			fsid=,root_squash,no_root_squash,all_squash,anonuid=,anongid="
+		opts="ro,rw,sync,async,nohide,no_subtree_check,crossmnt,mountpoint,fsid=,
+			root_squash,no_root_squash,all_squash,anonuid=,anongid="
 		title="NFS export options"
 		;;
 esac
@@ -42,22 +41,22 @@ cat <<-EOF
 			window.close();
 		}
 	</script>
-	<form><select id=bopt multiple>
+	<form><select id="bopt" multiple size="15" style="width: 20em">
 EOF
 
 # FIXME manage options of kind var=val
-echo $opts | awk -F',' -v eopts="$eopts" 'BEGIN {
-	split(eopts, enab, ",") }
+echo $opts | awk -F',' -v eopts="$eopts" '
+	BEGIN { split(eopts, enab, ",") }
 	{
 	for (i=1; i<=NF; i++) {
-		sel="" 
-		for (o in enab) {
-			if (index(enab[o],$i)) {
-				sel="SELECTED"
+		sel=""
+		for (j in enab) {
+			if (index(enab[j], $i) == 1) {
+				sel="selected"
 				break
 			}
 		}
-		printf "<option %s>%s</option>", sel, $i
+		printf "<option %s>%s</option>\n", sel, $i
 		}
 	}'
 
