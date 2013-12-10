@@ -178,6 +178,9 @@ rsync	873/tcp    # rsync
 rsync	873/udp    # rsync
 swat	901/tcp
 swats	902/tcp		# secure swat through 'stunnel'
+ftps	990/tcp		# ftp protocol, control, over TLS/SSL
+ftps	990/udp		# ftp protocol, control, over TLS/SSL
+
 #
 # From ``Assigned Numbers'':
 #
