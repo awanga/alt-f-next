@@ -255,7 +255,7 @@ disk_power() {
 
 # returns true if Alt-F is flashed
 isflashed() {
-	flashed_firmware=$(dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | grep -o 'Alt-F.*')
+	flashed_firmware=$(dd if=/dev/mtd2 ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
 	echo $flashed_firmware | grep -q Alt-F
 }
 
@@ -307,7 +307,6 @@ fs_progress() {
 		fi
 	done
 }
-
 
 firstboot() {
 	if ! test -f /tmp/firstboot; then return; fi
@@ -435,6 +434,7 @@ select_part() {
 	echo "</select>"
 }
 
+# tested with Chrome, Opera, Firefox, Safari, IE-6
 upload_file() {
 	# POST upload format:
 	# -----------------------------29995809218093749221856446032^M
@@ -447,38 +447,63 @@ upload_file() {
 	# ^M    <--------- extra empty line
 	# -----------------------------29995809218093749221856446032--^M
 
-	# The form might contain other fields, all are delimited by the initial delimiter
-	# the file and other fields might appear mixed.
-	# It looks like the order is the one in the form
-	# -----------------------------9708682921188161811539875626^M
-	# Content-Disposition: form-data; name="xpto1"^M
-	# ^M
-	# contents
-	# ^M
-	# -----------------------------9708682921188161811539875626^M
+# a file containing a single '+++' without newlines:
+# 
+# ------WebKitFormBoundaryfQ7SqiAMukx0oxhB^M
+# Content-Disposition: form-data; name="file1"; filename="po"^M
+# Content-Type: application/octet-stream^M
+# ^M
+# +++^M
+# ------WebKitFormBoundaryfQ7SqiAMukx0oxhB--^M
+
+# # hexdump -C same_file_as_above
+#
+# 00000000  2d 2d 2d 2d 2d 2d 57 65  62 4b 69 74 46 6f 72 6d  |------WebKitForm|
+# 00000010  42 6f 75 6e 64 61 72 79  68 37 68 57 72 42 71 5a  |Boundaryh7hWrBqZ|
+# 00000020  37 55 47 63 6f 36 58 30  0d 0a 43 6f 6e 74 65 6e  |7UGco6X0..Conten|
+# 00000030  74 2d 44 69 73 70 6f 73  69 74 69 6f 6e 3a 20 66  |t-Disposition: f|
+# 00000040  6f 72 6d 2d 64 61 74 61  3b 20 6e 61 6d 65 3d 22  |orm-data; name="|
+# 00000050  66 69 6c 65 31 22 3b 20  66 69 6c 65 6e 61 6d 65  |file1"; filename|
+# 00000060  3d 22 70 6f 22 0d 0a 43  6f 6e 74 65 6e 74 2d 54  |="po"..Content-T|
+# 00000070  79 70 65 3a 20 61 70 70  6c 69 63 61 74 69 6f 6e  |ype: application|
+# 00000080  2f 6f 63 74 65 74 2d 73  74 72 65 61 6d 0d 0a 0d  |/octet-stream...|
+# 00000090  0a 2b 2b 2b 0d 0a 2d 2d  2d 2d 2d 2d 57 65 62 4b  |.+++..------WebK|
+# 000000a0  69 74 46 6f 72 6d 42 6f  75 6e 64 61 72 79 68 37  |itFormBoundaryh7|
+# 000000b0  68 57 72 42 71 5a 37 55  47 63 6f 36 58 30 2d 2d  |hWrBqZ7UGco6X0--|
+# 000000c0  0d 0a                                             |..|
+
+	eval $(df -m /tmp | awk '/tmpfs/{printf "totalm=%d; freem=%d;", $2, $4}')
+	reqm=$((CONTENT_LENGTH * 2 / 1024 / 1024))
+	if test "$reqm" -gt "$freem"; then
+		if ! mount -o remount,size=$((totalm + reqm + 10 - freem))M /tmp; then
+			cat > /dev/null # discard transfer
+			echo "Not enought /tmp memory,\n$reqm MB required, $freem MB available.\nIs swap active?"
+			return 1
+		fi
+	fi
 
 	upfile=$(mktemp -t)
-	TF=$(mktemp -t)
 
 	read -r delim_line
-	while read -r line; do
-		if test "${line%:*}" = "Content-Type"; then
-			read -r line
-			break
-		fi
-	done
+	read -r Content_Disposition
+	read -r Content_Type
+	read -r empty_line
 
-	cat > $upfile
+	if ! echo "$CONTENT_TYPE" | grep -q multipart/form-data && 
+		echo "$Content_Disposition" | grep -q form-data &&
+		echo "$Content_Type" | grep -q 'application/octet-stream'; then
+			cat > /dev/null # discard transfer
+			rm -f $upfile
+			echo "Not a (simple) POST response, try another browser?"
+			return 1
+	fi
 
-	# remove from first delimiter found until EOF
-	sed -i '/'$delim_line'/,$d' $upfile
+	# each var has 2 extra bytes (\r\n), and last boundary has two trailing '-'
+	fs=$((CONTENT_LENGTH - 2 \* ${#delim_line} - ${#Content_Disposition} - ${#Content_Type} - 10))
 
-	# but miss to remove the cr nl before the delimiter, which is now at EOF
-	# pitty "head -c -2" doesn't work
-	len=$(expr $(stat -t $upfile | cut -d" " -f2) - 2)
-	dd if=$upfile of=$TF bs=$len count=1 >/dev/null 2>&1
-	rm -f $upfile
-	echo $TF
+	head -c $fs > $upfile
+
+	echo $upfile
 }
 
 download_file() {
@@ -529,6 +554,100 @@ check_cookie() {
 		</script></body></html>
 	EOF
 	exit 0
+}
+
+js_sha1() {
+	cat<<-EOF
+	<script type="text/javascript">
+	/*  SHA-1 implementation in JavaScript | (c) Chris Veness 2002-2013 | www.movable-type.co.uk      */
+	/*   - see http://csrc.nist.gov/groups/ST/toolkit/secure_hashing.html                             */
+	/*         http://csrc.nist.gov/groups/ST/toolkit/examples.html                                   */
+	/*  from http://www.movable-type.co.uk/scripts/sha1.html comments, Utf8.encode()/decode() removed */
+/* usage:
+<form name="f">
+<input type=text name="message" id="message" value="abc"> 
+<button type="button" onClick='f.hash.value = Sha1.hash(f.message.value)'>Generate Hash</button>
+<input type="text" size=40 name="hash" id="hash" readonly><br>
+SHA-1 hash of ‘abc’ should be: a9993e364706816aba3e25717850c26c9cd0d89d
+</form>
+*/
+	var Sha1 = {};
+
+	Sha1.hash = function(msg, utf8encode) {
+		var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
+
+		msg += String.fromCharCode(0x80);
+
+		var l = msg.length/4 + 2;
+		var N = Math.ceil(l/16);
+		var M = new Array(N);
+
+		for (var i=0; i<N; i++) {
+			M[i] = new Array(16);
+			for (var j=0; j<16; j++) {
+			M[i][j] = (msg.charCodeAt(i*64+j*4)<<24) | (msg.charCodeAt(i*64+j*4+1)<<16) | 
+				(msg.charCodeAt(i*64+j*4+2)<<8) | (msg.charCodeAt(i*64+j*4+3));
+			} 
+		}
+
+		M[N-1][14] = ((msg.length-1)*8) / Math.pow(2, 32); M[N-1][14] = Math.floor(M[N-1][14])
+		M[N-1][15] = ((msg.length-1)*8) & 0xffffffff;
+
+		var H0 = 0x67452301;
+		var H1 = 0xefcdab89;
+		var H2 = 0x98badcfe;
+		var H3 = 0x10325476;
+		var H4 = 0xc3d2e1f0;
+
+		var W = new Array(80); var a, b, c, d, e;
+		for (var i=0; i<N; i++) {
+
+			for (var t=0;  t<16; t++) W[t] = M[i][t];
+			for (var t=16; t<80; t++) W[t] = Sha1.ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16], 1);
+			
+			a = H0; b = H1; c = H2; d = H3; e = H4;
+			
+			for (var t=0; t<80; t++) {
+			var s = Math.floor(t/20);
+			var T = (Sha1.ROTL(a,5) + Sha1.f(s,b,c,d) + e + K[s] + W[t]) & 0xffffffff;
+			e = d;
+			d = c;
+			c = Sha1.ROTL(b, 30);
+			b = a;
+			a = T;
+			}
+			
+			H0 = (H0+a) & 0xffffffff;
+			H1 = (H1+b) & 0xffffffff; 
+			H2 = (H2+c) & 0xffffffff; 
+			H3 = (H3+d) & 0xffffffff; 
+			H4 = (H4+e) & 0xffffffff;
+		}
+
+		return Sha1.toHexStr(H0) + Sha1.toHexStr(H1) + 
+			Sha1.toHexStr(H2) + Sha1.toHexStr(H3) + Sha1.toHexStr(H4);
+	}
+
+	Sha1.f = function(s, x, y, z)  {
+		switch (s) {
+		case 0: return (x & y) ^ (~x & z);
+		case 1: return x ^ y ^ z;
+		case 2: return (x & y) ^ (x & z) ^ (y & z);
+		case 3: return x ^ y ^ z;
+		}
+	}
+
+	Sha1.ROTL = function(x, n) {
+		return (x<<n) | (x>>>(32-n));
+	}
+
+	Sha1.toHexStr = function(n) {
+		var s="", v;
+		for (var i=7; i>=0; i--) { v = (n>>>(i*4)) & 0xf; s += v.toString(16); }
+		return s;
+	}
+	</script>
+EOF
 }
 
 busy_cursor_start() {
