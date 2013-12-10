@@ -19,7 +19,7 @@ start_client() {
 if test -n "$unMount"; then
 	start_client
 	mp=$(httpd -d "$unMount")
-	res="$(umount -f $mp 2>&1)"
+	res="$(umount -f "$mp" 2>&1)"
 	st=$?
 	if test $st != 0; then
         msg "Error $st: $res"  
@@ -28,7 +28,7 @@ if test -n "$unMount"; then
 elif test -n "$Mount"; then
 	start_client
 	mp=$(httpd -d "$Mount")
-	res="$(mount $mp 2>&1)"
+	res=$(mount "$mp" 2>&1)
 	st=$?
 	if test $st != 0; then
         msg "Error $st: $res"  

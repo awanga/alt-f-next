@@ -1,32 +1,5 @@
 #!/bin/sh
 
-# edir ln cnt
-exports_row2() {
-	local edir ln cnt aip opts lopts
-	edir=$1; ln=$2; cnt=$3
- 
-	lopts="";
- 	
-	eval $(echo $ln | tr '()' '|' | awk -F'|' '{printf "aip=%s; opts=%s", $1, $2}')
-
-	exdir=${edir#\#} # remove possible comment char FIXME more than one and space
-	cmtd=${edir%%[!#]*}	# get possible comment char FIXME more than one and space
-	exdir="$(path_unescape $exdir)"
-	exdir=$(httpd -e "$exdir")
-
-	if test -n "$cmtd"; then sel=checked; else sel=""; fi
-
-	cat<<EOF
-		<tr><td align=center><input type=checkbox $sel name=xcmtd_$cnt value="#"></td>
-		<td><input type=text size=10 id=dir_$cnt name=exp_$cnt value="$exdir"></td>
-		<td><input type=button onclick="browse_dir_popup('dir_$cnt')" value=Browse></td>
-		<td><input type=text size=10 id=aip_$cnt name=ip_$cnt value="$aip" onclick="def_aip('aip_$cnt','$def_ip')"></td>
-		<td><input type=text size=40 id=expopts_$cnt name=xopts_$cnt value="$opts" onclick="def_opts('xpt', 'expopts_$cnt')"></td>
-		<td><input type=button value=Browse onclick="opts_popup('expopts_$cnt', 'nfs_exp_opt')"></td>
-		</tr>
-EOF
-}
-
 # cnt, share, host, opts
 spit_exports() {
 	cnt=$1
@@ -263,21 +236,6 @@ cat<<-EOF
 	<input type=hidden name="n_fstab" value="$cnt">
 	</fieldset>	
 EOF
-
-if false; then
-res=$(rpcinfo -b 100005 3 | sort -u  | while read hip hnm; do
-	if test $hnm = "(unknown)"; then
-		host=$hip
-	else
-		host=$hnm
-	fi
-	showmount -e --no-headers $host	| while read hdir rest; do
-		echo "<li>$host:$hdir</li>"
-	done
-done)
-
-echo "<ul> $res </ul>"
-fi
 
 if ! aufs.sh -s >& /dev/null; then
 	dnfs_dis="disabled"	
