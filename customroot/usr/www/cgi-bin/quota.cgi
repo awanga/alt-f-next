@@ -24,9 +24,15 @@ cat<<-EOF
 	</script>
 EOF
 
+if test -z "$user" -a -z "$group" -a -z "$admin"; then
+	admin=admin
+    kind=admin
+    targ=admin
+fi
+
 if test -n "$admin"; then
-	kind="admin"
-	targ="admin"
+	kind=admin
+	targ=admin
 
 	echo "<table><tr><th>Dev.</th><th>Label</th><th>Enabled</th><th>Active</th><th>Check</th></tr>"
 	fs=$(grep -E '(ext2|ext3|ext4)' /proc/mounts | cut -d" " -f1)
@@ -46,8 +52,8 @@ if test -n "$admin"; then
 		fi
 		cat<<-EOF
 			<tr><td>$part</td><td>$(plabel $part)</td>
-			<td><input $qm_chk type=checkbox name=enable_$j value="$part" onchange="dis_toogle(this, 'chk_$j')"></td>
-			<td><input $qm_dis $qs_chk type=checkbox id="chk_$j" name=active_$j value="$part"></td>
+			<td align="center"><input $qm_chk type=checkbox name=enable_$j value="$part" onchange="dis_toogle(this, 'chk_$j')"></td>
+			<td align="center"><input $qm_dis $qs_chk type=checkbox id="chk_$j" name=active_$j value="$part"></td>
 			<td><input $qm_dis type=submit name=$part value=CheckNow onclick="return confirm('This operation takes a long time to accomplish,\n\
 	as it has to scan all files on the filesystem.\n\n\
 	It has to be done the first time quotas are enabled,\n\
@@ -66,18 +72,18 @@ if test -n "$admin"; then
 elif test -n "$user" -o -n "$group"; then
 
 	if test -n "$user"; then
-		kind="user"
+		kind=user
 		opt="-u"
 		targ="$user"
 		name=$(awk -F: '/^'$user':/{printf "%s", $5}' $CONFP)
 	else
-		kind="group"
+		kind=group
 		opt="-g"
 		targ="$group"
 		name=$group
 	fi
 
-	res=$(quota --show-mntpoint -spwv $opt $targ)
+	res=$(quota --show-mntpoint -spwv $opt $targ 2> /dev/null)
 	if test -n "$res"; then
 		cat<<-EOF
 			<h3>Quota for $kind "$name"</h3>
@@ -105,15 +111,15 @@ elif test -n "$user" -o -n "$group"; then
 					<td><input type=text size=6 name=flimit_$i value="$flimit"></td></tr>
 			EOF
 		done
-		
-		cat<<-EOF
-			</table><br>
-			<input type=submit name=quota_user value="Submit">$(back_button)
-		EOF
+		echo "</table><br>"
+		echo "<input type=submit name=quota_user value="Submit">$(back_button)"
+	else
+		echo "<p>You have to setup Disk Quotas first.</p>$(back_button)"
 	fi
 fi
 
 cat<<-EOF
+	
 	<input type=hidden name=kind value="$kind">
 	<input type=hidden name=targ value="$targ">
 	<input type=hidden name=opt value="$opt">
