@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# TZ setting:
+# http://www.gnu.org/savannah-checkouts/gnu/libc/manual/html_node/TZ-Variable.html_node
+# http://pubs.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap08.html (near the end)
+#
+# timezones.txt was *crudely* extracted from /usr/share/zoneinfo/posix
+# from SuSE package timezone-2009d-0.1.1.
+# An alternative zonelist:
+# http://uclibc.10924.n7.nabble.com/attachment/5058/0/uclibc-zoneinfo.list
+
 # $1-default month
 opt_month() {
 	j=1
@@ -56,9 +65,6 @@ opt_min() {
 		echo "<option $sel value=\"$i\">$i</option>"
 	done
 }
-
-# timezones.txt was *crudely* extracted from /usr/share/zoneinfo/posix
-# from SuSE package timezone-2009d-0.1.1
 
 tzones() {
 
