@@ -13,9 +13,18 @@ elif test "$1" = "disable" -a -z "$2" ; then
 fi
 
 # for process match, some processes need -n, the default, others -x
-if test -z "$START_STOP"; then
-	START_STOP=-n
+if test -z "$RC_START_STOP"; then
+	RC_START_STOP=-n
 fi
+
+# some processes don't put themselves in background
+if test -n "$RC_START_BG"; then
+	RC_START_BG=-b
+fi
+
+# some proceeses need special start/stop cmds/args, e.g.
+# RC_START_CMD="start-stop-daemon -S -q -o -b -x $NAME -- $NAME_ARGS"
+# RC_STOP_CMD="start-stop-daemon -stop --signal 2 --quiet --oknodo --pidfile $PIDFILE
 
 AVAHI_SRV_DIR=/etc/avahi/services
 
@@ -91,9 +100,9 @@ excludedby() {
 	done
 }
 
-# FIXME: add support for --pidfile
+# FIXME: add support for --pidfile?
 status() {
-	if start-stop-daemon -K -t -q $START_STOP $1; then
+	if start-stop-daemon -K -t -q $RC_START_STOP $1; then
 		echo "$1 running"
 		return 0
 	else
@@ -130,6 +139,23 @@ omsg() {
 	return $1	
 }
 
+check_user() {
+	if test -n "$RC_USER" -a -n "$RC_USERN" -a -n "$RC_GROUP" -a -n "$RC_GROUPN" -a -n "$RC_DESC"; then
+		user_home=/var/lib/$RC_USER
+		if ! id $RC_USER >& /dev/null; then
+			addgroup -S -g $RC_GROUPN $RC_GROUP >& /dev/null
+			adduser -S -g "$RC_DESC" -G $RC_GROUP -u $RC_USERN -h $user_home $RC_USER >& /dev/null
+		fi
+		if ! test -d $user_home; then
+			mkdir -p $user_home
+			chown -R $RC_USER:$RC_GROUP $user_home
+		fi
+		if test $# != 0; then
+			chown -R $RC_USER:$RC_GROUP $*
+		fi
+	fi
+}
+
 start() {
 	if test -n "$EXCLUDEDBY"; then
 		excludedby $1 $EXCLUDEDBY
@@ -139,18 +165,23 @@ start() {
 		require $1 $REQUIRE
 	fi
 
- 	echo -n "Starting $1: "
-	if test -n "$START_CMD"; then
-		$START_CMD
+	if test -n "$RC_PIDFILE"; then
+		ARGS_PID="--pidfile $RC_PIDFILE"	
+		if test -n "$RC_MAKE_PID"; then
+			ARGS_PID="--make-pidfile $ARGS_PID"
+		fi
+	fi
+
+	echo -n "Starting $1: "
+	if test -n "$RC_START_CMD"; then
+		$RC_START_CMD
 	else
-		start-stop-daemon -S -q -o -x $*
+		start-stop-daemon -S -q -o $RC_START_BG $ARGS_PID -x $*
 	fi
 	omsg $?
 }
 
-# FIXME: add support for --pidfile
 stop() {
-
 #	if test -n "$REQUIREDBY"; then
 #		requiredby $1 $REQUIREDBY
 #	fi
@@ -161,14 +192,24 @@ stop() {
 	echo -n "Stopping $1: "
 	if test -n "$2"; then
 		sig="-s $2"
-	fi	
+	fi
 
-	if test -n "$STOP_CMD"; then
-		$STOP_CMD
+	STOP_ARGS="$1"
+	if test -n "$RC_PIDFILE"; then
+		STOP_ARGS="--pidfile $RC_PIDFILE"
+		RC_START_STOP=""
+	fi
+
+	if test -n "$RC_STOP_CMD"; then
+		$RC_STOP_CMD
 	else
-		start-stop-daemon -K -q -o $sig $START_STOP $1
+		start-stop-daemon -K -q -o $sig $RC_START_STOP $STOP_ARGS
 	fi
 	st=$?
+
+	if test -n "$RC_PIDFILE" -a "$st" = 0; then
+		rm -f $RC_PIDFILE
+	fi
 
 	if test -n "$REQUIRE"; then
 		while status $1 >& /dev/null; do usleep 200000; done
@@ -181,7 +222,7 @@ stop() {
 restart() {
 	echo "Restarting $1: "
 	sh $0 stop
-	while start-stop-daemon -K -t -q $START_STOP $1; do usleep 200000; done
+	while start-stop-daemon -K -t -q $RC_START_STOP $1; do usleep 200000; done
 	sh $0 start
 }
 
@@ -192,7 +233,7 @@ reload() {
 	else
 		sig=$2
 	fi
-	start-stop-daemon -K -q -s $sig $START_STOP $1
+	start-stop-daemon -K -q -s $sig $RC_START_STOP $1
 	omsg $?
 }
 
