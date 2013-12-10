@@ -242,6 +242,7 @@ case "$action" in
 			if mountpoint -q $i; then
 				if test -f $i/alt-f.log; then
 					showlog $i/alt-f.log SystemConf "System Configuration"
+					break
 				fi
 			fi
 		done
