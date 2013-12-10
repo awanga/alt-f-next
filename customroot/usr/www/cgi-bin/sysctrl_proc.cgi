@@ -12,20 +12,14 @@ cmd="hi_fan hi_temp lo_fan lo_temp fan_off_temp max_fan_speed
 	warn_temp warn_temp_command crit_temp crit_temp_command mail
 	back_button_command front_button_command1 front_button_command2 recovery"
 
-if test -f $CONFF; then
-	rm $CONFF
-fi
-
 for i in $cmd; do
 	arg="$(eval echo \$$i)"
 	if test -z "$arg"; then continue; fi
 	val=$(httpd -d "$arg")
-	echo "$i=\"$val\"" >> $CONFF
+	echo "$i=\"$val\"" >> $CONFF-
 done
 
-if rcsysctrl status >& /dev/null; then
-	rcsysctrl reload >& /dev/null
-fi
+mv $CONFF- $CONFF
 
 #enddebug
 gotopage /cgi-bin/sysctrl.cgi

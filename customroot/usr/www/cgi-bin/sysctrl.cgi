@@ -11,15 +11,15 @@ mktt tt_1cmd "User script to execute before the box reboots. Read the online hel
 mktt tt_2cmd "User script to execute before the box powers-down. Read the online help"
 mktt tt_3cmd "User script to execute when pressing the back button. Read the online help"
 
-board="$(cat /tmp/board)"
+board=$(cat /tmp/board)
 
 # keep in sync with sysctrl.c, args_t args, line ~84
 lo_fan=2000
 hi_fan=5000
-if test "$board" = "C1" -o "$board" = "D1"; then 
+if test "$board" = "DNS-323-C1" -o "$board" = "DNS-323-A1" -o "$board" = "DNS-325-A1"; then 
 	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	lo_temp=45
-elif test "$board" = "A1" -o "$board" = "B1"; then 
+elif test "$board" = "DNS-323-A1" -o "$board" = "DNS-323-B1"; then 
 	mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
 	lo_temp=40
 fi
@@ -27,7 +27,8 @@ hi_temp=50
 mail=1
 recovery=1
 fan_off_temp=38
-max_fan_speed=5500
+max_fan_speed=6000
+lo_temp=40
 warn_temp=52
 crit_temp=54
 warn_temp_command=
@@ -55,12 +56,10 @@ fi
 
 cat<<-EOF
 	<form action="/cgi-bin/sysctrl_proc.cgi" method="post">
-
-	<fieldset><Legend><strong>System Temperature / Fan Speed relationship</strong>
-		</legend><table>
+	<fieldset><legend>System Temperature / Fan Speed relationship</legend><table>
 EOF
 
-if test "$board" = "C1" -o "$board" = "D1"; then
+if test "$board" = "DNS-323-C1" -o "$board" = "DNS-321-A1" -o "$board" = "DNS-325-A1"; then
 	cat<<-EOF
 		<tr><td>Fan Off Temp.</td>
 			<td><input type=text size=2 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
@@ -69,7 +68,7 @@ if test "$board" = "C1" -o "$board" = "D1"; then
 			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
 		</table></fieldset>
 	EOF
-elif test "$board" = "A1" -o "$board" = "B1"; then
+elif test "$board" = "DNS-323-A1" -o "$board" = "DNS-323-B1"; then
 	cat<<-EOF
 		<tr><td>Low Temp.</td>
 			<td><input type=text size=2 name=lo_temp value="$lo_temp">&deg;C</td>
@@ -85,8 +84,7 @@ elif test "$board" = "A1" -o "$board" = "B1"; then
 		</tr>
 		</table></fieldset>
 
-	<fieldset><Legend><strong>Maximum ratings</strong>
-		</legend><table>
+	<fieldset><legend>Maximum ratings</legend><table>
 			<tr><td>Fan Off Temp.</td>
 				<td><input type=text size=4 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
 				</td></tr>
@@ -100,8 +98,7 @@ else
 fi
 
 cat<<-EOF
-	<fieldset><Legend><strong>System Safety</strong>
-		</legend><table>
+	<fieldset><legend>System Safety</legend><table>
 			<tr><td>Warn Temp. </td>
 				<td><input type=text size=4 name=warn_temp value="$warn_temp">&deg;C</td>
 				<td width=20></td>
@@ -123,8 +120,7 @@ cat<<-EOF
 			</tr>
 		</table></fieldset>
 
-	<fieldset><Legend><strong>Action to execute on Button press</strong>
-		</legend><table>
+	<fieldset><legend>Action to execute on Button press</legend><table>
 			<tr><td>Front button 1st cmd:</td>
 				<td colspan=3><input type=text name=front_button_command1  value="$front_button_command1" $(ttip tt_1cmd)></td>
 			</tr>
