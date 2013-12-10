@@ -27,10 +27,10 @@ download() {
 
 	rm -f $TMPDIR/$pname
 	if test $st = 0; then
-		echo "</pre><p><strong>Success</strong>"
+		echo "</pre><p><strong>Success</strong></p>"
 		goto_button Continue /cgi-bin/packages_ffp.cgi
 	else
-		echo "</pre><p><strong>Error</strong>"
+		echo "</pre><p><strong>Error</strong></p>"
 		goto_button Back /cgi-bin/packages_ffp.cgi
 	fi
 	echo "</body></html>"
@@ -115,14 +115,14 @@ if test "$install" = "Install"; then
 			chmod 0755 /ffp/bin/busybox$bbext
 			chmod u+s /ffp/bin/busybox$bbext
 			chmod -x /ffp/start/*
-			echo "success.</strong>"
+			echo "success.</strong></p>"
 			st=0
 		else
-			echo "fail.</strong>"
+			echo "fail.</strong></p>"
 			st=1
 		fi
 	else
-		echo "<p><strong>Download failed.</strong>"
+		echo "<p><strong>Download failed.</strong></p>"
 		st=1
 	fi
 	rm -f $TMPF
