@@ -4,7 +4,7 @@
 check_cookie
 write_header "LVM Setup"
 
-echo "<h3><center><font color=red>Work in progress, don't use for serious work.</font></center></h3>"
+echo "<h3 class=\"warn\">Work in progress, don't use for prodution.</h3>"
 
 CONFF=/etc/misc.conf
 
@@ -59,7 +59,7 @@ if ! echo $vg | grep -qi 'No volume groups'; then
 
 		dvgname=$vgname
 		if test ${attr:3:1} = "p"; then
-			dvgname="<font color=red>$vgname</font>"
+			dvgname="<span class="red">$vgname</span>"
 		fi
 
 		cat<<-EOF
@@ -106,7 +106,7 @@ if test -n "$pvd"; then
 
 		if echo "$pdev" | grep -q "unknown device"; then
 			inuse=""
-			pdev="<font color=red>missing</font>"
+			pdev="<span class="red">missing</span>"
 		else
 			pdev=$(basename $pdev)
 			inuse=$(pvdisplay --map /dev/$pdev 2> /dev/null | sed -n -e '/mlog/d' \
@@ -150,7 +150,7 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 
 			dldev=$ldev
 			if test ${attr:4:1} != "a"; then
-				dldev="<font color=red>$ldev</font>"
+				dldev="<span class="red">$ldev</span>"
 			fi
 
 			all_dis=""
@@ -173,10 +173,10 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 			esac
 
 			op=""
-			if test -n "$copy" -a -n "$move"; then op="<font color=red>copy $move ${copy%.*}%</font>"
-			elif test -n "$copy" -a "$copy" != "100.00"; then op="<font color=red>copy ${copy%.*}%</font>"
-			elif test -n "$move"; then op="<font color=red>move ${move%.*}%</font>"
-			elif test -n "$snap"; then op="<font color=red>snap ${snap%.*}%</font>"; fi
+			if test -n "$copy" -a -n "$move"; then op="<span class=\"red\">copy $move ${copy%.*}%</span>"
+			elif test -n "$copy" -a "$copy" != "100.00"; then op="<span class=\"red\">copy ${copy%.*}%</span>"
+			elif test -n "$move"; then op="<span class=\"red\">move ${move%.*}%</span>"
+			elif test -n "$snap"; then op="<span class=\"red\">snap ${snap%.*}%</span>"; fi
 
 			# not needed
 			# all_dis=""
