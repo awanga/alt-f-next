@@ -128,13 +128,11 @@ else
 	EOF
 fi
 
-ifdown eth0 >& /dev/null
-sleep 3
 if test -f /var/run/udhcpc.eth0.pid; then
 	kill $(cat /var/run/udhcpc.eth0.pid) >& /dev/null
 fi
-ifup eth0 >& /dev/null
-sleep 3
+ifdown -f eth0 >& /dev/null
+ifup -f eth0 >& /dev/null
 
 # FIXME: the following might not be enough.
 # FIXME: Add 'reload' to all /etc/init.d scripts whose daemon supports it
