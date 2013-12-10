@@ -15,8 +15,8 @@ restore() {
 	if test -f /tmp/$(basename $CONFF); then
 		if awk '{last=curr; curr=$2} END {if (last != curr) exit 1}' $CONFF; then
 			touch -r /tmp/$(basename $CONFF) $CONFF
-			rm /tmp/$(basename $CONFF)
 		fi
+		rm /tmp/$(basename $CONFF)
 	fi
 	exit $1
 }
