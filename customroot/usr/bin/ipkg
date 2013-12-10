@@ -1,9 +1,15 @@
 #!/bin/sh
 
 usage() {
-	echo "This is a frontend to ipkg.
-	ipkg is not installed, install using the web interface,
-	or using \"ipkg -install [<mount_point>]\""
+	echo "This is a frontend to ipkg. Use it always!
+Usage:
+	ipkg -install [<mount_point>]
+	ipkg -clean
+	ipkg -help
+	ipkg standard ipkg command"
+	if ! test -f //usr/bin/ipkg-cl; then
+		echo -e "\nipkg is not installed, install using the web interface."
+	fi
 	exit 1
 }
 
@@ -18,6 +24,7 @@ clean() {
 		return 0
 	fi
 
+	aufs.sh -n
 	if test -f /usr/bin/ipkg-cl; then
 		for i in $(ipkg-cl -V0 list_installed | cut -f1 -d" "); do
 			if test "$i" != "ipkg"; then
@@ -51,12 +58,12 @@ clean() {
 
 		if ! aufs.sh -u >& /dev/null; then # no hope
 			echo "ipkg: can't umount aufs branch, exiting."
+			aufs.sh -r
 			exit 1
 		fi
 	fi
 	
-	rm -rf $(readlink -f /Alt-F)
-	rm -f /Alt-F
+	rm -rf $(readlink -f /Alt-F) /Alt-F
 }
 
 install() {
@@ -129,20 +136,27 @@ and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 		msg "Downloaded wrong package?"
 	fi
 	
-	# remount /Alt-F with inotify
 	aufs.sh -n
 	tar -C /Alt-F -xzf data.tar.gz
-	
-	cd
+	mkdir -p /Alt-F/etc
+	aufs.sh -r
+
+	cd /
 	rm -rf $TMPD
 	
 	if test -z "$local"; then
+		# FIXME: remount /Alt-F with inotify makes 3.10.11 crash here, the *first* time.
+		# Take the risk and don't remount with inotify
+		#aufs.sh -n
 		ipkg-cl update
 		ipkg-cl install ipkg
+		#aufs.sh -r
 	fi
 
-	# remount /Alt-F with reval
-	aufs.sh -r
+	if test -s /etc/preinst.status; then
+		cat /etc/preinst.status >> /usr/lib/ipkg/status
+	fi
+
 	exit 0
 }
 
@@ -174,11 +188,32 @@ elif test "$#" != 0 -a "$1" = "-install"; then
 		exit $?
 	fi
 
+elif test "$#" != 0 -a "$1" = "-help"; then
+	usage
+
 elif test -f /usr/bin/ipkg-cl; then
+
+	# removing a package if it is preinstalled requires ressurrecting/reinstalling it
+	if echo $* | grep -q '[[:space:]]*remove[[:space:]]*'; then
+		pkg=$(eval echo \$$#)   # assume pkg is last command argument
+		# some packages have a rcscript, remake it if it exists
+		if test -f /usr/lib/ipkg/info/$pkg.list && grep -q /etc/init.d/S.* /usr/lib/ipkg/info/$pkg.list; then
+			rclink=$(grep -ho '/sbin/rc.*' /usr/lib/ipkg/info/$pkg.postrm)
+		fi
+	fi
+
 	aufs.sh -n
 	ipkg-cl $*
 	res=$?
 	aufs.sh -r
+
+	if test -n "$pkg" -a -f /etc/preinst.status && grep -q "Package:[[:space:]]*$pkg$" /etc/preinst.status; then
+		if test -n "$rclink"; then
+			ln -sf /usr/sbin/rcscript $rclink
+		fi
+		sed -n "/Package: $pkg/,/^$/p" /etc/preinst.status >> /usr/lib/ipkg/status
+	fi      
+
 	exit $res
 
 else
