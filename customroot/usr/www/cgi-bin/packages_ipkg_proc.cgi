@@ -78,7 +78,7 @@ if test "$install" = "Install"; then
 
 	change_feeds
 
-	ipkg_cmd -install $mp 
+	ipkg_cmd -install $mp
 
 elif test -n "$RemoveAll"; then
 
@@ -94,7 +94,7 @@ elif test -n "$RemoveAll"; then
 	EOF
 
 	busy_cursor_start
-	for i in  $(ls -r /Alt-F/etc/init.d/S*); do
+	for i in  $(ls -r /Alt-F/etc/init.d/S* 2>/dev/null); do
 		if test -f $i; then
 			f=$(basename $i)
 			rcscript=rc${f:3}
@@ -147,7 +147,7 @@ if test $? != 0; then
 fi
 
 if test -n "$Remove"; then
-	res=$(ipkg remove $Remove | sed -n '/^Package/,/^$/p')
+	res=$(ipkg remove $Remove 2>&1 | sed -n '/^Package/,/^$/p')
 
 	if test -n "$res"; then
 		msg "$res"

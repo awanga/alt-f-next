@@ -66,16 +66,18 @@ else
 		}
 		printf "<tr><td align=\"center\"><input type=checkbox name=dis_%d></td> \
 			<td><input type=text size=50 name=feed_%d value=\"\"></td></tr> \
-			<input type=hidden name=nfeeds value=\"%d\">", nf, nf, ++nf
+			<input type=hidden name=nfeeds value=\"%d\">", nf, nf, ++nf;
+		if (system("test -f /etc/preinst") == 0)
+			while (getline ln <"/etc/preinst") {
+				split(ln,a);
+				preinst[a[1]] = a[2];
+			}
 	}
 	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field 
 	/Version:/ { ver[i] = $2 }
 	/Source:/ { url[i] = $2 }
 	/Description:/ { des[i] = substr($0, index($0,$2)) }
-	/Status:/ { if ($4 == "installed")
-			inst[nm] = i;
-		else { uinst[nm] = i; ucnt++;}
-	}
+	/Status:/ { if ($4 == "installed") inst[nm] = i; else { uinst[nm] = i; ucnt++; } }
 	END {
 		print "<tr><td></td><td><input type=submit name=Submit value=Submit> \
 			<input type=submit name=updatelist value=UpdatePackageList> \
@@ -88,18 +90,39 @@ else
 		update = 0;
 		for (i=1; pkg[i] != ""; i++) {
 			nm = pkg[i];
-			if (nm in inst) {
+			if (nm in inst || nm in preinst) {
+
+				remdis = ""
+				if (nm in preinst && ! (nm in inst)) { # pre-instaled uninstalled
+					remdis = "disabled"
+				} else if (nm in preinst && nm in inst) { # pre-instaled updated
+					if (preinst[nm] == ver[inst[nm]])
+						remdis = "disabled"
+				}
+				rmv = sprintf("<td><input type=submit %s name=%s value=Remove></td>", remdis, nm);
+
 				if (nm in uinst) {	# new version available, old has missing info
-					j = uinst[nm]; v = ver[inst[nm]]; update++;
-					upd=sprintf("<td><input type=submit name=%s value=Update></td><td>to %s</td>", nm, ver[uinst[nm]]);
+					j = uinst[nm]; update++;
+
+					if (nm in preinst && ! (nm in inst))
+						v = preinst[nm]
+					else
+						v = ver[inst[nm]];
+
+					if (v == ver[uinst[nm]])
+						upd="<td></td><td></td>";
+					else
+						upd = sprintf("<td><input type=submit name=%s value=Update></td><td>(%s)</td>", nm, ver[uinst[nm]]);
+
 					delete uinst[nm]; ucnt--; delete inst[nm];
 				} else {
 					j = i; v = ver[i];
 					upd="<td></td><td></td>";
 				}
+
 				printf "<tr><td><a href=\"/cgi-bin/embed.cgi?name=%s?site=%s\">%s</a></td><td>%s</td>",
 					nm, url[j], nm, v;
-				printf "<td><input type=submit name=%s value=Remove></td>", nm;
+				print rmv;
 				print upd;
 				printf "<td>%s</td></tr>\n\n", des[j];
 			}
