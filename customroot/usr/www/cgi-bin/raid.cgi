@@ -1,7 +1,5 @@
 #!/bin/sh
 
-PATH=/bin:/usr/bin:/sbin:/usr/sbin
-
 . common.sh
 
 check_cookie
@@ -175,7 +173,7 @@ done
 # for metadata 1.2 mdadm reports /dev/md/0, /dev/md/1... which are simlinks to /dev/md0, /dev/md1...
 curdev=$(for i in $(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}'); do
 	if test -h /dev/$i; then
-		basename $(readlink -f /dev/$i)
+		if a=$(readlink -f /dev/$i); then basename $a; fi
 	else
 		echo $i
 	fi
