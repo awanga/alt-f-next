@@ -1,5 +1,16 @@
 #!/bin/sh
 
+lmount() {
+	if ! mount -t $fs_type $MTD $save_dir; then
+		rmdir $save_dir
+		exit 1
+	fi
+}
+
+lumount() {
+	umount $save_dir
+}
+
 listchanged() {
 	for i in $files /etc/fstab /var/spool/cron/crontabs/root; do
 		if test $i -nt $stamp; then
@@ -45,7 +56,6 @@ status() {
 }
 
 createdef() {
-
 	for i in /etc/init.d/S*; do
 		if test -x $i -o -n "$(grep ^TYPE=required $i)"; then
 			echo $i
@@ -68,13 +78,11 @@ createdef() {
 }
 
 saveflashdef() { 
-
 	if status; then
-		exit 1
+		return 1
 	fi
 
-	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
+	lmount
 	rm -f system.log
 
 	nm=$(createdef)
@@ -82,32 +90,33 @@ saveflashdef() {
 	res=$?
 
 	cnt=5
-	while test $res = 1 -a "$cnt" -gt 0; do
+	while test "$res" != 0 -a "$cnt" -gt 0; do
 		cnt=$((cnt-1))
 		rm $save_dir/$nm $(ls $save_dir/set_*.tgz | head -1) >& /dev/null
 		cp /tmp/$nm $save_dir/ 2>/dev/null
 		res=$?
 	done
 
-	umount $save_dir
+	# remove all but last 10
+	a=$(ls $save_dir/set_*.tgz)
+	rm -f $(echo "$a" | head -$(expr $(echo "$a" | wc -l) - 10) 2> /dev/null )
+
+	lumount
 
 # TODO start using mtdblock1 when mtdblock0 fails
 
 	rm /tmp/$nm $initscript_perms
-	rmdir $save_dir
 
 	if test "$res" != 0; then
 		echo "Error saving settings, not enough flash space available.\nYou might want to clear settings first."
-		exit 1
+		return 1
 	fi
 
 	touch $stamp
-	exit 0
 }
 
 checkfile() {
-	TD=$(mktemp -td)
-	mkdir -p $TD
+	TD=$(mktemp -d)
 
 	if ! tar -C $TD -xzf $1; then
 		ret=1
@@ -129,9 +138,7 @@ fi
 }
 
 loadflashdef() {
-
-	mkdir -p $save_dir
-	mount -o ro /dev/mtdblock0 $save_dir
+	lmount
 
 	if test $# = 0; then
 		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1 
@@ -141,13 +148,15 @@ loadflashdef() {
 		last="$1"	
 	fi
 
+	lf=$(basename $last)
 	if test -z "$last" -o ! -f "$last" -o ! -s "$last"; then
-		echo "Empty or no file $last found!"
+		echo "loadsave_settings: empty or no file $lf found!"
 		res=1
 	elif ! checkfile $last; then
-		echo "Invalid settings $last file."
+		echo "loadsave_settings: invalid $lf settings file."
 		res=1
 	else
+		echo "loadsave_settings: loaded $lf settings file."
 		tar -C / -xzf $last
 		res=$?
 		# special nfs, cifs, davfs cases
@@ -171,8 +180,7 @@ loadflashdef() {
 		# loads a settings file when the box is already running. call 'rcall restart' 
 	fi
 
-	umount $save_dir
-	rmdir $save_dir
+	lumount
 
 	if test -s $initscript_perms; then
 		for i in /etc/init.d/S*; do
@@ -189,60 +197,58 @@ loadflashdef() {
 	fi
 
 	touch $stamp
-	exit $res
+	return $res
 }
 
 # including stock firmware setings! 
 clearflashdef() {
-	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
-	rm -f $save_dir/* 	
+	lmount
+	rm -rf $save_dir/* 	
 	#rm -f $save_dir/sib.conf 
 	rm -f $stamp
-	umount $save_dir
-	rmdir $save_dir
+	lumount
 }
 
-# copy from mtd1 to mtd0
+# copy from mtd1 to mtd0 ( NOT for the DNS-320/325)
 # The vendors settings are saved in mtd0 and mtd1, one being the backup of the other
 # As Alt-F only uses mtd0, the original settings are still in mtd1 
 recover() {
-	mtd0=${save_dir}0
-	mtd1=${save_dir}1
+	rmdir $save_dir
+	if grep -qE "DNS-325|DNS-320" $BRD; then	
+		return 1
+	fi
+ 
+	mtd0=$(mktemp -d)
+	mtd1=$(mktemp -d)
 
-	mkdir -p $mtd0
-	mkdir -p $mtd1
-	mount /dev/mtdblock0 $mtd0
-	mount -r /dev/mtdblock1 $mtd1
+	if ! mount /dev/mtdblock0 $mtd0; then exit 1; fi
+	if ! mount -r /dev/mtdblock1 $mtd1; then umount $mtd0; exit 1; fi
 
 	rm -f $mtd0/*
 	cp -a $mtd1/* $mtd0 	
 
 	umount $mtd0
 	umount $mtd1
-	rmdir $mtd0
-	rmdir $mtd1
+	rmdir $mtd0 $mtd1
 	rm -f $stamp
 }
 
 listflashdef() {
-	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
+	lmount
 	(cd $save_dir; ls -1 set_* 2>/dev/null)
-	umount $save_dir
-	rmdir $save_dir
+	lumount
 }
 
 llistflashdef() {
-	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
+	lmount
 	(cd $save_dir; ls -l set_* 2>/dev/null)
-	umount $save_dir
-	rmdir $save_dir
+	lumount
 }
 
 check() {
-	fsck -av /dev/mtdblock0
+	if test "$fstype" = "minix"; then
+		fsck -av $MTD
+	fi
 }
 
 # from http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=30;filename=oldsys-preseed.patch;att=1;bug=502821
@@ -275,21 +281,18 @@ parse_sib_conf() {
 }
 
 read_sib() {
-	mkdir -p $save_dir
-	mount /dev/mtdblock0 $save_dir
+	lmount
 	if ! test -e $save_dir/$sib; then
 		echo "No sib.conf file"
-		umount $save_dir
-		rmdir $save_dir
-		exit 1
+		lumount
+		return 1
 	fi
 
 	DOMAIN=$(awk '/^workgroup/{print $3}' $save_dir/smb.default)
 	parse_sib_conf $save_dir/$sib
 	st=$?
 
-	umount $save_dir
-	rmdir $save_dir
+	lumount
 
 	if test $st = 0; then
 		echo "ip=$IPADDRESS; mask=$NETMASK; gw=$GATEWAY; \
@@ -337,49 +340,30 @@ usage() {
 	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
 	-rs (read sib ip) | -st (status) | -ck (check)"
-	exit 1;
+	return 1;
 }
 
+save_dir=$(mktemp -d)
 stamp=/tmp/settings_saved
-save_dir=/tmp/mtd
 initscript_perms=/tmp/initd_perms
 sib=sib.conf
 
-# FIXME: move this to an independent file
-# during initramfs creation create a setting-default.tgz, to
-# load when user press the box back button more than 10 seconds.
+# configuration files to save on flash
+files=$(cat /etc/settings)
 
-files="
-/etc/dropbear/dropbear_dss_host_key	/etc/dropbear/dropbear_rsa_host_key
-/etc/network/interfaces		/etc/web-secret
-/etc/passwd	/etc/shadow	/etc/group
-/etc/TZ		/etc/timezone
-/etc/hosts		/etc/resolv.conf	/etc/hostname
-/etc/samba/smbpasswd	/etc/samba/smbusers	/etc/samba/smb.conf
-/etc/samba/credentials.*	/etc/exports
-/etc/dnsmasq.conf	/etc/dnsmasq-opts	/etc/dnsmasq-hosts 
-/etc/dnsmasq-resolv	/etc/rsyncd.conf	/etc/rsyncd.secrets
-/etc/vsftpd.conf	/etc/vsftpd.user_list
-/etc/inetd.conf		/etc/httpd.conf
-/etc/misc.conf		/etc/inadyn.conf	/etc/ipkg.conf
-/etc/ntp.conf		/etc/ntp.drift		/etc/adjtime.conf
-/etc/sysctrl.conf	/etc/msmtprc		/etc/msmtprc.alias
-/etc/smartd.conf	/etc/wgetrc			/etc/ssl/certs/server.pem
-/etc/backup.conf	/etc/syslog.conf	/etc/sysctl.conf
-/etc/modprobe.conf	/usr/www/cgi-bin/Shortcuts.men
-"
-
-# those are also used only when mounting/unmounting the aufs branch
+# those files are also used only when mounting/unmounting the aufs branch
 xfiles="/etc/fstab /etc/bay /var/spool/cron/crontabs/root"
 
-brd=$(cat /tmp/board)
-if test "$brd" = "Unknown"; then
-	echo "Unsupported $brd board"
+BRD=/tmp/board
+if grep -q Unknown $BRD; then
+	echo "Unsupported board"
 	exit 1
-fi
-
-if test $# = 0; then
-	usage
+elif grep -qE "DNS-325|DNS-320" $BRD; then
+	fs_type="jffs2"
+	MTD=/dev/mtdblock5
+else
+	fs_type="minix"
+	MTD=/dev/mtdblock0
 fi
 
 case $1 in
@@ -401,3 +385,7 @@ case $1 in
 	"-ck")	check ;;
 	*)	usage ;;
 esac
+
+st=$?
+rmdir $save_dir >& /dev/null
+return $st
