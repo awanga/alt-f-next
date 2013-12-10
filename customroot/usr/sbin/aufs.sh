@@ -135,7 +135,7 @@ case $1 in
 
 	-l)
 		mount -t aufs
-		cat /sys/fs/aufs/*/br*		
+		cat /sys/fs/aufs/*/br?
 		;;
 
 	-s)
