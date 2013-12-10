@@ -7,15 +7,19 @@ TYPE=user
 
 PIDFILE=/var/run/$NAME.pid
 CONFIGFILE=/etc/$NAME.conf
-USHARE_USER=ushare
-USHARE_GROUP=multimedia
 #USHARE_OPTIONS=
 
-. $(dirname $0)/common
+RC_USER=ushare
+RC_USERN=10
+RC_GROUP=multimedia
+RC_GROUPN=80
+RC_DESC="uShare daemon"
 
-checkpid() {
-	[ -e $PIDFILE ] || touch $PIDFILE
-}
+RC_START_BG=yes
+RC_PIDFILE=$PIDFILE
+RC_MAKE_PID=yes
+
+. $(dirname $0)/common
 
 check_shares() {
 	if test -r "$CONFIGFILE"; then
@@ -24,31 +28,19 @@ check_shares() {
 			return 0
 		fi
 	fi
-	return 1
+	echo "uShare: No shares available, exiting"
+	exit 1
 }
+
+check_user $CONFIGFILE
 
 case "$1" in
 	start)
-		echo -n "Starting $NAME: "
-		if ! check_shares; then
-			echo "No shares available, exiting"
-			exit 1
-		else
-			checkpid
-			start-stop-daemon --start --quiet --background --oknodo \
-				--chuid $USHARE_USER:$USHARE_GROUP \
-				--make-pidfile --pidfile $PIDFILE \
-				--exec $DAEMON -- $USHARE_OPTIONS
-			omsg $?
-		fi
+		check_shares
+		start $NAME --chuid $RC_USER:$RC_GROUP -- $USHARE_OPTIONS
 		;;
 
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon --stop --signal 2 --quiet --oknodo --pidfile $PIDFILE
-		omsg $?
-		;;
-
+	stop) stop $NAME 2 ;;
 	status) status $NAME ;;	
 	reload) reload $NAME ;;
 	restart) restart $NAME ;;

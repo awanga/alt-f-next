@@ -1,33 +1,36 @@
 #! /bin/sh
 
-set -e
-
 DESC="FUPPES, the Free UPnP Entertainment Service"
 TYPE=user
 NAME=fuppesd
 
-PIDFILE=/var/run/fuppes.pid
-FUPPES_ARGS="--config-dir /etc/fuppes/ --log-file /var/log/fuppes.log \
-	--database-file /var/lib/fuppes/fuppes.db --log-level 3"
-FUPPES_USER=fuppes
-FUPPES_GROUP=multimedia
+LOGDIR=/var/log/fuppes
+LOGFILE=$LOGDIR/fuppes.log
+FUPPES_DIR=/var/lib/fuppes
+FUPPES_DB=$FUPPES_DIR/fuppes.db
+FUPPES_CONF=/etc/fuppes
+FUPPES_ARGS="--config-dir $FUPPES_CONF --log-file $LOGFILE \
+	--database-file $FUPPES_DB --log-level 2"
+
+RC_START_BG=yes
+
+RC_USER=fuppes
+RC_USERN=12
+RC_GROUP=multimedia
+RC_GROUPN=80
+RC_DESC="Fuppes user"
 
 . $(dirname $0)/common
 
+if ! test -d $LOGDIR; then
+	mkdir -p $LOGDIR
+fi
+
+check_user $FUPPES_CONF $FUPPES_DIR $LOGDIR 
+
 case "$1" in
-	start)
-		echo -n "Starting $NAME: "
-#	fuppes does a fork...	--make-pidfile --pidfile $PIDFILE \
-#			--chuid $FUPPES_USER:$FUPPES_GROUP \
-		start-stop-daemon -S -q -b \
-			-x $NAME -- $FUPPES_ARGS
-		omsg $?
-		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -s 2 -n $NAME
-		omsg $?
-		;;
+	start) start $NAME --chuid $RC_USER:$RC_GROUP -- $FUPPES_ARGS ;;
+	stop) stop $NAME 2 ;;
 	restart) restart $NAME ;;
 	status) status $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;

@@ -4,33 +4,61 @@ NAME=mediatomb
 DESC="MediaTomb provides an A/V UPnP service"
 TYPE=user
 
-MT_USER="mediatomb"
-MT_GROUP="multimedia"
+RC_USER=mediatomb
+RC_USERN=14
+RC_GROUP=multimedia
+RC_GROUPN=80
+RC_DESC="mediatomb daemon"
 
-MT_PIDFILE="/var/run/mediatomb.pid"
-MT_LOGFILE="/var/log/mediatomb.log"
+MT_PIDFILE=/var/run/mediatomb.pid
+MT_LOGFILE=/var/log/mediatomb.log
 
-MT_HOME="/var/lib"
-MT_CFGDIR="mediatomb"
+MT_HOME=/var/lib
+MT_DIR=$NAME
+MT_CFG=$MT_HOME/$MT_DIR/config.xml
 
 MT_PORT=50500
 
-MT_ARGS="-d -u $MT_USER -g $MT_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
--m $MT_HOME -f $MT_CFGDIR -p $MT_PORT -e eth0"
+MT_ARGS="-d -u $RC_USER -g $RC_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
+-m $MT_HOME -f $MT_DIR -p $MT_PORT -e eth0"
 
 . $(dirname $0)/common
+
+if ! test -f $MT_PIDFILE; then touch $MT_PIDFILE; fi
+
+check_user $MT_HOME/$NAME $MT_PIDFILE
+
+if ! test -e $MT_CFG; then
+	mediatomb $MT_ARGS
+	sleep 2
+	kill $(cat $MT_PIDFILE)
+	for i in $(seq 0 60); do
+		if ! kill -0 $(cat $MT_PIDFILE) 2> /dev/null; then break; fi
+		usleep 100000
+	done
+
+	# add holder for shares
+	sed -i '/<import hidden-files/a \
+    	<autoscan> \
+        	<directory location="/Public" mode="inotify" recursive="yes"/> \
+	    </autoscan> \
+    	<filesystem-charset>UTF-8</filesystem-charset> \
+	    <metadata-charset>UTF-8</metadata-charset> \
+    	<playlist-charset>UTF-8</playlist-charset> ' $MT_CFG
+fi
 
 case "$1" in
   start)
 	# Applying multicast settings to eth0
-	route add -net 239.0.0.0 netmask 255.0.0.0 eth0 >& /dev/null
+	route add -net 239.0.0.0 netmask 255.0.0.0 eth0
 	ifconfig eth0 allmulti
-	touch $MT_PIDFILE
-	chown mediatomb $MT_PIDFILE
 	start $NAME -- $MT_ARGS
 	;;
-
-  stop) stop $NAME ;;
+  stop)
+	stop $NAME
+	ifconfig eth0 -allmulti
+	route del -net 239.0.0.0 netmask 255.0.0.0 eth0
+	;;
   reload) reload $NAME ;;
   restart) restart $NAME ;;
   status) status $NAME ;;

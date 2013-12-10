@@ -3,16 +3,29 @@
 DESC="A secure, fast, compliant and very flexible web-server"
 TYPE=net
 NAME=lighttpd
-CONF=/etc/lighttpd/lighttpd.conf
-LOG_DIR=/var/log/lighttpd 
-HOME_DIR=/var/lib/lighttpd
-SECR_DIGST=/etc/lighttpd/lighttpd-digest.user
+
+CONF=/etc/$NAME/$NAME.conf
+LOG_DIR=/var/log/$NAME 
+HOME_DIR=/var/lib/$NAME
+
+SECR_DIGST=/etc/$NAME/lighttpd-digest.user
 SECR_RSYNC=/etc/rsyncd.secrets 
 VSFTPD_PEM=/etc/ssl/certs/vsftpd.pem
 LIGHTY_PEM=/etc/ssl/certs/lighttpd.pem
 BOX_PEM=/etc/ssl/certs/server.pem
 
+RC_USER=$NAME
+RC_USERN=35
+RC_GROUP=network
+RC_GROUPN=81
+RC_DESC="Lighttpd daemon"
+
 . $(dirname $0)/common
+
+if ! test -d $LOG_DIR; then mkdir -p $LOG_DIR; fi
+if ! test -d $HOME_DIR/sockets; then mkdir -p $HOME_DIR/sockets; fi
+
+check_user $CONF $LOG_DIR $HOME_DIR
 
 digs_pass() {
 	realm="WebDAV"
@@ -25,16 +38,6 @@ digs_pass() {
 }
 
 istart() {
-	if ! test -d $LOG_DIR; then
-		mkdir -p $LOG_DIR
-		chown lighttpd:network $LOG_DIR
-	fi
-
-	if ! test -d $HOME_DIR/sockets; then
-		mkdir $HOME_DIR/sockets
-		chown lighttpd $HOME_DIR/sockets
-	fi
-
 	if test $SECR_RSYNC -nt $SECR_DIGST -o ! -f $SECR_DIGST; then
 		digs_pass > $SECR_DIGST
 		chown lighttpd $SECR_DIGST

@@ -12,22 +12,33 @@ BOX_KEY=/etc/ssl/certs/server.key
 CUPS_CRT=/etc/cups/ssl/server.crt
 CUPS_KEY=/etc/cups/ssl/server.key
 
-CUPS_USER=cups
-CUPS_GROUP=lpadmin
+CUPS_CONF=/etc/cups
+
+RC_USER=cups
+RC_USERN=9
+RC_GROUP=lpadmin
+RC_GROUPN=9
+RC_DESC="CUPS Daemon"
 
 . $(dirname $0)/common
 
-sinit() {
-	if ! test -e $CUPS_CRT; then
-		cp $BOX_CRT $CUPS_CRT                                            
-		cp $BOX_KEY $CUPS_KEY   
-	fi
-}
+if ! test -e $CUPS_CRT; then
+	cp $BOX_CRT $CUPS_CRT                                            
+	cp $BOX_KEY $CUPS_KEY   
+fi
+
+CUPS_DIRS="/var/spool/cups /var/cache/cups /var/run/cups /var/log/cups"
+for i in $CUPS_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+check_user $CUPS_CONF $CUPS_DIRS
+
+# FIXME
+chmod a+rx /usr/sbin/cupsd
 
 case "$1" in
-	init) sinit ;;
 	start)
-		sinit
 		export TZ=$(cat /etc/TZ)
 		unset TMPDIR
 
@@ -35,8 +46,13 @@ case "$1" in
 		start $NAME
 		avahi add ipp
 
-		while ! cupsctl >& /dev/null ; do usleep 100000; done
-		cupsctl _remote_admin=1 _share_printers=1 >& /dev/null
+		for i in $(seq 0 100); do
+			usleep 100000
+			if cupsctl >& /dev/null; then
+				cupsctl _remote_admin=1 _share_printers=1 >& /dev/null
+				break
+			fi
+		done
 		;;
 
 	stop)
@@ -44,7 +60,6 @@ case "$1" in
 
 		# allow empty printcap
 		if grep -q cupsd $PRINTC >& /dev/null; then 
-			#rm $PRINTC
 			echo -n > $PRINTC
 		fi		
 

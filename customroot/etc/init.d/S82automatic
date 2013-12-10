@@ -1,7 +1,4 @@
 #!/bin/sh
-#
-# Starts sysctrl.
-#
 
 DESC="RSS downloader that grabs your favorite Transmission torrents"
 NAME=automatic
@@ -9,17 +6,26 @@ TYPE=user
 
 REQUIRE="transmission"
 
-AUTOMATIC_STATE=/var/lib/automatic/automatic.state
+RC_USER=automatic
+RC_USERN=17
+RC_GROUP=network
+RC_GROUPN=81
+RC_DESC="Automatic daemon"
+
+AUTOMATIC_DIR=/var/lib/$NAME
+AUTOMATIC_STATE=$AUTOMATIC_DIR/automatic.state
 AUTOMATIC_OPTS="--logfile /var/log/automatic.log"
 
 . $(dirname $0)/common
 
+if ! test -d $AUTOMATIC_DIR; then mkdir -p $AUTOMATIC_DIR; fi
+if ! test -f $AUTOMATIC_STATE; then touch $AUTOMATIC_STATE; fi
+
+check_user $AUTOMATIC_DIR
+
 case "$1" in
-	start)
-		if ! test -f $AUTOMATIC_STATE; then touch $AUTOMATIC_STATE; fi
-		start $NAME -- $AUTOMATIC_OPTS
-		;;
-	stop)	stop $NAME ;;
+	start) start $NAME -- $AUTOMATIC_OPTS ;;
+	stop) stop $NAME ;;
 	status)	status $NAME ;;
 	restart) restart $NAME ;;
 	*)  usage $0 "start|stop|status|restart" ;;

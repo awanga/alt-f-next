@@ -1,59 +1,57 @@
 #! /bin/sh
 
-DESC="A flexible, powerful, server-side application for playing music"
+#set -x
+
 NAME=mpd
 TYPE=user
+DESC="A flexible, powerful, server-side application for playing music"
+
 REQUIRE="avahi_daemon"
 
-USER=mpd
-GROUP=multimedia
+RC_USER=mpd
+RC_USERN=23
+RC_GROUP=multimedia
+RC_GROUPN=81
+RC_DESC="MPD daemon"
 
-DATA_DIR=/var/lib/mpd
-CONFF=/etc/mpd.conf
+DATA_DIR=/var/lib/$NAME
+CONFF=/etc/$NAME.conf
 
-PID_PATH=/var/run/mpd
-PID_FILE=$PID_PATH/mpd.pid
+PID_DIR=/var/run/$NAME
+PID_FILE=$PID_DIR/$NAME.pid
 
-LOG_PATH=/var/log/mpd
-
-OPTS="--no-daemon"
-START_CMD="start-stop-daemon -S -q -o -b -x $NAME -- $OPTS"
-STOP_CMD="mpd --kill"
+LOG_DIR=/var/log/$NAME
 
 MUSIC_DIR=$(sed -n 's|^music_directory.*"\(.*\)"|\1|p' $CONFF)
 
+MPD_DIRS="$PID_DIR $LOG_DIR"
+
+RC_PIDFILE=$PID_FILE
+RC_START_BG=yes
+OPTS="--no-daemon"
+
 . $(dirname $0)/common
 
-if ! test -d $PID_PATH; then
-	mkdir -p $PID_PATH
-	chown $USER:$GROUP $PID_PATH
+for i in $MPD_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+chmod g+rwxs "$MUSIC_DIR"
+
+if ! grep -q "$(hostname)" $CONFF; then
+	sed -i "s/^zeroconf_name.*/zeroconf_name \"Music Player on $(hostname)\"/" $CONFF
 fi
 
-if ! test -d $LOG_PATH; then 
-	mkdir -p $LOG_PATH
-	chown $USER:$GROUP $LOG_PATH
-fi
+check_user $MPD_DIRS
 
 if test "$(basename $MUSIC_DIR)" = "Public"; then
 	echo "Fail: you have to configure MPD first."
 	exit 1
 fi
 
-if ! test -d "$MUSIC_DIR"; then
-	mkdir -p "$MUSIC_DIR"
-	chown $USER:$GROUP "$MUSIC_DIR"
-	chmod g+rwxs "$MUSIC_DIR"
-fi
-
 case "$1" in
-	start)	start $NAME	;;
-	stop)
-		if test -e $PID_FILE; then 
-			stop $NAME
-		else
-			echo "Stopping $NAME: OK"
-		fi
-		;;
+	start) start $NAME -- $OPTS;;
+	stop) stop $NAME ;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;

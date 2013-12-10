@@ -1,20 +1,33 @@
 #! /bin/sh
 
+#set -x
+
 DESC="Media server for the Roku SoundBridge and iTunes"
 TYPE=user
 NAME=mt-daapd
 
 EXCLUDEDBY="forked_daapd"
 
-MTDAAPD_USER=mt-daapd
-MTDAAPD_GROUP=multimedia
+RC_USER=$NAME
+RC_USERN=15
+RC_GROUP=multimedia
+RC_GROUPN=80
+RC_DESC="mt-daapd daemon"
 
+RC_START_BG=y
 MTDAAPD_ARGS="-y"
+
+MTDAAPD_DIR=/var/lib/mt-daapd/mp3_dir
+MTDAAPD_CONF="/etc/mt-daapd.conf /etc/mt-daapd.playlist"
 
 . $(dirname $0)/common
 
+if ! test -d $MTDAAPD_DIR; then mkdir -p $MTDAAPD_DIR; fi
+
+check_user $MTDAAPD_DIR $MTDAAPD_CONF
+
 case "$1" in
-	start) start $NAME -b -- $MTDAAPD_ARGS ;;
+	start) start $NAME -- $MTDAAPD_ARGS ;;
 	stop) stop $NAME 2 ;;
 	restart) restart $NAME ;;
 	status) status $NAME ;;

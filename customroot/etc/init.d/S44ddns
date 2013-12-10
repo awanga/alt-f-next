@@ -1,22 +1,31 @@
-#! /bin/sh
+#!/bin/sh
 
 DESC="Dynamic DNS update daemon"
 TYPE=net
+
 NAME=inadyn
+if test -x /usr/bin/inadyn-mt; then
+	NAME=inadyn-mt
+fi
+
 CONF=/etc/inadyn.conf
+
+RC_PIDFILE=/var/run/$NAME.pid
+RC_MAKE_PID=yes
+RC_START_BG=yes
 
 . $(dirname $0)/common
 
 case "$1" in
 	start)
 		if ! test -f $CONF; then
-			echo "Starting $NAME: No $CONF configuration file, fail"
+			echo "Starting $NAME: No $CONF configuration file, exiting."
 			exit 1
 		fi
 		start $NAME
 		;;
-	stop)	stop $NAME ;;
-	status)	status $NAME ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
 	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
 esac

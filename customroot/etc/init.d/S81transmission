@@ -1,13 +1,16 @@
 #! /bin/sh
 
-set -e
+#set -x
 
 DESC="A Fast, Easy and Free Bittorrent client"
 NAME=transmission-daemon
 TYPE=user
 
-CONFF=/var/lib/transmission
-JSON=settings.json
+RC_USER=transmission
+RC_USERN=13
+RC_GROUP=BT
+RC_GROUPN=201
+RC_DESC="Transmission daemon"
 
 LOGDIR=/var/log/transmission
 LOGFILE=$LOGDIR/transmission.log
@@ -15,52 +18,66 @@ LOGFILE=$LOGDIR/transmission.log
 PIDDIR=/var/run/transmission
 PIDFILE=$PIDDIR/transmission.pid
 
-OPTS="--logfile $LOGFILE --pid-file $PIDFILE --config-dir=$CONFF"
+TRANSMISSION_HOME=/var/lib/transmission
+TRANSMISSION_CONF=$TRANSMISSION_HOME/settings.json
 
-TRANSMISSION_USER=transmission
-TRANSMISSION_GROUP=BT
+TRANSMISSION_DIRS="$LOGDIR $PIDDIR $TRANSMISSION_HOME"
+
+SMB_CONF=/etc/samba/smb.conf
+
+OPTS="--logfile $LOGFILE --pid-file $PIDFILE --config-dir=$TRANSMISSION_HOME"
 
 # special flag to start-stop-daemon
-START_STOP=-x
+RC_START_STOP=-x
 
 . $(dirname $0)/common
 
-if ! test -d $LOGDIR; then
-	mkdir -p $LOGDIR
-	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP $LOGDIR
+check_net() {
+	network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
+	if ! grep -q $(echo $network | sed 's/[.*]/\\&/g') "$TRANSMISSION_CONF"; then
+		sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
+			"$TRANSMISSION_CONF"
+	fi
+}
+
+check_dirs() {
+	eval $(awk '/"download-dir"/ { \
+			gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2 } \
+		/"watch-dir"/ { \
+			gsub(",|\\\\", "", $2); printf "WATCH_DIR=%s;", $2 } \
+		/"incomplete-dir"/ { \
+			gsub(",|\\\\", "", $2); printf "INCOMPLETE_DIR=%s;", $2 }' \
+		"$TRANSMISSION_CONF")
+
+	if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
+		echo "$NAME: Directories does not exist, you must configure Transmission first."
+		exit 1
+	fi
+}
+
+for i in $TRANSMISSION_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+if ! test -f $TRANSMISSION_CONF; then
+	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
+
+	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' \
+		-e 's|.*"umask":.*|    "umask": 2, |' \
+		-e 's|.*"message-level":.*|    "message-level": 1, |' $TRANSMISSION_CONF
+	if grep -q "^\[Transmission\]" $SMB_CONF; then
+		sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
+	fi
 fi
 
-if ! test -d $PIDDIR; then
-	mkdir -p $PIDDIR
-	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP $PIDDIR
-fi
+check_user $TRANSMISSION_DIRS
 
 case "$1" in
 	start)
-		eval $(awk '/"download-dir"/ { \
-				gsub(",|\\\\", "", $2); printf "DOWNLOAD_DIR=%s;", $2 } \
-			/"watch-dir"/ { \
-				gsub(",|\\\\", "", $2); printf "WATCH_DIR=%s;", $2 } \
-			/"incomplete-dir"/ { \
-				gsub(",|\\\\", "", $2); printf "INCOMPLETE_DIR=%s;", $2 }' \
-			"$CONFF/$JSON")
-
-		if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
-			echo "$NAME: Directories does not exist, you must configure transmission first."
-			exit 1
-		fi
-
-		network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
-		if ! grep -q $(echo $network | sed 's/[.*]/\\&/g') "$CONFF/$JSON"; then
-			sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
-				"$CONFF/$JSON"
-		fi
-
-		chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
-
-		start $NAME --chuid $TRANSMISSION_USER:$TRANSMISSION_GROUP -- $OPTS
+		check_dirs
+		check_net
+		start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS
 		;;
-
 	stop) stop $NAME ;;
 	status) status $NAME ;;
 	reload) reload $NAME ;;
