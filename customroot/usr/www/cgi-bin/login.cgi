@@ -11,10 +11,10 @@ mktt tt_login "Enter your web administration password,<br>the session will expir
 mktt tt_again "Type your password again. It will be your \"root\" password."
 
 if test -n "$(ls /tmp/check-* 2> /dev/null)"; then
-	echo "<h4 class="warn">Some filesystems are currently being checked and your data might not yet be available for usage.<br>
+	echo "<h4 class=\"warn\">Some filesystems are currently being checked and your data might not yet be available for usage.<br>
 	You can verify the check evolution in the <em>Filesystem Maintenance</em> section of the <em>Status page</em>.</h4>"
 	if test ! -f $SECR -a -z "$(loadsave_settings -ls)"; then
-		echo "<h4 class="error">As this is your first login, you <strong>must</strong> wait for the check to finish before login and proceed with the first time wizard.</h4><br>"
+		echo "<h4 class=\"error\">As this is your first login, you <strong>must</strong> wait for the check to finish before login and proceed with the first time wizard.</h4><br>"
 	fi
 fi
 
