@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# FIXME: the recover action needs/should be extend with the deactivation
+# of the 'Alt-F' and 'ffp' folders... just to be in the safe side... thinking...
+
 case $1 in
 
 	t)	# open telnet on port 26, login as root, no password
