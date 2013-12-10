@@ -22,14 +22,9 @@ parse() {
 
 parse $CONFF
 
-if test -f $CONFM; then
-	. $CONFM
-fi
-
-if test -z "$MAILTO"; then
-	MAILTO=$from
-fi
-
+if test -f $CONFM; then . $CONFM; fi
+if test -z "$MAILTO"; then MAILTO=$from; fi
+if test -z "$from"; then distest="disabled"; fi
 if test "$tls" = "on"; then tlsf=checked; fi
 
 case "$auth" in
@@ -82,7 +77,7 @@ cat<<-EOF
 
 	<tr><td>To</td>
 		<td><input type=text size=20 name=to value="$MAILTO">
-		<input type=submit name=submit value=Test>	
+		<input type=submit $distest name=submit value=Test>	
 		</td></tr>
 	</table>
 	<p><input type=submit name=submit value=Submit>

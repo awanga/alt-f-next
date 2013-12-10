@@ -65,9 +65,9 @@ if test "$submit" = "Test"; then
 	msmtp --read-recipients >& /dev/null <<-EOF
 		To: $to
 		From: $from
-		Subject: DNS-323 ALT-F mail test
+		Subject: ALT-F on $(hostname) mail test
 		
-		This is a test message
+		This is an Alt-F test message
 	EOF
 	if test $? = 0; then
 		msg "Mail sent."
