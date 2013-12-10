@@ -37,12 +37,14 @@ deactivate_chroot() {
 	done
 }
 
-inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-orion5x)
+if grep -qE 'DNS-320|DNS-325' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+
+inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-$SoC)
 
 for i in $inst; do
 	dn=$(dirname $i)
 	debdir=$(dirname $dn)
-	if test -f ${dn}/vmlinuz-*-orion5x; then
+	if test -f ${dn}/vmlinuz-*-$SoC; then
 		break;
 	fi
 done
@@ -131,12 +133,8 @@ cat<<-NEOF > /tmp/deb
 	fi
 
 	rcsysctrl stop
-	brd=$(cat /tmp/board)
-	if test "\$brd" = "A1" -o "\$brd" = "B1"; then
-		echo 150 > /sys/class/hwmon/hwmon0/device/pwm1
-	elif test "\$brd" = "C1" -o "\$brd" = "D1"; then
-		echo 255 > /sys/class/hwmon/hwmon1/device/pwm1
-	fi
+
+	echo 127 > /tmp/sys/pwm1
 
 	echo "Executing Debian now..."
 
