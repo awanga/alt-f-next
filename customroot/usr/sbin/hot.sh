@@ -124,7 +124,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 				fi
 			fi
 			swapon -p 1 $PWD/$MDEV
-			ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
+			ns=$(awk '/SwapTotal:/{ns = $2 * 0.15 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
 			mount -o remount,size=${ns}M /tmp
 			touch -r $FSTAB /tmp/fstab_date
 			sed -i '\|^'$PWD/$MDEV'|d' $FSTAB
@@ -211,15 +211,22 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
 	else # "normal" disk (not md)
 
+		lhost="/host0/"; rhost="/host1/"
+		if grep -q DNS-325 /tmp/board; then
+			lhost="/host1/"; rhost="/host0/"
+		fi
 		# which bay?	
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
 		PHYSD=$(realpath /sys/block/$MDEV/device) 
-		if echo $PHYSD | grep -q /host0/; then
+		if echo $PHYSD | grep -q $lhost; then
 			bay="right"
-		elif echo $PHYSD | grep -q /host1/; then
+		elif echo $PHYSD | grep -q $rhost; then
 			bay="left"
 		elif echo $PHYSD | grep -q /usb1/; then
 			bay="usb"${MDEV:2}
+			if test -h /tmp/sys/usb2_led; then
+				echo 1 > /tmp/sys/usb2_led/brightness
+			fi
 		fi
 	
 		if test -n "$bay"; then
@@ -300,6 +307,9 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 	if test -n "$bay"; then
 		sed -i '/^'$bay'_/d' $BAYC
 		sed -i '/^'$MDEV'/d' $BAYC
+		if test ${bay:0:3} = "usb" -a -h /tmp/sys/usb2_led; then
+			echo 1 > /tmp/sys/usb2_led/brightness
+		fi
 	fi
 
 	if rcsmart status >& /dev/null; then
@@ -454,22 +464,19 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 #	sysd="/sys/class/usb/$MDEV/device/ieee1284_id"
 #
 # linux-3.8.11 (usbfs deprecated and removed):
-#
-elif test "$ACTION" = "add" -a "$SUBSYSTEM" = "usbmisc" -a ${MDEV%[0-9]} = "lp"; then
-    sysd="/sys/class/usbmisc/$MDEV/device/ieee1284_id"
+# DEVNAME=usb/lp0
+# ACTION=add
+# HOME=/
+# SEQNUM=339
+# MAJOR=180
+# MDEV=lp0
+# DEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0/usbmisc/lp0
+# SUBSYSTEM=usbmisc
+# PATH=/sbin:/bin:/usr/sbin:/usr/bin
+# MINOR=0
+# PWD=/dev
 
-	if test -f "$sysd"; then
-		eval $(awk -F':' 'BEGIN{RS=";"} {printf "%s=\"%s\";", $1,$2}' "$sysd") >& /dev/null
-		#eval $(sed -e 's/:/="/g' -e 's/;/";/g' "$sysd") >/dev/null 2>&1
-	fi
-	model=${MDL:-$MODEL}
-	mfg=${MFG:-$MANUFACTURER}
-
-	mkdir -p /var/spool/lpd/$MDEV
-	sed -i '/^'$MDEV'|/d' $PCAP
-	echo "$MDEV|$mfg $model" >> $PCAP 
-	rcsmb reload
-
+#----------------
 # linux-2.6.35.14
 # DEVNAME=usb/lp0
 # ACTION=remove
@@ -488,17 +495,38 @@ elif test "$ACTION" = "add" -a "$SUBSYSTEM" = "usbmisc" -a ${MDEV%[0-9]} = "lp";
 # elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
 #
 # linux-3.8.11 (usbfs deprecated and removed):
-#
-elif test "$ACTION" = "remove" -a "$SUBSYSTEM" = "usbmisc" -a ${MDEV%[0-9]} = "lp"; then
-	rmdir /var/spool/lpd/$MDEV
-	sed -i '/^'$MDEV'|/d' $PCAP
+# DEVNAME=usb/lp0
+# ACTION=remove
+# HOME=/
+# SEQNUM=340
+# MAJOR=180
+# MDEV=lp0
+# DEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0/usbmisc/lp0
+# SUBSYSTEM=usbmisc
+# PATH=/sbin:/bin:/usr/sbin:/usr/bin
+# MINOR=0
+# PWD=/dev
 
-	if test -e $PCAP -a ! -s $PCAP; then
-		#rm $PCAP
-		echo -n > $PCAP
+#
+elif test ${MDEV%[0-9]} = "lp" -a \( $SUBSYSTEM = "usbmisc" -o $SUBSYSTEM = "usb" \); then
+	sysd="/sys/class/$SUBSYSTEM/$MDEV/device/ieee1284_id"
+	if test "$ACTION" = "add" -a -f "$sysd"; then
+		eval $(awk -F':' 'BEGIN{RS=";"} {printf "%s=\"%s\";", $1,$2}' "$sysd") >& /dev/null
+		model=${MDL:-$MODEL}
+		mfg=${MFG:-$MANUFACTURER}
+
+		mkdir -p /var/spool/lpd/$MDEV
+		sed -i '/^'$MDEV'|/d' $PCAP
+		echo "$MDEV|$mfg $model" >> $PCAP 
+	elif test "$ACTION" = "remove"; then
+		rmdir /var/spool/lpd/$MDEV
+		sed -i '/^'$MDEV'|/d' $PCAP
+
+		if test -e $PCAP -a ! -s $PCAP; then
+			echo -n > $PCAP
+		fi
 	fi
 	rcsmb reload
-
 else
 	logger -st hot "WHAT?"
 	logger -st hot "$(env)"

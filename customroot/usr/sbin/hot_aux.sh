@@ -19,7 +19,7 @@ check() {
 
 	while true; do
 		inuse=""
-		inclean=$(ls /tmp/check-sd[a-z][1-9] /tmp/check-md[0-9] 2> /dev/null | grep -oE '(sd[a-z].|md[0-1])')
+		inclean=$(ls /tmp/check-sd[a-z][1-9] /tmp/check-md[0-9] 2> /dev/null | grep -oE '(sd[a-z].|md[0-9])')
 		if test -z "$inclean"; then break; fi
 		for i in "$inclean"; do
 			if test "${i:0:2}" = "md"; then
@@ -41,6 +41,7 @@ MISCC=/etc/misc.conf
 FSTAB=/etc/fstab
 USERLOCK=/var/lock/userscript
 SERRORL=/var/log/systemerror.log
+PLED=/tmp/sys/power_led/trigger
 
 fsckcmd=$1
 fsopt=$2
@@ -70,7 +71,7 @@ if test "$fsckcmd" != "echo"; then
 		fsopt=""
 	fi
 
-	echo heartbeat > "/sys/class/leds/power:blue/trigger"
+	echo heartbeat > $PLED
 	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> $logf)"
 	if test $? -ge 2; then
 		mopts="ro"
@@ -83,7 +84,7 @@ if test "$fsckcmd" != "echo"; then
 	rm -f $xf $logf $pidf 
 
 	if test -z "$(ls /tmp/check-* 2>/dev/null)"; then
-		echo none > "/sys/class/leds/power:blue/trigger"
+		echo none > $PLED
 	fi
 
 else
