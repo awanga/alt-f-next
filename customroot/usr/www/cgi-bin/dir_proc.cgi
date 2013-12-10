@@ -164,7 +164,7 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 
 	html_header "$op $(m2g $src_sz) from \"$srcdir\" to \"$wdir\""
 	if test -n "$CopyContent"; then
-		echo "<p class="warn">Displayed values are incorrect if files being copied already exists in the destination folder</p>"
+		echo "<p class=\"warn\">Displayed values are incorrect if files being copied already exists in the destination folder</p>"
 	fi
 	echo "<div id=\"ellapsed\"></div>"
 	busy_cursor_start
