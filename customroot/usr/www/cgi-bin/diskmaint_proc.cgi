@@ -61,8 +61,11 @@ check() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
+		echo heartbeat > $PLED
 		res=\$(nice fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
 		st=\$?
+		if test -z "$(ls /tmp/check-* 2>/dev/null)"; then echo none > $PLED; fi
+		rm \$0*
 		if test "\$st" = 0 -o "\$st" = 1; then
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
@@ -119,6 +122,7 @@ format() {
 			emsg="Formating $1 with $2 failed with code \$st: \$(cat $logf)"
 			logger "\$emsg"
 			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			rm \$0*
 			exit 1
 		fi
 		if test "$2" = "ext3"; then
@@ -143,7 +147,7 @@ format() {
 				fi
 			fi
 		fi
-
+		rm \$0*
 		cd /dev
 		ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
 	EOF
@@ -175,6 +179,7 @@ resize() {
 			emsg="Checking $1 failed with error code \$st: \$(cat $logf)"
 			logger "\$emsg"
 			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			rm \$0*
 			exit 1
 		fi
 		logger "Checking /dev/$1 OK"
@@ -184,9 +189,11 @@ resize() {
 			emsg="${2}ing $1 failed: \$(cat $logf)"
 			logger "\$emsg"
 			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			rm \$0*
 			exit 1
 		fi
 		logger "${2}ing /dev/$1 succeeded"
+		rm \$0*
 	EOF
 
 	chmod +x /tmp/$2-$1
@@ -205,11 +212,13 @@ wipe() {
 		st=\$?
 		if test "\$st" = 0; then
 			logger "Wiped /dev/$1 OK"
+			rm \$0*
 			exit 0
 		fi
 		emsg="Wiping $1 failed with error code \$st. \$res"
 		logger "\$emsg"
 		echo "<li><pre>\$emsg</pre>" >> $SERRORL
+		rm \$0*
 	EOF
 
 	chmod +x /tmp/wip-$1
@@ -225,6 +234,7 @@ read_args
 
 CONFT=/etc/misc.conf
 SERRORL=/var/log/systemerror.log
+PLED=/tmp/sys/power_led/trigger
 
 if test "$Submit" = "tune"; then
 	sed -i '/^TUNE_DAYS/d' $CONFT

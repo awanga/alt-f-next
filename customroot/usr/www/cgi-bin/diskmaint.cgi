@@ -88,7 +88,7 @@ has_disks
 
 cat<<-EOF
 	<form id="diskm" name="diskm" action="/cgi-bin/diskmaint_proc.cgi" method="post">
-	<fieldset><Legend> <strong> Filesystems </strong> </legend>
+	<fieldset><legend>Filesystems</legend>
 EOF
 	
 cat<<-EOF
@@ -157,7 +157,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 	all_dis=""
 	if test "$TYPE" = "none"; then
 		all_dis="disabled"
-		otype="<font color=red>$TYPE</font>"
+		otype="<span class=\"red\">$TYPE</span>"
 	fi
 
 	conv_en="disabled"
@@ -172,10 +172,10 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 	resize_en=""
 	if test "$TYPE" = "vfat" -o "$TYPE" = "ntfs"; then
 		resize_en="disabled"
-		otype="<font color=blue>$TYPE</font>"
+		otype="<span class=\"blue\">$TYPE</span>"
 	fi
 
-	if isdirty $part; then otype="<font color=red>$TYPE</font>"; fi
+	if isdirty $part; then otype="<span class=\"red\">$TYPE</span>"; fi
 
 	mtdf=""
 	if ismount $part; then
@@ -185,7 +185,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 		mtdf="*"
 	else
 		# filesystem does not have to fill the partiton, signal it
-		pcap=$(awk '/'$part'/{printf "<font color=blue>%.1fGB</font>", $3/1048576}' /proc/partitions)
+		pcap=$(awk '/'$part'/{printf "<span class=\"blue\">%.1fGB</span>", $3/1048576}' /proc/partitions)
 		mtd="<option>Mount</option>"
 	fi
 
@@ -197,9 +197,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 
 	fs_progress $part # ln is global
 	if test -n "$ln"; then
-		cat<<-EOF
-			<td><font color=RED>$ln</font></td>
-		EOF
+		echo "<td class=\"red\">$ln</td>"
 	fi
 
 	if test -z "$ln"; then
@@ -252,7 +250,7 @@ fi
 cat<<-EOF
 	</table></fieldset>
 
-	<fieldset><Legend><strong> Set mounted filesystems to be checked every </strong></legend>
+	<fieldset><legend>Set mounted filesystems to be checked every</legend>
 	<input type=text size=4 name=TUNE_MOUNTS value="$TUNE_MOUNTS"> mounts
 	or every <input type=text size=4 name=TUNE_DAYS value="$TUNE_DAYS"> days
 	<input type=submit name=tune value=Submit>
