@@ -50,13 +50,15 @@ echo $opts | awk -F',' -v eopts="$eopts" '
 	{
 	for (i=1; i<=NF; i++) {
 		sel=""
+		show=$i
 		for (j in enab) {
 			if (index(enab[j], $i) == 1) {
 				sel="selected"
+				show=enab[j]
 				break
 			}
 		}
-		printf "<option %s>%s</option>\n", sel, $i
+		printf "<option %s>%s</option>\n", sel, show
 		}
 	}'
 
