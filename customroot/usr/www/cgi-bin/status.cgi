@@ -63,7 +63,7 @@ jscripts() {
 error_st() {
 	if test -s $SERRORL; then
 		cat<<-EOF
-			<fieldset><legend><font color=red><strong>Errors</strong></font></legend>
+			<fieldset><legend class="red">Errors</legend>
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 			Examine and Clear the error messages:
 			<input type=submit name="logaction" value="$SERRORL">
@@ -99,52 +99,23 @@ systems_st() {
 	eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
 		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
 
-	board="$(cat /tmp/board)"
+	board=$(cat /tmp/board)
 
 	if test "$board" = "Unknown"; then
-		fan=0; 	fanv="Unknown"
+		fan=0; fanv="Unknown"
 		temp=0; tempv="Unknown"
+		device="Unknown"
 	else
-		if test "$board" = "A1" -o "$board" = "B1"; then 
-			temp_dev="/sys/class/hwmon/hwmon1/device/temp1_input"
-			fan_dev="/sys/class/hwmon/hwmon0/device/fan1_input"
-		elif test "$board" = "C1" -o "$board" = "D1"; then
-			temp_dev="/sys/class/hwmon/hwmon0/device/temp1_input"
-			fan_dev="/sys/class/hwmon/hwmon1/device/fan1_input"
-		fi
-
-		if test "$board" = "A1" -o "$board" = "B1" -o "$board" = "C1"; then
-			device="DNS-323 rev-$board"
-		elif test "$board" = "D1"; then
-			device="DNS-321 rev-A1"
-		fi
-
+		max_fan_speed=6000
+		crit_temp=54
 		if test -f /etc/sysctrl.conf; then
 			. /etc/sysctrl.conf
-		else
-			max_fan_speed=5500
-			crit_temp=54
 		fi
 
-		eval $(awk '{printf "tempt=\"%.1f\"; temp=\"%d\"", $1 / 1000, $1 / 10 / '$crit_temp'}' $temp_dev)
+		eval $(awk '{printf "tempt=\"%.1f\"; temp=\"%d\"", $1 / 1000, $1 / 10 / '$crit_temp'}' /tmp/sys/temp1_input)
 		tempv="${tempt}&deg;C/$(celtofar $tempt)&deg;F"
-		fan=$(cat $fan_dev)
-
-		if test "$board" = "A1" -o "$board" = "B1"; then
-			fanv=$fan
-			fan=$(expr $fanv \* 100 / $max_fan_speed)
-		elif test "$board" = "C1" -o "$board" = "D1"; then
-			if test "$fan" -eq 0; then
-				fan=0
-				fanv="Off"
-			elif test "$fan" -le 400; then
-				fan=50
-				fanv="Low"
-			else
-				fan=100
-				fanv="High"
-			fi
-		fi
+		fanv=$(cat /tmp/sys/fan1_input)
+		fan=$(expr $fanv \* 100 / $max_fan_speed)
 	fi
 
 	mode="Reloaded"
@@ -162,7 +133,7 @@ systems_st() {
 			<td><div class="bgl">Swap</div> $(drawbargraph $swap $swapv)</td>
 		</tr><tr>
 			<td><strong>Name:</strong> $(hostname -s)</td>
-			<td colspan=2><strong>Device:</strong> $device</td>
+			<td colspan=2><strong>Device:</strong> $board</td>
 			<td><strong>Mode:</strong> $mode</td>
 			<td></td>
 		</tr><tr>
@@ -184,20 +155,20 @@ network_st() {
 			/TX bytes/ {printf "Tx=\"%s%s\";", $7, $8} \
 			/inet6/ { if (! match($3, "^fe80:")) ipv6=$3"; "ipv6} \
 			/inet addr/{printf "IP=\"%s\";", substr($2,6)} \
-			END {printf "ipv6=\"%s\"", ipv6}' | tr "()" "  ")
+			END {printf "ipv6=\"%s\"", ipv6}' | tr -d "()")
 
 	if test -n "$ipv6"; then
-		IPV6="<br><strong>IPv6:</strong> $ipv6"
+		IPV6="<br><strong>IPv6:</strong>$ipv6"
 	fi
 
 	cat<<-EOF
 		<fieldset><legend>Network</legend>
-		<strong>Speed: </strong> $(cat /sys/class/net/eth0/speed)Mbps
-		<strong>Duplex: </strong> $Mode
-		<strong>MTU: </strong> $MTU
-		<strong>TX: </strong> $Tx
-		<strong>Rx: </strong> $Rx
-		<strong>IP: </strong> $IP
+		<strong>Speed:</strong>$(cat /sys/class/net/eth0/speed)Mbps
+		<strong>Duplex:</strong>$Mode
+		<strong>MTU:</strong>$MTU
+		<strong>TX:</strong>$Tx
+		<strong>Rx:</strong>$Rx
+		<strong>IP:</strong>$IP
 		$IPV6
 		</fieldset>
 	EOF
@@ -237,7 +208,7 @@ disks_st() {
 				if (st == 0) color="black"
 				else if  (st == 32) color="blue"
 				else color="red"
-				printf "health_st=\"<font color=%s>%s</font>\";", color, tolower($NF) }
+				printf "health_st=\"<span class=\"%s\">%s</span>\";", color, tolower($NF) }
 			/Power mode is:/ { printf "pstatus=\"%s\";", 
 				tolower(substr($0, index($0,":")+2))} ' /tmp/smt_$dsk)
 		rm -f /tmp/smt_$dsk
@@ -290,13 +261,13 @@ raid_st() {
 			sz=$(awk '{ printf "%.1f GB", $1/2/1024/1024}' /sys/block/$mdev/size)
 			if test "$type" = "raid1" -o "$type" = "raid5"; then
 				if test "$(cat /sys/block/$mdev/md/degraded)" != 0; then
-					deg="<font color=RED> degraded </font>"
+					deg="<span class=\"red\">degraded</span>"
 				else
 					deg="OK"
 				fi
 				act=$(cat /sys/block/$mdev/md/sync_action)
 				if test "$act" != "idle"; then
-					act="<font color=RED> $act </font>"
+					act="<span class=\"red\"> $act </span>"
 					compl=$(drawbargraph $(awk '{printf "%d", $1 * 100 / $3}' /sys/block/$mdev/md/sync_completed))
 					speed=$(cat /sys/block/$mdev/md/sync_speed)
 					exp=$(awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60}' /sys/block/$mdev/md/sync_completed 2> /dev/null)
@@ -352,7 +323,7 @@ filesys() {
 			if test -n "$days"; then
 				days=$(expr \( $(date -d "$days" +%s) - $(date +%s) \) / 86400)
 				if test "$days" -lt 5 ; then
-					days="<font color=red> $days days</font>"
+					days="<span class=\"red\">$days days</span>"
 				else
 					days="$days days"
 				 fi
@@ -360,7 +331,7 @@ filesys() {
 
 			if test -n "$cnt"; then
 				if test "$cnt" -lt 5 ; then
-					cnt="<font color=red> $cnt mounts or</font>"
+					cnt="<span class=\"red\">$cnt mounts or</span>"
 				else
 					cnt="$cnt mounts or"
 				fi
@@ -371,7 +342,7 @@ filesys() {
 	MD="$(awk '$1 == "/dev/'$dev'" { n = split($4, a,",")
 		for (i=1;i<=n;i++) {
 			if (a[i] == "ro") {
-				printf ("<font color=red> %s </font>", toupper(a[i])); exit }
+				printf ("<span class=\"red\">%s</span>", toupper(a[i])); exit }
 			else if(a[i] == "rw") {
 				print toupper(a[i]); exit }
 		}
@@ -385,7 +356,7 @@ filesys() {
 		<td>$(drawbargraph $perc ${free}B)</td>
 		<td>$type</td>
 		<td>$MD</td>
-		<td><font color=RED>$dirty</font> </td>
+		<td><span class="red">$dirty</span> </td>
 		<td>$cnt $days</td>
 		</tr>
 	EOF
@@ -430,8 +401,9 @@ mounted_remote_filesystems_st() {
 		</tr>
 	EOF
 
-	while read rhost mnt fs rest; do
+	while read -r rhost mnt fs rest; do
 		if test "$fs" = "nfs" -o $fs = "cifs"; then
+			mnt=$(path_unescape $mnt)
 			if test "$fs" = "cifs"; then
 				rrhost=$(echo $rhost | cut -d'/' -f3)
 				rrdir=$(echo $rhost | cut -d'/' -f4)
@@ -521,7 +493,7 @@ backup_st() {
 		bdir=$(grep ^$id /etc/backup.conf | cut -d";" -f6)
 		type=$(grep ^$id /etc/backup.conf | cut -d";" -f2)
 		if test "$st" = "In progress"; then
-			st="<font color=red>In progress</font>"
+			st="<span class=\"red\">In progress</span>"
 		fi
 		echo "<tr><td>$id</td><td>$type</td><td>$bdir</td><td align=center>$st</td></tr>"
 	done
@@ -546,7 +518,7 @@ filesystem_maintenance_st() {
 		if test -n "$ln"; then
 			cat<<-EOF
 				<tr><td>$part</td><td>$(plabel $part)</td>
-				<td><font color=RED>$ln</font></td></tr>
+				<td><span class="red">$ln</span></td></tr>
 			EOF
 		fi
 	done
