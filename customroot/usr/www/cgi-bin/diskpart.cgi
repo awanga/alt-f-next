@@ -314,9 +314,9 @@ cat<<EOF
 EOF
 
 if test "$in_use" = "GPT" -o "$rawcap" -gt 3907024065; then
-		if ! isflashed; then
-			echo "<h4><font color=RED>This disk is partitioned with GPT or is bigger then 2.2TB, but the box is not Alt-F flashed, the stock firmware will not recognize GPT partitioned disks.</font></h4>" 
-		fi
+	if ! isflashed; then
+		echo "<h4 class=\"red\">This disk is partitioned with GPT or is bigger then 2.2TB, but the box is not <br>Alt-F flashed, the stock firmware will not recognize GPT partitioned disks.</h4>" 
+	fi
 fi
 
 if $(echo $fout | grep -q "doesn't contain a valid partition table"); then
