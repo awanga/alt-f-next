@@ -11,7 +11,7 @@ CONF_SMB=/etc/samba/smb.conf
 
 if test -n "$unMount"; then
 	mp=$(httpd -d "$unMount")
-	res="$(umount $mp 2>&1)"
+	res="$(umount "$mp" 2>&1)"
 	st=$?
 	if test $st != 0; then
 		msg "Error $st: $res"
@@ -19,7 +19,7 @@ if test -n "$unMount"; then
 
 elif test -n "$Mount"; then
 	mp=$(httpd -d "$Mount")
-	res="$(mount $mp 2>&1)"
+	res="$(mount "$mp" 2>&1)"
 	st=$?
 	# /etc/mtab is a link to /proc/mounts, mount.cifs cant lock it
 	if test $st != 0 -a $st != 16; then 

@@ -21,7 +21,7 @@ fstab_row() {
 	rdir="$(path_unescape $rdir)"
 	rdir=$(httpd -e "$rdir")
 	mdir="$(path_unescape $mdir)"
-	mdir=$(httpd -e "$mdir")
+	edir=$(httpd -e "$mdir")
 
 	cmtd=${hostdir%%[!#]*}	# get possible comment char
 	if test -n "$cmtd"; then dis_chk=checked; else dis_chk=""; fi
@@ -32,7 +32,7 @@ fstab_row() {
 		if mount -t cifs | grep -q "$mdir"; then
 			op="unMount"
 		fi
-		mntfld="<td><input type=submit value=\"$op\" name=\"$mdir\" onclick=\"return check_dis('$dis_chk','$op')\"></td>"
+		mntfld="<td><input type=submit value=\"$op\" name=\"$edir\" onclick=\"return check_dis('$dis_chk','$op')\"></td>"
 	fi
 
 	cat<<-EOF
@@ -42,7 +42,7 @@ fstab_row() {
 		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value="$rhost"></td>
 		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value="$rdir"></td>
 		<td><input type=button value=Browse onclick="browse_cifs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
-		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$mdir"></td>
+		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$edir"></td>
 		<td><input type=button value=Browse onclick="browse_dir_popup('mdir_$cnt')"></td>
 		<td><input type=text size=20 id=mntopts_$cnt name=mopts_$cnt value="$opts" onclick="def_opts('mntopts_$cnt')"></td>
 		</tr>
@@ -57,6 +57,10 @@ if test -e $CONF_SMB; then
 else
 	hostdesc=""
 	workgp=""
+fi
+
+if test "$hostdesc" = "NAS"; then
+	hostdesc="$(hostname) NAS"
 fi
 
 cat<<EOF
@@ -82,7 +86,7 @@ cat<<EOF
 					port = ":902";
 				else
 					return;
-				window.open(location.protocol + "//" + location.hostname + port, "SWAT", "width=800, height=600");
+				window.open(location.protocol + "//" + location.hostname + port, "SWAT", "scrollbars=yes, width=800, height=600");
 			}
         }
 		function def_opts(id) {
@@ -135,8 +139,9 @@ EOF
 awk -F = 'BEGIN {
 		t = FS; FS= ":"
 		i = 0; users[i++] = "anybody"; users[i++] = "nonpublic"
-		while (getline <"/etc/samba/smbpasswd")
-			users[i++] = $1
+		if (system("test -f /etc/samba/smbpasswd") == 0)
+			while (getline <"/etc/samba/smbpasswd")
+				users[i++] = $1
 		while (getline <"/etc/group")
 			if ($3 >= 100 || $3 == 34 || $3 == 80 || $3 == 84) 
 				users[i++] = "+" $1
@@ -272,7 +277,7 @@ for i in $(seq $cnt $((cnt+2))); do
 done
 
 if grep -q "# Samba config file created using SWAT" $CONF_SMB; then
-	swat="<h4 class="warn">The Advanced SWAT configuration tool has been used.<br>
+	swat="<h4 class=\"warn\">The Advanced SWAT configuration tool has been used.<br>
 	If you Submit changes, then SWAT changes applied to shares will be lost</h4>"
 else
 	swat="<p>"
