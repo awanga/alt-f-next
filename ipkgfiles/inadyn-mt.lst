@@ -1,0 +1,4 @@
+./usr/bin/inadyn-mt
+./etc/init.d/S44ddns
+./usr/www/cgi-bin/ddns.cgi
+./usr/www/cgi-bin/ddns_proc.cgi
