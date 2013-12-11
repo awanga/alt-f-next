@@ -3,26 +3,28 @@
 DESC="Samba Server (Windows)"
 TYPE=net
 NAME=smbd
+
 SMB_OPTS=-D
 NAME2=nmbd
 NMB_OPTS=-D
+SMB_CONF=/etc/samba/smb.conf
 
 RETVAL=0
 
-# Check that smb.conf exists.
-[ -f /etc/samba/smb.conf ] || exit 0
-
 . $(dirname $0)/common
 
-sinit() {
-	# Make directories.
-	mkdir -p /var/cache/samba
-	mkdir -p /var/log/samba
-	mkdir -p /var/lock/subsys
-}
+# Check that smb.conf exists.
+if ! test -f /etc/samba/smb.conf; then
+	echo "smb: no configuration file found."
+	exit 1
+fi
+
+# Make directories.
+for i in /var/cache/samba /var/log/samba /var/lock/subsys; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
 
 istart() {
-	sinit
 	start $NAME2 -- $NMB_OPTS
 	RETVAL2=$?
 
@@ -31,7 +33,11 @@ istart() {
 
 	avahi add smb
 
-	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && touch /var/lock/subsys/smb || RETVAL=1
+	if test $RETVAL -eq 0 -a $RETVAL2 -eq 0; then
+		touch /var/lock/subsys/smb
+	else
+		RETVAL=1
+	fi
 	return $RETVAL
 }	
 
@@ -46,7 +52,11 @@ istop() {
 
 	avahi remove smb
 
-	[ $RETVAL -eq 0 -a $RETVAL2 -eq 0 ] && rm -f /var/lock/subsys/smb || RETVAL=1
+	if test $RETVAL -eq 0 -a $RETVAL2 -eq 0; then
+		rm -f /var/lock/subsys/smb
+	else
+		RETVAL=1
+	fi
 	return $RETVAL
 }	
 
