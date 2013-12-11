@@ -1,0 +1,9 @@
+Package: kexec
+Description: a user space utiltity for loading another kernel
+Version: 2.0.4
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://kernel.org/pub/linux/utils/kernel/kexec
+Maintainer: jcard
