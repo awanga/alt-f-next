@@ -1,0 +1,17 @@
+./etc/init.d/S11sslcert
+./usr/bin/openssl
+./usr/lib/libcrypto.so
+./usr/lib/libcrypto.so.1.0.0
+./usr/lib/libssl.so
+./usr/lib/libssl.so.1.0.0
+./etc/ssl/openssl.cnf
+./etc/ssl/ca-bundle.crt
+./etc/ssl/cert.pem
+./etc/ssl/misc/CA.pl
+./etc/ssl/misc/CA.sh
+./etc/ssl/misc/c_hash
+./etc/ssl/misc/c_info
+./etc/ssl/misc/c_issuer
+./etc/ssl/misc/c_name
+./etc/ssl/misc/tsget
+
