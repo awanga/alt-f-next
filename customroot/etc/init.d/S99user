@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 DESC="Create diagnostics file and run user script"
 TYPE=user
@@ -15,87 +15,90 @@ SEP="======================"
 
 bootlog() {
 	TLOG=/tmp/$LOGF
-	writelog $TLOG
+	writelog | sed 's/..:..:..\(:..:..:..\)/xx:xx:xx\1/' > $TLOG
 	for i in /mnt/*; do
 		if mountpoint -q $i; then
 			cp $TLOG $i/$LOGF
 			chmod a+rw $i/$LOGF
 		fi
 	done
-	rm $TLOG
+	#rm $TLOG
 }
 
 writelog() {
-	echo -e "$SEP Alt-F $(cat /etc/Alt-F) $SEP\n" > $1
-	date >>  $1
+	echo -e "$SEP Alt-F $(cat /etc/Alt-F) $SEP\n"
+	date 
 
-	echo -e "\n\n$SEP BOARD $SEP\n" >> $1
-	cat /tmp/board >> $1
+	echo -e "\n\n$SEP BOARD $SEP\n" 
+	cat /tmp/board
 
-	echo -e "\n\n$SEP Flashed Firmware $SEP\n" >> $1
-	dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings >> $1
+	echo -e "\n\n$SEP CPU $SEP\n"
+	cat /proc/cpuinfo
 
-	echo -e "\n\n$SEP DMESG $SEP\n" >> $1
-	dmesg >> $1
+	echo -e "\n\n$SEP Flashed Firmware $SEP\n"
+	dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings
 
-	echo -e "\n\n$SEP SYSLOG $SEP\n" >> $1
-	logread >> $1
+	echo -e "\n\n$SEP DMESG $SEP\n"
+	dmesg
 
-	echo -e "\n\n$SEP BOOTLOG $SEP\n" >> $1
-	cat /var/log/boot.log >> $1
+	echo -e "\n\n$SEP SYSLOG $SEP\n"
+	logread
+
+	echo -e "\n\n$SEP BOOTLOG $SEP\n"
+	cat /var/log/boot.log
 
 	if test -f /usr/sbin/ethtool; then
-		echo -e "\n\n$SEP ETHTOOL $SEP\n" >> $1
-		ethtool eth0 >> $1
+		echo -e "\n\n$SEP ETHTOOL $SEP\n"
+		ethtool eth0
 	fi
 
-	echo -e "\n\n$SEP IFCONFIG $SEP\n" >> $1
-	ifconfig >> $1
+	echo -e "\n\n$SEP IFCONFIG $SEP\n"
+	ifconfig
 
-	echo -e "\n\n$SEP ROUTE $SEP\n" >> $1
-	route -n >> $1
+	echo -e "\n\n$SEP ROUTE $SEP\n"
+	route -n
 
-	echo -e "\n\n$SEP RESOLVER $SEP\n" >> $1
-	cat /etc/resolv.conf >> $1
+	echo -e "\n\n$SEP RESOLVER $SEP\n"
+	cat /etc/resolv.conf
 
-	echo -e "\n\n$SEP HOSTS $SEP\n" >> $1
-	cat /etc/hosts >> $1
+	echo -e "\n\n$SEP HOSTS $SEP\n"
+	cat /etc/hosts
 
-	echo -e "\n\n$SEP DISKS (MBR) $SEP\n" >> $1
-	sfdisk -luS >> $1
+	echo -e "\n\n$SEP DISKS (MBR) $SEP\n"
+	sfdisk -luS
 
-	echo -e "\n\n$SEP DISKS (GPT) $SEP\n" >> $1
+	echo -e "\n\n$SEP DISKS (GPT) $SEP\n"
 	for j in /dev/sd?; do
-		sgdisk -p $j >> $1
+		sgdisk -p $j
 	done
 
-	echo -e "\n\n$SEP BLOCKID $SEP\n" >> $1
-	blkid >> $1
+	echo -e "\n\n$SEP BLOCKID $SEP\n"
+	blkid
 
-	echo -e "\n\n$SEP RAID $SEP\n" >> $1
+	echo -e "\n\n$SEP RAID $SEP\n"
 	if test -f /proc/mdstat; then
-		cat /proc/mdstat >> $1
+		cat /proc/mdstat
 	else
-		echo None  >> $1
+		echo None 
 	fi
 
-	echo -e "\n\n$SEP MOUNT $SEP\n" >> $1
-	cat /proc/mounts >> $1
+	echo -e "\n\n$SEP MOUNT $SEP\n"
+	cat /proc/mounts
 
-	echo -e "\n\n$SEP FS $SEP\n" >> $1
-	df -h >> $1
+	echo -e "\n\n$SEP FS $SEP\n"
+	df -h
 
-	echo -e "\n\n$SEP AUFS $SEP\n" >> $1
-	aufs.sh -l >> $1
+	echo -e "\n\n$SEP AUFS $SEP\n"
+	aufs.sh -l
 
-	echo -e "\n\n$SEP SERVICES $SEP\n" >> $1
-	rcall status >> $1 2>&1
+	echo -e "\n\n$SEP SERVICES $SEP\n"
+	rcall status 2>&1
 
-	echo -e "\n\n$SEP TOP $SEP\n" >> $1
-	top -bn1 >> $1
+	echo -e "\n\n$SEP TOP $SEP\n"
+	top -bn1
 
-	echo -e "\n\n$SEP FREE $SEP\n" >> $1
-	free >> $1
+	echo -e "\n\n$SEP FREE $SEP\n"
+	free
 }
 
 if test -s "$CONF_MISC"; then
