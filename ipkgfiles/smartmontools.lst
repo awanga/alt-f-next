@@ -1,0 +1,7 @@
+./usr/sbin/smartctl
+./usr/sbin/smartd
+./etc/smartd.conf
+./usr/www/cgi-bin/smart.cgi
+./usr/www/cgi-bin/smart_proc.cgi
+./etc/init.d/S28smart
+
