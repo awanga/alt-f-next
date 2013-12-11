@@ -11,6 +11,7 @@ NAME=ntpd
 CONF=/etc/ntp.conf
 CONFM=/etc/misc.conf
 NTPD_CRON=/tmp/ntpd.cron
+CRONF=/var/spool/cron/crontabs/root
 
 . $(dirname $0)/common
 
@@ -43,7 +44,9 @@ update_cron() {
 	if test $# = 1; then
 		echo "$1" >> "$NTPD_CRON"
 	fi
+	touch -r $CRONF $NTPD_CRON
 	crontab "$NTPD_CRON"
+	touch -r $NTPD_CRON $CRONF
 	rm "$NTPD_CRON"
 }
 
