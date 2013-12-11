@@ -1,0 +1,9 @@
+Package: dnsmasq
+Description: A lightweight DNS and DHCP server.
+Version: 2.65
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.thekelleys.org.uk/dnsmasq/
+Maintainer: jcard
