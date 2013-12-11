@@ -91,6 +91,8 @@ case "$1" in
 		;;
 
 	status)
+		st=0
+
 		if test "$MODLOAD_IPV6" = "y"; then
 			mstat ipv6
 		fi
@@ -101,6 +103,11 @@ case "$1" in
 
 		if test "$MODLOAD_CRYPTODEV" = "y"; then
 			mstat cryptodev
+		fi
+
+		if test -z "$res"; then
+			res="No modules loaded\n";
+			st=1;
 		fi
 
 		echo -ne "$res"
