@@ -7,6 +7,8 @@ NAME=news
 
 . $(dirname $0)/common
 
+CRONF=/var/spool/cron/crontabs/root
+
 istatus() {
 	if ! rccron status >& /dev/null; then
 		echo "$1 stopped"
@@ -28,7 +30,9 @@ istop() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/bin/news.sh|d' $TF
+	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
 	rm -f $TF
 	echo "OK."
 }
@@ -43,7 +47,9 @@ istart() {
 	wday1=$(expr $(date +%s) % 7)
 	wday2=$(((wday1 + 3) % 7))
 	echo "0 $hour * * $wday1,$wday2 /usr/bin/news.sh #!# Alt-F cron" >> $TF
+	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
 	rm -f $TF
 	echo "OK."
 }
