@@ -2,19 +2,17 @@
 
 /bin/mount -t proc proc /proc
 /bin/mount -o remount,rw /
-/bin/mount -t usbfs -o devgid=9,devmode=0664  usbfs /proc/bus/usb
+if test "$(uname -r)" = "2.6.35.14"; then # usbfs removed from kernel in linux-3.8.11
+	/bin/mount -t usbfs -o devgid=9,devmode=0664  usbfs /proc/bus/usb 
+fi
 /bin/mount -t sysfs sysfs /sys
 /bin/mount -t tmpfs tmpfs /tmp
-#/bin/mount -t tmpfs -o size=64k,mode=0755 tmpfs /dev
-#/bin/mknod -m 666 /dev/null c 1 3
-#/bin/mknod -m 666 /dev/console c 5 1
 /bin/mount -t devpts devpts /dev/pts
-#/bin/mount -a
 #mount -t devtmpfs devtmpfs /dev # no obvious advantage
 
 rmdir /newroot/rootmnt /newroot >& /dev/null
 
-for i in run log cache; do
+for i in run log cache spool db; do
 	mkdir -p /tmp/$i
 	ln -sf /tmp/$i /var/$i
 done
@@ -24,50 +22,103 @@ chmod a+wt /var/spool/lpd /var/spool/samba
 echo > /etc/bay
 echo -n > /etc/printcap
 
-# create rc* shortcuts to /etc/init.d/S??*
-ln -f /etc/init.d/rcall /sbin/rcall
-for i in /etc/init.d/S??*; do
-	f=$(basename $i)
-	ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
-done
+# what box/board?
+mkdir -p /tmp/sys
+if grep -q 'DNS-321/323' /proc/cpuinfo; then
+	case $(sed -n 's/Revision.*:.\([[:digit:]]*\).*/\1/p' /proc/cpuinfo) in
+		0000) brd="DNS-323-A1" ;;
+		0001) brd="DNS-323-B1" ;;
+		0002) brd="DNS-323-C1" ;;
+		0003) brd="DNS-321-A1" ;; 
+	esac
+	kernel_mtd=/dev/mtd2; kernel_mn="90 4"
+	config_mtd=/dev/mtdblock0; config_mn="31 0"
+	
+	ln -sf "/sys/class/leds/power:blue" /tmp/sys/power_led
+	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
+	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
+elif grep -q 'DNS-325' /proc/device-tree/model 2> /dev/null ||
+	grep -q 'DNS-325' /proc/cpuinfo ; then
+	brd="DNS-325-A1"
+	kernel_mtd=/dev/mtd1; kernel_mn="90 2"
+	config_mtd=/dev/mtdblock5; config_mn="31 5"
 
-# what board revision? (Should be available in /proc/cpuinfo!)
-brd=$(dmesg | awk '/Identified HW revision/{print $5}')
-case $brd in
-	A1|B1|C1|D1) ;;
-	*) brd="Unknown"
-esac
+	# Tell PMU to turn back on after a power failure
+	# From http://jamie.lentin.co.uk/devices/dlink-dns325/userland-configuration/
+	echo 37 > /sys/class/gpio/export
+	echo out > /sys/class/gpio/gpio37/direction
+	echo 1 > /sys/class/gpio/gpio37/value
+	echo 37 > /sys/class/gpio/unexport
+
+	# MAC is stored in /dev/mtd4, configure eth0
+	if ! test -e /dev/mtd4; then mknod /dev/mtd4 c 90 8; fi
+	ifconfig eth0 hw ether $(nanddump -ql 2048 /dev/mtd4 | grep -E '..(:..){5}')
+
+	# get squashfs image from NAND and loop/aufs mount it.
+	# squashfs can't be run from a NAND flash (dns-320/325), in contrast to a NOR flash (dns-323/321)
+	if ! test -e /dev/mtd3; then mknod /dev/mtd3 c 90 6; fi
+	eval $(nanddump -ql 2048 /dev/mtd3 | strings) # contains sqimage_size=bytes_of_sqimage;
+	if test -n "$sqimage_size"; then
+		if test "$sqimage_size" -gt 0 -a "$sqimage_size" -lt 30000000; then
+			nanddump -qf /tmp/sqimage.xz -s 2048 -l $sqimage_size /dev/mtd3
+		fi
+	fi
+
+	if test -s /tmp/sqimage.xz; then
+		mkdir -p /rootmnt/sqimage
+		mount -o loop /tmp/sqimage.xz /rootmnt/sqimage
+		mount -t aufs -o remount,append:/rootmnt/sqimage=rr /
+	fi
+
+	ln -sf "/sys/class/leds/dns325:white:power" /tmp/sys/power_led
+	ln -sf "/sys/class/leds/dns325:red:l_hdd" /tmp/sys/left_led
+	ln -sf "/sys/class/leds/dns325:red:r_hdd" /tmp/sys/right_led
+	ln -sf "/sys/class/leds/dns325:red:usb" /tmp/sys/usb_led
+	ln -sf "/sys/class/leds/dns325:white:usb" /tmp/sys/usb2_led
+else
+	brd="Unknown"
+fi
 echo $brd > /tmp/board
 
-# start fan because the disks might have to be fsck
-# and might warm up a lot in the process
-if test "$brd" = "A1" -o "$brd" = "B1"; then
-	echo 100 > /sys/class/hwmon/hwmon0/device/pwm1
-elif test "$brd" = "C1" -o "$brd" = "D1"; then
-	echo 127 > /sys/class/hwmon/hwmon1/device/pwm1
-fi
+if test "$brd" != "Unknown"; then
+	if ! test -e $kernel_mtd; then mknod $kernel_mtd c $kernel_mn; fi
+	if ! test -e $config_mtd; then mknod $config_mtd b $config_mn; fi
 
-# stop blinking power-led
-if test $brd != "Unknown"; then
-	echo "none" > /sys/class/leds/power\:blue/trigger
+	if test -f /sys/class/hwmon/hwmon0/device/pwm1; then
+		ln -sf /sys/class/hwmon/hwmon0/device/pwm1 /tmp/sys/pwm1
+	elif test -f /sys/class/hwmon/hwmon1/device/pwm1; then
+		ln -sf /sys/class/hwmon/hwmon1/device/pwm1 /tmp/sys/pwm1
+	fi
+
+	if test -f /sys/class/hwmon/hwmon0/device/temp1_input; then
+		ln -sf /sys/class/hwmon/hwmon0/device/temp1_input /tmp/sys/temp1_input
+	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
+		ln -sf /sys/class/hwmon/hwmon1/device/temp1_input /tmp/sys/temp1_input
+	fi
+
+	if test -f /sys/class/hwmon/hwmon0/device/fan1_input; then
+		ln -sf /sys/class/hwmon/hwmon0/device/fan1_input /tmp/sys/fan1_input
+	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
+		ln -sf /sys/class/hwmon/hwmon1/device/fan1_input /tmp/sys/fan1_input
+	fi
+
+	# start fan because the disks might have to be fsck and might warm up a lot in the process
+	echo 127 > /tmp/sys/pwm1
+
+	# stop blinking power-led
+	echo "none" > /tmp/sys/power_led/trigger
 fi
 
 TSYSLOG=/var/log/boot.log
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
 start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
 
-if ! test -e /dev/mtdblock2; then
-	mknod /dev/mtdblock2 b 31 2
-fi
-
 logger -s "Board: $brd"
-logger -s "Firmware: $(dd if=/dev/mtdblock2 ibs=64 count=1 2> /dev/null | strings)"
+logger -s "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"
 
 # set system clock from RTC, in UTC
 # kernel do it at boot time, but seems to not wait for second change
-if ! test -e /dev/rtc0; then
-	mknod /dev/rtc0 c 254 0	
-fi
+if ! test -e /dev/rtc0; then mknod /dev/rtc0 c 254 0; fi
 i=0; o="$(hwclock)"
 while test "$o" = "$(hwclock)" -a "$i" -lt 200; do i=$((i+1)); done
 hwclock -su
@@ -75,13 +126,11 @@ hwclock -su
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! grep -q "nodef" /proc/cmdline; then
-	if ! test -e /dev/mtdblock0; then # mdev -s has not yet run
-		mknod /dev/mtdblock0 b 31 0
-	fi
 	logger -s "$(loadsave_settings -ck)"
-	loadsave_settings -lf
+	res=$(loadsave_settings -lf)
 	no_defaults=$?
-
+	logger -s "$res"
+	
 	if test -s /etc/misc.conf; then
 		. /etc/misc.conf
 	fi
@@ -149,7 +198,7 @@ else
 			sed -i "/$ns2/d" /etc/resolv.conf
 			echo "nameserver $ns2" >> /etc/resolv.conf
 		fi
-		hostname $host
+		hostname $host # host set from (loadsave_settings -rs)
 	else
 		ifconfig eth0 up
 		sleep 3
@@ -203,7 +252,6 @@ case $cip in
 
 		# set smb.conf hosts allow and workgroup
 		sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${netmask}\3|" /etc/samba/smb.conf
-		#sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
 
 		cat<<-EOF > /etc/network/interfaces
 			auto lo
@@ -252,6 +300,13 @@ done < /etc/fstab
 
 # stop temporary syslog to /var/log/boot.log
 start-stop-daemon -K -q -n syslogd
+
+# create rc* shortcuts to /etc/init.d/S??*
+ln -f /etc/init.d/rcall /sbin/rcall
+for i in /etc/init.d/S??*; do
+	f=$(basename $i)
+	ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
+done
 
 # Start all executable init scripts in /etc/init.d
 # executing them in numerical order.
