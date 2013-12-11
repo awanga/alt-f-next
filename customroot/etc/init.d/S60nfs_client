@@ -25,10 +25,12 @@ istart() {
 }
 
 istop() {
+	st=0
+	echo -n "Stopping $NAME: "
 	if test -n "$(mount -t nfs)"; then
 		if ! umount -f -t nfs -a >& /dev/null; then
-			echo "Couldn't unmount NFS filesystems and stop nfs-client."
-			return 1
+			echo "Fail: Couldn't unmount NFS filesystems and stop nfs-client."
+			st=1
 		fi
 	fi
 
@@ -36,7 +38,9 @@ istop() {
 		stop $NAME
 		rm -f /var/run/sm-notify.pid
 		rmmod -f nfs lockd >& /dev/null
+		st=0 # return true, as rmmod might fail
 	fi
+	omsg $st
 }
 
 case "$1" in
