@@ -6,12 +6,15 @@ TYPE=sys
 
 . $(dirname $0)/common 
 
+CROND=/var/spool/cron/crontabs
+SETF=/tmp/settings_saved
+
 sinit() {
-	if ! test -e /var/spool/cron/crontabs; then
-		mkdir -p /var/spool/cron/crontabs
+	if ! test -e $CROND; then
+		mkdir -p $CROND
 	fi
-	if ! test -e /var/spool/cron/crontabs/root; then
-		touch /var/spool/cron/crontabs/root
+	if ! test -e $CROND/root; then
+		touch -r $SETF $CROND/root
 	fi
 }
 
