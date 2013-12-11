@@ -1,0 +1,16 @@
+./etc/init.d/S40portmap
+./etc/init.d/S60nfs
+./etc/init.d/S60nfs_client
+.//usr/sbin/start-statd
+./usr/sbin/exportfs
+./usr/sbin/rpc.mountd
+./usr/sbin/rpc.nfsd
+./usr/sbin/rpc.statd
+./usr/sbin/sm-notify
+./usr/sbin/showmount
+./usr/sbin/mount.nfs
+./usr/sbin/umount.nfs
+./usr/www/nfs_hlp.html
+./usr/www/cgi-bin/browse_nfs.cgi
+./usr/www/cgi-bin/nfs.cgi
+./usr/www/cgi-bin/nfs_proc.cgi
