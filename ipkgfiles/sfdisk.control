@@ -1,0 +1,9 @@
+Package: sfdisk
+Description: Partition table manipulator for Linux (ripped off from the util-linux package)
+Version: 3.0
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.uclibc.org
+Maintainer: jcard
