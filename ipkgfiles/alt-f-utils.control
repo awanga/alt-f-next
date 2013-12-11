@@ -1,0 +1,9 @@
+Package: alt-f-utils
+Description: Provides fan control, hdd sleep and buttons press detection for the DNS-323/321
+Version: 0.1.6
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sourceforge.net/projects/alt-f
+Maintainer: jcard
