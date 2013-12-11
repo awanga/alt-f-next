@@ -1,6 +1,6 @@
 #############################################################
 #
-# ntfs-3g_ntfsprogs
+# ntfs-3g-ntfsprogs
 #
 #############################################################
 
@@ -15,7 +15,7 @@ NTFS_3G_NTFSPROGS_EXTRA_BIN = ntfscat ntfscluster ntfscmp ntfsfix ntfsinfo ntfsl
 NTFS_3G_NTFSPROGS_EXTRA_SBIN = mkntfs ntfsclone ntfscp ntfslabel ntfsresize ntfsundelete
 NTFS_3G_NTFSPROGS_NO = mkfs.ntfs mount.lowntfs-3g mount.ntfs-3g
 
-$(eval $(call AUTOTARGETS,package,ntfs-3g_ntfsprogs))
+$(eval $(call AUTOTARGETS,package,ntfs-3g-ntfsprogs))
 
 $(NTFS_3G_NTFSPROGS_HOOK_POST_INSTALL):
 ifeq ($(BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS),)
