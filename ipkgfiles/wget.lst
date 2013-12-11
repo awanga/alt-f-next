@@ -1,0 +1,3 @@
+./usr/bin/wget
+./usr/www/cgi-bin/proxy.cgi
+./usr/www/cgi-bin/proxy_proc.cgi

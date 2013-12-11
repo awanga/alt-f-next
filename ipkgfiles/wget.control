@@ -1,0 +1,9 @@
+Package: wget
+Description: Network utility to retrieve files from http/ftp/etc...
+Version: 1.14
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://wget.sunsite.dk/
+Maintainer: jcard
