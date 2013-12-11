@@ -6,6 +6,7 @@ NAME=backup
 #REQUIRE="cron" does not works here
 
 CONF=/etc/backup.conf
+CRONF=/var/spool/cron/crontabs/root
 
 . $(dirname $0)/common
 
@@ -30,7 +31,9 @@ istop() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/bin/backup|d' $TF
+	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
 
 	rm -f $TF
 	echo "OK."
@@ -62,7 +65,9 @@ istart() {
 		echo "0 $at $mday * $when /usr/bin/backup $id #!# Alt-F cron" >> $TF
 	done < $CONF
 
+	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
 	rm -f $TF
 
 	echo "OK."
