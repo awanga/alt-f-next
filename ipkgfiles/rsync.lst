@@ -1,0 +1,5 @@
+./usr/bin/rsync
+./etc/rsyncd.conf
+./etc/rsyncd.secrets
+./usr/www/cgi-bin/rsync.cgi
+./usr/www/cgi-bin/rsync_proc.cgi
