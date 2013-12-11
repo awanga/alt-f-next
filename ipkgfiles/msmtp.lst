@@ -1,0 +1,7 @@
+./usr/bin/msmtp
+./usr/sbin/sendmail
+./usr/lib/sendmail
+./etc/msmtprc
+./usr/www/mail_hlp.html
+./usr/www/cgi-bin/mail.cgi
+./usr/www/cgi-bin/mail_proc.cgi

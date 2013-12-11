@@ -1,0 +1,9 @@
+Package: msmtp
+Description: a SMTP (Single Mail Transfer Program) client.
+Version: 1.4.27
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://msmtp.sourceforge.net
+Maintainer: jcard
