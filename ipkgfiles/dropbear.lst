@@ -1,0 +1,6 @@
+./etc/init.d/S62dropbear
+./usr/sbin/dropbear
+./usr/bin/dropbearconvert
+./usr/bin/dropbearkey
+./usr/bin/dbclient
+./usr/bin/scp
