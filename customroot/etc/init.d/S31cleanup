@@ -7,6 +7,8 @@ NAME=cleanup
 
 . $(dirname $0)/common
 
+CRONF=/var/spool/cron/crontabs/root
+
 istatus() {
 	if ! rccron status >& /dev/null; then
 		echo "$1 stopped"
@@ -28,7 +30,9 @@ istop() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/sbin/cleanup|d' $TF
+	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
 	rm -f $TF
 	echo "OK."
 }
@@ -40,7 +44,9 @@ istart() {
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/sbin/cleanup|d' $TF
 	echo "0 * * * * /usr/sbin/cleanup #!# Alt-F cron" >> $TF
+	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
 	rm -f $TF
 	echo "OK."
 }
