@@ -2,22 +2,56 @@
 
 DESC="User/Group Disk Quotas"
 NAME=quota
+TYPE=sys
 
 . $(dirname $0)/common
 
-icommon() {
-	fs=$(grep -E '(ext2|ext3|ext4)' /proc/mounts | cut -d" " -f1)
+fs=$(grep -E '(ext2|ext3|ext4)' /proc/mounts | cut -d" " -f1)
+
+istart() {
 	for i in $fs; do
+		dev=$(basename $i)
 		if grep -qE "^$i.*(grpjquota|usrjquota)" /proc/mounts; then
-			eval $1
+			if quotaon -p $i >& /dev/null; then quotaon -ug $i; fi
+		else
+			echo "quota on $dev is disabled" 
 		fi
 	done
 }
 
+istop() {
+	for i in $fs; do
+		dev=$(basename $i)
+		if grep -qE "^$i.*(grpjquota|usrjquota)" /proc/mounts; then
+			if ! quotaon -p $i >& /dev/null; then quotaon -ugf $i; fi
+		else
+			echo "quota on $dev is disabled" 
+		fi
+	done
+}
+
+istatus() {
+	nact=0;
+	for i in $fs; do
+		dev=$(basename $i)
+		if grep -qE "^$i.*(grpjquota|usrjquota)" /proc/mounts; then
+			if quotaon -p $i >& /dev/null; then
+				echo quota on $dev is not active
+				nact=$((nact+1))
+			else
+				echo quota on $dev is active
+			fi
+		else
+			echo "quota on $dev is disabled" 
+		fi
+	done
+	if test "$nact" != "0"; then return 1; else return 0; fi
+}
+
 case "$1" in
-	start) icommon 'if quotaon -p $i >& /dev/null; then quotaon -ug $i; fi' ;;
-	stop) icommon 'if ! quotaon -p $i >& /dev/null; then quotaon -ugf $i; fi' ;;
-	status) if quotaon -pa; then return 1; else return 0; fi ;;
+	start) istart ;;
+	stop) istop ;;
+	status) istatus ;;
 	restart) restart $NAME ;;
 	*)  usage $0 "start|stop|status|restart" ;;
 esac
