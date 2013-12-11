@@ -1,0 +1,9 @@
+Package: ntp
+Description: Network Time Protocol suite/programs
+Version: 4.2.6p5
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.ntp.org/
+Maintainer: jcard
