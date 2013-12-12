@@ -21,8 +21,8 @@ if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
 fi
 rm -f /tmp/$TBALL
 
-cp -a /Alt-F/opt/RuudBurger-CouchPotato-*/* $CBPROG
-rm -rf /Alt-F/opt/RuudBurger-CouchPotato-*
+cp -a /Alt-F/opt/RuudBurger-CouchPotatoV1-*/* $CBPROG
+rm -rf /Alt-F/opt/RuudBurger-CouchPotatoV1-*
 
 ln -sf /usr/sbin/rcscript /sbin/rccouchpotato
 
