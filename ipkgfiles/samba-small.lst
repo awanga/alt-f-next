@@ -1,3 +1,4 @@
+./etc/init.d/S61smb
 ./usr/bin/smbpasswd
 ./usr/bin/smbstatus
 ./usr/bin/smbtree
