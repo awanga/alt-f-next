@@ -26,10 +26,11 @@ config BR2_PACKAGE_NFS_UTILS_RPC_LOCKD
 	help
 	  NFS lock manager for Linux kernels older than 2.4
 
-config BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD
-	bool "rpc.rquotad"
-	depends on BR2_PACKAGE_NFS_UTILS
-	help
-	  NFS remote quota server
+# nfs-utils-1.2.7/NEWS: - rpc.rquotad is gone.  Use the one from the 'quota' package
+#config BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD
+#	bool "rpc.rquotad"
+#	depends on BR2_PACKAGE_NFS_UTILS
+#	help
+#	  NFS remote quota server
 
 endmenu
