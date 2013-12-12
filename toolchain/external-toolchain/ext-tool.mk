@@ -44,17 +44,20 @@ copy_toolchain_lib_root = \
 	LIB="$(strip $2)"; \
 	DST="$(strip $3)"; \
 	STRIP="$(strip $4)"; \
+	TPREFIX="$(strip $5)"; \
  \
-	LIB_DIR="$${SYSROOT_DIR}/lib" ; \
+	LIB_DIR="$${SYSROOT_DIR}/lib $${SYSROOT_DIR}/usr/$${TPREFIX}/lib" ; \
 	for FILE in `find $${LIB_DIR} -maxdepth 1 -name "$${LIB}.*"`; do \
 		LIB=`basename $${FILE}`; \
+		DIR=`dirname $${FILE}`; \
+		echo found $$LIB in $$DIR; \
 		while test \! -z "$${LIB}"; do \
 			rm -fr $(TARGET_DIR)$${DST}/$${LIB}; \
 			mkdir -p $(TARGET_DIR)$${DST}; \
-			if test -h $${LIB_DIR}/$${LIB}; then \
-				cp -d $${LIB_DIR}/$${LIB} $(TARGET_DIR)$${DST}/; \
-			elif test -f $${LIB_DIR}/$${LIB}; then \
-				$(INSTALL) -D -m0755 $${LIB_DIR}/$${LIB} $(TARGET_DIR)$${DST}/$${LIB}; \
+			if test -h $${DIR}/$${LIB}; then \
+				cp -d $${DIR}/$${LIB} $(TARGET_DIR)$${DST}/; \
+			elif test -f $${DIR}/$${LIB}; then \
+				$(INSTALL) -D -m0755 $${DIR}/$${LIB} $(TARGET_DIR)$${DST}/$${LIB}; \
 				case "$${STRIP}" in \
 				(0 | n | no) \
 ;; \
@@ -65,7 +68,7 @@ copy_toolchain_lib_root = \
 			else \
 				exit -1; \
 			fi; \
-			LIB="`readlink $${LIB_DIR}/$${LIB}`"; \
+			LIB="`readlink $${DIR}/$${LIB}`"; \
 		done; \
 	done; \
  \
@@ -205,7 +208,7 @@ ifeq ($(BR2_INSTALL_LIBSTDCPP),y)
 EXTERNAL_LIBS+=libstdc++.so
 endif
 
-SYSROOT_DIR=$(shell LANG=C $(TARGET_CC) -v 2>&1 | grep ^Configured | tr " " "\n" | grep -- "--with-sysroot" | cut -f2 -d=)
+SYSROOT_DIR=$(shell LANG=C $(TARGET_CC) -v 2>&1 | grep ^Configured | tr " " "\n" | grep -- "--with-sysroot" | head -1 | cut -f2 -d=)
 
 $(STAMP_DIR)/ext-toolchain-installed:
 	@echo "Checking external toolchain settings"
@@ -222,11 +225,14 @@ ifeq ($(BR2_TOOLCHAIN_EXTERNAL_UCLIBC),y)
 else
 	$(Q)$(call check_glibc,$(SYSROOT_DIR))
 endif
-	mkdir -p $(TARGET_DIR)/lib
-	@echo "Copy external toolchain libraries to target..."
+	mkdir -p $(TARGET_DIR)/lib $(TARGET_DIR)/usr/bin
+	@echo "Copy external toolchain libraries from $(SYSROOT_DIR) to target..."
 	$(Q)for libs in $(EXTERNAL_LIBS); do \
-		$(call copy_toolchain_lib_root,$(SYSROOT_DIR),$$libs,/lib,$(BR2_TOOLCHAIN_EXTERNAL_STRIP)); \
+		echo "copy $$libs"; \
+		$(call copy_toolchain_lib_root,$(SYSROOT_DIR),$$libs,/lib,$(BR2_TOOLCHAIN_EXTERNAL_STRIP),$(BR2_TOOLCHAIN_EXTERNAL_PREFIX)); \
 	done
 	@echo "Copy external toolchain sysroot to staging..."
 	$(Q)$(call copy_toolchain_sysroot,$(SYSROOT_DIR))
+	cp $(STAGING_DIR)/usr/$(ARCH)-linux/target_utils/ldd $(TARGET_DIR)/usr/bin
+	$(TARGET_CROSS)strip $(TARGET_DIR)/usr/bin/ldd
 	@touch $@
