@@ -1,10 +1,6 @@
 #!/bin/sh 
- 
-addgroup -S -g 68 avahi 
-if id avahi >& /dev/null; then
-	deluser avahi
-fi
-adduser -S -g "avahi daemon" -G avahi -u 68 -h /var/run/avahi-daemon avahi 
 
-chown -R avahi:avahi /etc/avahi/ 
-ln -sf /usr/sbin/rcscript /sbin/rcavahi_daemon
+ln -sf /usr/sbin/rcscript /sbin/rcavahi_daemon 
+rcavahi_daemon status
+
+

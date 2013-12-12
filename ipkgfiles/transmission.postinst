@@ -1,27 +1,4 @@
 #!/bin/sh
 
-THOME=/var/lib/transmission
-JSON=settings.json
-SMBCONF=/etc/samba/smb.conf
-
-addgroup -S -g 201 BT
-if id transmission >& /dev/null; then
-	delgroup transmission network >& /dev/null
-	deluser transmission
-fi
-adduser -S -g "Transmission daemon" -G BT -u 13 -h $THOME transmission
-
-if ! test -f $THOME/$JSON; then
-	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir ""  >& $THOME/$JSON
-	sed -i 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' $THOME/$JSON
-fi
-
-sed -i -e 's|.*"umask":.*|    "umask": 2, |' \
-	-e 's|.*"message-level":.*|    "message-level": 1, |' $THOME/$JSON
-
-if grep -q "^\[Transmission\]" $SMBCONF; then
-	sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMBCONF
-fi
-
-chown -R transmission:BT $THOME
 ln -sf /usr/sbin/rcscript /sbin/rctransmission
+rctransmission status
