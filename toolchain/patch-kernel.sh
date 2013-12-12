@@ -34,7 +34,9 @@ for i in `cd ${patchdir}; ls -d ${patchpattern} 2> /dev/null` ; do
 	*.bz)
 	type="bzip"; uncomp="bunzip -dc"; ;; 
 	*.bz2)
-	type="bzip2"; uncomp="bunzip2 -dc"; ;; 
+	type="bzip2"; uncomp="bunzip2 -dc"; ;;
+	*.xz)
+	type="xz"; uncomp="xzcat -dc"; ;;
 	*.zip)
 	type="zip"; uncomp="unzip -d"; ;; 
 	*.Z)
