@@ -1,6 +1,6 @@
 #############################################################
 #
-# samba
+# samba-small
 #
 #############################################################
 
@@ -138,7 +138,7 @@ SAMBA_SMALL_INSTALL_TARGETS = installlibs installservers installbin \
 	installcifsmount installcifsumount installscripts
 
 #$(SAMBA_SMALL_DIR)/.installed: $(SAMBA_SMALL_DIR)/.build
-$(PROJECT_BUILD_DIR)/autotools-stamps/samba_small_target_installed: $(SAMBA_SMALL_DIR)/.build
+$(PROJECT_BUILD_DIR)/autotools-stamps/samba-small_target_installed: $(SAMBA_SMALL_DIR)/.build
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) \
 		prefix="${TARGET_DIR}/usr" \
 		BASEDIR="${TARGET_DIR}/usr" \
@@ -174,7 +174,7 @@ $(PROJECT_BUILD_DIR)/autotools-stamps/samba_small_target_installed: $(SAMBA_SMAL
 	find $(TARGET_DIR) -name \*.old -delete
 	touch $@
 
-samba-small: $(SAMBA_SMALL_DEPS) $(PROJECT_BUILD_DIR)/autotools-stamps/samba_small_target_installed
+samba-small: $(SAMBA_SMALL_DEPS) $(PROJECT_BUILD_DIR)/autotools-stamps/samba-small_target_installed
 
 samba-small-build: $(SAMBA_SMALL_DIR)/.build
 
