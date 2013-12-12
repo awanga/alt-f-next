@@ -13,6 +13,7 @@
 ./usr/lib/php5/extensions/iconv.so
 ./usr/lib/php5/extensions/json.so
 ./usr/lib/php5/extensions/mbstring.so
+./usr/lib/php5/extensions/mcrypt.so
 ./usr/lib/php5/extensions/mysql.so
 ./usr/lib/php5/extensions/openssl.so
 ./usr/lib/php5/extensions/pdo_mysql.so
