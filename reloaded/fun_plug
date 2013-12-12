@@ -96,10 +96,11 @@ if test "$ONCE" = "yes"; then
 	chmod -x fun_plug
 fi
 
-if test -r $ALTF_TARBALL; then 
-	# what the heck?! -x doesn't work, but -v does, so extract to stdout!
+if test -r $ALTF_TARBALL; then
+	rm -rf $ALTF_PATH
 	mkdir -p $ALTF_PATH
 	check $ALTF_PATH
+	# what the heck?! -x doesn't work, but -v does, so extract to stdout!
 	for i in $(tar -tf $ALTF_TARBALL); do
 		if ! test -d $i; then
 			tar -xOf $ALTF_TARBALL $i > $i
@@ -125,7 +126,7 @@ check "$kernel"
 check "$initrd"
 check "reloaded-$KV.ko"
 
-if test -n "$KIP"; then
+if test "$KIP" = "yes"; then
 	eval $(ifconfig egiga0 | sed -n '/inet addr/s/[a-zA-Z: ]*\([0-9.]*\)[a-zA-Z: ]*\([0-9.]*\)[a-zA-Z: ]*\([0-9.]*\)/ip=\1; bcast=\2; mask=\3/p')
 
 	eval $(route -n | sed -n '/^0.0.0.0/s/[0-9.]* *\([0-9.]*\) .*/gw=\1/p')
