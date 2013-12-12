@@ -1,6 +1,6 @@
 Package: minidlna
 Description: Media server compliant with DLNA/UPnP-AV clients.
-Version: 1.1.0
+Version: 1.1.0-1
 Depends: libexif, jpeg, libid3tag, flac, libvorbis, sqlite, ffmpeg, ipkg
 Architecture: arm
 Priority: optional
