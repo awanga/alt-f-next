@@ -44,5 +44,5 @@ $(NETATALK_HOOK_POST_CONFIGURE):
 	touch $@
 
 $(NETATALK_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/share/aclocal $(TARGET_DIR)/usr/bin/asip-status.pl
+	rm -rf $(TARGET_DIR)/usr/share/aclocal $(TARGET_DIR)/usr/bin/asip-status.pl $(TARGET_DIR)/usr/bin/netatalk-config
 	touch $@
