@@ -1,4 +1,7 @@
 #!/bin/sh 
 
+sed -i "\|/usr/sbin/sshd|d" /etc/inetd.conf
+rcinetd reload
+
 ln -sf /usr/sbin/dropbear /usr/bin/scp
 ln -sf /usr/sbin/dropbear /usr/bin/ssh

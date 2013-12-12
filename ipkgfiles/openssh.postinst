@@ -1,5 +1,7 @@
 #!/bin/sh 
 
+CONF=/etc/inetd.conf
+
 mkdir -p /etc/ssh
 if ! test -f /etc/ssh/ssh_host_rsa_key; then
 	dropbearconvert dropbear openssh \
@@ -12,6 +14,12 @@ if ! test -f /etc/ssh/ssh_host_ecdsa_key; then
 	ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ""
 fi
 
-if ! grep -q /usr/sbin/sshd /etc/inetd.conf; then
-	echo -e "ssh_alt\tstream\ttcp\tnowait\troot\t/usr/sbin/sshd\tsshd\t-i" >> /etc/inetd.conf
+if ! grep -q /usr/sbin/sshd $CONF; then
+	if grep -q ssh_alt $CONF; then
+		SSHP=ssh
+	else
+		SSHP=ssh_alt
+	fi
+	echo -e "$SSHP\tstream\ttcp\tnowait\troot\t/usr/sbin/sshd\tsshd\t-i" >> $CONF
+	rcinetd reload
 fi
