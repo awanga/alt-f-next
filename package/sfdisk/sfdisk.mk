@@ -3,11 +3,19 @@
 # sfdisk support
 #
 #############################################################
-SFDISK_VERSION:=
-SFDISK_SOURCE=sfdisk$(SFDISK_VERSION).tar.bz2
+
+# This package was ripped out of the util-linux package and contains
+# sfdisk version 3.0 Copyright (C) 1995  Andries E. Brouwer (aeb@cwi.nl)
+# the download site does not keeps a sfdisk-$(SFDISK_VERSION).tar.bz2 version,
+# only sfdisk.tar.bz2
+
+SFDISK_VERSION:=3.0
+#SFDISK_SOURCE=sfdisk-$(SFDISK_VERSION).tar.bz2
+SFDISK_SOURCE=sfdisk.tar.bz2
 SFDISK_CAT:=$(BZCAT)
 SFDISK_SITE:=http://www.uclibc.org/
-SFDISK_DIR=$(BUILD_DIR)/sfdisk$(SFDISK_VERSION)
+#SFDISK_DIR=$(BUILD_DIR)/sfdisk$(SFDISK_VERSION)
+SFDISK_DIR=$(BUILD_DIR)/sfdisk
 
 $(DL_DIR)/$(SFDISK_SOURCE):
 	$(call DOWNLOAD,$(SFDISK_SITE),$(SFDISK_SOURCE))
