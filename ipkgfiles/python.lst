@@ -734,6 +734,7 @@
 ./usr/lib/python2.7/lib-dynload/array.so
 ./usr/lib/python2.7/lib-dynload/audioop.so
 ./usr/lib/python2.7/lib-dynload/binascii.so
+./usr/lib/python2.7/lib-dynload/bz2.so
 ./usr/lib/python2.7/lib-dynload/_bisect.so
 ./usr/lib/python2.7/lib-dynload/_bsddb.so
 ./usr/lib/python2.7/lib-dynload/cmath.so
