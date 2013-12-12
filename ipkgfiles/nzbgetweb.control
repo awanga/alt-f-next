@@ -1,7 +1,7 @@
 Package: nzbgetweb
 Description: The NZBget web interface
 Version: 1.5-2
-Depends: nzbget,php,lighttpd,ipkg
+Depends: nzbget, php, lighttpd, ipkg
 Architecture: arm
 Priority: optional
 Section: admin

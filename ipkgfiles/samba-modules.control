@@ -1,6 +1,6 @@
 Package: samba-modules
 Description: Samba VFS modules
-Depends: samba,ipkg
+Depends: samba, ipkg
 Version: 3.5.21-1
 Architecture: arm
 Priority: optional
