@@ -10,17 +10,12 @@
 ./usr/lib/libpanel.so
 ./usr/lib/libpanel.so.5
 ./usr/lib/libpanel.so.5.6
-./usr/share/terminfo
-./usr/share/terminfo/a
 ./usr/share/terminfo/a/ansi
-./usr/share/terminfo/l
 ./usr/share/terminfo/l/linux
-./usr/share/terminfo/v
 ./usr/share/terminfo/v/vt100
 ./usr/share/terminfo/v/vt102
 ./usr/share/terminfo/v/vt200
 ./usr/share/terminfo/v/vt220
-./usr/share/terminfo/x
 ./usr/share/terminfo/x/xterm
 ./usr/share/terminfo/x/xterm-color
 ./usr/share/terminfo/x/xterm-xfree86
