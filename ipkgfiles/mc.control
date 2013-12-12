@@ -1,7 +1,7 @@
 Package: mc
 Description: Midnight Commander is a text-mode file manager.
-Version: 4.8.1.6
-Depends: libglib2, ipkg
+Version: 4.8.1.6-1
+Depends: ncurses, libglib2, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
