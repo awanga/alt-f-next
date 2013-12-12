@@ -44,7 +44,6 @@
 ./usr/sbin/avahi-autoipd
 ./usr/sbin/avahi-daemon
 ./usr/sbin/avahi-dnsconfd
-./usr/share/applications
 ./usr/share/avahi/avahi-service.dtd
 ./usr/share/avahi/service-types
 ./usr/share/dbus-1/interfaces/org.freedesktop.Avahi.AddressResolver.xml
