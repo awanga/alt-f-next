@@ -3,4 +3,4 @@ config BR2_PACKAGE_MDADM
 	help
 	  Utility for managing RAID hardware.
 
-	  http://cgi.cse.unsw.edu.au/~neilb/mdadm
+	  http://kernel.org/pub/linux/utils/raid/mdadm
