@@ -4,8 +4,6 @@
 ./usr/bin/gobject-query
 ./usr/bin/gtester
 ./usr/bin/gtester-report
-./usr/lib/gio
-./usr/lib/gio/modules
 ./usr/lib/libgio-2.0.so
 ./usr/lib/libgio-2.0.so.0
 ./usr/lib/libgio-2.0.so.0.2000.4
