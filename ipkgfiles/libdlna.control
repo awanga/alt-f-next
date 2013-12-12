@@ -1,6 +1,6 @@
 Package: libdlna
 Description: Reference DLNA open-source implementation for Linux
-Version: 0.2.3-3
+Version: 0.2.3-4
 Depends: ffmpeg, ipkg
 Architecture: arm
 Priority: optional
