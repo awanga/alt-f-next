@@ -3,12 +3,17 @@
 # MySQL 5.1 Client
 #
 #############################################################
-MYSQL_CLIENT_VERSION = 5.1.23-rc
+
+#MYSQL_CLIENT_VERSION = 5.1.23
+MYSQL_CLIENT_VERSION = 5.1.63
 MYSQL_CLIENT_SOURCE = mysql-$(MYSQL_CLIENT_VERSION).tar.gz
-MYSQL_CLIENT_SITE = http://mirrors.24-7-solutions.net/pub/mysql/Downloads/MySQL-5.1
+#MYSQL_CLIENT_SITE = http://mirrors.24-7-solutions.net/pub/mysql/Downloads/MySQL-5.1
+MYSQL_CLIENT_SITE = http://www.mirrorservice.org/sites/ftp.mysql.com/Downloads/MySQL-5.1
 MYSQL_CLIENT_INSTALL_TARGET = YES
 MYSQL_CLIENT_INSTALL_STAGING = YES
 MYSQL_CLIENT_DEPENDENCIES = uclibc readline ncurses
+
+MYSQL_CLIENT_LIBTOOL_PATCH = NO
 
 MYSQL_CLIENT_CONF_ENV = ac_cv_sys_restartable_syscalls=yes
 MYSQL_CLIENT_CONF_OPT = \
