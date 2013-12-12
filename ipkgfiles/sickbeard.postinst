@@ -37,13 +37,3 @@ adduser -S -g "Sick Beard user" -G TV -u 18 -h $SBHOME sickbeard
 
 chown -R sickbeard:TV $SBPROG $SBCONFD
 ln -sf /usr/sbin/rcscript /sbin/rcsickbeard
-
-# reuse box certificate -- to remove after RC3
-BOX_PEM=/etc/ssl/certs/vsftpd.pem
-BOX_CRT=/etc/ssl/certs/server.crt
-BOX_KEY=/etc/ssl/certs/server.key
-
-if ! test -f $BOX_CRT; then
-	sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' $BOX_PEM > $BOX_CRT
-	sed -n '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/p' $BOX_PEM > $BOX_KEY
-fi
