@@ -17,15 +17,6 @@ config BR2_PACKAGE_SAMBA_OPTIM
 	help
 	  Additional compile options (-Os, -O2)
 
-config BR2_PACKAGE_SAMBA_SMBCOMMON
-	bool "samba smbcommon"
-	default y
-	depends on BR2_PACKAGE_SAMBA
-	help
-	  Remove common object files in binaries and create libsmbcommon,
-	  reducing code size.
-	  Not usable with shared modules
-
 config BR2_PACKAGE_SAMBA_ACL
 	bool "samba acl"
 	depends on BR2_PACKAGE_SAMBA

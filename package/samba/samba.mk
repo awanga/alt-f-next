@@ -111,30 +111,10 @@ $(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 	)
 	touch $@
 
-$(SAMBA_DIR)/.mkcommon : $(SAMBA_DIR)/.configured
-ifeq ($(BR2_PACKAGE_SAMBA_SMBCOMMON),y)
-	patch -p0 -b -d $(SAMBA_DIR) < package/samba/samba-$(SAMBA_VERSION)-Makefile.patch2
-	sed -i 's/-Wl,--as-needed//' $(SAMBA_DIR)/Makefile
-endif
-	touch $@
-
 $(SAMBA_DIR)/$(SAMBA_BINARY): $(SAMBA_DIR)/.configured
 	# make proto must be done before make to be parallel safe
 	$(MAKE) -C $(SAMBA_DIR) proto
 	$(MAKE) -C $(SAMBA_DIR)
-ifeq ($(BR2_PACKAGE_SAMBA_SMBCOMMON),y)
-	(cd $(SAMBA_DIR)/bin; \
-	mkdir -p tmp; rm -f tmp/*; \
-	mklibs -v -D -d tmp/ \
-	--target arm-linux-uclibcgnueabi \
-	-L .:$(TARGET_DIR)/lib:$(TARGET_DIR)/usr/lib \
-	--ldlib $(TARGET_DIR)/lib/ld-uClibc.so.0 \
-	smbd nmbd smbtree smbstatus smbpasswd swat; \
-	cp tmp/libsmbcommon.so libsmbcommon.so; \
-	)
-else
-	touch $(SAMBA_DIR)/bin/libsmbcommon.so
-endif
 	touch $@
 
 SAMBA_TARGETS_ := usr/bin/sharesec
@@ -197,9 +177,6 @@ $(TARGET_DIR)/$(SAMBA_TARGET_BINARY): $(SAMBA_DIR)/$(SAMBA_BINARY)
 		MODULESDIR="${TARGET_DIR}/usr/lib" \
 		LIBDIR="${TARGET_DIR}/usr/lib" \
 		-C $(SAMBA_DIR) $(SAMBA_INSTALL_TARGETS)
-	# jc: 	
-	-cp $(SAMBA_DIR)/bin/libsmbcommon.so $(TARGET_DIR)/usr/lib/
-	-chmod +w $(TARGET_DIR)/usr/lib/libsmbcommon.so
 ifneq ($(BR2_PACKAGE_SAMBA_EXTRA),y)
 	# Do not install the LDAP-like embedded database tools
 	rm -f $(addprefix $(TARGET_DIR)/usr/bin/ldb, add del edit modify rename search)
