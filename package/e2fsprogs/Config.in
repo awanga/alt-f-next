@@ -7,11 +7,6 @@ config BR2_PACKAGE_E2FSPROGS
 
 	  http://e2fsprogs.sourceforge.net/
 
-config BR2_PACKAGE_LIBUUID
-	bool "libuuid"
-	help
-	  The uuid library from the e2fsprogs suite
-
 config BR2_PACKAGE_E2FSPROGS_BADBLOCKS
 	bool "badblocks"
 	default y
@@ -64,7 +59,7 @@ config BR2_PACKAGE_E2FSPROGS_LOGSAVE
 	depends on BR2_PACKAGE_E2FSPROGS
 
 config BR2_PACKAGE_E2FSPROGS_LSATTR
-	bool "chattr"
+	bool "lsattr"
 	default y
 	depends on BR2_PACKAGE_E2FSPROGS
 
@@ -93,6 +88,11 @@ config BR2_PACKAGE_E2FSPROGS_RESIZE
 	bool "resize2fs"
 	default y
 	depends on BR2_PACKAGE_E2FSPROGS
+
+config BR2_PACKAGE_LIBUUID
+	bool "libuuid"
+	help
+	  The uuid library from the e2fsprogs suite
 
 comment "e2fsprogs requires a toolchain with LARGEFILE support"
 	depends on !BR2_LARGEFILE
