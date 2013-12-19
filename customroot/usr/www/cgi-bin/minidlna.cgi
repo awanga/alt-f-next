@@ -10,28 +10,19 @@ mktt rescan_tt "Forces a rescan of all shares on service start.<br>It can take a
 CONFF=/etc/minidlna.conf
 
 if test -e $CONFF; then
-	. $CONFF >& /dev/null
-	MDLNA_DIR="$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONFF)" 
-	if grep -q '^#force_rescan=yes' $CONFF; then
-		RESCAN_CHK=checked
-	fi
+	friendly_name=$(awk -F= '/^friendly_name/{printf "%s", $2}' $CONFF)
+	enable_tivo=$(awk -F= '/^enable_tivo/{printf "%s", $2}' $CONFF)
+	strict_dlna=$(awk -F= '/^strict_dlna/{printf "%s", $2}' $CONFF)
+	presentation_url=$(awk -F= '/^presentation_url/{printf "%s", $2}' $CONFF)
+	force_rescan=$(awk -F= '/^#force_rescan/{printf "%s", $2}' $CONFF)
+	MDLNA_DIR=$(awk -F= '/^media_dir/{printf "%s;", $2}' $CONFF)
 fi
 
-if test -n "$presentation_url"; then
-	XBOX_CHK=checked
-fi
-
-if test "$enable_tivo" = "yes"; then
-	TV_CHK=checked
-fi
-
-if test "$strict_dlna" = "yes"; then
-	STRICT_CHK=checked
-fi
-
-if test -z "$friendly_name"; then
-	friendly_name=miniDLNA
-fi
+if test "$force_rescan" = "yes"; then RESCAN_CHK=checked; fi
+if test "$enable_tivo" = "yes"; then TV_CHK=checked; fi
+if test "$strict_dlna" = "yes"; then STRICT_CHK=checked; fi
+if test -z "$friendly_name"; then friendly_name=miniDLNA; fi
+if test -n "$presentation_url"; then XBOX_CHK=checked; fi
  
 cat<<-EOF
 	<script type="text/javascript">
