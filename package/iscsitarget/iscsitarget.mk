@@ -4,20 +4,47 @@
 #
 #############################################################
 
-ISCSITARGET_VERSION:=1.4.20.2
-ISCSITARGET_SOURCE:=iscsitarget-$(ISCSITARGET_VERSION).tar.gz
-ISCSITARGET_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/iscsitarget
-ISCSITARGET_DIR:=$(BUILD_DIR)/iscsitarget-$(ISCSITARGET_VERSION)
+# comments, mkpkgs.sh don't process conditionals
+#
+#ISCSITARGET_SVN:=y
+#
+#ifeq ($(ISCSITARGET_SVN),)
+#
+#ISCSITARGET_VERSION:=1.4.20.2
+#ISCSITARGET_SOURCE:=iscsitarget-$(ISCSITARGET_VERSION).tar.gz
+#ISCSITARGET_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/iscsitarget
+#ISCSITARGET_DIR:=$(BUILD_DIR)/iscsitarget-$(ISCSITARGET_VERSION)
+#ISCSITARGET_CAT=$(ZCAT)
+#
+#$(DL_DIR)/$(ISCSITARGET_SOURCE):
+#	$(call DOWNLOAD,$(ISCSITARGET_SITE),$(ISCSITARGET_SOURCE))
+#
+#else
+
+ISCSITARGET_REPO:=svn://svn.code.sf.net/p/iscsitarget/code/trunk
+ISCSITARGET_VERSION:=496
+ISCSITARGET_NAME:=iscsitarget-svn-$(ISCSITARGET_VERSION)
+ISCSITARGET_DIR:=$(BUILD_DIR)/$(ISCSITARGET_NAME)
+ISCSITARGET_SOURCE:=$(ISCSITARGET_NAME).tar.bz2
+ISCSITARGET_CAT=$(BZCAT)
+
+$(DL_DIR)/$(ISCSITARGET_SOURCE):
+	(cd $(BUILD_DIR); \
+		$(SVN_CO) -r $(ISCSITARGET_REV) $(ISCSITARGET_REPO) $(ISCSITARGET_NAME); \
+		tar --exclude-vcs -cvjf $(ISCSITARGET_SOURCE) $(ISCSITARGET_NAME); \
+		mv $(ISCSITARGET_SOURCE) $(DL_DIR)/$(ISCSITARGET_SOURCE); \
+		touch $(ISCSITARGET_NAME)/.source \
+	)
+
+#endif
+
 ISCSITARGET_BIN:=usr/ietd
 ISCSITARGET_MOD:=kernel/iscsi_trgt.ko
 ISCSITARGET_TARGET_BIN:=usr/sbin/ietd
 ISCSITARGET_TARGET_MOD:=iscsi/iscsi_trgt.ko
 
-$(DL_DIR)/$(ISCSITARGET_SOURCE):
-	$(call DOWNLOAD,$(ISCSITARGET_SITE),$(ISCSITARGET_SOURCE))
-
 $(ISCSITARGET_DIR)/.source: $(DL_DIR)/$(ISCSITARGET_SOURCE)
-	$(ZCAT) $(DL_DIR)/$(ISCSITARGET_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	$(ISCSITARGET_CAT) $(DL_DIR)/$(ISCSITARGET_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	touch $@
 
 $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN): $(ISCSITARGET_DIR)/.source
@@ -45,7 +72,7 @@ $(TARGET_DIR)/lib/modules/$(LINVER)/$(ISCSITARGET_TARGET_MOD): $(ISCSITARGET_DIR
 
 iscsitarget: uclibc linux26-modules $(TARGET_DIR)/lib/modules/$(LINVER)/$(ISCSITARGET_TARGET_MOD) $(TARGET_DIR)/$(ISCSITARGET_TARGET_BIN)
 
-iscsitarget-build: $(ISCSITARGET_DIR)/$(ISCSITARGET_TARGET)
+iscsitarget-build: $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN)
 
 iscsitarget-extract: $(ISCSITARGET_DIR)/.source
 
