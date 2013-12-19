@@ -4,6 +4,8 @@ exec >& /dev/console
 
 echo "rcE: Starting reboot/shutdown"
 
+brd=$(cat /tmp/board | grep -o 'DNS-...')
+
 echo "rcE: stopping all services"
 # Stop all executable init scripts in /etc/init.d
 # executing them in reverse numerical order.
@@ -17,9 +19,17 @@ killall5 -KILL
 
 sleep 1
 
-echo "rcE: unmounting aufs "
+echo "rcE: unmounting aufs"
 if aufs.sh -s >& /dev/null ; then
+	if aufs.sh -l | grep -q /rootmnt/sqimage; then
+		mount -o remount,del=/rootmnt/sqimage /
+	fi
 	aufs.sh -u
+fi
+
+echo "rcE: unmounting sqimage"
+if mount -t squashfs | grep -q /rootmnt/sqimage; then
+	umount /rootmnt/sqimage
 fi
 
 echo "rcE: unmounting all mounted filesystems"
@@ -53,7 +63,9 @@ for i in /dev/sd[a-z]; do
 done
 
 echo "rcE: still mounted filesystems"
+echo "------------------------------"
 mount
+echo "------------------------------"
 
 echo "rcE: saving date and time to RTC"
 # write system time to RTC, waiting for second change
@@ -64,21 +76,20 @@ hwclock -wu
 echo "rcE: bringing network down"
 ifconfig eth0 down
 
-mount / -o remount,ro
-
 # do a kexec to a new kernel/rootfs instead of a reboot
 if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	cd /root
 
 	# no kernel image, use flashed kernel
-	if ! test -f zImage; then
+	if ! test -f zImage -o "$brd" = "DNS-325"; then
 		dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
 	fi
 	
 	initrfs=$(ls rootfs.arm.*)
 	# no rootfs, use flashed rootfs
-	if ! test -f "$initrfs" ; then
+	if ! test -f "$initrfs" -o "$brd" = "DNS-325"; then
 		dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
+		initrfs=rootfs.arm.sqmtd
 	fi
 	
 	if test -s "cmdline"; then
@@ -88,9 +99,13 @@ if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	else # squashrd
 		cmdline="! console=ttyS0,115200 root=/dev/ram0 init=/init"
 	fi
-	
-	echo "rcE: starting a new kernel and root filesystem"
-	kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" && kexec -e
+
+	if test -s zImage -a -n "$initrfs"; then
+		mount / -o remount,ro
+		echo "rcE: starting a new kernel and root filesystem"
+		kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" --atags && kexec -e
+	fi
 fi
 
-echo "rcE: Poweroff NOW! "
+mount / -o remount,ro
+echo "rcE: Poweroff NOW!"
