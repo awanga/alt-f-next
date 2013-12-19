@@ -33,7 +33,7 @@ fi
 
 if ! test -h $LOG_FILE; then ln -sf $DATA_DIR/Logs/sickbeard.log $LOG_FILE; fi
 
-for i in $CONF $PID_DIR "$DL_DIR"; do
+for i in $CONF_DIR $PID_DIR "$DL_DIR"; do
 	if ! test -d "$i"; then mkdir -p "$i"; fi
 done
 
