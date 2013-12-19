@@ -11,7 +11,8 @@ RC_GROUP=multimedia
 RC_GROUPN=80
 RC_DESC="minidlna daemon"
 
-MINIDLNA_ARGS="-u $RC_USER"
+RC_PIDFILE=/var/run/$NAME/$NAME.pid
+MINIDLNA_ARGS="-u $RC_USER "
 
 . $(dirname $0)/common
 

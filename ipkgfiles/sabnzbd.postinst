@@ -5,8 +5,6 @@ TBALL=SABnzbd-$VER-src.tar.gz
 SITE=http://master.dl.sourceforge.net/project/sabnzbdplus/sabnzbdplus/$VER
 
 SABPROG=/Alt-F/opt/SABnzbd
-SABHOME=/var/lib/sabnzbd
-SABCONFD=/Alt-F/etc/sabnzbd
 
 if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
 	rm -f /tmp/$TBALL
@@ -25,12 +23,7 @@ rm -f /tmp/$TBALL
 cp -a $SABPROG-$VER/* $SABPROG
 rm -rf $SABPROG-$VER
 
-addgroup -S -g 200 TV
-if id sabnzbd >& /dev/null; then
-	deluser sabnzbd
-fi
-adduser -S -g "SABnzbd user" -G TV -u 19 -h $SABHOME sabnzbd
-
-chown -R sabnzbd:TV $SABPROG $SABCONFD
-
 ln -sf /usr/sbin/rcscript /sbin/rcsabnzbd
+rcsabnzbd status
+
+return 0

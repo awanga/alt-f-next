@@ -1,16 +1,5 @@
-#!/bin/sh
-
-NZBCONF="/etc/nzbget*.conf"
-NZBHOME=/var/lib/nzbget
+ #!/bin/sh
 
 ln -sf /usr/sbin/rcscript /sbin/rcnzbget
-
-addgroup -S -g 200 TV
-if id nzbget >& /dev/null; then
-	deluser nzbget
-fi
-adduser -S -g "NZBget user" -G TV -u 21 -h $NZBHOME nzbget
-
-chown -R nzbget:TV $NZBCONF
-chmod g+rw,o-r $NZBCONF
-
+rcnzbget status
+return 0

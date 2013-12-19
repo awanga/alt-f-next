@@ -4,8 +4,6 @@ SITE=https://github.com/RuudBurger/CouchPotato/tarball
 TBALL=master
 
 CBPROG=/Alt-F/opt/CouchPotato
-CPCONF=/etc/couchpotato.conf
-CPHOME=/var/lib/couchpotato
 
 if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
 	rm -f /tmp/$TBALL
@@ -25,11 +23,5 @@ cp -a /Alt-F/opt/RuudBurger-CouchPotatoV1-*/* $CBPROG
 rm -rf /Alt-F/opt/RuudBurger-CouchPotatoV1-*
 
 ln -sf /usr/sbin/rcscript /sbin/rccouchpotato
-
-addgroup -S -g 200 TV
-if id couchpotato >& /dev/null; then
-	deluser couchpotato
-fi
-adduser -S -g "CouchPotato user" -G TV -u 20 -h $CPHOME couchpotato
-
-chown -R couchpotato:TV $CBPROG $CPCONF
+rccouchpotato status
+return 0

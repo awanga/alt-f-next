@@ -4,76 +4,47 @@ DESC="SickBeard searches and manages your TV shows"
 NAME=sickbeard
 TYPE=user
 
-USER=sickbeard
-GROUP=TV
+RC_USER=sickbeard
+RC_USERN=18
+RC_GROUP=TV
+RC_GROUPN=200
+RC_DESC="Sick Beard user"
 
 DATA_DIR=/var/lib/sickbeard
 PROG_DIR=/opt/SickBeard
+CONF_DIR=/etc/sickbeard
+PID_DIR=/var/run/sickbeard
+
+CONFF=$CONF_DIR/sickbeard.conf
 PROG=${PROG_DIR}/SickBeard.py
-CONFF=/etc/sickbeard/sickbeard.conf
+LOG_FILE=/var/log/sickbeard.log
+RC_PIDFILE=$PID_DIR/sickbeard.pid
 DL_DIR=$(sed -n 's/^root_dirs.*=.*|\(.*\)/\1/p' $CONFF)
 
-LOG_FILE=/var/log/sickbeard.log
-PID_PATH=/var/run/sickbeard
-PID_FILE=$PID_PATH/sickbeard.pid
-
-OPTS="--quiet --daemon --pidfile=$PID_FILE --config $CONFF --datadir=$DATA_DIR"
+OPTS="--quiet --daemon --pidfile=$RC_PIDFILE --config=$CONFF --datadir=$DATA_DIR"
 
 . $(dirname $0)/common
 
-if ! test -d $PID_PATH; then
-	mkdir -p $PID_PATH
-	chown $USER:$GROUP $PID_PATH
-fi
-
-if test -e $PID_FILE; then
-	PID=$(cat $PID_FILE)
-	if ! kill -0 $PID >& /dev/null; then
-		rm $PID_FILE
-	fi
-fi
-
-if ! test -h $LOG_FILE; then
-    ln -sf $DATA_DIR/Logs/sickbeard.log $LOG_FILE
-fi
-
-if test "$(basename $DL_DIR)" = "Public"; then
+if test "$(basename "$DL_DIR")" = "Public"; then
+	check_user $CONF_DIR $PROG_DIR
 	echo "Fail: you have to configure SickBeard first."
 	exit 1
 fi
 
-if ! test -d "$DL_DIR"; then
-	mkdir -p "$DL_DIR"
-	chown $USER:$GROUP "$DL_DIR"
-	chmod g+rwxs "$DL_DIR"
-fi
+if ! test -h $LOG_FILE; then ln -sf $DATA_DIR/Logs/sickbeard.log $LOG_FILE; fi
+
+for i in $CONF $PID_DIR "$DL_DIR"; do
+	if ! test -d "$i"; then mkdir -p "$i"; fi
+done
+
+chmod g+rwxs "$DL_DIR"
+
+check_user $CONF_DIR $PID_DIR $PROG_DIR "$DL_DIR" 
 
 case "$1" in
-	start)
-		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -o --chuid $USER:$GROUP -x $PROG -- $OPTS
-		omsg $?
-		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -o --pidfile $PID_FILE
-		omsg $?
-		;;
-	status)
-		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
-			echo "$NAME running"
-			exit 0
-		else
-			echo "$NAME stopped"
-			exit 1
-		fi
-		;;
-	restart)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		while sh $0 status >& /dev/null; do echo -n '.'; sleep 1; done
-		sleep 5
-		sh $0 start
-        ;;
+	start) start $PROG --chuid $RC_USER:$RC_GROUP -- $OPTS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
 esac

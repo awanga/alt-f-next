@@ -4,76 +4,48 @@ DESC="CouchPotato searches and manages your movies"
 NAME=couchpotato
 TYPE=user
 
-USER=couchpotato
-GROUP=TV
+RC_USER=couchpotato
+RC_USERN=20
+RC_GROUP=TV
+RC_GROUPN=200
+RC_DESC="CouchPotato user"
 
 DATA_DIR=/var/lib/couchpotato
 PROG_DIR=/opt/CouchPotato
 PROG=${PROG_DIR}/CouchPotato.py
 CONFF=/etc/couchpotato.conf
 
-PID_PATH=/var/run/couchpotato
-PID_FILE=$PID_PATH/couchpotato.pid
+PID_DIR=/var/run/couchpotato
+RC_PIDFILE=$PID_DIR/couchpotato.pid
 
 DL_DIR=$(sed -n 's/^destination[[:space:]]*=[[:space:]]*\(.*\)/\1/p' $CONFF)
 
-OPTS="--quiet -d --nolaunch --config=$CONFF --datadir=$DATA_DIR --pidfile=$PID_FILE"
+OPTS="--quiet -d --nolaunch --config=$CONFF --datadir=$DATA_DIR --pidfile=$RC_PIDFILE"
 
 . $(dirname $0)/common
 
-if ! test -d $PID_PATH; then
-	mkdir -p $PID_PATH
-	chown $USER:$GROUP $PID_PATH
+if test "$(basename $DL_DIR)" = "Public"; then
+	check_user $PROG_DIR $CONFF
+	echo "Fail: you have to configure CouchPotato first."
+	exit 1
 fi
 
-if test -e $PID_FILE; then
-	PID=$(cat $PID_FILE)
-	if ! kill -0 $PID >& /dev/null; then
-		rm $PID_FILE
-	fi
-fi
+for i in $PID_DIR "$DL_DIR"; do
+	if ! test -d "$i"; then mkdir -p "$i"; fi
+done
 
 if ! test -h /var/log/couchpotato.log; then
     ln -sf $DATA_DIR/logs/CouchPotato.log /var/log/couchpotato.log
 fi
 
-if test "$(basename $DL_DIR)" = "Public"; then
-	echo "Fail: you have to configure CouchPotato first."
-	exit 1
-fi
+chmod g+rwxs "$DL_DIR"
 
-if ! test -d "$DL_DIR"; then
-	mkdir -p "$DL_DIR"
-	chown $USER:$GROUP "$DL_DIR"
-	chmod g+rwxs "$DL_DIR"
-fi
+check_user $PROG_DIR $PID_DIR $CONFF "$DL_DIR"
 
 case "$1" in
-	start)
-		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -o --chuid $USER:$GROUP -x $PROG -- $OPTS
-		omsg $?
-		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -o --pidfile $PID_FILE
-		omsg $?
-		;;
-	status)
-		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
-			echo "$NAME running"
-			exit 0
-		else
-			echo "$NAME stopped"
-			exit 1
-		fi
-		;;
-	restart)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		while sh $0 status >& /dev/null; do echo -n '.'; sleep 1; done
-		sleep 5
-		sh $0 start
-        ;;
+	start) start $PROG --chuid $RC_USER:$RC_GROUP -- $OPTS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
 esac

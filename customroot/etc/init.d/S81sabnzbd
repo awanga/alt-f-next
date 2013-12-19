@@ -4,33 +4,32 @@ DESC="SABnzbd is a Binary Newsreader written in Python"
 NAME=sabnzbd
 TYPE=user
 
-USER=sabnzbd
-GROUP=TV
+RC_USER=sabnzbd
+RC_USERN=19
+RC_GROUP=TV
+RC_GROUPN=200
+RC_DESC="SABnzbd user"
 
 DATA_DIR=/var/lib/sabnzbd
 PROG_DIR=/opt/SABnzbd
 PROG=${PROG_DIR}/SABnzbd.py
-CONFF=/etc/sabnzbd/sabnzbd.conf
+CONF_DIR=/etc/sabnzbd
+CONFF=$CONF_DIR/sabnzbd.conf
 
 PORT=$(awk '/[misc]/{ while (st = getline) { if ($1 == "port") {print $3; exit}}}' $CONFF)
 DL_DIR=$(sed -n 's|^dirscan_dir *= *\(.*\)|\1|p' $CONFF)
 
-PID_PATH=/var/run/sabnzbd
-PID_FILE=$PID_PATH/sabnzbd-$PORT.pid
+PID_DIR=/var/run/sabnzbd
+RC_PIDFILE=$PID_DIR/sabnzbd-$PORT.pid
 
-OPTS="--daemon --pid=$PID_PATH --config-file $CONFF"
+OPTS="--daemon --pid=$PID_DIR --config-file $CONFF"
 
 . $(dirname $0)/common
 
-if ! test -d $PID_PATH; then
-	mkdir -p $PID_PATH
-	chown $USER:$GROUP $PID_PATH
-fi
-
-if test -e $PID_FILE; then
-	if ! kill -0 $(cat $PID_FILE) >& /dev/null; then
-		rm $PID_FILE
-	fi
+if test "$(basename "$DL_DIR")" = "Public"; then
+	check_user $CONF_DIR $PROG_DIR 
+	echo "Fail: you have to configure SABnzbd first."
+	exit 1
 fi
 
 if ! test -h /var/log/sabnzbd.log; then 
@@ -38,44 +37,20 @@ if ! test -h /var/log/sabnzbd.log; then
 	ln -sf $DATA_DIR/logs/sabnzbd.error.log /var/log/sabnzbd-error.log
 fi
 
-if test "$(basename $DL_DIR)" = "Public"; then
-	echo "Fail: you have to configure SABnzbd first."
-	exit 1
-fi
+for i in $PID_DIR "$DL_DIR"; do
+	if ! test -d "$i"; then mkdir -p "$i"; fi
+done
 
-if ! test -d "$DL_DIR"; then
-	mkdir -p "$DL_DIR"
-	chown $USER:$GROUP "$DL_DIR"
-	chmod g+rwxs "$DL_DIR"
-fi
+chmod g+rwxs "$DL_DIR"
+chmod g+rw,o-r $CONFF
+
+check_user $CONF_DIR $PROG_DIR $PID_DIR "$DL_DIR"
 
 case "$1" in
-	start)
-		echo -n "Starting $NAME: "
-		start-stop-daemon -S -q -o --chuid $USER:$GROUP -x $PROG -- $OPTS
-		omsg $?
-		;;
-	stop)
-		echo -n "Stopping $NAME: "
-		start-stop-daemon -K -q -o --pidfile $PID_FILE
-		omsg $?
-		;;
-	status)
-		if start-stop-daemon -K -t -q --pidfile $PID_FILE; then
-			echo "$NAME running"
-			exit 0
-		else
-			echo "$NAME stopped"
-			exit 1
-		fi
-		;;
-	restart)
-		echo "Restarting $NAME: "
-		sh $0 stop
-		while sh $0 status >& /dev/null; do echo -n '.'; sleep 1; done
-		sleep 5
-		sh $0 start
-        ;;
+	start) start $PROG --chuid $RC_USER:$RC_GROUP -- $OPTS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
 esac
 
