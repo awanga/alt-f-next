@@ -4,3 +4,10 @@ config BR2_PACKAGE_RSYNC
 	  File transfer program to keep remote files in sync.
 
 	  http://rsync.samba.org/
+
+config BR2_PACKAGE_RSYNC_ACL
+	bool "rsync-acl"
+	depends on BR2_PACKAGE_RSYNC
+	select BR2_PACKAGE_ACL
+	help
+	  compile rsync with ACL an XATTR support
