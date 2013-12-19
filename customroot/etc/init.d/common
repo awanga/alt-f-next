@@ -102,7 +102,13 @@ excludedby() {
 
 # FIXME: add support for --pidfile?
 status() {
-	if start-stop-daemon -K -t -q $RC_START_STOP $1; then
+	STOP_ARGS="$1"
+	if test -n "$RC_PIDFILE"; then
+		STOP_ARGS="--pidfile $RC_PIDFILE"
+		RC_START_STOP=""
+	fi
+
+	if start-stop-daemon -K -t -q $RC_START_STOP $STOP_ARGS; then
 		echo "$1 running"
 		return 0
 	else
@@ -172,7 +178,7 @@ start() {
 		fi
 	fi
 
-	echo -n "Starting $1: "
+	echo -n "Starting $(basename $1): "
 	if test -n "$RC_START_CMD"; then
 		$RC_START_CMD
 	else
@@ -189,7 +195,7 @@ stop() {
 	requiredby $1
 
 	sig=""
-	echo -n "Stopping $1: "
+	echo -n "Stopping $(basename $1): "
 	if test -n "$2"; then
 		sig="-s $2"
 	fi
@@ -220,14 +226,21 @@ stop() {
 }
 
 restart() {
-	echo "Restarting $1: "
+	echo "Restarting $(basename $1): "
 	sh $0 stop
-	while start-stop-daemon -K -t -q $RC_START_STOP $1; do usleep 200000; done
+
+	STOP_ARGS="$1"
+	if test -n "$RC_PIDFILE"; then
+		STOP_ARGS="--pidfile $RC_PIDFILE"
+		RC_START_STOP=""
+	fi
+	while start-stop-daemon -K -t -q $RC_START_STOP $STOP_ARGS; do usleep 200000; done
+
 	sh $0 start
 }
 
 reload() {
-	echo -n "Reloading $1: "
+	echo -n "Reloading $(basename $1): "
 	if test -z "$2"; then
 		sig=SIGHUP
 	else
