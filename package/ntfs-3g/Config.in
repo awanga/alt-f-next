@@ -1,5 +1,5 @@
-config BR2_PACKAGE_NTFS_3G_NTFSPROGS
-	bool "ntfs-3g-ntfsprogs"
+config BR2_PACKAGE_NTFS_3G
+	bool "ntfs-3g"
 	depends on BR2_LARGEFILE
 	depends on BR2_USE_WCHAR
 	help
@@ -10,12 +10,12 @@ config BR2_PACKAGE_NTFS_3G_NTFSPROGS
 
 	  http://www.tuxera.com/community/ntfs-3g-download/
 
-#comment "ntfs-3g-ntfsprogs requires a toolchain with LARGEFILE and WCHAR support"
+#comment "ntfs-3g requires a toolchain with LARGEFILE and WCHAR support"
 #	depends on !(BR2_LARGEFILE && BR2_USE_WCHAR)
 
-config BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS
+config BR2_PACKAGE_NTFS_3G_NTFSPROGS
 	bool "ntfsprogs"
-	depends on BR2_PACKAGE_NTFS_3G_NTFSPROGS
+	depends on BR2_PACKAGE_NTFS_3G
 	help
 	  Compile also the ntfsprogs utilities programs
 
