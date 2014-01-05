@@ -8,8 +8,8 @@ config BR2_PACKAGE_OPENSSH
 
 	  http://www.openssh.com/
 
-config BR2_PACKAGE_OPENSSH_SFTP_ONLY
+config BR2_PACKAGE_OPENSSH_SFTP
 	bool "sftp server only"
 	depends on BR2_PACKAGE_OPENSSH
 	help
-	 Installs only sftp-server
+	 Installs only the sftp-server

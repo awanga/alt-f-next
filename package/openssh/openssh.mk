@@ -20,24 +20,16 @@ OPENSSH_DEPENDENCIES = zlib openssl dropbear
 
 $(eval $(call AUTOTARGETS,package,openssh))
 
-ifneq ($(BR2_PACKAGE_OPENSSH_SFTP_ONLY),y)
+# this is a hack. Use AUTOTARGETS to do everything but install.
+# At the build end, the post build hook runs, which installs just sftp-server
+
+ifneq ($(BR2_PACKAGE_OPENSSH_SFTP),y)
 
 $(OPENSSH_HOOK_POST_INSTALL):
 	sed -i 's/#.*Ciphers /Ciphers aes128-cbc,/' $(TARGET_DIR)/etc/ssh/ssh_config
 	touch $@
 
 else
-
-# this is a hack. Use AUTOTARGETS to do everything but install.
-# At the build end, the post build hook runs, which installs just sftp-server
-# and touchs the autotools dir as if a target install had been run.
-# dont touch the dependency, otherwise a full install occurs.
-# FIXME: use OPENSSH_TARGET_INSTALL_TARGET instead
-#$(OPENSSH_HOOK_POST_BUILD):
-#	#mkdir -p $(TARGET_DIR)/usr/libexec
-#	$(INSTALL) -m 0755 $(OPENSSH_DIR)/sftp-server $(TARGET_DIR)/usr/lib
-#	touch $(PROJECT_BUILD_DIR)/autotools-stamps/openssh_target_installed
-##	touch $@ # dont! and don't remove me!
 
 $(OPENSSH_TARGET_INSTALL_TARGET):
 	$(INSTALL) -m 0755 $(OPENSSH_DIR)/sftp-server $(TARGET_DIR)/usr/lib
