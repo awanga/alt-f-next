@@ -1,7 +1,7 @@
 Package: iptraf
 Description: IPTraf is a console-based network statistics utility for Linux
-Version: 3.0.0
-Depends: ncurses, ipkg
+Version: 3.0.0-1
+Depends: ncurses-panel, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
