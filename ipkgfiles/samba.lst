@@ -2,7 +2,6 @@
 ./usr/bin/smbpasswd
 ./usr/bin/smbstatus
 ./usr/bin/smbtree
-./usr/lib/libsmbcommon.so
 ./usr/sbin/mount.cifs
 ./usr/sbin/nmbd
 ./usr/sbin/smbd
