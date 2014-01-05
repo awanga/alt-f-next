@@ -9,7 +9,6 @@
 ./usr/bin/ssh-agent
 ./usr/bin/ssh-keygen
 ./usr/bin/ssh-keyscan
-./usr/lib/sftp-server
 ./usr/lib/ssh-keysign
 ./usr/lib/ssh-pkcs11-helper
 ./usr/sbin/sshd
