@@ -1,6 +1,6 @@
 Package: iscsitarget
 Description: iSCSI Enterprise Target is for building an iSCSI storage system on Linux.
-Version: 1.4.20.2-1
+Version: 496
 Depends: ipkg, kernel-modules
 Architecture: arm
 Priority: optional
