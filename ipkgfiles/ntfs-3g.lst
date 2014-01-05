@@ -1,0 +1,5 @@
+./usr/bin/ntfs-3g
+./usr/lib/libntfs-3g.so
+./usr/lib/libntfs-3g.so.83
+./usr/lib/libntfs-3g.so.83.0.0
+./usr/sbin/mount.ntfs-3g

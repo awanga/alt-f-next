@@ -1,7 +1,7 @@
-Package: ntfs-3g-ntfsprogs
-Description: The extra ntfsprogs components of the ntfs-3g packages
+Package: ntfs-3g
+Description: a stable, read-write NTFS driver for Linux and other operating systems.
 Version: 2012.1.15-2
-Depends: ntfs-3g, ipkg
+Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: admin

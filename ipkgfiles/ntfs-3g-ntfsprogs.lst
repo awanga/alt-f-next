@@ -1,5 +1,4 @@
 ./usr/bin/lowntfs-3g
-./usr/bin/ntfs-3g
 ./usr/bin/ntfs-3g.probe
 ./usr/bin/ntfs-3g.secaudit
 ./usr/bin/ntfs-3g.usermap
@@ -9,16 +8,10 @@
 ./usr/bin/ntfsfix
 ./usr/bin/ntfsinfo
 ./usr/bin/ntfsls
-./usr/lib/libntfs-3g.so
-./usr/lib/libntfs-3g.so.83
-./usr/lib/libntfs-3g.so.83.0.0
-./usr/sbin/fsck.ntfs
-./usr/sbin/fsck.ntfs-3g
-./usr/sbin/mount.ntfs-3g
 ./usr/sbin/mkfs.ntfs
-./usr/sbin/mkntfs
 ./usr/sbin/ntfsclone
 ./usr/sbin/ntfscp
 ./usr/sbin/ntfslabel
 ./usr/sbin/ntfsresize
 ./usr/sbin/ntfsundelete
+./usr/sbin/mkntfs
