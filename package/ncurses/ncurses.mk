@@ -107,13 +107,13 @@ $(STAGING_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION): $(NCURSES_DIR)/lib/libn
 $(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION): $(STAGING_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
 ifeq ($(BR2_PACKAGE_NCURSES),y)
 	cp -dpf $(NCURSES_DIR)/lib/libncurses.so* $(TARGET_DIR)/usr/lib/
-ifeq ($(BR2_PACKAGE_NCURSES_TARGET_PANEL),y)
+ifeq ($(BR2_PACKAGE_NCURSES_PANEL),y)
 	cp -dpf $(NCURSES_DIR)/lib/libpanel.so* $(TARGET_DIR)/usr/lib/
 endif
-ifeq ($(BR2_PACKAGE_NCURSES_TARGET_FORM),y)
+ifeq ($(BR2_PACKAGE_NCURSES_FORM),y)
 	cp -dpf $(NCURSES_DIR)/lib/libform.so* $(TARGET_DIR)/usr/lib/
 endif
-ifeq ($(BR2_PACKAGE_NCURSES_TARGET_MENU),y)
+ifeq ($(BR2_PACKAGE_NCURSES_MENU),y)
 	cp -dpf $(NCURSES_DIR)/lib/libmenu.so* $(TARGET_DIR)/usr/lib/
 endif
 	ln -snf /usr/share/terminfo $(TARGET_DIR)/usr/lib/terminfo
