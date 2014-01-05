@@ -1,0 +1,9 @@
+Package: ncurses-panel
+Description: The libpanel component of ncurses
+Depends: ncurses, ipkg
+Version: 5.6-3
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.gnu.org/software/ncurses/
+Maintainer: jcard
