@@ -13,3 +13,16 @@ config BR2_PACKAGE_SQLITE_READLINE
 	help
 	  Enable command-line editing. This requires ncurses and readline.
 
+
+config BR2_PACKAGE_SQLITE_LIBS
+	bool "sqlite libs"
+	default y
+	depends on BR2_PACKAGE_SQLITE
+	help
+	  install sqlite libraries
+
+config BR2_PACKAGE_SQLITE_PROGS
+	bool "sqlite progs"
+	depends on BR2_PACKAGE_SQLITE
+	help
+	  install sqlite binaries

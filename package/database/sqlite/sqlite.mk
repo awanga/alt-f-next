@@ -4,21 +4,19 @@
 #
 #############################################################
 
-SQLITE_VERSION = 3.6.23.1
-SQLITE_SOURCE = sqlite-amalgamation-$(SQLITE_VERSION).tar.gz
+SQLITE_VERSION = 3080200
+SQLITE_SOURCE = sqlite-autoconf-$(SQLITE_VERSION).tar.gz
+SQLITE_SITE = http://www.sqlite.org/2013
 
-# version bundled with php-5.40
-#SQLITE_VERSION = 3070701
-# last version
-#SQLITE_VERSION = 3071100
-#SQLITE_SOURCE = sqlite-autoconf-$(SQLITE_VERSION).tar.gz
+SQLITE_LIBTOOL_PATCH = NO
 
-SQLITE_SITE = http://www.sqlite.org
 SQLITE_INSTALL_STAGING = YES
 SQLITE_INSTALL_TARGET = YES
+
+SQLITE_DEPENDENCIES = uclibc
+
 SQLITE_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-SQLITE_LIBTOOL_PATCH = YES
-SQLITE_DEPENDENCIES = uclibc readline
+SQLITE_PROGS = sqlite3
 
 SQLITE_CONF_OPT = --enable-shared \
 			--disable-static \
@@ -29,13 +27,19 @@ SQLITE_CONF_OPT = --enable-shared \
 SQLITE_CONF_ENV += CFLAGS+=" -DSQLITE_ENABLE_UNLOCK_NOTIFY"
 
 ifeq ($(BR2_PACKAGE_SQLITE_READLINE),y)
-SQLITE_DEPENDENCIES += ncurses readline
+SQLITE_DEPENDENCIES += readline
 SQLITE_CONF_OPT += --enable-readline
 else
 SQLITE_CONF_OPT += --disable-readline
 endif
 
 $(eval $(call AUTOTARGETS,package,sqlite))
+
+$(SQLITE_HOOK_POST_INSTALL):
+ifneq ($(BR2_PACKAGE_SQLITE_PROGS),y)
+	(cd $(TARGET_DIR)/usr/bin; rm -f $(SQLITE_PROGS))
+endif
+	touch $@
 
 $(SQLITE_TARGET_UNINSTALL):
 	$(call MESSAGE,"Uninstalling")
