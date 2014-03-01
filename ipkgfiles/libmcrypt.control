@@ -4,6 +4,6 @@ Version: 2.5.8
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://sourceforge.net/projects/mcrypt
 Maintainer: jcard

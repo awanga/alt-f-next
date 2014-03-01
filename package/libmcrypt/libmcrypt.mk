@@ -12,3 +12,7 @@ LIBMCRYPT_DEPENDENCIES = uclibc
 
 $(eval $(call AUTOTARGETS,package,libmcrypt))
 
+$(LIBMCRYPT_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/bin/arm-linux-libmcrypt-config \
+		$(TARGET_DIR)/usr/share/aclocal/libmcrypt.m4
+	touch $@
