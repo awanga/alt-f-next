@@ -4,3 +4,16 @@ config BR2_PACKAGE_JPEG
 	  The ubiquitous C library for manipulating JPEG images.
 
 	  http://www.ijg.org/
+
+config BR2_PACKAGE_JPEG_LIBS
+	bool "jpeg-libs"
+	default y
+	depends on BR2_PACKAGE_JPEG
+	help
+	  install jpeg libraries on the target
+
+config BR2_PACKAGE_JPEG_PROGS
+	bool "jpeg-progs"
+	depends on BR2_PACKAGE_JPEG_LIBS
+	help
+	  install jpeg programs on the target
