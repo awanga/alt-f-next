@@ -1,6 +1,6 @@
 Package: libglib2
 Description: Low-level core library that forms the basis of GTK+ and GNOME.
-Version: 2.20.4
+Version: 2.20.4-1
 Depends: gettext, ipkg
 Architecture: arm
 Priority: optional

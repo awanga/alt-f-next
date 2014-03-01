@@ -70,6 +70,13 @@ $(LIBGLIB2_HOOK_POST_INSTALL):
 	$(TARGET_DIR)/usr/share/aclocal/ \
 	$(TARGET_DIR)/usr/lib/glib-2.0 \
 	$(TARGET_DIR)/usr/share/glib-2.0
+	# PKG_CONFIG_SYSROOT_DIR is defined by build root, .pc files don't need patch, only <pkg>-config
+	#for i in glib-2.0.pc gobject-2.0.pc gmodule-2.0.pc gio-2.0.pc gthread-2.0.pc; do \
+	#$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
+	#	-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
+	#	-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+	#	$(STAGING_DIR)/usr/lib/pkgconfig/$$i; \
+	#done
 	touch $@
 
 # libglib2 for the host
