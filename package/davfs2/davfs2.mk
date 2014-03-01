@@ -17,3 +17,7 @@ DAVFS2_DEPENDENCIES = uclibc neon libiconv
 DAVFS2_CONF_ENV = LIBS=-liconv
 
 $(eval $(call AUTOTARGETS,package,davfs2))
+
+$(DAVFS2_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/sbin/mount.davfs $(TARGET_DIR)/sbin/umount.davfs
+	touch $@

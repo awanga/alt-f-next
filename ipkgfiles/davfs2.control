@@ -4,6 +4,6 @@ Version: 1.4.7-2
 Depends: neon, kernel-modules, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://savannah.nongnu.org/projects/davfs2
 Maintainer: jcard
