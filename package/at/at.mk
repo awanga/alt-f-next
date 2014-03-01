@@ -3,8 +3,9 @@
 # at
 #
 #############################################################
-AT_VERSION:=3.1.10
-AT_SOURCE:=at_$(AT_VERSION).tar.gz
+
+AT_VERSION:=3.1.14
+AT_SOURCE:=at_$(AT_VERSION).orig.tar.gz
 AT_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/a/at
 AT_DIR:=$(BUILD_DIR)/at-$(AT_VERSION)
 AT_CAT:=$(ZCAT)
@@ -36,8 +37,8 @@ $(AT_DIR)/.configured: $(AT_DIR)/.unpacked
 		--libexecdir=/usr/lib \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
-		--with-jobdir=/var/lib/atjobs \
-		--with-atspool=/var/lib/atspool \
+		--with-jobdir=/var/spool/atjobs \
+		--with-atspool=/var/spool/atspool \
 		--with-daemon_username=at \
 		--with-daemon_groupname=at \
 	)
@@ -57,7 +58,7 @@ ifneq ($(BR2_HAVE_MANPAGES),y)
 endif
 	echo 'rm -rf $(TARGET_DIR)/usr/doc' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
 	echo 'rm -rf $(TARGET_DIR)/var/lib/at*' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
-	$(INSTALL) -m 0755 -D $(AT_DIR)/debian/rc $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
+	#$(INSTALL) -m 0755 -D $(AT_DIR)/debian/rc $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
 
 at: uclibc host-fakeroot msmtp $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
 
