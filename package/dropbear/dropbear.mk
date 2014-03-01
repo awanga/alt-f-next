@@ -4,8 +4,7 @@
 #
 #############################################################
 
-#DROPBEAR_VERSION = 2012.55
-DROPBEAR_VERSION = 2013.58
+DROPBEAR_VERSION = 2014.63
 DROPBEAR_SOURCE = dropbear-$(DROPBEAR_VERSION).tar.bz2
 DROPBEAR_SITE = http://matt.ucc.asn.au/dropbear/releases
 DROPBEAR_DEPENDENCIES = uclibc zlib
