@@ -5,15 +5,17 @@
 #############################################################
 
 LIBAVL_VERSION:=0.3.5
-LIBAVL_DIR=$(BUILD_DIR)/libavl-$(LIBAVL_VERSION)
-LIBAVL_SITE:=http://alioth.debian.org/~jblache/forked-daapd/
-LIBAVL_SOURCE=libavl_$(LIBAVL_VERSION).tar.gz
-LIBAVL_DESTDIR:=usr/lib
-LIBAVL_TARGET=libavl.so.1.5
-LIBAVL_TARGET_LIBRARY=$(LIBAVL_DESTDIR)/$(LIBAVL_TARGET)
+LIBAVL_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/liba/libavl
+LIBAVL_SOURCE=libavl_$(LIBAVL_VERSION).orig.tar.gz
 
 LIBAVL_LIBTOOL_PATCH = NO
 LIBAVL_INSTALL_STAGING = YES
+
+LIBAVL_DIR=$(BUILD_DIR)/libavl-$(LIBAVL_VERSION)
+LIBAVL_DESTDIR:=usr/lib
+
+LIBAVL_TARGET=libavl.so.1.5
+LIBAVL_TARGET_LIBRARY=$(LIBAVL_DESTDIR)/$(LIBAVL_TARGET)
 
 $(DL_DIR)/$(LIBAVL_SOURCE):
 	$(call DOWNLOAD,$(LIBAVL_SITE),$(LIBAVL_SOURCE))
