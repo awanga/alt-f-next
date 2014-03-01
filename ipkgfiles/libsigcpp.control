@@ -1,9 +1,9 @@
 Package: libsigcpp
 Description: libsigc++ implements a typesafe callback system for standard C++
-Version: 2.2.10
+Version: 2.2.10-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://libsigc.sourceforge.net/
 Maintainer: jcard
