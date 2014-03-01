@@ -30,7 +30,7 @@ $(STAGING_DIR)/usr/include/crypto/cryptodev.h: $(CRYPTODEV_DIR)/.source
 	mkdir -p $(STAGING_DIR)/usr/include/crypto
 	cp $(CRYPTODEV_DIR)/crypto/cryptodev.h $(STAGING_DIR)/usr/include/crypto
 
-$(CRYPTODEV_DIR)/$(CRYPTODEV_MOD): $(CRYPTODEV_DIR)/.source $(PROJECT_BUILD_DIR)/autotools-stamps/linux_modules_target_installed
+$(CRYPTODEV_DIR)/$(CRYPTODEV_MOD): $(CRYPTODEV_DIR)/.source $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed
 	$(LINUX26_MAKE_FLAGS) $(MAKE) KERNEL_DIR=$(LINUX_DIR) -C $(CRYPTODEV_DIR) build
 
 # for some reason, LINUX26_VERSION, defined in target/linux/Makefile.in
