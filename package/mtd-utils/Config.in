@@ -2,6 +2,7 @@ config BR2_PACKAGE_MTD_UTILS
 	bool "mtd/jffs2 utilities"
 	select BR2_PACKAGE_ZLIB
 	select BR2_PACKAGE_LZO
+	select BR2_PACKAGE_LIBUUID
 	help
 	  Build mtd/jffs utilities
 

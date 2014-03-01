@@ -124,7 +124,7 @@ $(MTD_UTILS_TARGETS): $(TARGET_DIR)/usr/sbin/% : $(MTD_UTILS_DIR)/%
 	cp -f $< $(TARGET_DIR)/usr/sbin/$(notdir $@)
 	$(STRIPCMD) $(TARGET_DIR)/usr/sbin/$(notdir $@)
 
-mtd-utils: zlib lzo $(MTD_UTILS_TARGETS)
+mtd-utils: zlib lzo libuuid $(MTD_UTILS_TARGETS)
 
 mtd-utils-source: $(DL_DIR)/$(MTD_UTILS_SOURCE)
 
