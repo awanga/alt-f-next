@@ -4,6 +4,6 @@ Version: 496
 Depends: ipkg, kernel-modules
 Architecture: arm
 Priority: optional
-Section: admin
+Section: disktools
 Source: http://sourceforge.net/projects/iscsitarget
 Maintainer: jcard
