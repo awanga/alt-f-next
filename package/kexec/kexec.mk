@@ -4,8 +4,8 @@
 #
 #############################################################
 
-KEXEC_VERSION = 2.0.4
-KEXEC_SOURCE = kexec-tools-$(KEXEC_VERSION).tar.bz2
+KEXEC_VERSION = 2.0.5
+KEXEC_SOURCE = kexec-tools-$(KEXEC_VERSION).tar.xz
 KEXEC_SITE = http://kernel.org/pub/linux/utils/kernel/kexec/
 KEXEC_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
