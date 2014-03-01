@@ -16,6 +16,6 @@ LIBPCAP_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
 $(eval $(call AUTOTARGETS,package,libpcap))
 
-#$(LIBPCAP_HOOK_POST_CONFIGURE):
-#	sed -i 's/^install:/install-strip:/p' $(LIBPCAP_DIR)/Makefile
-#	touch $@
+$(LIBPCAP_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/bin/pcap-config
+	touch $@

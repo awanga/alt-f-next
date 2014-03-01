@@ -1,9 +1,9 @@
 Package: libpcap
 Description: A system-independent library for user-level network packet capture.
-Version: 1.4.0
+Version: 1.4.0-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.tcpdump.org
 Maintainer: jcard
