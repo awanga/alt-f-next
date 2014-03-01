@@ -13,3 +13,7 @@ A2PS_DEPENDENCIES = uclibc file
 A2PS_CONF_ENV = ac_cv_path_file_prog=/usr/bin/file
 
 $(eval $(call AUTOTARGETS,package,a2ps))
+
+$(A2PS_HOOK_POST_INSTALL):
+	rm -rf $(TARGET_DIR)/usr/share/emacs
+	touch $@
