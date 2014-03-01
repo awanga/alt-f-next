@@ -3,11 +3,14 @@
 # gettext
 #
 #############################################################
+
 GETTEXT_VERSION:=0.16.1
 GETTEXT_SOURCE:=gettext-$(GETTEXT_VERSION).tar.gz
 GETTEXT_SITE:=$(BR2_GNU_MIRROR)/gettext
-GETTEXT_DIR:=$(BUILD_DIR)/gettext-$(GETTEXT_VERSION)
+
 GETTEXT_CAT:=$(ZCAT)
+GETTEXT_DIR:=$(BUILD_DIR)/gettext-$(GETTEXT_VERSION)
+
 GETTEXT_BINARY:=gettext-runtime/src/gettext
 GETTEXT_TARGET_BINARY:=usr/bin/gettext
 

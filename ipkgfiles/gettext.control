@@ -1,9 +1,9 @@
 Package: gettext
 Description: A set of tools that provide a framework to produce multi-lingual messages.
-Version: 0.16.1
+Version: 0.16.1-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.gnu.org/software/gettext/
 Maintainer: jcard
