@@ -1,10 +1,23 @@
 config BR2_PACKAGE_FFMPEG
 	bool "ffmpeg"
-	select BR2_PACKAGE_BZIP2
-	select BR2_PACKAGE_LAME
+	#select BR2_PACKAGE_BZIP2
+	#select BR2_PACKAGE_LAME
 	help
 	  ffmpeg is command line tool to convert multimedia files between formats
 	  libavcodec is a library containing decoders and encoders for audio/video codecs.
 	  libavformat is a library containing demuxers and muxers for multimedia container formats.
 
 	  http://ffmpeg.org
+
+config BR2_PACKAGE_FFMPEG_LIBS
+	bool "ffmpeg-libs"
+	default y
+	depends on BR2_PACKAGE_FFMPEG
+	help
+	  install ffmpeg libraries on the target
+
+config BR2_PACKAGE_FFMPEG_PROGS
+	bool "ffmpeg-progs"
+	depends on BR2_PACKAGE_FFMPEG_LIBS
+	help
+	  install ffmpeg programs on the target
