@@ -2,5 +2,5 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rcautomatic
 rcautomatic status
-
+return 0
 

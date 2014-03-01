@@ -20,6 +20,9 @@ AUTOMATIC_LIBTOOL_PATCH = NO
 
 AUTOMATIC_DEPENDENCIES = host-pkgconfig uclibc libxml2 pcre libcurl libiconv openssl
 
+AUTOMATIC_CONF_ENV = LIBXML_CFLAGS="-I$(STAGING_DIR)/usr/include/libxml2" \
+	LIBXML_LIBS="-L$(STAGING_DIR)/usr/lib -lxml2"
+
 $(eval $(call AUTOTARGETS,package,automatic))
 
 $(AUTOMATIC_TARGET_SOURCE):
@@ -30,4 +33,8 @@ $(AUTOMATIC_TARGET_SOURCE):
 
 $(AUTOMATIC_HOOK_POST_EXTRACT):
 	(cd $(AUTOMATIC_DIR); ./autogen.sh)
+	touch $@
+
+$(AUTOMATIC_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/etc/automatic.conf-sample
 	touch $@
