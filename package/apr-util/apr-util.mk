@@ -18,9 +18,6 @@ APR_UTIL_CONF_OPT = \
 	--with-openssl=$(STAGING_DIR)/usr \
 	--with-crypto --disable-static
 
-#	--with-apr=$(APR_DIR) \
-#	--with-apr=$(STAGING_DIR)/usr/bin/apr-1-config \
-
 APR_UTIL_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 APR_UTIL_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) install
 
@@ -28,12 +25,18 @@ APR_UTIL_MAKE_OPT = -j1
 
 $(eval $(call AUTOTARGETS,package,apr-util))
 
-# cross-compile/stagind-dir HACKS!
+$(APR_UTIL_HOOK_POST_INSTALL):
+	rm -rf $(TARGET_DIR)/usr/bin/apu-1-config \
+		$(TARGET_DIR)/usr/lib/aprutil.exp
+	touch $@
+
 $(APR_UTIL_TARGET_INSTALL_STAGING):
 	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(APR_UTIL_DIR) install
-	sed -i 's|="/usr|="$(STAGING_DIR)/usr|' $(STAGING_DIR)/usr/bin/apu-1-config
-	sed -i -e "s|^libdir=.*|libdir='$(STAGING_DIR)/usr/lib'|" \
+	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+		$(STAGING_DIR)/usr/bin/apu-1-config
+	$(SED) "s|^libdir=.*|libdir='$(STAGING_DIR)/usr/lib'|" \
 		$(STAGING_DIR)/usr/lib/libaprutil-1.la
 	touch $@
 
-#		-e "/^dependency_libs=/s|/usr/lib/libapr-1.la|$(STAGING_DIR)/usr/lib/libapr-1.la|" \
