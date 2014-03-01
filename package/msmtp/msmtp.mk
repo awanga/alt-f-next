@@ -4,8 +4,7 @@
 #
 #############################################################
 
-#MSMTP_VERSION = 1.4.26
-MSMTP_VERSION = 1.4.27
+MSMTP_VERSION = 1.4.31
 MSMTP_SOURCE = msmtp-$(MSMTP_VERSION).tar.bz2
 MSMTP_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/msmtp
 MSMTP_INSTALL_STAGING = NO
