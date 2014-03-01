@@ -1,9 +1,9 @@
 Package: kernel-modules
 Description: Aditional kernel modules
-Version: 2.6.35.14-6
+Version: 3.10.32
 Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: http://kernel.org
 Maintainer: jcard
