@@ -3,7 +3,7 @@
 # libxml2
 #
 #############################################################
-#LIBXML2_VERSION = 2.7.3
+
 LIBXML2_VERSION = 2.7.8
 LIBXML2_SOURCE = libxml2-sources-$(LIBXML2_VERSION).tar.gz
 LIBXML2_SITE = ftp://xmlsoft.org/libxml2
@@ -30,8 +30,10 @@ endif
 $(eval $(call AUTOTARGETS,package,libxml2))
 
 $(LIBXML2_HOOK_POST_INSTALL):
-	$(SED) "s,^prefix=.*,prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/xml2-config
-	$(SED) "s,^exec_prefix=.*,exec_prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/xml2-config
+	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+		$(STAGING_DIR)/usr/bin/xml2-config
 	rm -rf $(TARGET_DIR)/usr/share/aclocal \
 	       $(TARGET_DIR)/usr/share/doc/libxml2-$(LIBXML2_VERSION) \
 	       $(TARGET_DIR)/usr/share/gtk-doc
