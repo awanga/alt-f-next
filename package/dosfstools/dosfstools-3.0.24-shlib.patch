@@ -1,0 +1,62 @@
+--- dosfstools-3.0.24/Makefile-orig	2014-01-22 16:14:31.352120355 +0000
++++ dosfstools-3.0.24/Makefile	2014-01-22 18:11:33.546109198 +0000
+@@ -24,6 +24,7 @@
+ DESTDIR =
+ PREFIX = /usr/local
+ SBINDIR = $(PREFIX)/sbin
++LIBDIR = $(PREFIX)/lib
+ DOCDIR = $(PREFIX)/share/doc
+ MANDIR = $(PREFIX)/share/man
+ 
+@@ -32,17 +33,27 @@
+ #WARNFLAGS = -Wall -pedantic -std=c99
+ WARNFLAGS = -Wall -Wextra -Wno-sign-compare -Wno-missing-field-initializers -Wmissing-prototypes -Wstrict-prototypes
+ DEBUGFLAGS = -g
+-CFLAGS += $(OPTFLAGS) $(WARNFLAGS) $(DEBUGFLAGS)
++PICFLAGS = -fPIC
++SHFLAGS = -shared
++override CFLAGS += $(PICFLAGS) $(OPTFLAGS) $(WARNFLAGS) $(DEBUGFLAGS)
++override LDFLAGS += $(PICFLAGS)
+ 
+ VPATH = src
+ 
++LIBOBJ = boot.o check.o common.o fat.o file.o io.o lfn.o charconv.o
++
+ all: build
+ 
+-build: fatlabel fsck.fat mkfs.fat
++build: fatlabel fsck.fat mkfs.fat libfat.so
++
++libfat.so: $(LIBOBJ)
++	$(CC) $(LDFLAGS) $(SHFLAGS) $(LDLIBS) -o $@ $(LIBOBJ)
+ 
+-fatlabel: boot.o check.o common.o fat.o file.o io.o lfn.o charconv.o fatlabel.o
++fatlabel: fatlabel.o libfat.so
++	$(CC) $(CFLAGS) -o $@ $< -L. -lfat
+ 
+-fsck.fat: boot.o check.o common.o fat.o file.o io.o lfn.o charconv.o fsck.fat.o
++fsck.fat: fsck.fat.o libfat.so
++	$(CC) $(CFLAGS) -o $@ $< -L. -lfat
+ 
+ mkfs.fat: mkfs.fat.o
+ 
+@@ -51,8 +62,9 @@
+ install: install-bin install-doc install-man install-symlinks
+ 
+ install-bin: build
+-	install -d -m 0755 $(DESTDIR)/$(SBINDIR)
++	install -d -m 0755 $(DESTDIR)/$(SBINDIR) $(DESTDIR)/$(LIBDIR)
+ 	install -m 0755 fatlabel fsck.fat mkfs.fat $(DESTDIR)/$(SBINDIR)
++	install -m 0755 libfat.so  $(DESTDIR)/$(LIBDIR)
+ 
+ install-doc:
+ 	install -d -m 0755 $(DESTDIR)/$(DOCDIR)/dosfstools
+@@ -160,7 +172,7 @@
+ reinstall: distclean install
+ 
+ clean:
+-	rm -f *.o
++	rm -f *.o *.so
+ 
+ distclean: clean
+ 	rm -f fatlabel fsck.fat mkfs.fat

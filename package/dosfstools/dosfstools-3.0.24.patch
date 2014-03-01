@@ -1,0 +1,72 @@
+diff -Nru dosfstools-3.0.24-orig/src/common.h dosfstools-3.0.24/src/common.h
+--- dosfstools-3.0.24-orig/src/common.h	2013-07-19 06:03:32.000000000 +0100
++++ dosfstools-3.0.24/src/common.h	2014-01-12 18:13:08.653894792 +0000
+@@ -20,6 +20,8 @@
+    can be found in /usr/share/common-licenses/GPL-3 file.
+ */
+ 
++#include "endian-compat.h"
++
+ #include <asm/types.h>
+ 
+ #ifndef _COMMON_H
+diff -Nru dosfstools-3.0.24-orig/src/endian-compat.h dosfstools-3.0.24/src/endian-compat.h
+--- dosfstools-3.0.24-orig/src/endian-compat.h	1970-01-01 01:00:00.000000000 +0100
++++ dosfstools-3.0.24/src/endian-compat.h	2014-01-12 18:34:01.173483498 +0000
+@@ -0,0 +1,44 @@
++/* 
++This patch adds support for convertion of values between host and
++big-/little-endian byte order.
++
++Signed-off-by: Vladimir Zapolskiy <vzapolskiy at gmail.com>
++
++http://lists.uclibc.org/pipermail/uclibc/2010-June/044107.html
++*/
++
++/* Conversion interfaces.  */ 
++# include <byteswap.h> 
++ 
++# if __BYTE_ORDER == __LITTLE_ENDIAN 
++#  define htobe16(x) __bswap_16 (x) 
++#  define htole16(x) (x) 
++#  define be16toh(x) __bswap_16 (x) 
++#  define le16toh(x) (x) 
++ 
++#  define htobe32(x) __bswap_32 (x) 
++#  define htole32(x) (x) 
++#  define be32toh(x) __bswap_32 (x) 
++#  define le32toh(x) (x) 
++ 
++#  define htobe64(x) __bswap_64 (x) 
++#  define htole64(x) (x) 
++#  define be64toh(x) __bswap_64 (x) 
++#  define le64toh(x) (x) 
++# else 
++#  define htobe16(x) (x) 
++#  define htole16(x) __bswap_16 (x) 
++#  define be16toh(x) (x) 
++#  define le16toh(x) __bswap_16 (x) 
++ 
++#  define htobe32(x) (x) 
++#  define htole32(x) __bswap_32 (x) 
++#  define be32toh(x) (x) 
++#  define le32toh(x) __bswap_32 (x) 
++ 
++#  define htobe64(x) (x) 
++#  define htole64(x) __bswap_64 (x) 
++#  define be64toh(x) (x) 
++#  define le64toh(x) __bswap_64 (x) 
++# endif 
++
+diff -Nru dosfstools-3.0.24-orig/src/mkfs.fat.c dosfstools-3.0.24/src/mkfs.fat.c
+--- dosfstools-3.0.24-orig/src/mkfs.fat.c	2013-10-14 23:15:39.000000000 +0100
++++ dosfstools-3.0.24/src/mkfs.fat.c	2014-01-12 18:14:01.981857994 +0000
+@@ -46,6 +46,8 @@
+ 
+ #include "version.h"
+ 
++#include "endian-compat.h"
++
+ #include <fcntl.h>
+ #include <linux/hdreg.h>
+ #include <sys/mount.h>

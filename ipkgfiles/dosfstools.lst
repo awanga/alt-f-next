@@ -1,3 +1,4 @@
 ./usr/sbin/dosfsck
 ./usr/sbin/dosfslabel
 ./usr/sbin/fsck.vfat
+./usr/lib/libfat.so
