@@ -3,7 +3,7 @@
 # bzip2
 #
 #############################################################
-BZIP2_VERSION:=1.0.4
+BZIP2_VERSION:=1.0.6
 BZIP2_SOURCE:=bzip2-$(BZIP2_VERSION).tar.gz
 BZIP2_SITE:=http://www.bzip.org/$(BZIP2_VERSION)
 BZIP2_DIR:=$(BUILD_DIR)/bzip2-$(BZIP2_VERSION)

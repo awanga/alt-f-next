@@ -1,6 +1,6 @@
 Package: bzip2
 Description: Freely available, patent free, high-quality data compressor.
-Version: 1.0.4-1
+Version: 1.0.6
 Depends: ipkg
 Architecture: arm
 Priority: optional
