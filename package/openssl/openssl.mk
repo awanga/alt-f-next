@@ -4,7 +4,7 @@
 #
 #############################################################
 
-OPENSSL_VERSION:=1.0.1e
+OPENSSL_VERSION:=1.0.1f
 OPENSSL_SITE:=http://www.openssl.org/source
 
 OPENSSL_MAKE = $(MAKE1)
@@ -58,17 +58,15 @@ $(OPENSSL_TARGET_CONFIGURE):
 			no-krb5 no-jpake no-store no-hw no-zlib \
 			linux-$(OPENSSL_TARGET_ARCH) \
 	)
-	$(SED) "s:-O[0-9]:$(OPENSSL_CFLAGS):" $(OPENSSL_DIR)/Makefile
-	#$(SED) "s:-march=[-a-z0-9] ::" -e "s:-mcpu=[-a-z0-9] ::g" $(OPENSSL_DIR)/Makefile
 	touch $@
 
 $(OPENSSL_TARGET_BUILD):
-	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend build_crypto build_ssl build_engines build_apps
-	#$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend 
-	#$(OPENSSL_MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_crypto build_ssl
-	#$(OPENSSL_MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_engines
-	#$(OPENSSL_MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
-	##$(MAKE) CC=$(TARGET_CC) -C $(OPENSSL_DIR) all build-shared do_linux-shared
+	# libs compiled with chosen optimization
+	$(SED) "s:-O[0-9]:$(OPENSSL_CFLAGS):" $(OPENSSL_DIR)/Makefile
+	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend build_crypto build_ssl build_engines
+	# apps (openssl program) compiled with -Os, saves 27KB
+	$(SED) "s:-O[0-9]:-Os:" $(OPENSSL_DIR)/Makefile
+	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
 	touch $@
 
 $(OPENSSL_HOOK_POST_INSTALL):
