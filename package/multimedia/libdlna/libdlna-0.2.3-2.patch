@@ -1,0 +1,73 @@
+--- libdlna-0.2.3/src/av_mpeg4_part10.c-orig	2014-01-18 17:22:22.130369338 +0000
++++ libdlna-0.2.3/src/av_mpeg4_part10.c	2014-01-18 17:24:50.260491547 +0000
+@@ -26,7 +26,7 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ 
+-#include <ffmpeg/avcodec.h>
++#include <libavcodec/avcodec.h>
+ 
+ #include "dlna_internals.h"
+ #include "profiles.h"
+--- libdlna-0.2.3/src/containers.c-orig	2014-01-18 17:22:45.543914353 +0000
++++ libdlna-0.2.3/src/containers.c	2014-01-18 17:25:02.715249667 +0000
+@@ -4,7 +4,7 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ 
+-#include <ffmpeg/avformat.h>
++#include <libavformat/avformat.h>
+ 
+ #include "containers.h"
+ #include "profiles.h"
+--- libdlna-0.2.3/src/profiles.h-orig	2014-01-18 17:22:57.007691600 +0000
++++ libdlna-0.2.3/src/profiles.h	2014-01-18 17:25:22.090873436 +0000
+@@ -22,8 +22,8 @@
+ #ifndef _PROFILES_H_
+ #define _PROFILES_H_
+ 
+-#include <ffmpeg/avcodec.h>
+-#include <ffmpeg/avformat.h>
++#include <libavcodec/avcodec.h>
++#include <libavformat/avformat.h>
+ 
+ #include "dlna_internals.h"
+ #include "containers.h"
+--- libdlna-0.2.3/src/profiles.c-orig        2014-01-18 17:57:57.095043424 +0000
++++ libdlna-0.2.3/src/profiles.c       2014-01-18 17:55:29.282865341 +0000
+@@ -205,13 +205,13 @@
+   for (i = 0; i < ctx->nb_streams; i++)
+   {
+     if (audio_stream == -1 &&
+-        ctx->streams[i]->codec->codec_type == CODEC_TYPE_AUDIO)
++        ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+     {
+       audio_stream = i;
+       continue;
+     }
+     else if (video_stream == -1 &&
+-             ctx->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO)
++             ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+     {
+       video_stream = i;
+       continue;
+@@ -280,7 +280,7 @@
+   if (!dlna->inited)
+     dlna = dlna_init ();
+   
+-  if (av_open_input_file (&ctx, filename, NULL, 0, NULL) != 0)
++  if (avformat_open_input (&ctx, filename, NULL, NULL) != 0)
+   {
+     if (dlna->verbosity)
+       fprintf (stderr, "can't open file: %s\n", filename);
+--- libdlna-0.2.3/src/av_mpeg4_part2.c-orig	2014-01-18 17:23:08.240473345 +0000
++++ libdlna-0.2.3/src/av_mpeg4_part2.c	2014-01-18 17:25:35.914604981 +0000
+@@ -26,7 +26,7 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ 
+-#include <ffmpeg/avcodec.h>
++#include <libavcodec/avcodec.h>
+ 
+ #include "dlna_internals.h"
+ #include "profiles.h"

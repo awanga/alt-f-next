@@ -4,6 +4,6 @@ Version: 0.2.3-4
 Depends: ffmpeg, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://libdlna.geexbox.org/
 Maintainer: jcard
