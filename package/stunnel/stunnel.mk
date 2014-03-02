@@ -4,7 +4,7 @@
 #
 #############################################################
 
-STUNNEL_VERSION:=4.54
+STUNNEL_VERSION:=4.56
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
 STUNNEL_SITE:=ftp://ftp.stunnel.org/stunnel/archive/4.x/
 STUNNEL_CAT:=$(ZCAT)
@@ -45,6 +45,7 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 		--with-random=/dev/urandom \
 		--disable-libwrap \
 		--with-ssl=$(STAGING_DIR)/usr/ \
+		--disable-fips \
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
 	)
