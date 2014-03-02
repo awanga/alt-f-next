@@ -2,3 +2,4 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rctransmission
 rctransmission status
+return 0

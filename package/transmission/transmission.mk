@@ -4,8 +4,6 @@
 #
 #############################################################
 
-
-#TRANSMISSION_VERSION = 2.80
 TRANSMISSION_VERSION = 2.82
 TRANSMISSION_SOURCE = transmission-$(TRANSMISSION_VERSION).tar.xz
 TRANSMISSION_SITE = http://download.m0k.org/transmission/files
