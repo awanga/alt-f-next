@@ -3,13 +3,17 @@
 # Alt-F-utils
 #
 #############################################################
+
 ALT_F_UTILS_VERSION = 0.1.7
 ALT_F_UTILS_SOURCE = alt-f-utils-$(ALT_F_UTILS_VERSION).tar.gz
 ALT_F_UTILS_SITE = file://$(DL_DIR)
 
 ALT_F_UTILS_AUTORECONF := NO
+ALT_F_UTILS_LIBTOOL_PATCH = NO
+
 ALT_F_UTILS_INSTALL_STAGING := NO
 ALT_F_UTILS_INSTALL_TARGET := YES
+
 ALT_F_UTILS_DEPENDENCIES := uclibc
 
 $(DL_DIR)/$(ALT_F_UTILS_SOURCE): package/alt-f-utils/alt-f-utils-$(ALT_F_UTILS_VERSION)/sysctrl.c package/alt-f-utils/alt-f-utils-$(ALT_F_UTILS_VERSION)/dns323-fw.c
