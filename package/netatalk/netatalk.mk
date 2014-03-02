@@ -4,13 +4,15 @@
 #
 #############################################################
 
-NETATALK_VERSION = 3.0.2
+NETATALK_VERSION = 3.0.8
 NETATALK_SOURCE = netatalk-$(NETATALK_VERSION).tar.bz2
 NETATALK_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/netatalk/netatalk/$(NETATALK_VERSION)
+
+NETATALK_LIBTOOL_PATCH = NO
 NETATALK_AUTORECONF = NO
+
 NETATALK_INSTALL_STAGING = NO
 NETATALK_INSTALL_TARGET = YES
-NETATALK_LIBTOOL_PATCH = NO
         
 NETATALK_CONF_OPT = \
 		--localstatedir=/var/lib \

@@ -1,9 +1,9 @@
 Package: netatalk
-Version: 3.0.2-2
+Version: 3.0.8
 Depends: db, libgcrypt, avahi, libevent2, ipkg
 Description: A AFP (Apple Filling Protocol) fileserver
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://netatalk.sourceforge.net/
 Maintainer: jcard
