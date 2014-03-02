@@ -8,6 +8,8 @@
 ./usr/bin/ntfsfix
 ./usr/bin/ntfsinfo
 ./usr/bin/ntfsls
+./usr/sbin/fsck.ntfs
+./usr/sbin/fsck.ntfs-3g
 ./usr/sbin/mkfs.ntfs
 ./usr/sbin/ntfsclone
 ./usr/sbin/ntfscp
