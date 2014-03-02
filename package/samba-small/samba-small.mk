@@ -8,7 +8,7 @@
 # "interface" option must be specified in the samba config.file
 # (or an "couln'd get interface address" (or similar) error happens at runtime 
 
-SAMBA_SMALL_VERSION:=3.5.21
+SAMBA_SMALL_VERSION:=3.5.22
 #SAMBA_SMALL_VERSION:=3.6.3 don't fit flash
 
 ifeq ($(SAMBA_SMALL_VERSION),3.3.9)

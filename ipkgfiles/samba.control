@@ -1,7 +1,7 @@
 Package: samba
 Description: on-disk version of Samba shipped in the firmware, supporting ACL and samba modules.
 Depends: ipkg, acl
-Version: 3.5.21-3
+Version: 3.5.22
 Architecture: arm
 Priority: optional
 Section: admin
