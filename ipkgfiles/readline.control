@@ -1,9 +1,9 @@
 Package: readline
-Version: 5.2-3
+Version: 6.2
 Description: The GNU readline librarie
 Depends: ncurses, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://tiswww.case.edu/php/chet/readline/rltop.html
 Maintainer: jcard

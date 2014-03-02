@@ -1,6 +1,7 @@
 ./usr/lib/libhistory.so
-./usr/lib/libhistory.so.5
-./usr/lib/libhistory.so.5.2
+./usr/lib/libhistory.so.6
+./usr/lib/libhistory.so.6.2
 ./usr/lib/libreadline.so
-./usr/lib/libreadline.so.5
-./usr/lib/libreadline.so.5.2
+./usr/lib/libreadline.so.6
+./usr/lib/libreadline.so.6.2
+

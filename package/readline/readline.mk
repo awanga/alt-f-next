@@ -3,15 +3,18 @@
 # build GNU readline
 #
 #############################################################
-READLINE_VERSION:=5.2
+
+READLINE_VERSION:=6.2
 READLINE_SITE:=$(BR2_GNU_MIRROR)/readline
 READLINE_SOURCE:=readline-$(READLINE_VERSION).tar.gz
 READLINE_DIR:=$(BUILD_DIR)/readline-$(READLINE_VERSION)
 READLINE_CAT:=$(ZCAT)
+
 READLINE_BINARY:=libhistory.a
 READLINE_SHARED_BINARY:=libhistory.so
 READLINE_TARGET_BINARY:=usr/lib/$(READLINE_BINARY)
 READLINE_TARGET_SHARED_BINARY:=usr/lib/$(READLINE_SHARED_BINARY)
+
 READLINE_DEPENDENCIES:=ncurses
 
 $(DL_DIR)/$(READLINE_SOURCE):
@@ -22,7 +25,7 @@ readline-source: $(DL_DIR)/$(READLINE_SOURCE)
 $(READLINE_DIR)/.unpacked: $(DL_DIR)/$(READLINE_SOURCE)
 	mkdir -p $(READLINE_DIR)
 	tar -C $(BUILD_DIR) -zxf $(DL_DIR)/$(READLINE_SOURCE)
-	toolchain/patch-kernel.sh $(READLINE_DIR) package/readline/ readline??-???
+	toolchain/patch-kernel.sh $(READLINE_DIR) package/readline/ readline-$(READLINE_VERSION)-\*.patch
 	$(CONFIG_UPDATE) $(READLINE_DIR)
 	$(CONFIG_UPDATE) $(READLINE_DIR)/support
 	touch $@
