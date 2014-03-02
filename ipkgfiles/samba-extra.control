@@ -1,7 +1,7 @@
 Package: samba-extra
 Description: Extra Samba binaries
 Depends: ipkg
-Version: 3.5.21
+Version: 3.5.22
 Architecture: arm
 Priority: optional
 Section: admin
