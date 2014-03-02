@@ -2,3 +2,4 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rcmt_daapd
 rcmt_daapd status
+return 0

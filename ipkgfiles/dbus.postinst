@@ -2,5 +2,5 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rcdbus
 rcdbus status
-
+return 0
 

@@ -2,3 +2,4 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rcmediatomb
 rcmediatomb status
+return 0

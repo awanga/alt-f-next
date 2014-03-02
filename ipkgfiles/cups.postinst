@@ -2,5 +2,4 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rccups
 rccups status
-
-
+return 0
