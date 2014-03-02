@@ -4,7 +4,7 @@
 #
 #############################################################
 
-RSYNC_VERSION:=3.0.9
+RSYNC_VERSION:=3.1.0
 RSYNC_SOURCE:=rsync-$(RSYNC_VERSION).tar.gz
 RSYNC_SITE:=http://rsync.samba.org/ftp/rsync/src
 RSYNC_AUTORECONF:=no
@@ -22,6 +22,7 @@ endif
 
 RSYNC_DEPENDENCIES:=uclibc popt
 RSYNC_CONF_OPT:=$(DISABLE_IPV6)
+RSYNC_CONF_ENV:= rsync_cv_HAVE_SOCKETPAIR=yes
 
 ifeq ($(BR2_PACKAGE_RSYNC_ACL),y)
 RSYNC_DEPENDENCIES += acl
