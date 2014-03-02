@@ -81,7 +81,7 @@ config BR2_KERNEL_THIS_VERSION
 	default "2.6.24" if BR2_LINUX_2_6_24
 
 config BR2_KERNEL_SITE
-	string
+	string "kernel download site"
 	default "http://ftp.kernel.org/pub/linux/kernel/v2.6"
 
 config BR2_MM_PATCH_SITE
@@ -203,7 +203,13 @@ config BR2_CUSTOM_DOWNLOAD_LINUX26_VERSION
 	string "Linux Tarball version"
 	default "2.6.32"
 	help
-	  Specify any .tar.bz2 file
+	  Specify any .tar.{bz2,xz} file
+
+config BR2_CUSTOM_DOWNLOAD_LINUX26_EXTENSION
+	string "Linux Tarball extension"
+	default "xz"
+	help
+	  Specify tarbal extension, bz2 or xz
 
 config BR2_CUSTOM_LINUX26_VERSION
 	string "Linux Version"

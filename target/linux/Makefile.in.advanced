@@ -59,7 +59,10 @@ LINUX_DIR:=$(LINUX26_DIR)
 
 # -----------------------------------------------------------------------------
 # Define source name and sites
-LINUX26_SOURCE:=linux-$(DOWNLOAD_LINUX26_VERSION).tar.bz2
+
+CUSTOM_DOWNLOAD_LINUX26_EXTENSION:=$(strip $(subst ",,$(BR2_CUSTOM_DOWNLOAD_LINUX26_EXTENSION)))
+#"))
+LINUX26_SOURCE:=linux-$(DOWNLOAD_LINUX26_VERSION).tar.$(CUSTOM_DOWNLOAD_LINUX26_EXTENSION)
 LINUX26_SITE:=$(strip $(subst ",,$(BR2_KERNEL_SITE)))
 #"))
 
@@ -188,7 +191,11 @@ LINUX_KERNEL:=$(LINUX26_KERNEL)
 
 
 # -----------------------------------------------------------------------------
+ifeq ($(CUSTOM_DOWNLOAD_LINUX26_EXTENSION),bz2)
 LINUX26_BZCAT:=$(BZCAT)
+else
+LINUX26_BZCAT:=$(XZCAT)
+endif
 
 LINUX26_MAKE_FLAGS = HOSTCC="$(HOSTCC)" HOSTCFLAGS="$(HOSTCFLAGS)" \
 	ARCH=$(KERNEL_ARCH) \
@@ -337,9 +344,10 @@ ifeq ($(BR2_PACKAGE_LINUX_USE_KCONFIG),y)
 		$(MAKE) $(LINUX26_MAKE_FLAGS) -C $(LINUX26_DIR) $(KERNEL_CONFIG_METHOD) ; \
 	fi
 endif
-ifneq ($(strip $(subst ",,$(BR2_EXTRA_VERSION))),)
-	$(SED) 's,^EXTRAVERSION.*,EXTRAVERSION = $(KERNEL_EXTRA_VERSION),g' $(LINUX26_DIR)/Makefile
-endif
+#HERE
+#ifneq ($(strip $(subst ",,$(BR2_EXTRA_VERSION))),)
+#	$(SED) 's,^EXTRAVERSION.*,EXTRAVERSION = $(KERNEL_EXTRA_VERSION),g' $(LINUX26_DIR)/Makefile
+#endif
 # $(strip $(subst ",, - ))
 
 # -----------------------------------------------------------------------------
@@ -399,7 +407,9 @@ $(LINUX26_KERNEL): $(LINUX26_DIR)/$(LINUX26_BINLOC)
 	touch $@
 
 # -----------------------------------------------------------------------------
-$(PROJECT_BUILD_DIR)/autotools-stamps/linux_modules_target_installed: $(LINUX26_DIR)/.depend_done
+$(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed: $(LINUX26_DIR)/.depend_done
+	# to make zImage before than kernel modules:
+	# $(PROJECT_BUILD_DIR)/autotools-stamps/kernel_modules_target_installed: $(LINUX26_DIR)/.depend_done $(LINUX26_KERNEL)
 	rm -rf $(TARGET_DIR)/lib/modules/$(LINUX26_VERSION_PROBED)
 	rm -f $(TARGET_DIR)/sbin/cardmgr
 	# Make Linux depend on modules only if enabled in the .config.
@@ -471,7 +481,7 @@ linux26: $(LINUX26_TARGETS)
 
 linux26-version: $(PROJECT_BUILD_DIR)/.linux-version
 
-linux26-modules: cross-depmod26 $(PROJECT_BUILD_DIR)/autotools-stamps/linux_modules_target_installed
+linux26-modules: cross-depmod26 $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed
 
 linux26-source: $(DL_DIR)/$(LINUX26_SOURCE)
 
@@ -488,7 +498,7 @@ linux26-force:
 
 # This has been renamed so we do _NOT_ by default run this on 'make clean'
 linux26clean:
-	rm -f $(PROJECT_BUILD_DIR)/autotools-stamps/linux_modules_target_installed
+	rm -f $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed
 	rm -f $(LINUX26_KERNEL) $(LINUX26_DIR)/.configured
 	-$(MAKE) PATH=$(TARGET_PATH) -C $(LINUX26_DIR) clean
 
