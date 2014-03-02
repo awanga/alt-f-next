@@ -3,10 +3,12 @@
 # taglib
 #
 #############################################################
-#TAGLIB_VERSION = 1.5
+
 TAGLIB_VERSION = 1.6.3
 TAGLIB_SOURCE = taglib-$(TAGLIB_VERSION).tar.gz
 TAGLIB_SITE = http://developer.kde.org/~wheeler/files/src
+# http://taglib.github.io/releases/taglib-1.9.1.tar.gz
+
 TAGLIB_LIBTOOL_PATCH = NO
 TAGLIB_INSTALL_STAGING = YES
 
@@ -21,10 +23,10 @@ TAGLIB_CONF_OPT = --disable-libsuffix --program-prefix=''
 
 $(eval $(call AUTOTARGETS,package/multimedia,taglib))
 
-ifneq ($(BR2_HAVE_DEVFILES),y)
 $(TAGLIB_HOOK_POST_INSTALL):
 	rm -f $(TARGET_DIR)/usr/bin/taglib-config
-	sed -i 's|prefix=\(.*\)|prefix='$(STAGING_DIR)'\1|' $(STAGING_DIR)/usr/bin/taglib-config
-	sed -i 's|prefix=\(.*\)|prefix='$(STAGING_DIR)'\1|' $(STAGING_DIR)/usr/lib/pkgconfig//taglib.pc
+	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+		$(STAGING_DIR)/usr/bin/taglib-config
 	touch $@
-endif
