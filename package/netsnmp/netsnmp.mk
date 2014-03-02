@@ -54,7 +54,10 @@ $(eval $(call AUTOTARGETS,package,netsnmp))
 
 $(NETSNMP_HOOK_POST_INSTALL):
 	rm -rf $(TARGET_DIR)/usr/share/man $(TARGET_DIR)/usr/share/doc $(TARGET_DIR)/usr/share/info
-	sed -i "s|includedir=.*|includedir=$(STAGING_DIR)/usr/include|" $(STAGING_DIR)/usr/bin/net-snmp-config
+	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
+		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+		$(STAGING_DIR)/usr/bin/net-snmp-config
 	# Copy the .conf files.
 	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/EXAMPLE.conf $(TARGET_DIR)/etc/snmp/snmpd.conf
 	-mv $(TARGET_DIR)/usr/share/snmp/mib2c*.conf $(TARGET_DIR)/etc/snmp

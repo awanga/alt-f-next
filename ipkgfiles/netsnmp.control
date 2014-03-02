@@ -4,6 +4,6 @@ Depends: ipkg
 Version: 5.5.2-1
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://net-snmp.sourceforge.net/
 Maintainer: jcard
