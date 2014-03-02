@@ -5,5 +5,5 @@ Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://pub/linux/utils/raid/mdadm
+Source: http://kernel.org/pub/linux/utils/raid/mdadm
 Maintainer: jcard
