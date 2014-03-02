@@ -4,6 +4,6 @@ Version: 1.1a-4
 Depends: libupnp, libdlna, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: upnp-dlna servers
 Source: http://ushare.geexbox.org
 Maintainer: jcard
