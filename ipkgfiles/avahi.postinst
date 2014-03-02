@@ -2,5 +2,4 @@
 
 ln -sf /usr/sbin/rcscript /sbin/rcavahi_daemon 
 rcavahi_daemon status
-
-
+return 0
