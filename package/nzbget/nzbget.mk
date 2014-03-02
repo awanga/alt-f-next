@@ -13,10 +13,9 @@ NZBGET_INSTALL_TARGET = YES
 NZBGET_LIBTOOL_PATCH = NO
 NZBGET_DEPENDENCIES = uclibc libpar2 libxml2 openssl ncurses
 
-NZBGET_CONF_ENV = LIBPREF=$(STAGING_DIR)
-NZBGET_CONF_OPT = --program-prefix="" 
-
-#--with-libsigc-includes=" " \
+NZBGET_CONF_OPT = --program-prefix=""
+NZBGET_CONF_ENV = LIBPREF=$(STAGING_DIR) libxml2_CFLAGS="-I$(STAGING_DIR)/usr/include/libxml2" \
+	libxml2_LIBS="-L$(STAGING_DIR)/usr/lib -lxml2"
 
 $(eval $(call AUTOTARGETS,package,nzbget))
 
