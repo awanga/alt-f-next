@@ -1,9 +1,9 @@
 Package: ncurses-form
 Description: The libform component of ncurses
 Depends: ncurses, ipkg
-Version: 5.6-3
+Version: 5.9
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.gnu.org/software/ncurses/
 Maintainer: jcard

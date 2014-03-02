@@ -22,8 +22,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 
-# TARGETS
-NCURSES_VERSION:=5.6
+NCURSES_VERSION:=5.9
+
 NCURSES_SITE:=$(BR2_GNU_MIRROR)/ncurses
 NCURSES_DIR:=$(BUILD_DIR)/ncurses-$(NCURSES_VERSION)
 NCURSES_SOURCE:=ncurses-$(NCURSES_VERSION).tar.gz
@@ -38,9 +38,6 @@ $(DL_DIR)/$(NCURSES_SOURCE):
 
 $(NCURSES_DIR)/.patched: $(DL_DIR)/$(NCURSES_SOURCE)
 	$(NCURSES_CAT) $(DL_DIR)/$(NCURSES_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	#use the local tic and not whatever the build system was going to find.
-	$(SED) 's~\$$srcdir/shlib tic\$$suffix~/usr/bin/tic~' \
-		$(NCURSES_DIR)/misc/run_tic.in
 	toolchain/patch-kernel.sh $(NCURSES_DIR) package/ncurses/ ncurses\*.patch
 	$(CONFIG_UPDATE) $(NCURSES_DIR)
 	touch $@
@@ -73,10 +70,11 @@ $(NCURSES_DIR)/.configured: $(NCURSES_DIR)/.patched
 		$(DISABLE_NLS) $(DISABLE_LARGEFILE) \
 		--without-profile --without-debug --disable-rpath \
 		--enable-echo --enable-const --enable-overwrite \
-		--enable-broken_linker \
 		$(NCURSES_WANT_STATIC) \
 	)
 	touch $@
+
+#		--enable-broken_linker \
 
 $(NCURSES_DIR)/lib/libncurses.so.$(NCURSES_VERSION): $(NCURSES_DIR)/.configured
 	$(MAKE1) DESTDIR=$(STAGING_DIR) -C $(NCURSES_DIR) \

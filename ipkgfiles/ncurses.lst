@@ -1,6 +1,6 @@
 ./usr/lib/libncurses.so
 ./usr/lib/libncurses.so.5
-./usr/lib/libncurses.so.5.6
+./usr/lib/libncurses.so.5.9
 ./usr/share/terminfo/a/ansi
 ./usr/share/terminfo/l/linux
 ./usr/share/terminfo/v/vt100
