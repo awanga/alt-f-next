@@ -101,7 +101,7 @@ args_t args =
     { 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1, DNS_325_A1 };
+enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1, DNS_325_A1, DNS_320_A1};
 int board;
 
 enum Buttons { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
@@ -675,9 +675,13 @@ void check_board() {
 		board = DNS_325_A1;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
+	else if (strcmp("DNS-320-A1", res) == 0) {
+		board = DNS_320_A1;
+		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+	}
 	else {
 		char buf[BUFSZ];
-		snprintf(buf, BUFSZ, "Hardware board %s not supported, exiting", res);
+		snprintf(buf, BUFSZ, "Hardware board %s not supported, exiting.", res);
 		syserrorlog(buf);
 		exit(1);
 	}
@@ -699,9 +703,55 @@ int read_pwm(void) {
 	return u;
 }
 
+/* for the DNS-320, a sh script is asynchronously writing the temperature to the file */
+#define LOCK_DIR "/var/lock/temp-lock"
+
+void clearlock() {
+	if (unlink(LOCK_DIR"/pid"))
+		syslog(LOG_ERR, "unlink: %m");
+	if (rmdir(LOCK_DIR))
+		syslog(LOG_ERR, "rmdir: %m");
+}
+
+int dolock() {
+	int i = 100;
+	while(mkdir(LOCK_DIR, S_IRWXU)) {
+		if(i-- == 0) {
+			int u = 0;
+			if (read_int_from_file(LOCK_DIR"/pid", &u)) {
+				 /* assume stale, reuse lock and continue */
+				syslog(LOG_INFO, "couldn't read "LOCK_DIR" pid owner.");
+			} else {
+				if (getpid() == u) {
+					/* how?! assume OK, reuse lock and continue */
+					syslog(LOG_INFO, "owner of "LOCK_DIR" exists, it's me!"); 
+				} else {
+					if (kill(u, 0)) {
+						 /* reuse lock and continue */
+						syslog(LOG_INFO, "owner of "LOCK_DIR" dissapeared, removing stale lock.");
+					} else {
+						syserrorlog("owner of "LOCK_DIR" is alive, can't get lock, exiting.");
+						exit(1);
+					}
+				}
+			}
+			break;
+		}
+		usleep(100000);
+	}
+	char buf[64];
+	sprintf(buf, "%d\n", getpid()); /* write_int_to_file() don't write \n at end*/
+	int fd = creat(LOCK_DIR"/pid", S_IRWXU);
+	write(fd, buf, strlen(buf));
+	close(fd);
+	return 0;
+}
+
 int read_temp(void) {
 	int u = 0;
+	dolock();
 	read_int_from_file(sys_temp_input, &u);
+	clearlock();
 	return u;
 }
 
@@ -720,9 +770,9 @@ void fanctl(void) {
 		float m = (args.hi_fan - args.lo_fan) * 1. / (args.hi_temp - args.lo_temp);
 		float b = args.lo_fan - m * args.lo_temp;
 		
-		if (temp < args.fan_off_temp - T_HIST)
+		if (temp < (args.fan_off_temp - T_HIST))
 			pwm = 0;
-		else if (temp > args.fan_off_temp + T_HIST)
+		else if (temp > (args.fan_off_temp + T_HIST))
 			pwm = (int)poly(temp * m + b, f2p);
 		else
 			pwm = read_pwm();
