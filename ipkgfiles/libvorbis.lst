@@ -1,9 +1,9 @@
 ./usr/lib/libvorbisenc.so
 ./usr/lib/libvorbisenc.so.2
-./usr/lib/libvorbisenc.so.2.0.6
+./usr/lib/libvorbisenc.so.2.0.7
 ./usr/lib/libvorbisfile.so
 ./usr/lib/libvorbisfile.so.3
 ./usr/lib/libvorbisfile.so.3.3.2
 ./usr/lib/libvorbis.so
 ./usr/lib/libvorbis.so.0
-./usr/lib/libvorbis.so.0.4.3
+./usr/lib/libvorbis.so.0.4.4

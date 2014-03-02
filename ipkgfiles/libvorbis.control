@@ -2,10 +2,10 @@ Package: libvorbis
 Description: Library for the Vorbis open source audio decoder Ogg Vorbis is a fully
  open, non-proprietary, patent-and-royalty-free, general-purpose compressed audio
  format for mid to high quality audio and music at fixed and variable bitrates.
-Version: 1.2.3-3
+Version: 1.3.1
 Depends: libogg, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://xiph.org/vorbis/
 Maintainer: jcard
