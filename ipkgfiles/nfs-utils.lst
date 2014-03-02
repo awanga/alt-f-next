@@ -1,7 +1,7 @@
 ./etc/init.d/S40portmap
 ./etc/init.d/S60nfs
 ./etc/init.d/S60nfs_client
-.//usr/sbin/start-statd
+./usr/sbin/start-statd
 ./usr/sbin/exportfs
 ./usr/sbin/rpc.mountd
 ./usr/sbin/rpc.nfsd

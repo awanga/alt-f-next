@@ -18,16 +18,6 @@
  #include <syslog.h>
  
  #include "conffile.h"
---- nfs-utils-1.2.7/support/include/sockaddr.h.orig	2012-12-15 00:34:08.000000000 +0000
-+++ nfs-utils-1.2.7/support/include/sockaddr.h	2012-12-15 00:35:07.000000000 +0000
-@@ -20,7 +20,6 @@
- #ifndef NFS_UTILS_SOCKADDR_H
- #define NFS_UTILS_SOCKADDR_H
- 
--#include <libio.h>
- #include <stdbool.h>
- #include <sys/socket.h>
- #include <netinet/in.h>
 --- nfs-utils-1.2.7/utils/Makefile.in-orig	2013-02-15 17:57:40.969195383 +0000
 +++ nfs-utils-1.2.7/utils/Makefile.in	2013-02-15 17:58:03.975753940 +0000
 @@ -106,7 +106,7 @@
