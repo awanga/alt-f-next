@@ -2,6 +2,19 @@ config BR2_PACKAGE_FLAC
 	bool "flac"
 	select BR2_PACKAGE_LIBOGG
 	help
-          FLAC is an Open Source lossless audio codec.
+	  FLAC is an Open Source lossless audio codec.
 
 	  http://flac.sourceforge.net/
+
+config BR2_PACKAGE_FLAC_LIBS
+	default y
+	bool "flac-libs"
+	depends on BR2_PACKAGE_FLAC
+	help
+	  install flac libraries on the target
+
+config BR2_PACKAGE_FLAC_PROGS
+	depends on BR2_PACKAGE_FLAC_LIBS
+	bool "flac-progs"
+	help
+	  install flac programs on the target

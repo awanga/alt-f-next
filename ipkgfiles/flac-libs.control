@@ -1,9 +1,9 @@
-Package: flac
+Package: flac-libs
 Version: 1.3.0
 Description: FLAC is an Open Source lossless audio codec.
-Depends: flac-libs, ipkg
+Depends: libogg, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://flac.sourceforge.net/
 Maintainer: jcard
