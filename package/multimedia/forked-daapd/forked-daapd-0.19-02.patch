@@ -1,0 +1,31 @@
+--- forked-daapd-0.19/src/main.c-orig	2014-01-17 19:20:38.606665698 +0000
++++ forked-daapd-0.19/src/main.c	2014-01-17 19:20:54.547366404 +0000
+@@ -610,7 +610,7 @@
+   DPRINTF(E_LOG, L_MAIN, "Forked Media Server Version %s taking off\n", VERSION);
+ 
+   /* Initialize ffmpeg */
+-  avcodec_init();
++  avcodec_register_all();
+ 
+   ret = av_lockmgr_register(ffmpeg_lockmgr);
+   if (ret < 0)
+--- forked-daapd-0.19/src/transcode.c-orig	2014-01-17 18:59:06.932529022 +0000
++++ forked-daapd-0.19/src/transcode.c	2014-01-17 19:01:52.193312264 +0000
+@@ -426,7 +426,7 @@
+       goto setup_fail_codec;
+     }
+ 
+-  if ((ctx->acodec->sample_fmt != SAMPLE_FMT_S16)
++  if ((ctx->acodec->sample_fmt != AV_SAMPLE_FMT_S16)
+       || (ctx->acodec->channels != 2)
+       || (ctx->acodec->sample_rate != 44100))
+     {
+@@ -434,7 +434,7 @@
+ 
+       ctx->resample_ctx = av_audio_resample_init(2,              ctx->acodec->channels,
+ 						 44100,          ctx->acodec->sample_rate,
+-						 SAMPLE_FMT_S16, ctx->acodec->sample_fmt,
++						 AV_SAMPLE_FMT_S16, ctx->acodec->sample_fmt,
+ 						 16, 10, 0, 0.8);
+ 
+       if (!ctx->resample_ctx)

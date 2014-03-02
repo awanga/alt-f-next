@@ -1,9 +1,9 @@
 Package: forked-daapd
 Description: A DAAP and RSP iTunes media server. It is a complete rewrite of mt-daapd (Firefly Media Server).
 Version: 0.19-2
-Depends: libavl, libevent, ffmpeg, libantlr, alsa-lib, mxml, libconfuse, libgcrypt, libunistring, avahi, sqlite, taglib, flac, lame, ipkg
+Depends: libavl, libevent, ffmpeg-libs, libantlr, alsa-lib, mxml, libconfuse, libgcrypt, libunistring, avahi, sqlite-libs, taglib, flac-libs, lame, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: upnp-dlna servers
 Source: https://github.com/jasonmc/forked-daapd
 Maintainer: jcard
