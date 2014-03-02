@@ -1,9 +1,9 @@
 Package: libusb
 Description: Userspace library for accessing USB devices
 Depends: ipkg
-Version: 0.1.12-3
+Version: 0.1.12-4
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://libusb.sourceforge.net/
 Maintainer: jcard

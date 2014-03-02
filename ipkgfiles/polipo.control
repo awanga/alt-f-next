@@ -1,9 +1,9 @@
 Package: polipo
 Description: Polipo is a small and fast caching web proxy 
-Version: 1.0.4.1
+Version: 1.0.4.1-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/
 Maintainer: jcard

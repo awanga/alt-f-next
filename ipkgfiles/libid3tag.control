@@ -1,9 +1,9 @@
 Package: libid3tag
 Depends: ipkg
-Version: 0.15.1b-3
+Version: 0.15.1b-4
 Description: ID3 tag reading library from the MAD project.
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.underbit.com/products/mad/
 Maintainer: jcard

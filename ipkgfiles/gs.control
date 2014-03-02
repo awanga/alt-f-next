@@ -1,9 +1,9 @@
 Package: gs
 Description: An interpreter for the PostScript (TM) language and the Adobe Portable Document Format
-Version: 8.71-3
+Version: 8.71-4
 Depends: jpeg, libpng, tiff, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: interpreters
 Source: http://pages.cs.wisc.edu/~ghost/doc/GPL/index.htm
 Maintainer: jcard

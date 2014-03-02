@@ -1,6 +1,6 @@
 Package: flex
 Description: A fast lexical analyser generator. A tool for generating programs that perform pattern-matching on text.
-Version: 2.5.35
+Version: 2.5.35-1
 Depends: ipkg
 Architecture: arm
 Priority: optional

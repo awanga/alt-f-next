@@ -1,9 +1,9 @@
 Package: nmap
 Description: Nmap is a free and open source utility for network exploration or security auditing.
-Version: 5.51-2
+Version: 5.51-3
 Depends: ipkg, pcre
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://nmap.org
 Maintainer: jcard

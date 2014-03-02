@@ -1,9 +1,9 @@
 Package: hplip
 Description: HP Linux imaging and printing (for HP Printers)
-Version: 3.12.9
+Version: 3.12.9-1
 Depends: cups, gs, sane, netsnmp, libusb, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: printing
 Source: http://hplipopensource.com/hplip-web/about.html
 Maintainer: jcard

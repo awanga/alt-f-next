@@ -1,9 +1,9 @@
 Package: ipsec-tools
 Description: This package is required to support IPSec for Linux 2.6+
-Version: 0.8.0
+Version: 0.8.0-1
 Depends: flex, kernel-modules, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://ipsec-tools.sourceforge.net
 Maintainer: jcard

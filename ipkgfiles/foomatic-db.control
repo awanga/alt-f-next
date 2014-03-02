@@ -1,9 +1,9 @@
 Package: foomatic-db
 Description: Foomatic PPD files (non-HP printers)
 Depends: ipkg
-Version: 4.0-3
+Version: 4.0-4
 Architecture: arm
 Priority: optional
-Section: admin
+Section: printing
 Source: http://www.openprinting.org/download/foomatic/
 Maintainer: jcard

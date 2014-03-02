@@ -4,6 +4,6 @@ Version: 1.16
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://rpm5.org/files/popt
 Maintainer: jcard

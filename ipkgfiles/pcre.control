@@ -1,6 +1,6 @@
 Package: pcre
 Depends: ipkg
-Version: 8.20
+Version: 8.20-1
 Description: Perl Compatible Regular Expressions
 Architecture: arm
 Priority: optional

@@ -4,6 +4,6 @@ Version: 2012.1.15-2
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: fstools
 Source: http://www.tuxera.com/community/ntfs-3g-download/
 Maintainer: jcard

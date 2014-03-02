@@ -4,6 +4,6 @@ Version: 2.7.2-3
 Depends: ncurses, readline, gettext, expat, sqlite, db, gdbm, bzip2
 Architecture: arm
 Priority: optional
-Section: admin
+Section: interpreters
 Source: http://www.python.org/
 Maintainer: jcard

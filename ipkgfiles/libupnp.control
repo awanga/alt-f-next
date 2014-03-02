@@ -4,9 +4,9 @@ Description: The portable SDK for UPnP(tm) Devices (libupnp) provides
  devices, and bridges that are compliant with Version 1.0 of the
  Universal Plug and Play Device Architecture Specification
 Depends: ipkg
-Version: 1.6.6-3
+Version: 1.6.6-4
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://pupnp.sourceforge.net/
 Maintainer: jcard

@@ -1,9 +1,9 @@
 Package: ethtool
 Description: Utility for examining and tuning your ethernet-based network interface.
-Version: 3.7
+Version: 3.7-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://sourceforge.net/projects/gkernel/
 Maintainer: jcard

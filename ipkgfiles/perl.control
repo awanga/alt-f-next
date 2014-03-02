@@ -1,9 +1,9 @@
 Package: perl
 Description: Practical Extraction and Report Language
-Version: 5.16.0-2
+Version: 5.16.0-3
 Depends: groff, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: interpreters
 Source: http://perl.org/
 Maintainer: jcard

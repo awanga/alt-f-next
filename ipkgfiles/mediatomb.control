@@ -4,6 +4,6 @@ Depends: sqlite, ffmpegthumbnailer, expat, file, taglib, ffmpeg, libexif, libcur
 Description: A UPnP MediaServer with a nice web user interface.
 Architecture: arm
 Priority: optional
-Section: admin
+Section: upnp-dlna servers
 Source: http://mediatomb.cc
 Maintainer: jcard

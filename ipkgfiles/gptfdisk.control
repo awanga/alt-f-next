@@ -4,6 +4,6 @@ Version: 0.8.6-1
 Depends: gptfdisk-sgdisk, ncurses, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: disktools
 Source: http://www.rodsbooks.com/gdisk
 Maintainer: jcard

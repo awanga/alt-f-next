@@ -1,9 +1,9 @@
 Package: netcat
 Description: Netcat is a featured networking utility which reads and writes data across network connections, using the TCP/IP protocol.
-Version: 0.7.1
+Version: 0.7.1-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://netcat.sourceforge.net
 Maintainer: jcard

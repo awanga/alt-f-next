@@ -4,6 +4,6 @@ Version: 3.0.0-1
 Depends: ncurses-panel, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://iptraf.seul.org
 Maintainer: jcard

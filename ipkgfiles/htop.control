@@ -1,6 +1,6 @@
 Package: htop
 Description: An interactive process viewer for Linux
-Version: 1.0.2
+Version: 1.0.2-1
 Depends: ncurses, ipkg
 Architecture: arm
 Priority: optional

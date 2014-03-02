@@ -1,10 +1,10 @@
 Package: mxml
 Description: Mini-XML is a small XML library that you can use to read
  and write XML and XML-like data files in your application
-Version: 2.6-2
+Version: 2.6-3
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.minixml.org
 Maintainer: jcard

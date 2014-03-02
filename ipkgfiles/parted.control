@@ -1,9 +1,9 @@
 Package: parted
 Description: GNU Parted is a program for manipulating partition tables.
-Version: 2.2-1
+Version: 2.2-2
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: disktools
 Source: http://www.gnu.org/software/parted
 Maintainer: jcard

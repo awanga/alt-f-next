@@ -1,9 +1,9 @@
 Package: tcpdump
 Description: A tool for network monitoring and data acquisition.
-Version: 4.4.0
+Version: 4.4.0-1
 Depends: libpcap, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://www.tcpdump.org
 Maintainer: jcard

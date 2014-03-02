@@ -1,9 +1,9 @@
 Package: nano
 Description: A nice ncurses-based editor. Started out as a clone of pico. Great editor for new users.
 Depends: ipkg
-Version: 2.2.4-3
+Version: 2.2.4-4
 Architecture: arm
 Priority: optional
-Section: admin
+Section: editors
 Source: http://www.nano-editor.org/
 Maintainer: jcard

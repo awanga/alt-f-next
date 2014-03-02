@@ -1,9 +1,9 @@
 Package: libconfuse
 Description: LibConfuse is a configuration file parser library written in C.
-Version: 2.6-2
+Version: 2.6-3
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.nongnu.org/confuse/
 Maintainer: jcard

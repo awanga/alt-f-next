@@ -1,9 +1,9 @@
 Package: bridge
 Description: Manage ethernet bridging; a way to connect networks together to form a larger network.
-Version: 1.5
+Version: 1.5-1
 Depends: ipkg, kernel-modules
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://bridge.sourceforge.net/
 Maintainer: jcard

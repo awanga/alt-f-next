@@ -4,6 +4,6 @@ Version: 1.2.10
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.gtk.org/
 Maintainer: jcard

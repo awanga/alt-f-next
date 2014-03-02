@@ -1,9 +1,9 @@
 Package: libtheora
-Version: 1.0-3
+Version: 1.0-4
 Depends: libogg, ipkg
 Description: A library for the free and open video compression format "Theora" from the Xiph.org Foundation.
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.theora.org/
 Maintainer: jcard

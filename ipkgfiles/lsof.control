@@ -1,7 +1,7 @@
 Package: lsof
 Description: LiSt Open Files -The lsof tool lists information about files opened by processes.
 Depends: ipkg
-Version: 4.81-3
+Version: 4.81-4
 Architecture: arm
 Priority: optional
 Section: admin

@@ -4,6 +4,6 @@ Description: The Common Unix Printing System
 Depends: gs, libusb, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: printing
 Source: http://www.cups.org
 Maintainer: jcard

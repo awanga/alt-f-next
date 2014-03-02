@@ -1,9 +1,9 @@
 Package: libpng
 Depends: ipkg
-Version: 1.2.38-3
+Version: 1.2.38-4
 Description: Library for handling PNG (Portable Network Graphics) images.
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.libpng.org/
 Maintainer: jcard

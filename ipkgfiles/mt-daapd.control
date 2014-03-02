@@ -4,6 +4,6 @@ Version: 0.2.4.2-4
 Depends: gdbm, libid3tag, libvorbis, libogg, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: upnp-dlna servers
 Source: http://www.fireflymediaserver.org/ 
 Maintainer: jcard

@@ -1,9 +1,9 @@
 Package: twolame
 Description: An optimized MPEG Audio Layer 2 encoder
-Version: 0.3.13
+Version: 0.3.13-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.twolame.org
 Maintainer: jcard

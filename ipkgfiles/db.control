@@ -1,9 +1,9 @@
 Package: db
 Depends: ipkg
-Version: 4.8.30-2
+Version: 4.8.30-3
 Description: Berkeley DB
 Architecture: arm
 Priority: optional
-Section: admin
+Section: database
 Source: http://www.oracle.com/database/berkeley-db/index.html
 Maintainer: jcard

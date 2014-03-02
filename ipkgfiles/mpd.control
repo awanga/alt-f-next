@@ -4,6 +4,6 @@ Version: 0.17.2-1
 Depends: lame, twolame, alsa-lib, libid3tag, libcurl, ffmpeg, libmad, libogg, libvorbis, flac, sqlite, ipkg, avahi
 Architecture: arm
 Priority: optional
-Section: admin
+Section: upnp-dlna servers
 Source: http://sourceforge.net/projects/musicpd
 Maintainer: jcard

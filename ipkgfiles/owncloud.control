@@ -1,9 +1,9 @@
 Package: owncloud
 Description: ownCloud enables universal access to files through the WebDAV standard.
-Version: 3.0.2-1
+Version: 3.0.2
 Depends: php, lighttpd, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: networking
 Source: http://www.owncloud.org
 Maintainer: jcard

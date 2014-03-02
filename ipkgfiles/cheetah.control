@@ -1,9 +1,9 @@
 Package: cheetah
 Description: Cheetah is an open source template engine and code generation tool
-Version: 2.4.4
+Version: 2.4.4-1
 Depends: python, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: interpreters
 Source: http://www.cheetahtemplate.org/
 Maintainer: jcard

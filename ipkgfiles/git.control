@@ -1,6 +1,6 @@
 Package: git
 Description: Git is a free & open source, distributed version control system
-Version: 1.7.7-1
+Version: 1.7.7-2
 Depends: libcurl, expat, ipkg, perl
 Architecture: arm
 Priority: optional

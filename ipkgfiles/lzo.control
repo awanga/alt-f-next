@@ -1,9 +1,9 @@
 Package: lzo
 Description: Portable lossless data compression library written in ANSI C.
-Version: 2.06-1
+Version: 2.06-2
 Depends: ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://www.oberhumer.com/opensource/lzo/
 Maintainer: jcard

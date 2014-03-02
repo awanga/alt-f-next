@@ -1,9 +1,9 @@
 Package: vim
 Description: Vi IMproved Text editor
-Version: 7.1
+Version: 7.1-1
 Depends: ncurses, gettext, ipkg
 Architecture: arm
 Priority: optional
-Section: admin
+Section: editors
 Source: http://www.vim.org/
 Maintainer: jcard

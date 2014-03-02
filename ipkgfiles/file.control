@@ -1,6 +1,6 @@
 Package: file
 Depends: ipkg
-Version: 5.04-3
+Version: 5.04-4
 Description: Program to identify a file's format by scanning binary data for known patterns.
 Architecture: arm
 Priority: optional

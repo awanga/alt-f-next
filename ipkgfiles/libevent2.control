@@ -1,9 +1,9 @@
 Package: libevent2
 Description: Userspace library for handling asynchronous notifications
 Depends: ipkg
-Version: 2.0.10-2
+Version: 2.0.10-3
 Architecture: arm
 Priority: optional
-Section: admin
+Section: libraries
 Source: http://monkey.org/~provos/
 Maintainer: jcard

@@ -1,6 +1,6 @@
 Package: svn
 Description: Enterprise-class centralized version control for the masses
-Version: 1.7.7
+Version: 1.7.7-1
 Depends: ipkg, apr, apr-util, neon, libxml2, expat, file, sqlite, db
 Architecture: arm
 Priority: optional
