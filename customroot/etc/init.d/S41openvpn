@@ -1,0 +1,37 @@
+#!/bin/sh 
+
+DESC="OpenVPN daemon" 
+NAME=openvpn 
+TYPE=net
+
+RC_PIDFILE=/var/run/$NAME.pid 
+
+OPENVPN_DIR=/etc/openvpn
+OPENVPN_OPTS="--daemon --writepid $RC_PIDFILE --config $OPENVPN_DIR/server.conf" 
+
+for i in server.conf ca.crt server.crt server.key dh1024.pem; do
+	if ! test -f $OPENVPN_CONF/$i; then
+		echo "$OPENVPN_DIR/$i missing, you have to manually configure openVPN first."
+		exit 1
+	fi
+done
+
+. $(dirname $0)/common 
+
+case "$1" in 
+	start)
+		modprobe tun >& /dev/null
+		# enable IP forwarding?
+		# echo 1 > /proc/sys/net/ipv4/ip_forward
+		start $NAME -- $OPENVPN_OPTS
+		;; 
+	stop)
+		stop $NAME
+		modprobe -r tun >& /dev/null
+		# disable IP forwarding
+		# echo 0 > /proc/sys/net/ipv4/ip_forward
+		;; 
+	status) status $NAME ;; 
+	reload) reload $NAME ;; 
+	restart) restart $NAME ;; 
+esac 

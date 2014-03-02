@@ -1,4 +1,5 @@
-./etc/openvpn
+./etc/init.d/S41openvpn
+./etc/openvpn/server.conf
 ./usr/sbin/openvpn
 ./usr/share/openvpn
 ./usr/share/openvpn/easy-rsa
