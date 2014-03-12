@@ -7,6 +7,7 @@
 <center><h2>Backups Setup Help</h2></center>
 
 This service makes unattended backups of various kinds, all following the same pattern.
+All backup types use the <tt>rsync</tt> program to make backups.
 
 <p>In the top section, <strong>Backup Destination Folder</strong> you
 can see the destination folder where your backups are currently
@@ -62,11 +63,6 @@ will be deleted.<br>
 If Rotate is 0, a new folder will be created everytime the backup time arrives,
 until disk space exhausts.
 
-<p><strong>Log</strong> creates a log file with new, deleted or changed
-files in every backup, but doing it is a <strong>very, very</strong>
-slow process, so avoid using it except on small folders.  If there are
-no changes, this useless backup will be deleted. 
-
 <p><strong>BackupNow</strong> starts the selected backup as if the
 schedule time had arrived, allowing you to test the backup; the button
 will be disabled while the backup is being done.
@@ -95,8 +91,8 @@ Cardoso</em>, which has <em>jcard</em> as its nick name, and
 <strong>Folder</strong> is <em>/home/jcard/src</em> then the backup will
 be located in <code>/Backup/silver_home_jcard_src/</code><br> If at the
 time you setup an entry of this type the remote host is powered on, its
-MAC will be retrieved and stored; at backup time, if the remote host is
-not answering, it will be sent a magic packet (WOL) trying to awake it
+network MAC will be retrieved and stored; at backup time, if the remote host is
+not answering, it will be sent a magic packet (WOL) trying to power it
 up; setting the remote host to be powered-up in this way is out of
 scope. 
 
