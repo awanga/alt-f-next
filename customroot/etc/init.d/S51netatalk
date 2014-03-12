@@ -6,8 +6,13 @@ NAME=netatalk
 
 REQUIRE=avahi_daemon
 NETATALK_CONF=/etc/afp.conf
+NETATALK_DIR=/var/lib/netatalk
 
 . $(dirname $0)/common
+
+if ! test -d $NETATALK_DIR/CNID; then
+	mkdir -p $NETATALK_DIR/CNID
+fi
 
 # the shipped configuration file needs some adjustments
 
