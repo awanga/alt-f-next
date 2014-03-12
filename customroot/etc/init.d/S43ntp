@@ -36,18 +36,18 @@ istatus() {
 }
 
 update_cron() {
-	crontab -l > "$NTPD_CRON" 2> /dev/null
+	crontab -l > $NTPD_CRON 2> /dev/null
 	if test $? = 1 -a $# = 0 ; then return; fi
 
-	sed -i '/\/usr\/sbin\/adjtime/d' "$NTPD_CRON"
+	sed -i '\|/usr/sbin/adjtime|d' $NTPD_CRON
 
 	if test $# = 1; then
-		echo "$1" >> "$NTPD_CRON"
+		echo "$1" >> $NTPD_CRON
 	fi
 	touch -r $CRONF $NTPD_CRON
-	crontab "$NTPD_CRON"
+	crontab $NTPD_CRON
 	touch -r $NTPD_CRON $CRONF
-	rm "$NTPD_CRON"
+	rm $NTPD_CRON
 }
 
 get_server() {

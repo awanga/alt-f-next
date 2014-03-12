@@ -35,7 +35,7 @@ istop() {
 	crontab $TF 2> /dev/null
 	touch -r $TF $CRONF
 
-	rm -f $TF
+	rm $TF
 	echo "OK."
 }
 
@@ -68,7 +68,7 @@ istart() {
 	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
 	touch -r $TF $CRONF
-	rm -f $TF
+	rm $TF
 
 	echo "OK."
 }
