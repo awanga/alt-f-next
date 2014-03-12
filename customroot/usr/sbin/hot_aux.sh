@@ -165,8 +165,8 @@ if test -d /mnt/$lbl/Alt-F; then
 			logger -t hot_aux "Alt-F directory found in $lbl"
 			rm -f /mnt/$lbl/Alt-F/Alt-F /mnt/$lbl/Alt-F/ffp /mnt/$lbl/Alt-F/home
 			ln -s /mnt/$lbl/Alt-F /Alt-F
-			echo "DONT'T ADD, REMOVE OR CHANGE ANY FILE ON THIS DIRECTORY
-OR IN ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG." > /Alt-F/README.txt
+			echo "DON'T ADD, REMOVE OR MODIFY ANY FILE IN THIS DIRECTORY
+OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > /Alt-F/README.txt
 			for i in /Alt-F/etc/init.d/S??*; do
 				f=$(basename $i)
 				ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
@@ -177,8 +177,7 @@ OR IN ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG." > /Alt-F/README.txt
 			if test -n "$DELAY_NFS" -a -x /etc/init.d/S60nfs; then
 				tostart="$tostart rcnfs"
 			fi
-			loadsave_settings -ta
-			mount -t aufs -o remount,prepend:/mnt/$lbl/Alt-F=rw /
+			aufs.sh -m
 			for i in $tostart; do
 				logger -st hot_aux "$($i start)"
 			done
