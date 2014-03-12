@@ -4,14 +4,15 @@ DESC="Daemon to run jobs queued for later execution"
 NAME=atd
 #TYPE=sys
 
+ATDIR=/var/spool
+
 . $(dirname $0)/common
 
 inits() {
-	if ! test -d /var/lib/atjobs; then
-		mkdir -p /var/lib/atjobs
-		mkdir -p /var/lib/atspool
-		touch /var/lib/atjobs/.SEQ
-		chown at:at /var/lib/atjobs /var/lib/atspool /var/lib/atjobs/.SEQ	
+	if ! test -d $ATDIR/atjobs -a $ATDIR/atspool; then
+		mkdir -p $ATDIR/atjobs $ATDIR/atspool
+		touch $ATDIR/atjobs/.SEQ
+		chown -R at:at $ATDIR/atjobs $ATDIR/atspool
 	fi
 }
 
