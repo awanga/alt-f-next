@@ -37,7 +37,7 @@ deactivate_chroot() {
 	done
 }
 
-if grep -qE 'DNS-320|DNS-325' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+if grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
 
 inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-$SoC)
 
