@@ -4,7 +4,7 @@ exec >& /dev/console
 
 echo "rcE: Starting reboot/shutdown"
 
-brd=$(cat /tmp/board | grep -o 'DNS-...')
+board=$(cat /tmp/board)
 
 echo "rcE: stopping all services"
 # Stop all executable init scripts in /etc/init.d
@@ -19,16 +19,16 @@ killall5 -KILL
 
 sleep 1
 
-echo "rcE: unmounting aufs"
 if aufs.sh -s >& /dev/null ; then
+	echo "rcE: unmounting aufs"
 	if aufs.sh -l | grep -q /rootmnt/sqimage; then
 		mount -o remount,del=/rootmnt/sqimage /
 	fi
 	aufs.sh -u
 fi
 
-echo "rcE: unmounting sqimage"
 if mount -t squashfs | grep -q /rootmnt/sqimage; then
+	echo "rcE: unmounting sqimage"
 	umount /rootmnt/sqimage
 fi
 
@@ -81,13 +81,13 @@ if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	cd /root
 
 	# no kernel image, use flashed kernel
-	if ! test -f zImage -o "$brd" = "DNS-325"; then
+	if ! test -f zImage -o "$board" = "DNS-320-A1" -o "$board" = "DNS-325-A1"; then
 		dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
 	fi
 	
 	initrfs=$(ls rootfs.arm.*)
 	# no rootfs, use flashed rootfs
-	if ! test -f "$initrfs" -o "$brd" = "DNS-325"; then
+	if ! test -f "$initrfs" -o "$board" = "DNS-320-A1" -o "$board" = "DNS-325-A1"; then
 		dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
 		initrfs=rootfs.arm.sqmtd
 	fi
@@ -95,9 +95,9 @@ if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	if test -s "cmdline"; then
 		cmdline=$(cat cmdline);
 	elif test "$initrfs" = "rootfs.arm.cpio-sq.lzma"; then
-		cmdline="! console=ttyS0,115200 squashcpio"
+		cmdline="console=ttyS0,115200 squashcpio"
 	else # squashrd
-		cmdline="! console=ttyS0,115200 root=/dev/ram0 init=/init"
+		cmdline="console=ttyS0,115200 root=/dev/ram0 init=/init"
 	fi
 
 	if test -s zImage -a -n "$initrfs"; then
