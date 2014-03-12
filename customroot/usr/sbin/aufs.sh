@@ -14,7 +14,7 @@ usage() {
 install() {
 	local mp
 	mp="$1"
-	if ! $(mountpoint -q "$mp"); then
+	if ! mountpoint -q "$mp"; then
 		echo "$mp is not a mountpoint, exiting"
 		exit 1
 	fi
@@ -25,13 +25,14 @@ install() {
 	else
 		mkdir $mp/Alt-F
 		echo "DON'T ADD, REMOVE OR MODIFY ANY FILE IN THIS DIRECTORY
-OR ANY OF ITS SUBDIRECTORIES, OR THE SYSTEM MIGHT HANG!" > $mp/Alt-F/README.txt
+OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > $mp/Alt-F/README.txt
 	fi
 
 	rm -f /Alt-F
 	ln -s $mp/Alt-F /Alt-F
-	mkdir -p /Alt-F/var
-	cp -a /var/lib /var/spool /Alt-F/var
+	mkdir -p /Alt-F/var/lib /Alt-F/var/spool
+	cp -a /var/lib/* /Alt-F/var/lib
+	cp -a /var/spool/* /Alt-F/var/spool
 	loadsave_settings -ta
 	mount -t aufs -o remount,prepend:$mp/Alt-F=rw /
 	return $?
@@ -64,16 +65,50 @@ check() {
 		exit 1
 	fi
 
-	mp=$(readlink -f /Alt-F)
-	if test $? = 1; then
+	if ! mp=$(readlink -f /Alt-F); then
 		echo "/Alt-F seems to point to nowhere, exiting. "
 		exit 1
 	fi
 
-	if ! $(mountpoint -q $(dirname $mp)); then
+	if ! mountpoint -q $(dirname $mp); then
 		echo "/Alt-F is not in a mountpoint, exiting."
 		exit 1
 	fi
+}
+
+# When Alt-F runs without packages installed, all changes to /var/spool or var/lib will
+# be lost on poweroff/reboot.
+# when Alt-F packages are installed on Alt-F, that directory is used as the real /var/lib
+# or /var/spool, so they persist across reboots. However, as one don't know if the /Alt-F
+# directory will ever appears, the system has to start anyway; when the directory appears,
+# a copy operation is performed.
+#
+# the directory copy operations after/before mount/umounting are prone to race conditions,
+# as other programs or scripts might be changing them, but can't devise any general type
+# of lock to prevent that to happens.
+# This occurs frequently at boot time, when hotplugging detects the Alt-F directory and
+# "rcall start" is being executed. A "can't stat <file>: No such file or directory" appears.
+#
+# affected Alt-F directories on the base firmware:
+# /var/lib/misc (rcurandom) /var/lib/nfs (rcnfs)
+# /var/spool/atjobs /var/spool/atspool (rcat)
+# /var/spool/cron (rccron)
+# /var/spool/lpd /var/spool/samba
+
+# lock file for initscripts (rcS) synchronization
+aufslock=/tmp/.aufs-lock
+dolock() {
+	logger -st aufs "waiting for lock"
+	while ! mkdir $aufslock >& /dev/null; do
+		usleep 500000
+	done
+	logger -st aufs "got lock"
+}
+
+# remove aufs lock upon termination
+cleanlock() {
+	logger -st aufs "remove lock"
+	rmdir $aufslock
 }
 
 case $1 in
@@ -83,8 +118,13 @@ case $1 in
 			echo "$mp is already a aufs branch."
 			exit 0
 		fi
-		mkdir -p /Alt-F/var
-		cp -a /var/lib /var/spool /Alt-F/var
+
+		dolock
+		trap cleanlock exit 
+
+		mkdir -p /Alt-F/var/spool /Alt-F/var/lib
+		cp -a /var/lib/* /Alt-F/var/lib
+		cp -a /var/spool/* /Alt-F/var/spool
 		loadsave_settings -ta
 		mount -t aufs -o remount,prepend:${mp}=rw /
 		exit $?
@@ -100,17 +140,21 @@ case $1 in
 			echo "Unmounting $mp aufs branch failed, stop all services first."
 			exit 1
 		fi
+
+		dolock
+		trap cleanlock exit
+
 		loadsave_settings -fa
-		for i in atjobs atspool nfs misc; do
-			if test -d /Alt-F/var/lib/$i; then
-				cp -a /Alt-F/var/lib/$i /var/lib/
-			fi
+		mkdir -p /tmp/lib /tmp/spool
+		for i in nfs misc; do
+			cp -a /Alt-F/var/lib/$i /tmp/lib/
 		done
-		for i in cron lpd samba; do
-			if test -d /Alt-F/var/spool/$i; then
-				cp -a /Alt-F/var/spool/$i /var/spool/
-			fi
+		for i in atjobs atspool cron lpd samba; do
+			cp -a /Alt-F/var/spool/$i /tmp/spool/
 		done
+		rm -rf /var/lib /var/spool
+		ln -sf /tmp/lib /var/lib
+		ln -sf /tmp/spool /var/spool
 		;;
 
 	-n)
