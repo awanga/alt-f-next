@@ -1,37 +1,56 @@
 #!/bin/sh 
 
+#set -x
+
 DESC="OpenVPN daemon" 
 NAME=openvpn 
 TYPE=net
 
-RC_PIDFILE=/var/run/$NAME.pid 
-
 OPENVPN_DIR=/etc/openvpn
-OPENVPN_OPTS="--daemon --writepid $RC_PIDFILE --config $OPENVPN_DIR/server.conf" 
-
-for i in server.conf ca.crt server.crt server.key dh1024.pem; do
-	if ! test -f $OPENVPN_CONF/$i; then
-		echo "$OPENVPN_DIR/$i missing, you have to manually configure openVPN first."
-		exit 1
-	fi
-done
 
 . $(dirname $0)/common 
+
+if ! test -d $OPENVPN_DIR; then mkdir -p $OPENVPN_DIR; fi
+
+if ! ls $OPENVPN_DIR/*.conf >& /dev/null ; then
+	echo "$0: You must configure openvpn first."
+	exit 1
+fi
+
+doit() {
+	st=0
+	for i in $OPENVPN_DIR/*.conf; do
+		if ! test -f $i; then continue; fi
+		nm=$(basename $i .conf)
+		RC_PIDFILE=/var/run/$NAME-$nm.pid
+		OPENVPN_OPTS=""
+		if test "$1" = "start"; then
+			OPENVPN_OPTS="-- --daemon openvpn-$nm --cd $OPENVPN_DIR \
+				--log /var/log/openvpn-$nm.log --writepid $RC_PIDFILE --config $i" 
+		fi
+		$1 $NAME $OPENVPN_OPTS 
+		st=$((st+$?))
+		if test "$1" = "restart"; then return $st; fi
+	done
+	return $st
+}
 
 case "$1" in 
 	start)
 		modprobe tun >& /dev/null
 		# enable IP forwarding?
 		# echo 1 > /proc/sys/net/ipv4/ip_forward
-		start $NAME -- $OPENVPN_OPTS
+		doit start
 		;; 
 	stop)
-		stop $NAME
-		modprobe -r tun >& /dev/null
+		if doit stop; then rmmod -w tun >& /dev/null; fi
+		st=$?
 		# disable IP forwarding
 		# echo 0 > /proc/sys/net/ipv4/ip_forward
+		return $st
 		;; 
-	status) status $NAME ;; 
-	reload) reload $NAME ;; 
-	restart) restart $NAME ;; 
+	status) doit status ;;
+	reload) doit reload ;;
+	restart) doit restart ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
 esac 
