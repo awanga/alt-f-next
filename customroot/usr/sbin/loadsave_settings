@@ -72,8 +72,8 @@ createdef() {
 
 	dt=$(date +%F_%T)
 	nm=set_$dt.tgz
-	tar -czf /tmp/$nm $files > /dev/null 2>&1
-	rm /tmp/xfstab /tmp/ucron
+	tar -czf /tmp/$nm $files >& /dev/null
+	rm -f /tmp/xfstab /tmp/ucron
 	echo $nm
 }
 
@@ -123,7 +123,7 @@ checkfile() {
 	fi
 
 if false; then
-	# FIXME: stupid test. Store a signature instead!		
+	# FIXME: stupid test. Store a signature instead!
 	for i in $files tmp/initd_perms tmp/xfstab; do
 		rm -f $TD/$i
 	done
@@ -203,18 +203,17 @@ loadflashdef() {
 # including stock firmware setings! 
 clearflashdef() {
 	lmount
-	rm -rf $save_dir/* 	
-	#rm -f $save_dir/sib.conf 
+	rm -rf $save_dir/*
 	rm -f $stamp
 	lumount
 }
 
-# copy from mtd1 to mtd0 ( NOT for the DNS-320/325)
+# copy from mtd1 to mtd0 (NOT for the DNS-320/325)
 # The vendors settings are saved in mtd0 and mtd1, one being the backup of the other
 # As Alt-F only uses mtd0, the original settings are still in mtd1 
 recover() {
 	rmdir $save_dir
-	if grep -qE "DNS-325|DNS-320" $BRD; then	
+	if grep -qE "DNS-320-A1|DNS-325-A1" $BRD; then	
 		return 1
 	fi
  
@@ -246,8 +245,14 @@ llistflashdef() {
 }
 
 check() {
-	if test "$fstype" = "minix"; then
+	if test "$fs_type" = "minix"; then
 		fsck -av $MTD
+	fi
+}
+
+format() {
+	if test "$fs_type" = "minix"; then
+		mkfs.minix $MTD
 	fi
 }
 
@@ -301,16 +306,14 @@ read_sib() {
 	return $st
 }
 
-# When a pen/disk is inserted, the current box settings 
-# must overwrite the ones existing in the pen/disk, 
-# and the reverse must happen when the pen/disk is removed.
-# As the pen/disk is the top priority union branch, new or modified
-# files are stored there
+# When a pen/disk is inserted, the current box settings must overwrite the ones
+# existing in the pen/disk, and the reverse must happen when the pen/disk is removed.
+# As the pen/disk is the top priority union branch, new or modified files are stored there
 
 # Copy current box settings to /Alt-F dir.
 # Used after mounting Alt-F dir but before adding it to the union.
 to_AltF() {
-	wfiles="$files $xfiles"
+	wfiles="$files /etc/fstab /etc/bay"
 	for i in $wfiles; do
 		if test -e $i -a -e /Alt-F/$i; then
 #			cp -a $i /Alt-F/$i	# no need to copy, they will be copied when changed/created
@@ -323,7 +326,7 @@ to_AltF() {
 # Copy current box settings in /Alt-F to RAM root dir
 # Used after removing Alt-F from the union but before unmounting it
 from_AltF() {
-	wfiles="$files $xfiles"
+	wfiles="$files /etc/fstab /etc/bay"
 	for i in $wfiles; do
 		if test -e /Alt-F/$i; then
 			bd=$(dirname $i)
@@ -339,7 +342,7 @@ usage() {
 	-cf (clear flash) | -rc (recover from mtd1) |\n\
 	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
-	-rs (read sib ip) | -st (status) | -ck (check)"
+	-rs (read sib ip) | -st (status) | -ck (check) | -fm (format)"
 	return 1;
 }
 
@@ -351,14 +354,11 @@ sib=sib.conf
 # configuration files to save on flash
 files=$(cat /etc/settings)
 
-# those files are also used only when mounting/unmounting the aufs branch
-xfiles="/etc/fstab /etc/bay /var/spool/cron/crontabs/root"
-
 BRD=/tmp/board
 if grep -q Unknown $BRD; then
 	echo "Unsupported board"
 	exit 1
-elif grep -qE "DNS-325|DNS-320" $BRD; then
+elif grep -qE "DNS-320-A1|DNS-325-A1" $BRD; then
 	fs_type="jffs2"
 	MTD=/dev/mtdblock5
 else
@@ -383,6 +383,7 @@ case $1 in
 	"-rs")	read_sib ;;
 	"-st")	status ;;
 	"-ck")	check ;;
+	"-fm")	format ;;
 	*)	usage ;;
 esac
 
