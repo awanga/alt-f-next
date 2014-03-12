@@ -44,7 +44,6 @@ exclusive() {
 
 # $1=id
 details() {
-
 	IFS=";"
 	while read id type runas host mac srcpath dstpath when at log nlogs rest; do
 		if test -z "$id" -o -z "$type" -o -z "$runas" -o -z "$srcpath" -o -z "$dstpath" \
@@ -55,25 +54,6 @@ details() {
 	done < $CONF_BACKUP 
 
 	return 1
-}
-
-do_log() {
-	TF=$(mktemp -t)
-	diff -rq "$old" "$date" > $TF
-	if test -s $TF; then
-		awk '
-			/^Only in '$date'/{printf "Added:   %s\n", $4}
-			/^Only in '$old'/ {printf "Deleted: %s\n", $4}
-			/(^Binary files.*differ$|^Files.*differ$)/ {
-				start = index($0, "'$date'") + 20
-				ln = length($0) - length("differ") - start
-				printf "Changed: %s\n", substr($0, start, ln)
-		}' $TF | sort > ${date}.log
-	else #diff didn't find any differences, save disk space
-		nodiff="true"
-		rm -rf "$date"
-	fi
-	rm $TF
 }
 
 clean_logs() {
@@ -111,9 +91,16 @@ wakeup() {
 	return 1
 }
 
+# For log format see rsync man page: --itemize-changes. Essentially
+# >f.s....... file' means file was updated due to size change
+# >f..t...... file' means file was updated due to time change
+# >f+++++++++ file' mean a new file
+# cd..tpog... dir' means a created dir
+# .f..xxx  file' means no file content change, only xxx attributes
+# .d..xxx  dir' means no dir change, only xxx attributes
+#
 # srcpath - from, destname - to
 do_backup() {
-
 	gid=$(id -gn $runas)
 	date=$(date "+%Y-%m-%d_%H-%M-%S")
 	mkdir -p $destname/$date
@@ -128,45 +115,34 @@ do_backup() {
 
 	if test -z "$first_time"; then
 		# the '/' in "$srcpath" is to copy directory contents, not directory
-		res=$(su -c "nice rsync -ax $rsync_opt \"${rsync_host}${srcpath}/\" \"$destname/$date\" " ${runas} )
+		res=$(su -c "nice rsync -ax --stats --log-file=$destname/${date}.log $rsync_opt \
+			\"${rsync_host}${srcpath}/\" \"$destname/$date\" " ${runas} )
 		st=$?
 	else
 		res=$(su -c "cd \"$srcpath\"; cp -a ./ \"$destname/$date/\" " ${runas})
 		st=$?
+		if test $st = 0; then res="First backup, all data copied"; fi
 	fi
 
 	if test "$st" != 0; then
 		msg="$id failed but continuing nevertheless, err=$st: $res"
 		logger -st backup "$msg"
 		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
-		#return 1
 	fi
 
 	cd $destname
-	nodiff=""
 	if test -e current; then
 		old=$(readlink current)
-		if test "$log" = "yes"; then 		# this is nice, but the diff takes too long.
-			do_log
-		fi
-		if test -z "$nodiff"; then 
-			rm current
-		fi
+		rm current
 	fi
 
-	if test -z "$nodiff"; then
-		ln -sf "$date" current
-		logger -st backup "Backup $id finished"
-		if test $nlogs -gt 0; then
-			clean_logs
-		fi
-	else
-		logger -st backup "No changes found on backup $id, no backup generated"
-	fi
+	ln -sf "$date" current
+	echo "$res"
+	logger -st backup "Backup $id finished"
+	if test $nlogs -gt 0; then clean_logs; fi
 }
 
 dir_backup() {
-
 	if test "$type" = "FTP" -o "$type" = "HTTP"; then
 		ddname=$(dirname $srcpath)
 	elif test "$type" = "NFS" -o "$type" = "CIFS"; then
@@ -257,7 +233,6 @@ cifs_nfs_backup() {
 }
 
 ftp_http_backup() {
-
 	if test "${srcpath:0:1}" = "/"; then srcpath=${srcpath:1}; fi
 	bs=$srcpath
 	dcnt=0
