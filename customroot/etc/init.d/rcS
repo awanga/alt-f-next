@@ -2,34 +2,37 @@
 
 /bin/mount -t proc proc /proc
 /bin/mount -o remount,rw /
-if test "$(uname -r)" = "2.6.35.14"; then # usbfs removed from kernel in linux-3.8.11
-	/bin/mount -t usbfs -o devgid=9,devmode=0664  usbfs /proc/bus/usb 
-fi
 /bin/mount -t sysfs sysfs /sys
 /bin/mount -t tmpfs tmpfs /tmp
 /bin/mount -t devpts devpts /dev/pts
-#mount -t devtmpfs devtmpfs /dev # no obvious advantage
+#mount -t devtmpfs devtmpfs /dev # no obvious advantage?
 
 rmdir /newroot/rootmnt /newroot >& /dev/null
 
-for i in run log cache spool db; do
+for i in lib run log cache spool db lock; do
 	mkdir -p /tmp/$i
 	ln -sf /tmp/$i /var/$i
 done
 
-mkdir -p /mnt /var/lib /var/spool/lpd /var/spool/samba
+mkdir -p /mnt /var/spool/lpd /var/spool/samba
 chmod a+wt /var/spool/lpd /var/spool/samba
+
 echo > /etc/bay
 echo -n > /etc/printcap
 
+# bootlog. syslog has not yet started, and hot.sh uses "logger",
+TSYSLOG=/var/log/boot.log
+start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
+
 # what box/board?
 mkdir -p /tmp/sys
+
 if grep -q 'DNS-321/323' /proc/cpuinfo; then
 	case $(sed -n 's/Revision.*:.\([[:digit:]]*\).*/\1/p' /proc/cpuinfo) in
-		0000) brd="DNS-323-A1" ;;
-		0001) brd="DNS-323-B1" ;;
-		0002) brd="DNS-323-C1" ;;
-		0003) brd="DNS-321-A1" ;; 
+		0000) board="DNS-323-A1" ;;
+		0001) board="DNS-323-B1" ;;
+		0002) board="DNS-323-C1" ;;
+		0003) board="DNS-321-A1" ;; 
 	esac
 	kernel_mtd=/dev/mtd2; kernel_mn="90 4"
 	config_mtd=/dev/mtdblock0; config_mn="31 0"
@@ -37,9 +40,20 @@ if grep -q 'DNS-321/323' /proc/cpuinfo; then
 	ln -sf "/sys/class/leds/power:blue" /tmp/sys/power_led
 	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
 	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
-elif grep -q 'DNS-325' /proc/device-tree/model 2> /dev/null ||
-	grep -q 'DNS-325' /proc/cpuinfo ; then
-	brd="DNS-325-A1"
+
+elif grep -q 'DNS-320' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-320-A1"
+
+elif grep -q 'DNS-325' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-325-A1"
+
+else
+	board="Unknown"
+fi
+
+echo $board > /tmp/board
+
+if test $board = "DNS-320-A1" -o $board = "DNS-325-A1"; then
 	kernel_mtd=/dev/mtd1; kernel_mn="90 2"
 	config_mtd=/dev/mtdblock5; config_mn="31 5"
 
@@ -70,17 +84,25 @@ elif grep -q 'DNS-325' /proc/device-tree/model 2> /dev/null ||
 		mount -t aufs -o remount,append:/rootmnt/sqimage=rr /
 	fi
 
-	ln -sf "/sys/class/leds/dns325:white:power" /tmp/sys/power_led
-	ln -sf "/sys/class/leds/dns325:red:l_hdd" /tmp/sys/left_led
-	ln -sf "/sys/class/leds/dns325:red:r_hdd" /tmp/sys/right_led
-	ln -sf "/sys/class/leds/dns325:red:usb" /tmp/sys/usb_led
-	ln -sf "/sys/class/leds/dns325:white:usb" /tmp/sys/usb2_led
-else
-	brd="Unknown"
+	if test $board = "DNS-320-A1"; then
+		ln -sf "/sys/class/leds/dns320:blue:power" /tmp/sys/power_led
+		ln -sf "/sys/class/leds/dns320:orange:l_hdd" /tmp/sys/left_led
+		ln -sf "/sys/class/leds/dns320:orange:r_hdd" /tmp/sys/right_led
+		ln -sf "/sys/class/leds/dns320:orange:usb" /tmp/sys/usb_led
+		ln -sf "/sys/class/leds/dns320:blue:usb" /tmp/sys/usb2_led
+		sed -i 's/^#[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
+		echo 40 > /tmp/sys/temp1_input
+		kill -1 1
+	elif test $board = "DNS-325-A1"; then
+		ln -sf "/sys/class/leds/dns325:white:power" /tmp/sys/power_led
+		ln -sf "/sys/class/leds/dns325:red:l_hdd" /tmp/sys/left_led
+		ln -sf "/sys/class/leds/dns325:red:r_hdd" /tmp/sys/right_led
+		ln -sf "/sys/class/leds/dns325:red:usb" /tmp/sys/usb_led
+		ln -sf "/sys/class/leds/dns325:white:usb" /tmp/sys/usb2_led
+	fi
 fi
-echo $brd > /tmp/board
 
-if test "$brd" != "Unknown"; then
+if test "$board" != "Unknown"; then
 	if ! test -e $kernel_mtd; then mknod $kernel_mtd c $kernel_mn; fi
 	if ! test -e $config_mtd; then mknod $config_mtd b $config_mn; fi
 
@@ -109,12 +131,8 @@ if test "$brd" != "Unknown"; then
 	echo "none" > /tmp/sys/power_led/trigger
 fi
 
-TSYSLOG=/var/log/boot.log
-# bootlog. syslog has not yet started, and hot.sh uses "logger",
-start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
-
-logger -s "Board: $brd"
-logger -s "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"
+logger -st rcS "Board: $board"
+logger -st rcS "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"
 
 # set system clock from RTC, in UTC
 # kernel do it at boot time, but seems to not wait for second change
@@ -126,27 +144,27 @@ hwclock -su
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! grep -q "nodef" /proc/cmdline; then
-	logger -s "$(loadsave_settings -ck)"
+	if ! res=$(loadsave_settings -ck); then
+		logger -st rcS "$res"
+	fi
 	res=$(loadsave_settings -lf)
 	no_defaults=$?
-	logger -s "$res"
+	logger -st rcS "$res"
 	
 	if test -s /etc/misc.conf; then
 		. /etc/misc.conf
 	fi
 fi
 
-# can't avoid this?
-logger -s "FIXME: Waiting 3 sec for kernel enumeration to finish..."
-sleep 3
-logger -s "FIXME: stop waiting."
+# create lock file for aufs.sh synchronization, minimizing (not solving!) hotpluging
+# interation issues with initscripts when /Alt-F is mounted
+aufslock=/tmp/.aufs-lock
+while ! mkdir $aufslock >& /dev/null; do usleep 500000; done
 
-# sequences events
+# sequence hotplug events
 echo > /dev/mdev.seq 
-
 # populate /dev
 /sbin/mdev -s
-
 # "hotplug", mdev.conf registers /usr/sbin/hot.sh, 
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 
@@ -164,7 +182,7 @@ hostname -F /etc/hostname
 # 4th, try to use a dhcp server
 # 5th, find and use a non-used ip address from 192.168.1.254 to 230 range
 if grep -q "ip=" /proc/cmdline; then
-	logger -s "IP from kernel cmdline, kernel brings eth0 up"
+	logger -st rcS "IP from kernel cmdline, kernel brings eth0 up"
 	cip="kip"
 	eval $(cat /proc/cmdline)
 	ns=$(echo $ip | awk -F: '{ print $3 }')
@@ -179,13 +197,13 @@ if grep -q "ip=" /proc/cmdline; then
 	fi
 	ifconfig eth0 up
 elif test $no_defaults = "0"; then
-	logger -s "IP from flash-defaults"
+	logger -st rcS "IP from flash-defaults"
 	cip="def"
 	ifup eth0
 else
 	res=$(loadsave_settings -rs)
 	if test $? = 0; then
-		logger -s "IP from sib.conf"
+		logger -st rcS "IP from sib.conf"
 		cip="sib"
 		eval $res
 		ifconfig eth0 up $ip netmask $mask
@@ -204,19 +222,19 @@ else
 		sleep 3
 		udhcpc -Sfqns /dev/null
 		if test $? = 0; then
-			logger -s "IP from dhcp server"
+			logger -st rcS "IP from dhcp server"
 			cip="dhcp"
 		else
-			logger -s "Fixed IP"
+			logger -st rcS "Fixed IP"
 			ifconfig eth0 0.0.0.0
 			sleep 3
 			for i in $(seq 254 -1 230); do
 				res=$(arping -Dw 2 192.168.1.$i)
 				st = $?
-				logger -s "$res"
+				logger -st rcS "$res"
 				if test $? = 0; then break; fi
 			done
-			logger -s "using 192.168.1.$i"
+			logger -st rcS "using 192.168.1.$i"
 			ifconfig eth0 192.168.1.$i
 			cip="fip"
 		fi
@@ -298,9 +316,6 @@ while read dev mp fs rest; do
 	 fi
 done < /etc/fstab
 
-# stop temporary syslog to /var/log/boot.log
-start-stop-daemon -K -q -n syslogd
-
 # create rc* shortcuts to /etc/init.d/S??*
 ln -f /etc/init.d/rcall /sbin/rcall
 for i in /etc/init.d/S??*; do
@@ -308,13 +323,20 @@ for i in /etc/init.d/S??*; do
 	ln -sf /usr/sbin/rcscript /sbin/rc${f#S??}
 done
 
-# Start all executable init scripts in /etc/init.d
-# executing them in numerical order.
+# stop temporary syslog to /var/log/boot.log
+start-stop-daemon -K -q -n syslogd
+
+# Start all executable init scripts
 rcall start
 
+# remove aufs.sh lock
+rmdir $aufslock
+
 # append boot.log to syslog:
-logger "****** Boot Log start ******"
-while read ln; do
-	logger "$ln"
+logger "****** Start of appended early system log ******"
+while read a b time sys msg; do
+	logger -t ${sys%:} -p user.debug "($time) $msg"
 done < $TSYSLOG
-logger "****** Boot Log end ******"
+logger "****** End of appended early system log ******"
+
+rm -f $TSYSLOG
