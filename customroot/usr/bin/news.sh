@@ -75,10 +75,13 @@ if test -s $MISCC; then
 	. $MISCC
 fi
 
-if test -z "$NEWS_CHK" -o -z "$FILES_CHK"; then
-	echo NEWS_CHK=$(date +%s) >> $MISCC
-	echo FILES_CHK=$(date +%s) >> $MISCC
-	exit 0
+if test -z "$NEWS_CHK" -o -z "$FILES_CHK"; then # FIXME: to remove after RC4
+	#echo NEWS_CHK=$(date +%s) >> $MISCC
+	#echo FILES_CHK=$(date +%s) >> $MISCC
+	eval $(grep NEWS_CHK /rootmnt/ro/etc/misc.conf)
+	echo NEWS_CHK=$NEWS_CHK >> $MISCC
+	eval $(grep FILES_CHK /rootmnt/ro/etc/misc.conf)
+	echo FILES_CHK=$FILES_CHK >> $MISCC
 fi
 
 last_files=$(parse_rss $FILES_URL $FILES_CHK)
