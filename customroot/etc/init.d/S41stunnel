@@ -2,8 +2,8 @@
 
 DESC="Secure administrative web pages (https)"
 NAME=stunnel
-TYPE=net
-REQUIRE="inetd"
+#TYPE=net
+
 INETD_CONF=/etc/inetd.conf
 
 STUNNEL_CERT=/etc/ssl/certs/stunnel.pem
