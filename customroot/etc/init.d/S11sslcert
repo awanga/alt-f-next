@@ -22,10 +22,10 @@ case "$1" in
 
 	elif test ! -e $BOX_PEM; then # first time, none exists
 		echo -n "Creating SSL self-signed certificate... "
-		tf=$(mktemp -t)
-		echo -e ".\n.\n.\nAlt-F\nDNS-323\n$(hostname)\nroot@$(hostname -f)\n" > $tf
-		openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout $BOX_PEM -out $BOX_PEM < $tf  2> /dev/null
-		rm -f $tf
+		TF=$(mktemp -t)
+		echo -e ".\n.\n.\nAlt-F\n$(cat /tmp/board)\n$(hostname)\nroot@$(hostname -f)\n" > $TF
+		openssl req -x509 -nodes -days 3650 -newkey rsa:1024 -keyout $BOX_PEM -out $BOX_PEM < $TF  2> /dev/null
+		rm $TF
 	fi
 
 	# generate box crt and key, needed by some packages
