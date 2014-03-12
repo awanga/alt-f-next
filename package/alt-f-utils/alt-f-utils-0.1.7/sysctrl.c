@@ -954,23 +954,25 @@ void hdd_powercheck(int noleds) {
 			continue;
 		dev = disks[i].dev;
 		dpm = check_powermode(dev);
-		
-		if (dpm == -1) { /* unknown, might happens for USB-attached disks */
+
+		if (dpm == -1 && disks[i].spindow_time > 0) { /* unknown, might happens for USB disks */
 			time_t ctime = time(NULL);
 			dst = dstat(dev);
-			dpm = 1; // mark as active
-			if (dst > disks[i].rdwr_cnt) { /* disk is active, has been used */
+			if (dst > disks[i].rdwr_cnt) { /* disk has been used, is active */
 				disks[i].rdwr_cnt = dst;
 				disks[i].last_access = ctime;
-			} else if (disks[i].spindow_time > 0 &&
-				ctime - disks[i].last_access > disks[i].spindow_time &&
-				disks[i].power_state != 0) {
-				/* not active and unused for longer then programmed spindown */
-				spindown_disk(dev);
-				dpm = 0; // mark as sleep
+				dpm = 1; // mark as active
+			} else {
+				dpm = disks[i].power_state; // previous state
+				if (disks[i].power_state != 0 &&
+					ctime - disks[i].last_access > disks[i].spindow_time) {
+					/* not active and unused for longer then programmed spindown */
+						spindown_disk(dev);
+						dpm = 0; // mark as sleep
+				}
 			}
 		}
-		
+
 		if (disks[i].power_state != dpm) { // changed state to
 			char *slot = disks[i].slot;
 			if (dpm == 0) { // standby/sleep
@@ -1414,11 +1416,13 @@ void print_config() {
 	syslog(LOG_INFO, "args.lo_temp=%d", args.lo_temp);
 	syslog(LOG_INFO, "args.hi_temp=%d", args.hi_temp);
 	syslog(LOG_INFO, "args.mail=%d", args.mail);
+	usleep(1000); /* give syslog a break */
 	syslog(LOG_INFO, "args.recovery=%d", args.recovery);
 	syslog(LOG_INFO, "args.fan_off_temp=%d", args.fan_off_temp);
 	syslog(LOG_INFO, "args.max_fan_speed=%d", args.max_fan_speed);
 	syslog(LOG_INFO, "args.crit_temp=%d", args.crit_temp);
 	syslog(LOG_INFO, "args.warn_temp=%d", args.warn_temp);
+	usleep(1000); /* give syslog a break */
 	syslog(LOG_INFO, "args.crit_temp_command=\"%s\"",
 	       args.crit_temp_command);
 	syslog(LOG_INFO, "args.warn_temp_command=\"%s\"",
