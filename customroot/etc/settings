@@ -7,6 +7,7 @@
 /etc/dnsmasq.conf
 /etc/dropbear/dropbear_dss_host_key
 /etc/dropbear/dropbear_rsa_host_key
+/etc/dropbear/dropbear_ecdsa_host_key
 /etc/exports
 /etc/group
 /etc/hostname
