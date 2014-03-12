@@ -12,7 +12,7 @@ case "$1" in
 		for i in $(ls -r /etc/init.d/S*) ;do
 			if ! test -f "$i"; then continue; fi
 			bn=$(basename $i); nm=rc${bn:3}
-			if test "$nm" = "rcinetd" -o "$nm" = "rcsysctrl" -o "$nm" = "rcsyslog"; then continue; fi
+			if test "$nm" = "rcinetd"; then continue; fi
 			if $nm status >& /dev/null; then
 				logger -s $($nm stop)
 			fi
