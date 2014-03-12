@@ -1,22 +1,21 @@
 #! /bin/sh
 #
-# urandom	This script saves the random seed between reboots.
-#		It is called from the boot, halt and reboot scripts.
-#
-# Version:	@(#)urandom  1.33  22-Jun-1998  miquels@cistron.nl
+# urandom: This script saves the random seed between reboots.
 
 NAME=urandom
 TYPE=required
 
-RFILE=/var/lib/misc/random-seed
+RDIR=/var/lib/misc
+RFILE=$RDIR/random-seed
 
 . $(dirname $0)/common
+
+if ! test -d $RDIR; then mkdir -p $RDIR; fi
 
 case "$1" in
 	start)
 		echo -n "Starting $NAME: "
-		# Load and then save 512 bytes,
-		# which is the size of the entropy pool
+		# Load and then save 512 bytes, which is the size of the entropy pool
 		if test -f $RFILE; then
 			cat $RFILE >/dev/urandom
 		fi
@@ -26,20 +25,16 @@ case "$1" in
 		chmod og-rwx $RFILE
 		echo "OK."
 		;;
-		
+
 	stop)
 		echo -n "Stopping $NAME: "
 		# Carry a random seed from shut-down to start-up;
-		# see documentation in linux/drivers/char/random.c
-		# Saving random seed
 		dd if=/dev/urandom of=$RFILE count=1 >& /dev/null
 		chmod og-rwx $RFILE
 		echo "OK."
 		;;
 
-	status)
-		status $NAME
-		;;
-		
+	status) status $NAME ;;
+
 	*)  usage $0 "start|stop|status" ;;
 esac
