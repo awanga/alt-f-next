@@ -152,6 +152,8 @@
 ./usr/lib/modules/3.10.32/kernel/lib/zlib_deflate/zlib_deflate.ko
 ./usr/lib/modules/3.10.32/kernel/net
 ./usr/lib/modules/3.10.32/kernel/net/802
+./usr/lib/modules/3.10.32/kernel/net/8021q
+./usr/lib/modules/3.10.32/kernel/net/8021q/8021q.ko
 ./usr/lib/modules/3.10.32/kernel/net/802/p8022.ko
 ./usr/lib/modules/3.10.32/kernel/net/802/psnap.ko
 ./usr/lib/modules/3.10.32/kernel/net/802/stp.ko
