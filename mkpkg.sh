@@ -41,6 +41,7 @@ usage() {
 	echo -e "usage: mkpkg.sh <package> |
 	-rm <package> (remove from rootfs files from <pkg> |
 	-ls <package> (list package file contents) |
+	-check [package] (verify package|all files existence)
 	-set (store current rootfs file list) |
 	-clean (remove new files since last -set) |
 	-diff (show new files since last -set) |
@@ -58,15 +59,14 @@ usage() {
 }
 
 if test "$(dirname $0)" != "."; then
-	echo "This script must be run in the root of the tree, exiting."
+	echo "This script must be run in the root of the tree."
 	exit 1;
 fi
 
 if test -z "$BLDDIR"; then
 	cat<<-EOF
 		Set the environment variable BLDDIR to the build directory, e.g
-		   export BLDDIR=<path to where you which the build dir>\nkeep it out of this tree."
-		exiting.
+		   export BLDDIR=<path to where you which the build dir>\nkeep it out of this tree.
 	EOF
 	exit 1
 fi
@@ -81,8 +81,11 @@ CDIR=$(pwd)
 PATH=$CDIR/bin:$PATH
 IPKGDIR=$CDIR/ipkgfiles
 
+. .config 2> /dev/null
+BOARD=$BR2_PROJECT
+
 ROOTFSFILES=$CDIR/rootfsfiles-base.lst
-ROOTFSDIR=$BLDDIR/project_build_arm/dns323/root
+ROOTFSDIR=$BLDDIR/project_build_arm/$BOARD/root
 TFILES=$CDIR/rootfsfiles.lst
 PFILES=$CDIR/pkgfiles.lst
 
@@ -93,7 +96,11 @@ case "$1" in
 		if test $# != 2 -o ! -f $IPKGDIR/$2.lst; then
 			usage
 		fi
-		rm -f $BLDDIR/project_build_arm/dns323/autotools-stamps/$2_*
+		#if ! grep -q ^BR2_PACKAGE_$(echo $2 | tr '[:lower:]-' '[:upper:]_') .config; then
+		#	echo package $2 not configured
+		#	exit 1
+		#fi
+		rm -f $BLDDIR/project_build_arm/$BOARD/autotools-stamps/$2_*
 		cd $ROOTFSDIR
 		# remove files first
 		xargs --arg-file=$IPKGDIR/$2.lst rm -f >& /dev/null
@@ -108,7 +115,7 @@ case "$1" in
 		fi
 		cd $ROOTFSDIR
 		xargs --arg-file=$IPKGDIR/$2.lst ls
-		exit 0
+		exit $?
 		;;
 
 	-set)
@@ -192,13 +199,40 @@ case "$1" in
 		;;
 
 	-all)
-		for i in $(ls $IPKGDIR/*.lst); do
-			p=$(basename $i .lst)
-			echo Creating package $p
-			./mkpkg.sh $p
-			#if test $? = 1; then exit 1; fi
+		for i in $(ls $IPKGDIR/*.control); do
+			p=$(basename $i .control)
+			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y .config; then
+				echo -n Creating package ${p}...
+				res=$(./mkpkg.sh $p)
+				st=$?
+				if test -n "$res"; then res="($res)"; fi
+				if test $st = 0; then
+					echo " OK $res" 
+				else
+					echo " FAIL $res"
+				fi
+			fi
 		done
 		ipkg-make-index pkgs/ > pkgs/Packages
+		exit 0
+		;;
+
+	-check)
+		if test "$#" = 2; then
+			./mkpkg.sh -ls $2 1> /dev/null
+			exit $?
+		else
+			for i in $(ls $IPKGDIR/*.control); do
+				p=$(basename $i .control)
+				if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y .config; then
+					if ! ./mkpkg.sh -ls $p >& /dev/null; then
+						echo "Package $p FAILS"
+					else
+						echo "Package $p OK"
+					fi
+				fi
+			done
+		fi
 		exit 0
 		;;
 
@@ -208,7 +242,7 @@ case "$1" in
 		TF=$(mktemp)
 		for i in $(ls $IPKGDIR/*.lst); do
 			p=$(basename $i .lst)
-			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_') .config; then
+			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y .config; then
 				cat $i >> $TF 
 			fi
 		done
@@ -221,15 +255,21 @@ case "$1" in
 				echo $i
 			fi
 		done
-		rm $TF $TF1
+		#echo $TF $TF1 $TF2
+		rm $TF $TF1 $TF2
 		exit 0
 		;;
 
 	-rmall)
-		for i in $(ls $IPKGDIR/*.lst); do
-			p=$(basename $i .lst)
-			echo Removing files from package $p
-			./mkpkg.sh -rm $p
+		for i in $(ls $IPKGDIR/*.control); do
+			p=$(basename $i .control)
+			echo -n Removing files from package ${p}...
+			res=$(./mkpkg.sh -rm $p)
+			if test $? != 0; then
+				echo " FAIL ($res)"
+			else
+				echo " OK"
+			fi
 		done
 		exit 0
 		;;
@@ -270,7 +310,7 @@ case "$1" in
 esac
 
 if ! test -e $TFILES; then
-	echo "file $TFILES not found, read help. Exiting"
+	echo "file $TFILES not found, read help."
 	exit 1
 fi
 
@@ -282,47 +322,70 @@ PKG=$(echo $pkg | tr '[:lower:]-' '[:upper:]_')
 if test "$force" != "y"; then
 	if test "$pkg" = "gdb" -a -n "$(grep '^BR2_PACKAGE_GDB=y' .config)"; then # special gdb case
 		PKGDIR=toolchain/gdb
-		eval $(grep '^BR2_GDB_VERSION=' .config)
-		version=$BR2_GDB_VERSION
+		version=$(sed -n 's/^BR2_GDB_VERSION="\(.*\)"/\1/p' .config)
 	else
 		PKGMK=$(find $CDIR/package -name $pkg.mk)
 		if test -z "$PKGMK"; then
 			#echo Package $pkg not found, is it a sub-package?
 			
-			if grep -q ^BR2_PACKAGE_$PKG .config; then
-				MPKG=$(echo $PKG | cut -f1 -d "_")
-				mpkg=$(echo $MPKG | tr '[:upper:]_' '[:lower:]-' )
-				MPKGMK=$(find $CDIR/package -name $mpkg.mk)
+			if grep -q "^BR2_PACKAGE_$PKG=y" .config; then
+				MPKGMK=$(echo $pkg | awk -v CDIR=$CDIR -F - '{
+					res = $1
+					for (i=2; i<=NF+1; i++) {
+						if ("find "CDIR"/package -name " res ".mk" | getline var) {
+							print var; exit;
+						} else {
+							res=res "-" $i
+						}
+					}
+				}')
+
 				if test -z "$MPKGMK"; then
-					echo Main Package $mpkg not found, exiting.
+					echo main package of $pkg not found.
 					exit 1
 				fi
+
+				mpkg=$(basename $MPKGMK .mk)
+				MPKG=$(echo $mpkg | tr '[:lower:]-' '[:upper:]_'  )
+
 			else
-				echo Package $pkg is not configured, exiting.
+				echo $pkg is not configured.
 				exit 1
 			fi
-			echo $pkg is a sub-package of $mpkg
 
+			echo $pkg is a sub-package of $mpkg
 			PKGDIR=$(dirname $MPKGMK)
-			eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
-			version=$(eval echo \$${MPKG}_VERSION)	
-		elif grep -q ^BR2_PACKAGE_$PKG .config; then
+			if true; then
+				# faster, but does not expand makefile variables nor takes conditionals into account
+				eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
+				version=$(eval echo \$${MPKG}_VERSION)
+			else
+				version=$(make O=$BLDDIR -p -n $mpkg 2>/dev/null | sed -n '/^'$MPKG'_VERSION[ :=]/s/.*=[ ]\(.*\)/\1/p')
+			fi
+		elif grep -q "^BR2_PACKAGE_$PKG=y" .config; then
 			PKGDIR=$(dirname $PKGMK)
-			eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
-			version=$(eval echo \$${PKG}_VERSION)
+			if true; then
+				# faster, but doesn't expand makefile variables nor takes conditionals into account
+				eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
+				version=$(eval echo \$${PKG}_VERSION)
+			else
+				version=$(make O=$BLDDIR -p -n $pkg 2>/dev/null | sed -n '/^'$PKG'_VERSION[ :=]/s/.*=[ ]\(.*\)/\1/p')
+			fi
 		else
-			echo Package $pkg is not configured, exiting.
+			echo $pkg is not configured.
 			exit 1
 		fi
 	fi
 fi
+
+#echo pkg=$pkg PKG=$PKG mpkg=$mpkg MPKG=$MPKG version=$version
 
 if ! test -f $IPKGDIR/$pkg.control; then # first time build
 
 	# create minimum control file. User must edit it
 	# and do a new "./mkpkg <package>
 	# the "Depends" entry is just a helper, it has to be checked
-	# and corrected		
+	# and corrected
 
 	awk -v ver=$version -v pkg=$pkg '
 		BEGIN { deps = "ipkg" }
@@ -357,7 +420,7 @@ elif test "$force" != "y"; then
 	cver=$(awk '/^Version/{print $2}' $IPKGDIR/$pkg.control)
  	if test "$cver" != "$version"; then
 		if test "${cver%-[0-9]}" != "$version"; then
-			echo "ERROR: $pkg.control has version $cver and built package has version $version."
+			echo $pkg.control has version $cver and built package has version $version.
 			exit 1
 		else
 			version=$cver
@@ -383,28 +446,28 @@ fi
 # scripts to execute: preinst, postinst, prerm, and postrm
 #	(variable PKG_ROOT defined as root of pkg installation)
 #
-# in $IPKGDI there will be:
+# in $IPKGDIR there will be:
 # <pkg>.control, <pkg>.lst, <pkg>.conffiles, 
 # <pkg>.preinst, <pkg>.postinst, <pkg>.prerm, <pkg>.postrm
 
 mkdir -p tmp tmp/CONTROL
 
-cd ${BLDDIR}/project_build_arm/dns323
+cd ${BLDDIR}/project_build_arm/$BOARD
 #cd root
 #cpio --quiet -pdu $CDIR/tmp < $IPKGDIR/$pkg.lst
 # cpio creates needed directories ignoring umask, so use tar
 # but using tar with a pipe, if the first tar fails we can't know it,
 # so check files first
 for i in $(cat $IPKGDIR/$pkg.lst); do
-	if ! test -e root/$i; then
-		echo "Fail creating $pkg package ($i not found)"
+	if test ! -e root/$i -a ! -h root/$i; then
+		echo "failed creating $pkg package ($i not found)"
 		exit 1
 	fi
 done
 
 tar -C root -c --no-recursion -T $IPKGDIR/$pkg.lst | tar -C $CDIR/tmp -x
 if test $? = 1; then 
-	echo Fail creating $pkg package
+	echo failed creating $pkg package
 	exit 1
 fi
 cd "$CDIR"
