@@ -190,7 +190,14 @@ elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 		deps_status $i
 	done >> root/etc/preinst.status
 
-	rm -f root/dev/null root/dev/console # mksquashfs can create device nodes
+	# mksquashfs can create device nodes
+	rm -f root/dev/null root/dev/console
+	if ! test -f $CWD/mksquashfs.pf; then
+		cat<<-EOF > $CWD/mksquashfs.pf
+		/dev/null c 666 root root 1 3
+		/dev/console c 600 root root 5 1
+		EOF
+	fi
 	mksquashfs root rootfs.arm.$TYPE.$EXT -comp $COMP -noappend -b $SQFSBLK \
 		-always-use-fragments -all-root -pf $CWD/mksquashfs.pf
 
