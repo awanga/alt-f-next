@@ -11,12 +11,17 @@
 # the files to remove from root before creating the filesystem:
 # this should be fixed in buildroot and packages.mk
 
-RMF="etc/default/ntpd etc/at.deny etc/random-seed
+RMF="etc/default/ntpd etc/random-seed
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
-var/spool var/log var/cache var/run var/pcmcia var/lib/pcmcia
-usr/doc usr/share/locale usr/swat/lang etc/init.d/S30dbus
+etc/init.d/S30dbus
 sbin/fsck.ext4dev sbin/mkfs.ext4dev
-usr/bin/ntpdate lib/udev"
+usr/bin/ntpdate
+var/spool var/log var/cache var/run var/pcmcia var/lib var/lock
+usr/doc usr/share/locale usr/swat/lang 
+lib/udev lib/firmware"
+
+echo configfs:
+#(cd $1; ls $RMF)
 
 . .config 2> /dev/null
 board=$BR2_PROJECT
@@ -27,6 +32,8 @@ if test -z "$BR2_KERNEL_none"; then
 	else
 		kver=$BR2_CUSTOM_LINUX26_VERSION
 	fi
+
+echo kernel=$kver
 
 	# if BRIDGE is not set as a kernel module in the base firmware kernel, it will not load
 	# the bridge module from kernel-modules.
@@ -40,17 +47,52 @@ if test -z "$BR2_KERNEL_none"; then
 	# the kernel modules in the base firmware:
 # 	KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/usb/serial/usbserial.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
 
-	KMOD="./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
+	KMOD="./kernel/drivers/usb/class/usblp.ko
+./kernel/fs/fat/vfat.ko ./kernel/fs/fat/fat.ko
+./kernel/fs/cifs/cifs.ko
+./kernel/fs/nfs/nfs.ko ./kernel/fs/nfs/nfsv2.ko ./kernel/fs/nfs/nfsv3.ko 
+./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko
+./kernel/crypto/ansi_cprng.ko ./kernel/crypto/async_tx/async_memcpy.ko
+./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_raid6_recov.ko
+./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_xor.ko
+./kernel/crypto/xor.ko
+"
 
 	if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 		if ! test -d $BLDDIR/project_build_arm/$board/root/lib/modules/$kver; then
 			echo "configfs: kernel modules dir does not exists!"
 		else
-			OPWD=$PWD;
+			RMF="$RMF lib/libthread_db*"
+			OPWD=$PWD
 			cd $BLDDIR/project_build_arm/$board/root/lib/modules/$kver
+			echo "configfs: removing $(find . -name \*.ko | wc -l) unwanted kernel modules"
+			# remove unwanted kernel modules
 			for i in $(find . -name \*.ko); do
 				if ! echo $KMOD | grep -q $i; then
-					RMF="$RMF usr/lib/modules/$kver/$i"
+					rm -f $i
+				fi
+			done
+			find . -depth -type d -empty -exec rmdir {} \;
+			
+			# strip modules.* of unexistant modules
+			for i in $(cat modules.order); do
+				if ! test -f $i; then
+					f=$(basename $i)
+					s1=$(basename $i .ko)
+					s2=$(echo $s1 | tr '-' '_')
+					#echo "-------> $f"
+					sed -i "\|$i|d" modules.order
+					sed -i "\|/$f:|d" modules.dep
+					sed -i -e "\|$s1$|d" -e "\|$s2$|d" modules.symbols
+					sed -i -e "\|$s1$|d" -e "\|$s2$|d" modules.alias
+					sed -i -e "\|^$s1[[:space:]]*|d" -e "\|^$s2[[:space:]]*|d" modules.usbmap
+				fi
+			done
+
+			for i in $(cut -f1 -d: modules.dep); do
+				if ! test -f $1/$i; then
+					sed -i "\|^$i:|d" modules.dep
+					#echo $i
 				fi
 			done
 			cd $OPWD
@@ -65,15 +107,21 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
-BR2_PACKAGES="BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
-BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD BR2_PACKAGE_QUOTA_TOOLS"
+BR2_PACKAGES="BR2_PACKAGE_MDADM BR2_PACKAGE_DNSMASQ BR2_PACKAGE_WGET BR2_PACKAGE_RSYNC BR2_PACKAGE_NTP BR2_PACKAGE_MSMTP BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_NETATALK2 BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
+BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD BR2_PACKAGE_QUOTA_TOOLS BR2_PACKAGE_OPENVPN"
 
-# special case, BR2_PACKAGE_OPENSSH is always defined, but BR2_PACKAGE_OPENSSH_SFTP_ONLY
+# special case, BR2_PACKAGE_OPENSSH is always defined, but BR2_PACKAGE_OPENSSH_SFTP
 # if only defined in the base firmware, so create a dummy openssh package for this case
-if grep -q '^BR2_PACKAGE_OPENSSH_SFTP_ONLY=' .config; then
+if grep -q '^BR2_PACKAGE_OPENSSH_SFTP=' .config; then
 	BR2_PACKAGES="$BR2_PACKAGES BR2_PACKAGE_OPENSSH_EXTRA"
 fi
 
+BR2_PACKAGE_MDADM="usr/sbin/mdadm usr/sbin/mdmon etc/init.d/S29mdadm usr/www/cgi-bin/raid.cgi           usr/www/cgi-bin/raid_proc.cgi"
+BR2_PACKAGE_DNSMASQ="etc/dnsmasq-opts etc/dnsmasq.conf etc/init.d/S42dnsmasq usr/www/dnsmasq_hlp.html usr/www/cgi-bin/dnsmasq.cgi usr/www/cgi-bin/dnsmasq_proc.cgi"
+BR2_PACKAGE_WGET="usr/www/cgi-bin/proxy.cgi usr/www/cgi-bin/proxy_proc.cgi"
+BR2_PACKAGE_RSYNC="etc/rsyncd.conf etc/rsyncd.secrets usr/www/cgi-bin/rsync.cgi usr/www/cgi-bin/rsync_proc.cgi"
+BR2_PACKAGE_MSMTP="etc/msmtprc usr/www/mail_hlp.html usr/www/cgi-bin/mail.cgi usr/www/cgi-bin/mail_proc.cgi"
+BR2_PACKAGE_NTP="etc/ntp.conf ./etc/init.d/S43ntp ./usr/www/cgi-bin/ntp.cgi ./usr/www/cgi-bin/ntp_proc.cgi"
 BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
 BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi usr/www/ushare_hlp.html"
@@ -87,12 +135,12 @@ BR2_PACKAGE_MPD="etc/mpd.conf etc/init.d/S81mpd"
 BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
 BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
 
-BR2_PACKAGE_NTFS_3G_NTFSPROGS_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs"
+BR2_PACKAGE_NTFS_3G_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs"
 
 BR2_PACKAGE_DBUS="etc/init.d/S20dbus"
 BR2_PACKAGE_POLIPO="etc/init.d/S45polipo"
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
-BR2_PACKAGE_NETATALK="etc/init.d/S51netatalk etc/afp.conf"
+BR2_PACKAGE_NETATALK="etc/init.d/S51netatalk etc/afp.conf usr/www/cgi-bin/netatalk.cgi usr/www/cgi-bin/netatalk_proc.cgi"
 BR2_PACKAGE_NETATALK2="etc/init.d/S51afpd usr/www/cgi-bin/afpd.cgi usr/www/cgi-bin/afpd_proc.cgi usr/www/afpd_hlp.html"
 BR2_PACKAGE_OPENSSH_EXTRA="usr/www/cgi-bin/sshd.cgi usr/www/cgi-bin/sshd_proc.cgi"
 
@@ -100,7 +148,8 @@ BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
 BR2_PACKAGE_LVM2="etc/init.d/S14lvm usr/www/cgi-bin/Disk_lvm.men usr/www/cgi-bin/lvm.cgi usr/www/cgi-bin/lvm_proc.cgi usr/www/lvm_hlp.html"
 BR2_PACKAGE_CRYPTSETUP="etc/init.d/S14cryptsetup usr/www/cryptsetup_hlp.html usr/www/cgi-bin/Disk_cryptsetup.men usr/www/cgi-bin/cryptsetup.cgi usr/www/cgi-bin/cryptsetup_proc.cgi"
-BR2_PACKAGE_STUNNEL="etc/stunnel etc/init.d/S41stunnel"
+BR2_PACKAGE_STUNNEL="etc/stunnel etc/init.d/S41stunnel usr/www/cgi-bin/stunnel.cgi"
+BR2_PACKAGE_OPENVPN="etc/openvpn etc/init.d/S41openvpn"
 BR2_PACKAGE_QUOTA_TOOLS="etc/init.d/S19quota usr/www/cgi-bin/quota.cgi usr/www/cgi-bin/quota_proc.cgi usr/www/cgi-bin/Disk_quotas.men"
 BR2_PACKAGE_KERNEL_MODULES="etc/init.d/S13modload"
 
@@ -151,4 +200,29 @@ if ! test -d $1/lib/modules -a -h $1/lib/modules; then
 	mv lib/modules usr/lib/
 	cd lib
 	ln -sf ../usr/lib/modules modules
+fi
+
+# 6- update etc/misc.conf with release date, so that only news and updated files after
+# that date will be checked by the news.sh.
+
+echo NEWS_CHK=$(date +%s) >> $1/etc/misc.conf
+echo FILES_CHK=$(date +%s) >> $1/etc/misc.conf
+
+# 7-generate /etc/preinst with name of built-in packages than can be upgraded latter
+# through the webUI package manager.
+#
+# notice that mkinitramfs.sh also does a similar work, for spliting the rootfs into
+# a image and sqimage for the dns325.
+#
+# also, some packages are not explicitly define in .config, but they are installed as dependencies
+# think again...
+
+if false; then
+rm $1/etc/preinst
+for i in $(sed -n 's/^BR2_PACKAGE_\(.*\)=y/\1/p' .config); do
+	p=$(echo $i | tr '[:upper:]_' '[:lower:]-')
+	if test -f ipkgfiles/$p.control; then
+		echo $p $(awk '/Version:/{print $2}' ipkgfiles/$p.control) >> $1/etc/preinst
+	fi
+done
 fi
