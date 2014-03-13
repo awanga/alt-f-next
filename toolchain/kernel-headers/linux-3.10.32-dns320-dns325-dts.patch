@@ -1,0 +1,64 @@
+diff -ur linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns320.dts linux-3.10.32/arch/arm/boot/dts/kirkwood-dns320.dts
+--- linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns320.dts	2013-06-30 23:13:29.000000000 +0100
++++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dns320.dts	2014-02-27 14:39:51.667769024 +0000
+@@ -13,6 +13,7 @@
+ 
+ 	chosen {
+ 		bootargs = "console=ttyS0,115200n8 earlyprintk";
++		linux,stdout-path = &uart0;
+ 	};
+ 
+ 	gpio-leds {
+@@ -20,7 +21,7 @@
+ 		blue-power {
+ 			label = "dns320:blue:power";
+ 			gpios = <&gpio0 26 1>; /* GPIO 26 Active Low */
+-			linux,default-trigger = "default-on";
++			linux,default-trigger = "timer";
+ 		};
+ 		blue-usb {
+ 			label = "dns320:blue:usb";
+@@ -41,11 +42,11 @@
+ 	};
+ 
+ 	ocp@f1000000 {
+-		serial@12000 {
++		uart0: serial@12000 {
+ 			status = "okay";
+ 		};
+ 
+-		serial@12100 {
++		uart1: serial@12100 {
+ 			status = "okay";
+ 		};
+ 	};
+diff -ur linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns325.dts linux-3.10.32/arch/arm/boot/dts/kirkwood-dns325.dts
+--- linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns325.dts	2013-06-30 23:13:29.000000000 +0100
++++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dns325.dts	2014-02-27 14:39:41.665968876 +0000
+@@ -13,6 +13,7 @@
+ 
+ 	chosen {
+ 		bootargs = "console=ttyS0,115200n8 earlyprintk";
++		linux,stdout-path = &uart0;
+ 	};
+ 
+ 	gpio-leds {
+@@ -20,7 +21,7 @@
+ 		white-power {
+ 			label = "dns325:white:power";
+ 			gpios = <&gpio0 26 1>; /* GPIO 26 Active Low */
+-			linux,default-trigger = "default-on";
++			linux,default-trigger = "timer";
+ 		};
+ 		white-usb {
+ 			label = "dns325:white:usb";
+@@ -49,7 +50,7 @@
+ 				reg = <0x48>;
+ 			};
+ 		};
+-		serial@12000 {
++		uart0: serial@12000 {
+ 			status = "okay";
+ 		};
+ 	};
+
