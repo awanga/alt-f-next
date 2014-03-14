@@ -16,19 +16,11 @@ board=$(cat /tmp/board)
 # keep in sync with sysctrl.c, args_t args, line ~84
 lo_fan=2000
 hi_fan=5000
-if test "$board" = "DNS-323-C1" -o "$board" = "DNS-323-A1" -o "$board" = "DNS-325-A1"; then 
-	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
-	lo_temp=45
-elif test "$board" = "DNS-323-A1" -o "$board" = "DNS-323-B1"; then 
-	mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
-	lo_temp=40
-fi
 hi_temp=50
 mail=1
 recovery=1
 fan_off_temp=38
 max_fan_speed=6000
-lo_temp=40
 warn_temp=52
 crit_temp=54
 warn_temp_command=
@@ -59,16 +51,11 @@ cat<<-EOF
 	<fieldset><legend>System Temperature / Fan Speed relationship</legend><table>
 EOF
 
-if test "$board" = "DNS-323-C1" -o "$board" = "DNS-321-A1" -o "$board" = "DNS-325-A1"; then
-	cat<<-EOF
-		<tr><td>Fan Off Temp.</td>
-			<td><input type=text size=2 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
-			</td></tr>
-		<tr><td>Low Fan Speed Temp.</td>
-			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
-		</table></fieldset>
-	EOF
-elif test "$board" = "DNS-323-A1" -o "$board" = "DNS-323-B1"; then
+case "$board" in
+	"DNS-323-A1"|"DNS-323-B1")
+	mktt fanoff_tt "The fan turns off at system temperatures lower than this value"
+	lo_temp=40
+
 	cat<<-EOF
 		<tr><td>Low Temp.</td>
 			<td><input type=text size=2 name=lo_temp value="$lo_temp">&deg;C</td>
@@ -93,9 +80,26 @@ elif test "$board" = "DNS-323-A1" -o "$board" = "DNS-323-B1"; then
 			</tr>
 		</table></fieldset>
 	EOF
-else
+	;;
+
+	"DNS-323-C1"|"DNS-321-A1"|"DNS-320-A1"|"DNS-325-A1")
+	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
+	lo_temp=45
+
+	cat<<-EOF
+		<tr><td>Fan Off Temp.</td>
+			<td><input type=text size=2 name=fan_off_temp value="$fan_off_temp" $(ttip fanoff_tt)>&deg;C
+			</td></tr>
+		<tr><td>Low Fan Speed Temp.</td>
+			<td><input type=text size=2 name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
+		</table></fieldset>
+	EOF
+	;;
+	
+	*)
 	echo "Unknown board</table></fieldset>"
-fi
+	;;
+esac
 
 cat<<-EOF
 	<fieldset><legend>System Safety</legend><table>
