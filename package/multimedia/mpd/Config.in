@@ -15,4 +15,4 @@ config BR2_PACKAGE_MPD
 	help
 	  A flexible, powerful, server-side application for playing music
 
-	  http://sourceforge.net/projects/musicpd
+	  http://www.musicpd.org
