@@ -5,7 +5,7 @@
 #############################################################
 
 PHP_VERSION = 5.4.4
-PHP_SITE = http://www.php.net/distributions
+PHP_SITE = http://museum.php.net/php5
 PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
 PHP_INSTALL_STAGING = YES
 PHP_INSTALL_STAGING_OPT = INSTALL_ROOT=$(STAGING_DIR) install
