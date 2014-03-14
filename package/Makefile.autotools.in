@@ -130,6 +130,7 @@ TERM_RESET := $(shell tput rmso)
 #
 # Argument 1 is the source location
 # Argument 2 is the source filename
+# Argument 3 are package-dependant wget options (FOO_WGET_OPTS)
 #
 # E.G. use like this:
 # $(call DOWNLOAD,$(FOO_SITE),$(FOO_SOURCE))
@@ -137,12 +138,12 @@ TERM_RESET := $(shell tput rmso)
 
 # support make source-check/external-deps
 ifneq ($(SPIDER),)
-DOWNLOAD=$(WGET) -P $(DL_DIR) $(1)/$(2)
+DOWNLOAD=$(WGET) $(3) -P $(DL_DIR) $(1)/$(2)
 else
 define DOWNLOAD
 	$(Q)test -e $(DL_DIR)/$(2) || \
 	for site in $(strip $(subst ",,$(BR2_PRIMARY_SITE))) $(1) $(strip $(subst ",,$(BR2_BACKUP_SITE))); \
-	do $(WGET) -P $(DL_DIR) $$site/$(2) && exit; done
+	do $(WGET) $(3) -P $(DL_DIR) $$site/$(2) && exit; done
 endef
 endif
 
@@ -166,8 +167,8 @@ $(BUILD_DIR)/%/.stamp_downloaded:
 ifeq ($(SPIDER),)
 	$(call MESSAGE,"Downloading")
 endif
-	$(call DOWNLOAD,$($(PKG)_SITE),$($(PKG)_SOURCE))
-	$(if $($(PKG)_PATCH),$(call DOWNLOAD,$($(PKG)_SITE),$($(PKG)_PATCH)))
+	$(call DOWNLOAD,$($(PKG)_SITE),$($(PKG)_SOURCE),$($(PKG)_WGET_OPTS))
+	$(if $($(PKG)_PATCH),$(call DOWNLOAD,$($(PKG)_SITE),$($(PKG)_PATCH),$($(PKG)_WGET_OPTS)))
 ifeq ($(SPIDER),)
 	$(Q)mkdir -p $(@D)
 	$(Q)touch $@
