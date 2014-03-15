@@ -3,6 +3,8 @@ config BR2_PACKAGE_NUTS
 	select BR2_PACKAGE_NETSNMP
 	select BR2_PACKAGE_LIBUSB
 	select BR2_PACKAGE_OPENSSL
+	select BR2_PACKAGE_LIBGD
+	select BR2_PACKAGE_NEON
 
 	help
 	  Network UPS Tools is a collection of programs for monitoring and
