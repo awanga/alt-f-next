@@ -52,7 +52,7 @@ gcnt=0; gjstr=""
 gsel='<tr><td colspan=2><select class="fill" size="8" name="groups" onChange="update_groups()">'
 while read group gpass ggid userl; do
 	if test "${group:0:1}" = "#" -o "$gpass" = "!" -o -z "$group"; then continue; fi
-	if test $ggid -lt 100; then continue; fi
+	if test $ggid -lt 100 -a $ggid != 80; then continue; fi
 	gsel="$gsel <option>$group</option>"
 
 	# primary group
