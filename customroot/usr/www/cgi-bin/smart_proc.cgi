@@ -20,13 +20,15 @@ mailto() {
 }
 
 when() {
-	days="("
+	days=""
 	for i in $(seq 1 7); do
-		##if test -n "$(eval echo \$$1_$i)"; then
+		if test -n "$(eval echo \$$1_$i)"; then
 			days="$days|$(eval echo \$$1_$i)"
-		##fi
+		fi
 	done
-	echo "$days)"
+	if test -n "$days"; then
+		echo "$2/../../($days)/$(printf "%02d" $3)" | sed 's:(|:(:'
+	fi
 }
 
 opt="DEVICESCAN -a -d sat -S on"
@@ -35,18 +37,25 @@ if test -n "$longtest"; then
 	if test -z "$longhour"; then
 		msg "You must specify the test starting hour."
 	fi
-	ldays="L/../../$(when l)/$(printf "%02d" $longhour)"
+	ldays=$(when l L $longhour)
 fi
 
 if test -n "$shorttest"; then
 	if test -z "$shorthour"; then
 		msg "You must specify the test starting hour."
 	fi
-	sdays="S/../../$(when s)/$(printf "%02d" $shorthour)"
+	sdays=$(when s S $shorthour)
 fi
 
-if test -n "$longtest" -o -n "$shorttest"; then
-	opt="$opt -s ($ldays|$sdays)"
+if test -n "$ldays" -o -n "$sdays"; then
+	opt="$opt -s"
+	if test -n "$ldays" -a -n "$sdays"; then
+		opt="$opt ($ldays|$sdays)"
+	elif test -n "$ldays"; then
+		opt="$opt $ldays"
+	else
+		opt="$opt $sdays"
+	fi
 fi
 
 if test -n "$mailerror"; then
