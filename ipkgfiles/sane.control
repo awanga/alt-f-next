@@ -1,7 +1,7 @@
 Package: sane
 Description: SANE stands for Scanner Access Now Easy.
 Version: 1.0.21-4
-Depends: libusb, tiff, ipkg
+Depends: libusb, jpeg, tiff, ipkg
 Architecture: arm
 Priority: optional
 Section: printing
