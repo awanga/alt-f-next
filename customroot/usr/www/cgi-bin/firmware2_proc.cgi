@@ -30,6 +30,7 @@ flash_error() {
 	rm -f $TF $kernel_file $initramfs_file $sqimage_file $defaults_file
 	echo "none" > /tmp/sys/power_led/trigger
 	echo "Failed</p><br></p><p>You can use the Firmware Upgrade page to try again, or \"TryIt\" another firmware, but<br><strong><span class=\"error\">don't reboot or poweroff the box until success</span></strong><br> or you will need to buy and solder a serial cable into the box to make it work again.<br><pre>$1</pre></body></html>"
+	rcsysctrl start
 	exit 1
 }
 
@@ -111,13 +112,14 @@ elif test "$flash" = "FlashIt"; then
 		initramfs_mtd=mtd3
 		defaults_mtd=mtdblock0
 		sqimage_mtd=""
-	elif grep -qE 'DNS-320|DNS-325' /tmp/board; then
+	elif grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board; then
 		kernel_mtd=mtd1
 		initramfs_mtd=mtd2
 		defaults_mtd=mtdblock5
 		sqimage_mtd=mtd3
 		fs_type="-t jffs2"
 	else
+		rcsysctrl start
 		msg "bummer!"
 	fi
  
@@ -154,6 +156,7 @@ elif test "$flash" = "FlashIt"; then
 			;;
 	esac
 
+	rcsysctrl start
 	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
 	echo "none" > "/tmp/sys/power_led/trigger"
 fi

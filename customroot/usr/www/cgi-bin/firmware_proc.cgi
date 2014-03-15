@@ -22,7 +22,7 @@ st=$?
 
 rm -f $upfile
 
-supported="D-Link DNS-320, D-Link DNS-321, D-Link DNS-323, D-Link DNS-325, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
+supported="D-Link DNS-320-A1, D-Link DNS-321-A1/A2, D-Link DNS-323-A1/B1/C1, D-Link DNS-325-A1, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
 
 if test $st != "0"; then
 	rm -f kernel initramfs sqimage defaults
@@ -87,8 +87,7 @@ if test -n "$notcomp"; then
 	exit 0
 fi
 
-html_header
-echo "<h2><center>Firmware Updater</center></h2>"
+html_header "Firmware Update"
 
 #echo "<pre>$res</pre>"
 
@@ -113,8 +112,8 @@ if losetup | grep -q /dev/mtdblock3; then
 	runfromflash="disabled"
 	flmsg='<h4 class="blue">Alt-F is running from flash memory,
 you have to reboot into a special mode by hitting the "SpecialReboot" button
-and after rebooting run again the "Firmware Updater".
-<br>Alt-F firmware can be tried without flashing it, by hitting the "TryIt" button.</h4>
+and after rebooting run again the "Firmware Updater" and hitting the "FlashIt" button.
+<br>Some Alt-F firmware can be tried without flashing, by hitting the "TryIt" button.</h4>
 <input type=submit name=flash value="SpecialReboot">'
 fi
 
