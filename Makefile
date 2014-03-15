@@ -308,7 +308,8 @@ world: dependencies dirs target-host-info $(BASE_TARGETS) $(TARGETS_ALL)
 #
 #############################################################
 $(DL_DIR):
-	@ln -sf $$(readlink $(TOPDIR)/dl) $@
+	if ! test -e $(TOPDIR)/dl; then mkdir -p $(TOPDIR)/dl; fi
+	@ln -sf $$(readlink -f $(TOPDIR)/dl) $@
 
 $(TOOL_BUILD_DIR) $(BUILD_DIR) $(HOST_DIR) $(PROJECT_BUILD_DIR) \
 	$(PROJECT_BUILD_DIR)/autotools-stamps $(BINARIES_DIR) $(STAMP_DIR):
