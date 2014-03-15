@@ -27,7 +27,6 @@ mktt src_tt "Folder to backup from."
 mktt when_tt "Week or Month day(s) to perform the backup.<br><br><strong>Week day</strong>: 0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br><br><strong>Month day:</strong> first character must be a 'd',<br> 1 to 31 allowed, same rules as above applies,<br> e.g., 'd1,15' or 'd1-5' or 'd28' are valid.<br><br>No spaces allowed, no checks done"
 mktt at_tt "Hour of the day to perform the backup, 0..23.<br><br>Use the same format as in the \"When\" field.<br>You can schedule several backup for the same hour,<br> they will be performed one at a time, sequentially."
 mktt rot_tt "After doing this number of backups, start removing the oldest, as needed.<br>0 disables rotation."
-mktt log_tt "After doing a backup generates a log with added, removed and changed files.<br>If no changes were detected, the backup is removed.<br>It is too sloow, use only for special folders."
 mktt now_tt "Perform the backup now.<br>Disabled if the backup is currently being done.<br>You can start several backups."
 
 cat<<EOF
@@ -102,7 +101,7 @@ cat<<-EOF
 	<fieldset><legend>Backup Setup</legend>
 	<table>
 	<tr><th>Disable</th><th>ID</th><th>Type</th><th>Run As</th><th>Host</th>
-	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th>Log</th><th></th></tr>
+	<th>Folder</th><th>Browse</th><th>When</th><th>At</th><th>Rotate</th><th></th></tr>
 EOF
 
 max_id=0
@@ -147,8 +146,6 @@ if test -f $CONF_BACKUP; then
 
 		sbck_user=$(echo $bck_user | sed 's/value='$runas'/selected value='$runas'/')
 
-		log_chk=""; if test "$log" = "yes"; then log_chk="checked"; fi
-
 		cat<<-EOF
 			<tr align=center>
 				<td><input type=checkbox $cmtd_chk name=cmtd_$cnt value="#" $(ttip disable_tt)></td>
@@ -167,7 +164,6 @@ if test -f $CONF_BACKUP; then
 				<td><input type=text size=4 name="when_$cnt" value="$when" $(ttip when_tt)></td>
 				<td><input type=text size=4 name="at_$cnt" value="$at" $(ttip at_tt)></td>
 				<td><input type=text size=4 name="nlogs_$cnt" value="$nlogs" $(ttip rot_tt)></td>
-				<td><input type=checkbox $log_chk name="log_$cnt" value="yes" $(ttip log_tt)></td>
 				<td><input type=submit $bcknow_dis name="$id" value=BackupNow $(ttip now_tt)></td>
 			</tr>
 		EOF
@@ -195,7 +191,6 @@ for i in $(seq $cnt $((cnt+2))); do
 			<td><input type=text size=4 name="when_$i" value="" $(ttip when_tt)></td>
 			<td><input type=text size=4 name="at_$i" value="" $(ttip at_tt)></td>
 			<td><input type=text size=4 name="nlogs_$i" value="0"  $(ttip rot_tt)></td>
-			<td><input type=checkbox name="log_$i" value="yes" $(ttip log_tt)></td><td></td>
 		</tr>
 	EOF
 done
