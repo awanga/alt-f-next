@@ -11,21 +11,17 @@ start_stop() {
 	if test -n "$sscript"; then
 		busy_cursor_start
 		if test "$act" = "enable"; then
-			chmod +x $sscript
-			touch $sscript
-		elif test "$act" = "disable"; then
-			chmod -x $sscript
-			touch $sscript
+			$rcscript enable >& /dev/null
+		elif test "$act" = "disable" -a "$rcscript" != "rcinetd"; then
+			$rcscript disable >& /dev/null
 		fi
 
 		if test "$act" = "start" -o "$act" = "enable"; then
-			res=$($rcscript start 2>&1)
-			if test $? != 0; then
+			if ! res=$($rcscript start 2>&1); then
 				msg "$res"
 			fi
 		elif test "$act" = "stop" -o "$act" = "disable"; then
-			res=$($rcscript stop 2>&1)
-			if test $? != 0; then
+			if ! res=$($rcscript stop 2>&1); then
 				msg "$res"
 			fi
 			for i in $(seq 1 50); do
@@ -35,7 +31,7 @@ start_stop() {
 				usleep 200000
 			done
 			if test "$i" -eq 50; then
-				msg "Service was successfully signaled to stop but it is slow to finish, please wait."
+				msg "Service was signaled to stop but it is slow to react, please wait."
 			fi
 		fi
 		busy_cursor_end
