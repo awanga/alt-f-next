@@ -10,6 +10,7 @@ read_args
 CONFF=/etc/httpd.conf
 INETD_CONF=/etc/inetd.conf
 STUNNEL_CONF=/etc/stunnel/stunnel.conf
+CONFS=/etc/init.d/S41stunnel
 
 hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
@@ -79,9 +80,11 @@ if test "$stunnel" = "server"; then
 	else
 		sed -i 's/^accept.*=.*443/accept = 443/' $STUNNEL_CONF
 	fi
+	sed -i 's/^#TYPE=/TYPE=/' $CONFS
 	rcstunnel restart >& /dev/null
 	rcstunnel enable >& /dev/null
 else
+	sed -i 's/^TYPE=/#TYPE=/' $CONFS
 	rcstunnel stop >& /dev/null
 	rcstunnel disable >& /dev/null
 	if test "$sport" = "8443"; then
