@@ -19,7 +19,12 @@ It is recommended, although not necessary, to dedicate the selected filesystem t
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
 After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
 
-if grep -qE 'DNS-320|DNS-325' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+if grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board ; then
+	SoC=kirkwood
+	kexec_dis=disabled
+else
+	SoC=orion5x
+fi
 
 # check installed:
 
@@ -46,7 +51,7 @@ EOF
 if test -n "$mirror" -a -n "$dbpart"; then
 	cat<<-EOF
 		<fieldset><legend>Found a $(cat $dbpart/etc/issue.net) installation in $dbpart</legend>
-		<input type="submit" name="submit" value="Execute" $(ttip kexec_tt) onClick="return confirm('Executing Debian will stop Alt-F and all its services.\n\n\
+		<input type="submit" $kexec_dis name="submit" value="Execute" $(ttip kexec_tt) onClick="return confirm('Executing Debian will stop Alt-F and all its services.\n\n\
 You will have to use a ssh client to login as user root,\n\
 password is the same as Alt-F web password, and use the command line.\n\nProceed?')">
 		<input type="submit" name="submit" value="Uninstall" $(ttip rm_tt)></fieldset>

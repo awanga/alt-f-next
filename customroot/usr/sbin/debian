@@ -68,6 +68,11 @@ if test $# != 0 -a "$1" = "-chroot"; then
 
 elif test $# != 0 -a "$1" = "-kexec"; then
 
+	if test "$SoC" = "kirkwood"; then
+		echo "kexec not working on DNS-320/DNS-325, exiting."
+		exit 1
+	fi
+
 cat<<-NEOF > /tmp/deb	
 	#!/bin/sh
 

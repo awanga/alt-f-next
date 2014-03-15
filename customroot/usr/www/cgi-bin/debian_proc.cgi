@@ -45,7 +45,7 @@ if test "$submit" = "Install"; then
 		msg "You have to specify a mirror near you in order to download Debian"
 	fi
 
-	if grep -qE 'DNS-320|DNS-325' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+	if grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
 
 	DEBMIRROR=$(httpd -d $mirror)
 
@@ -175,8 +175,7 @@ if test "$submit" = "Install"; then
 
 elif test "$submit" = "Uninstall"; then
 
-	html_header
-	echo "<h3><center>Uninstalling Debian...</center></h3>"
+	html_header "Uninstalling Debian..."
 	busy_cursor_start
 
 	for i in bin boot dev etc home initrd.img lib media mnt opt proc root sbin selinux \
@@ -196,8 +195,7 @@ elif test "$submit" = "Execute"; then
 
 	part=/dev/$(basename $DEBDIR)
 
-	html_header 
-	echo "<h3><center>Executing Debian.</center></h3>"
+	html_header "Executing Debian"
 
 	debian -kexec > /dev/null
 	
