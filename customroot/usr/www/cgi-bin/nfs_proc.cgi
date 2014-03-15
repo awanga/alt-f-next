@@ -67,6 +67,7 @@ elif test -n "$Submit"; then
 		prest=$rest
 	done < $TF
 	rm $TF
+	echo >> $CONFX
 
 	#if test $? != 0; then # exportfs always return 0!
 	res="$(exportfs -r 2>&1 )"
