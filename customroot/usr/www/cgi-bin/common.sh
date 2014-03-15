@@ -334,6 +334,7 @@ msg_diskwiz="You should now select a disk configuration."
 msg_newuser_1="You should now specify the filesystem where users will login and store their personal data."
 msg_newuser_2="You should now create an user account."
 msg_smb="You can now create new folders and define them as network shares."
+msg_packages_ipkg="You should now specify the filesystem where Alt-F packages can be installed."
 msg_settings="You should now save in flash memory the changes that you have just made.<br>
 You should do it whenever you want your changes to survive a box reboot."
 
@@ -344,7 +345,8 @@ You should do it whenever you want your changes to survive a box reboot."
 		diskwiz) next=newuser_1;;
 		newuser_1) next=newuser_2;; 
 		newuser_2) next=smb;;
-		smb) next=settings;; 
+		smb) if grep -q 'DNS-323' /tmp/board; then next=settings; else next=packages_ipkg; fi;;
+		packages_ipkg) next=settings;;
 		settings) next=status;; 
 		*) rm /tmp/firstboot; firstmsg=""; return ;;
 	esac
@@ -786,7 +788,7 @@ menu_setup() {
 
 load_thm() {
 	SCRIPTS=/scripts
-	if test -f ../$SCRIPTS/$1; then
+	if test -f /usr/www/$SCRIPTS/$1; then
 		while read ln; do
 			if echo $ln | grep -q .js; then
 				echo "<script type=\"text/javascript\" src=\"$SCRIPTS/$ln\"></script>"
@@ -795,7 +797,7 @@ load_thm() {
 			elif echo $ln | grep -q .thm; then
 				load_thm $ln
 			fi
-		done < ../$SCRIPTS/$1
+		done < /usr/www/$SCRIPTS/$1
 	fi
 }
 
