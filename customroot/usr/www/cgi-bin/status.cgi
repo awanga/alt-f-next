@@ -308,16 +308,16 @@ filesys() {
 		lbl="$(plabel $dsk)"
 
 		if test "$type" == "ext2" -o "$type" == "ext3" -o "$type" == "ext4"; then
-			res=$(tune2fs -l $dsk 2> /dev/null)
-			if test $? = 0; then
+			if res=$(tune2fs -l $dsk 2> /dev/null); then
+			#if test $? = 0; then
 				eval $(echo "$res" | awk \
-					'/state:/ { if ($3 != "clean") printf "dirty=*;"} \
-					/Mount/ {FS=":"; curr_cnt=$2} \
-					/Maximum/ {FS=":"; max_cnt=$2} \
-					/Next check after:/ {FS=" "; 
+					'/^Filesystem state:/ { if ($3 != "clean") printf "dirty=*;"} \
+					/^Mount count:/ {FS=":"; curr_cnt=$2} \
+					/^Maximum mount count:/ {FS=":"; max_cnt=$2} \
+					/^Next check after:/ {FS=" "; 
 						mth = index("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", $5) / 4 + 1; 
 						printf "days=\"%s-%d-%s %s\";", $8, mth, $6, $7 } 
-					END {printf "cnt=%d;", max_cnt-curr_cnt}')
+					END {printf "cnt=%d;", max_cnt - curr_cnt}')
 			fi
 
 			if test -n "$days"; then
@@ -392,7 +392,7 @@ mounted_remote_filesystems_st() {
 
 	cat<<-EOF
 		<fieldset><legend>Mounted Remote Filesystems</legend>
-		<table><tr align=center>
+		<table><tr align="left">
 		<th>Host</th>
 		<th>Remote Share</th>
 		<th>Local Folder</th>
