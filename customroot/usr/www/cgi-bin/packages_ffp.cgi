@@ -121,8 +121,8 @@ fi
 	EOF
 
 	if ! nslookup $RSITE >& /dev/null; then
-		echo "<h3><center>You don't seem to have a working internet connection<br>
-	or/and a name server configured.</center></h3>"
+		echo '<center><h3 class="blue">You dont seem to have a working internet connection<br>
+	or/and a name server configured.</h3></center>'
 	fi
 	
 	for i in $avail_pkg; do
