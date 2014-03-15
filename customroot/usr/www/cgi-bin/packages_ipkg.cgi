@@ -82,7 +82,7 @@ else
 		print "<tr><td></td><td><input type=submit name=Submit value=Submit> \
 			<input type=submit name=updatelist value=UpdatePackageList> \
 			</table></fieldset> \
-			<fieldset><legend> Installed Packages </legend> \
+			<fieldset><legend> Installed/Pre-installed Packages </legend> \
 			<table><tr> \
 				<th>Name</th><th>Version</th><th></th><th></th><th></th><th>Description</th> \
 			</tr>"
@@ -114,7 +114,7 @@ else
 					else
 						upd = sprintf("<td><input type=submit name=%s value=Update></td><td>(%s)</td>", nm, ver[uinst[nm]]);
 
-					delete uinst[nm]; ucnt--; delete inst[nm];
+					delete uinst[nm]; ucnt--; delete inst[nm]; delete preinst[nm]
 				} else {
 					j = i; v = ver[i];
 					upd="<td></td><td></td>";
