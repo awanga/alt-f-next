@@ -475,8 +475,7 @@ if test "$ndisks" = "0" -o "$wish_part" = "notouch"; then
 	gotopage /cgi-bin/diskmaint.cgi
 fi
 
-html_header
-echo "<center><h2>Disk Wizard</h2></center>"
+html_header "Disk Wizard"
 busy_cursor_start
 
 echo "<p>Stopping all services and disks..."

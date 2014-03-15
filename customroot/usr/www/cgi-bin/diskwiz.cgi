@@ -83,8 +83,8 @@ echo "</table></fieldset><input type=hidden name=num_disks value=$((j-1))>"
 
 nusb="$(cat /etc/bay | grep =usb | wc -l)"
 if test  "$nusb" -ge 2; then
-	echo "<center><h4>For performance reasons you should have no more than one external USB disk.<br>
-If you have plugged a usb pen, eject and remove it and retry again.</h4></center></form</body></html>"
+	echo '<center><h4 class="blue">For performance reasons you should have no more than one external USB disk.<br>
+If you have plugged a usb pen, eject and remove it and retry again.</h4></center></form</body></html>'
 	exit 1
 fi
 
