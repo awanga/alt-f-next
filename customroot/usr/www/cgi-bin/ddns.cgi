@@ -31,15 +31,9 @@ cat<<EOF
 	</script>
 EOF
 
-sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org"
-
-sites2="default@easydns.com dyndns@3322.org default@sitelutions.com default@dnsomatic.com
-ipv6tb@he.net default@tzo.com default@dynsip.org default@dhis.org default@majimoto.net
-default@zerigo.com"
-
-if test -x /usr/bin/inadyn-mt; then
-	sites="$sites $sites2"
-fi
+sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org
+default@easydns.com dyndns@3322.org default@sitelutions.com default@dnsomatic.com ipv6tb@he.net
+default@tzo.com default@dynsip.org default@dhis.org default@majimoto.net default@zerigo.com"
 
 if test -f $CONFF; then
 	while read -r key value; do
@@ -59,6 +53,7 @@ for i in $sites; do
 	site=$(echo $i | cut -d"@" -f2)
 	sel=""
 	if test "$dyndns_system" = $i; then sel=selected; fi
+	if test "$site" = "freedns.afraid.org"; then updis=disabled; fi
 	options="$options <option $sel>$site</option>"
 done
 
