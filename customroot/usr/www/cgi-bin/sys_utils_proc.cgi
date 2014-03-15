@@ -114,8 +114,8 @@ case "$action" in
 		;;
 	
 	Poweroff)
-		html_header
-		echo "<br><br><strong><center>The box is being powered off.</center></strong></body></html>"
+		html_header "<br><br>The box is being powered off."
+		echo "</body></html>"
 		/sbin/poweroff
 		exit 0
 		;;
@@ -138,17 +138,30 @@ case "$action" in
 		done
 		;;
 
-	StartAll)
-		rcall start >& /dev/null
+	UpdateList)
+		res=$(fixup download)
+		if test $? != 0; then msg "$res"; fi
 		;;
 
-	StopAll)
-		rcall stop >& /dev/null
+	Apply)
+		if test "$fixaction" != "Select+one"; then
+			res=$(fixup apply $fixaction)
+			if test $? != 0; then msg "$res"; fi
+		fi
 		;;
 
-	RestartAll)
-		rcall restart >& /dev/null
+	Rollback)
+		if test "$fixaction" != "Select+one"; then
+			res=$(fixup rollback $fixaction)
+			if test $? != 0; then msg "$res"; fi
+		fi
 		;;
+
+	StartAll) rcall start >& /dev/null ;;
+
+	StopAll) rcall stop >& /dev/null ;;
+
+	RestartAll) rcall restart >& /dev/null ;;
 
 	ChangePassword)
 		SECR=/etc/web-secret
@@ -166,7 +179,6 @@ case "$action" in
 		gotopage /cgi-bin/login.cgi
 		exit 0
 		;;
-
 
 	createNew)
 		html_header

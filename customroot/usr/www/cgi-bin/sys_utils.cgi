@@ -25,6 +25,16 @@ for i in $(find /var/log/ -name \*.log\* -o -name log.\* -o -name \*_log); do
 done
 logsel="$logsel</select>"
 
+fixlst=$(fixup list | while read st fx; do
+	chk="&nbsp;"
+	if test "$st" = "0"; then chk="&#x2713;"; fi
+	fxi=$(echo $fx | cut -d"-" -f1)
+	echo "<option value=\"$fxi\">$chk $fx</option>"
+done)
+
+fixsel="<select name=\"fixaction\">
+<option>Select one</option>$fixlst</select>"
+
 if test -f $CONFM; then
 	. $CONFM
 fi
@@ -57,6 +67,13 @@ cat<<-EOF
 	<input type="submit" name="action" value="StartAll">
 	<input type="submit" name="action" value="StopAll">
 	<input type="submit" name="action" value="RestartAll">
+	</fieldset>
+
+	<fieldset><legend>Fixes</legend>
+	$fixsel
+	<input type="submit" name="action" value="UpdateList">
+	<input type="submit" name="action" value="Apply">
+	<input type="submit" name="action" value="Rollback">
 	</fieldset>
 
 	<fieldset><legend>Administering password</legend>
