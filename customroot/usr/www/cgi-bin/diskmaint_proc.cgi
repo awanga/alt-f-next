@@ -8,7 +8,11 @@ tune() {
 	while read ln; do
 		eval $(echo $ln | awk '/^(\/dev\/sd[a-z]|\/dev\/md[0-9])/{printf "part=%s;type=%s", $1, $3}')
 		if test "$type" = "ext2" -o "$type" = "ext3" -o "$type" = "ext4"; then
-			tune2fs -c $mounts -i $days $part >& /dev/null
+
+			cnt=$(tune2fs -l $part 2> /dev/null | awk '/^Mount count:/ {FS=":"; cnt=$2; print cnt+1}')
+			if test $cnt -ge $mounts; then tuneopts="-C $mounts -T now"; fi
+
+			tune2fs -c $mounts $tuneopts -i $days $part >& /dev/null
 			mounts=$((mounts - 2)) # try to avoid simultaneus fsck at mount time
 			days=$((days - 2))
 		fi
