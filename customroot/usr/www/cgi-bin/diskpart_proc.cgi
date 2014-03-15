@@ -8,8 +8,7 @@ read_args
 
 # FIXME: deal with errors
 pre() {
-	html_header
-	echo "<center><h2>Disk Partitioner</h2></center>"
+	html_header "Disk Partitioner"
 	busy_cursor_start
 
 	echo "<p>Stopping disk $dsk..."
