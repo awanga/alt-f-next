@@ -12,16 +12,15 @@ fi
 if test "$wind" = "no"; then
 	write_header "$hdr"
 else
-	html_header
-	mktt() { # no tooltips or help...
-		true
-	}
 	hf=${0%.cgi}_hlp.html
 	if test -f /usr/www/$hf; then
 		hlp="<a href=\"../$hf\" $(ttip tt_help)><img src=\"../help.png\" alt=\"help\" border=0></a>"
 	fi
 
-	echo "<center><h2>Folder Ownership and Access Permissions $hlp</h2></center>"
+	html_header "Folder Ownership and Access Permissions $hlp"
+	mktt() { # no tooltips or help...
+		true
+	}
 fi
 
 browse="$(httpd -d $browse)"
