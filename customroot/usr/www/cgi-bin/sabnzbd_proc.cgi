@@ -67,7 +67,13 @@ if test -n "$update"; then
 
 		echo "<p>Starting SABnzbd..."
 		rcsabnzbd start >& /dev/null
-		while ! rcsabnzbd status >& /dev/null; do usleep 200000; done
+		for i in $(seq 1 300); do
+			if rcsabnzbd status >& /dev/null; then
+				break
+			else
+				usleep 200000
+			fi
+		done
 	fi
 
 	js_gotopage /cgi-bin/user_services.cgi
