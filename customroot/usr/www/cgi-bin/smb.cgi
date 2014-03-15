@@ -50,6 +50,10 @@ fstab_row() {
 }
 
 if test -e $CONF_SMB; then
+	if ! grep -q '[[:space:]]*use sendfile' $CONF_SMB; then
+		sed -i '/socket options/a\	use sendfile = yes'  $CONF_SMB
+	fi
+
 	eval $(awk '/server string/{split($0, a, "= ");
 		print "hostdesc=\"" a["2"] "\""}
 		/workgroup/{split($0, a, "= ");
