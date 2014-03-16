@@ -29,10 +29,7 @@ Continue?")
 at the expense of a small performance degradation.\n\n\
 Continue?")	
 
-		else if (op == "Verify") // raid consistency
-			res = true
-
-		else if (op == "Repair") // raid inconsistency
+		else if (op == "Verify" || op == "Repair" || op == "Details" || op == "Examine_part")
 			res = true
 
 		else if (op == "Enlarge_raid") // raid to accomodate bigger partitions
@@ -313,6 +310,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 						<option $remops value="Enlarge_raid">Enlarge</option>
 						<option $remops value="Shrink_raid">Shrink</option>
 						<option $destroy_dis value="Destroy_raid">Destroy</option>
+						<option>Details</option>
 					</select></td>
 				EOF
 
@@ -325,6 +323,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 						<option value=Fail_part>Fail</option>
 						<option value=Remove_part>Remove</option>
 						<option value=Add_part>Add</option>
+						<option value=Examine_part>Examine</option>
 						<option value=Clear_part>Clear</option>
 					</select></td>
 					</tr>

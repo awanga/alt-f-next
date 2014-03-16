@@ -237,6 +237,13 @@ elif test -n "$Destroy_raid"; then
 	mdadm --examine --scan > /etc/mdadm.conf
 	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 
+elif test -n "$Details"; then
+	mdev=$Details
+	res=$(mdadm --detail /dev/$mdev; echo; cat /proc/mdstat 2>&1)
+	html_header "$mdev RAID Details"
+	echo "<pre>$res</pre>$(back_button)</body></html>"
+	exit 0
+
 elif test -n "$Add_part"; then
 	mdev="$Add_part"
 	rdev=$(eval echo \$rdev_$mdev)
@@ -260,6 +267,14 @@ elif test -n "$Fail_part"; then
 	if test $? != 0; then
 		msg "Marking failed the $rdev partition of the $mdev RAID device failed:\n\n$res"
 	fi
+
+elif test -n "$Examine_part"; then
+	mdev="$Examine_part"
+	rdev=$(eval echo \$rdev_$mdev)
+	res=$(mdadm --examine /dev/$rdev 2>&1)
+	html_header "$rdev RAID Component Details"
+	echo "<pre>$res</pre>$(back_button)</body></html>"
+	exit 0
 
 elif test -n "$Clear_part"; then
 	mdev="$Clear_part"
