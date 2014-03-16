@@ -481,7 +481,7 @@ linux26: $(LINUX26_TARGETS)
 
 linux26-version: $(PROJECT_BUILD_DIR)/.linux-version
 
-linux26-modules: cross-depmod26 $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed
+linux26-modules: cross-depmod26 xz-host $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed
 
 linux26-source: $(DL_DIR)/$(LINUX26_SOURCE)
 
