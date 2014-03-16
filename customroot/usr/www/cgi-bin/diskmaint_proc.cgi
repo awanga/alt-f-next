@@ -316,6 +316,13 @@ elif test -n "$Format"; then
 	lumount "$part" "formating"
 	format "$part" "$type" "$label"
 
+elif test -n "$Details"; then
+    eval part=\$part_$Details
+    res=$(tune2fs -l "/dev/$part" 2>&1)
+    html_header "$part Filesystem Details"
+    echo "<pre>$res</pre>$(back_button)</body></html>"
+    exit 0
+
 elif test -n "$Convert"; then
 	eval part=\$part_$Convert
 	eval type=\$type_$Convert

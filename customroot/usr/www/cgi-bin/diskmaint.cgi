@@ -42,9 +42,7 @@ It is not advisable to do if you intend to continue using\n\
 the vendors firmware, that might not recognize the new format.\n\n" + cmsg +
 "Proceed converting the " + part + " filesystem anyway?");
 		}
-		else if (op == "Mount")
-			res = true
-		else if (op == "unMount")
+		else if (op == "Mount" || op == "unMount" || op == "setLabel" || op == "setMountOpts" || op == "Details")
 			res = true
 		else if (op == "Check")
 			res = confirm("Cleaning a filesystems means verifying its consistency\n\
@@ -55,10 +53,6 @@ If this happens, you must either select the \"Force Fix\" Operation\n\
 or fix the filesystem using the command line.\n\n" + cmsg + "Proceed checking the " + part + " filesystem?");
 		else if (op == "ForceFix")
 			res = confirm("Use ONLY if the Check operation failed and asked for manual intervention, as data loss might occur.\n\n" + cmsg + "Are you really sure that you want to force fix the " + part + " filesystem?");
-		else if (op == "setLabel")
-			res = true
-		else if (op == "setMountOpts")
-			res = true
 		else if (op == "Shrink")
 			res = confirm("Shrinking a filesystem compacts all its data at the partition begin.\n\n\
 Shrink a filesystem if you intend to latter shrink the disk partition\n\
@@ -163,6 +157,9 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 	conv_en="disabled"
 	if test "$TYPE" = "ext2" -o "$TYPE" = "ext3"; then conv_en=""; fi
 
+	details_en="disabled"
+	if test "$TYPE" = "ext2" -o "$TYPE" = "ext3" -o "$TYPE" = "ext4"; then details_en=""; fi
+
 	clean_en=""; label_en=""
 	if test "$TYPE" = "ntfs" -a -n "$ntfs_dis"; then
 		clean_en="disabled"
@@ -215,6 +212,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 				<option value=setMountOpts>Set Mnt Options</option>
 				<option $resize_en>Shrink</option>
 				<option $resize_en>Enlarge</option>
+				<option $details_en>Details</option>
 				<option>Wipe</option>
 			</select></td>
 			<td class="highcol"><select id="fs_$i" name="type_$i">
