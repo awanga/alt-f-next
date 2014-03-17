@@ -59,8 +59,10 @@ EOF
 awk -F = 'BEGIN {
 		t = FS; FS= ":"
 		i = 0; users[i++] = "anybody"
-		while (getline <"/etc/rsyncd.secrets")
+		while (getline <"/etc/rsyncd.secrets") {
+			if (substr($1,1,1) == "#") continue
 			users[i++] = $1
+		}
 		FS = t
 	} 
 	/\[.*\]/ {
