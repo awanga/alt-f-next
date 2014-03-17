@@ -84,8 +84,9 @@ IPKGDIR=$CDIR/ipkgfiles
 . .config 2> /dev/null
 BOARD=$BR2_PROJECT
 
-ROOTFSFILES=$CDIR/rootfsfiles-base.lst
 ROOTFSDIR=$BLDDIR/project_build_arm/$BOARD/root
+
+ROOTFSFILES=$CDIR/rootfsfiles-base.lst
 TFILES=$CDIR/rootfsfiles.lst
 PFILES=$CDIR/pkgfiles.lst
 
@@ -309,11 +310,6 @@ case "$1" in
 		;;
 esac
 
-if ! test -e $TFILES; then
-	echo "file $TFILES not found, read help."
-	exit 1
-fi
-
 ARCH=arm
 
 pkg=$1
@@ -431,9 +427,13 @@ else
 fi
 
 if ! test -f $IPKGDIR/$pkg.lst; then # first time build
+	if ! test -e $TFILES; then
+		echo "file $TFILES not found, read help."
+		exit 1
+	fi
+
 	# create file list
 	cd $ROOTFSDIR	
-	#find . ! -type d | sort > $PFILES
 	find . | sort > $PFILES
 
 	diff $TFILES $PFILES | sed -n 's\> ./\./\p' > $IPKGDIR/$pkg.lst
