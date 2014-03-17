@@ -13,7 +13,7 @@ alternative firmware for the D-Link DNS-320/321/323/325 and compatible NAS.
 <a href="http://sourceforge.net/p/alt-f/wiki/Home" target=_blank>Wiki</a><br> 
 
 <h3>Copyright</h3>	
-<pre>$(cat /LICENCE)</pre>
+<pre>$(cat /LICENSE)</pre>
 
 <h3>Licence</h3>
 <pre>$(cat /COPYING)</pre>
