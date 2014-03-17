@@ -284,6 +284,10 @@ for i in $build; do
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat --format=%s initramfs)) bytes
 done
 
-cp ${DESTD}/urootfs ${DESTD}/uImage /srv/tftpboot/
-#rm kernel initramfs defaults ${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage
+# DNS-320/325 devel only
+if false; then
+	cp ${DESTD}/urootfs ${DESTD}/uImage /srv/tftpboot/
+else
+	rm kernel initramfs defaults ${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage
+fi
 
