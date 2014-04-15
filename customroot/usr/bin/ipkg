@@ -143,10 +143,12 @@ and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 
 	cd /
 	rm -rf $TMPD
-	
+
+# FIXME: remount /Alt-F with inotify makes 3.10.11 crash here, the *first* time.
+# FIXME: Take the risk and don't remount with inotify??
+# FIXME: verify what happens with 3.10.32
+
 	if test -z "$local"; then
-		# FIXME: remount /Alt-F with inotify makes 3.10.11 crash here, the *first* time.
-		# Take the risk and don't remount with inotify
 		#aufs.sh -n
 		ipkg-cl update
 		ipkg-cl install ipkg
