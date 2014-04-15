@@ -375,19 +375,8 @@ create_raid() {
 			;;
 	esac
 
-	metad="0.9"
-	for i in $pair1 $pair2 $spare; do
-		if test $i = "missing"; then continue; fi
-		j=$(basename $i)
-		k=${j:0:3}
-		if test "$(cat /sys/block/$k/$j/size)" -gt 4294967296; then # 2^32, 2.2 TB
-			metad=1.2
-			break
-		fi
-	done
-
 	echo "<p>Creating $1 $MD..."
-	res="$(mdadm --create /dev/$MD --run --level=$1 --metadata=$metad $opts \
+	res="$(mdadm --create /dev/$MD --run --level=$1 --metadata=1.0 $opts \
 		--raid-devices=$ndisks $pair1 $pair2 $spare 2>&1)"
 	if test $? != 0; then
 		err "mdadm error, st=$?: $res"
