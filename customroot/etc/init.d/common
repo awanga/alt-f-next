@@ -146,16 +146,47 @@ omsg() {
 	return $1	
 }
 
+# lock file for adduser/addgroup (busybox don't support concurrency on them, 'at' launches them)
+initlock=/tmp/.checkuser-lock
+dolock() {
+	logger -st $1 "waiting for lock"
+	while ! mkdir $initlock >& /dev/null; do usleep 500000; done
+	logger -st $1 "got lock"
+}
+
+# remove lock upon termination
+cleanlock() {
+	logger -st $1 "remove lock"
+	rmdir $initlock
+}
+
+# check_altf() needs to know the initscript argument:
+srv_arg=$1
+
+# some services should only be started when the Alt-F folder is aufs mounted
+check_altf() {
+	srva=$(basename $0); srv=${srva:3}
+	if ! aufs.sh -s >& /dev/null; then
+		if ! rcat status >& /dev/null; then rcat start >& /dev/null; fi
+		at -q z now+1min<<-EOF 2> /dev/null
+			rc$srv $srv_arg
+		EOF
+		logger -st $srv "Alt-F folder not yet available, delaying one minute. Use Packages->Alt-F menu to install Alt-F packages if you have not yet done it."
+		exit 1
+	fi
+}
+
+# some services need to create its own user/group
 check_user() {
 	if test -n "$RC_USER" -a -n "$RC_USERN" -a -n "$RC_GROUP" -a -n "$RC_GROUPN" -a -n "$RC_DESC"; then
-		if ! aufs.sh -s >& /dev/null; then
-			echo "You need to install Alt-F 'ipkg' package, use menu Packages->Alt-F"
-			exit 1
-		fi
+		check_altf
+		srva=$(basename $0); srv=${srva:3}
 		user_home=/var/lib/$RC_USER
 		if ! id $RC_USER >& /dev/null; then
+			dolock $srv
 			addgroup -S -g $RC_GROUPN $RC_GROUP >& /dev/null
 			adduser -S -g "$RC_DESC" -G $RC_GROUP -u $RC_USERN -h $user_home $RC_USER >& /dev/null
+			cleanlock $srv
 		fi
 		if ! test -d $user_home; then
 			mkdir -p $user_home
