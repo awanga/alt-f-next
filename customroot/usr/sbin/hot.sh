@@ -81,7 +81,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 
 	res=$(mdadm --query --examine --export --test $PWD/$MDEV)
 	if test $? = 0; then
-		mdadm --examine --scan > $MDADMC
+		mdadm --examine --scan --config=partitions > $MDADMC
 		echo "DEVICES /dev/sd*" >> $MDADMC
 		mdadm --incremental --no-degraded $PWD/$MDEV
 		eval $res
@@ -243,7 +243,11 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 				fam="$(cat /sys/block/$MDEV/device/vendor)"
 				mod="$(cat /sys/block/$MDEV/device/model)"
 			fi
-			cap="$(awk '{printf "%.1f GB", $0 * 512 / 1e9}' /sys/block/$MDEV/size)"
+			# Tom Schmidt tom@4schmidts.com: Display MB, GB or TB depending on the disk capacity
+			cap=$(awk '{siz=$0*512/1e6; unit="MB";
+				if (siz >= 1000) {siz=siz/1e3; unit="GB"};
+				if (siz >= 1000) {siz=siz/1e3; unit="TB"};
+				printf "%.1f%s\n", siz, unit}' /sys/block/$MDEV/size)
 			echo ${bay}_dev=$MDEV >> $BAYC
 			echo $MDEV=${bay} >> $BAYC
 			echo ${bay}_cap=\"$cap\" >> $BAYC
@@ -282,7 +286,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 	
 		# for now use only disk partition-based md
 		if ! fdisk -l /dev/$MDEV | awk '$6 == "da" || $6 == "fd" || $6 == "fd00" { exit 1 }'; then
-			mdadm --examine --scan > $MDADMC
+			mdadm --examine --scan --config=partitions > $MDADMC
 			echo "DEVICES /dev/sd*" >> $MDADMC
 		fi
 
@@ -294,7 +298,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
 elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 
-	mdadm --examine --scan > $MDADMC
+	mdadm --examine --scan --config=partitions > $MDADMC
 	echo "DEVICES /dev/sd*" >> $MDADMC
 	blkid -g
 
@@ -323,7 +327,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 #	fi
 
 	ret=0
-	mdadm --examine --scan > $MDADMC
+	mdadm --examine --scan --config=partitions > $MDADMC
 	echo "DEVICES /dev/sd*" >> $MDADMC
 
 	mpt=$(awk '/'$MDEV'/{print $2}' /proc/mounts )
