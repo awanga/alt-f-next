@@ -1,11 +1,15 @@
 #!/bin/sh
 
 # udhcpc script edited by Tim Riker <Tim@Rikers.org>
+# modified for Alt-F by jcard
 
 [ -z "$1" ] && logger -s "Error: should be called from udhcpc" && exit 1
 
+#debug=true
+MODFILES="/etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf"
+
 # record current date on modifiable files
-for i in /etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf; do
+for i in $MODFILES; do
     touch -r $i /tmp/$(basename $i)
 done
 
@@ -20,32 +24,28 @@ case "$1" in
 		;;
 
 	renew|bound)
-		logger -s -t udhcpc "udhcpc environment:"
-		for i in $(env); do
-			logger -s -t udhcpc "   $i"
-		done
+		if test -n "$debug"; then
+			logger -s -t udhcpc "udhcpc environment:"
+			for i in $(env); do
+				logger -s -t udhcpc "   $i"
+			done
+		fi
 
 		# evaluate NETWORK
 		eval $(ipcalc -n $ip $subnet)
 
-		if test -z "$domain"; then
-			#domain=$(sed -n "s/workgroup = \(.*$\)/\1/p" /etc/samba/smb.conf)
-			domain="localnet"
+		if test -z "$domain"; then domain="localnet"; fi
+
+		if test -n "$mtu"; then MTU="mtu $mtu"
+		elif test -n "$IF_MTU"; then MTU="mtu $IF_MTU"
+		else MTU="mtu 1500"
 		fi
 
-		if test -n "$mtu"; then
-			MTU="mtu $mtu"
-		elif test -n "$IF_MTU"; then
-			MTU="mtu $IF_MTU"
-		else
-			MTU="mtu 1500"
-		fi
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK $MTU
 
 		logger -s -t udhcpc "Updating /etc/hosts"
 		hname=$(hostname)
-		fnm=$(hostname -f)
-		if test $? = 0; then
+		if fnm=$(hostname -f); then
 			sed -i '/^[^#].*'$fnm'/d' /etc/hosts
 		fi
 		echo -ne "$ip\t$hname.$domain\t$hname\n" >> /etc/hosts
@@ -54,18 +54,13 @@ case "$1" in
 		sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$subnet #!# Allow local net|" /etc/httpd.conf
 
 		logger -s -t udhcpc "Updating /etc/samba/smb.conf"
-		#sed -i "s/workgroup =.*$/workgroup = $domain/" /etc/samba/smb.conf
 		sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${subnet}\3|" /etc/samba/smb.conf
 		
 		if test -n "$router"; then
 			logger -s -t udhcpc "Updating default route"
-			while route del default gw 0.0.0.0 dev $interface 2>/dev/null; do
-				:
-			done
+			while route del default gw 0.0.0.0 dev $interface 2>/dev/null; do true; done
 
-			for i in $router ; do
-				route add default gw $i dev $interface
-			done
+			for i in $router ; do route add default gw $i dev $interface; done
 		fi
 
 		logger -s -t udhcpc "Updating /etc/resolv.conf"
@@ -79,7 +74,7 @@ case "$1" in
 esac
 
 # recover dates on modified files
-for i in /etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf; do
+for i in $MODFILES; do
     touch -r /tmp/$(basename $i) $i
 	rm /tmp/$(basename $i)
 done
