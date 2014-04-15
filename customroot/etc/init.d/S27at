@@ -14,6 +14,8 @@ inits() {
 		touch $ATDIR/atjobs/.SEQ
 		chown -R at:at $ATDIR/atjobs $ATDIR/atspool
 	fi
+	# delete jobs in the z queue (delayed service jobs, /etc/init.d/common:check_user)
+	for i in $(atq -q z | cut -f1); do atrm $i; done
 }
 
 case "$1" in
