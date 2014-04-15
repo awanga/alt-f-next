@@ -47,8 +47,9 @@ Continue? ")
 		else if (op == "Destroy_raid") // raid to release its components
 			res = confirm("Destroying a RAID will make all data it contains inaccessible\n\
 and will make its components available to other RAID arrays.\n\n\
-However, for RAID1, the data it contains will be available duplicated on\n\
-each component, which can be used latter as a \"standard\" filesystem.\n\nContinue?")
+However, for RAID1 with metadata 0.9 and 1.0, the data\n\n
+it contains will be available duplicated on each component,\n\n
+which can be used latter as a \"standard\" filesystem.\n\nContinue?")
 
 		else if (op == "Add_part" || op == "Remove_part" || op == "Fail_part" || op == "Clear_part") {
 			if (document.getElementById("rdev_" + part).selectedIndex == 0) {
@@ -148,9 +149,10 @@ EOF
 
 has_disks
 
-# THIS IS RIGHT!
-p1=$(fdisk -l /dev/sd? 2>/dev/null | awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
-	print substr($1, 6)}')
+# RAID components: RAID partitions plus RAID on generic linux partitions
+p1=$(fdisk -l /dev/sd? 2>/dev/null | \
+	awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
+		print substr($1, 6)}')
 p2=$(blkid -t TYPE="mdraid" | awk '{print substr($1, 6, 4)}')
 raidp=$(echo -e "$p1\n$p2" | sort -u)
 
@@ -165,17 +167,17 @@ for i in $raidp; do
 	pairs="$pairs <option value=\"$i\">$i ${cap}GB</option>"
 done
 
-# THIS IS RIGHT! first non-existing md device
-#curdev=$(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}')
-# for metadata 1.2 mdadm reports /dev/md/0, /dev/md/1... which are simlinks to /dev/md0, /dev/md1...
-curdev=$(for i in $(mdadm --examine --scan | awk '/ARRAY/{ print substr($2, match($2, "md"))}'); do
-	if test -h /dev/$i; then
-		if a=$(readlink -f /dev/$i); then basename $a; fi
-	else
-		echo $i
-	fi
-done)
+mout=$(mdadm --examine --scan --verbose --config=partitions | \
+awk '{printf "%s", $0; getline; printf "%s\n", $0}' | \
+sed -n -e 's|ARRAY.*/dev/md/*\(.\)|ARRAY=md\1|' \
+-e 's/num-devices=/num_devices=/' \
+-e 's/,/ /g' -e 's|/dev/||g' \
+-e 's/ devices=\(.*\)/ devices="\1"/p')
 
+# existing on disk RAID devices
+curdev=$(echo "$mout" | sed -n 's|ARRAY=\(.*\).*level.*|\1|p')
+
+# 'dev' is first non-existing md device
 for dev in $(seq 0 9); do
 	if ! echo $curdev | grep -q md$dev; then break; fi
 done
@@ -210,7 +212,8 @@ cat<<-EOF
 	</fieldset>
 EOF
 
-if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
+# there are RAID arrays, either started or stopped
+if echo "$mout" | grep -q ARRAY; then
 	cat<<-EOF
 		<fieldset><legend>RAID Maintenance</legend>
 		<table>
@@ -218,6 +221,7 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 		<th>Dev.</th> 
 		<th>Capacity</th>
 		<th>Level</th>
+		<th>Ver.</th>
 		<th>Components</th>
 		<th></th>
 		<th>Array</th>
@@ -233,20 +237,38 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 		raid_devs="$raid_devs<option value=\"$j\">$j ${cap}GB</option>"
 	done
 
-	if ls /dev/md? >& /dev/null; then
-		for mdev in $curdev; do
-			if ! test -f /sys/block/$mdev/md/array_state; then continue; fi
+	for mdev in $curdev; do
+		if ! test -f /sys/block/$mdev/md/array_state; then continue; fi
 
-			state=$(cat /sys/block/$mdev/md/array_state)
-			type=$(cat /sys/block/$mdev/md/level)
-			pcap=$(awk '/'$mdev'/{printf "%.1f GB", $3/1048576}' /proc/partitions)
+		state=$(cat /sys/block/$mdev/md/array_state)
 
+		if test "$state" = "clear" -o "$state" = "inactive"; then
+			act="Start"
+			destroy_dis="disabled"
+
+			metadata=0.9
+			eval $(echo "$mout" | grep ARRAY=$mdev)
+			cat<<-EOF
+				<tr>
+				<td>$mdev</td>
+				<td></td>
+				<td>$level</td>
+				<td>$metadata</td>
+				<td>$devices</td>
+				<td></td>
+				<td><input type=submit name=$mdev value="Start"></td>
+				<td></td>
+				<td colspan="2" class="highcol"></td>
+				</tr>
+			EOF
+
+		else
 			act="Stop"
 			destroy_dis=""
-			if test "$state" = "clear"; then
-				act="Start"
-				destroy_dis="disabled"
-			fi
+
+			type=$(cat /sys/block/$mdev/md/level)
+			mdata=$(cat /sys/block/$mdev/md/metadata_version)
+			pcap=$(awk '/'$mdev'/{printf "%.1fGB", $3/1048576}' /proc/partitions)
 
 			devs=""
 			for j in $(ls /sys/block/$mdev/slaves); do
@@ -266,9 +288,10 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 	
 			cat<<-EOF
 				<tr>
-				<td align=left>$mdev</td> 
+				<td>$mdev</td> 
 				<td>$pcap</td>
 				<td>$otype</td>
+				<td>${mdata:0:3}</td>
 				<td>$devs</td>
 			EOF
 
@@ -292,10 +315,15 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 				if test "$action" = "check" -o "$action" = "repair"; then
 					abort="<input type=submit name=$mdev value=\"Abort\">"
 				fi
+				if test "$(cat /sys/block/$mdev/md/sync_completed)" = "delayed"; then
+					echo "<td><span class=\"red\"> ${action}ing (delayed)</span>"
+				else
+					echo "<td><span class=\"red\"> ${action}ing</span>"
+				fi
 				cat<<-EOF
-					<td><span class="red"> ${action}ing </span>
 					$abort</td>
-					<td colspan="3"><input type=submit name=$mdev value="Stop"</td>
+					<td><input type=submit name=$mdev value="Stop"</td>
+					<td></td><td class="highcol" colspan=2></td>
 					</tr>
 				EOF
 			else
@@ -310,11 +338,14 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 						<option $remops value="Enlarge_raid">Enlarge</option>
 						<option $remops value="Shrink_raid">Shrink</option>
 						<option $destroy_dis value="Destroy_raid">Destroy</option>
-						<option>Details</option>
+						<option $remops>Details</option>
 					</select></td>
 				EOF
 
-				if test -n "$remops"; then continue; fi
+				if test -n "$remops"; then
+					echo '<td colspan=3 class="highcol"></td></tr>'
+					continue
+				fi
 
 				cat<<-EOF
 					<td class="highcol"><select id=rdev_$mdev name=rdev_$mdev>$raid_devs</select></td>
@@ -329,40 +360,46 @@ if mdadm --examine --brief /dev/sd?? 2> /dev/null | grep -q ARRAY; then
 					</tr>
 				EOF
 			fi
-		done
-	fi
+		fi
+	done
 
-# "Preferred Minor" is for 0.9 metadata
-# minor can be extracted from "name" with 1.x metadata
-# create with 0.9 metadata? for compatibility with the vendor's firmware?
+
+if false; then
+	# now handle stoped arrays, /dev/md? does not exists
+
+	# "Preferred Minor" is for 0.9 metadata, 
+	# for 1.x metadata minor can be extracted from "Name : host:minor"
 
 	ex=""
 	for i in $raidp; do
+		rdev=""; level=""; devs="";
 		eval $(mdadm --examine /dev/$i 2> /dev/null | awk '
 			/Raid Level/ { printf "level=%s; ", $4}
+			/Version/ { printf "mdata=%s; ", $3}
 			/Preferred Minor/ { printf "rdev=\"md%d\"; ", $4}
+			/Name/ {printf "rdev=\"md%d\"; ", substr($3,index($3,":")+1)}
 			/this/ { getline; while (getline) {
 				if (substr($NF, 1,5) == "/dev/") {
 					devs = substr($NF, 6, 4) " " devs;}}
 				printf "devs=\"%s\";", devs}')
-		if test -b /dev/$rdev; then continue; fi
+		if test -b /dev/$rdev; then continue; fi # started, deal above
 		if echo "$ex" | grep -q "$rdev" ; then continue; fi
 		ex="$rdev $ex"
-#if echo "$alldevs" | grep -q $i; then continue; fi
-#alldevs="$alldevs $devs"
-#echo "<p>$alldevs</p>"
 
 		cat<<-EOF
-			<tr align=center>
+			<tr>
 			<td>$rdev</td>
 			<td></td>
 			<td>$level</td>
+			<td>${mdata:0:3}</td>
 			<td>$devs</td>
 			<td></td>
 			<td><input type=submit name=$rdev value="Start"></td>
 			</tr>
 		EOF
 	done
+fi
+
 fi
 
 cat<<-EOF
