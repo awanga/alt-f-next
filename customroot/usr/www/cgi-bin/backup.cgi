@@ -79,6 +79,9 @@ cat<<EOF
 	</script>
 EOF
 
+cifs_dis="disabled"
+if modprobe -D cifs.ko 2> /dev/null; then cifs_dis=""; fi
+
 bck_user="<option>root</option>"
 OIFS="$IFS"
 IFS=":"
@@ -153,7 +156,7 @@ if test -f $CONF_BACKUP; then
 				<td><select id=type_id_$cnt name=bck_type_$cnt onChange="typechg('type_id_$cnt','$cnt')" $(ttip type_tt)>
 					<option $none_sel>Select One</option>
 					<option $dir_sel>Dir</option><option $nfs_sel>NFS</option>
-					<option $cifs_sel>CIFS</option><option $ftp_sel>FTP</option>
+					<option $cifs_dis $cifs_sel>CIFS</option><option $ftp_sel>FTP</option>
 					<option $http_sel>HTTP</option><option $rsync_sel>rsync</option>
 				</select></td>
 				<td><select name="bck_user_$cnt" $(ttip runas_tt)>$sbck_user</select></td>
@@ -180,7 +183,7 @@ for i in $(seq $cnt $((cnt+2))); do
 			<td><span $(ttip id_tt)>$max_id</span></td>
 			<td><select id="type_id_$i" name="bck_type_$i" onChange="typechg('type_id_$i','$i')" $(ttip type_tt)>
 					<option>Select One</option>
-					<option>Dir</option><option>NFS</option><option>CIFS</option>
+					<option>Dir</option><option>NFS</option><option $cifs_dis>CIFS</option>
 					<option>FTP</option><option>HTTP</option><option>rsync</option>
 			</select></td>
 			<td><select name="bck_user_$i" $(ttip runas_tt)>$bck_user</select></td>
