@@ -35,6 +35,8 @@ cat<<EOF
 	</script>
 
 	<form id=disku name=disku action="/cgi-bin/diskutil_proc.cgi" method="post">
+	<fieldset>
+	<legend>Disks</legend>
 	<table>
 	<tr><th>Bay</th>
 	<th>Dev.</th>
@@ -110,8 +112,9 @@ fi
 
 cat<<-EOF
 	<tr><td colspan=8></td>
-	<td class="highcol"><input type="submit" name="standby" value="Submit"></td></tr>        
+	<td class="highcol"><input type="submit" name="standby" value="Submit"></td></tr>
 	</table>
+	</fieldset>     
 	<p>Swapping on USB devices: <input type="submit" name=usb_swap value="$usb_swap_val">
 	</form></body></html>
 EOF

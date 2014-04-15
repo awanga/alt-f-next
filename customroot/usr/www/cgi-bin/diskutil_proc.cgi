@@ -91,14 +91,21 @@ elif test -n "$hstatus"; then
 	exit
 
 elif test -n "$shorttest"; then
-	res="$(smartctl -t short /dev/$shorttest)"
-	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
-	msg "$res\n\nYou can see the result using Health Status."
+	if res=$(smartctl -t short /dev/$shorttest); then
+		res=$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')
+		msg "$res\n\nYou can see the result using Health Status."
+	else
+		msg "Fail: $res"
+	fi
 
 elif test -n "$longtest"; then
-	res="$(smartctl -t long /dev/$longtest)"
-	res="$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')"
-	msg "$res\n\nYou can see the result using Health Status."
+	if res=$(smartctl -t long /dev/$longtest); then
+		res=$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')
+		hdparm -S 0 /dev/$longtest >& /dev/null
+		msg "$res\n\nYou can see the result using Health Status.\n\nDisk spindown has been disable."
+	else
+		msg "Fail: $res"
+	fi
 
 elif test -n "$Enable"; then
 	sed -i '/USB_SWAP/d' $CONFT >& /dev/null
