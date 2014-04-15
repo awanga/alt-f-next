@@ -11,9 +11,9 @@ mktt rem_tt "All hosts from the local network are already allowed<br>
 to access the administrative web pages.<br><br>
 
 Specify, if needed, an external IP address that you wish to also<br>
-have access to the administrative web pages.<br>
+have http access to the administrative web pages.<br>
 Remember that passwords are transmited in plaintext, you are<br>
-advised to install the 'stunnel' package and use secure http.<br><br>
+advised to use https (FIXME: where all IPs are already allowed).<br><br>
 
 The IP must be in the form x.x.x.x, x.x.x.x/y.y.y.y, or x.x.x.x/n,<br> 
 where x or y is between 1 and 254 and n can be 8, 16, 24, 32."
