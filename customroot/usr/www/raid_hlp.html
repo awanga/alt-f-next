@@ -110,6 +110,8 @@ RAID devices are shown, one per line.
 <li><strong>Level</strong> the device RAID level. It will be in red if
 the device is in the degraded state.
 
+<li><strong>Ver.</strong> the device RAID metadata version.
+
 <li><strong>Components</strong> all device components. They will be in
 red if they are in the failed state, green if they are spare components,
 and black otherwise.<br> If a component is automaticaly marked as
@@ -152,9 +154,9 @@ filesystem before shrinking the device.
 
 <li><strong>Destroy</strong> the RAID device and the RAID information
 contained in its components. You will not be able to access the data
-its contains afterwards.<br> For RAID1, however, your data will still be
-available in each of the previous RAID components, and you can mount and
-use them using the Disk->Filesystem web page. 
+its contains afterwards.<br> However, for RAID1 with metadata version 0.9 and 1.0
+your data will still be available in each of the previous RAID components,
+and you can mount and use them using the Disk->Filesystem web page. 
 
 </ul>
 
