@@ -37,6 +37,8 @@ if test -z "$srv"; then
 fi
 
 cat<<-EOF
+	<fieldset>
+	<legend>$title</legend>
 	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<table><tr>
 	<th>Service</th>
@@ -83,7 +85,7 @@ cat<<-EOF
 	<tr><td></td>
 	<td class="highcol"><input type="submit" name="$srv" value="Submit"></td>
 	<td colspan=4></td></tr>
-	</table></form></body></html>
+	</table></fieldset></form></body></html>
 EOF
 
 #enddebug
