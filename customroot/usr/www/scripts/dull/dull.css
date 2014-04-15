@@ -27,8 +27,11 @@ select, input {
 	background: #e0e0e0;
 	text-align: center;
 }
-table, th, td {
+table {
 	border-collapse: collapse;
+}
+th, td {
+	padding: 3px;
 }
 fieldset {
 	margin-bottom: 1em;
