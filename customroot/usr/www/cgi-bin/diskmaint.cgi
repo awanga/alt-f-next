@@ -35,7 +35,7 @@ but the operation evolution can be verified in the status page.\n\n"
 			}
 
 			if (op == "Format")
-				res = confirm("Formating will destroy all data in the filesystem " + part + "\n\n" + cmsg + "Proceed?");
+				res = confirm("Formatting will destroy all data in the filesystem " + part + "\n\n" + cmsg + "Proceed?");
 			else if (op == "Convert")
 				res = confirm("Converting filesystems can only be done upwards.\n\n\
 It is not advisable to do if you intend to continue using\n\

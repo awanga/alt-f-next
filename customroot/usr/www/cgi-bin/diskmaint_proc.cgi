@@ -13,7 +13,7 @@ tune() {
 			if test $cnt -ge $mounts; then tuneopts="-C $mounts -T now"; fi
 
 			tune2fs -c $mounts $tuneopts -i $days $part >& /dev/null
-			mounts=$((mounts - 2)) # try to avoid simultaneus fsck at mount time
+			mounts=$((mounts - 2)) # try to avoid simultaneous fsck at mount time
 			days=$((days - 2))
 		fi
 	done < /proc/mounts
@@ -123,7 +123,7 @@ format() {
 		nice mkfs.$2 $opts -v /dev/$1 > $logf 2>&1
 		st=\$?
 		if test \$st != 0; then
-			emsg="Formating $1 with $2 failed with code \$st: \$(cat $logf)"
+			emsg="Formatting $1 with $2 failed with code \$st: \$(cat $logf)"
 			logger "\$emsg"
 			echo "<li><pre>\$emsg</pre>" >> $SERRORL
 			rm \$0*
@@ -313,7 +313,7 @@ elif test -n "$Format"; then
 	eval part=\$part_$Format
 	eval type=\$type_$Format
 	label="$(plabel $part)"
-	lumount "$part" "formating"
+	lumount "$part" "formatting"
 	format "$part" "$type" "$label"
 
 elif test -n "$Details"; then
