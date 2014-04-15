@@ -156,15 +156,15 @@ elif test "$flash" = "FlashIt"; then
 			;;
 	esac
 
-	rcsysctrl start
+	rcsysctrl start >& /dev/null
 	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
 	echo "none" > "/tmp/sys/power_led/trigger"
 fi
 
 cat<<-EOF
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-	You can continue using the current firmware,<br>
-	but the new firmware will only be active after a reboot.<br>
+	You can continue using the current firmware,
+	the new firmware will only be active after a reboot.<br>
 	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 60 seconds.\n\nProceed?')">
 	</form></body></html>
 EOF

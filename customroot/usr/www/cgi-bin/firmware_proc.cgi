@@ -22,7 +22,7 @@ st=$?
 
 rm -f $upfile
 
-supported="D-Link DNS-320-A1, D-Link DNS-321-A1/A2, D-Link DNS-323-A1/B1/C1, D-Link DNS-325-A1, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
+supported="D-Link DNS-320-A1/A2, D-Link DNS-321-A1/A2, D-Link DNS-323-A1/B1/C1, D-Link DNS-325-A1/A2, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
 
 if test $st != "0"; then
 	rm -f kernel initramfs sqimage defaults
