@@ -12,10 +12,9 @@ If you drop a torrent file in this folder, downloading will start."
 mktt block_tt "Example site from where a file with a list of IPs to block will be downloaded.<br>
 You must be confident on the site, the default value is not endorsed."
 
-CONFF=/var/lib/transmission
-JSON=settings.json
+CONFF=/etc/transmission/transmission.conf
 
-WATCH_DIR=$(sed -n '/watch-dir/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF/$JSON)
+WATCH_DIR=$(sed -n '/watch-dir/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF)
 WATCH_DIR=$(httpd -e "$WATCH_DIR")
 
 cat<<-EOF

@@ -4,8 +4,7 @@
 check_cookie
 read_args
 
-CONFF=/var/lib/transmission
-JSON=settings.json
+TCONF=/etc/transmission/transmission.conf
 SMBCONF=/etc/samba/smb.conf
 
 TRANSMISSION_USER=transmission
@@ -18,7 +17,7 @@ if test -n "$WebPage"; then
 		rctransmission start  >& /dev/null
 	fi
 	
-	rpc_port=$(sed -n 's/.*"rpc-port":[[:space:]]*\([[:digit:]]*\).*/\1/p' $CONFF/$JSON)
+	rpc_port=$(sed -n 's/.*"rpc-port":[[:space:]]*\([[:digit:]]*\).*/\1/p' $TCONF)
 	embed_page "http://${HTTP_HOST%%:*}:${rpc_port}" "Transmission Page"
 
 elif test -n "$Submit"; then
@@ -51,9 +50,9 @@ elif test -n "$Submit"; then
 	sed -i -e 's|.*"download-dir":.*|    "download-dir": "'"$EDOWNLOAD_DIR"'",|' \
 	-e 's|.*"incomplete-dir":.*|    "incomplete-dir": "'"$EINCOMPLETE_DIR"'",|' \
 	-e 's|.*"watch-dir":.*|    "watch-dir": "'"$EWATCH_DIR"'",|' \
-	"$CONFF/$JSON"
+	"$TCONF"
 
-	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$CONFF/$JSON"
+	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$TCONF"
 
 	if ! grep -q "^\[Transmission\]" $SMBCONF; then
 		cat<<EOF >> $SMBCONF
