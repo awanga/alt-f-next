@@ -13,7 +13,6 @@ RC_DESC="DBUS daemon"
 
 . $(dirname $0)/common
 
-# Create needed directories.
 DBUS_DIRS="/var/lib/dbus /var/run/dbus /var/lock/subsys /tmp/dbus
 /etc/dbus-1/system.d /etc/dbus-1/session.d /usr/libexec/dbus-1 
 /usr/share/dbus-1/services /usr/share/dbus-1/system-services"
@@ -44,7 +43,6 @@ istop() {
 
 check_user /var/lib/$RC_USER
 
-# See how we were called.
 case "$1" in
 	start) istart ;;
 	stop) istop ;;
