@@ -267,7 +267,7 @@ for i in $disks; do
 			<option $conv_mbr_dis value=Conv_MBR>Convert to MBR</option>
 			<option $conv_gpt_dis value=Conv_GPT>Convert to GPT</option>
 		</select></td>
-		<td><select id=cp_$disk name=cp_$disk onChange="msubmit('$disk','$dbay', '$dcap')"><option>CopyTo</option>$optd</select></td>
+		<td class="highcol"><select id=cp_$disk name=cp_$disk onChange="msubmit('$disk','$dbay', '$dcap')"><option>CopyTo</option>$optd</select></td>
 		</tr>
 EOF
 done
@@ -296,11 +296,16 @@ if $(echo $fout | grep -q "Found valid GPT with protective MBR; using GPT"); the
 	windd_dis=""; ntfsd="disabled"; vfatd="disabled"
 fi
 
+swapneeded=""
+if test "$dbay" != "usb"; then
+	swapneeded="<p>Every internal disk must have a swap partition as its first partition, 0.5GB is generally enough.</p>"
+fi
+
 cat<<EOF
 	<fieldset>
 	<legend>Partition $dbay disk, $dcap, $dmod </legend>
 	<p>Using <strong>$in_use</strong> partitioning.</p>
-	<p>Every disk must have a swap partition as its first partition, 0.5GB is generally enough.</p>
+	$swapneeded
 	<input type=hidden name=in_use value="$in_use">
 	<table>
 	<tr align=center>
