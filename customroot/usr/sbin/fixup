@@ -1,0 +1,115 @@
+#!/bin/sh
+
+# a very simple, i.e., crude and rude, script to apply fixes.
+#
+# fix name format: <Alt-F version>-<fix number>-<long_description_no_spaces>.fix
+# a fix must contain three functions: status(), apply() and rollback().
+# status() returns 0 if the fix is already applied.
+# A REQUIRE variable might exist, containing fix <version>-<number> that
+# shall be recursively applied before, e.g. REQUIRE="0.1RC4-04 0.1RC4-02"
+# rollback() does not recursively remove REQUIRE fixes. Shall it?
+
+CONFM=/etc/misc.conf
+
+. $CONFM 
+
+if test -z "$FIXSITE"; then # to remove after RC4
+	FIXSITE=http://sourceforge.net/projects/alt-f/files/fixes
+	echo FIXSITE=$FIXSITE >> $CONFM
+fi
+
+VER=$(cat /etc/Alt-F)
+FIXDIR=/usr/share/fixes
+
+if ! test -d $FIXDIR; then mkdir -p $FIXDIR; fi
+cd $FIXDIR
+
+usage() {
+	echo usage: $0 "apply <fix> | rollback <fix> | status <fix> | download | list"
+	exit 1
+}
+
+args() {
+	if test $# != 2; then usage; else include $2; fi
+}
+
+include() {
+	if ! test -f fixes.lst; then download; fi
+
+	if test ${1%%-*} != "$VER"; then
+		fix=$(ls $VER-$1-*.fix 2> /dev/null)
+	else
+		fix=$(ls $1-*.fix 2> /dev/null)
+	fi
+
+	if test -z "$fix"; then
+		echo "No such \"$1\" fix."
+		exit 1
+	fi
+
+	. $fix
+	#echo $fix REQUIRE: $REQUIRE
+}
+
+download() {
+	# mirroring with wget doesn't work on sourceforge
+	rm * >& /dev/null
+	if ! wget -q $FIXSITE/fixes.lst; then
+		echo "No No fixes available or can't download fixes."
+		touch fixes.lst
+		exit 1
+	fi
+
+	for i in $(cat fixes.lst | grep $VER); do
+		flst="$flst $FIXSITE/$i"
+	done
+
+	if test -n "$flst"; then
+		wget -q $flst
+	fi
+}
+
+recurse() {
+	for i in $REQUIRE; do
+		if test -s $i-*.fix; then fixup apply $i; fi
+	done
+}
+
+list() {
+	if ! test -f fixes.lst; then download; fi
+
+	for i in $(ls $VER-*.fix 2> /dev/null); do
+		fix2=$(echo $i | cut -d"-" -f2)
+		fix3=$(echo $i | cut -d"-" -f3)
+		fixup status $fix2 >& /dev/null
+		echo $? $fix2-$(basename $fix3 .fix)
+	done
+}
+
+case "$1" in
+	apply)
+		args $*
+		if status; then return; fi
+		if test -n "$REQUIRE"; then recurse; fi
+		apply
+		;;
+
+	rollback)
+		args $*
+		if ! status; then return; fi
+		rollback
+		;;
+
+	status)
+		args $*
+		if ! test -f fixes.lst; then download; fi
+		status
+		;;
+
+	list) list ;;
+
+	download) download ;;
+
+	*) usage ;;
+esac
+
