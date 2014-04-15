@@ -91,7 +91,7 @@ if test -z "$ME" -o -z "$MG"; then
 	export MG=$(id -gn)
 fi
 
-PATH=$(pwd)/bin:$PATH
+#PATH=$(pwd)/bin:$PATH
 
 . .config 2> /dev/null
 board=$BR2_PROJECT
@@ -109,8 +109,6 @@ else
 	exit 1
 fi
 
-# SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
-
 # FIXME: shouldn't this be in .config instead? to diminish redundancy and missing dependencies?
 # fw_pkgs: pre-installed packages in base firmware
 # sq_pkgs: pre-installed packages on sqimage 
@@ -119,25 +117,38 @@ fi
 base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools dropbear rsync portmap nfs-utils kexec gptfdisk-sgdisk sfdisk ntfs-3g zlib libiconv popt"
 base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp samba-small openssl openssh-sftp vsftpd wget msmtp stunnel"
 
+# SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
+
 case $board in
 	dns323)
 		SQFSBLK=262144
 		fw_pkgs="$base_pkgs $base_pkgs2"
+		all_pkgs=$fw_pkgs
 		;;
 	dns321)
 		SQFSBLK=131072
-		#SQFSBLK=262144
 		fw_pkgs="$base_pkgs $base_pkgs2 minidlna"
+		all_pkgs=$fw_pkgs
 		;;
 	dns325)
 		SQFSBLK=131072
 		fw_pkgs="$base_pkgs gptfdisk mtd-utils"
 		sq_pkgs="$base_pkgs2 ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission iscsitarget"
+		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
+	*) echo "Unsupported \"$board\" board"; exit 1;;
 esac
 
 CWD=$PWD
 
+# base packages /etc configuration files
+base_conf=$(for i in $base_pkgs $base_pkgs2; do grep './etc/'  $CWD/ipkgfiles/$i.lst; done)
+
+# all packages (and needed dependencies) /etc configuration files
+all=$(for i in $all_pkgs; do rdeps $i; done | sort -u | cut -d" " -f1)
+all_conf=$(for i in $all; do grep './etc/' $CWD/ipkgfiles/$i.lst; done)
+
+# deprecated
 if test "$TYPE" = "cpio"; then # standard initramfs
 	beroot
 
@@ -153,6 +164,7 @@ if test "$TYPE" = "cpio"; then # standard initramfs
 
 	chown $ME:$MG rootfs.arm.$TYPE.$EXT
 
+# deprecated
 elif test "$TYPE" = "squsr"; then # standard initramfs with /usr squashed
 	beroot
 
@@ -175,7 +187,8 @@ elif test "$TYPE" = "squsr"; then # standard initramfs with /usr squashed
 	rm rootfs.arm.ext2.tmp
 
 	chown $ME:$MG rootfs.arm.$TYPE.$EXT
-	
+
+# DNS-321/323
 elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 
 	cd ${BLDDIR}/project_build_arm/$board/
@@ -189,6 +202,9 @@ elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 		deps_check $i
 		deps_status $i
 	done >> root/etc/preinst.status
+	
+	# update /etc/settings with pre installed package configuration files
+	echo -e "$base_conf\n$all_conf" | sort | uniq -u | grep -vE '/etc/init.d|/etc/avahi/services' | sed 's|^./|/|' >> root/etc/settings
 
 	# mksquashfs can create device nodes
 	rm -f root/dev/null root/dev/console
@@ -203,6 +219,7 @@ elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 
 	mv rootfs.arm.sqall.$EXT ${BLDDIR}/binaries/$board
 
+# DNS-320/325
 elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage with extra files
 
 # BUG: FIXME kernel-modules is needed for the dns-325 because of forked-daapd
@@ -212,7 +229,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 # note: cryptodev is a kernel module, set at package config time
 
 	if test "$board" != "dns325"; then
-		echo "initramfs: FIXME: ERROR, this mode is only for a dns325"
+		echo "initramfs: FIXME: ERROR, this mode is only for a dns-320/325"
 		exit 1
 	fi
 
@@ -221,7 +238,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 	sq_pkgs_deps=$(for i in $sq_pkgs; do rdeps $i; done | sort -u)
 
-	echo -e "$fw_pkgs_deps" "\n$sq_pkgs_deps" | sort -u > root/etc/preinst
+	echo -e "$fw_pkgs_deps\n$sq_pkgs_deps" | sort -u > root/etc/preinst
 
 	# create ipkg status file stating which packages are pre installed
 	rm -f root/etc/preinst.status
@@ -230,6 +247,9 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 		deps_status $i
 	done >> root/etc/preinst.status
 
+	# update /etc/settings with pre installed package configuration files
+	echo -e "$base_conf\n$all_conf" | sort | uniq -u | grep -vE '/etc/init.d|/etc/avahi/services' | sed 's|^./|/|' >> root/etc/settings
+	
 	# create sqimage pkgs file list and ipkg status file stating which packages are pre installed
 	TF=$(mktemp)
 	for i in $(echo "$sq_pkgs_deps" | cut -d' ' -f1); do
