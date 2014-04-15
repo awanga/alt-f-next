@@ -148,7 +148,7 @@ loadflashdef() {
 		last="$1"	
 	fi
 
-	lf=$(basename $last)
+	lf=$(basename $last 2> /dev/null)
 	if test -z "$last" -o ! -f "$last" -o ! -s "$last"; then
 		echo "loadsave_settings: empty or no file $lf found!"
 		res=1
@@ -316,9 +316,9 @@ to_AltF() {
 	wfiles="$files /etc/fstab /etc/bay"
 	for i in $wfiles; do
 		if test -e $i -a -e /Alt-F/$i; then
-#			cp -a $i /Alt-F/$i	# no need to copy, they will be copied when changed/created
+#			cp -a $i /Alt-F/$i # no need to copy, they will be copied when changed/created
 #		elif test -e /Alt-F/$i; then
-			rm -f /Alt-F/$i	# remove old, probably outdated, files
+			rm -f /Alt-F/$i # remove old, probably outdated, files
 		fi 
 	done
 }
