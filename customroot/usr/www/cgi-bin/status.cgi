@@ -2,7 +2,7 @@
 
 . common.sh
 
-# Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
+# Based on original idea and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
 # Modified and adapted by Joao Cardoso
 launch() {
 	echo "<div id=\"$1\">"
@@ -11,7 +11,7 @@ launch() {
 	return 0;
 }
 
-# Based on original ideia and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
+# Based on original idea and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
 # Modified and adapted by Joao Cardoso
 jscripts() {
 	cat<<-EOF
@@ -93,8 +93,31 @@ systems_st() {
 	loadv=$(cut -f1 -d" " /proc/loadavg)
 	load=$(awk '{printf "%d", 50 * $1 }' /proc/loadavg)
 
-	eval $(free | awk '/Swap/{if ($2 == 0) printf "swap=0; swapv=None"; \
-			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3*100/$2, $3/1024, $4/1024}}')
+#	eval $(free | awk '/Swap/{if ($2 == 0) printf "swap=0; swapv=None"; \
+#			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3*100/$2, $3/1024, $4/1024}}')
+
+	mem=0; physmem=0
+	swap=0; swapv="None"
+	eval $(free | awk '{if ($1 == "Mem:") \
+			{printf "mem=%d; physmem=%d;", $3*100/$2, $2/1024}; \
+		if ($1 == "Swap:" && $2 != 0) \
+			{printf "swap=%d; swapv=\"%dMB\";", $3*100/$2, $2/1024}}')
+	if test "$swapv" = "None"; then
+		memalert=""
+		swap=100	# Trigger red alert if no swap
+	else
+		memalert="101 102"	# always green as long as we have swap configured
+	fi
+	if test $physmem -eq 0; then
+		physmem="Unknown"
+	else # Round up memory
+		if test $physmem -le 64; then physmem="64MB"
+		elif test $physmem -le 128; then physmem="128MB"
+		elif test $physmem -le 256; then physmem="256MB"
+		elif test $physmem -le 512; then physmem="512MB"
+		elif test $physmem -le 1024; then physmem="1GB"
+		fi
+	fi
 
 	eval $(awk '{ days = $1/86400; hours = $1 % 86400 / 3600; \
 		printf "up=\"%d day(s) %d hour(s)\"", days, hours }' /proc/uptime)
@@ -118,11 +141,6 @@ systems_st() {
 		fan=$(expr $fanv \* 100 / $max_fan_speed)
 	fi
 
-	mode="Reloaded"
-	if isflashed; then
-		mode="Flashed"	
-	fi
-
 	cat<<-EOF
 		<fieldset><legend>System</legend>
 		<table><tr>
@@ -130,12 +148,11 @@ systems_st() {
 			<td><div class="bgl">Fan speed</div> $(drawbargraph $fan $fanv)</td>
 			<td><div class="bgl">Load</div> $(drawbargraph $load $loadv)</td>
 			<td><div class="bgl">CPU</div> $(drawbargraph $cpu)</td>
-			<td><div class="bgl">Swap</div> $(drawbargraph $swap $swapv)</td>
+			<td><div class="bgl">Memory</div> $(drawbargraph $mem "$mem% of $physmem" $memalert)</td>
+			<td><div class="bgl">Swap</div> $(drawbargraph $swap "$swap% of $swapv")</td>
 		</tr><tr>
-			<td><strong>Name:</strong> $(hostname -s)</td>
+			<td colspan=2><strong>Name:</strong> $(hostname -s)</td><td></td>
 			<td colspan=2><strong>Device:</strong> $board</td>
-			<td><strong>Mode:</strong> $mode</td>
-			<td></td>
 		</tr><tr>
 			<td colspan=3><strong>Date:</strong> $(date)</td>
 			<td colspan=2><strong>Uptime:</strong> $up</td>
@@ -250,6 +267,7 @@ raid_st() {
 	EOF
 
 	for i in /dev/md[0-9]*; do
+		if ! test -b $i; then continue; fi
 		mdev=$(basename $i)
 		state=$(cat /sys/block/$mdev/md/array_state)
 		# if test "$state" = "clear"; then continue; fi
@@ -266,11 +284,17 @@ raid_st() {
 					deg="OK"
 				fi
 				act=$(cat /sys/block/$mdev/md/sync_action)
+				scompl=$(cat /sys/block/$mdev/md/sync_completed)
 				if test "$act" != "idle"; then
 					act="<span class=\"red\"> $act </span>"
-					compl=$(drawbargraph $(awk '{printf "%d", $1 * 100 / $3}' /sys/block/$mdev/md/sync_completed))
-					speed=$(cat /sys/block/$mdev/md/sync_speed)
-					exp=$(awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60}' /sys/block/$mdev/md/sync_completed 2> /dev/null)
+					if test "$scompl" != "delayed"; then
+						compl=$(drawbargraph $(echo $scompl | awk '{printf "%d", $1 * 100 / $3}'))
+						speed=$(cat /sys/block/$mdev/md/sync_speed)
+						exp=$(echo $scompl | awk '{printf "%.1fmin", ($3 - $1) * 512 / 1000 / '$speed' / 60}' 2> /dev/null)
+					else
+						compl=$(drawbargraph 0)
+						exp="delayed"
+					fi
 				fi
 			fi
 		fi
@@ -309,7 +333,6 @@ filesys() {
 
 		if test "$type" == "ext2" -o "$type" == "ext3" -o "$type" == "ext4"; then
 			if res=$(tune2fs -l $dsk 2> /dev/null); then
-			#if test $? = 0; then
 				eval $(echo "$res" | awk \
 					'/^Filesystem state:/ { if ($3 != "clean") printf "dirty=*;"} \
 					/^Mount count:/ {FS=":"; curr_cnt=$2} \
@@ -580,7 +603,7 @@ write_header "Alt-F $ver Status Page"
 jscripts
 
 mktt st_tt "Checking this will refresh different sections in the page every 10 to 20 seconds.<br>
-This consumes CPU, so if you are waiting for something lengtly to accomplish<br>
+This consumes CPU, so if you are waiting for something lengthly to accomplish<br>
 it will actually take more time if autorefresh is enabled."
 
 launch error
