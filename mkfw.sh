@@ -96,9 +96,12 @@ if test -n "$sqimage"; then
 	sqimage=tsqimage
 fi
 
-if test $board = "dns325"; then
-	sq_opts="-a ${DESTD}/$sqimage"
-fi
+case $board in
+	dns323) ;;
+	dns321) ;;
+	dns325) sq_opts="-a ${DESTD}/$sqimage" ;;
+	*) echo "Unsupported \"$board\" board"; exit 1;;
+esac
 
 # the several vendors firmware signatures:
 # Model	product_id	custom_id	model_id	sub_id	NewVersion type
@@ -285,7 +288,7 @@ for i in $build; do
 done
 
 # DNS-320/325 devel only
-if false; then
+if true; then
 	cp ${DESTD}/urootfs ${DESTD}/uImage /srv/tftpboot/
 else
 	rm kernel initramfs defaults ${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage
