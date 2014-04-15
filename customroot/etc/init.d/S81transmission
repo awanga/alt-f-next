@@ -11,6 +11,7 @@ RC_USERN=13
 RC_GROUP=BT
 RC_GROUPN=201
 RC_DESC="Transmission daemon"
+RC_START_STOP=-x
 
 LOGDIR=/var/log/transmission
 LOGFILE=$LOGDIR/transmission.log
@@ -19,16 +20,15 @@ PIDDIR=/var/run/transmission
 PIDFILE=$PIDDIR/transmission.pid
 
 TRANSMISSION_HOME=/var/lib/transmission
-TRANSMISSION_CONF=$TRANSMISSION_HOME/settings.json
+TRANSMISSION_CDIR=/etc/transmission
+TRANSMISSION_CONF=$TRANSMISSION_CDIR/transmission.conf
+TRANSMISSION_CONF2=$TRANSMISSION_HOME/settings.json
 
-TRANSMISSION_DIRS="$LOGDIR $PIDDIR $TRANSMISSION_HOME"
+TRANSMISSION_DIRS="$LOGDIR $PIDDIR $TRANSMISSION_HOME $TRANSMISSION_CDIR"
 
 SMB_CONF=/etc/samba/smb.conf
 
 OPTS="--logfile $LOGFILE --pid-file $PIDFILE --config-dir=$TRANSMISSION_HOME"
-
-# special flag to start-stop-daemon
-RC_START_STOP=-x
 
 . $(dirname $0)/common
 
@@ -59,7 +59,7 @@ for i in $TRANSMISSION_DIRS; do
 	if ! test -d $i; then mkdir -p $i; fi
 done
 
-if ! test -f $TRANSMISSION_CONF; then
+if ! test -s $TRANSMISSION_CONF; then
 	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
 
 	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' \
@@ -68,6 +68,11 @@ if ! test -f $TRANSMISSION_CONF; then
 	if grep -q "^\[Transmission\]" $SMB_CONF; then
 		sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
 	fi
+fi
+
+# 'sed -i' breaks $TRANSMISSION_CONF link to $TRANSMISSION_CONF2
+if ! test -h $TRANSMISSION_CONF2; then
+	ln -sf $TRANSMISSION_CONF $TRANSMISSION_CONF2
 fi
 
 check_user $TRANSMISSION_DIRS
