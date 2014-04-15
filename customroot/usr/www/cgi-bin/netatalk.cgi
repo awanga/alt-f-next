@@ -125,7 +125,7 @@ function spit(cnt, opts) {
 }
 
 function parse(share_name, line) {
-	if (share_name == "Global" || share_name == "Homes")
+	if (share_name == "Global" || share_name == "Homes" || index(line,"#"))
 		next
 
 	cnt++
