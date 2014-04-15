@@ -3,8 +3,8 @@ CONF_MISC=/etc/misc.conf
 
 # sed removes any ' or " that would upset quoted assignment
 # awk ensures that 
-#	- all variables passed have legal names
-#	- special characters are not interpreted by sh
+# - all variables passed have legal names
+# - special characters are not interpreted by sh
 read_args() {
 	read -r args
 	eval $(echo -n $args | tr '\r' '\n' | sed -e 's/'"'"'/%27/g;s/"/%22/g' | \
@@ -123,12 +123,7 @@ path_unescape() {
 	echo "$1" | sed 's/\\040/ /g'
 }
 
-# for http only <>&"' needs to be encoded, but possible clash with some linux utilities
-# quoting and special chars meaning and javascript quoting advises doing it
-# characters in the hexadecimal ranges 0-08, 0B-0C, 0E-1F, 7F, and 80-9F cannot be used in HTML
-# Wouldn't be faster doing it as in url_encode() bellow?
-#
-# in the bellow httpencode() the following is missing
+# FIXME: missing
 # s/	/\&#x09;/g
 # s/!/\&#x21;/g
 # s/#/\&#x23;/g
@@ -169,57 +164,9 @@ s/~/\&#x7e;/g
 "
 }
 
-# "Characters from the unreserved set never need to be percent-encoded". But is much faster to do.
-# Reserved chars: !*'();:@&=+$,/?#[]
-#
 # FIXME: howto make hexdump to output a '%'?
 url_encode() {
 	echo -n "$1" | hexdump -ve '/1 "-%X"' | tr '-' '%'
-}
-
-# deprecated, too slow and does unnecessary UTF-8 encoding (the doctype charset is UTF-8)
-httpencode() {
-	echo -n "$1" | iconv -s -f UTF-8 -t UCS-2LE | hexdump -ve '/2 "&#%u;"'
-}
-
-# deprecated, use url_encode above (but is it faster?)
-urlencode() {
-echo "$1" | sed " 
-s/	/%09/g
-s/ /%20/g
-s/!/%21/g
-s/\"/%22/g
-s/#/%23/g
-s/\\$/%24/g
-s/%/%25/g
-s/\&/%26/g
-s/'/%27/g
-s/(/%28/g
-s/)/%29/g
-s/\*/%2a/g
-s/+/%2b/g
-s/,/%2c/g
-s/-/%2d/g
-s/\./%2e/g
-s/\//%2f/g
-s/:/%3a/g
-s/;/%3b/g
-s/</%3c/g
-s/=/%3d/g
-s/>/%3e/g
-s/?/%3f/g
-s/@/%40/g
-s/\[/%5b/g
-s/\\\/%5c/g
-s/\]/%5d/g
-s/\^/%5e/g
-s/_/%5f/g
-s/\`/%60/g
-s/{/%7b/g
-s/|/%7c/g
-s/}/%7d/g
-s/~/%7e/g
-"
 }
 
 has_disks() {
@@ -253,7 +200,6 @@ disk_power() {
 	fi
 }
 
-# returns true if Alt-F is flashed
 isflashed() {
 	flashed_firmware=$(dd if=/dev/mtd2 ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
 	echo $flashed_firmware | grep -q Alt-F
@@ -436,43 +382,17 @@ select_part() {
 	echo "</select>"
 }
 
-# tested with Chrome, Opera, Firefox, Safari, IE-6
 upload_file() {
-	# POST upload format:
-	# -----------------------------29995809218093749221856446032^M
-	# Content-Disposition: form-data; name="file1"; filename="..."^M
-	# Content-Type: application/octet-stream^M
-	# ^M    <--------- headers end with empty line
-	# file contents
-	# file contents
-	# file contents
-	# ^M    <--------- extra empty line
-	# -----------------------------29995809218093749221856446032--^M
-
-# a file containing a single '+++' without newlines:
-# 
-# ------WebKitFormBoundaryfQ7SqiAMukx0oxhB^M
-# Content-Disposition: form-data; name="file1"; filename="po"^M
+# POST upload format:
+# -----------------------------29995809218093749221856446032^M
+# Content-Disposition: form-data; name="file1"; filename="..."^M
 # Content-Type: application/octet-stream^M
-# ^M
-# +++^M
-# ------WebKitFormBoundaryfQ7SqiAMukx0oxhB--^M
-
-# # hexdump -C same_file_as_above
-#
-# 00000000  2d 2d 2d 2d 2d 2d 57 65  62 4b 69 74 46 6f 72 6d  |------WebKitForm|
-# 00000010  42 6f 75 6e 64 61 72 79  68 37 68 57 72 42 71 5a  |Boundaryh7hWrBqZ|
-# 00000020  37 55 47 63 6f 36 58 30  0d 0a 43 6f 6e 74 65 6e  |7UGco6X0..Conten|
-# 00000030  74 2d 44 69 73 70 6f 73  69 74 69 6f 6e 3a 20 66  |t-Disposition: f|
-# 00000040  6f 72 6d 2d 64 61 74 61  3b 20 6e 61 6d 65 3d 22  |orm-data; name="|
-# 00000050  66 69 6c 65 31 22 3b 20  66 69 6c 65 6e 61 6d 65  |file1"; filename|
-# 00000060  3d 22 70 6f 22 0d 0a 43  6f 6e 74 65 6e 74 2d 54  |="po"..Content-T|
-# 00000070  79 70 65 3a 20 61 70 70  6c 69 63 61 74 69 6f 6e  |ype: application|
-# 00000080  2f 6f 63 74 65 74 2d 73  74 72 65 61 6d 0d 0a 0d  |/octet-stream...|
-# 00000090  0a 2b 2b 2b 0d 0a 2d 2d  2d 2d 2d 2d 57 65 62 4b  |.+++..------WebK|
-# 000000a0  69 74 46 6f 72 6d 42 6f  75 6e 64 61 72 79 68 37  |itFormBoundaryh7|
-# 000000b0  68 57 72 42 71 5a 37 55  47 63 6f 36 58 30 2d 2d  |hWrBqZ7UGco6X0--|
-# 000000c0  0d 0a                                             |..|
+# ^M    <--------- headers end with empty line
+# file contents
+# file contents
+# file contents
+# ^M    <--------- extra empty line
+# -----------------------------29995809218093749221856446032--^M
 
 	eval $(df -m /tmp | awk '/tmpfs/{printf "totalm=%d; freem=%d;", $2, $4}')
 	reqm=$((CONTENT_LENGTH * 2 / 1024 / 1024))
@@ -714,13 +634,10 @@ embed_page() {
 	exit 0
 }
 
-# Contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
-# Adapted by Joao Cardoso
-#
+# Contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com, adapted by Joao Cardoso
 # draws a bar graph, $1 is the percentage to display (1-100) and $2 is the text to display,
 # if $2 is not present $1 is displayed for the text.  Normally $2 is used when graphing data
-# that has a range other than 1-100.
-# Note since this graph uses a div it doesn't display inline
+# that has a range other than 1-100. Since this graph uses a div it doesn't display inline
 drawbargraph() {
 
 	linewidth="$1"
@@ -728,16 +645,14 @@ drawbargraph() {
 		linewidth="100"
 	fi
 
-	if [ "$2" == "" ]; then
-		text="$1%"
-	else
-		text="$2"
-	fi
+	if test "$2" == ""; then text="$1%"; else text="$2"; fi
+	if test "$3" == ""; then yellow=80; else yellow=$3; fi
+	if test "$4" == ""; then red=90; else red=$4; fi
 
-	if test "$linewidth" -gt 90; then
+	if test "$linewidth" -gt $red; then
 		bgcolor="#F66"
 		fgcolor="#FFF"
-	elif test "$linewidth" -gt 75; then
+	elif test "$linewidth" -gt $yellow; then
 		bgcolor="#FF5"
 		fgcolor="#000"
 	else
