@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 # $1=dev $2=level $3=comp1 $4=comp2 $5=comp3
 raid() {
 	md=$1
@@ -61,7 +60,6 @@ raid() {
 
 	esac
 
-	metad="0.9"
 	for i in $pair1 $pair2 $pair3; do
 		part=$(basename $i)
 		if find /sys/block/md*/slaves/$part >& /dev/null ; then
@@ -70,9 +68,9 @@ Either choose another componente\n\
 or destroy the RAID array where $part bellongs and retry."
 		fi
 		if grep -q $i /proc/mounts; then
-			msg "$part is currently in use.\n\
-Unmount it first, and retry,\n\
-if you want all its data to be lost."
+			msg "$part is currently mounted.\n\
+Unmount it first, and retry.\n\
+The data it contains might be lost."
 			#lumount $i "creating RAID"
 			#sed -i '\|^'$i'|d' $CONFT
 		fi
@@ -80,18 +78,15 @@ if you want all its data to be lost."
 		if test $i = "missing"; then continue; fi
 		j=$(basename $i)
 		k=${j:0:3}
-		if test "$(cat /sys/block/$k/$j/size)" -gt 4294967296; then # 2^32, 2.2 TB
-			metad=1.2
-		fi
 	done
 
-	res=$(mdadm --create /dev/$md --run --level=$level --metadata=$metad $opts \
+	res=$(mdadm --create /dev/$md --run --level=$level --metadata=1.0 $opts \
 		--raid-devices=$ndevices $pair1 $pair2 $pair3 2>&1)
 	if test $? != 0; then
 		msg "Creating RAID on $md failed:\n\nError $?: $res"
 	fi
 
-	mdadm --examine --scan > /etc/mdadm.conf
+	mdadm --examine --scan --config=partitions > /etc/mdadm.conf
 	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 	blkid -g >& /dev/null
 }
@@ -234,12 +229,12 @@ elif test -n "$Destroy_raid"; then
 	done
 	sleep 3
 	rm /dev/$mdev
-	mdadm --examine --scan > /etc/mdadm.conf
+	mdadm --examine --scan --config=partitions > /etc/mdadm.conf
 	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 
 elif test -n "$Details"; then
 	mdev=$Details
-	res=$(mdadm --detail /dev/$mdev; echo; cat /proc/mdstat 2>&1)
+	res=$(mdadm --detail /dev/$mdev; echo -e "\n/proc/mdstat:"; cat /proc/mdstat 2>&1)
 	html_header "$mdev RAID Details"
 	echo "<pre>$res</pre>$(back_button)</body></html>"
 	exit 0
