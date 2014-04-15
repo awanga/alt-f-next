@@ -93,9 +93,9 @@ else
 			if (nm in inst || nm in preinst) {
 
 				remdis = ""
-				if (nm in preinst && ! (nm in inst)) { # pre-instaled uninstalled
+				if (nm in preinst && ! (nm in inst)) { # pre-installed uninstalled
 					remdis = "disabled"
-				} else if (nm in preinst && nm in inst) { # pre-instaled updated
+				} else if (nm in preinst && nm in inst) { # pre-installed updated
 					if (preinst[nm] == ver[inst[nm]])
 						remdis = "disabled"
 				}
@@ -109,7 +109,7 @@ else
 					else
 						v = ver[inst[nm]];
 
-					if (v == ver[uinst[nm]])
+					if (system("ipkg compare_versions " v " \">\" " ver[uinst[nm]] " >/dev/null"))
 						upd="<td></td><td></td>";
 					else
 						upd = sprintf("<td><input type=submit name=%s value=Update></td><td>(%s)</td>", nm, ver[uinst[nm]]);
@@ -130,7 +130,7 @@ else
 	
 		print "<tr><td colspan=6><br></td></tr>"
 		if (update != 0)
-			print "<tr><td colspan=2><strong>UpdateAll</strong></td> \
+			print "<tr><td colspan=2><strong>Update all installed</strong></td> \
 				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
 		print "<tr><td colspan=2><strong>Remove all installed</strong></td> \
