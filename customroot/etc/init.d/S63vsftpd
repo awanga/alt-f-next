@@ -2,7 +2,7 @@
 
 DESC="FTP/FTPS server"
 NAME=vsftpd
-#TYPE="net"
+#TYPE=net
 
 CONF=/etc/vsftpd.conf
 CONFU=/etc/vsftpd.user_list
