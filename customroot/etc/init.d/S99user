@@ -78,6 +78,8 @@ writelog() {
 	echo -e "\n\n$SEP RAID $SEP\n"
 	if test -f /proc/mdstat; then
 		cat /proc/mdstat
+		echo
+		mdadm --examine --scan --verbose --verbose --config=partitions 2> /dev/null
 	else
 		echo None 
 	fi
