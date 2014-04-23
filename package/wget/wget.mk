@@ -16,6 +16,7 @@ ifeq ($(BR2_PACKAGE_OPENSSL),n)
 	DISABLE_SSL += --without-ssl
 else
 	DISABLE_SSL += --with-ssl=openssl
+	WGET_DEPENDENCIES = openssl
 endif
 
 $(DL_DIR)/$(WGET_SOURCE):
@@ -52,7 +53,7 @@ $(WGET_DIR)/$(WGET_BINARY): $(WGET_DIR)/.configured
 $(TARGET_DIR)/$(WGET_TARGET_BINARY): $(WGET_DIR)/$(WGET_BINARY)
 	install -D $(WGET_DIR)/$(WGET_BINARY) $(TARGET_DIR)/$(WGET_TARGET_BINARY)
 
-wget: uclibc $(TARGET_DIR)/$(WGET_TARGET_BINARY)
+wget: uclibc $(WGET_DEPENDENCIES) $(TARGET_DIR)/$(WGET_TARGET_BINARY)
 
 wget-patch: $(WGET_DIR)/.unpacked
 
