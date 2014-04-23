@@ -44,12 +44,11 @@ $(PERL_DIR)/.stamp_configured: $(PERL_DIR)/.stamp_cross
 	touch $@
 
 $(PERL_DIR)/.stamp_build: $(PERL_DIR)/.stamp_configured
-	#$(MAKE) -C $(PERL_DIR) # there is a non-tracked dependency, don't parallel
-	make -C $(PERL_DIR)
+	$(MAKE1) -C $(PERL_DIR) # there is a non-tracked dependency, don't parallel
 	touch $@
 
 $(PERL_DIR)/.stamp_installed: $(PERL_DIR)/.stamp_build
-	make -C $(PERL_DIR) DESTDIR=$(TARGET_DIR) install.perl
+	$(MAKE1) -C $(PERL_DIR) DESTDIR=$(TARGET_DIR) install.perl
 	chmod +w $(TARGET_DIR)/usr/lib/perl/arm-linux/Config.pm $(TARGET_DIR)/usr/lib/perl/arm-linux/Config_heavy.pl
 	sed -i "s/cc *=> *'arm-linux-gcc'/cc => 'gcc'/" $(TARGET_DIR)/usr/lib/perl/arm-linux/Config.pm
 	sed -i -e "s/'arm-linux-\(.*\)'/'\1'/" \
@@ -60,6 +59,19 @@ $(PERL_DIR)/.stamp_installed: $(PERL_DIR)/.stamp_build
 		$(TARGET_DIR)/usr/lib/perl/arm-linux/Config_heavy.pl
 	touch $@
 
+#####################
+# perl for the host
+
+PERL_HOST_INSTALL_OPT = install.perl
+
+$(eval $(call AUTOTARGETS_HOST,package,perl))
+
+$(PERL_HOST_CONFIGURE):
+	( cd $(PERL_HOST_DIR); ./configure.gnu --prefix=$(HOST_DIR)/usr )
+	touch $@
+
+#####################
+
 perl-source: $(DL_DIR)/$(PERL_SOURCE)
 
 perl-extract: $(PERL_DIR)/.stamp_extracted
@@ -68,7 +80,7 @@ perl-configure: $(PERL_DIR)/.stamp_configured
 
 perl-build: $(PERL_DIR)/.stamp_build
 
-perl: uclibc gdbm $(PERL_DIR)/.stamp_installed
+perl: uclibc perl-host gdbm $(PERL_DIR)/.stamp_installed
 
 #############################################################
 #
