@@ -152,7 +152,9 @@ $(TARGET_DIR)/usr/lib/libncurses.a: $(NCURSES_DIR)/lib/libncurses.a
 	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
 	touch -c $@
 
-ncurses: $(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
+$(eval $(call AUTOTARGETS_HOST,package,ncurses))
+
+ncurses: ncurses-host $(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
 
 ncurses-unpacked: $(NCURSES_DIR)/.patched
 
