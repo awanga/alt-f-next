@@ -5,7 +5,7 @@
 #############################################################
 INADYN_MT_VERSION = 02.24.38
 INADYN_MT_SOURCE = inadyn-mt.v.$(INADYN_MT_VERSION).tar.gz
-INADYN_MT_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/inadyn-mt/inadyn-mt/inadyn-mt.v.$(INADYN_MT_VERSION)/
+INADYN_MT_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/inadyn-mt/inadyn-mt/inadyn-mt.v.$(INADYN_MT_VERSION)
 
 INADYN_MT_AUTORECONF = NO
 INADYN_MT_INSTALL_STAGING = NO
