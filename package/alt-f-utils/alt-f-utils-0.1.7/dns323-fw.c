@@ -139,7 +139,8 @@ sig_t signatures[] = {
 	{1, 64, 1572864, 10485760, 0, 131072, "\x55\xAA" "Chopper" "\x00\x55\xAA"},	/* DNS-321 */
 	{2, 64, 1572864, 14417920, 0, 131072, "\x55\xAA" "Gandolf" "\x00\x55\xAA"},	/* DNS-343 */
 	{3, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS-325" "\x00\x55\xAA"},	/* DNS-325 */
-	{4, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS323D1" "\x55\xAA"}		/* DNS-320 */
+	{4, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS323D1" "\x55\xAA"},		/* DNS-320-A1A2 */
+	{5, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS320B" "\x00\x55\xAA"}		/* DNS-320-B1 */
 };
 
 int nsig = sizeof(signatures)/sizeof(sig_t);
@@ -463,8 +464,9 @@ int check_sig(uchar * hd, MY_CONTROL_HEADER * myhd) {
 }
 
 void print_info(int fd, MY_CONTROL_HEADER *hd) {	
-	printf("product_id=%x;\ncustom_id=%x;\nmodel_id=%x;\nsub_id=%x;\nNewVersion=%x;\n",
-		hd->product_id, hd->custom_id, hd->model_id, hd->sub_id, hd->NewVersion);
+	printf("product_id=%x;\ncustom_id=%x;\nmodel_id=%x;\nsub_id=%x;\nNewVersion=%x;\nsignature=\"%.8s\";\n",
+		hd->product_id, hd->custom_id, hd->model_id, hd->sub_id,
+		hd->NewVersion, signatures[hd->sig_num].signature+2);
 
 	if (!quiet)
 		printf("\nsig_num=%d header=%d Next_offset=%lu\n",
@@ -507,7 +509,7 @@ void usage() {
 		"\tdns323-fw -m [-q (quiet)]\n"
 		"\t-k kernel_file -i initramfs_file [-a sqimage_file] [-d defaults_file]\n"
 		"\t[-p product_id]  [-c custom_id] [-l model_id ] [-u sub_id] [-v new_version]\n"
-		"\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf, 3-DNS-325, 4-DNS-320] firmware_file\n");
+		"\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf, 3-DNS-325, 4-DNS-320A, 5-DNS-320B] firmware_file\n");
   
 	fprintf(stderr, "-Print information from a firmware file:\n"
 		"\tdns323-fw -f firmware_file\n");
