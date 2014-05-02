@@ -112,8 +112,6 @@ if test -n "$LD_LIBRARY_PATH" ; then
 	fi
 fi;
 
-
-
 #############################################################
 #
 # check build system 'which'
@@ -125,8 +123,6 @@ if ! which which > /dev/null ; then
 	exit 1;
 fi;
 echo "which installed:				Ok"
-
-
 
 #############################################################
 #
@@ -142,9 +138,6 @@ else
 	XSED=$SED
 	echo "sed works:					Ok ($SED)"
 fi
-
-
-
 
 #############################################################
 #
@@ -170,8 +163,6 @@ if [ $MAKE_MAJOR -lt 3 ] || [ $MAKE_MAJOR -eq 3 -a $MAKE_MINOR -lt 80 ] ; then
 	exit 1;
 fi;
 echo "GNU make version '$MAKE_VERSION':			Ok"
-
-
 
 #############################################################
 #
@@ -270,7 +261,6 @@ if ! which bison > /dev/null ; then
 fi;
 echo "bison installed:				Ok"
 
-
 #############################################################
 #
 # check build system 'flex'
@@ -307,6 +297,17 @@ if ! which msgfmt > /dev/null ; then \
 fi;
 echo "gettext installed:				Ok"
 
+#############################################################
+#
+# check build system 'intltool'
+#
+#############################################################
+if ! which intltool-update > /dev/null ; then \
+	echo "intltool installed:		    FALSE"
+	/bin/echo -e "\n\nYou must install 'intltool' on your build machine\n"; \
+	exit 1; \
+fi;
+echo "intltool installed:				Ok"
 
 if ! which makeinfo > /dev/null ; then \
 	echo "makeinfo installed:		    FALSE"
@@ -317,7 +318,6 @@ else
 	echo "makeinfo installed:				Ok"
 fi
 
-
 #############################################################
 #
 # All done
@@ -325,4 +325,3 @@ fi
 #############################################################
 echo "Build system dependencies:			Ok"
 echo ""
-
