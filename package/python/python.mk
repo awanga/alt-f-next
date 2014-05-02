@@ -8,7 +8,7 @@ PYTHON_VERSION=2.7.2
 PYTHON_VERSION_MAJOR=2.7
 
 PYTHON_SOURCE:=Python-$(PYTHON_VERSION).tar.bz2
-PYTHON_SITE:=http://python.org/ftp/python/$(PYTHON_VERSION)
+PYTHON_SITE:=http://www.python.org/ftp/python/$(PYTHON_VERSION)
 PYTHON_DIR:=$(BUILD_DIR)/Python-$(PYTHON_VERSION)
 PYTHON_CAT:=$(BZCAT)
 PYTHON_BINARY:=python
@@ -17,7 +17,7 @@ PYTHON_TARGET_BINARY:=usr/bin/python
 LIBPYTHON_BINARY:=usr/lib/libpython$(PYTHON_VERSION_MAJOR).so
 PYTHON_SITE_PACKAGE_DIR=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
 
-PYTHON_DEPS:=
+PYTHON_DEPS:=zlib-host
 
 ifneq ($(BR2_INET_IPV6),y)
 	DISABLE_IPV6= --disable-ipv6
@@ -124,10 +124,18 @@ $(PYTHON_DIR)/.hostpython: $(PYTHON_DIR)/.patched
 		$(MAKE) python Parser/pgen; \
 		mv python hostpython;  \
 		mv Parser/pgen Parser/hostpgen; \
-		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" $(MAKE) all install DESTDIR=$(HOST_DIR); \
+		PYTHON_MODULES_INCLUDE="$(HOST_DIR)/usr/include" \
+		PYTHON_MODULES_LIB="$(HOST_DIR)/lib $(HOST_DIR)/usr/lib" \
+		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
+		$(MAKE) all install DESTDIR=$(HOST_DIR); \
 		$(MAKE) -i distclean \
 	)
 	touch $@
+
+#		OPT="$(HOST_CFLAGS)" \
+#		PYTHON_MODULES_INCLUDE="$(HOST_DIR)/usr/include" \
+#		PYTHON_MODULES_LIB="$(HOST_DIR)/lib $(HOST_DIR)/usr/lib" \
+#		PYTHON_DISABLE_MODULES="$(BR2_PYTHON_DISABLED_MODULES)" \
 
 $(PYTHON_DIR)/.configured: $(PYTHON_DIR)/.hostpython
 	$(call MESSAGE,"Configuring python for the target")
@@ -163,6 +171,7 @@ $(PYTHON_DIR)/$(PYTHON_BINARY): $(PYTHON_DIR)/.configured
 		CROSS_COMPILE=$(GNU_TARGET_NAME)- CROSS_COMPILE_TARGET=yes \
 		HOSTARCH=$(GNU_TARGET_NAME) BUILDARCH=$(GNU_HOST_NAME) \
 		BLDSHARED="$(TARGET_CC) -shared"
+	touch -c $@
 
 $(TARGET_DIR)/$(PYTHON_TARGET_BINARY): $(PYTHON_DIR)/$(PYTHON_BINARY)
 	$(call MESSAGE,"Installing python on the target")
@@ -209,8 +218,15 @@ endif
 ifneq ($(BR2_PACKAGE_PYTHON_SQLITE3),y)
 	rm -rf $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/sqlite3
 endif
+	touch -c $@
+
+#$(eval $(call AUTOTARGETS_HOST,package,python))
 
 python: uclibc $(PYTHON_DEPS) $(TARGET_DIR)/$(PYTHON_TARGET_BINARY)
+
+python-extract: $(PYTHON_DIR)/.unpacked
+
+python-patch: $(PYTHON_DIR)/.patched
 
 python-host: $(PYTHON_DIR)/.hostpython
 
