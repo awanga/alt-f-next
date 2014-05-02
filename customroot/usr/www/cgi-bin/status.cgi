@@ -93,9 +93,6 @@ systems_st() {
 	loadv=$(cut -f1 -d" " /proc/loadavg)
 	load=$(awk '{printf "%d", 50 * $1 }' /proc/loadavg)
 
-#	eval $(free | awk '/Swap/{if ($2 == 0) printf "swap=0; swapv=None"; \
-#			else { printf "swap=%d; swapv=\"%.1f/%dMB\"", $3*100/$2, $3/1024, $4/1024}}')
-
 	mem=0; physmem=0
 	swap=0; swapv="None"
 	eval $(free | awk '{if ($1 == "Mem:") \
@@ -107,6 +104,7 @@ systems_st() {
 		swap=100	# Trigger red alert if no swap
 	else
 		memalert="101 102"	# always green as long as we have swap configured
+		swapv="$swap% of $swapv"
 	fi
 	if test $physmem -eq 0; then
 		physmem="Unknown"
@@ -149,13 +147,13 @@ systems_st() {
 			<td><div class="bgl">Load</div> $(drawbargraph $load $loadv)</td>
 			<td><div class="bgl">CPU</div> $(drawbargraph $cpu)</td>
 			<td><div class="bgl">Memory</div> $(drawbargraph $mem "$mem% of $physmem" $memalert)</td>
-			<td><div class="bgl">Swap</div> $(drawbargraph $swap "$swap% of $swapv")</td>
+			<td><div class="bgl">Swap</div> $(drawbargraph $swap "$swapv")</td>
 		</tr><tr>
 			<td colspan=2><strong>Name:</strong> $(hostname -s)</td><td></td>
-			<td colspan=2><strong>Device:</strong> $board</td>
+			<td colspan=2><strong>Model:</strong> $board</td><td></td>
 		</tr><tr>
 			<td colspan=3><strong>Date:</strong> $(date)</td>
-			<td colspan=2><strong>Uptime:</strong> $up</td>
+			<td colspan=2><strong>Uptime:</strong> $up</td><td></td>
 		</tr></table></fieldset>
 	EOF
 }
@@ -276,7 +274,7 @@ raid_st() {
 
 		sz=""; deg=""; act=""; compl=""; exp="";
 		if test "$state" != "inactive"; then
-			sz=$(awk '{ printf "%.1f GB", $1/2/1024/1024}' /sys/block/$mdev/size)
+			sz=$(awk '{ printf "%.1fGB", $1/2/1024/1024}' /sys/block/$mdev/size)
 			if test "$type" = "raid1" -o "$type" = "raid5"; then
 				if test "$(cat /sys/block/$mdev/md/degraded)" != 0; then
 					deg="<span class=\"red\">degraded</span>"
