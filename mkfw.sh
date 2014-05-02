@@ -107,27 +107,31 @@ esac
 # Model	product_id	custom_id	model_id	sub_id	NewVersion type
 # DNS323		7		1			1			1		4		0
 # CH3SNAS		7		2			1			1		4		0
-# DUO 35-LR		7		3			1			1		4		0
-# DNS321		a		1			1			1/2		0/1		1
-# DNS-343		9		1			1			1/2		1		2
-# DNS325		0		8			5			1/2		0		3
-# DNS320		0		8			7			1/2		0		4
+# DUO35-LR		7		3			1			1		4		0
+# DNS321-A		a		1			1			1/2		0/1		1
+# DNS343		9		1			1			1/2		1		2
+# DNS325-A		0		8			5			1/2		0		3
+# DNS320-A		0		8			7			1/2		0		4
+# DNS320-B		0		8			c			1		1		5
+# DNS320L		0		8			b			1		1		6
 # Alt-F-0.1B	1		2			3			4		5		0
 # Alt-F-0.1RC	7		1			1			1		4		0
 
+# FIXME: use associative arrays
 # the brand models
-name=(DNS-323 CH3SNAS DUO-35LR DNS-321 DNS-343 DNS-320 DNS-325)
+name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1 DNS-320L)
+working=(y y y y n y y n n)
 
-# the hardware boards build
-hwboard=(dns323 dns323 dns323 dns321 dns343 dns325 dns325)
+# the buildroot boards .config used
+hwboard=(dns323 dns323 dns323 dns321 dns343 dns325 dns325 dns325 dns325)
 
 # the firmware file signatures
-prod=(7 7 7 10 9 0 0)
-cust=(1 2 3 1 1 8 8)
-model=(1 1 1 1 1 7 5)
-sub=(1 1 1 2 2 2 2)
-nver=(4 4 4 1 1 0 0)
-type=(0 0 0 1 2 4 3)
+prod=( 7 7 7 10 9 0 0  0  0)
+cust=( 1 2 3  1 1 8 8  8  8)
+model=(1 1 1  1 1 5 7 12 11)
+sub=(  1 1 1  2 2 2 2  1  1)
+nver=( 4 4 4  1 1 0 0  1  1)
+type=( 0 0 0  1 2 3 4  5  6)
 
 # the real flash partion capacities for each board.
 # notice that the capacity is a multiple of the eraseblock size,
@@ -138,9 +142,9 @@ type=(0 0 0 1 2 4 3)
 
 # the amount of NAND flash partition that u-boot copies to ram at bootm for each board
 # this only differs from the above for the DNS-325/320 (read the NOTE-2 bellow)
-kernel_max=(1572864 1572864 1572864 1572864 1572864 3145728 3145728)
-initramfs_max=(6488064 6488064 6488064 10485760 14417920 3145728 3145728)
-sqimage_max=(0 0 0 0 0 106954752 106954752)
+kernel_max=(1572864 1572864 1572864 1572864 1572864 3145728 3145728 3145728 3145728)
+initramfs_max=(6488064 6488064 6488064 10485760 14417920 3145728 3145728 3145728 3145728)
+sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 0)
 
 # some kernels need a prologue to change the device_id set by the bootloader
 # read NOTE-1 bellow
@@ -214,13 +218,8 @@ mkimage -A arm -O linux -T ramdisk -C none \
 check $? "initramfs mkimage"
 echo
 
-for i in $(seq 0 $((num-1))); do
-	if test "$board" = "${hwboard[i]}"; then
-		build="$build $i"
-	fi
-done
- 
-for i in $build; do
+for i in ${!name[*]}; do
+	if ! test "$board" = "${hwboard[i]}" -a "${working[i]}" = "y"; then continue; fi
 
 	# build prologue
 	if test -n "${prez[i]}" -a ! -f ${DESTD}/${prez[i]}; then
