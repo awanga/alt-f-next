@@ -84,6 +84,9 @@ writelog() {
 		echo None 
 	fi
 
+	echo -e "\n\n$SEP SWAP $SEP\n"
+	cat /proc/swaps
+
 	echo -e "\n\n$SEP MOUNT $SEP\n"
 	cat /proc/mounts
 
