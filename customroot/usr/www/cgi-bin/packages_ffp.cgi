@@ -69,10 +69,18 @@ fi
 		inst_pkg=$(ls /ffp/funpkg/installed)
 	fi
 
-	avail_pkg=$(wget $FSITE/$FDIR/$FFP_DIR/packages/ $xtra_pkgs -O - 2>/dev/null | \
-		sed -n 's|<li>.*>[[:space:]]*\(.*\).'$arch_ext'.*|\1|p')
+	if ! nslookup $RSITE >& /dev/null; then
+		echo '<center><h3 class="blue">You dont seem to have a working internet connection<br>
+	or/and a name server configured.</h3></center>'
+	fi
 
-	avail_pkg=$(echo -e "$avail_pkg\n$inst_pkg" | sort -u)
+	if avail_pkg=$(wget --tries=1 --timeout=30 $FSITE/$FDIR/$FFP_DIR/packages/ $xtra_pkgs -O - 2>/dev/null); then
+		avail_pkg=$(echo "$avail_pkg" | sed -n 's|<li>.*>[[:space:]]*\(.*\).'$arch_ext'.*|\1|p')
+		avail_pkg=$(echo -e "$avail_pkg\n$inst_pkg" | sort -u)
+	else
+		echo "<center><h3 class=\"blue\">The ffp package server <a href=\"$FSITE\">$FSITE</a> is not responding</h3></center>'"
+		noserver=y
+	fi
 
 	cat <<-EOF
 		<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
@@ -82,14 +90,19 @@ fi
 	
 	for i in $inst_pkg; do
 		base_name=${i%$spat}
+		if test -z "$noserver"; then
+			plnk="<a href="/cgi-bin/embed.cgi?name=ffp+$base_name?site=$(url_encode $FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name)">$i</a>"
+		else
+			plnk=$base_name
+		fi
 		cat<<-EOF
-			<tr><td><a href="/cgi-bin/embed.cgi?name=ffp+$base_name?site=$(url_encode $FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name)">$i</a></td>
+			<tr><td>$plnk</td>
 			<td><input type=submit name="$i" value="Remove"></td>
 		EOF
 
 		updates=$(echo "$avail_pkg" | grep $base_name$gpat)
 		update_name=$(echo "$updates" | tail -1)
-		if test "$update_name" != $i; then
+		if test -n "$update_name" -a "$update_name" != $i; then
 			echo "<td><input type=submit name=\"$update_name\" value=\"Update\">to $update_name</td>"
 		else
 			echo "<td></td>"
@@ -114,30 +127,29 @@ fi
 		<tr><td><strong>$op to $to</upgrade></td>
 			<td colspan=2><input type=submit name=$op value="$op" onclick="return ask_$op()"></td></tr>
 		</table></fieldset>
-        
+	EOF
+
+	if test -z "$noserver"; then
+		cat<<-EOF
 		<fieldset><legend>
 		<a href="$FSITE/$FDIR/$FFP_DIR/">
 		<strong>Available ffp Packages</strong></a></legend><table>
-	EOF
-
-	if ! nslookup $RSITE >& /dev/null; then
-		echo '<center><h3 class="blue">You dont seem to have a working internet connection<br>
-	or/and a name server configured.</h3></center>'
-	fi
-	
-	for i in $avail_pkg; do
-		base_name=${i%$spat}
-
-		updates=$(echo "$avail_pkg" | grep $base_name$gpat)
-		if test -z "$updates"; then continue; fi
-		update_name=$(echo "$updates" | tail -1)
-		for j in $updates; do
-			avail_pkg=$(echo "$avail_pkg" | sed "/$j/d")
-		done
-		cat<<-EOF
-			<tr><td><a href="/cgi-bin/embed.cgi?name=ffp+$base_name?site=$(url_encode $FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name)">$update_name</a></td>
-			<td><input type=submit name="$update_name" value="Install"></td></tr>
 		EOF
-	done
+	
+		for i in $avail_pkg; do
+			base_name=${i%$spat}
+
+			updates=$(echo "$avail_pkg" | grep $base_name$gpat)
+			if test -z "$updates"; then continue; fi
+			update_name=$(echo "$updates" | tail -1)
+			for j in $updates; do
+				avail_pkg=$(echo "$avail_pkg" | sed "/$j/d")
+			done
+			cat<<-EOF
+				<tr><td><a href="/cgi-bin/embed.cgi?name=ffp+$base_name?site=$(url_encode $FSITE/$FDIR/$FFP_DIR/PACKAGES.html#$base_name)">$update_name</a></td>
+				<td><input type=submit name="$update_name" value="Install"></td></tr>
+			EOF
+		done
+	fi
 	
 	echo "</table></fieldset></form></body></html>"
