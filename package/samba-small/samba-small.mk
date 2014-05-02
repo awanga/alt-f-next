@@ -4,12 +4,10 @@
 #
 #############################################################
 
-# uClibc must be compiled with UCLIBC_SUPPORT_AI_ADDRCONFIG, or else an
-# "interface" option must be specified in the samba config.file
-# (or an "couln'd get interface address" (or similar) error happens at runtime 
+# this is a stripped-down version of samba, to fit the available dns-323 flash memory space
+# see notes in packages/samba/samba.mk
 
 SAMBA_SMALL_VERSION:=3.5.22
-#SAMBA_SMALL_VERSION:=3.6.3 don't fit flash
 
 ifeq ($(SAMBA_SMALL_VERSION),3.3.9)
 	SAMBA_SMALL_SUBDIR=source
@@ -18,7 +16,6 @@ else
 endif
 
 SAMBA_SMALL_SOURCE:=samba-$(SAMBA_SMALL_VERSION).tar.gz
-SAMBA_SMALL_SITE:=http://samba.org/samba/ftp/stable/
 SAMBA_SMALL_DIRM:=$(BUILD_DIR)/samba-small-$(SAMBA_SMALL_VERSION)
 SAMBA_SMALL_DIR:=$(SAMBA_SMALL_DIRM)/$(SAMBA_SMALL_SUBDIR)
 SAMBA_SMALL_DEPS = mklibs-host popt libiconv zlib
@@ -31,16 +28,7 @@ ifneq ($(BR2_PACKAGE_SAMBA_SMALL_OPTIM),)
 	SAMBA_SMALL_CFLAGS = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_SAMBA_SMALL_OPTIM)"
 endif
 
-# Optim Free
-# -O0: -303 KB
-# -O:    40 KB
-# -O1:   36 KB
-# -Os:    4 KB
-# -O2: -102 KB
-# -O3: -168 KB
-
-$(DL_DIR)/$(SAMBA_SMALL_SOURCE):
-	$(call DOWNLOAD,$(SAMBA_SMALL_SITE),$(SAMBA_SMALL_SOURCE))
+$(DL_DIR)/$(SAMBA_SMALL_SOURCE): $(DL_DIR)/$(SAMBA_SOURCE)
 
 $(SAMBA_SMALL_DIR)/.unpacked: $(DL_DIR)/$(SAMBA_SMALL_SOURCE)
 	mkdir -p $(SAMBA_SMALL_DIRM)
