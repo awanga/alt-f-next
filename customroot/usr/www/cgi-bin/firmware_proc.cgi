@@ -40,7 +40,9 @@ fi
 # DNS321		a		1			1			1/2		0/1		1
 # DNS343		9		1			1			1/2		1		2
 # DNS325		0		8			5			1/2		0		3
-# DNS320		0		8			7			1/2		0		4
+# DNS320-A		0		8			7			1/2		0		4
+# DNS320-B		0		8			c			1		1		5
+# DNS320L		0		8			b			1		1		6
 # Alt-F-0.1B	1		2			3			4		5		0
 # Alt-F-0.1RC	7		1			1			1		4		0
 
@@ -54,11 +56,13 @@ sig=${product_id}${custom_id}${model_id}${sub_id}
 brd=$(cat /tmp/board)
 
 case "$sig" in
-	"0851"|"0852") ftype="DNS-325" ;;
-	"0871"|"0872") ftype="DNS-320" ;;
-	"a111"|"a112") ftype="DNS-321" ;;
-	"9111"|"9112") ftype="DNS-343" ;;
-	"7111") ftype="DNS-323" ;;
+	"0851"|"0852") ftype="DNS-325" ;; # DNS-325-rev-A
+	"0871"|"0872") ftype="DNS-320" ;; # DNS-320-rev-A
+	#"08c1") ftype="DNS-320" ;; # DNS-320-rev-B
+	#"08b1") ftype="DNS-320L" ;; # DNS-320L-rev-?
+	"a111"|"a112") ftype="DNS-321" ;; # DNS-321-rev-A
+	"9111"|"9112") ftype="DNS-343" ;; # DNS-343-rev-?
+	"7111") ftype="DNS-323" ;; # DNS-323-rev-ABC
 	"7211") ftype="CH3SNAS" ;;
 	"7311") ftype="DUO35LR" ;;
 	*) rm -f kernel initramfs sqimage defaults

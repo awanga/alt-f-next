@@ -99,7 +99,7 @@ elif test "$flash" = "TryIt"; then
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
 
 elif test "$flash" = "FlashIt"; then
-	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br>If you suspect that something went wrong, you can try to upgrade again after stopping all running processes.</h3>"
+	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br>If you suspect that something went wrong,<br>you can try to upgrade again after stopping all running processes.</h3>"
 
 	rcall stop >& /dev/null
 
