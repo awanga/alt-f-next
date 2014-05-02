@@ -4,9 +4,9 @@
 #
 #############################################################
 UEMACS_VERSION:=4.0.15-lt
-UEMACS_SOURCE:=em-$(UEMACS_VERSION).tar.bz2
-UEMACS_CAT:=$(BZCAT)
-UEMACS_SITE:=$(BR2_KERNEL_MIRROR)/software/editors/uemacs/
+UEMACS_SOURCE:=em-$(UEMACS_VERSION).tar.gz
+UEMACS_CAT:=$(ZCAT)
+UEMACS_SITE:=$(BR2_KERNEL_MIRROR)/software/editors/uemacs
 UEMACS_DIR:=$(BUILD_DIR)/em-$(UEMACS_VERSION)
 UEMACS_BINARY:=em
 UEMACS_TARGET_BINARY:=usr/bin/emacs

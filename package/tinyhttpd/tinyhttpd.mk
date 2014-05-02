@@ -5,7 +5,7 @@
 #############################################################
 TINYHTTPD_VER:=0.1.0
 TINYHTTPD_SOURCE:=tinyhttpd-$(TINYHTTPD_VER).tar.gz
-TINYHTTPD_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/tinyhttpd/$(TINYHTTPD_SOURCE)
+TINYHTTPD_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/tinyhttpd/$(TINYHTTPD_SOURCE)
 TINYHTTPD_DIR:=$(BUILD_DIR)/tinyhttpd-$(TINYHTTPD_VER)
 TINYHTTPD_CAT:=$(ZCAT)
 TINYHTTPD_BINARY:=httpd

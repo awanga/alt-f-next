@@ -3,11 +3,13 @@
 # lsof
 #
 #############################################################
-LSOF_VERSION:=4.81
+
 #LSOF_VERSION:=4.84 # patches have LSOF_VERSION hardcoded
-LSOF_SOURCE:=lsof_$(LSOF_VERSION).tar.bz2
-LSOF_SITE:=ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/
-LSOF_CAT:=$(BZCAT)
+LSOF_VERSION:=4.81
+LSOF_SOURCE:=lsof_$(LSOF_VERSION).tar.gz
+LSOF_SITE:=ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/OLD
+
+LSOF_CAT:=$(ZCAT)
 LSOF_DIR:=$(BUILD_DIR)/lsof_$(LSOF_VERSION)
 LSOF_BINARY:=lsof
 LSOF_TARGET_BINARY:=usr/bin/lsof

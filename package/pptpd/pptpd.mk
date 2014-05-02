@@ -6,7 +6,7 @@
 
 PPTPD_VERSION:=1.3.4
 PPTPD_SOURCE:=pptpd-$(PPTPD_VERSION).tar.gz
-PPTPD_SITE:=$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/poptop/pptpd/pptpd-$(PPTPD_VERSION)
+PPTPD_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/poptop/pptpd/pptpd-$(PPTPD_VERSION)
 
 PPTPD_DEPENDENCIES = uclibc pppd
 

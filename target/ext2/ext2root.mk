@@ -3,10 +3,12 @@
 # genext2fs to build to target ext2 filesystems
 #
 #############################################################
+
 GENEXT2_VERSION=1.4
-GENEXT2_DIR=$(BUILD_DIR)/genext2fs-$(GENEXT2_VERSION)
 GENEXT2_SOURCE=genext2fs-$(GENEXT2_VERSION).tar.gz
-GENEXT2_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/genext2fs
+GENEXT2_SITE:=http://$(BR2_SOURCEFORGE_MIRROR)/project/genext2fs/genext2fs
+
+GENEXT2_DIR=$(BUILD_DIR)/genext2fs-$(GENEXT2_VERSION)
 
 $(DL_DIR)/$(GENEXT2_SOURCE):
 	$(call DOWNLOAD,$(GENEXT2_SITE),$(GENEXT2_SOURCE))

@@ -4,11 +4,11 @@
 #
 #############################################################
 
-E2FSPROGS_VERSION:=1.41.14
 #E2FSPROGS_VERSION:=1.42 this new release is too big! (and uclibc needs ftw, +4KB) 
-
+E2FSPROGS_VERSION:=1.41.14
 E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
-E2FSPROGS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/e2fsprogs
+E2FSPROGS_SITE=$(BR2_SOURCEFORGE_MIRROR)/project/e2fsprogs/e2fsprogs/$(E2FSPROGS_VERSION)
+
 E2FSPROGS_DIR=$(BUILD_DIR)/e2fsprogs-$(E2FSPROGS_VERSION)
 E2FSPROGS_CAT:=$(ZCAT)
 E2FSPROGS_BINARY:=misc/mke2fs

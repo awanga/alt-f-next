@@ -5,7 +5,7 @@
 #############################################################
 MESA3D_VERSION:=7.2
 MESA3D_SOURCE:=MesaLib-$(MESA3D_VERSION).tar.gz
-MESA3D_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/mesa3d
+MESA3D_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/mesa3d
 MESA3D_DIR:=$(BUILD_DIR)/Mesa-$(MESA3D_VERSION)
 MESA_TARGET:=linux-dri
 

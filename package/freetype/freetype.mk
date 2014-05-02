@@ -4,7 +4,7 @@
 #
 #############################################################
 FREETYPE_VERSION = 2.3.9
-FREETYPE_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/freetype
+FREETYPE_SITE = $(BR2_SOURCEFORGE_MIRROR)/sourceforge/freetype
 FREETYPE_SOURCE = freetype-$(FREETYPE_VERSION).tar.bz2
 FREETYPE_LIBTOOL_PATCH = NO
 FREETYPE_INSTALL_STAGING = YES

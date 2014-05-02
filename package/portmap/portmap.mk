@@ -6,9 +6,8 @@
 
 PORTMAP_VERSION:=6.0.0
 PORTMAP_SOURCE:=portmap_$(PORTMAP_VERSION).orig.tar.gz
-# Neil Brown site is down. Use debian pool instead
-# PORTMAP_SITE:=http://neil.brown.name/portmap/
-PORTMAP_SITE:=http://ftp.debian.org/debian/pool/main/p/portmap
+PORTMAP_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/p/portmap
+
 PORTMAP_DIR:=$(BUILD_DIR)/portmap-$(PORTMAP_VERSION)
 PORTMAP_CAT:=$(ZCAT)
 PORTMAP_BINARY:=portmap

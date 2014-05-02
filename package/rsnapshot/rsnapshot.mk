@@ -19,3 +19,7 @@ $(eval $(call AUTOTARGETS,package,rsnapshot))
 $(RSNAPSHOT_HOOK_POST_INSTALL):
 	mv $(TARGET_DIR)/etc/rsnapshot.conf.default $(TARGET_DIR)/etc/rsnapshot.conf
 	touch $@
+
+# don't generate docs
+$(RSNAPSHOT_HOOK_POST_CONFIGURE):
+	sed -i 's/^man_MANS =.*/#&/' $(RSNAPSHOT_DIR)/Makefile

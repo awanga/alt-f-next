@@ -3,10 +3,11 @@
 # libfuse
 #
 #############################################################
-#LIBFUSE_VERSION:=2.8.1
+
 LIBFUSE_VERSION:=2.8.5
 LIBFUSE_SOURCE:=fuse-$(LIBFUSE_VERSION).tar.gz
-LIBFUSE_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/fuse/
+LIBFUSE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/fuse/fuse-2.X/$(LIBFUSE_VERSION)
+
 LIBFUSE_DIR:=$(BUILD_DIR)/fuse-$(LIBFUSE_VERSION)
 LIBFUSE_BINARY:=libfuse
 LIBFUSE_LIBTOOL_PATCH = NO

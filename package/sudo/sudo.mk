@@ -5,7 +5,7 @@
 #############################################################
 
 SUDO_VERSION:=1.6.8p12
-SUDO_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/s/sudo
+SUDO_SITE:=http://snapshot.debian.org/archive/debian-archive/20110127T084257Z/debian/pool/main/s/sudo
 SUDO_SOURCE:=sudo_$(SUDO_VERSION).orig.tar.gz
 
 #SUDO_VERSION:=1.7.0

@@ -6,8 +6,7 @@
 
 FLAC_VERSION = 1.3.0
 FLAC_SOURCE = flac-$(FLAC_VERSION).tar.xz
-#FLAC_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/flac/
-FLAC_SITE = http://downloads.xiph.org/releases/flac/
+FLAC_SITE = http://downloads.xiph.org/releases/flac
 
 FLAC_AUTORECONF = NO
 FLAC_LIBTOOL_PATCH = NO

@@ -5,7 +5,7 @@
 #############################################################
 
 SQUASHFS_VERSION = 4.2
-SQUASHFS_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/squashfs
+SQUASHFS_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/squashfs/squashfs/squashfs$(SQUASHFS_VERSION)
 SQUASHFS_SOURCE = squashfs$(SQUASHFS_VERSION).tar.gz
 
 SQUASHFS_AUTORECONF = NO

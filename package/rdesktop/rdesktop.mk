@@ -6,7 +6,7 @@
 
 RDESKTOP_VERSION=1.5.0
 RDESKTOP_SOURCE=rdesktop-$(RDESKTOP_VERSION).tar.gz
-RDESKTOP_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/rdesktop/
+RDESKTOP_SITE=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/rdesktop/
 RDESKTOP_DIR=$(BUILD_DIR)/rdesktop-$(RDESKTOP_VERSION)
 RDESKTOP_CAT:=$(ZCAT)
 

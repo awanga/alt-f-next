@@ -5,7 +5,7 @@
 #############################################################
 JAMVM_VERSION = 1.5.0
 JAMVM_SOURCE = jamvm-$(JAMVM_VERSION).tar.gz
-JAMVM_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/jamvm/
+JAMVM_SITE = $(BR2_SOURCEFORGE_MIRROR)/sourceforge/jamvm/
 JAMVM_AUTORECONF = NO
 JAMVM_INSTALL_STAGING = YES
 JAMVM_INSTALL_TARGET = YES

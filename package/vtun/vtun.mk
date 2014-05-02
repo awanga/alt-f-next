@@ -9,7 +9,7 @@
 #Old version 2.6
 VTUN_VERSION:=3.0.2
 VTUN_SOURCE:=vtun-$(VTUN_VERSION).tar.gz
-VTUN_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/vtun/
+VTUN_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/vtun/
 VTUN_DIR:=$(BUILD_DIR)/vtun-$(VTUN_VERSION)
 VTUN_CAT:=$(ZCAT)
 VTUN_BINARY:=vtund

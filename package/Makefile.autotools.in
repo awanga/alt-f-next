@@ -330,7 +330,7 @@ $(2)_VERSION			?= undefined
 $(2)_DIR			=  $$(BUILD_DIR)/$(1)-$$($(2)_VERSION)
 $(2)_SOURCE			?= $(1)-$$($(2)_VERSION).tar.gz
 $(2)_SITE			?= \
-	http://$$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/$(1)
+	http://$$(BR2_SOURCEFORGE_MIRROR)/sourceforge/$(1)
 $(2)_DEPENDENCIES		?=
 $(2)_AUTORECONF			?= NO
 $(2)_LIBTOOL_PATCH		?= YES
@@ -529,7 +529,7 @@ $(2)_VERSION		?= undefined
 $(2)_HOST_DIR		=  $$(BUILD_DIR)/$(1)-$$($(2)_VERSION)-host
 $(2)_SOURCE		?= $(1)-$$($(2)_VERSION).tar.gz
 $(2)_SITE		?= \
-	http://$$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/$(1)
+	http://$$(BR2_SOURCEFORGE_MIRROR)/sourceforge/$(1)
 $(2)_HOST_DEPENDENCIES		?=
 $(2)_HOST_CONF_ENV		?=
 $(2)_HOST_CONF_OPT		?=

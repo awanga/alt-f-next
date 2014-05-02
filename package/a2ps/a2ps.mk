@@ -10,7 +10,7 @@ A2PS_INSTALL_STAGING = YES
 A2PS_INSTALL_TARGET = YES
 A2PS_DEPENDENCIES = uclibc file
 
-A2PS_CONF_ENV = ac_cv_path_file_prog=/usr/bin/file
+A2PS_CONF_ENV = ac_cv_prog_EMACS=no ac_cv_path_file_prog=/usr/bin/file
 
 $(eval $(call AUTOTARGETS,package,a2ps))
 

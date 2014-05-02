@@ -3,10 +3,11 @@
 # hdparm
 #
 #############################################################
-#HDPARM_VERSION:=7.7
+
 HDPARM_VERSION:=9.35
 HDPARM_SOURCE:=hdparm-$(HDPARM_VERSION).tar.gz
-HDPARM_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/hdparm
+HDPARM_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/hdparm/hdparm
+
 HDPARM_CAT:=$(ZCAT)
 HDPARM_DIR:=$(BUILD_DIR)/hdparm-$(HDPARM_VERSION)
 HDPARM_BINARY:=hdparm

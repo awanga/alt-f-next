@@ -5,7 +5,8 @@
 #############################################################
 STRACE_VERSION:=4.5.18
 STRACE_SOURCE:=strace-$(STRACE_VERSION).tar.bz2
-STRACE_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/strace
+STRACE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/strace/strace/$(STRACE_VERSION)
+
 STRACE_AUTORECONF:=NO
 STRACE_INSTALL_STAGING:=NO
 STRACE_INSTALL_TARGET:=YES

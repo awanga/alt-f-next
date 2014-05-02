@@ -4,12 +4,10 @@
 #
 #############################################################
 
-#ICU_VERSION:=4c-3_8_1
-
 ICU_VERSION:=4c-4_8
+ICU_MAJOR=4.8
 ICU_SOURCE:=icu$(ICU_VERSION)-src.tgz
-#ICU_SITE:=http://download.icu-project.org/files/icu4c/4.8/
-ICU_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/icu
+ICU_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/icu/ICU4C/$(ICU_MAJOR)
 
 ICU_CAT:=$(ZCAT)
 ICU_DIR:=$(BUILD_DIR)/icu/source

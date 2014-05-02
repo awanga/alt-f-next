@@ -6,7 +6,7 @@
 
 FUPPES_VERSION = 660
 FUPPES_SOURCE = fuppes-0.$(FUPPES_VERSION).tar.gz
-FUPPES_SITE = http://downloads.sourceforge.net/project/fuppes/fuppes/SVN-$(FUPPES_VERSION)
+FUPPES_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/fuppes/fuppes/SVN-$(FUPPES_VERSION)
 
 FUPPES_INSTALL_STAGING = NO
 FUPPES_INSTALL_TARGET = YES

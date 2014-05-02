@@ -7,7 +7,7 @@
 PCRE_VERSION = 8.20
 PCRE_SOURCE = pcre-$(PCRE_VERSION).tar.bz2
 #PCRE_SITE = ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre
-PCRE_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/pcre/pcre/$(PCRE_VERSION)
+PCRE_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/pcre/pcre/$(PCRE_VERSION)
 PCRE_INSTALL_STAGING = YES
 PCRE_INSTALL_TARGET = YES
 PCRE_LIBTOOL_PATCH = NO

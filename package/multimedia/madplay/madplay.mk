@@ -5,7 +5,7 @@
 #############################################################
 MADPLAY_VERSION:=0.15.2b
 MADPLAY_SOURCE:=madplay-$(MADPLAY_VERSION).tar.gz
-MADPLAY_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/mad
+MADPLAY_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/mad
 MADPLAY_CAT:=$(ZCAT)
 MADPLAY_DIR:=$(BUILD_DIR)/madplay-$(MADPLAY_VERSION)
 MADPLAY_BIN:=madplay

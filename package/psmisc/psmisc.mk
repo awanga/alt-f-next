@@ -5,7 +5,7 @@
 #############################################################
 PSMISC_VERSION:=22.6
 PSMISC_SOURCE:=psmisc-$(PSMISC_VERSION).tar.gz
-PSMISC_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/psmisc
+PSMISC_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/psmisc
 PSMISC_AUTORECONF:=no
 PSMISC_INSTALL_STAGING:=no
 PSMISC_INSTALL_TARGET:=YES

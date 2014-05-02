@@ -9,7 +9,7 @@
 # which is in host binary, not a target binary
 
 LIBTIRPC_VERSION = 0.2.2
-LIBTIRPC_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/libtirpc/libtirpc/$(LIBTIRPC_VERSION)
+LIBTIRPC_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/libtirpc/libtirpc/$(LIBTIRPC_VERSION)
 LIBTIRPC_SOURCE = libtirpc-$(LIBTIRPC_VERSION).tar.bz2
 
 LIBTIRPC_AUTORECONF = YES

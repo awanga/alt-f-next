@@ -4,10 +4,10 @@
 #
 #############################################################
 
-#IPSEC_TOOLS_VERSION:=0.7.2
-#IPSEC_TOOLS_VERSION:=0.7.3
+IPSEC_TOOLS_MAJOR:=0.8
 IPSEC_TOOLS_VERSION:=0.8.0
 IPSEC_TOOLS_SOURCE:=ipsec-tools-$(IPSEC_TOOLS_VERSION).tar.bz2
+IPSEC_TOOLS_SITE=http://ftp.sunet.se/pub/NetBSD/misc/ipsec-tools/$(IPSEC_TOOLS_MAJOR)
 IPSEC_TOOLS_CAT:=$(BZCAT)
 IPSEC_TOOLS_DIR:=$(BUILD_DIR)/ipsec-tools-$(IPSEC_TOOLS_VERSION)
 
@@ -18,7 +18,6 @@ IPSEC_TOOLS_BINARY_RACOONCTL:=src/racoon/racoonctl
 IPSEC_TOOLS_TARGET_BINARY_SETKEY:=usr/sbin/setkey
 IPSEC_TOOLS_TARGET_BINARY_RACOON:=usr/sbin/racoon
 IPSEC_TOOLS_TARGET_BINARY_RACOONCTL:=usr/sbin/racoonctl
-IPSEC_TOOLS_SITE=http://ftp.sunet.se/pub/NetBSD/misc/ipsec-tools/0.7/
 
 ifeq ($(BR2_PACKAGE_IPSEC_TOOLS_ADMINPORT), y)
 IPSEC_TOOLS_CONFIG_FLAGS+= --enable-adminport

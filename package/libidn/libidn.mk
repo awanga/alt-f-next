@@ -5,7 +5,7 @@
 #############################################################
 LIBIDN_VERSION = 1.9
 LIBIDN_SOURCE = libidn-$(LIBIDN_VERSION).tar.gz
-LIBIDN_SITE = http://ftp.gnu.org/gnu/libidn/
+LIBIDN_SITE = $(BR2_GNU_MIRROR)/libidn
 LIBIDN_INSTALL_STAGING = YES
 LIBIDN_INSTALL_TARGET = YES
 LIBIDN_CONF_OPT = --enable-shared

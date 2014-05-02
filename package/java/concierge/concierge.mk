@@ -5,7 +5,7 @@
 #############################################################
 CONCIERGE_VERSION = 1.0_RC2
 CONCIERGE_SOURCE = concierge-$(CONCIERGE_VERSION).jar
-CONCIERGE_SITE = http://ovh.dl.sourceforge.net/sourceforge/concierge/
+CONCIERGE_SITE = http://ovh.sourceforge.net/sourceforge/concierge/
 CONCIERGE_DIR=$(BUILD_DIR)/concierge-$(CONCIERGE_VERSION)
 CONCIERGE_SITE_BUNDLES = http://concierge.sourceforge.net/bundles/
 

@@ -7,7 +7,7 @@
 ZLIB_VERSION:=1.2.8
 ZLIB_SOURCE:=zlib-$(ZLIB_VERSION).tar.xz
 ZLIB_CAT:=$(XZCAT)
-ZLIB_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/libpng/zlib/$(ZLIB_VERSION)
+ZLIB_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/libpng/zlib/$(ZLIB_VERSION)
 ZLIB_DIR:=$(BUILD_DIR)/zlib-$(ZLIB_VERSION)
 
 $(DL_DIR)/$(ZLIB_SOURCE):

@@ -6,7 +6,8 @@
 
 HTOP_VERSION:=1.0.2
 HTOP_SOURCE:=htop-$(HTOP_VERSION).tar.gz
-HTOP_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/htop/htop/$(HTOP_VERSION)
+HTOP_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/htop/htop/$(HTOP_VERSION)
+
 HTOP_LIBTOOL_PATCH = NO
 
 HTOP_DEPENDENCIES = ncurses

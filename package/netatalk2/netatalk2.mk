@@ -4,10 +4,10 @@
 #
 #############################################################
 
-#NETATALK2_VERSION = 2.2.2
 NETATALK2_VERSION = 2.2.4
 NETATALK2_SOURCE = netatalk-$(NETATALK2_VERSION).tar.bz2
-NETATALK2_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/netatalk
+NETATALK2_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/netatalk
+
 NETATALK2_AUTORECONF = NO
 NETATALK2_INSTALL_STAGING = NO
 NETATALK2_INSTALL_TARGET = YES

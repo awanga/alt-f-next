@@ -6,7 +6,7 @@
 
 SYNERGY_VERSION = 1.3.1
 SYNERGY_SOURCE = synergy-$(SYNERGY_VERSION).tar.gz
-SYNERGY_SITE = http://internap.dl.sourceforge.net/sourceforge/synergy2/
+SYNERGY_SITE = http://internap.sourceforge.net/sourceforge/synergy2/
 SYNERGY_AUTORECONF = NO
 SYNERGY_INSTALL_STAGING = NO
 SYNERGY_INSTALL_TARGET = YES

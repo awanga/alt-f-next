@@ -3,9 +3,11 @@
 # libpng (Portable Network Graphic library)
 #
 #############################################################
+
 LIBPNG_VERSION:=1.2.38
-LIBPNG_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/libpng
+LIBPNG_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/libpng/libpng12/older-releases/$(LIBPNG_VERSION)
 LIBPNG_SOURCE = libpng-$(LIBPNG_VERSION).tar.bz2
+
 LIBPNG_LIBTOOL_PATCH = NO
 LIBPNG_INSTALL_STAGING = YES
 LIBPNG_INSTALL_TARGET = YES

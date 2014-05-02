@@ -4,6 +4,7 @@
 #
 #############################################################
 
+# 2012.1.15 not available, but 2013.1.13 is
 NTFS_3G_VERSION:=2012.1.15
 NTFS_3G_SOURCE:=ntfs-3g_ntfsprogs-$(NTFS_3G_VERSION).tgz
 NTFS_3G_SITE:=http://tuxera.com/opensource

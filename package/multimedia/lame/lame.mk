@@ -4,9 +4,10 @@
 #
 #############################################################
 
+LAME_MAJOR = 3.99
 LAME_VERSION = 3.99.5
 LAME_SOURCE = lame-$(LAME_VERSION).tar.gz
-LAME_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/lame/
+LAME_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/lame/lame/$(LAME_MAJOR)
 
 LAME_AUTORECONF = NO
 LAME_LIBTOOL_PATCH = NO

@@ -4,12 +4,10 @@
 #
 #############################################################
 
-#http://sourceforge.net/projects/parchive/files/par2cmdline/0.4/par2cmdline-0.4.tar.gz/download
-
 PAR2CMDLINE_VERSION = 0.4
 PAR2CMDLINE_SOURCE = par2cmdline-$(PAR2CMDLINE_VERSION).tar.gz
-#PAR2CMDLINE_SITE = http://$(SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/parchive/files/par2cmdline/$(PAR2CMDLINE_VERSION)/
-PAR2CMDLINE_SITE = http://sourceforge.net/projects/parchive/files/par2cmdline/$(PAR2CMDLINE_VERSION)
+PAR2CMDLINE_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/parchive/par2cmdline/$(PAR2CMDLINE_VERSION)
+
 PAR2CMDLINE_AUTORECONF = NO
 PAR2CMDLINE_INSTALL_STAGING = NO
 PAR2CMDLINE_INSTALL_TARGET = YES

@@ -3,10 +3,18 @@
 # module-init-tools
 #
 #############################################################
+
 MODULE_INIT_TOOLS_VERSION=3.2.2
+# not available, it will fallback to buildroot.net, which has a copy 
 MODULE_INIT_TOOLS_SOURCE=module-init-tools-$(MODULE_INIT_TOOLS_VERSION).tar.bz2
+MODULE_INIT_TOOLS_SITE=$(BR2_KERNEL_MIRROR)/linux/utils/kernel/module-init-tools
 MODULE_INIT_TOOLS_CAT:=$(BZCAT)
-MODULE_INIT_TOOLS_SITE=$(BR2_KERNEL_MIRROR)/linux/utils/kernel/module-init-tools/
+
+# the debian snapshot contains th original, but...
+#MODULE_INIT_TOOLS_SOURCE=module-init-tools_$(MODULE_INIT_TOOLS_VERSION).orig.tar.gz
+#MODULE_INIT_TOOLS_SITE=http://snapshot.debian.org/archive/debian/20051212T000000Z/pool/main/m/module-init-tools
+#MODULE_INIT_TOOLS_CAT:=$(ZCAT)
+
 MODULE_INIT_TOOLS_DIR=$(BUILD_DIR)/module-init-tools-$(MODULE_INIT_TOOLS_VERSION)
 MODULE_INIT_TOOLS_DIR2=$(TOOL_BUILD_DIR)/module-init-tools-$(MODULE_INIT_TOOLS_VERSION)
 MODULE_INIT_TOOLS_BINARY=depmod

@@ -5,7 +5,7 @@
 #############################################################
 LIBCGI_VERSION:=1.0
 LIBCGI_SOURCE:=libcgi-$(LIBCGI_VERSION).tar.gz
-LIBCGI_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/libcgi
+LIBCGI_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/libcgi
 LIBCGI_DIR:=$(BUILD_DIR)/libcgi-$(LIBCGI_VERSION)
 LIBCGI_LIBRARY:=src/libcgi.so
 LIBCGI_DESTDIR:=usr/lib

@@ -6,8 +6,7 @@
 
 TAGLIB_VERSION = 1.6.3
 TAGLIB_SOURCE = taglib-$(TAGLIB_VERSION).tar.gz
-TAGLIB_SITE = http://developer.kde.org/~wheeler/files/src
-# http://taglib.github.io/releases/taglib-1.9.1.tar.gz
+TAGLIB_SITE = http://taglib.github.io/releases
 
 TAGLIB_LIBTOOL_PATCH = NO
 TAGLIB_INSTALL_STAGING = YES

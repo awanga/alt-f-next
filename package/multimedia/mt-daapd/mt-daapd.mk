@@ -5,7 +5,7 @@
 #############################################################
 MT_DAAPD_VERSION = 0.2.4.2
 MT_DAAPD_SOURCE = mt-daapd-$(MT_DAAPD_VERSION).tar.gz
-MT_DAAPD_SITE = http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/mt-daapd/mt-daapd/$(MT_DAAPD_VERSION)
+MT_DAAPD_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/mt-daapd/mt-daapd/$(MT_DAAPD_VERSION)
 MT_DAAPD_AUTORECONF = NO
 MT_DAAPD_INSTALL_STAGING = NO
 MT_DAAPD_INSTALL_TARGET = YES

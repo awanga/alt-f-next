@@ -5,10 +5,14 @@
 #############################################################
 
 SANE_VERSION = 1.0.21
-SANE_SOURCE = sane-backends-$(SANE_VERSION).tar.gz
-SANE_SITE = http://alioth.debian.org/frs/download.php/file/3258
 
-SANE_WGET_OPTS = --no-check-certificate
+# alioth.debian.org is requesting login to download?!
+#SANE_SOURCE = sane-backends-$(SANE_VERSION).tar.gz
+#SANE_SITE = http://alioth.debian.org/frs/download.php/file/3258
+#SANE_WGET_OPTS = --no-check-certificate
+
+SANE_SOURCE = sane-backends_$(SANE_VERSION).orig.tar.gz
+SANE_SITE = $(BR2_DEBIAN_MIRROR)/debian/pool/main/s/sane-backends
 
 SANE_AUTORECONF = NO
 SANE_LIBTOOL_PATCH = YES

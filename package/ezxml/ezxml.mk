@@ -6,7 +6,7 @@
 
 EZXML_VERSION:=0.8.6
 EZXML_SOURCE:=ezxml-$(EZXML_VERSION).tar.gz
-EZXML_SITE:=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/sourceforge/ezxml/
+EZXML_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/ezxml/
 EZXML_DIR:=$(BUILD_DIR)/ezxml
 
 $(DL_DIR)/$(EZXML_SOURCE):
