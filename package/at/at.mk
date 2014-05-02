@@ -59,7 +59,7 @@ endif
 	echo 'rm -rf $(TARGET_DIR)/usr/doc' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
 	echo 'rm -rf $(TARGET_DIR)/var/lib/at*' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
 	echo 'rm -rf $(TARGET_DIR)/var/spool' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
-	#$(INSTALL) -m 0755 -D $(AT_DIR)/debian/rc $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
+	echo '$(TARGET_STRIP) $(TARGET_DIR)/usr/sbin/atd $(TARGET_DIR)/usr/bin/at' >> $(PROJECT_BUILD_DIR)/.fakeroot.at
 
 at: uclibc host-fakeroot msmtp $(TARGET_DIR)/$(AT_TARGET_SCRIPT)
 
