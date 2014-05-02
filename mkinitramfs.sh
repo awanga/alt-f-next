@@ -133,7 +133,7 @@ case $board in
 	dns325)
 		SQFSBLK=131072
 		fw_pkgs="$base_pkgs gptfdisk mtd-utils"
-		sq_pkgs="$base_pkgs2 ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission iscsitarget"
+		sq_pkgs="$base_pkgs2 ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission"
 		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
 	*) echo "Unsupported \"$board\" board"; exit 1;;
@@ -142,7 +142,7 @@ esac
 CWD=$PWD
 
 # base packages /etc configuration files
-base_conf=$(for i in $base_pkgs $base_pkgs2; do grep './etc/'  $CWD/ipkgfiles/$i.lst; done)
+base_conf=$(for i in $base_pkgs $base_pkgs2; do grep './etc/' $CWD/ipkgfiles/$i.lst; done)
 
 # all packages (and needed dependencies) /etc configuration files
 all=$(for i in $all_pkgs; do rdeps $i; done | sort -u | cut -d" " -f1)
