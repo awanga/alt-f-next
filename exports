@@ -1,0 +1,82 @@
+# this is not a script, it is intended to be sourced,
+# so defined variables will be available at the current shell
+
+if test $# = 0; then
+	if test -f .config; then
+		. .config 2> /dev/null
+		board=$BR2_PROJECT
+		if test -n "$BLDDIR"; then
+			bdir=$BLDDIR
+		else
+			bdir=$PWD/build
+		fi
+	else
+		echo "No board defined nor .config found."
+		echo "Usage: . exports.sh [board ($(ls local | tr '\n' ' '))] [build dir]"
+	fi
+
+elif test $# = 1; then
+	board=$1
+	bdir=$PWD/build
+
+elif test $# = 2; then
+	board=$1
+	bdir=$2
+fi
+
+if test -f ./local/$board/$board.config; then
+	if test -f .config; then
+		eval $(grep BR2_PROJECT .config)
+
+		if ! cmp -si $(head -n 4 local/$BR2_PROJECT/$BR2_PROJECT.config | wc -c):$(head -n 4 .config | wc -c) \
+			local/$BR2_PROJECT/$BR2_PROJECT.config .config; then
+			echo "Current .config for \"$BR2_PROJECT\" has changed," \
+				 "consider making \"make saveconfig\". Exiting."
+			board=$BR2_PROJECT
+			return
+		fi
+	fi
+	make BOARD=$board getconfig
+else
+	echo "No configuration ./local/$board/$board.config found for board $board"
+	return
+fi
+
+if false; then
+	if ! test -d $bdir; then
+		echo "\"$bdir\" doesn't exist, creating it"
+		mkdir -p $bdir
+	fi
+
+	if ! test -e $bdir/dl; then
+		echo "creating donwload link to '$bdir/dl'"
+		ln -sf "$(readlink -f dl)" $bdir/dl
+	fi
+fi
+
+. .config 2> /dev/null
+
+if test "$board" != "$BR2_PROJECT"; then
+	echo "The board defined in ./local/$board/$board.config, \"$BR2_PROJECT\", does not match this script argument, \"$board\""
+	return
+fi
+
+linux_version=$BR2_CUSTOM_LINUX26_VERSION
+board=$BR2_PROJECT
+
+export BLDDIR=$bdir
+export ROOTFS=$BLDDIR/project_build_arm/$board/root
+export KERNEL=$BLDDIR/project_build_arm/$board/linux-$linux_version
+export UCLIBC=$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3
+export STAGING=$BLDDIR//build_arm/staging_dir
+export HOSTDIR=$BLDDIR/build_arm/host_dir
+export BINARIES=$BLDDIR/binaries/$board
+
+if test -z $OPATH; then OPATH=$PATH; fi
+export PATH=$OPATH:$HOSTDIR/usr/bin:$STAGING/usr/bin
+
+export EDITOR=uemacs
+
+make oldconfig
+
+echo Build ready for \"$board\"
