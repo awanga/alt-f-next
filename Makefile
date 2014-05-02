@@ -307,7 +307,7 @@ world: dependencies dirs target-host-info $(BASE_TARGETS) $(TARGETS_ALL)
 # dependencies anywhere else
 #
 #############################################################
-$(DL_DIR):
+$(DL_DIR): $(BUILD_DIR)
 	if ! test -e $(TOPDIR)/dl; then mkdir -p $(TOPDIR)/dl; fi
 	@ln -sf $$(readlink -f $(TOPDIR)/dl) $@
 
@@ -393,7 +393,7 @@ target-purgelocales:
 	done
 endif
 
-source: $(TARGETS_SOURCE) $(HOST_SOURCE)
+source: dirs $(TARGETS_SOURCE) $(HOST_SOURCE)
 
 _source-check:
 	$(MAKE) SPIDER=--spider source

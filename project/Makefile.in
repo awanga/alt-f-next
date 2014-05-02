@@ -33,7 +33,12 @@ TAR_OPTIONS=$(subst ",, $(BR2_TAR_OPTIONS)) -xf
 
 # Buildroot supports building out of tree similarly to the Linux kernel.
 # To use, add O= to the make command line (make O=/tmp/build)
+ifeq ("$BLDDIR",)
 BASE_DIR:=$(shell pwd)/build
+else
+BASE_DIR:=$(BLDDIR)
+endif
+
 ifdef O
 ifeq ("$(origin O)", "command line")
 BASE_DIR := $(shell mkdir -p $(O) && cd $(O) && pwd)
