@@ -47,8 +47,8 @@ Continue? ")
 		else if (op == "Destroy_raid") // raid to release its components
 			res = confirm("Destroying a RAID will make all data it contains inaccessible\n\
 and will make its components available to other RAID arrays.\n\n\
-However, for RAID1 with metadata 0.9 and 1.0, the data\n\n
-it contains will be available duplicated on each component,\n\n
+However, for RAID1 with metadata 0.9 and 1.0, the data\n\n\
+it contains will be available duplicated on each component,\n\n\
 which can be used latter as a \"standard\" filesystem.\n\nContinue?")
 
 		else if (op == "Add_part" || op == "Remove_part" || op == "Fail_part" || op == "Clear_part") {
