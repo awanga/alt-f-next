@@ -1,9 +1,9 @@
 #!/bin/sh
 
 # udhcpc script edited by Tim Riker <Tim@Rikers.org>
-# modified for Alt-F by jcard
+# heavily modified for Alt-F by jcard
 
-[ -z "$1" ] && logger -s "Error: should be called from udhcpc" && exit 1
+[ -z "$1" ] && logger -st udhcpc "$0: Error, should be called from udhcpc" && exit 1
 
 #debug=true
 MODFILES="/etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf"
@@ -19,16 +19,18 @@ RESOLV_CONF="/etc/resolv.conf"
 
 case "$1" in
 	deconfig)
-		logger -s -t udhcpc "Deconfiguring $interface"
+		logger -st udhcpc "Deconfiguring $interface"
 		/sbin/ifconfig $interface 0.0.0.0
 		;;
 
 	renew|bound)
 		if test -n "$debug"; then
-			logger -s -t udhcpc "udhcpc environment:"
+			logger -st udhcpc "udhcpc environment:"
 			for i in $(env); do
-				logger -s -t udhcpc "   $i"
+				logger -st udhcpc "   $i"
 			done
+		else
+			logger -st udhcpc "Renew: Using IP=$ip for $lease seconds"
 		fi
 
 		# evaluate NETWORK
@@ -43,31 +45,31 @@ case "$1" in
 
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK $MTU
 
-		logger -s -t udhcpc "Updating /etc/hosts"
+		logger -st udhcpc "Updating /etc/hosts"
 		hname=$(hostname)
 		if fnm=$(hostname -f); then
 			sed -i '/^[^#].*'$fnm'/d' /etc/hosts
 		fi
 		echo -ne "$ip\t$hname.$domain\t$hname\n" >> /etc/hosts
 
-		logger -s -t udhcpc "Updating /etc/httpd.conf"
+		logger -st udhcpc "Updating /etc/httpd.conf"
 		sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$subnet #!# Allow local net|" /etc/httpd.conf
 
-		logger -s -t udhcpc "Updating /etc/samba/smb.conf"
+		logger -st udhcpc "Updating /etc/samba/smb.conf"
 		sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${subnet}\3|" /etc/samba/smb.conf
 		
 		if test -n "$router"; then
-			logger -s -t udhcpc "Updating default route"
+			logger -st udhcpc "Updating default route"
 			while route del default gw 0.0.0.0 dev $interface 2>/dev/null; do true; done
 
 			for i in $router ; do route add default gw $i dev $interface; done
 		fi
 
-		logger -s -t udhcpc "Updating /etc/resolv.conf"
+		logger -st udhcpc "Updating /etc/resolv.conf"
 		echo -n > $RESOLV_CONF
 		echo search $domain >> $RESOLV_CONF
 		for i in $dns ; do
-			logger -s -t udhcpc adding dns $i
+			logger -st udhcpc adding dns $i
 			echo nameserver $i >> $RESOLV_CONF
 		done
 		;;
