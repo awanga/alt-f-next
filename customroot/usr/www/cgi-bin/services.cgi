@@ -37,9 +37,9 @@ if test -z "$srv"; then
 fi
 
 cat<<-EOF
+	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<fieldset>
 	<legend>$title</legend>
-	<form action="/cgi-bin/services_proc.cgi" method="post">
 	<table><tr>
 	<th>Service</th>
 	<th class="highcol">Boot Enabled</th>
