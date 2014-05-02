@@ -37,7 +37,7 @@ noconfig_targets:=menuconfig xconfig config oldconfig randconfig \
 ifneq ($(BUILDROOT_LOCAL),)
 BR2_LOCAL:=$(BUILDROOT_LOCAL)
 else
-BR2_LOCAL:=$(TOPDIR)/local
+BR2_LOCAL:=$(TOPDIR)local
 endif
 
 # Variables for use in Make constructs
