@@ -3,18 +3,17 @@
 # perl
 #
 #############################################################
+
 PERL_MAJOR:=5
-#PERL_VERSION:=$(PERL_MAJOR).16.0
 PERL_VERSION:=5.16.0
 PERL_SOURCE:=perl-$(PERL_VERSION).tar.gz
-PERL_SITE:=http://www.cpan.org/src/$(PERL_MAJOR).0/
+PERL_SITE:=http://www.cpan.org/src/$(PERL_MAJOR).0
 PERL_DIR:=$(BUILD_DIR)/perl-$(PERL_VERSION)
 PERL_CAT:=$(ZCAT)
 
 PERL_CROSS_VERSION=0.7.1
 PERL_CROSS_SOURCE=perl-$(PERL_VERSION)-cross-$(PERL_CROSS_VERSION).tar.gz
-#PERL_CROSS_SITE=http://download.berlios.de/perlcross
-PERL_CROSS_SITE=http://$(BR2_SOURCEFORGE_MIRROR).dl.sourceforge.net/project/perlcross.berlios
+PERL_CROSS_SITE=$(BR2_SOURCEFORGE_MIRROR)/project/perlcross.berlios
 
 $(DL_DIR)/$(PERL_CROSS_SOURCE):
 	$(call DOWNLOAD,$(PERL_CROSS_SITE),$(PERL_CROSS_SOURCE))
@@ -80,7 +79,7 @@ perl-configure: $(PERL_DIR)/.stamp_configured
 
 perl-build: $(PERL_DIR)/.stamp_build
 
-perl: uclibc perl-host gdbm $(PERL_DIR)/.stamp_installed
+perl: uclibc gdbm $(PERL_DIR)/.stamp_installed
 
 #############################################################
 #
