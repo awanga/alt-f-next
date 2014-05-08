@@ -80,7 +80,7 @@ cat<<EOF
 EOF
 
 cifs_dis="disabled"
-if modprobe -D cifs.ko 2> /dev/null; then cifs_dis=""; fi
+if modprobe -D cifs >& /dev/null; then cifs_dis=""; fi
 
 bck_user="<option>root</option>"
 OIFS="$IFS"
