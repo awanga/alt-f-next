@@ -106,16 +106,14 @@ check() {
 # lock file for initscripts (rcS) synchronization
 aufslock=/tmp/.aufs-lock
 dolock() {
-	logger -st aufs "waiting for lock"
-	while ! mkdir $aufslock >& /dev/null; do
-		usleep 500000
-	done
-	logger -st aufs "got lock"
+	logger -t aufs "waiting for lock"
+	while ! mkdir $aufslock >& /dev/null; do usleep 500000; done
+	logger -t aufs "got lock"
 }
 
 # remove aufs lock upon termination
 cleanlock() {
-	logger -st aufs "remove lock"
+	logger -t aufs "remove lock"
 	rmdir $aufslock
 }
 
