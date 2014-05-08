@@ -3,8 +3,10 @@
 NAME=minidlna
 DESC="MiniDLNA is a DLNA/UPnP-AV server."
 TYPE=user
+NEED_ALTF_DIR=1
 
 CONF_MINIDLNA=/etc/$NAME.conf
+
 RC_USER=$NAME
 RC_USERN=11
 RC_GROUP=multimedia
@@ -14,7 +16,7 @@ RC_DESC="minidlna daemon"
 RC_PIDFILE=/var/run/$NAME/$NAME.pid
 MINIDLNA_ARGS="-u $RC_USER "
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 check_shares() {
 	if test -r "$CONF_MINIDLNA"; then
@@ -57,11 +59,12 @@ case "$1" in
 		start $NAME -- $RESCAN $MINIDLNA_ARGS 
 		;;
 
-	stop) stop $NAME 1 ;;
+	stop) stop $NAME ;;
 	status)	status $NAME ;;
+	reload) reload $NAME 1 ;;
 	restart) restart $NAME ;;
 	*)
-		echo "Usage: $0 {start|stop|status|restart}"
+		echo "Usage: $0 {start|stop|status|reload|restart}"
 		exit 1
 		;;
 esac
