@@ -66,7 +66,12 @@ for i in $srv; do
 	fi
 
 	if test -f $PWD/${i}.cgi; then
-		conf="<td><input type="submit" name=$i value="Configure"></td>"
+		NEED_ALTF_DIR=0; dis_wait=""
+		eval $(grep '^NEED_ALTF_DIR=' $CONFD/S??$i)
+		if test $NEED_ALTF_DIR = 1; then
+			if ! aufs.sh -s >& /dev/null; then dis_wait=disabled; fi
+		fi
+		conf="<td><input $dis_wait type="submit" name=$i value="Configure"></td>"
 	else
 		conf="<td></td>"
 	fi
