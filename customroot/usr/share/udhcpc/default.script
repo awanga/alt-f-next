@@ -26,11 +26,9 @@ case "$1" in
 	renew|bound)
 		if test -n "$debug"; then
 			logger -st udhcpc "udhcpc environment:"
-			for i in $(env); do
-				logger -st udhcpc "   $i"
-			done
+			for i in $(env); do logger -st udhcpc "   $i"; done
 		else
-			logger -st udhcpc "Renew: Using IP=$ip for $lease seconds"
+			logger -st udhcpc "Renew: Using $ip for $lease seconds"
 		fi
 
 		# evaluate NETWORK
@@ -45,33 +43,37 @@ case "$1" in
 
 		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK $MTU
 
-		logger -st udhcpc "Updating /etc/hosts"
 		hname=$(hostname)
+		logger -st udhcpc "Updating /etc/hosts: $ip $hname.$domain $hname"
 		if fnm=$(hostname -f); then
 			sed -i '/^[^#].*'$fnm'/d' /etc/hosts
 		fi
 		echo -ne "$ip\t$hname.$domain\t$hname\n" >> /etc/hosts
 
-		logger -st udhcpc "Updating /etc/httpd.conf"
+		logger -st udhcpc "Updating /etc/httpd.conf: allow $NETWORK/$subnet"
 		sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$subnet #!# Allow local net|" /etc/httpd.conf
 
-		logger -st udhcpc "Updating /etc/samba/smb.conf"
+		logger -st udhcpc "Updating /etc/samba/smb.conf: allow $NETWORK/${subnet}"
 		sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${subnet}\3|" /etc/samba/smb.conf
 		
 		if test -n "$router"; then
-			logger -st udhcpc "Updating default route"
 			while route del default gw 0.0.0.0 dev $interface 2>/dev/null; do true; done
-
-			for i in $router ; do route add default gw $i dev $interface; done
+			msg="adding route"
+			for i in $router ; do
+				msg="$msg $i"
+				route add default gw $i dev $interface
+			done
+			logger -st udhcpc "Updating $interface default route: $msg"
 		fi
 
-		logger -st udhcpc "Updating /etc/resolv.conf"
 		echo -n > $RESOLV_CONF
 		echo search $domain >> $RESOLV_CONF
+		msg="adding nameserver"
 		for i in $dns ; do
-			logger -st udhcpc adding dns $i
+			msg="$msg $i"
 			echo nameserver $i >> $RESOLV_CONF
 		done
+		logger -st udhcpc "Updating /etc/resolv.conf: $msg"
 		;;
 esac
 
