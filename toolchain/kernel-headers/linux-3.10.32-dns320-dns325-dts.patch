@@ -1,6 +1,14 @@
-diff -ur linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns320.dts linux-3.10.32/arch/arm/boot/dts/kirkwood-dns320.dts
---- linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns320.dts	2013-06-30 23:13:29.000000000 +0100
-+++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dns320.dts	2014-02-27 14:39:51.667769024 +0000
+--- linux-3.10.32/arch/arm/boot/dts/kirkwood-dns320.dts-orig	2014-05-06 21:43:24.958992573 +0100
++++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dns320.dts	2014-05-06 21:44:25.740796289 +0100
+@@ -3,7 +3,7 @@
+ /include/ "kirkwood-dnskw.dtsi"
+ 
+ / {
+-	model = "D-Link DNS-320 NAS (Rev A1)";
++	model = "D-Link DNS-320 NAS (Rev A1/A2)";
+ 	compatible = "dlink,dns-320-a1", "dlink,dns-320", "dlink,dns-kirkwood", "marvell,kirkwood-88f6281", "marvell,kirkwood";
+ 
+ 	memory {
 @@ -13,6 +13,7 @@
  
  	chosen {
@@ -32,9 +40,17 @@ diff -ur linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns320.dts linux-3.10.32/
  			status = "okay";
  		};
  	};
-diff -ur linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns325.dts linux-3.10.32/arch/arm/boot/dts/kirkwood-dns325.dts
---- linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns325.dts	2013-06-30 23:13:29.000000000 +0100
-+++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dns325.dts	2014-02-27 14:39:41.665968876 +0000
+--- linux-3.10.32/arch/arm/boot/dts/kirkwood-dns325.dts-orig	2014-05-06 21:43:37.958736702 +0100
++++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dns325.dts	2014-05-06 21:44:36.124591937 +0100
+@@ -3,7 +3,7 @@
+ /include/ "kirkwood-dnskw.dtsi"
+ 
+ / {
+-	model = "D-Link DNS-325 NAS (Rev A1)";
++	model = "D-Link DNS-325 NAS (Rev A1/A2)";
+ 	compatible = "dlink,dns-325-a1", "dlink,dns-325", "dlink,dns-kirkwood", "marvell,kirkwood-88f6281", "marvell,kirkwood";
+ 
+ 	memory {
 @@ -13,6 +13,7 @@
  
  	chosen {
@@ -61,4 +77,3 @@ diff -ur linux-3.10.32-orig/arch/arm/boot/dts/kirkwood-dns325.dts linux-3.10.32/
  			status = "okay";
  		};
  	};
-
