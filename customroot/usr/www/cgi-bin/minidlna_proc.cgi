@@ -8,6 +8,15 @@ read_args
 
 CONFF=/etc/minidlna.conf
 
+if test -n "$WebPage"; then
+	if ! rcminidlna status >& /dev/null; then
+		rcminidlna start  >& /dev/null
+	fi
+
+	eval $(grep ^port= $CONFF)
+	embed_page "http://${HTTP_HOST%%:*}:${port}" "Minidlna Page"
+fi
+
 if test -n "$enable_tivo"; then
 	enable_tivo=yes
 else
