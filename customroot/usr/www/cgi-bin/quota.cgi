@@ -55,10 +55,10 @@ if test -n "$admin"; then
 			<td align="center"><input $qm_chk type=checkbox name=enable_$j value="$part" onchange="dis_toogle(this, 'chk_$j')"></td>
 			<td align="center"><input $qm_dis $qs_chk type=checkbox id="chk_$j" name=active_$j value="$part"></td>
 			<td><input $qm_dis type=submit name=$part value=CheckNow onclick="return confirm('This operation takes a long time to accomplish,\n\
-	as it has to scan all files on the filesystem.\n\n\
-	It has to be done the first time quotas are enabled,\n\
-	and periodically afterwards, to ensure consistency.\n\n\
-	Continue?')"></td></tr>
+as it has to scan all files on the filesystem.\n\n\
+It has to be done the first time quotas are enabled,\n\
+and periodically afterwards, to ensure consistency.\n\n\
+Continue?')"></td></tr>
 		EOF
 	done
 
