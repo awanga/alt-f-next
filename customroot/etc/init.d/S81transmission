@@ -5,6 +5,7 @@
 DESC="A Fast, Easy and Free Bittorrent client"
 NAME=transmission-daemon
 TYPE=user
+NEED_ALTF_DIR=1
 
 RC_USER=transmission
 RC_USERN=13
@@ -30,7 +31,7 @@ SMB_CONF=/etc/samba/smb.conf
 
 OPTS="--logfile $LOGFILE --pid-file $PIDFILE --config-dir=$TRANSMISSION_HOME"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 check_net() {
 	network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
@@ -60,20 +61,25 @@ for i in $TRANSMISSION_DIRS; do
 done
 
 if ! test -s $TRANSMISSION_CONF; then
-	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
+	if test -s $TRANSMISSION_CONF2 -a ! -h $TRANSMISSION_CONF2; then
+		mv $TRANSMISSION_CONF2 $TRANSMISSION_CONF
+	else
+		transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
+	fi
 
 	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' \
 		-e 's|.*"umask":.*|    "umask": 2, |' \
 		-e 's|.*"message-level":.*|    "message-level": 1, |' $TRANSMISSION_CONF
+
+	if ! test -h $TRANSMISSION_CONF2; then
+		ln -sf $TRANSMISSION_CONF $TRANSMISSION_CONF2
+	fi
+
 	if grep -q "^\[Transmission\]" $SMB_CONF; then
 		sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
 	fi
 fi
 
-# 'sed -i' breaks $TRANSMISSION_CONF link to $TRANSMISSION_CONF2
-if ! test -h $TRANSMISSION_CONF2; then
-	ln -sf $TRANSMISSION_CONF $TRANSMISSION_CONF2
-fi
 
 check_user $TRANSMISSION_DIRS
 
