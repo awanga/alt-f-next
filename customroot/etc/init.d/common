@@ -1,5 +1,7 @@
 #set -x
 
+# dummy comment
+
 # Add "enable" and "disable" options for all scripts.
 # Notice that S41inetd also uses enable/disable, but with arguments
 if test "$1" = "enable" -a -z "$2" ; then
