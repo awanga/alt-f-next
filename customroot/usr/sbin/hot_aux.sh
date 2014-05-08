@@ -155,9 +155,18 @@ OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > /Alt-F/README.txt
 					tostart="$tostart rc${f#S??}"
 				fi
 			done
+
+			for i in $(grep -l "^NEED_ALTF_DIR=1" /etc/init.d/S??*); do
+				if test -x $i; then
+					f=$(basename $i)
+					tostart="$tostart rc${f#S??}"
+				fi
+			done
+
 			if test -n "$DELAY_NFS" -a -x /etc/init.d/S60nfs; then
 				tostart="$tostart rcnfs"
 			fi
+
 			aufs.sh -m
 			for i in $tostart; do
 				logger -st hot_aux "$($i start)"
