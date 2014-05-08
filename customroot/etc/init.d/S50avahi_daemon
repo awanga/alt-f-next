@@ -7,6 +7,7 @@
 DESC="The Avahi mDNS/DNS-SD daemon"
 NAME=avahi-daemon
 TYPE=net
+NEED_ALTF_DIR=1
 AVAHI_OPTS="-D"
 
 RC_USER=avahi
@@ -19,7 +20,7 @@ CONF_AVAHI=/etc/avahi
 
 REQUIRE="dbus"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 # register all running services
 # when a new service is started its own initscript or the daemon registers itself
@@ -31,8 +32,9 @@ istart() {
 	ntout=$(netstat -ln 2> /dev/null)
 
 	for i in /etc/avahi/services/*; do
-		pt=$(sed -n 's|.*<port>\(.*\)</port>|\1|p' $i)
 		srv=$(basename $i)
+		srvn=${srv%.*}
+		pt=$(sed -n '\|<type>_'$srvn'.*</type>|{ns|.*<port>\(.*\)</port>|\1|p}' $i)
 		if echo "$ntout" | grep -q ":$pt "; then
 			avahi add ${srv%.*} 
 		else
