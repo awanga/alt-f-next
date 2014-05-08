@@ -101,7 +101,7 @@ args_t args =
     { 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1, DNS_325_A1, DNS_320_A1};
+enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2};
 int board;
 
 enum Buttons { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
@@ -665,18 +665,18 @@ void check_board() {
 		leds[usb_led] = NULL;
 		args.lo_temp = 45;	// redefine defaults for C1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-321-A1", res) == 0) {
-		board = DNS_321_A1;
+	else if (strcmp("DNS-321-A1A2", res) == 0) {
+		board = DNS_321_A1A2;
 		leds[usb_led] = NULL;
 		nslots = 2; // box has no USB
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-325-A1", res) == 0) {
-		board = DNS_325_A1;
+	else if (strcmp("DNS-325-A1A2", res) == 0) {
+		board = DNS_325_A1A2;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-320-A1", res) == 0) {
-		board = DNS_320_A1;
+	else if (strcmp("DNS-320-A1A2", res) == 0) {
+		board = DNS_320_A1A2;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
 	else {
