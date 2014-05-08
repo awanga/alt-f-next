@@ -213,7 +213,7 @@ clearflashdef() {
 # As Alt-F only uses mtd0, the original settings are still in mtd1 
 recover() {
 	rmdir $save_dir
-	if grep -qE "DNS-320-A1|DNS-325-A1" $BRD; then	
+	if grep -qE "DNS-320-A1A2|DNS-325-A1A2" $BRD; then	
 		return 1
 	fi
  
@@ -252,7 +252,7 @@ check() {
 
 format() {
 	if test "$fs_type" = "minix"; then
-		mkfs.minix $MTD
+		mkfs.minix -i 64 $MTD
 	fi
 }
 
@@ -358,7 +358,7 @@ BRD=/tmp/board
 if grep -q Unknown $BRD; then
 	echo "Unsupported board"
 	exit 1
-elif grep -qE "DNS-320-A1|DNS-325-A1" $BRD; then
+elif grep -qE "DNS-320-A1A2|DNS-325-A1A2" $BRD; then
 	fs_type="jffs2"
 	MTD=/dev/mtdblock5
 else
