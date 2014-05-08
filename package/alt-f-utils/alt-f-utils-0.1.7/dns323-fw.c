@@ -138,7 +138,7 @@ sig_t signatures[] = {
 	{0, 64, 1572864, 6488064, 0, 65536, "\x55\xAA" "FrodoII" "\x00\x55\xAA"},	/* DNS-323 */
 	{1, 64, 1572864, 10485760, 0, 131072, "\x55\xAA" "Chopper" "\x00\x55\xAA"},	/* DNS-321 */
 	{2, 64, 1572864, 14417920, 0, 131072, "\x55\xAA" "Gandolf" "\x00\x55\xAA"},	/* DNS-343 */
-	{3, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS-325" "\x00\x55\xAA"},	/* DNS-325 */
+	{3, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS-325" "\x00\x55\xAA"},	/* DNS-325-A1A2 */
 	{4, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS323D1" "\x55\xAA"},	/* DNS-320-A1A2 */
 	{5, 128, 5242880, 5242880, 104857600, 5242880, "\x55\xAA" "DNS320B" "\x00\x55\xAA"},	/* DNS-320-B1 */
 	{6, 128, 0, 0, 0, 0, "\x55\xAA" "DNS320L" "\x00\x55\xAA"}	/* DNS-320L */
@@ -510,7 +510,7 @@ void usage() {
 		"\tdns323-fw -m [-q (quiet)]\n"
 		"\t-k kernel_file -i initramfs_file [-a sqimage_file] [-d defaults_file]\n"
 		"\t[-p product_id]  [-c custom_id] [-l model_id ] [-u sub_id] [-v new_version]\n"
-		"\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf, 3-DNS-325-A, 4-DNS-320-A, 5-DNS-320-B 6-DNS-320L] firmware_file\n");
+		"\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf, 3-DNS-325-A1A2, 4-DNS-320-A1A2, 5-DNS-320-B 6-DNS-320L] firmware_file\n");
   
 	fprintf(stderr, "-Print information from a firmware file:\n"
 		"\tdns323-fw -f firmware_file\n");
