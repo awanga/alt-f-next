@@ -17,65 +17,66 @@ A share is a network offer of an existing folder.
 Specifies folders that can be NFS mounted by other computers. Only NFS-v3 is supported.
 
 <ul>
-<li><strong>Disable:</strong> Check to temporary stop exporting the share.
+<li><strong>Disable:</strong> Check to temporary stop exporting the share.</li>
 
 <li><strong>Folder:</strong> The folder to export.
 <strong>Note:</strong> To export the same folder to different hosts with
-different options, enter the same folder on different lines for each host.
+different options, enter the same folder on different lines for each host.</li>
 
 <li><strong>Search:</strong> Hit to browse the local folder structure. 
-Hitting "OK" will fill-in the Folder field. 
+Hitting "OK" will fill-in the Folder field. </li>
 
 <li><strong>Allowed hosts:</strong> the hosts allowed to mount the share. Can be:
 <ul>
-<li>anonymous: a single * character will match all clients.
-<li>single host: a host name setup under Setup->Hosts, or an IP address
-<li>IP networks: a (sub) network specified by address/netmask
-<li>wildcards: wildcard characters * and ?, or class lists within [square brackets]. 
-<li>netgroups: NIS  netgroups  may be given as @group (not supported)
+<li>anonymous: a single * character will match all clients.</li>
+<li>single host: a host name setup under Setup->Hosts, or an IP address</li>
+<li>IP networks: a (sub) network specified by address/netmask</li>
+<li>wildcards: wildcard characters * and ?, or class lists within [square brackets]. </li>
+<li>netgroups: NIS  netgroups  may be given as @group (not supported)</li>
 </ul>
 
-<li><strong>Export Options:</strong> Any NFS allowed option, comma separated, no spaces.
+<li><strong>Export Options:</strong> Any NFS allowed option, comma separated, no spaces.</li>
 
 <li><strong>Options:</strong> Opens a new window with a list of the most
 frequently used options and the currently selected ones; hit CTRL while
-cliking to select multiple options. Options of the form option=value
-does not preserve the current value. 
+clicking to select multiple options. Options of the form option=value
+does not preserve the current value. </li>
 
-</ul>
+</ul></li>
 
 <li><h4>Folders to import from other hosts</h4>
 
-Specify remote folders to be localy mounted, e.g. to make them available under other protocol.
+Specify remote folders to be locally mounted, e.g. to make them available under other protocol.
 <ul>
-<li><strong>Disable:</strong> Check to temporary stop mounting the share..
-<li><strong>Host:</strong> The remote hostname (or IP address) that exports the share.
-<li><strong>Folder:</strong> The remote folder to mount localy.
-<li><strong>Discover:</strong> Hit to NFS browse the network; hitting a line will fill the Host and Folder fields.
+<li><strong>Disable:</strong> Check to temporary stop mounting the share..</li>
+<li><strong>Host:</strong> The remote hostname (or IP address) that exports the share.</li>
+<li><strong>Folder:</strong> The remote folder to mount locally.</li>
+<li><strong>Discover:</strong> Hit to NFS browse the network; hitting a line will fill the Host and Folder fields.</li>
 <li><strong>Local Folder:</strong> Local folder where the remote share should be made available. 
-It is recommended to use an empty folder directly under "/mnt"; if necessary create the folder, e.g. "/mnt/remoteNFS\".
-<li><strong>Search:</strong> Hit to browse the local folder structure (and possibly create the mount folder).
-<li><strong>Mount Options:</strong> NFS mount options, comma separated, no spaces.
+It is recommended to use an empty folder directly under "/mnt"; if necessary create the folder, e.g. "/mnt/remoteNFS".</li>
+<li><strong>Search:</strong> Hit to browse the local folder structure (and possibly create the mount folder).</li>
+<li><strong>Mount Options:</strong> NFS mount options, comma separated, no spaces.</li>
 <li><strong>Options:</strong> Opens a new window with a list of the most
 frequently used mount options and the currently selected ones; hit CTRL while
-cliking to select multiple options. Options of the form option=value
+clicking to select multiple options. Options of the form option=value
 does not preserve the current value. 
 
 After an entry is filled-in and the Submit button is hit, a
 <strong>Mount</strong> button will appear, which will make the remote
-share localy available; when <em>mounted</em>, an
-<strong>unMount</strong> button will appear instead, which if hitted will unmount
-(unmap) the remote share. 
+share locally available; when <em>mounted</em>, an
+<strong>unMount</strong> button will appear instead, which if selected will unmount
+(unmap) the remote share. </li>
 
-</ul>
+</ul></li>
 
 <li><p><h4>Delay NFS start on boot:</h4> NFS stores some client information on disk, for recovery on reboot
 in case of server or client crash. That information is stored in a sub-directory where Alt-F 
 packages are stored. At boot time, when NFS starts, the Alt-F directory might not yet be available
 and such recovery information is missing.<br>Checking this checkbox delays the NFS start until the
 Alt-F directory becomes available. Notice that if the checkbox is checked and the Alt-F directory
-never appears, then NFS will not auto-start.
+never appears, then NFS will not auto-start.</li>
 
 </ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

@@ -7,28 +7,29 @@
 <center><h2>Host Setup Help</h2></center>
 
 <ul>
-<li>Host name: the box name, as seen by other computers in the network
-<li>Host description: a more meaningfull box description
-<li>Workgroup: the MS-W workgroup or the local network domain name
+<li>Host name: the box name, as seen by other computers in the network</li>
+<li>Host description: a more meaningful box description</li>
+<li>Workgroup: the MS-Windows workgroup or the local network domain name</li>
 </ul>
 
 <ul>
-<li>Static IP or	DHCP:<br>
-Every computer in a network must have an assigned IP. An IP has the form x.x.x.x, where x lies between 1 and 254.<br>
-The IP can be either assigned statically, remaining fixed once for all, or dynamically, where an existing DHCP server in the network leases an IP to the box for a given amount of time, and in this case the IP can change over time. Usually the DHCP server lies in the modem/router that connects you to the internet.<br>
+<li>Static IP or DHCP:<br>
+Every computer in a network must have an assigned IP address. An IP address has the form x.x.x.x, where x lies between 1 and 254.<br>
+The IP address can be either assigned statically, remaining fixed once for all, or dynamically, where an existing DHCP server in the network leases an IP address to the box for a given amount of time, and in this case the IP address can change over time. Usually the DHCP server lies in the modem/router that connects you to the internet.<br>
 The recommended setting for computers that are servers, and the DNS-323 is a server, is to have a fixed IP.<br>
-If you select a static IP you have also to specify other network details. If you don't know them, you can start with DHCP, note the values that the DHCP server published, and then revert to a static IP, keeping all DHCP settings but the host IP.
+If you select a static IP address you also have to specify other network details. If you don't know them, you can start with DHCP, note the values that the DHCP server published, and then revert to a static IP address, keeping all DHCP settings but the host IP.</li>
 
-<li>Host IP: the IP must be compatible with your other hosts IPs
-<li>Netmask: how "wide" your local network is, usually 255.255.255.0, meaning that your network can have up to 255 computers
-<li>Gateway: the IP of the computer that connects you to the internet, generally you modem/router
-<li>Name server 1: the IP of a computer that translates host names to IP, generally you modem/router or your ISP DNS
-<li>Name server 2: the IP of a fallback computer that translates host names to IPs, optional.
+<li>Host IP: the IP address must be compatible with your other hosts IP addresses</li>
+<li>Netmask: how "wide" your local network is, usually 255.255.255.0, meaning that your network can have up to 253 computers (x.x.x.0 and x.x.x.255 are reserved).</li>
+<li>Gateway: the IP address of the computer that connects you to the internet, generally your modem/router</li>
+<li>Name server 1: the IP address of a computer that translates host names to IP address, generally your modem/router or your ISP DNS</li>
+<li>Name server 2: the IP address of a fallback computer that translates host names to IP addresses, optional.</li>
 <li>Frame size: Usually 1500. A higher value means that "jumbo frames" are enabled, allowing higher network throughput.<br>
-Maximum value is 9000, but it is a waste of memory, either 3700 (maximum memory saving) or 7500 are good choices. Other computers, routers or switches in the network must also support jumbo frames
+Maximum value is 9000, but it is a waste of memory, either 3700 (maximum memory saving) or 7500 are good choices. Other computers, routers or switches in the network must also support jumbo frames</li>
 <li>Enable IPv6: protocol for the next generation internet.<br>
-Most users don't need it. If you activate it it will became immediately active; if you disable it it will become disabled only after the next reboot.<br>
-The kernel-modules package must be installed first.
+Most users don't need it. If you activate it, it will become immediately active; if you disable it, it will become disabled only after the next reboot.<br>
+The kernel-modules package must be installed first.</li>
 </ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

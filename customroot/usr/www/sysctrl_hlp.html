@@ -18,7 +18,7 @@ temperature.<br>
 <li><h4>DNS-323 rev-A1/B1 hardware boards:</h4>
 
 For the A1 and B1 hardware boards, the fan speed can
-varies continuously between 2000 and 6500 RPM.<br>
+vary continuously between 2000 and 6500 RPM.<br>
 
 To calibrate the fan speed with the system temperature, you must specify
 a <strong>Low</strong> and a <strong>High</strong> reference point.<br>
@@ -42,10 +42,11 @@ In the <strong>Max Fan Speed</strong>, you specify the maximum fan speed
 that the fan must turn at. The value depends on the characteristics of
 the fan, and the manufacturer specifies between 6000 and 7000 RPM. You
 should not exceed this value. </p>
+</li>
 
-<li><h4>DNS 323 rev-C1, DNS-323 rev-A1/A2, DNS-320 rev-A1 and DNS-325 rev-A1 hardware boards:</h4>
+<li><h4>DNS-323 rev-C1, DNS-320/321/325 rev-A1/A2 hardware boards:</h4>
 
-The C1 hardware board fan can only have three fan settings: off,
+The hardware board fan on these box models can only have three fan settings: off,
 low speed and fast speed.<br>
 
 In the <strong>Fan Off Temp</strong> entry, you can specify at what temperature
@@ -54,7 +55,7 @@ should the fan stop.<br>
 In the <strong>Low Temp</strong> entry you specify the threshold temperature
 between the low and fast fan speed: at lower temperatures the fan turns at low
 speed, while at higher temperatures it turns at the fast speed.
-
+</li>
 </ul>
 
 <p> In <strong>System Safety</strong>, you can specify a warning and
@@ -68,7 +69,7 @@ down.<br>
 
 If you check the <strong>Send email</strong> checkbox, an email will be
 sent when any of the temperatures limits are exceeded. The email will be
-sent only once; no email will be sent if the temperature drops bellow
+sent only once; no email will be sent if the temperature drops below
 the setpoints.</p>
 
 <p> In the <strong>Action to execute on Button press</strong>, you can
@@ -76,20 +77,20 @@ specify the full path name of scripts that you wrote and that must be
 executed when your press the box buttons:<ol>
 
 <li>Three seconds after you start pressing the box front button, the
-right led starts flashing,  and if you release the button the box will
+right LED starts flashing,  and if you release the button the box will
 do a controlled reboot, but first will execute the script that you
-specified in the <strong>Front button 1st cmd entry</strong>.
+specified in the <strong>Front button 1st cmd entry</strong>.</li>
 
-<li>If you keep pressing the button, the left led will start flashing,
+<li>If you keep pressing the button, the left LED will start flashing,
 and if you then release the button the box will do a controlled
 shutdown, but first will execute  the script that you specified in the
-<strong>Front button 2nd cmd entry</strong>.
+<strong>Front button 2nd cmd entry</strong>.</li>
 
-<li>If you keep pressing the button, both leds will stop flashing and if
-you then release the button no action will be taken.
+<li>If you keep pressing the button, both LEDs will stop flashing and if
+you then release the button no action will be taken.</li>
 
 <li>Finally, if you press the box back button for one or two seconds,
-both leds will start flashing, and the script that you specified in the
+both LEDs will start flashing, and the script that you specified in the
 <strong>Back button cmd</strong> will be executed.<br>
 If no script is specified all USB mounted filesystems will be unmounted,
 making it safe to remove the attached USB device. Notice that unmounting
@@ -100,17 +101,18 @@ The back button also has two <em>recovery actions</em> if the
 
 <li>If you keep the back button pressed for more than ten seconds, you
 can telnet the box at port 26, as root and without password. This is a
-safeguard in case you forget the password.
+safeguard in case you forget the password.</li>
 
 <li>As a last safeguard, if you press the back button for more that
 twenty seconds, all the settings saved in flash will be erased, and the
 box will do a controlled reboot. This is a last resort safeguard, in
 case you mess the box configuration so much that you can't do anything
 with it; after the reboot the box will behave as if no settings has
- ever been saved, and you have to struggle to find its IP
-(if you have a DHCP server enabled in your network, the box will use it).
-</ul>
+ ever been saved, and you have to struggle to find its IP address
+(if you have a DHCP server enabled in your network, the box will use it).</li>
+</ul></li>
 
 </ol>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

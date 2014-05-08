@@ -6,7 +6,7 @@
 
 <center><h2>Settings Management Help</h2></center>
 
-The changes you make to Alt-F configuration, using its administrative web page, reside in memory and must be save into non-volatile flash-memory in order to survive reboots or power-off.
+The changes you make to Alt-F configuration, using its administrative web page, reside in memory and must be saved into non-volatile flash-memory in order to survive reboots or power-off.
 
 <p>When configuration files are changed, a <font color=red>When done you should save settings</font> warning appears under all the web pages title, reminding you to save the changes when you are satisfied with the results; you don't have to save changes immediately. If you hold the mouse pointer on top of the warning, a popup window will show you the files that have changed and needs to be saved.
 
@@ -16,12 +16,12 @@ Depending on the current Alt-F and vendor's settings, there can be not enough fl
 
 <p>In any case, when reflashing the vendor's firmware back, Alt-F offers you the possibility of restoring the vendor's settings from an alternative flash memory location, or in alternative to use the vendor's firmware defaults.
 
-<p>Alt-F has an emergency/last resort way of clearing settings to default values: press and keep pressing the box back button for more than twenty seconds (both leds will be flashing twice a second) -- all settings will be erased and a reboot will happen. Read <a href="sysctrl_hlp.html">Temperature, Fan and Buttons Setup</a>, near the end.
+<p>Alt-F has an emergency/last resort way of clearing settings to default values: press and keep pressing the box back button for more than twenty seconds (both LEDs will be flashing twice a second) -- all settings will be erased and a reboot will happen. Read <a href="sysctrl_hlp.html">Temperature, Fan and Buttons Setup</a> near the end for more details.
 
-<p>In this page upper section, <strong>Flash Memory</strong>, you can
+<p>In the upper <strong>Flash Memory</strong> section, you can:
 <ul>
-<li><strong>SaveSettings</strong>: the current in-memory settings are saved into flash-memory. Several sets of Alt-F settings can coexist, tagged with the date and hour of the save operation; if necessary the older is deleted in order to provide space for the new set.
-<li><strong>LoadSettings</strong>: You have to select one of the available sets using the <strong>Select one</strong> button. The stored settings will be loaded in memory and become effective immediately; however, most running services will not recognize configuration changes until they are restarted. You might restart then all using System->Utilities->Services->RestartAll. The box IP and name might change.
+<li><strong>SaveSettings</strong>: the current in-memory settings are saved into flash-memory. Several sets of Alt-F settings can coexist, tagged with the date and hour of the save operation; if necessary the older is deleted in order to provide space for the new set.</li>
+<li><strong>LoadSettings</strong>: You have to select one of the available sets using the <strong>Select one</strong> button. The stored settings will be loaded in memory and become effective immediately; however, most running services will not recognize configuration changes until they are restarted. You might restart then all using System->Utilities->Services->RestartAll. The box IP address and name might change.</li>
 
 <li><strong>ClearSettings</strong>: the flash-memory used to store
 settings will be wiped, removing all vendor's and Alt-F settings.<br>
@@ -34,16 +34,17 @@ Clearing settings will also clear all created users and groups (but not
 their home folders), including system users and groups created by
 installed packages, so you might want to <strong>Download</strong> the
 current settings to your computer first, so you can examine them to
-help you restore any needed settings latter.<br>
+help you restore any needed settings later.<br>
 
 If rebooted without settings, the box will first try to use a DHCP
-assigned IP, and if not successful it will try to find a free IP in the
-192.168.1.254-240 range." </ul>
+assigned IP address, and if not successful it will try to find a free IP address in the
+192.168.1.254-240 range."</li></ul>
 
-<p>In the lower section, <strong>Computer Disk</strong>, you can
+<p>In the lower <strong>Computer Disk</strong> section, you can:
 <ul>
-<li><strong>Save current settings to file</strong>: you can store the current settings in your computer disk as a compressed tar archive using the <strong>Download</strong> button. Keep the file safe, as passwords will be available for anyone reading it.
-<li><strong>Load settings from file</strong>: using the <strong>Browse</strong> button you have to select  a file in your computer that you have previously saved, and hitting the <strong>Upload</strong> button, the settings will be transferred to the box and will became effective immediately; the box IP might change.
+<li><strong>Save current settings to file</strong>: you can store the current settings in your computer disk as a compressed tar archive using the <strong>Download</strong> button. Keep the file safe, as passwords will be available for anyone reading it.</li>
+<li><strong>Load settings from file</strong>: using the <strong>Browse</strong> button you have to select  a file in your computer that you have previously saved, and hitting the <strong>Upload</strong> button, the settings will be transferred to the box and will became effective immediately; the box IP address might change.</li>
 </ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

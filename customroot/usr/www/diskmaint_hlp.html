@@ -6,49 +6,51 @@
 
 <center><h2>Filesystem Maintenance Help</h2></center>
 
-<p>In order to acess and manipulate disk data as files and folders, a device needs to have a filesystem on it.<br>
-A device can be a <a href="diskpart_hlp.html">disk partition</a>, a <a href="raid_hlp.html">RAID array<a>, a LVM device, etc, and a filesystem can be ext2/3/4, NTFS, FAT, etc.<br>
-<p>To be usable, a filesystem has to be <em>mounted</em> on a directory, called the mountpoint, and all filesystem data will appear as if contained in that directory; when the filesystem is unmounted the directory will be empty. One can specify how to mount a filesystem using <em>mount options</em>, e.g., Read Only, Read-Write, or some other exotic options.<br>
-On Alt-F, everytime a filesystem is detected the mountpoint is automatically created under the directory <em>/mnt</em>, using either the device name or the filesystem label, e.g., <em>/mnt/sda2</em> or <em>/mnt/Videos</em> if <em>Videos</em> is the label found in the filesystem.<br>
-Adding a filesystem label is useful because it makes the device or filesystem content clear and independent of the order that the device is found -- it might happens that sometimes a faster disk is detected before a slower one, and the device name, <em>sda</em> or <em>sdb</em> might appear exchanged.
+<p>In order to access and manipulate disk data as files and folders, a device needs to have a filesystem on it.
+A device can be a <a href="diskpart_hlp.html">disk partition</a>, a <a href="raid_hlp.html">RAID array</a>, a LVM device, etc, and a filesystem can be ext2/3/4, NTFS, FAT, etc.<br>
+<p>To be usable, a filesystem has to be <em>mounted</em> on a directory, called the mountpoint, and all filesystem data will appear as if contained in that directory; when the filesystem is unmounted the directory will be empty. One can specify how to mount a filesystem using <em>mount options</em>, e.g., Read Only, Read-Write, or some other exotic options.<p>
+On Alt-F, every time a filesystem is detected the mountpoint is automatically created under the directory <em>/mnt</em>, using either the device name or the filesystem label, e.g., <em>/mnt/sda2</em> for <em>/dev/sda2</em>, or <em>/mnt/Videos</em> if <em>Videos</em> is the label found in the filesystem.
+Adding a filesystem label is useful because it makes the device or filesystem content clear and independent of the order that the device is found -- it might happen that sometimes a faster disk is detected before a slower one, and the device name, <em>sda</em> or <em>sdb</em> might appear exchanged.
 
-<p>In this page all box available devices suitable to contain a filesystem are shown
-(but devices that are currently in use by a RAID device are not).<br> 
+<p>All available devices suitable to contain a filesystem for the box are shown on this page (but devices that are currently in use by a RAID device are not).
 Suitable devices are physical partitions of adequate type (which excludes swap,
-RAID and LVM partition types), RAID arrays or LVM physical volumes.<br>
+RAID and LVM partition types), RAID arrays or LVM physical volumes.
 
-<p>In the description bellow, and depending on the filesystem type, state and installed packages, not all operations might be available.
-
-<p>In the upper <strong>Filesystems</strong> section each line shows one device:
-
+<p>Depending on the filesystem type, state and installed packages, not all operations might be available below:
+<ul><li>
+<p>In the upper <strong>Filesystems</strong> section, each line shows one device:
 <ul>
-<li><strong>Dev</strong> is the device name
-<li><strong>Size</strong> is the the filesystem capacity, if the device has a filesystem on it,  otherwise the device size (in blue)
-<li><strong>FS</strong> is the existing filesystem type, "none" if none exists (in red), or vfat or ntfs (in blue, not linux-native filesystems)
-<li><strong>Mnt</strong> show whether a filesystem is mounted or not
-<li><strong>Label</strong> shows (or inputs) the filesystem label, if any
-<li><strong>Mount Options</strong> shows (or inputs) the current mount options
-<li><strong>FS Operations</strong> allows selecting operations that can be performed on the filesystem, see bellow
-<li><strong>New FS Operations</strong> allows to use the <strong>Operation</strong> menu so you can <strong>Format</strong> the device with a new filesystem (loosing all data it contains) or <strong>Convert</strong> the current filesystem to a new format, keeping its data; you have first to select the new filesystem using the <strong>New FS</strong> selection.
+<li><strong>Dev</strong> is the device name</li>
+<li><strong>Size</strong> is the the filesystem capacity, if the device has a filesystem on it,  otherwise the device size (in blue)</li>
+<li><strong>FS</strong> is the existing filesystem type: "none" if none exists (in red), or vfat or ntfs (in blue, not Linux-native filesystems)</li>
+<li><strong>Mnt</strong> show whether a filesystem is mounted or not</li>
+<li><strong>Label</strong> shows (or inputs) the filesystem label, if any</li>
+<li><strong>Mount Options</strong> shows (or inputs) the current mount options</li>
+<li><strong>FS Operations</strong> allows selecting operations that can be performed on the filesystem, see below</li>
+<li><strong>New FS Operations</strong> allows to use the <strong>Operation</strong> menu so you can <strong>Format</strong> the device with a new filesystem (loosing all data it contains) or <strong>Convert</strong> the current filesystem to a new format, keeping its data; first you have to select the new filesystem using the <strong>New FS</strong> selection.</li>
 </ul>
-
+<p>
 <strong>FS Operations:</strong>
 <ul>
-<li><strong>Mount/Unmount</strong> enables to manually mount or unmount a filesystem
-<li><strong>Check</strong> verifies filesystem consistency and if needed automatically fixes it. This operation can take a long time to complete, and its evolution can be seen in the Status page and the blue power led blinks with a slow heart-beat rhythm. When if finishes, you can see the log using the System->Utilities->View Logs->System Log page and searching for "fsck".
-<li><strong>ForceFix</strong>If the above automatic Check operation fails, it is necessary to run the 'fsck' program manually answering a series of cryptic questions.<br> If you are no expert, you will just answer 'yeah', trusting 'fsck' unconditionally. If you select this option a default answer of 'yes' will be given to 'fsck'. Use with care, as data loss might occur.
-<li><strong>Set Label</strong> sets the filesystem label using the <em>Label</em> entry
-<li><strong>Set Mnt options</strong> sets mount options using the <em>Mount Options</em> entry. The options will be used whenever the filesystem is mounted.
-<li><strong>Shrink</strong> consolidates the filesystem data at the device start, occupying the minimum possible space. After the operation completes and the filesystem is mounted the <strong>Size</strong> column shows the new size. It can take a very long time to complete, use the Status page and consult the System Log at the end.
-<li><strong>Enlarge</strong> expands the filesystem to occupy the totality of the device enclosing it
-<li><strong>Wipe</strong> fills the filesystem with zeros, erasing all its data. It is only effective for destroying the data from ordinary users, not specialized and expensive data recovery centers. It can take a very long time to complete, use the Status page. A more effective wipe would take an enormous amounts of time, if you need it do it on a faster computer.
+<li><strong>Mount/Unmount</strong> - Enables to manually mount or unmount a filesystem</li>
+<li><strong>Check</strong> - Verifies filesystem consistency and automatically fixes it if needed. This operation can take a long time to complete, and its progress can be seen in the Status page and the blue power LED blinks with a slow heart-beat rhythm. When the check finishes, you can see the log using the System->Utilities->View Logs->System Log page and searching for "fsck".</li>
+<li><strong>ForceFix</strong> - If the above automatic Check operation fails, it is necessary to run the 'fsck' program manually answering a series of cryptic questions. If you are no expert, you will just answer 'yes', trusting 'fsck' unconditionally. If you select this option a default answer of 'yes' will be given to 'fsck'. Use with care, as data loss might occur.</li>
+<li><strong>Set Label</strong> - Sets the filesystem label using the <em>Label</em> entry</li>
+<li><strong>Set Mnt options</strong> - Sets mount options using the <em>Mount Options</em> entry. The options will be used whenever the filesystem is mounted.</li>
+<li><strong>Shrink</strong> - Consolidates the filesystem data at the device start, occupying the minimum possible space. After the operation completes and the filesystem is mounted the <strong>Size</strong> column shows the new size. It can take a very long time to complete, use the Status page and consult the System Log at the end.</li>
+<li><strong>Enlarge</strong> - Expands the filesystem to occupy the totality of the device enclosing it</li>
+<li><strong>Wipe</strong> - Fills the filesystem with zeros, erasing all its data. It is only effective for destroying the data from ordinary users, not specialized and expensive data recovery centers. It can take a very long time to complete, use the Status page. A more effective wipe would take an enormous amounts of time, if you need it do it on a faster computer.</li>
 </ul>
-
-In the lower <strong>Set mounted filesystems to be checked every</strong> section you can specify when you want the filesystems to be checked for consistency and repaired if necessary.<br>
-When an ext2/3/4 filesystem is created, it is marked with some default values for when this check/fix is to be done, if they don't fit your needs you can change then using this section.<br>
-
-On every mount operation, which happens at least when the box is powered-up or a device is plugged-in, every filesystem is checked to verify that it was cleanly unmounted, i.e., there was not a catastrophic power-off or device unplugging.<br>
-If the filesystem is marked as have being cleanly unmounted, and the number of days or mount operations since the last check/fix has not elapsed, no further checks are done, otherwise an automatic check and fix is done.<br>
-While the filesystem check is being done the blue power led blinks with a slow heart-beat rhythm.<br>
-
+</li><p>
+<li>
+In the lower <strong>Set mounted filesystems to be checked every</strong> section you can specify when you want the filesystems to be checked for consistency and repaired if necessary.<ul>
+<li>
+When an ext2/3/4 filesystem is created, it is marked with some default values for when this check/fix is to be done, if they don't fit your needs you can change this using this section.</li>
+<li>On every mount operation, which happens at least when the box is powered-up or a device is plugged-in, every filesystem is checked to verify that it was cleanly unmounted, i.e., there was not a catastrophic power-off or device unplugging.</li>
+<li>If the filesystem is marked as have being cleanly unmounted, and the number of days or mount operations since the last check/fix has not elapsed, no further checks are done, otherwise an automatic check and fix is done.</li>
+<li>While the filesystem check is being done the blue power LED blinks with a slow heart-beat rhythm.</li>
+</li>
+</ul>
+</ul>
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

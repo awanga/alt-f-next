@@ -6,48 +6,47 @@
 
 <center><h2>Disk Utilities Help</h2></center>
 
-In this page all found disks, including USB disks or pens, will be presented, one per line:
+In this page all found disks, including USB hard disks or USB flash pens, will be presented, one per line:
 
 <ul>
-<li><strong>Bay</strong> will show you where the disk is, in the left or right box bay or on the USB port.
-<li><strong>Dev.</strong> the linux device name
-<li><strong>Capacity</strong> as reported by the disk 
-<li><strong>Disk Model</strong> as reported by the disk 
-<li><strong>Eject/Load</strong>: this button can be used with USB or internal disks. When
-
+<li><strong>Bay</strong> - will show you where the disk is, in the left or right box bay or on the USB port.</li>
+<li><strong>Dev.</strong> - the Linux device name</li>
+<li><strong>Capacity</strong> - as reported by the disk </li>
+<li><strong>Disk Model</strong> - as reported by the disk </li>
+<li><strong>Eject/Load</strong> - this button can be used with USB or internal disks. When</li>
 <ul>
-<li><strong>Eject</strong> appears, it means that some disk resource are in use by the box, and when pressing the button an attempt will be made to stop using them. If the disk is in use by some program or service and it can't be stopped, you have to stop the service or program that is using it before.
-<li><strong>Load</strong> appears, it means that no disk resource is in use, and you can safely remove or eject the disk. If you press the button, all filesystems found on the disk will be mounted and ready to be used. When a disk is plugged-in, this happens automatically.
+<li><strong>Eject</strong> appears, it means that some disk resource are in use by the box, and when pressing the button an attempt will be made to stop using them. If the disk is in use by some program or service and it can't be stopped, you have to stop the service or program that is using it before ejecting.</li>
+<li><strong>Load</strong> appears, it means that no disk resource is in use, and you can safely remove or eject the disk. If you press the button, all supported filesystems found on the disk will be mounted and ready to be used. When a disk is plugged-in, this happens automatically.</li>
 </ul>
 
-<li><strong>Health</strong>: you can see the disk <a href="http://en.wikipedia.org/wiki/S.M.A.R.T." target="_blank">S.M.A.R.T.</a> status or perform some SMART tests.
-<br>
+<li><strong>Health</strong> - you can see the disk <a href="http://en.wikipedia.org/wiki/S.M.A.R.T." target="_blank">S.M.A.R.T.</a> status or perform some SMART tests.</li>
 You can use Services->System->smart->Configure to automate tests.
 <ul>
-<li><strong>Show Status</strong> shows the disk SMART report, including disk capabilities, SMART disk attributes, and test results.
-<li><strong>Start short test</strong>: as the name says, selecting this performs a fast test, that will run offline (you can continue using the disk). When it finishes you can see the test result selecting <strong>Show Status</strong> and looking near the top of the <em>SMART Self-test log structure</em>
-<li><strong>Start long test</strong>: this is similar to the short test but is more exhaustive and takes a longer time to accomplish.
+<li><strong>Show Status</strong> - shows the disk SMART report, including disk capabilities, SMART disk attributes, and test results.</li>
+<li><strong>Start short test</strong> - as the name says, selecting this performs a fast test, that will run offline (you can continue using the disk). When it finishes you can see the test result selecting <strong>Show Status</strong> and looking near the top of the <em>SMART Self-test log structure</em></li>
+<li><strong>Start long test</strong> - this is similar to the short test but is more exhaustive and takes a longer time to accomplish.</li>
 </ul>
 
-<li><strong>Power Mode</strong> can show <strong>StandbyNow</strong> to attempt putting the disk in standby, not spinning, or <strong>WakeupNow</strong> to take the disk out of standby. If some programs or services are using the disk, it can't be put in standby.
+<li><strong>Power Mode</strong> - can show <strong>StandbyNow</strong> to attempt putting the disk in standby, not spinning, or <strong>WakeupNow</strong> to take the disk out of standby. If some programs or services are using the disk, it can't be put in standby.</li>
 
-<li><strong>Power Sav.</strong> if the disk supports A.P.M (Advanced Power Management), three levels of power saving can be set. If grayed out, the disk does not supported APM.
+<li><strong>Power Sav.</strong> - if the disk supports A.P.M (Advanced Power Management), three levels of power saving can be set. If grayed out, the disk does not supported APM.</li>
 <ul>
-<li><strong>Low</strong>: Low power saving, higher performance, can't spindown
-<li><strong>Med</strong>: Medium power savings and performance, can spindown
-<li><strong>High</strong>: Higher power savings, lower performance, can spindown
-<li><strong>Disable</strong>: disables APM
+<li><strong>Low</strong> - Low power saving, higher performance, can't spindown</li>
+<li><strong>Med</strong> - Medium power savings and performance, can spindown</li>
+<li><strong>High</strong> - Higher power savings, lower performance, can spindown</li>
+<li><strong>Disable</strong> - disables APM</li>
 </ul>
-<li><strong>Spindown</strong> You can enter the number of minutes of disk inactivity after which it will enter standby mode, stopping spinning. If services are using the disk, it might not be possible to spin it down. This depends on how the service uses the disk. Also, when packages are installed on disk and are running, the disk where the package was installed might not be put in standby; again, it depends on the service that the package offers. You have to press the <strong>Submit</strong> button for this to take efect.
+<li><strong>Spindown</strong> - You can enter the number of minutes of disk inactivity after which it will enter standby mode, stopping spinning. If services are using the disk, it might not be possible to spin it down. This depends on how the service uses the disk. Also, when packages are installed on disk and are running, the disk where the package was installed might not be put in standby; again, it depends on the service that the package offers. You have to press the <strong>Submit</strong> button for this to take effect.</li>
 
 </ul>
 
 <strong>Swapping on USB devices: </strong> <em>Enable</em> if you want to enable 
-<a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.<br>
-By default swaping is not enabled on USB pens or disks,
-as it will degrade performance and can shorten the life of your USB pen (that has a limited number
-of write cycles).<br>
-Swap <strong>is necessary</strong> and is enabled for internal disks,
-that must have a swap partition as its first partition.
+<a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.<ul>
+<li>By default swapping is not enabled on USB flash pens or USB hard disks, as it will degrade performance and can shorten the life of your USB flash pen (that has a limited number
+of write cycles).</li>
+<li>Swap <strong>is necessary</strong> and is enabled for internal disks,
+that must have a swap partition as its first partition.</li>
+</ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

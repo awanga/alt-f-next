@@ -24,41 +24,42 @@ don't deserve to be called RAID, as they provide no redundancy at all.
 <p>Alt-F enables creating, using and administering the following RAID levels:
 <ul>
 
-<li><strong>linear</strong> also called <em>JBOD, Just a Bunch Of
-Disks,</em> presents a RAID device that is the result of concatenating
+<li><strong>linear</strong>, also called <em>JBOD (Just a Bunch Of
+Disks)</em>, presents a RAID device that is the result of concatenating
 its two components, providing no redundancy at all. It is "convenient"
 because it provides a large device, with a size equal to the sum of the
-two components. If one components fails all the data that the RAID
+two components. If one of the components fails all the data that the RAID
 contains might be compromised -- it is just the same as if half of a
-normal disk gets damaged: depending on the damage you migh be able to
+normal disk gets damaged: depending on the damage you might be able to
 recover only part of the data (and you have to be a filesystem expert to
-do it). 
+do it).</li>
 
-<li><strong>RAID 0</strong> splits all reads and writes in turns to its
-two components, doubling the troughput of a normal disk. It is used for
-high-performace applications, and has no redundancy at all: if one of
-its components fails all data will be lost, no matter what. The
-components must be of the same size, and the resulting RAID device will
-have twice that size. 
+<li><strong>RAID 0</strong> comprises <em>striping</em> without parity or
+mirroring.  It splits all reads and writes in turns to its two components,
+doubling the throughput of a normal disk. It is used for high-performance
+applications, and has no redundancy at all: if one of its components
+fails all data will be lost, no matter what. The components must be of the
+same size, and the resulting RAID device will have twice that size.</li>
 
-<li><strong>RAID 1</strong> also called <em>mirroring</em>, all writes
-are made in parallel to its two components, so any of them has a exact
-copy of the other.<br> If one component fails the data is still
-available in the other component. An extra live component may be set
-apart as a <em>spare</em>, and will start working if any of the active
-components fails. For redundancy to be effective, all components must
-be of equal size and on different physical disks; the resulting RAID
-device will have the same size as the smaller component. 
+<li><strong>RAID 1</strong> comprises <em>mirroring</em> without parity
+or striping.  All writes are made in parallel to its two components, so
+any of them has a exact copy of the other.  If one component fails the
+data is still available in the other component. An extra live component
+may be set apart as a <em>spare</em>, and will start working if any of
+the active components fails. For redundancy to be effective, all
+components must be of equal size and on different physical disks; the
+resulting RAID device will have the same size as the smaller component.</li>
 
-<li><strong>RAID 5</strong> splits reads and writes between two
-components, as RAID 0 does, but keeps in a third component checksums of
-the other components data; components roles are not fixed, and if one of
+<li><strong>RAID 5</strong> comprises <em>block-level striping with
+distributed parity</em>.  It splits reads and writes between two components,
+as RAID 0 does, but keeps checksums of the other twho components data
+in a third component; components roles are not fixed, and if one of
 them fails all data is available from the other two. All components
 must have equal size, and the resulting RAID device size will be twice
-the size of the smaller component.
+the size of a single component.</li>
 </ul>
 
-<p>For RAID levels 1 and 5, if one component fails the data is still
+<p>For RAID 1 and RAID 5, if one component fails the data is still
 available in the other component(s); while this happens the device is
 said to be in the <em>degraded</em> state, meaning that it is working
 like a regular device with no redundancy at all. You have to
@@ -74,9 +75,9 @@ component its partition type must be RAID.
 
 <p>A RAID device, as all other devices, can't be used directly, you have
 to create a filesystem on it, see <a
-href="diskmaint_hlp.html">Filesystem Maintenance</a>.<br>
+href="diskmaint_hlp.html">Filesystem Maintenance</a>.
 
-However, RAID-1 and JBOD can be built on partitions that already have a
+However, RAID 1 and JBOD can be built on partitions that already have a
 filesystem (and data) on them, as long as it is the first RAID
 component. In this case, if you which to maintain the data the
 filesystem contains you should not create a filesystem on the new RAID
@@ -84,19 +85,19 @@ device, and instead you should "Enlarge" the filesystem <a
 href="diskmaint_hlp.html">Filesystem Maintenance</a> after the RAID
 creation. 
 
-<p>In the web page upper section, <strong>RAID Creation</strong>, you
+<p>In the upper <strong>RAID Creation</strong> section, you
 have to select the RAID level you wish, select its components, and hit
-the <strong>Create</strong> button. You have to be carefull enough to
+the <strong>Create</strong> button. You have to be careful enough to
 not select as a component a disk partition that is already assigned to
-other RAID array -- you can check the current component usage in the
+another RAID array -- you can check the current component usage in the
 page lower section, under the <strong>Components</strong> column.<br>
-You are allowed to create level 1 and 5 RAID devices in the degraded
-state if you select less that the needed components.<br> Creating a RAID
-5 device starts it in the degraded state even you specify its all three
+You are allowed to create RAID 1 and RAID 5 devices in the degraded
+state if you select less than the needed components.<br> Creating a RAID
+5 device starts it in the degraded state even you specify all three
 components, and the <em>recovering</em> action is automatically taken,
 which can take several (tens of) hours to complete (14MB/sec). During
 the recovering action the component will appear as a spare. For RAID 1
-the creation behaviour is similar, but the started action is
+the creation behavior is similar, but the started action is
 <em>resyncing</em> and no component appears as a spare. This is normal
 and is the expected behavior, not an Alt-F artifact. 
 
@@ -104,84 +105,87 @@ and is the expected behavior, not an Alt-F artifact.
 RAID devices are shown, one per line. 
 
 <ul>
-<li><strong>Dev.</strong> the device name
-<li><strong>Capacity</strong> the device capacity
+<li><strong>Dev.</strong> - the device name</li>
+<li><strong>Capacity</strong> - the device capacity</li>
 
-<li><strong>Level</strong> the device RAID level. It will be in red if
-the device is in the degraded state.
+<li><strong>Level</strong> - the device RAID level. It will be in red if
+the device is in the degraded state.</li>
 
-<li><strong>Ver.</strong> the device RAID metadata version.
+<li><strong>Ver.</strong> the device RAID metadata version.</li>
 
-<li><strong>Components</strong> all device components. They will be in
+<li><strong>Components</strong> - all device components. They will be in
 red if they are in the failed state, green if they are spare components,
-and black otherwise.<br> If a component is automaticaly marked as
+and black otherwise.<br> If a component is automatically marked as
 failed, but you think that is OK and want to reuse it, you should perform a long
-SMART test on the disk first (Disk->Utilities).
+SMART test on the disk first (Disk->Utilities).</li>
 
 <li>An action indication might appear in red, consult the Status page
-for checking its evolution. 
+for checking its evolution. </li>
 
-<li><strong>Array</strong> This button allows starting and stopping RAID
+<li><strong>Array</strong> - This button allows starting and stopping RAID
 arrays; certain operations cannot be stopped, as they will restart
-automatically. 
+automatically. </li>
 
 <li><strong>RAID Operations</strong><br>
 
-The following operations can be performed on level 1 and 5 RAID arrays,
+The following operations can be performed on RAID 1 and RAID 5 arrays,
 if the array is started and no action is occurring on it:
 <ul>
 
-<li><strong>Add/Remove bitmap</strong> adds or removes the "write-intent
+<li><strong>Add/Remove bitmap</strong> - adds or removes the "write-intent
 bitmap", that makes resyncing much faster.<br>
 By default Alt-F creates RAID devices with the write-intent bitmap
 active. If you are using a RAID device created under the vendor's
-firmware you should activate the write-intent bitmap.
+firmware you should activate the write-intent bitmap.</li>
 
-<li><strong>Verify</strong> verify the consistency of the device,
-comparing its components data (RAID 1) and its checksums (RAID 5)
+<li><strong>Verify</strong> - verify the consistency of the device,
+comparing its components data (RAID 1) and its checksums (RAID 5)</li>
 
-<li><strong>Repair</strong> verify the consistency of the device and try
-to fix any inconsistency found
+<li><strong>Repair</strong> - verify the consistency of the device and try
+to fix any inconsistency found</li>
 
-<li><strong>Enlarge</strong> make the device ocupy the maximum available
-space from its components. Usefull after adding or replacing components
+<li><strong>Enlarge</strong> - make the device occupy the maximum available
+space from its components. Useful after adding or replacing components
 with others of greater capacity. You should Enlarge the contained
-filesystem afterwards. 
+filesystem afterwards. </li>
 
-<li><strong>Shrink</strong> shrink the device to the minimum needed to
+<li><strong>Shrink</strong> - shrink the device to the minimum needed to
 hold the filesystem it contains. You should Shrink the contained
-filesystem before shrinking the device. 
+filesystem before shrinking the device. </li>
 
-<li><strong>Destroy</strong> the RAID device and the RAID information
+<li><strong>Destroy</strong> - destroy the RAID device and the RAID information
 contained in its components. You will not be able to access the data
-its contains afterwards.<br> However, for RAID1 with metadata version 0.9 and 1.0
+it contains afterwards.<br> For RAID 1 with metadata version 0.9 and 1.0, however,
 your data will still be available in each of the previous RAID components,
-and you can mount and use them using the Disk->Filesystem web page. 
+and you can mount and use them using the Disk->Filesystem web page. </li>
 
-</ul>
+</ul></li>
 
 <li><strong>Component Operations</strong><br>
-The following component <strong>Operations</strong> can be performed on
-level 1 and 5 RAID arrays, after selecting the desired component under
+The following <strong>Component Operations</strong> can be performed on
+RAID 1 and RAID 5 arrays, after selecting the desired component under
 <strong>Partition</strong>
 
 <ul>
 
-<li><strong>Fail</strong> deliberately fail a component, in order to
+<li><strong>Fail</strong> - deliberately fail a component, in order to
 remove (or re-add) it afterwards. It will be marked as failed (in red)
 in the <strong>Components</strong> column.<br> Fail here means
 logically, not at the hardware level, the disk itself will not be
-damaged!
+damaged!</li>
 
-<li><strong>Remove</strong> a component from the array; it has to be in
-the Fail state. 
+<li><strong>Remove</strong> - remove a component from the array; it has
+to be in the Fail state. </li>
 
-<li><strong>Add</strong> a component to the array, e.g., to replace a
-failed component or add a spare. 
+<li><strong>Add</strong> - add a component to the array, e.g., to replace a
+failed component or add a spare. </li>
 
-<li><strong>Clear</strong> clear the RAID information from the
+<li><strong>Clear</strong> - clear the RAID information from the
 component. This is needed if you want to use the disk partition for
-other than RAID purposes, or if a component was automaticaly marked as
-failed but you think that it is OK and you want to re-add it to device</ul>
+other than RAID purposes, or if a component was automatically marked as
+failed but you think that it is OK and you want to re-add it to device.</li>
+
+</ul></li></ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

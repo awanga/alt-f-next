@@ -8,125 +8,133 @@
 <center><h2>Status Page Help</h2></center>
 
 <p>This page shows the box status.<br>
-If the Autorefresh checkbox at the bottom is checked, then each status section will refresh itself between every 10 to 20 seconds. 
+If the Autorefresh checkbox at the bottom is checked, then each status section will refresh itself between every 10 to 20 seconds.
+Currently this feature does not work on Internet Explorer.
 Leaving it checked will avoid the disks to spin down and will consume some CPU power, so some lengthy tasks might tale longer to accomplish.
 If the disks are already spindown they will not spinup when the page is displayed.
 
 <p>There are several Status sections, not all will be shown if there are no status to display for them:
 
 <ul>
-<li>Errors: shows some system errors.<br>
-	To clear goto <a href="/cgi-bin/sys_utils.cgi">System-&gt;Utilities</a>-&gt;View Logs-&gt;systemerror.log and hit the Clear button.<br>
+<li><strong>Errors</strong>: shows some system errors.<br>
+	To clear go to <a href="/cgi-bin/sys_utils.cgi">System-&gt;Utilities</a>-&gt;View Logs-&gt;systemerror.log and hit the Clear button.<br>
 	More details can eventually be found at the System Log, Kernel Log
-	or other application specific log.
+	or other application specific log.</li>
 
-<li>System: shows the box system status.
+<li><strong>System:</strong> shows the box system status.
 	<ul>
-	<li>Temperature: is the box internal temperature. It will be affected by ambient temperature and by disks temperature.
+	<li>Temperature: is the box internal temperature. It will be affected by ambient temperature and by disks temperature.</li>
 
 	<li>Fan speed: the current fan speed.
 	The fan speed is automatically adjusted according to the box temperature.
-	You can change the relationship between fan speed and temperature in the Services->System->sysctrl->Configure section.
+	You can change the relationship between fan speed and temperature in the Services->System->sysctrl->Configure section.</li>
 
-	<li>Load: The number of processes trying to execute simultaneously on the CPU.
+	<li>Load: The number of processes trying to execute simultaneously on the CPU.</li>
 
-	<li>CPU: how busy the CPU is
+	<li>CPU: how busy the CPU is</li>
 
-	<li>Swap: amount of disk space used as memory; when the system needs more memory than physical memory is available, a special disk partition called swap is used ans some less frequently used applications and data are moved to the disk.
+	<li>Memory: how much of the physical memory is in use</li>
+
+	<li>Swap: amount of disk space used as virtual memory. When the system needs more memory than physical memory is available, a special disk partition called swap is used and some less frequently used applications and data are moved (swapped) to the disk.</li>
 	</ul>
+</li>
 
-<li>Network: shows network status
+<li><strong>Network:</strong> shows network status
 	<ul>
-	<li>Speed: can be 10, 100 or 1000 Mega bits per second, depending on the negotiated rate with the nearby connected device.
+	<li>Speed: can be 10, 100 or 1000 Megabits per second, depending on the negotiated rate with the nearby connected device.</li>
 	<li>MTU: also called "jumbo frames"; they can improve network throughput when transferring large files, but both sides of the transfer must support it.<br>
 	To change it, go to Setup->Host. Try to use values lower than 3700 bytes and/or 7500 bytes.<br>
 	Changing it right after power up is fine, but changing it when the system has already being
-	active for a some time can actually degrade network performance.
-	<li>Rx/Tx the amount of data received and sent by the box
-	<li>MAC: the network chip identification, which is fixed and world-unique
+	active for a some time can actually degrade network performance.</li>
+	<li>Rx/Tx: the amount of data received and transmitted by the box</li>
+	<li>MAC: the network chip identification, which is fixed and world-unique</li>
 	</ul>
+</li>
 
-<li>Disks: shows available disks
+<li><strong>Disks</strong>: shows available disks
 	<ul>
-	<li>Bay: where the disk is attached: the left, right or USB port
-	<li>Dev: the linux device name used to identify the disk
-	<li>Model: the disk model
-	<li>Capacity: the disk Capacity
-	<li>Power: the disk power status, can be "active or idle", standby or unknown.
-	<li>Temp: the disk internal temperature
+	<li>Bay: where the disk is attached: the left, right or USB port</li>
+	<li>Dev: the Linux device name used to identify the disk</li>
+	<li>Model: the disk model</li>
+	<li>Capacity: the disk Capacity</li>
+	<li>Power: the disk power status, can be "active or idle", standby or unknown.</li>
+	<li>Temp: the disk internal temperature</li>
 	<li>Health: the disk health, as reported by SMART, or unknown, if the drive does not support SMART or is in standby.<br>
 	If you see a message in red, replace the disk as soon as possible, as the disk is likely
 	to fail in the next hours or days.<br>
-	If the message appears in blue it means that some disk parameter has failed in the past.<br> You can examine the SMART log in Disk->Utilities->Health->Show Status.
+	If the message appears in blue it means that some disk parameter has failed in the past.<br> You can examine the SMART log in Disk->Utilities->Health->Show Status.</li>
 	</ul>
+</li>
 
-<li>RAID: show RAID status
+<li><strong>RAID</strong>: show RAID status
 	<ul>
-	<li>Dev: the name used by linux to identify the RAID device
-	<li>Capacity: the RAID capacity
-	<li>Level: the RAID type, can be linear(JBOD), raid0, raid1 or raid5
-	<li>State:
-	<li>Status: the RAID status, can be OK or degraded. If 'degraded' appears in red, the RAID is not providing any redundancy, as one disk has failed and must be replaced. Go to Disk->RAID.<br>
-	<li>Action: can rebuilding or resyncing.
-	<li>Done: shows the percent completion of the the Action operation
-	<li>ETA: shows the expected time to complete the Action operation
+	<li>Dev: the name used by Linux to identify the RAID device</li>
+	<li>Capacity: the RAID capacity</li>
+	<li>Level: the RAID type, can be linear(JBOD), raid0, raid1 or raid5</li>
+	<li>State:</li>
+	<li>Status: the RAID status, can be OK or degraded. If 'degraded' appears in red, the RAID is not providing any redundancy, as one disk has failed and must be replaced. Go to Disk->RAID.<br></li>
+	<li>Action: can be rebuilding or resyncing.</li>
+	<li>Done: shows the percent completion of the the Action operation</li>
+	<li>ETA: shows the expected time to complete the Action operation</li>
 	</ul>
+</li>
 
-<li>Mounted Filesystems: shows mounted local filesystems
+<li><strong>Mounted Filesystems</strong>: shows mounted local filesystems
 	<ul>
-	<li>Dev: the name used  by linux to identify the filesystem; except for RAID, it has the same name as the disk where it resides, plus the number of the disk partition.
-	<li>Label: a filesystem can have an human-readable label, such a Pictures, or Videos.
-	<li>Capacity: the filesystem capacity
-	<li>Available: the filesystem capacity still available for use, and a bar showing the percentage already used.
-	<li>FS: the kind of filesystem, can be ext2/3/4, fat or NTFS
-	<li>Mode: can be RO (Read-only) or RW (Read and Write). A filesystem is RO if when it was checked at power-up or at plug-time some errors couldn't be fixed -- to fix them a manual operation is needed.
+	<li>Dev: the name used  by Linux to identify the filesystem; except for RAID, it has the same name as the disk where it resides, plus the number of the disk partition.</li>
+	<li>Label: a filesystem can have an human-readable label, such a Pictures, or Videos.</li>
+	<li>Capacity: the filesystem capacity</li>
+	<li>Available: the filesystem capacity still available for use, and a bar showing the percentage already used.</li>
+	<li>FS: the kind of filesystem, can be ext2/3/4, vfat or NTFS</li>
+	<li>Mode: can be RO (Read-only) or RW (Read and Write). A filesystem is RO if when it was checked at power-up or at plug-time some errors couldn't be fixed -- to fix them a manual operation is needed.</li>
 	<li>Dirty: the filesystem is in an inconsistent state, you should go to
 	Disk->Filesystem->FS Operation and select "Check". "ext2" filesystems are marked as dirty
-	as soon as they are mounted.
+	as soon as they are mounted.</li>
 	<li>Automatic FSCK in: the number of mounts or days left until an automatic
 	filesystem check will be done at power-up or mount time.<br>
 	To avoid an inopportune lengthy check, that will certainly happen when you most need your files,	you should manually start a filesystem check using
-	Disk->Filesystems->Operation->Clean
+	Disk->Filesystems->Operation->Clean</li>
 	</ul>
-
-<li>Mounted Remote Filesystems: shows filesystems from remote hosts locally available
+</li>
+<li><strong>Mounted Remote Filesystems</strong>: shows filesystems from remote hosts locally available
 	<ul>
-	<li>Host: the host where the filesystem resides
-	<li>Remote Dir/Share: the directory or share of the remoter host
-	<li>Local Dir: the local directory where the filesystem is available
-	<li>Capacity: the filesystem capacity
-	<li>Available; the amount of free storage on the filesystem
-	<li>FS: the filesystem type, can be NFS or CIFS/smb
+	<li>Host: the host where the filesystem resides</li>
+	<li>Remote Dir/Share: the directory or share of the remote host</li>
+	<li>Local Dir: the local directory where the filesystem is available</li>
+	<li>Capacity: the filesystem capacity</li>
+	<li>Available; the amount of free storage on the filesystem</li>
+	<li>FS: the filesystem type, can be NFS or CIFS/smb</li>
 	</ul>
-
-<li>Remotely Mounted Filesystems: shows local filesystems in use by remote hosts
+</li>
+<li><strong>Remotely Mounted Filesystems</strong>: shows local filesystems in use by remote hosts
 	<ul>
-	<li>Host: the host that is using the local filesystem
-	<li>Dir/Share: the local directory or share name being used
-	<li>FS: the kind of filesystem, can be NFS or CIFS (smb)
+	<li>Host: the host that is using the local filesystem</li>
+	<li>Dir/Share: the local directory or share name being used</li>
+	<li>FS: the kind of filesystem, can be NFS or CIFS (smb)</li>
 	</ul>
-
-<li>Backup: shows currently running backup
+</li>
+<li><strong>Backup</strong>: shows currently running backup
 	<ul>
-	<li>ID; the backup id, set when configuring backups
-	<li>Directory: the directory being backup
-	<li>State: the backup status, can be "In Progress" or Queued; only one backup is performed at a time, if others are schedule for the same time they will wait for the current one to finish
+	<li>ID: the backup id, set when configuring backups</li>
+	<li>Directory: the directory being backup</li>
+	<li>State: the backup status, can be "In Progress" or Queued; only one backup is performed at a time, if others are schedule for the same time they will wait for the current one to finish</li>
 	</ul>
-
-<li>Filesystem Maintenance: shows currently filesystem maintenance operations
+</li>
+<li><strong>Filesystem Maintenance</strong>: shows current filesystem maintenance operations
 	<ul>
-	<li>Dev: The filesystem linux identifier
-	<li>Label: The filesystem label
-	<li>Operation: the maintenance operation occurring, can be checking, formatting, converting, shrinking, enlarging or wiping.
+	<li>Dev: The filesystem Linux identifier</li>
+	<li>Label: The filesystem label</li>
+	<li>Operation: the maintenance operation occurring, can be checking, formatting, converting, shrinking, enlarging or wiping.</li>
 	</ul>
-
-<li>Printers: shows available printers
+</li>
+<li><strong>Printers</strong>: shows available printers
 	<ul>
-	<li>Name: the printer queue name. You should use this name when setting up the printer in your computer.
-	<li>Model: the printer model
-	<li>Jobs: the number of print jobs awaiting to be printed
+	<li>Name: the printer queue name. You should use this name when setting up the printer in your computer.</li>
+	<li>Model: the printer model</li>
+	<li>Jobs: the number of print jobs awaiting to be printed</li>
 	</ul>
+</li>
 </ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
-
+</html>

@@ -7,89 +7,89 @@
 
 <center><h2>DHCP/DNS Setup Help</h2></center>
 
-<p> Every computer in a network must have an assigned IP. An IP has the
-form x.x.x.x, where x lies between 1 and 254.<br>
+<p> Every computer in a network must have an assigned IP address. An IP
+address has the form x.x.x.x, where x lies between 1 and 254.<br>
 
 It is also convenient to assign a name to a computer, in order to not
-have to remember its IP when one desires to communicate with it. </p>
+have to remember its IP address when one desires to communicate with it. </p>
 
-<p> Computers can have static or dynamically assigned IP, where its IP
-is not fixed but assigned on-demand by a DHCP server (Dynamic Host
-Configuration Protocol). Usually the DHCP server lies in the
+<p> Computers can have static or dynamically assigned IP addresses, where
+its IP address is not fixed but assigned on-demand by a DHCP server (Dynamic
+Host Configuration Protocol). Usually the DHCP server lies in the
 modem/router that connects you to the internet, but Alt-F also has a
-DHCP server, that you can configure in this page.<br>
+DHCP server feature that you can configure in this page.<br>
 
 </p>
 
 <p> No two DHCP servers should be running in the same network. If using
 Alt-F DHCP server, remember to stop the modem/router DHCP server. </p>
 
-<p>A DNS (Domain Name System) server translates computer names to IP.<br>
+<p>A DNS (Domain Name System) server translates computer names to IP address.<br>
 
 When you type a web address on your browser, that name has to be
-translated to an IP in order to establish communications with the
+translated to an IP address in order to establish communications with the
 computer that hosts the web pages you wish to visit.<br>
  Usually it is your modem/router that takes
-that role, either by returning the IP associated with the computer name,
+that role, either by returning the IP address associated with the computer name,
 or by forwarding the request to another DNS server, usually your ISP DNS
 server. </p>
 
-<p> Alt-F combined DHCP/DNS server, dnsmasq, can replace yours router's
-DHCP/DNS server, with the advantage that it also translates your local
-network computer names.<br>
+<p>Alt-F has a combined DHCP/DNS server, dnsmasq, that can replace your
+modem/router's DHCP/DNS server, with the advantage that it also translates
+your local network computer names.<br>
 
-When you connect your laptop (that usually uses DHCP) to your local
-network, it  asks for an IP and gives its own name; Alt-F DHCP/DNS
-server replies giving it an yet unassigned IP, but only for a certain
+When you connect your computer (that usually uses DHCP) to your local
+network, it  asks for an IP address and gives its own name; Alt-F DHCP/DNS
+server replies giving it a yet unassigned IP address, but only for a certain
 amount of time (the lease time), and takes note of the computer
 name.<br>
 
 When later your refer to your computer name in a browser, the DHCP/DNS
-server reply with the IP that it leased. </p>
+server replies with the IP address that it leased. </p>
 
 <p> Sometime you wish to have a device in your network to have a know
-IP, but want it to be dynamically assigned.<br>
+IP address, but want it to be dynamically assigned.<br>
 
 As every network card in the world has a unique identifier, its MAC,
 this can also be done by the Alt-F DHCP/DNS server.<br>
 
-You only have to specify the computer name, its MAC, and the desired IP.
+You only have to specify the computer name, its MAC, and the desired IP address.
 If you don't know the computer MAC, you can ask Alt-F to discover it by
-using the IP currently assigned to the computer. </p>
+using the IP address currently assigned to the computer. </p>
 
 <p> Not all computers in your local network have dynamically assigned
-IP, some use fixed IP. Your modem/router, as an example, has a fixed IP;
+IP address, some use fixed IP address. Your modem/router, as an example, has a fixed IP;
 generally all devices in a network with a server role have static
-IP.<br>
+IP address.<br>
 
-The association of computer names to its fixed IP is done through the
+The association of computer names to its fixed IP address is done through the
 Setup->Hosts page.<br>
 
  Alt-F DHCP/DNS server also uses that information when asked to
-translate a name to an IP. </p>
+translate a name to an IP address. </p>
 
-<p>When furnishing an IP, a DHCP server also advertises other resources
-in the network, such as the modem/router IP, the DNS server, time
+<p>When furnishing an IP address, a DHCP server also advertises other resources
+in the network, such as the modem/router IP address, the DNS server, time
 servers, the domain name, etc. That information is collected from
 elsewhere from a variety of configuration files. </p>
 
 <ul>
 
 <li>In  <strong>Dynamically serve IPs</strong> you can specify the range
-of IP that you wish the DHCP server to server, and for how long it is
-valid; after that time elapses, the computer has to ask for an IP again,
+of IP address that you wish the DHCP server to server, and for how long it is
+valid; after that time elapses, the computer has to ask for an IP address again,
 renewing the lease.
 
 <li>In <strong>Serve fixed IPs based on MAC</strong>, you can specify
-the name and MAC of a computer, and its the desired IP, as well as the
+the name and MAC of a computer, and its the desired IP address, as well as the
 time for which it is valid when leased.
 
-<li>In <strong>Current Leases</strong> you can see the names, IP and MAC
+<li>In <strong>Current Leases</strong> you can see the names, IP address and MAC
 of computers currently being  served, as well as the lease time expiry
 date.<br>
 
 Notice that when you disconnect a computer, the lease does not
-disappears immediately, only after the lease expiry time has elapsed.
+disappear immediately, only after the lease expiry time has elapsed.
 This is the desired behavior.
 
 <li>In <strong>Time Servers</strong> you can specify if you wish the
@@ -97,7 +97,7 @@ DHCP/DNS server to advertise a local time server (configurable through
 the Services->Network->ntp web page), or another time server.
 
 <li>In <strong>TFTP server</strong> you can enable and advertise a
-builtin TFTP server, and specify the directory that it will serve.<br>
+built-in TFTP server, and specify the directory that it will serve.<br>
 
 A TFTP server serves files using a special protocol, it is a dnsmasq
 add-on but is out of the scope of a DHCP/DNS server.
@@ -108,3 +108,4 @@ the System->Utilities->System logs web page.
 
 </ul>
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

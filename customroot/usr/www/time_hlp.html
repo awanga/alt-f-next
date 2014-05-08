@@ -6,20 +6,21 @@
 
 <center><h2>Time Setup Help</h2></center>
 
-<p>In this page you must setup the local where you live, specifying how many hours ahead or behind Greenwich Meridian Time (GMT) you live and also specifying when Dayligh Saving Time (DST) starts and ends, if it applies to your country; this is the so called "timezone"<br>
+<p>In this page you must setup the local timezone where you live, specifying how many hours ahead or behind Greenwich Meridian Time (GMT) you live and also specifying when Daylight Saving Time (DST) starts and ends, if it applies to your country; this is the so called "timezone"<br>
 You must also adjust the local time and date, either manually or using a time server if the box is connected to the internet.<br>
 This is important to keep the box time always in sync with your other computers.
 
 <p>The timezone has a somehow cryptic format, e.g, "WET0WEST,M3.5.0/1,M10.5.0". If you know it, you can input it in the "Timezone" input field, otherwise you can select the continent/city where you leave and the timezone will be filled for you.<br>
 The value was correct at the time it was created, but sometimes governments change it, namely the DST. If the value is incorrect, you can check the "FIX DST" checkbox and specify when DST starts and ends.<br>
-Notice that the meaningfull start and end DST grayed entries are only updated when the page is first draw, they are not updated when you change the Continent/City or the timezone string; if you want to check that the used values for your city are correct, select the Continent/City or fill the timezone string and submit -- you can then check that the week, week day, month, hour and minute of the DST start and end time are correct.<br>
-Some values, when absent, have a default value; consult the 'tzset' linux manual page for more details, or read the <a href="http://pubs.opengroup.org/onlinepubs/007904875/basedefs/xbd_chap08.html">TZ variable</a> specification (look near the end).
+Notice that the meaningful start and end DST grayed entries are only updated when the page is first drawn, they are not updated when you change the Continent/City or the timezone string; if you want to check that the used values for your city are correct, select the Continent/City or fill the timezone string and submit -- you can then check that the week, week day, month, hour and minute of the DST start and end time are correct.<br>
+Some values, when absent, have a default value; consult the 'tzset' Linux manual page for more details, or read the <a href="http://pubs.opengroup.org/onlinepubs/007904875/basedefs/xbd_chap08.html">TZ variable</a> specification (look near the end).
 
 <p>If the box has internet access you can adjust the local time and date in the "Adjust time through internet" section, specifying a time server in the "Adjust from" field or selecting one of the default time servers for each continent in the selection list.<br>
 After hitting the "Submit" button the selected time server is contacted and after a while the local date and time is shown in the "Local Time" field.
 
-<p>If the box does not have internet access you have to adjust the time and date manualy in the "Adjust time manually" section, entering the current time in the HH:MM:SS 24H format and the 
+<p>If the box does not have internet access you have to adjust the time and date manually in the "Adjust time manually" section, entering the current time in the HH:MM:SS 24H format and the 
 current date using the YYYY-MM-DD format.<br>
 After hitting the "Submit" button the local date and time will be set.
-
+<br>
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

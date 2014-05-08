@@ -49,8 +49,9 @@ the box, you are offered the possibility of flashing and trying it.
 <p>If you have already flashed Alt-F in your box, you shall try the new
 version before flashing it. By trying first you will be be reassured that
 it works fine with your current setup, and also that it is not in error,
-avoiding further serious problems.<br>
-After trying you can flash it.
+avoiding further serious problems.
+
+<p>After trying it successfully, you can flash it.
 
 <p>When you choose to flash the new firmware you should take into attention
 how to deal with the settings already saved in flash, the settings
@@ -61,46 +62,45 @@ file eventually contained in the firmware file, and the backup of the vendors se
 not changed.<br>
 
 This option is the default when flashing a firmware file without a defaults section, 
-like Alt-F. You should use it if you want to keep yours Alt-F flash saved settings.<br><br>
+like Alt-F. You should use it if you want to keep yours Alt-F flash saved settings.</li>
 
 <li><strong>Erase all flashed settings</strong>: all saved settings are
 erased from flash, and all yours previous setting are lost.<br>
 
 This option should be chosen when flashing Alt-F but only if you want to
 loose the previous settings. Configuration files structure sometime
-change between releases, and using and old configuration file with new
-software might cause problems.<br><br>
+change between releases, and using an old configuration file with new
+software might cause problems.</li>
 
 <li><strong>Erase all flashed settings and flash new settings from
-defaults file</strong> Besides doing the same as the above option, if
+defaults file</strong>: Besides doing the same as the above option, if
 you select this option the settings contained in the defaults file extracted
 from the firmware file are also flashed.<br>
 
 Vendors distributed firmware files have a section of defaults setting,
 that are flashed if you check this option. This option is only available
-is there exists a non-empty defaults section -- Alt-F firmware don't
+is there exists a non-empty defaults section -- Alt-F firmware doesn't
 have a defaults section.<br>
 
-This option should be chosen when flashing the vendors firmware.<br><br>
+This option should be chosen when flashing the vendors firmware.</li>
 
 <li><strong>Erase all flashed settings and recover the last flash settings
-from vendors backup</strong> Selecting this options erases all flashed settings,
+from vendors backup</strong>: Selecting this options erases all flashed settings,
 and flashes the last vendor's made backup of flashed settings.
 <br>
 
-The vendor's firmware saves a backup of the flashed settings in a a special area
+The vendor's firmware saves a backup of the flashed settings in a special area
 of the flash chip. Selecting this option recovers those backup settings, and in principle
 after re-flashing a vendors firmware the box will have the same settings as it had before
 you flashed Alt-F.<br>
 
 This option is only available is there exists a non-empty defaults section,
-meaning that it is a vendors file. Alt-F firmware don't have a defaults section.
+meaning that it is a vendors file. Alt-F firmware doesn't have a defaults section.</li>
 </ul>
 
 <p>In any case, saving default settings or clearing the saved settings,
-makes your box loose its IP, and it will not certainly be accessible
+makes your box loose its IP address, and it will probably not be accessible
 using the old IP address.<br><br>
 
 <br><button type=button onclick="history.back()">Back</button></body>
-
-
+</html>

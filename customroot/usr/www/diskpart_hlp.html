@@ -8,59 +8,56 @@
 
 A hard disk can be seen as a numbered sequence of sectors, each one with 512 consecutive bytes.<br>
 A disk can be divided, for different purposes, in different zones, with each zone being called a partition.<br>
-To partition a disk, a small table is created in its first sector, saying in which sector a partition starts and how many sectors it has. Thus, partitioning a disk only changes its first 512 bytes, and does not changes any other data on the disk.<br>
-Of course, if you don't know where a partition starts you can't access the data it contains, although it is still there. Partitioning a disk can thus make all your data inaccessible, so it is advisable to make a backup of the partition table, so you can reload it latter in case something goes wrong during the partitioning.
+To partition a disk, a small table is created in its first sector, saying in which sector a partition starts and how many sectors it has. Thus, partitioning a disk only changes its first 512 bytes, and does not change any other data on the disk.<br>
+Of course, if you don't know where a partition starts you can't access the data it contains, although it is still there. Partitioning a disk can thus make all your data inaccessible, so it is advisable to make a backup of the partition table so you can reload it later in case something goes wrong during the partitioning.
 
 <p>After partitioning a disk you have to <a href="diskmaint_hlp.html">create a filesystem</a> in each partition; a filesystem is only a disk structure that enables you to access its contents, using directories and files.<br>
-A partition can be used for other purposes than having a filesystem, such being part of a RAID array, a swap area, a LVM component... That's why each partition has associated with it a type, saying what purpose it has. The partition type does not avoids its usage for other purposes, it is only and indication for disk tool and operating system of what its contents might be; for the sake of data safety, disk tools should not modify partitions whose type they don't understand.
+A partition can be used for other purposes than having a filesystem, such being part of a RAID array, a swap area, a LVM component, etc. That's why each partition has associated with it a type, saying what purpose it has. The partition type does not avoid its usage for other purposes, it is only an indication for disk tool and operating system of what its contents might be; for the sake of data safety, disk tools should not modify partitions whose type they don't understand.
 
-<p>There are two kinds of partition tables, MBR and GPT. MBR is the most common scheme, used by computers by more than thirty years, but has a limitation of 2.2TB per partition, which preclude its usage on recent 3TB disks. To overcome that limitation, GPT partitioning has to be used. GPT can be used on any disk, not only on 3TB disks, but not all PC motherboards supports GPT, so you might be unable to use a GPT partitioned disk on such computers.<br>
-The Disk Partitioner will start using the partitioning scheme it founds on the disk, and if none is found it will start in MBR mode if the disk is smaller than 2.2GB or GPT otherwise.
+<p>There are two kinds of partition tables, MBR and GPT. MBR is the most common scheme, used by computers by more than thirty years, but has a limitation of 2.2TB per partition, which preclude its usage on recent 3TB disks. To overcome that limitation, GPT partitioning has to be used. GPT can be used on any disk, not only on 3TB disks. But not all PC motherboards supports GPT, so you might be unable to use a GPT partitioned disk on such computers.<br>
+The Disk Partitioner will start using the partitioning scheme it finds on the disk, and if none is found it will start in MBR mode if the disk is smaller than 2.2TB or GPT if it is larger than 2.2TB.
 
-<p> A disk can have up to four primary partitions and more secondary or extended partitions. Alt-F Disk Partitioner only enables partitioning a disk with primary partition, but the Alt-F core will work with secondary and extended partitions if the disk is partitioned that way.<br>
+<p> A disk can have up to four primary partitions and more secondary or extended partitions. Alt-F Disk Partitioner only enables partitioning a disk with primary partitions, but the Alt-F core will work with secondary and extended partitions if the disk is partitioned that way.<br>
 
-<p>Some recent disks have internally sectors with 4096 bytes, but they still present themselves as having 512 bytes sectors, so they can be used with most disk tools. However, they can have up to a 30% performance loss during writing if each partition start sectors and its length is not a multiple of 8. Alt-F does this for you, unless you use the "advanced" button.
+<p>Some recent disks have sectors with 4096 bytes internally, but they still present themselves as having 512 bytes sectors so they can be used with most disk tools. However, they can have up to a 30% performance loss during writing if each partition start sectors and its length is not a multiple of 8. Alt-F does this for you, unless you use the "advanced" button.
 
 <p>In order to (re)partition a disk, even if partially, all its filesystems must be unmounted first, see <a href="diskmaint_hlp.html">Filesystem Maintenance</a>. The Disk Partitioner tries to to it first, but it might fail if some running service is using any disk filesystem; in this case, all services will be stopped and the unmount operation retried. But even this might fail, and you should manually stop running services, RAID arrays, LVM and crypto devices, and unmount NTFS filesystems.
 
 <p>With this small background you are now able to understand the <strong>Disk Partitioner</strong>.<br>
 
-<p>In the upper section, <strong>Select the disk you want to partition</strong> you are presented with all detected disks, one per line.<br>
+<p>In the upper section, <strong>Select the disk you want to partition</strong>, you are presented with all detected disks, one per line.<br>
 When you select one of the disks using the <strong>Partition</strong> button, the lower section will presented you its partition table, so you can change it.<br>
-In the upper section you can also perform the following operations on the current's line disk:
+In the upper section you can also perform the following operations on the selected disk:
 <ul>
-<li><strong>Erase</strong> erase the partition table, start with an empty one.
-<li><strong>Save</strong> saves the partition table in memory, using the name <em>/tmp/saved_&lt;device&gt;_part</em>, overwriting previous save operations and not surviving a reboot or shutdown. 
-<li><strong>Load</strong> loads the partition table previously saved.
-<li><strong>Convert to MBR</strong> converts the partition to MBR. Tested only with primary partitions.
-<li><strong>Convert to GPT</strong> converts the partition to GPT. Tested only with primary partitions.
-
-<li><strong>CopyTo</strong> you have to select the disk where you want to write the partition table of the current's line disk.<br>
-This is useful if you have identically sized disks and want to duplicate the partition table of one of them into the other. Notice that only the partition table is copied, no other operations, namely creating the swap "filesystem", is performed.
-<br>You can also copy the partition table of a smaller to a greater disk, and latter you can grow the last partition of the greater disk to fill the remaining space.
-<br>If is not advisable to use this option to copy a partition table from a greater to a smaller disk, as one or more partitions (the last ones) might not be valid.
+<li><strong>Erase</strong> - Erase the partition table, start with an empty one.</li>
+<li><strong>Save</strong> - Saves the partition table in memory, using the name <em>/tmp/saved_&lt;device&gt;_part</em>, overwriting previous save operations and not surviving a reboot or shutdown. </li>
+<li><strong>Load</strong> - Loads the partition table previously saved from <em>/tmp/saved_&lt;device&gt;_part</em>.</li>
+<li><strong>Convert to MBR</strong> - Converts the partition to MBR. Tested only with primary partitions.</li>
+<li><strong>Convert to GPT</strong> - Converts the partition to GPT. Tested only with primary partitions.</li>
+<li><strong>CopyTo</strong> - You have to select the disk where you want to write the partition table of the selected disk.<br>
+This is useful if you have identically sized disks and want to duplicate the partition table of one of them into the other. Note that only the partition table is copied, no filesystem data is copied and no other operations, namely creating the swap "filesystem", is performed.
+<br>You can also copy the partition table of a smaller to a greater disk, and later you can grow the last partition of the greater disk to fill the remaining space.
+<br>If is not advisable to use this option to copy a partition table from a greater to a smaller disk, as one or more partitions (the last ones) might not be valid.</li>
 
 </ul>
 In the lower section, you are presented with the partition table of the disk you selected in the upper section.<br>
-Linux must have a swap partition to provide more (virtual) memory than the meager 64MB of physical memory that the box provides, 500MB of swap is enough. All disks must have one swap partition, in the eventuality that one of the disks is removed. Also, the swap partition must be the first disk partition, so enough (virtual) memory is available when checking/fixing subsequent data partitions.
+Linux must have a swap partition on the internal hard disks to provide more (virtual) memory than the meager 64MB of physical memory that the box provides, 500MB of swap is enough. All internal disks must have one swap partition, in the eventuality that one of the disks is removed. Also, the swap partition must be the first disk partition, so enough (virtual) memory is available when checking/fixing subsequent data partitions with "fsck".
 <ul>
-<li><strong>Keep</strong> will disable changes to the checked partition. This can be useful but remember that partitions start must be in order of increasing sectors. Un-checking it, making any change and rechecking it again does not guarantees that the resulting partition will be valid, and the original partition might not be preserved -- if you don't want to change a partition, never unckeck it.<br>
-<li><strong>Start Sector</strong> sector number where partition starts, 8 sectors aligned, only available in Advanced mode
-<li><strong>Length</strong> number of sectors in partition, 8 sectors aligned, only available in Advanced mode
-<li><strong>Size</strong> partition size in GB, only available in Basic mode. Rounding might occur.
-<li><strong>Type</strong> partition intended usage. NTFS or VFAT are not linux native, not advisable for the main disks. Creating NTFS filesystems is only available if the ntfs-3G_ntfsprogs package is installed.
-
-<li style="margin-top:1em"><strong>Free</strong> free disk space, computed as the disk size minus the sum of the partitions sizes.  This does not means that that much space is available for creating a new partition, as gaps might exists between partitions.<br>
-
-<li><strong>Advanced</strong> will disable all Keep check buttons, enable the <strong>Start Sector</strong> and the <strong>Length</strong> entries and disable the Size entry. Reverting to the Basic settings <strong>does not restores the original partition</strong>.<br>
-
-<li><strong>Partition</strong> will partition the disk. A confirmation dialog will be displayed.
-
+<li><strong>Keep</strong> - Disable changes to the checked partition. This can be useful, but remember that partitions start must be in order of increasing sectors. Un-checking it, making any change and rechecking it again does not guarantees that the resulting partition will be valid, and the original partition might not be preserved -- if you don't want to change a partition, never uncheck it.<br></li>
+<li><strong>Start Sector</strong> - Sector number where partition starts, 8 sectors aligned, only available in Advanced mode</li>
+<li><strong>Length</strong> - Number of sectors in partition, 8 sectors aligned, only available in Advanced mode</li>
+<li><strong>Size</strong> - Partition size in GB, only available in Basic mode. Rounding might occur.</li>
+<li><strong>Type</strong> - Partition intended usage. NTFS or VFAT are not Linux native are not advised for the main disks. Creating NTFS filesystems is only available if the ntfs-3G_ntfsprogs package is installed.</li>
+<li><strong>Free</strong> - Free disk space, computed as the disk size minus the sum of the partitions sizes.  This does not mean that that much space is available for creating a new partition, as gaps might exists between partitions.</li>
+<li><strong>Advanced</strong> - Disable all Keep check buttons, enable the <strong>Start Sector</strong> and the <strong>Length</strong> entries and disable the Size entry. Reverting to the Basic settings <strong>does not restore the original partition</strong>.</li>
+<li><strong>Partition</strong> - Partition the disk. A confirmation dialog will be displayed.</li>
 </ul>
 
 <p>NOTES:<br>
--To change only the type of <em>one</em> partition, un-check its <strong>Keep</strong> check-button, select the new partition type and hit the <strong>Partition</strong> button.<br>
--If the partition start sector does not changes, you can increase or decrease the partition size without data loss. To do it, keep the <strong>Keep</strong> check-button of the <em>previous</em> partition checked and change the size of the partition you intent to alter. Do first a Disk->Filesystem->Operations->Shrink followed by a Disk->RAID->Operations->Shrink if the filesystem is on RAID, then decrease the partition size. To increase the partition size do the same, but you have also to uncheck the <strong>Keep</strong> check button of the <em>next</em> partition, loosing all its data. After partitioning succeeds you have to <strong>Grow</strong> the RAID device (if there is one), then <strong>Enlarge</strong> the filesystem.<br>
--Disks partitioned using the vendor's firmware are often not in start sector increasing order, and can't be manipulated using this tool; you have to erase the partition table and loose all your data.
-
+<ul>
+<li>To change only the type of <em>one</em> partition, un-check its <strong>Keep</strong> check-button, select the new partition type and hit the <strong>Partition</strong> button.</li>
+<li>If the partition start sector does not change, you can increase or decrease the partition size without data loss. To do it, keep the <strong>Keep</strong> check-button of the <em>previous</em> partition checked and change the size of the partition you intent to alter. Do first a Disk->Filesystem->Operations->Shrink followed by a Disk->RAID->Operations->Shrink if the filesystem is on RAID, then decrease the partition size. To increase the partition size do the same, but you also have to uncheck the <strong>Keep</strong> check button of the <em>next</em> partition, loosing all its data. After partitioning succeeds you have to <strong>Grow</strong> the RAID device (if there is one), then <strong>Enlarge</strong> the filesystem.</li>
+<li>Disks partitioned using the vendor's firmware are often not in start sector increasing order, and can't be manipulated using this tool; you have to erase the partition table and loose all your data.</li>
+</ul>
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>

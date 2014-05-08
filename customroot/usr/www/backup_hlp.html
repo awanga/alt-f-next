@@ -4,26 +4,30 @@
 <title>Backup Help</title>
 </head><body>
 
-<center><h2>Backups Setup Help</h2></center>
+<center><h2>Backup Setup Help</h2></center>
 
-This service makes unattended backups of various kinds, all following the same pattern.
-All backup types use the <tt>rsync</tt> program to make backups.
+This service makes unattended backups of various types, all following the same pattern:<p>
+the last backup is compared with the current folder and the rsync program creates a new
+backup based on the differences.
+The current folder can be a local folder, or a remote folder locally mounted using any of the
+Backup types depicted bellow.
 
-<p>In the top section, <strong>Backup Destination Folder</strong> you
-can see the destination folder where your backups are currently
-done.<br>
-
-You can change the current location, but it has to be located at a
+<p>In the page top section, <strong>Backup Destination Folder</strong> you
+can see the destination folder where your backups are currently done.
+<ul>
+<li>You can change the current location, but it has to be located at a
 filesystem root, such as /mnt/sda2 or /mnt/md0.  If you change the
 location, your previous backup folder with all its contents will be
 preserved, being renamed to Backup-0 (or Backup-1, if a Backup-0 folder
-already exists), and the newly create Backup folder will be empty. 
+already exists), and the newly create Backup folder will be empty.</li>
+</ul>
 
-<p>In the lower section, <strong>Backup Setup</strong> you can configure
-scheduled backup of several kinds, and test them.
+<p>In the page lower section, <strong>Backup Setup</strong> you can configure
+scheduled backup of several types, and test them.
 
-<p><strong>Folder</strong> is the source folder from where to make the backup.<br>
-E.g., if <strong>Folder</strong> is <code>/mnt/sda3/Music</code>, the
+<p><strong>Folder</strong> is the source folder from where to make the backup.
+<ul>
+<li>E.g., if <strong>Folder</strong> is <code>/mnt/sda3/Music</code>, the
 backup will be found in folder <code>/Backup/sda3_Music</code> with
 several sub-folders named after the backup date and time, and a special
 file named "current" that refers to the last backup done:
@@ -34,34 +38,37 @@ file named "current" that refers to the last backup done:
 	2011-10-03_18-08-28
 	current -> 2011-10-03_18-08-28
 </pre>
-
-<p>You can browse the Backup folder using the Setup->Folder web page, or
+</li>
+<li>You can browse the Backup folder using the Setup->Folder web page, or
 using the Backup Samba share created for you.  All regular box users can
 browse and read this share. 
-
-<p>The first time a backup is done a full copy of the source folder is
+</li>
+<li>The first time a backup is done a full copy of the source folder is
 made, and on subsequent backups only new, deleted or modified files are
-updated.<br> Unaltered files are kept as references to the files last
+updated.  Unaltered files are kept as references to the files last
 version, not occupying extra space.  Thus, every backup set contains an
 exact copy of the source folder at the backup time.
-
-<p><strong>When</strong> specifies the week day to perform a backup,
-with 0 meaning Sunday, 1-Monday, 2-Tue...  and 0,2,4 meaning every Sun,
+</li></ul>
+<p><strong>When</strong> specifies the weekday to perform a backup.
+<ul>
+<li>0 meaning Sunday, 1-Monday, 2-Tue...  and 0,2,4 meaning every Sun,
 Tue and Thu, and 0-2 meaning every Sun, Mon and Tue; * means
-everyday.<br> If the first character is a 'd', then the day of the month
-(1 to 31) is assumed, using the same rules, e.g.  'd1,5,10,15,20,25',
-'d1-30', 'd15' are valid. 
+everyday.</li>
+<li>If the first character is a 'd', then the day of the month
+(1 to 31) is assumed, using the same rules, e.g. 'd1,5,10,15,20,25',
+'d1-30', 'd15' are valid.</li>
+</ul>
 
 <p><strong>At</strong> specifies the hour when the backup is to be made,
 following the same pattern as above.  Hour uses a 24 hour format. 
 
 <p><strong>Rotate</strong> is the number of backups kept, with the
-oldest being deleted after a new one is made; in the above example, if
-Rotate is 3, after a new backup finishes the 2011-10-03_17-56-02 backup
-will be deleted.<br>
-
-If Rotate is 0, a new folder will be created everytime the backup time arrives,
-until disk space exhausts.
+oldest being deleted after a new one is made.<ul>
+<li>In the above example, if Rotate is 3, after a new backup finishes
+the 2011-10-03_17-56-02 backup will be deleted. If Rotate is 0, a new
+folder will be created every time the backup time arrives, until disk
+space exhausts.</li>
+</ul>
 
 <p><strong>BackupNow</strong> starts the selected backup as if the
 schedule time had arrived, allowing you to test the backup; the button
@@ -69,62 +76,63 @@ will be disabled while the backup is being done.
 
 <p><strong>Backup types:</strong>
 
-<ul> <p><li><strong>Dir</strong> this mode of operation only backups
-local folders.  You can use it to backup folders from one disk to the
-other, e.g.<br> The <strong>Run As</strong> entry should be user "root",
+<ul> <p><li><strong>Dir</strong> - this mode of operation only backups
+local folders.  For example, you can use it to backup folders from one
+disk to the other.  The <strong>Run As</strong> entry should be user "root",
 so the backup files original date, permissions and owners are preserved. 
 
-<p><li><strong>NFS</strong> this mode of operation mounts a folder from
-the remote <strong>Host</strong> using NFS, then continue as in the
-<strong>Dir</strong> mode.  It's purpose is mainly to create backups
-from UNIX/Linux machines.<br> For this mode of operation to work, there
-must exist user equivalence between the user on the remote machine and
-an user on the box; user equivalence means that the user and group ID
-should be the same on both machines, and it is setup when the user is
-created.<br> Most of the time the user "root" is not allowed to be also
+<p><li><strong>NFS</strong> - this mode of operation mounts a folder from
+a remote <strong>Host</strong> using NFS, then continues as in the
+<strong>Dir</strong> mode.  Its purpose is mainly to create backups
+from remote UNIX/Linux machines.<ul>
+<li>For this mode of operation to work, there must exist user equivalence
+between the user on the remote machine and a user on the box; user
+equivalence means that the user and group ID should be the same on both
+machines, and it is setup when the user is created.</li>
+<li>Most of the time the user "root" is not allowed to be also
 "root" on remote machines, so the <strong>Run As</strong> entry has to
-be set to the user who owns the files on the remote machine, in order
-for the remote folder to be browseable and backup files keeps its
-original date, permissions and owners.<br> If <strong>Host</strong> is
-named <em>silver</em> and <strong>Run As</strong> is <em>Joao
-Cardoso</em>, which has <em>jcard</em> as its nick name, and
-<strong>Folder</strong> is <em>/home/jcard/src</em> then the backup will
-be located in <code>/Backup/silver_home_jcard_src/</code><br> If at the
-time you setup an entry of this type the remote host is powered on, its
-network MAC will be retrieved and stored; at backup time, if the remote host is
-not answering, it will be sent a magic packet (WOL) trying to power it
-up; setting the remote host to be powered-up in this way is out of
-scope. 
+be set to the user who owns the files on the remote machine in order
+for the remote folder to be browsable and backup files to keep their
+original date, permissions and owners.</li>
+<li>For example, if <strong> Host</strong> is named <em>silver</em> and
+<strong>Run As</strong> is <em>Joao Cardoso</em>, which has <em>jcard
+</em> as its nick name, and <strong>Folder</strong> is <em>
+/home/jcard/src</em> then the backup will be located in <code>
+/Backup/silver_home_jcard_src/</code></li>
+<li>If at the time you setup an entry of this type the remote host is
+powered on, its network MAC will be retrieved and stored.  At backup time, if
+the remote host is not answering, it will be sent a magic packet (WOL)
+trying to power it up; setting the remote host to be powered-up in
+this way is out of scope. </li>
+</ul>
 
-<p><li><strong>CIFS</strong> this mode of operation is similar to the
+<p><li><strong>CIFS</strong> - this mode of operation is similar to the
 NFS mode, but mounts a folder from the remote <strong>Host</strong>
 using CIFS/SMB (samba).  It's purpose is mainly to create backups from
-MS_Windows machines.<br> For this mode of operation to work, there must
-exist an user with the same name and password on both machines, and the
-<strong>Run As</strong> entry should be the user who owns the files to
-backup on the remote machine.<br> Notice that the user name is the full
-user name, such as <em>Joao Cardoso</em>, not the user nick name,
-<em>jcard</em>.<br>
-
-If <strong>Host</strong> is named <em>MONO</em> and <strong>Run
-As</strong> is <em>Joao Cardoso</em>, and <strong>Folder</strong> is
-<em>Users/Joao Cardoso/Music</em> then the backup will be located in
-<code>/Backup/MONO_Users_Joao_Cardoso_Music/</code><br>
-
-If you try to backup a whole users folder, as above, the backup will
+remote MS-Windows machines.<ul>
+<li>For this mode of operation to work, there must exist a user with
+the same name and password on both machines, and the <strong>Run As
+</strong> entry should be the user who owns the files to backup on the
+remote machine.</li>
+<li>Notice that the user name is the full MS-Windows user name, such as
+<em>Joao Cardoso</em>, not the user nick name, <em>jcard</em>.</li>
+<li>For Example, if <strong>Host</strong> is named <em>MONO</em> and
+<strong>Run As</strong> is <em>Joao Cardoso</em>, and <strong>Folder
+</strong> is <em>Users/Joao Cardoso/Music</em> then the backup will be
+located in <code>/Backup/MONO_Users_Joao_Cardoso_Music/</code></li>
+<li>If you try to backup a whole users folder, as above, the backup will
 fail, as some files are owned by the System Administrator and the user
-does not has permission to use them.<br>
+does not has permission to access them.</li>
+<li>As in the NFS mode of operation the remote host is sent a WOL
+packet if necessary.</li>
+</ul>
 
-As in the NFS mode of operation the remote host is sent a WOL packet if
-necessary. 
-
-<p><li><strong>HTTP</strong> this mode of operation keeps a local mirror
+<p><li><strong>HTTP</strong> - this mode of operation keeps a local mirror
 of the remote host folder, using the <em>wget</em> program, than
 proceeds as in the DIR mode.  The mirror is kept between backups and is
 updated before the backup is done, so only new/deleted/changed files are
-downloaded.<br>
-
-If <strong>Host</strong> is named <em>silver</em> and
+downloaded.<ul>
+<li>If <strong>Host</strong> is named <em>silver</em> and
 <strong>Folder</strong> is <em>~jcard/ensino/LabC</em> then the backup
 will be located in <code> /Backup/silver_~jcard_ensino_LabC</code>, and
 the content of the backup folder will be <pre>
@@ -133,65 +141,66 @@ the content of the backup folder will be <pre>
 	current -> 2011-10-03_21-40-21
 	mirror
 </pre>
-
-where <code>mirror</code> is the mirror of the remote location.<br>
-The only effect of <strong>Run As</strong> is that the backup belongs to the given user.<br>
-
-This backup scheme keeps two copies of the same file, one in the mirror
-folder and other in the backup folders, so it will need twice the disk
-space needed by the other backup schemes.<br>
-
-Please note also that doing the backup does not means that all files
+where <code>mirror</code> is the mirror of the remote location.</li>
+<li>The only effect of <strong>Run As</strong> is that the backup
+belongs to the given user.</li>
+<li>This backup scheme keeps two copies of the same file, one in the
+mirror folder and other in the backup folders, so it will need twice
+the disk space needed by the other backup schemes.</li>
+<li>Please note also that doing the backup does not means that all files
 present in the remote host will be available; only the files that you
-can see or download following the site pages will be downloaded.<br>
+can see or download following the site pages will be downloaded.</li>
+</ul>
 
-<p><li><strong>FTP</strong> this mode of operation is similar to the
+<p><li><strong>FTP</strong> - this mode of operation is similar to the
 HTTP one, except that authentication might be used if a
 <code>.netrc</code> file is found in the home folder of the <strong>Run
-As</strong> user.<br> The file <code>.netrc</code> format specifies in
-each line a username and a password to be used in a given host:<br>
+As</strong> user.<ul>
+<li>The file <code>.netrc</code> format specifies in each line a
+username and a password to be used for a given host:<br>
 <code>&nbsp;&nbsp;&nbsp;machine &lt;host-name&gt; login
 &lt;user-name&gt; password &lt;password&gt;</code><br> e.g.,
-<code>machine silver login jcard password mypasswordonsilver</code><br>
-The file should have permissions so that nobody else can read it, use
-the command<br> <code>&nbsp;&nbsp;&nbsp;chmod og-rwx .netrc</code><br>
-If <strong>Host</strong> is named <em>silver</em> and
+<code>machine silver login jcard password mypasswordonsilver</code></li>
+<li>The file should have permissions so that nobody else can read it, use
+the command<br> <code>&nbsp;&nbsp;&nbsp;chmod og-rwx .netrc</code></li>
+<li>If <strong>Host</strong> is named <em>silver</em> and
 <strong>Folder</strong> is <em>win</em>, and <strong>Run As</strong> is
 <em>Joao Cardoso</em>, which has <em>jcard</em> as its nick name, then
-the backup will be located in <code>/Backup/silver_jcard_win</code><br>
+the backup will be located in <code>/Backup/silver_jcard_win</code></li>
+</ul>
 
-<p><li><strong>rsync</strong> this mode of operation uses the
+<p><li><strong>rsync</strong> - this mode of operation uses the
 <em>rsync</em> program to make the backup.  It can work in two modes:
-using rsync/ssh or a rsync daemon on the remote host.<br> The backup
-script first tries to use the daemon mode, and if unsuccessful tries the
-rsync/ssh mode.<br> <ul> <li>For the daemon mode, there must exist a
-rsync user with the same nick name and password in both computers, and a
-remote rsync daemon must be setup first.  In the remote host a file
+using the rsync daemon or a rsync/ssh on the remote host.
+The backup script first tries to use the daemon mode, and if
+unsuccessful tries the rsync/ssh mode.<ul>
+<li>For the rsync daemon mode, there must exist a rsync user with the same
+nick name and password in both computers, and a remote rsync daemon
+must be setup first.  In the remote host a file
 <em>/etc/rsyncd.secrets</em> must exist with lines of the form
 <em>user:password</em> and the file <em>/etc/rsyncd.conf</em> must
-contain the definition of the module to backup.<br>
-
-The <strong>Folder</strong> entry must start with the daemon
-<em>module</em> name to backup.<br> If <strong>Folder</strong> is
-<em>vuze/plugins</em> and a rsync module named <em>vuze</em> exists in
-<strong>host</strong> <em>silver</em>, where user <strong>Run
-As</strong> has permissions to use the module and its
-<em>nick:password</em> is in the <em>/etc/rsyncd.secrets</em> file, then
-the backup will be located in
-<code>/Backup/silver_vuze_plugins</code>.<br>
-
-
+contain the definition of the module to backup.<ul>
+<li>The <strong>Folder</strong> entry must start with the daemon
+<em>module</em> name to backup.</li>
+<li>If <strong>Folder</strong> is <em>vuze/plugins</em> and a rsync
+module named <em>vuze</em> exists in <strong>host</strong>
+<em>silver</em>, where user <strong>Run As</strong> has permissions
+to use the module and its <em>nick:password</em> is in the
+<em>/etc/rsyncd.secrets</em> file, then the backup will be located in
+<code>/Backup/silver_vuze_plugins</code>.</li>
+</ul>
 <li>In the rsync/ssh mode, password-less login using ssh cryptographic
-keys has to be manually setup.<br> If a <code>.ssh/identity</code> file
-is not found in the <strong>Run As</strong> home folder, <em>ssh</em>
-keys will be created for him and a file with instructions left in his
-home folder.  After following the instructions the backup should proceed
-normally.<br>
-
-If <strong>host</strong> is <em>silver</em>, <strong>Folder</strong> is
-<em>workspace</em> and <strong>Run As</strong> is jcard, then the backup
-will be located in <code>/Backup/silver_jcard_workspace/</code>.<br>
-
+keys has to be manually setup.<ul>
+<li>If a <code>.ssh/identity</code> file is not found in the
+<strong>Run As</strong> home folder, <em>ssh</em> keys will be created
+forthe userhim and a file with instructions left in their home folder.  After
+following the instructions the backup should proceed normally.</li>
+<li>If <strong>host</strong> is <em>silver</em>, <strong>Folder</strong> is
+<em>workspace</em> and <strong>Run As</strong> is <em>jcard</em>, then the backup
+will be located in <code>/Backup/silver_jcard_workspace/</code>.</li>
+</ul>
+</ul>
 </ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
+</html>
