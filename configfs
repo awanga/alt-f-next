@@ -35,27 +35,12 @@ if test -z "$BR2_KERNEL_none"; then
 
 echo kernel=$kver
 
-	# if BRIDGE is not set as a kernel module in the base firmware kernel, it will not load
-	# the bridge module from kernel-modules.
-	# So, build the kernel with BRIDGE module enabled, then remove the aditional modules.
-	# to diferentiate between the base kernel and the pkg kernel, use BR2_PACKAGE_KERNEL_MODULES
-	# The same as above applies to IPV6 and other modules
-
-	# FIXME HOWEVER, THE FIRST make will reinstall modules (linux26 is a late target),
-	# so TWO makes have to be done the first time!!!
+	# FIXME THE FIRST make will reinstall modules (linux26 is a late target),
+	# so TWO makes have to be done the first time!!! Isn't this already solved?
 
 	# the kernel modules in the base firmware:
-# 	KMOD="./kernel/fs/isofs/isofs.ko ./kernel/fs/fat/vfat.ko ./kernel/fs/fat/msdos.ko ./kernel/fs/fat/fat.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/lockd/lockd.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/drivers/usb/class/usblp.ko ./kernel/drivers/usb/serial/usbserial.ko ./kernel/drivers/md/raid6_pq.ko ./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko ./kernel/drivers/scsi/scsi_wait_scan.ko ./kernel/crypto/aes_generic.ko ./kernel/crypto/crypto_algapi.ko ./kernel/crypto/krng.ko ./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_xor.ko ./kernel/crypto/async_tx/async_raid6_recov.ko ./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_memcpy.ko ./kernel/crypto/rng.ko ./kernel/crypto/xor.ko ./kernel/crypto/ansi_cprng.ko"
-
 	KMOD="./kernel/drivers/usb/class/usblp.ko
-./kernel/fs/fat/vfat.ko ./kernel/fs/fat/fat.ko
-./kernel/fs/cifs/cifs.ko
-./kernel/fs/nfs/nfs.ko ./kernel/fs/nfs/nfsv2.ko ./kernel/fs/nfs/nfsv3.ko 
-./kernel/drivers/md/raid0.ko ./kernel/drivers/md/raid456.ko
-./kernel/crypto/ansi_cprng.ko ./kernel/crypto/async_tx/async_memcpy.ko
-./kernel/crypto/async_tx/async_pq.ko ./kernel/crypto/async_tx/async_raid6_recov.ko
-./kernel/crypto/async_tx/async_tx.ko ./kernel/crypto/async_tx/async_xor.ko
-./kernel/crypto/xor.ko
+./kernel/fs/fuse/fuse.ko
 "
 
 	if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
@@ -122,7 +107,7 @@ BR2_PACKAGE_WGET="usr/www/cgi-bin/proxy.cgi usr/www/cgi-bin/proxy_proc.cgi"
 BR2_PACKAGE_RSYNC="etc/rsyncd.conf etc/rsyncd.secrets usr/www/cgi-bin/rsync.cgi usr/www/cgi-bin/rsync_proc.cgi"
 BR2_PACKAGE_MSMTP="etc/msmtprc usr/www/mail_hlp.html usr/www/cgi-bin/mail.cgi usr/www/cgi-bin/mail_proc.cgi"
 BR2_PACKAGE_NTP="etc/ntp.conf ./etc/init.d/S43ntp ./usr/www/cgi-bin/ntp.cgi ./usr/www/cgi-bin/ntp_proc.cgi"
-BR2_PACKAGE_TRANSMISSION="etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
+BR2_PACKAGE_TRANSMISSION="etc/transmission etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
 BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi usr/www/ushare_hlp.html"
 BR2_PACKAGE_MEDIATOMB="etc/init.d/S80mediatomb usr/www/cgi-bin/mediatomb.cgi usr/www/cgi-bin/mediatomb_proc.cgi usr/www/mediatomb_hlp.html"
@@ -226,3 +211,16 @@ for i in $(sed -n 's/^BR2_PACKAGE_\(.*\)=y/\1/p' .config); do
 	fi
 done
 fi
+
+# 8 - strip rootfs binaries and libraries, as some makefile install targets don't do it
+# BR2_GNU_TARGET_SUFFIX="linux-uclibcgnueabi"
+# BR2_ARCH="arm"
+
+#STRIP=$BR2_ARCH-$BR2_GNU_TARGET_SUFFIX-strip
+
+#for i in $(find $1 -path '*/usr/lib/modules' -prune -o -print); do
+#	if file $i | grep -q 'not stripped'; then
+#		echo stripping $i
+#		$STRIP --strip-unneeded --remove-section=.comment --remove-section=.note $i
+#	fi
+#done
