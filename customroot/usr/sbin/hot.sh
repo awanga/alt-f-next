@@ -212,7 +212,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 	else # "normal" disk (not md)
 
 		lhost="/host0/"; rhost="/host1/"
-		if grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board; then
+		if grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board; then
 			lhost="/host1/"; rhost="/host0/"
 		fi
 		# which bay?	
