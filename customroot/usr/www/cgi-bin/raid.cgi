@@ -338,7 +338,7 @@ if echo "$mout" | grep -q ARRAY; then
 						<option $remops value="Enlarge_raid">Enlarge</option>
 						<option $remops value="Shrink_raid">Shrink</option>
 						<option $destroy_dis value="Destroy_raid">Destroy</option>
-						<option $remops>Details</option>
+						<option $destroy_dis>Details</option>
 					</select></td>
 				EOF
 
