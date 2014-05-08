@@ -148,10 +148,10 @@ sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 0)
 
 # some kernels need a prologue to change the device_id set by the bootloader
 # read NOTE-1 bellow
-prez=(mach_id mach_id mach_id mach_id mach_id  "" "")
+prez=(mach_id mach_id mach_id mach_id mach_id  "" ""  "" "")
 
 # other kernels needs an epilogue with a hardware device tree description
-postz=("" "" "" "" "" kirkwood-dns320.dtb kirkwood-dns325.dtb)
+postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
 
 # NOTE-1: DNS-323/DNS-321:
 # Sets the cpu r1 to the machine ID, overriding the value that u-boot sets there.
@@ -206,7 +206,7 @@ num=${#name[*]}
 if test $num != ${#prod[*]} -o $num != ${#cust[*]} -o $num != ${#cust[*]} \
 	-o $num != ${#model[*]} -o $num != ${#sub[*]} -o $num != ${#nver[*]} \
 	-o $num != ${#type[*]} -o $num != ${#hwboard[*]} -o $num != ${#kernel_max[*]} \
-	-o $num != ${#initramfs_max[*]}; then
+	-o $num != ${#initramfs_max[*]} -o $num != ${#prez[*]} -o $num != ${#postz[*]}; then
 		check 1 "firmware descriptions"
 fi
 
