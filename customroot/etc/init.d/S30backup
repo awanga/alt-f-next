@@ -8,7 +8,7 @@ NAME=backup
 CONF=/etc/backup.conf
 CRONF=/var/spool/cron/crontabs/root
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 istatus() {
 	if ! rccron status >& /dev/null; then

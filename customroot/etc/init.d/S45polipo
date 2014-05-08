@@ -13,7 +13,7 @@ CONF=/etc/polipo/config
 # discard as much of the memory cache as possible.  It will then reopen
 # the log file and reload the forbidden URLs file. 
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 case "$1" in
 	start)

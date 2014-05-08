@@ -13,7 +13,7 @@ CONFM=/etc/misc.conf
 NTPD_CRON=/tmp/ntpd.cron
 CRONF=/var/spool/cron/crontabs/root
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if test -e $CONFM; then
 	. $CONFM

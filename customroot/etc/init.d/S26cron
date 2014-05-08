@@ -4,7 +4,7 @@ DESC="Daemon to execute scheduled commands"
 NAME=crond
 TYPE=sys
 
-. $(dirname $0)/common 
+. /etc/init.d/common 
 
 CROND=/var/spool/cron/crontabs
 CRONF=$CROND/root

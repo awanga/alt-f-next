@@ -14,6 +14,15 @@ elif test "$1" = "disable" -a -z "$2" ; then
 	exit 0
 fi
 
+if test "$NEED_ALTF_DIR" = 1; then
+	srva=$(basename $0); srv=${srva:3}
+	if ! aufs.sh -s >& /dev/null; then
+		logger -st $srv "Alt-F folder not yet available.\n\
+Use menu Packages->Alt-F to install Alt-F packages folder if you have not yet done it."
+		exit 1
+	fi
+fi
+
 # for process match, some processes need -n, the default, others -x
 if test -z "$RC_START_STOP"; then
 	RC_START_STOP=-n
@@ -146,40 +155,23 @@ omsg() {
 	return $1	
 }
 
-# lock file for adduser/addgroup (busybox don't support concurrency on them, 'at' launches them)
+# lock file for adduser/addgroup (busybox don't support concurrency on them)
 initlock=/tmp/.checkuser-lock
 dolock() {
-	logger -st $1 "waiting for lock"
+	logger -t $1 "waiting for lock"
 	while ! mkdir $initlock >& /dev/null; do usleep 500000; done
-	logger -st $1 "got lock"
+	logger -t $1 "got lock"
 }
 
 # remove lock upon termination
 cleanlock() {
-	logger -st $1 "remove lock"
+	logger -t $1 "remove lock"
 	rmdir $initlock
-}
-
-# check_altf() needs to know the initscript argument:
-srv_arg=$1
-
-# some services should only be started when the Alt-F folder is aufs mounted
-check_altf() {
-	srva=$(basename $0); srv=${srva:3}
-	if ! aufs.sh -s >& /dev/null; then
-		if ! rcat status >& /dev/null; then rcat start >& /dev/null; fi
-		at -q z now+1min<<-EOF 2> /dev/null
-			rc$srv $srv_arg
-		EOF
-		logger -st $srv "Alt-F folder not yet available, delaying one minute. Use Packages->Alt-F menu to install Alt-F packages if you have not yet done it."
-		exit 1
-	fi
 }
 
 # some services need to create its own user/group
 check_user() {
 	if test -n "$RC_USER" -a -n "$RC_USERN" -a -n "$RC_GROUP" -a -n "$RC_GROUPN" -a -n "$RC_DESC"; then
-		check_altf
 		srva=$(basename $0); srv=${srva:3}
 		user_home=/var/lib/$RC_USER
 		if ! id $RC_USER >& /dev/null; then
@@ -249,13 +241,13 @@ stop() {
 	fi
 	st=$?
 
-	if test -n "$RC_PIDFILE" -a "$st" = 0; then
-		rm -f $RC_PIDFILE
-	fi
-
 	if test -n "$REQUIRE"; then
 		while status $1 >& /dev/null; do usleep 200000; done
 		stoprequired $1 $REQUIRE
+	fi
+
+	if test -n "$RC_PIDFILE" -a "$st" = 0; then
+		rm -f $RC_PIDFILE
 	fi
 
 	omsg $st

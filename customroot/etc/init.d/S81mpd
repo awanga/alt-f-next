@@ -5,6 +5,7 @@
 NAME=mpd
 TYPE=user
 DESC="A flexible, powerful, server-side application for playing music"
+NEED_ALTF_DIR=1
 
 REQUIRE="avahi_daemon"
 
@@ -30,7 +31,7 @@ RC_PIDFILE=$PID_FILE
 RC_START_BG=yes
 OPTS="--no-daemon"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 for i in $MPD_DIRS; do
 	if ! test -d $i; then mkdir -p $i; fi

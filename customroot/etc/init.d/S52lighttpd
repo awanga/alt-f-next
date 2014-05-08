@@ -3,6 +3,7 @@
 DESC="A secure, fast, compliant and very flexible web-server"
 TYPE=net
 NAME=lighttpd
+NEED_ALTF_DIR=1
 
 CONF=/etc/$NAME/$NAME.conf
 LOG_DIR=/var/log/$NAME 
@@ -20,7 +21,7 @@ RC_GROUP=network
 RC_GROUPN=81
 RC_DESC="Lighttpd daemon"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -d $LOG_DIR; then mkdir -p $LOG_DIR; fi
 if ! test -d $HOME_DIR/sockets; then mkdir -p $HOME_DIR/sockets; fi

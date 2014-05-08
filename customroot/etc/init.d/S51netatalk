@@ -3,14 +3,13 @@
 DESC="AFP (Apple Filling Protocol) fileserver"
 TYPE=net
 NAME=netatalk
+NEED_ALTF_DIR=1
 
 REQUIRE=avahi_daemon
 NETATALK_CONF=/etc/afp.conf
 NETATALK_DIR=/var/lib/netatalk
 
-. $(dirname $0)/common
-
-check_altf
+. /etc/init.d/common
 
 if ! test -d $NETATALK_DIR/CNID; then
 	mkdir -p $NETATALK_DIR/CNID

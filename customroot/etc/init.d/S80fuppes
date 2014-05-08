@@ -20,7 +20,7 @@ RC_GROUP=multimedia
 RC_GROUPN=80
 RC_DESC="Fuppes user"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -d $LOGDIR; then
 	mkdir -p $LOGDIR

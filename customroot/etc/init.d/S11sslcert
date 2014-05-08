@@ -9,7 +9,7 @@ BOX_CRT=/etc/ssl/certs/server.crt
 BOX_KEY=/etc/ssl/certs/server.key
 VSFTP_CERT=/etc/ssl/certs/vsftpd.pem
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 case "$1" in
 	start)

@@ -14,7 +14,7 @@ RC_PIDFILE=/var/run/$NAME.pid
 RC_MAKE_PID=yes
 RC_START_BG=yes
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 case "$1" in
 	start)

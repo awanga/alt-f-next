@@ -8,7 +8,7 @@ TYPE=net
 
 OPENVPN_DIR=/etc/openvpn
 
-. $(dirname $0)/common 
+. /etc/init.d/common 
 
 if ! test -d $OPENVPN_DIR; then mkdir -p $OPENVPN_DIR; fi
 

@@ -7,7 +7,7 @@ REQUIRE="portmap"
 
 MISCC=/etc/misc.conf
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if test -f $MISCC; then
 	. $MISCC

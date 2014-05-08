@@ -8,7 +8,7 @@ TYPE=required
 RDIR=/var/lib/misc
 RFILE=$RDIR/random-seed
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -d $RDIR; then mkdir -p $RDIR; fi
 

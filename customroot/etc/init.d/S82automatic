@@ -3,6 +3,7 @@
 DESC="RSS downloader that grabs your favorite Transmission torrents"
 NAME=automatic
 TYPE=user
+NEED_ALTF_DIR=1
 
 REQUIRE="transmission"
 
@@ -16,7 +17,7 @@ AUTOMATIC_DIR=/var/lib/$NAME
 AUTOMATIC_STATE=$AUTOMATIC_DIR/automatic.state
 AUTOMATIC_OPTS="--logfile /var/log/automatic.log"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -d $AUTOMATIC_DIR; then mkdir -p $AUTOMATIC_DIR; fi
 if ! test -f $AUTOMATIC_STATE; then touch $AUTOMATIC_STATE; fi

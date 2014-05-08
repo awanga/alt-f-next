@@ -8,7 +8,7 @@ AVAHI_SRV="rsync ssh telnet ftp http printer swat"
 
 REQUIRE="inetd" # don't allow inetd to be stopped
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 #set -x
 

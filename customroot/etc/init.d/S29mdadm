@@ -6,7 +6,7 @@ TYPE=sys
 PIDFILE=/var/run/mdadm.pid
 CONFF=/etc/misc.conf
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 case "$1" in
 	start)

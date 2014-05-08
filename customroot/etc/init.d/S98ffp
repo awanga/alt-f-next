@@ -4,7 +4,7 @@ DESC="Run ffp initialization script"
 TYPE=user
 NAME=ffp
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 iffp() {
 	if test -f /ffp/etc/rc; then

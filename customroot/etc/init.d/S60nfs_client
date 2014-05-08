@@ -7,7 +7,7 @@ REQUIRE="portmap"
 
 PORTMAP_FLAG="" #-v
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 # The /var/lib/nfs directory is actually on a tmpfs filesystem.
 # except when Alt-F is aufs mounted (just install ipkg for this to take effect)

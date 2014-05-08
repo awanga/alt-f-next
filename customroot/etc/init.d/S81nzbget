@@ -3,6 +3,7 @@
 DESC="NZBGet is a binary newsgrabber for nzb files"
 NAME=nzbget
 TYPE=user
+NEED_ALTF_DIR=1
 
 RC_USER=nzbget
 RC_USERN=21
@@ -18,7 +19,7 @@ DATA_DIR=$(sed -n '/^$MAINDIR=/s/$MAINDIR=\(.*\)/\1/p' $CONFF)
 
 OPTS="--daemon -c $CONFF"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 umask 002
 

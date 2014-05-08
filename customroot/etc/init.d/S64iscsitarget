@@ -6,7 +6,7 @@ TYPE=net
 
 IETD_OPTS=""
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 istart() {
 	modprobe crc32c

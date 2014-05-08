@@ -5,6 +5,7 @@ TYPE=sys
 NAME=cupsd
 INETD_CONF=/etc/inetd.conf
 PRINTC=/etc/printcap
+NEED_ALTF_DIR=1
 
 BOX_CRT=/etc/ssl/certs/server.crt
 BOX_KEY=/etc/ssl/certs/server.key
@@ -20,7 +21,7 @@ RC_GROUP=lpadmin
 RC_GROUPN=9
 RC_DESC="CUPS Daemon"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -e $CUPS_CRT; then
 	cp $BOX_CRT $CUPS_CRT                                            

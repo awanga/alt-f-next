@@ -3,6 +3,7 @@
 DESC="DAAP and RSP media server (iTunes)"
 NAME=forked-daapd
 TYPE=user
+NEED_ALTF_DIR=1
 
 EXCLUDEDBY="mt_daapd"
 REQUIRE="avahi_daemon"
@@ -18,7 +19,7 @@ CONF_FORKED=/etc/$NAME.conf
 FORKED_LOG=/var/log/$NAME.log
 FORKED_OVRW_LOG="yes" # overwrite log file on each start
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 check_user $CONF_FORKED /var/lib/$RC_USER
 

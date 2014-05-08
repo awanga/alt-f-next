@@ -3,6 +3,7 @@
 DESC="SickBeard searches and manages your TV shows"
 NAME=sickbeard
 TYPE=user
+NEED_ALTF_DIR=1
 
 RC_USER=sickbeard
 RC_USERN=18
@@ -23,7 +24,7 @@ DL_DIR=$(sed -n 's/^root_dirs.*=.*|\(.*\)/\1/p' $CONFF)
 
 OPTS="--quiet --daemon --pidfile=$RC_PIDFILE --config=$CONFF --datadir=$DATA_DIR"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if test "$(basename "$DL_DIR")" = "Public"; then
 	check_user $CONF_DIR $PROG_DIR

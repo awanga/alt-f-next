@@ -11,7 +11,7 @@ SMB_CONF=/etc/samba/smb.conf
 
 RETVAL=0
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 # Check that smb.conf exists.
 if ! test -f /etc/samba/smb.conf; then

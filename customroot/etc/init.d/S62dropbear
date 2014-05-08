@@ -6,7 +6,7 @@
 DESC="Light SSH/SFTP client/server"
 NAME=dropbear
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 sinit() {
 	# Make sure dropbear directory exists

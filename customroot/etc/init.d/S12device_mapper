@@ -5,7 +5,7 @@ NAME=device-mapper
 
 umask 077
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 case "$1" in
 	start)

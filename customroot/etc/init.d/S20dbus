@@ -4,6 +4,7 @@
 
 NAME=dbus-daemon
 NAME2=dbus-uuidgen
+NEED_ALTF_DIR=1
 
 RC_USER=dbus
 RC_USERN=6
@@ -11,7 +12,7 @@ RC_GROUP=sys
 RC_GROUPN=3
 RC_DESC="DBUS daemon"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 DBUS_DIRS="/var/lib/dbus /var/run/dbus /var/lock/subsys /tmp/dbus
 /etc/dbus-1/system.d /etc/dbus-1/session.d /usr/libexec/dbus-1 

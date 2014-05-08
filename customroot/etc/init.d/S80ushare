@@ -4,6 +4,7 @@ NAME=ushare
 DAEMON=/usr/bin/$NAME
 DESC="GeeXboX uShare, A free UPnP A/V & DLNA Media Server for Linux"
 TYPE=user
+NEED_ALTF_DIR=1
 
 PIDFILE=/var/run/$NAME.pid
 CONFIGFILE=/etc/$NAME.conf
@@ -19,7 +20,7 @@ RC_START_BG=yes
 RC_PIDFILE=$PIDFILE
 RC_MAKE_PID=yes
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 check_shares() {
 	if test -r "$CONFIGFILE"; then

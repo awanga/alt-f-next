@@ -81,13 +81,13 @@ if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	cd /root
 
 	# no kernel image, use flashed kernel
-	if ! test -f zImage -o "$board" = "DNS-320-A1" -o "$board" = "DNS-325-A1"; then
+	if ! test -f zImage -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-325-A1A2"; then
 		dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
 	fi
 	
 	initrfs=$(ls rootfs.arm.*)
 	# no rootfs, use flashed rootfs
-	if ! test -f "$initrfs" -o "$board" = "DNS-320-A1" -o "$board" = "DNS-325-A1"; then
+	if ! test -f "$initrfs" -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-325-A1A2"; then
 		dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
 		initrfs=rootfs.arm.sqmtd
 	fi

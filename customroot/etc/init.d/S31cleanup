@@ -5,7 +5,7 @@ TYPE=sys
 NAME=cleanup
 #REQUIRE="cron" doesn't not work here
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 CRONF=/var/spool/cron/crontabs/root
 

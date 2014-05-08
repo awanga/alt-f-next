@@ -3,6 +3,7 @@
 DESC="CouchPotato searches and manages your movies"
 NAME=couchpotato2
 TYPE=user
+NEED_ALTF_DIR=1
 
 RC_USER=couchpotato2
 RC_USERN=22
@@ -22,7 +23,7 @@ OPTS="--quiet --daemon --config_file=$CONFF --pid_file=$RC_PIDFILE"
 
 DL_DIR=$(sed -n 's/^to[[:space:]]*=[[:space:]]*\(.*\)/\1/p' $CONFF)
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if test "$(basename $DL_DIR)" = "Public"; then
 	check_user $PROG_DIR $CONFF

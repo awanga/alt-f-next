@@ -9,7 +9,7 @@ REQUIRE="avahi_daemon"
 AFPD_OPTS="-P /var/run/afpd.pid"
 CNID_OPTS="-l log_info"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 istart() {
 	start $NAME2 -- $CNID_OPTS

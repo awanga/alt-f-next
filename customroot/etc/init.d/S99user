@@ -11,7 +11,7 @@ USERLOCK=/var/lock/userscript
 LOGF="alt-f.log"
 SEP="======================"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 bootlog() {
 	TLOG=/tmp/$LOGF

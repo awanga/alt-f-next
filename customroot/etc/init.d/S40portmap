@@ -5,7 +5,7 @@ NAME=portmap
 
 PORTMAP_FLAG="" #-v
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 istart() {
 	# portmap fails when starting/stopping it in fast succession.

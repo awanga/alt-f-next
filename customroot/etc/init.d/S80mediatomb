@@ -3,6 +3,7 @@
 NAME=mediatomb
 DESC="MediaTomb provides an A/V UPnP service"
 TYPE=user
+NEED_ALTF_DIR=1
 
 RC_USER=mediatomb
 RC_USERN=14
@@ -22,7 +23,7 @@ MT_PORT=50500
 MT_ARGS="-d -u $RC_USER -g $RC_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
 -m $MT_HOME -f $MT_DIR -p $MT_PORT -e eth0"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -f $MT_PIDFILE; then touch $MT_PIDFILE; fi
 

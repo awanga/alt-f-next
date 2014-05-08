@@ -4,7 +4,7 @@ DESC="Combined DHCP/DNS/TFTP Server"
 TYPE=net
 NAME=dnsmasq
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 FLG_MSG="#!in use by dnsmasq, don't change"
 CONF_R=/etc/resolv.conf

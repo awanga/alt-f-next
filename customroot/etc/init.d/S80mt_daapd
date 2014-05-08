@@ -5,6 +5,7 @@
 DESC="Media server for the Roku SoundBridge and iTunes"
 TYPE=user
 NAME=mt-daapd
+NEED_ALTF_DIR=1
 
 EXCLUDEDBY="forked_daapd"
 
@@ -20,7 +21,7 @@ MTDAAPD_ARGS="-y"
 MTDAAPD_DIR=/var/lib/mt-daapd/mp3_dir
 MTDAAPD_CONF="/etc/mt-daapd.conf /etc/mt-daapd.playlist"
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if ! test -d $MTDAAPD_DIR; then mkdir -p $MTDAAPD_DIR; fi
 

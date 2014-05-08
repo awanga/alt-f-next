@@ -5,7 +5,7 @@ TYPE=sys
 NAME=news
 #REQUIRE="cron" doesn't work here
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 CRONF=/var/spool/cron/crontabs/root
 

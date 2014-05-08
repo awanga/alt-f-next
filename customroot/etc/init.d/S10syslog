@@ -11,7 +11,7 @@ CONFF=/etc/syslog.conf
 
 umask 077
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 PARAMS="-C -m 0"
 

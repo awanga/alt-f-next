@@ -10,7 +10,7 @@ CONFF=/etc/misc.conf
 
 umask 077
 
-. $(dirname $0)/common
+. /etc/init.d/common
 
 if test -f $CONFF; then
 	. $CONFF

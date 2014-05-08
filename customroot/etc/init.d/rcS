@@ -32,7 +32,7 @@ if grep -q 'DNS-321/323' /proc/cpuinfo; then
 		0000) board="DNS-323-A1" ;;
 		0001) board="DNS-323-B1" ;;
 		0002) board="DNS-323-C1" ;;
-		0003) board="DNS-321-A1" ;; 
+		0003) board="DNS-321-A1A2" ;; 
 	esac
 	kernel_mtd=/dev/mtd2; kernel_mn="90 4"
 	config_mtd=/dev/mtdblock0; config_mn="31 0"
@@ -41,11 +41,11 @@ if grep -q 'DNS-321/323' /proc/cpuinfo; then
 	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
 	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
 
-elif grep -q 'DNS-320' /proc/device-tree/model 2> /dev/null; then
-	board="DNS-320-A1"
+elif grep -q 'DNS-320.*A1/A2' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-320-A1A2"
 
-elif grep -q 'DNS-325' /proc/device-tree/model 2> /dev/null; then
-	board="DNS-325-A1"
+elif grep -q 'DNS-325.*A1/A2' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-325-A1A2"
 
 else
 	board="Unknown"
@@ -53,7 +53,7 @@ fi
 
 echo $board > /tmp/board
 
-if test $board = "DNS-320-A1" -o $board = "DNS-325-A1"; then
+if test $board = "DNS-320-A1A2" -o $board = "DNS-325-A1A2"; then
 	kernel_mtd=/dev/mtd1; kernel_mn="90 2"
 	config_mtd=/dev/mtdblock5; config_mn="31 5"
 
@@ -84,7 +84,7 @@ if test $board = "DNS-320-A1" -o $board = "DNS-325-A1"; then
 		mount -t aufs -o remount,append:/rootmnt/sqimage=rr /
 	fi
 
-	if test $board = "DNS-320-A1"; then
+	if test $board = "DNS-320-A1A2"; then
 		ln -sf "/sys/class/leds/dns320:blue:power" /tmp/sys/power_led
 		ln -sf "/sys/class/leds/dns320:orange:l_hdd" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns320:orange:r_hdd" /tmp/sys/right_led
@@ -93,7 +93,7 @@ if test $board = "DNS-320-A1" -o $board = "DNS-325-A1"; then
 		sed -i 's/^#[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
 		echo 40 > /tmp/sys/temp1_input
 		kill -1 1
-	elif test $board = "DNS-325-A1"; then
+	elif test $board = "DNS-325-A1A2"; then
 		ln -sf "/sys/class/leds/dns325:white:power" /tmp/sys/power_led
 		ln -sf "/sys/class/leds/dns325:red:l_hdd" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns325:red:r_hdd" /tmp/sys/right_led
