@@ -45,7 +45,7 @@ if test "$submit" = "Install"; then
 		msg "You have to specify a mirror near you in order to download Debian"
 	fi
 
-	if grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+	if grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
 
 	DEBMIRROR=$(httpd -d $mirror)
 

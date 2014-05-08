@@ -82,7 +82,7 @@ case "$board" in
 	EOF
 	;;
 
-	"DNS-323-C1"|"DNS-321-A1"|"DNS-320-A1"|"DNS-325-A1")
+	"DNS-323-C1"|"DNS-321-A1A2"|"DNS-320-A1A2"|"DNS-325-A1A2")
 	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	lo_temp=45
 

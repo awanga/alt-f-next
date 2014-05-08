@@ -56,13 +56,13 @@ sig=${product_id}${custom_id}${model_id}${sub_id}
 brd=$(cat /tmp/board)
 
 case "$sig" in
-	"0851"|"0852") ftype="DNS-325" ;; # DNS-325-rev-A
-	"0871"|"0872") ftype="DNS-320" ;; # DNS-320-rev-A
+	"0851"|"0852") ftype="DNS-325-A1A2" ;; # DNS-325-rev-A1A2
+	"0871"|"0872") ftype="DNS-320-A1A2" ;; # DNS-320-rev-A1A2
 	#"08c1") ftype="DNS-320" ;; # DNS-320-rev-B
 	#"08b1") ftype="DNS-320L" ;; # DNS-320L-rev-?
-	"a111"|"a112") ftype="DNS-321" ;; # DNS-321-rev-A
+	"a111"|"a112") ftype="DNS-321-A1A2" ;; # DNS-321-rev-A1A2
 	"9111"|"9112") ftype="DNS-343" ;; # DNS-343-rev-?
-	"7111") ftype="DNS-323" ;; # DNS-323-rev-ABC
+	"7111") ftype="DNS-323" ;; # DNS-323-rev-A1B1C1
 	"7211") ftype="CH3SNAS" ;;
 	"7311") ftype="DUO35LR" ;;
 	*) rm -f kernel initramfs sqimage defaults
@@ -74,9 +74,9 @@ esac
 nomsg="Your box is a $brd and this firmware is for the $ftype"
 
 case "$brd" in
-	"DNS-325-A1") if test $ftype != "DNS-325"; then notcomp=yes; fi ;;
-	"DNS-320-A1") if test $ftype != "DNS-320"; then notcomp=yes; fi ;;
-	"DNS-321-A1") if test $ftype != "DNS-321"; then notcomp=yes; fi ;;
+	"DNS-325-A1A2") if test $ftype != "DNS-325-A1A2"; then notcomp=yes; fi ;;
+	"DNS-320-A1A2") if test $ftype != "DNS-320-A1A2"; then notcomp=yes; fi ;;
+	"DNS-321-A1A2") if test $ftype != "DNS-321-A1A2"; then notcomp=yes; fi ;;
 	"DNS-323-A1"|"DNS-323-B1"|"DNS-323-C1")
 		if test $ftype != "DNS-323" -a $ftype != "CH3SNAS" -a $ftype != "DUO35LR"; then notcomp=yes; fi
 		;;

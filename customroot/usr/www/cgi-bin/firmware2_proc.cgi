@@ -37,7 +37,7 @@ flash_error() {
 nor_flash() {
 	sz=$(stat -t $1 | cut -d" " -f2)
 	tm=$(expr $sz / 75126 + 1)
-	wait_count_start "<p>Flashing $3, it takes about $tm seconds..."
+	wait_count_start "<p>Flashing $3, it should take about $tm seconds"
 	cat $1 > /dev/mtdblock${2:3} # use block device, don't need to use flash_erase?
 	wait_count_stop
 
@@ -99,7 +99,7 @@ elif test "$flash" = "TryIt"; then
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
 
 elif test "$flash" = "FlashIt"; then
-	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br>If you suspect that something went wrong,<br>you can try to upgrade again after stopping all running processes.</h3>"
+	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br><br>If you suspect that something went wrong,<br>you can try to upgrade again after stopping all running processes.</h3>"
 
 	rcall stop >& /dev/null
 
@@ -107,12 +107,12 @@ elif test "$flash" = "FlashIt"; then
 	echo 50 > /tmp/sys/power_led/delay_off 
 	echo 50 > /tmp/sys/power_led/delay_on
 
-	if grep -qE 'DNS-321|DNS-323' /tmp/board; then
+	if grep -qE 'DNS-321-A1A2|DNS-323' /tmp/board; then
 		kernel_mtd=mtd2
 		initramfs_mtd=mtd3
 		defaults_mtd=mtdblock0
 		sqimage_mtd=""
-	elif grep -qE 'DNS-320-A1|DNS-325-A1' /tmp/board; then
+	elif grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board; then
 		kernel_mtd=mtd1
 		initramfs_mtd=mtd2
 		defaults_mtd=mtdblock5
@@ -135,12 +135,12 @@ elif test "$flash" = "FlashIt"; then
 			;;
 
 		"clear")
-			echo "<p>Erasing flashed settings, it takes some 5 seconds..."
+			echo "<p>Erasing flashed settings, it should take some 5 seconds..."
 			loadsave_settings -cf
 			;;
 
 		"flashfile")
-			echo "<p>Flashing new settings, it takes some 5 seconds..."
+			echo "<p>Flashing new settings, it should take some 5 seconds..."
 			TD=$(mktemp -d)
 			mount $fs_type /dev/$defaults_mtd $TD
 			rm -f $TD/*
@@ -151,7 +151,7 @@ elif test "$flash" = "FlashIt"; then
 			;;
 
 		"recover")
-			echo "<p>Recovering vendors settings from backup, it takes some 5 seconds..."
+			echo "<p>Recovering vendors settings from backup, it should take some 5 seconds..."
 			loadsave_settings -rc
 			;;
 	esac
