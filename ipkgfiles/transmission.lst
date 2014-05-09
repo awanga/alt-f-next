@@ -1,4 +1,5 @@
 ./etc/init.d/S81transmission
+./etc/transmission/transmission.conf
 ./usr/bin/transmission-cli
 ./usr/bin/transmission-create
 ./usr/bin/transmission-daemon
