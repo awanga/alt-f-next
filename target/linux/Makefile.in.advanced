@@ -377,6 +377,12 @@ ifeq ($(BR2_TARGET_ROOTFS_INITRAMFS),y)
 else
 	echo "CONFIG_INITRAMFS_SOURCE=\"\"" >> $(LINUX26_DIR)/.config
 endif
+	$(SED) '/CONFIG_CC_OPTIMIZE_FOR_SIZE/d' $(LINUX26_DIR)/.config
+ifeq ($(BR2_LINUX_OPTIM_SIZE),y)
+	echo "CONFIG_CC_OPTIMIZE_FOR_SIZE=y" >> $(LINUX26_DIR)/.config
+else
+	echo "# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set " >> $(LINUX26_DIR)/.config
+endif
 ifeq ($(BR2_PACKAGE_BUSYBOX_INITRAMFS),y)
 	# precedence for a small initramfs
 	$(SED) '/CONFIG_INITRAMFS_SOURCE/d' $(LINUX26_DIR)/.config
