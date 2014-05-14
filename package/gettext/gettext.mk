@@ -123,6 +123,15 @@ $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY): $(GETTEXT_DIR)/$(GETTEXT_BINARY)
 		autopoint envsubst gettext.sh gettextize msg* ?gettext)
 	touch -c $@
 
+# a patch in uClibc removes libintl.h:
+ifeq ($(BR2_PACKAGE_LIBINTL),y)
+TARGETS += $(STAGING_DIR)/usr/include/libintl.h
+endif
+
+$(STAGING_DIR)/usr/include/libintl.h: $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
+	cp $(GETTEXT_DIR)/gettext-runtime/intl/libintl.h $(STAGING_DIR)/usr/include/
+	touch $@
+
 gettext: uclibc host-pkgconfig $(if $(BR2_PACKAGE_LIBICONV),libiconv) $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
 
 gettext-unpacked: $(GETTEXT_DIR)/.unpacked
