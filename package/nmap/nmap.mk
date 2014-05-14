@@ -17,10 +17,7 @@ NMAP_CONF_ENV = ac_cv_linux_vers=$(BR2_DEFAULT_KERNEL_HEADERS)
 
 $(eval $(call AUTOTARGETS,package,nmap))
 
-$(NMAP_HOOK_POST_CONFIGURE):
-	sed -i 's/^install:/install-strip:/p' $(NMAP_DIR)/Makefile
-	touch $@
-
-$(NMAP_HOOK_POST_INSTALL):
-	rm $(TARGET_DIR)/usr/bin/ndiff
+$(NMAP_TARGET_INSTALL_TARGET):
+	$(call MESSAGE,"Installing to target")
+	$(MAKE1) DESTDIR=$(TARGET_DIR) -C $(NMAP_DIR) install
 	touch $@
