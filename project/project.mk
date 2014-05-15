@@ -19,31 +19,22 @@ $(TARGET_DIR)/etc/br-version: .config
 	mkdir -p $(TARGET_DIR)/etc
 	echo $(BR2_VERSION)$(shell $(TOPDIR)/scripts/setlocalversion) >$@
 
+BCOMP = cmp -si $$(head -n 4 $(1) | wc -c):$$(head -n 4 $(2) | wc -c) $(1) $(2)
+
 saveconfig:
 	mkdir -p $(LOCAL)/$(PROJECT)
 	-cp .config $(PROJECT_FILE)
-	if [ -f $(LINUX26_DIR)/.config ]; then \
-		cp $(LINUX26_DIR)/.config \
-			$(LOCAL)/$(PROJECT)/linux-$(LINUX26_VERSION).config; \
-		$(SED) 's|BR2_PACKAGE_LINUX_KCONFIG=.*|BR2_PACKAGE_LINUX_KCONFIG=\"$(LOCAL)/$(PROJECT)/linux-$(LINUX26_VERSION).config\"|' $(PROJECT_FILE); \
-		#$(SED) '/BR2_BOARD_PATH/d' $(PROJECT_FILE); \
-		#echo "BR2_BOARD_PATH=\"$(LOCAL)/$(PROJECT)\"" >> $(PROJECT_FILE); \
+	if ! $(call BCOMP,$(BUSYBOX_DIR)/.config,$(BR2_PACKAGE_BUSYBOX_CONFIG)); then \
+		cp $(BUSYBOX_DIR)/.config $(BR2_PACKAGE_BUSYBOX_CONFIG); \
 	fi
-	if [ -f $(BUSYBOX_DIR)/.config -a -f $(LOCAL)/$(PROJECT)/busybox-$(BUSYBOX_VERSION).config ]; then \
-		cp $(BUSYBOX_DIR)/.config \
-			$(LOCAL)/$(PROJECT)/busybox-$(BUSYBOX_VERSION).config; \
-		$(SED) 's|BR2_PACKAGE_BUSYBOX_CONFIG=.*|BR2_PACKAGE_BUSYBOX_CONFIG=\"$(LOCAL)/$(PROJECT)/busybox-$(BUSYBOX_VERSION).config\"|' $(PROJECT_FILE); \
+	if ! $(call BCOMP,$(UCLIBC_DIR)/.config,$(BR2_UCLIBC_CONFIG)); then \
+		cp $(UCLIBC_DIR)/.config $(BR2_UCLIBC_CONFIG); \
 	fi
-	if [ -f $(UCLIBC_DIR)/.config -a -f $(LOCAL)/$(PROJECT)/uclibc-$(UCLIBC_VER).config ]; then \
-		cp $(UCLIBC_DIR)/.config \
-			$(LOCAL)/$(PROJECT)/uclibc-$(UCLIBC_VER).config; \
-		$(SED) 's|BR2_UCLIBC_CONFIG=.*|BR2_UCLIBC_CONFIG=\"$(LOCAL)/$(PROJECT)/uclibc-$(UCLIBC_VER).config\"|' $(PROJECT_FILE); \
-	fi
-	if [ -f $(UBOOT_DIR)/include/configs/$(PROJECT).h ]; then \
-		mkdir -p $(LOCAL)/$(PROJECT)/u-boot; \
-		cp $(UBOOT_DIR)/include/configs/$(PROJECT).h \
-			$(LOCAL)/$(PROJECT)/u-boot/$(PROJECT).h; \
+	if ! $(call BCOMP,$(LINUX26_DIR)/.config,$(BR2_PACKAGE_LINUX_KCONFIG)); then \
+		cp $(LINUX26_DIR)/.config $(BR2_PACKAGE_LINUX_KCONFIG); \
 	fi
 
 getconfig:
 	-cp $(LOCAL)/$(PROJECT)/$(PROJECT).config .config
+
+
