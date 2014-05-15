@@ -200,6 +200,7 @@ case "$1" in
 		;;
 
 	-all)
+		gst=0
 		for i in $(ls $IPKGDIR/*.control); do
 			p=$(basename $i .control)
 			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y .config; then
@@ -212,10 +213,16 @@ case "$1" in
 				else
 					echo " FAIL $res"
 				fi
+				gst=$((gst+st))
 			fi
 		done
+		if test $gst != 0; then
+			echo "$gst package(s) FAILED."
+		else
+			echo "All packages build OK."
+		fi
 		ipkg-make-index pkgs/ > pkgs/Packages
-		exit 0
+		exit $gst
 		;;
 
 	-check)
