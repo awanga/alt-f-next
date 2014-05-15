@@ -17,8 +17,9 @@ err() {
 		<input type="button" value="Back" onclick="window.location.assign(document.referrer)"></p>
 		</body></html>
 	EOF
-	# restart hotplug
+	# restart hotplug and sysctrl
 	echo /sbin/mdev > /proc/sys/kernel/hotplug
+	rcsysctrl start >& /dev/null
 	exit 1
 }
 
@@ -314,7 +315,7 @@ create_fs() {
 			obj.innerHTML = '$ln \\${pgr:$i:1}'
 			</script>
 		EOF
-		sleep 10
+		sleep 3
 	done
 
 	if test -f /tmp/${dev}.err; then
@@ -360,7 +361,6 @@ create_raid() {
 			;;
 		raid1)  opts="$opts --bitmap=internal"
 			if test $ndisks = 1; then
-				pair2="missing"
 				ndisks=2
 			elif test $ndisks = 3; then
 				spare="/dev/${usb}2"
