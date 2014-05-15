@@ -39,9 +39,7 @@ echo kernel=$kver
 	# so TWO makes have to be done the first time!!! Isn't this already solved?
 
 	# the kernel modules in the base firmware:
-	KMOD="./kernel/drivers/usb/class/usblp.ko
-./kernel/fs/fuse/fuse.ko
-"
+	KMOD="./kernel/drivers/usb/class/usblp.ko ./kernel/fs/fuse/fuse.ko"
 
 	if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 		if ! test -d $BLDDIR/project_build_arm/$board/root/lib/modules/$kver; then
