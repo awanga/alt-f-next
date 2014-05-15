@@ -1,6 +1,56 @@
 # this is not a script, it is intended to be sourced,
 # so defined variables will be available at the current shell
 
+# tail compare: config files have a time stamp in the first four lines, compare remainder
+tailcmp() {
+	if ! test -f $1 -a -f $2; then
+		echo No configuration for $3 found
+		return 0
+	fi
+
+	st=0
+	if ! cmp -si $(head -n 4 $1 | wc -c):$(head -n 4 $2 | wc -c) $1 $2; then
+		echo Configuration for $3 has changed
+		st=1
+	else
+		echo "No change for $3"
+	fi
+	return $st
+}
+
+do_exports() {
+	eval $(grep BR2_CUSTOM_LINUX26_VERSION .config)
+	linux_version=$BR2_CUSTOM_LINUX26_VERSION
+
+	export BLDDIR=$bdir
+	export ROOTFS=$BLDDIR/project_build_arm/$board/root
+	export KERNEL=$BLDDIR/project_build_arm/$board/linux-$linux_version
+	export UCLIBC=$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3
+	export STAGING=$BLDDIR//build_arm/staging_dir
+	export HOSTDIR=$BLDDIR/build_arm/host_dir
+	export BINARIES=$BLDDIR/binaries/$board
+
+	if test -z $OPATH; then OPATH=$PATH; fi
+	export PATH=$OPATH:$HOSTDIR/usr/bin:$STAGING/usr/bin
+
+	export EDITOR=uemacs
+
+	make oldconfig
+	echo -e "\nBuild ready for \"$board\" at \"$BLDDIR\""
+}
+
+force=""
+BR2_PROJECT=""
+
+if test -f .config; then
+	eval $(grep ^BR2_PROJECT .config)
+fi
+
+if test "$1" = "-f"; then
+	force=y
+	shift
+fi
+
 if test $# = 2; then
 	bdir=$2
 elif test -n "$BLDDIR"; then
@@ -9,75 +59,57 @@ else
 	bdir=$PWD/build
 fi
 
-if test -z "$bdir"; then
-	bdir=$PWD/build
-fi
-
 if test $# -ge 1; then
 	board=$1
-elif test -f .config; then
-	. .config 2> /dev/null
+	if ! test -f ./local/$board/$board.config; then
+		echo "No ./local/$board/$board.config file found"
+		return 1
+	fi
+elif test -n "$BR2_PROJECT"; then
 	board=$BR2_PROJECT
 else
 	echo "No board defined nor .config found."
-	echo "Usage: . exports.sh [board ($(ls local | tr '\n' ' '))] [build dir]"
+	echo "Usage: . exports.sh [-f (force)] [board ($(ls local | tr '\n' ' '))] [build dir]"
 	return 1
 fi
 
-if ! test -f ./local/$board/$board.config; then
-	echo "No configuration file ./local/$board/$board.config found"
-	return 1
+if test $board = $BR2_PROJECT; then
+	do_exports
+	return 0
 fi
 
-if test -f .config; then
-	eval $(grep BR2_PROJECT .config)
+if test -z "$force" -a -f .config; then
+	for i in BR2_UCLIBC_VERSION_STRING BR2_UCLIBC_CONFIG \
+		BR2_BUSYBOX_VERSION BR2_PACKAGE_BUSYBOX_CONFIG \
+		BR2_CUSTOM_LINUX26_VERSION BR2_PACKAGE_LINUX_KCONFIG; do
+		eval $(grep ^$i .config)
+	done
 
-	if ! cmp -si $(head -n 4 local/$BR2_PROJECT/$BR2_PROJECT.config | wc -c):$(head -n 4 .config | wc -c) \
-		local/$BR2_PROJECT/$BR2_PROJECT.config .config; then
-		echo "Current .config for \"$BR2_PROJECT\" has changed," \
-				"consider making \"make saveconfig\". Exiting."
+	# board change, are there config files changes worth saving?
+	cbusybox=$BLDDIR/build_arm/busybox-$BR2_BUSYBOX_VERSION/.config
+	cuclibc=$BLDDIR/toolchain_build_arm/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
+	ckernel=$BLDDIR/project_build_arm/$BR2_PROJECT/linux-$BR2_CUSTOM_LINUX26_VERSION/.config
+
+	if tailcmp local/$BR2_PROJECT/$BR2_PROJECT.config .config board && \
+	tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc && \
+	tailcmp $BR2_PACKAGE_BUSYBOX_CONFIG $cbusybox Busybox && \
+	tailcmp $BR2_PACKAGE_LINUX_KCONFIG $ckernel Kernel; then
+		true
+	else
+		echo "Consider making \"make saveconfig\" or use '-f' to ignore changes. Reusing existing .config"
 		board=$BR2_PROJECT
+		do_exports
 		return 1
 	fi
 fi
 
-make BOARD=$board getconfig
-
-if false; then
-	if ! test -d $bdir; then
-		echo "\"$bdir\" doesn't exist, creating it"
-		mkdir -p $bdir
-	fi
-
-	if ! test -e $bdir/dl; then
-		echo "creating donwload link to '$bdir/dl'"
-		ln -sf "$(readlink -f dl)" $bdir/dl
-	fi
-fi
-
-. .config 2> /dev/null
+make BOARD=$board getconfig dirs
+eval $(grep BR2_PROJECT .config)
 
 if test "$board" != "$BR2_PROJECT"; then
-	echo "The board defined in ./local/$board/$board.config is \"$BR2_PROJECT\", and it does not match the required \"$board\"."
+	echo "The board defined in ./local/$board/$board.config is \"$BR2_PROJECT\", not \"$board\"."
+	rm .config
 	return 1
 fi
 
-linux_version=$BR2_CUSTOM_LINUX26_VERSION
-board=$BR2_PROJECT
-
-export BLDDIR=$bdir
-export ROOTFS=$BLDDIR/project_build_arm/$board/root
-export KERNEL=$BLDDIR/project_build_arm/$board/linux-$linux_version
-export UCLIBC=$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3
-export STAGING=$BLDDIR//build_arm/staging_dir
-export HOSTDIR=$BLDDIR/build_arm/host_dir
-export BINARIES=$BLDDIR/binaries/$board
-
-if test -z $OPATH; then OPATH=$PATH; fi
-export PATH=$OPATH:$HOSTDIR/usr/bin:$STAGING/usr/bin
-
-export EDITOR=uemacs
-
-make oldconfig
-
-echo Build ready for \"$board\" at \"$BLDDIR\"
+do_exports
