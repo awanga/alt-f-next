@@ -222,14 +222,8 @@ elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 # DNS-320/325
 elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage with extra files
 
-# BUG: FIXME kernel-modules is needed for the dns-325 because of forked-daapd
-# (quota-tools doesn't needs it also?)
-# but cryptodev and iscsitarget are not build, so no kernel modules for them exists!
-# the easy solution is to also build those packages for the 325, although seldom used
-# note: cryptodev is a kernel module, set at package config time
-
 	if test "$board" != "dns325"; then
-		echo "initramfs: FIXME: ERROR, this mode is only for a dns-320/325"
+		echo "mkinitramfs: ERROR, \"sqsplit\" is only for a dns-320/325"
 		exit 1
 	fi
 
