@@ -125,7 +125,7 @@ $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY): $(GETTEXT_DIR)/$(GETTEXT_BINARY)
 
 # a patch in uClibc removes libintl.h:
 ifeq ($(BR2_PACKAGE_LIBINTL),y)
-TARGETS += $(STAGING_DIR)/usr/include/libintl.h
+TARGETS := $(STAGING_DIR)/usr/include/libintl.h $(TARGETS)
 endif
 
 $(STAGING_DIR)/usr/include/libintl.h: $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)

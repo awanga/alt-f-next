@@ -27,10 +27,10 @@ $(eval $(call AUTOTARGETS,package,libiconv))
 
 # a patch in uClibc removes iconv.h:
 ifeq ($(BR2_PACKAGE_LIBICONV),y)
-TARGETS += $(STAGING_DIR)/usr/include/iconv.h
+TARGETS := $(STAGING_DIR)/usr/include/iconv.h $(TARGETS)
 endif
 
-$(STAGING_DIR)/usr/include/iconv.h: $(LIBICONV_TARGET_INSTALL_STAGING)
+$(STAGING_DIR)/usr/include/iconv.h: libiconv-install-staging
 	cp $(LIBICONV_DIR)/include/iconv.h.inst $(STAGING_DIR)/usr/include/iconv.h
 	touch $@
 
