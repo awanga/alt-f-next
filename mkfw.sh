@@ -61,8 +61,13 @@ PATH=$(pwd)/bin:$PATH
 
 . .config 2> /dev/null
 board=$BR2_PROJECT
-DESTD=$BLDDIR/binaries/$board
 
+if test $TYPE = "sqsplit" -a "$board" != "dns325"; then
+	echo "mkfw: ERROR, \"sqsplit\" is only for a dns-320/325"
+	exit 1
+fi
+
+DESTD=$BLDDIR/binaries/$board
 KVER=$(cat $BLDDIR/project_build_arm/$board/.linux-version)
 VER=$(cut -f2 -d" " customroot/etc/Alt-F)
 
