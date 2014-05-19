@@ -1,5 +1,5 @@
 Package: gptfdisk
-Description: The gdisk and sgdisk programs work on (GUID) Partition Table (GPT) disks. Needed for greater than 2TB disks
+Description: Programs to manage (GUID) Partition Table (GPT) disks. Needed for greater than 2TB disks
 Version: 0.8.6-1
 Depends: gptfdisk-sgdisk, ncurses, ipkg
 Architecture: arm

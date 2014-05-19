@@ -1,5 +1,5 @@
 Package: automatic
-Description: Automatic is an RSS downloader that grabs your favorite torrents. It was designed to integrate with the popular BitTorrent client Transmission.
+Description: An RSS downloader that grabs your favorite torrents. It was designed to integrate with the popular BitTorrent client Transmission.
 Version: 0.8.3-1
 Depends: transmission, pcre, libxml2, libcurl, ipkg
 Architecture: arm

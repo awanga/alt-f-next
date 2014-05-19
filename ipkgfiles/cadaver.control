@@ -1,5 +1,5 @@
 Package: cadaver
-Description: cadaver is a command-line WebDAV client for Unix
+Description: A command-line WebDAV client for Unix
 Version: 0.23.3-1
 Depends: neon, readline, ncurses, ipkg
 Architecture: arm

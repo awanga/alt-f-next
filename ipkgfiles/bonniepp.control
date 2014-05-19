@@ -1,5 +1,5 @@
 Package: bonniepp
-Description: Bonnie++ is a benchmark suite that is aimed at performing a number of simple tests of hard drive and file system performance.
+Description: A benchmark suite that is aimed at performing a number of simple tests of hard drive and file system performance.
 Version: 1.03e-3
 Depends: ipkg
 Architecture: arm

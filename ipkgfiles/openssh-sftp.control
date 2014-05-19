@@ -1,5 +1,5 @@
 Package: openssh-sftp
-Description: the sftp server component of openSSH 
+Description: The sftp server component of openSSH 
 Version: 6.4p1
 Depends: ipkg, openssl
 Architecture: arm

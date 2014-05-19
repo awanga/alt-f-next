@@ -1,5 +1,5 @@
 Package: gnupg
-Description: GnuPG allows to encrypt and sign your data and communication
+Description: Allows to encrypt and sign your data and communication.
 Version: 1.4.15-1
 Depends: readline, libusb, ipkg
 Architecture: arm

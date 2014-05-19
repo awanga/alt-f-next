@@ -1,5 +1,5 @@
 Package: libcurl
-Description: cURL is a tool for getting files from FTP, HTTP, Gopher,
+Description: A tool for getting files from FTP, HTTP, Gopher,
  Telnet, and Dict servers, using any of the supported protocols.
 Depends: ipkg
 Version: 7.22.0-2

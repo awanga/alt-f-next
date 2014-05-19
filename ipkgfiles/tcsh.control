@@ -1,5 +1,5 @@
 Package: tcsh
-Description: Tcsh is an enhanced, but completely compatible version of the Berkeley UNIX C shell (csh).
+Description: An enhanced, but completely compatible version of the Berkeley UNIX C shell (csh).
 Version: 6.18.01-1
 Depends: ncurses, ipkg
 Architecture: arm

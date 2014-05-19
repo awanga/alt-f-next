@@ -1,5 +1,5 @@
 Package: davfs2
-Description: davfs2 will work with most WebDAV servers needing little or no configuration
+Description: Works with most WebDAV servers needing little or no configuration
 Version: 1.4.7-2
 Depends: neon, kernel-modules, ipkg
 Architecture: arm

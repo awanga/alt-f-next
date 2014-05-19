@@ -1,5 +1,5 @@
 Package: attr
-Description: utilities to administer the extended attributes on filesystem objects
+Description: Utilities to administer the extended attributes on filesystem objects
 Version: 2.4.47-1
 Depends: ipkg
 Architecture: arm

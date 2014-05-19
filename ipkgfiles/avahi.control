@@ -1,7 +1,7 @@
 Package: avahi
 Version: 0.6.31-1
 Depends: libglib2, dbus, libdaemon, ipkg
-Description: Avahi is a system which facilitates service discovery on a local network.
+Description: A system which facilitates service discovery on a local network.
 Architecture: arm
 Priority: optional
 Section: networking

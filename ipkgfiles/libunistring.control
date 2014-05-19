@@ -1,6 +1,6 @@
 Package: libunistring
-Description: This library implements Unicode strings, together with functions for Unicode
- charactets and functions for string processing.
+Description: Library that implements Unicode strings, together with functions
+ for Unicode charactets and functions for string processing.
 Version: 0.9.3-3
 Depends: ipkg
 Architecture: arm

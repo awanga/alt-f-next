@@ -1,5 +1,5 @@
 Package: msmtp
-Description: a SMTP (Single Mail Transfer Program) client.
+Description: A SMTP (Simple Mail Transfer Program) client.
 Version: 1.4.31
 Depends: ipkg
 Architecture: arm

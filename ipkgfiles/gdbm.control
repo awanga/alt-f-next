@@ -1,7 +1,7 @@
 Package: gdbm
 Depends: ipkg
 Version: 1.8.3-4
-Description: GNU dbm is a set of database routines that use extensible hashing.
+Description: A set of database routines that use extensible hashing.
 Architecture: arm
 Priority: optional
 Section: database

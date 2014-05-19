@@ -2,7 +2,7 @@ Package: dev-bundle
 Depends: ipkg
 Version: 0.2-2
 Description: Everything needed to compile programs on the DNS-323. 
- gcc-4.3.3, binutils-2.19.1, header files, and shared and static libraries.
+ gcc, binutils, header files, shared and static libraries.
 Architecture: arm
 Priority: optional
 Section: admin

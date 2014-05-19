@@ -1,7 +1,7 @@
 Package: libexif
 Depends: ipkg
 Version: 0.6.21
-Description: libexif is a library for parsing, editing, and saving EXIF data.
+Description: A library for parsing, editing, and saving EXIF data.
 Architecture: arm
 Priority: optional
 Section: libraries

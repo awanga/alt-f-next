@@ -1,5 +1,5 @@
 Package: screen
-Description: Screen is a full-screen window manager that multiplexes a physical terminal between several processes.
+Description: A full-screen window manager that multiplexes a physical terminal between several processes.
 Version: 4.0.3-1
 Depends: ncurses, ipkg
 Architecture: arm

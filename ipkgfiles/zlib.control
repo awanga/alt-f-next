@@ -1,5 +1,5 @@
 Package: zlib
-Description: Standard (de)compression library.  Used by things like gzip and libpng.
+Description: Standard (de)compression library. Used by things like gzip and libpng.
 Version: 1.2.8
 Depends: ipkg
 Architecture: arm

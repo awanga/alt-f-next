@@ -1,5 +1,5 @@
 Package: gptfdisk-sgdisk
-Description: the sgdisk component of gptfdisk. Needed for greater than 2TB disks
+Description: The sgdisk component of gptfdisk. Needed for greater than 2TB disks
 Version: 0.8.6-1
 Depends: ipkg
 Architecture: arm

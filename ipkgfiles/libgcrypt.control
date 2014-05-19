@@ -1,5 +1,5 @@
 Package: libgcrypt
-Description: LibGCrypt is GNU's basic cryptographic library.
+Description: GNU's basic cryptographic library.
 Version: 1.5.0-3
 Depends: libgpg-error, ipkg
 Architecture: arm

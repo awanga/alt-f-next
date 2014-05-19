@@ -1,5 +1,5 @@
 Package: couchpotato
-Description: CouchPotato searches and manages your movies
+Description: Searches and manages your movies
 Version: 2012-05-15-2
 Depends: python, cheetah, git
 Architecture: arm

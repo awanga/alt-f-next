@@ -1,5 +1,5 @@
 Package: a2ps
-Description: GNU a2ps is an Any to PostScript filter.
+Description: An 'Any to PostScript' filter.
 Version: 4.14-4
 Depends: file, ipkg
 Architecture: arm

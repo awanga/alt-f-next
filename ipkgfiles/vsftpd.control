@@ -1,5 +1,5 @@
 Package: vsftpd
-Description: vsftpd is an ftp daemon written with security in mind.
+Description: An ftp daemon written with security in mind.
 Version: 3.0.2
 Depends: ipkg
 Architecture: arm

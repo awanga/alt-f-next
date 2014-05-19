@@ -1,5 +1,5 @@
 Package: ntfs-3g-ntfsprogs
-Description: The extra ntfsprogs components of the ntfs-3g packages
+Description: Additional NTFS programs to the ntfs-3g package
 Version: 2012.1.15-2
 Depends: ntfs-3g, ipkg
 Architecture: arm

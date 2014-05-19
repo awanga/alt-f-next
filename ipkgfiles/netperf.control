@@ -1,5 +1,5 @@
 Package: netperf
-Description: Netperf is a benchmark that can be used to measure the performance of many different types of networking.
+Description: A benchmark that can be used to measure the performance of many different types of networking.
 Version: 2.6.0-1
 Depends: ipkg
 Architecture: arm

@@ -1,5 +1,5 @@
 Package: dialog
-Description: dialog - display dialog boxes from shell scripts
+Description: Display dialog boxes from shell scripts
 Version: 1.1-20070704-1
 Depends: ncurses, ipkg
 Architecture: arm

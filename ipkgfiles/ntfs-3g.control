@@ -1,5 +1,5 @@
 Package: ntfs-3g
-Description: a stable, read-write NTFS driver for Linux and other operating systems.
+Description: A stable, read-write NTFS driver for Linux and other operating systems.
 Version: 2012.1.15-2
 Depends: ipkg
 Architecture: arm

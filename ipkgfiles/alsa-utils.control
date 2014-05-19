@@ -1,5 +1,5 @@
 Package: alsa-utils
-Description: This package contains the command line utilities for the ALSA project.
+Description: Command line utilities for the ALSA project.
 Version: 1.0.26-1
 Depends: ncurses-panel, ncurses-form, ncurses-menu, alsa-lib, ipkg
 Architecture: arm

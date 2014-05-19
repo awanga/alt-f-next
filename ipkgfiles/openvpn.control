@@ -1,5 +1,5 @@
 Package: openvpn
-Description: OpenVPN is a full-featured SSL VPN solution
+Description: A full-featured SSL VPN solution
 Version: 2.2.1-2
 Depends: kernel-modules, bridge, lzo, ipkg
 Architecture: arm

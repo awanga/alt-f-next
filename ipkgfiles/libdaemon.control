@@ -1,7 +1,7 @@
 Package: libdaemon
 Depends: ipkg
 Version: 0.14-3
-Description: libdaemon is a lightweight C library that eases the writing of UNIX daemons.
+Description: A lightweight C library that eases the writing of UNIX daemons.
 Architecture: arm
 Priority: optional
 Section: libraries

@@ -1,6 +1,6 @@
 Package: readline
 Version: 6.2
-Description: The GNU readline librarie
+Description: The GNU readline library
 Depends: ncurses, ipkg
 Architecture: arm
 Priority: optional

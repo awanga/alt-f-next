@@ -1,5 +1,5 @@
 Package: kernel-modules
-Description: Aditional kernel modules
+Description: Aditional linux kernel modules
 Version: 3.10.32
 Depends: ipkg
 Architecture: arm

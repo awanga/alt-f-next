@@ -1,5 +1,5 @@
 Package: popt
-Description: Popt is a C library for parsing command line parameters.
+Description: A C library for parsing command line parameters.
 Version: 1.16
 Depends: ipkg
 Architecture: arm

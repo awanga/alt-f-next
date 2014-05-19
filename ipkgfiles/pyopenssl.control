@@ -1,10 +1,9 @@
 Package: pyopenssl
-Description: 	  Python interface to the OpenSSL library
-	  https://launchpad.net/pyopenssl
+Description: Python interface to the OpenSSL library
 Version: 0.11-1
 Depends: python, ipkg
 Architecture: arm
 Priority: optional
 Section: interpreters
-Source: http://code.google.com/p/alt-f/
+Source: https://launchpad.net/pyopenssl
 Maintainer: jcard

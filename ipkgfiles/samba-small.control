@@ -1,5 +1,5 @@
 Package: samba-small
-Description: This is the version of Samba shipped in the firmware.
+Description: The stripped-down version of Samba shipped in the firmware.
 Depends: ipkg
 Version: 3.5.22
 Architecture: arm
