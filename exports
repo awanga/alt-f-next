@@ -3,23 +3,44 @@
 
 # tail compare: config files have a time stamp in the first four lines, compare remainder
 tailcmp() {
+	local st=0
 	if ! test -f $1 -a -f $2; then
-		echo No configuration for $3 found
+		echo "No $3 configuration found"
 		return 0
-	fi
-
-	st=0
-	if ! cmp -si $(head -n 4 $1 | wc -c):$(head -n 4 $2 | wc -c) $1 $2; then
-		echo Configuration for $3 has changed
-		st=1
+	elif cmp -si $(head -n 4 $1 | wc -c):$(head -n 4 $2 | wc -c) $1 $2; then
+		echo "No $3 configuration changes"
 	else
-		echo "No change for $3"
+		echo "Configuration for $3 has changed. To examine differences use"
+		echo "   diff $1 $(echo $2 | sed "s|$BLDDIR|\$BLDDIR|")"
+		st=1
 	fi
 	return $st
 }
 
+# board change, are there config files changes worth saving?
+check_current() {
+	local st=0
+	for i in BR2_UCLIBC_VERSION_STRING BR2_UCLIBC_CONFIG \
+		BR2_BUSYBOX_VERSION BR2_PACKAGE_BUSYBOX_CONFIG \
+		BR2_CUSTOM_LINUX26_VERSION BR2_PACKAGE_LINUX_KCONFIG; do
+		eval $(grep ^$i .config)
+	done
+
+	cbusybox=$BLDDIR/build_arm/busybox-$BR2_BUSYBOX_VERSION/.config
+	cuclibc=$BLDDIR/toolchain_build_arm/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
+	ckernel=$BLDDIR/project_build_arm/$BR2_PROJECT/linux-$BR2_CUSTOM_LINUX26_VERSION/.config
+
+
+	tailcmp local/$BR2_PROJECT/$BR2_PROJECT.config .config board || ((st++))
+	tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc || ((st++))
+	tailcmp $BR2_PACKAGE_BUSYBOX_CONFIG $cbusybox Busybox || ((st++))
+	tailcmp $BR2_PACKAGE_LINUX_KCONFIG $ckernel Kernel || ((st++))
+	return $st
+}
+
 do_exports() {
-	eval $(grep BR2_CUSTOM_LINUX26_VERSION .config)
+	eval $(grep ^BR2_PROJECT .config)
+	eval $(grep ^BR2_CUSTOM_LINUX26_VERSION .config)
 	linux_version=$BR2_CUSTOM_LINUX26_VERSION
 
 	export BLDDIR=$bdir
@@ -40,12 +61,6 @@ do_exports() {
 }
 
 force=""
-BR2_PROJECT=""
-
-if test -f .config; then
-	eval $(grep ^BR2_PROJECT .config)
-fi
-
 if test "$1" = "-f"; then
 	force=y
 	shift
@@ -59,57 +74,53 @@ else
 	bdir=$PWD/build
 fi
 
-if test $# -ge 1; then
-	board=$1
-	if ! test -f ./local/$board/$board.config; then
-		echo "No ./local/$board/$board.config file found"
-		return 1
-	fi
-elif test -n "$BR2_PROJECT"; then
-	board=$BR2_PROJECT
-else
-	echo "No board defined nor .config found."
+BR2_PROJECT=""
+
+if test $# = 0 -a ! -f .config; then
+	echo "No board defined and no .config found."
 	echo "Usage: . exports.sh [-f (force)] [board ($(ls local | tr '\n' ' '))] [build dir]"
 	return 1
-fi
 
-if test $board = $BR2_PROJECT; then
+elif test $# = 0 -a -f .config; then
+	eval $(grep ^BR2_PROJECT .config)
+	board=$BR2_PROJECT
 	do_exports
 	return 0
-fi
 
-if test -z "$force" -a -f .config; then
-	for i in BR2_UCLIBC_VERSION_STRING BR2_UCLIBC_CONFIG \
-		BR2_BUSYBOX_VERSION BR2_PACKAGE_BUSYBOX_CONFIG \
-		BR2_CUSTOM_LINUX26_VERSION BR2_PACKAGE_LINUX_KCONFIG; do
-		eval $(grep ^$i .config)
-	done
-
-	# board change, are there config files changes worth saving?
-	cbusybox=$BLDDIR/build_arm/busybox-$BR2_BUSYBOX_VERSION/.config
-	cuclibc=$BLDDIR/toolchain_build_arm/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
-	ckernel=$BLDDIR/project_build_arm/$BR2_PROJECT/linux-$BR2_CUSTOM_LINUX26_VERSION/.config
-
-	if tailcmp local/$BR2_PROJECT/$BR2_PROJECT.config .config board && \
-	tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc && \
-	tailcmp $BR2_PACKAGE_BUSYBOX_CONFIG $cbusybox Busybox && \
-	tailcmp $BR2_PACKAGE_LINUX_KCONFIG $ckernel Kernel; then
-		true
-	else
-		echo "Consider making \"make saveconfig\" or use '-f' to ignore changes. Reusing existing .config"
-		board=$BR2_PROJECT
+elif test $# -ge 1 -a ! -f .config; then
+	board=$1
+	if test -f ./local/$board/$board.config; then
+		cp ./local/$board/$board.config .config
 		do_exports
+		return 0
+	else
+		echo "No ./local/$board/$board.config file found for $board"
+		return 1
+	fi
+
+elif test $# -ge 1 -a -f .config; then
+	board=$1
+	eval $(grep ^BR2_PROJECT .config)
+
+	if test "$board" = "$BR2_PROJECT"; then
+		do_exports
+		return 0
+	elif test -z "$force"; then
+		if ! check_current; then
+			board=$BR2_PROJECT
+			echo -e "\nConsider making \"make saveconfig\" or use \". exports -f $*\" to ignore changes."
+			echo "Continue using existing .config for $board"
+			do_exports >& /dev/null
+			return 1
+		fi
+	fi
+
+	if test -f ./local/$board/$board.config; then
+		cp ./local/$board/$board.config .config
+		do_exports
+		return 0
+	else
+		echo "No ./local/$board/$board.config file found for $board"
 		return 1
 	fi
 fi
-
-make BOARD=$board getconfig dirs
-eval $(grep BR2_PROJECT .config)
-
-if test "$board" != "$BR2_PROJECT"; then
-	echo "The board defined in ./local/$board/$board.config is \"$BR2_PROJECT\", not \"$board\"."
-	rm .config
-	return 1
-fi
-
-do_exports
