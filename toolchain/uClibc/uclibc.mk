@@ -530,7 +530,7 @@ endif
 
 ifneq ($(TARGET_DIR),)
 $(UCLIBC_DIR)/.target_build: $(UCLIBC_DIR)/.staging_installed
-	@echo target_uclibc_target
+	@echo target_uclibc_target install_runtime 
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX=$(TARGET_DIR) \
 		DEVEL_PREFIX=/usr/ \
@@ -546,7 +546,7 @@ endif
 
 ifneq ($(TARGET_DIR),)
 $(TARGET_DIR)/lib/libc.so.0: $(UCLIBC_DIR)/.target_build
-	@echo target_uclibc_target
+	@echo target_uclibc_target install_build
 	$(MAKE1) -C $(UCLIBC_DIR) \
 		PREFIX=$(TARGET_DIR) \
 		DEVEL_PREFIX=/usr/ \
