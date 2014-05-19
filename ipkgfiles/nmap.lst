@@ -1,4 +1,5 @@
 ./usr/bin/ncat
+./usr/bin/ndiff
 ./usr/bin/nmap
 ./usr/bin/nping
 ./usr/share/ncat
