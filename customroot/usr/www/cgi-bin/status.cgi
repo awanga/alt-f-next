@@ -63,9 +63,9 @@ jscripts() {
 error_st() {
 	if test -s $SERRORL; then
 		cat<<-EOF
-			<fieldset><legend class="red">Errors</legend>
+			<fieldset><legend class="red">Errors/Warnings</legend>
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-			Examine and Clear the error messages:
+			Examine and Clear the error/warning messages:
 			<input type=submit name="logaction" value="$SERRORL">
 			</form> 
 			<ul>$(cat $SERRORL)</ul>
