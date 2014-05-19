@@ -1,6 +1,6 @@
 Package: usbutils
 Description: USB enumeration utilities
-Version: 0.86-4
+Version: 0.87
 Depends: libusb, ipkg
 Architecture: arm
 Priority: optional
