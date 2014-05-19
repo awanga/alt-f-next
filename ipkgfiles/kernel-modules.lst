@@ -3,8 +3,6 @@
 ./usr/lib/modules/3.10.32
 ./usr/lib/modules/3.10.32/cryptodev
 ./usr/lib/modules/3.10.32/cryptodev/cryptodev.ko
-./usr/lib/modules/3.10.32/iscsi
-./usr/lib/modules/3.10.32/iscsi/iscsi_trgt.ko
 ./usr/lib/modules/3.10.32/kernel
 ./usr/lib/modules/3.10.32/kernel/crypto
 ./usr/lib/modules/3.10.32/kernel/crypto/authencesn.ko
@@ -119,12 +117,8 @@
 ./usr/lib/modules/3.10.32/kernel/fs/hfsplus/hfsplus.ko
 ./usr/lib/modules/3.10.32/kernel/fs/isofs
 ./usr/lib/modules/3.10.32/kernel/fs/isofs/isofs.ko
-./usr/lib/modules/3.10.32/kernel/fs/jffs2
-./usr/lib/modules/3.10.32/kernel/fs/jffs2/jffs2.ko
 ./usr/lib/modules/3.10.32/kernel/fs/jfs
 ./usr/lib/modules/3.10.32/kernel/fs/jfs/jfs.ko
-./usr/lib/modules/3.10.32/kernel/fs/logfs
-./usr/lib/modules/3.10.32/kernel/fs/logfs/logfs.ko
 ./usr/lib/modules/3.10.32/kernel/fs/quota
 ./usr/lib/modules/3.10.32/kernel/fs/quota/quota_tree.ko
 ./usr/lib/modules/3.10.32/kernel/fs/quota/quota_v2.ko
