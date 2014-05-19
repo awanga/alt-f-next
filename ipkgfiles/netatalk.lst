@@ -5,6 +5,7 @@
 ./usr/bin/ad
 ./usr/bin/afpldaptest
 ./usr/bin/afppasswd
+./usr/bin/afpstats
 ./usr/bin/apple_dump
 ./usr/bin/cnid2_create
 ./usr/bin/dbd
