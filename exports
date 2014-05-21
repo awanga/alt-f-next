@@ -52,9 +52,11 @@ do_exports() {
 	export BINARIES=$BLDDIR/binaries/$board
 
 	if test -z $OPATH; then OPATH=$PATH; fi
-	export PATH=$OPATH:$HOSTDIR/usr/bin:$STAGING/usr/bin
+	export PATH=$HOSTDIR/usr/bin:$STAGING/usr/bin:$OPATH
 
 	export EDITOR=uemacs
+
+	if ! test -d $BLDDIR; then make dirs; fi
 
 	make oldconfig
 	echo -e "\nBuild ready for \"$board\" at \"$BLDDIR\""
