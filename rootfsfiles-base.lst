@@ -432,6 +432,7 @@
 ./usr/www/diskmaint_hlp.html
 ./usr/www/diskpart_hlp.html
 ./usr/www/diskutil_hlp.html
+./usr/www/dns-323.png
 ./usr/www/firmware_hlp.html
 ./usr/www/help.png
 ./usr/www/host_hlp.html
@@ -446,6 +447,8 @@
 ./usr/www/raid_hlp.html
 ./usr/www/scripts
 ./usr/www/scripts/default.thm
+./usr/www/scripts/demo.css
+./usr/www/scripts/demo.thm
 ./usr/www/scripts/dull
 ./usr/www/scripts/dull/dull.css
 ./usr/www/scripts/dull/dull.js
