@@ -200,7 +200,7 @@ case "$1" in
 		;;
 
 	-all)
-		gst=0
+		gst=0; skp=0;
 		for i in $(ls $IPKGDIR/*.control); do
 			p=$(basename $i .control)
 			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y .config; then
@@ -209,13 +209,17 @@ case "$1" in
 				st=$?
 				if test -n "$res"; then res="($res)"; fi
 				if test $st = 0; then
-					echo " OK $res" 
+					echo -e "\tOK $res" 
 				else
-					echo " FAIL $res"
+					echo -e "\tFAIL $res"
 				fi
 				gst=$((gst+st))
+			else
+				echo -e "Creating package ${p}...\tskipping (not configured)."
+				((skp++))
 			fi
 		done
+		echo "$skp package(s) skipped."
 		if test $gst != 0; then
 			echo "$gst package(s) FAILED."
 		else
