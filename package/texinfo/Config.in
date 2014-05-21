@@ -1,0 +1,7 @@
+config BR2_PACKAGE_TEXINFO_HOST
+	bool "Install texinfo-4.13a for the host/build system"
+	default y
+	help
+	  the official documentation format of the GNU project
+
+	  http://savannah.gnu.org/projects/texinfo
