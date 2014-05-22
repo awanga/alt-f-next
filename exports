@@ -56,9 +56,9 @@ do_exports() {
 
 	export EDITOR=uemacs
 
+	make oldconfig
 	if ! test -d $BLDDIR; then make dirs; fi
 
-	make oldconfig
 	echo -e "\nBuild ready for \"$board\" at \"$BLDDIR\""
 }
 
