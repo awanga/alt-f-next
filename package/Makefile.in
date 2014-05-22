@@ -187,7 +187,8 @@ BISON:=$(shell which bison || type -p bison)
 
 HOST_CFLAGS   += -I$(HOST_DIR)/include -I$(HOST_DIR)/usr/include
 HOST_CXXFLAGS += -I$(HOST_DIR)/include -I$(HOST_DIR)/usr/include
-HOST_LDFLAGS  += -L$(HOST_DIR)/lib -L$(HOST_DIR)/usr/lib
+HOST_LDFLAGS  += -L$(HOST_DIR)/lib -L$(HOST_DIR)/usr/lib -L$(HOST_DIR)/usr/lib64 \
+	-Wl,-rpath,$(HOST_DIR)/usr/lib -Wl,-rpath,$(HOST_DIR)/usr/lib64
 HOST_PATH=$(HOST_DIR)/bin:$(HOST_DIR)/usr/bin:$(PATH)
 
 # hostcc version as an integer - E.G. 4.3.2 => 432
