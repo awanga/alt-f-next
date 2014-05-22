@@ -4,6 +4,12 @@
 #
 #############################################################
 
+##########################################
+#
+# foomatic-db has to be build before hplip
+#
+##########################################
+
 # the database. we only need to download and extract it
 FOOMATIC_DB_VERSION = 4.0
 FOOMATIC_DB_SOURCE = foomatic-db-$(FOOMATIC_DB_VERSION)-current.tar.gz
