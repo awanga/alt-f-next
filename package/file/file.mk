@@ -22,11 +22,14 @@ $(FILE_HOST_CONFIGURE):
 	$(call MESSAGE,"Host Configuring")
 	cd $(FILE_HOST_DIR) && rm -f config.cache && \
 	$(HOST_CONFIGURE_OPTS) \
-	$(HOST_CONFIGURE_ARGS) \
 	$(HOST_CONFIGURE_ENV) \
 	$(FILE_HOST_CONF_ENV) \
 	./configure \
 		--prefix=$(HOST_DIR)/usr \
+		--exec-prefix=$(HOST_DIR)/usr \
+		--libdir=$(HOST_DIR)/usr/lib \
+		--libexecdir=$(HOST_DIR)/usr/lib \
+		--sysconfdir=$(HOST_DIR)/etc \
 		$(DISABLE_DOCUMENTATION) \
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
