@@ -47,8 +47,7 @@ $(FOOMATIC_DB_ENGINE_DIR)/.unpacked: $(DL_DIR)/$(FOOMATIC_DB_ENGINE_SOURCE)
 $(FOOMATIC_DB_ENGINE_DIR)/.configured: $(FOOMATIC_DB_ENGINE_DIR)/.unpacked $(FOOMATIC_DB_DIR)/.unpacked
 	(cd $(FOOMATIC_DB_ENGINE_DIR); \
 		$(HOST_CONFIGURE_OPTS) \
-		CFLAGS="$(HOST_CFLAGS)" \
-		LDFLAGS="$(HOST_LDFLAGS)" \
+		$(HOST_CONFIGURE_ENV) \
 		./configure \
 	)
 	touch $@
@@ -83,7 +82,7 @@ foomatic-db-build: $(FOOMATIC_DB_ENGINE_DIR)/.build
 
 foomatic-db-install: $(FOOMATIC_DB_ENGINE_DIR)/.installed
 	
-foomatic-db: uclibc host-libxml2 foomatic-db-install
+foomatic-db: uclibc libxml2-host foomatic-db-install
 
 ifeq ($(BR2_PACKAGE_FOOMATIC_DB),y)
 TARGETS+=foomatic-db
