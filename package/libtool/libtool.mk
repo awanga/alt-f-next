@@ -3,6 +3,7 @@
 # libtool
 #
 #############################################################
+
 LIBTOOL_VERSION = 1.5.24
 LIBTOOL_SOURCE = libtool-$(LIBTOOL_VERSION).tar.gz
 LIBTOOL_SITE = $(BR2_GNU_MIRROR)/libtool
@@ -38,6 +39,7 @@ $(STAMP_DIR)/host_libtool_configured: $(STAMP_DIR)/host_libtool_unpacked
 		LDFLAGS="$(HOST_LDFLAGS)" \
 		./configure \
 		--prefix="$(HOST_DIR)/usr" \
+		--libdir="$(HOST_DIR)/usr/lib" \
 		--sysconfdir="$(HOST_DIR)/etc" \
 		--disable-static \
 	)
