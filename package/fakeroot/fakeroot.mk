@@ -3,9 +3,11 @@
 # fakeroot
 #
 #############################################################
+
 FAKEROOT_VERSION:=1.9.5
 FAKEROOT_SOURCE:=fakeroot_$(FAKEROOT_VERSION).tar.gz
 FAKEROOT_SITE:=http://snapshot.debian.org/archive/debian/20080427T000000Z/pool/main/f/fakeroot
+
 FAKEROOT_CAT:=$(ZCAT)
 FAKEROOT_SOURCE_DIR:=$(BUILD_DIR)/fakeroot-$(FAKEROOT_VERSION)
 FAKEROOT_DIR1:=$(BUILD_DIR)/fakeroot-$(FAKEROOT_VERSION)-host
@@ -37,6 +39,7 @@ $(FAKEROOT_DIR1)/.configured: $(FAKEROOT_SOURCE_DIR)/.unpacked
 		CC="$(HOSTCC)" \
 		$(FAKEROOT_SOURCE_DIR)/configure \
 		--prefix=$(HOST_DIR)/usr \
+		--libdir=$(HOST_DIR)/usr/lib \
 	)
 	touch $@
 
