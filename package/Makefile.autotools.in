@@ -469,7 +469,6 @@ $(BUILD_DIR)/%/.stamp_host_configured:
 	$(call MESSAGE,"Host Configuring")
 	cd $(@D)/$($(PKG)_SUBDIR) && rm -f config.cache && \
 	$(HOST_CONFIGURE_OPTS) \
-	$(HOST_CONFIGURE_ARGS) \
 	$(HOST_CONFIGURE_ENV) \
 	$($(PKG)_HOST_CONF_ENV) \
 	$(if $(THIS_SRCDIR),$(THIS_SRCDIR)/,./)configure \
@@ -488,7 +487,7 @@ $(BUILD_DIR)/%/.stamp_host_configured:
 # host Build
 $(BUILD_DIR)/%/.stamp_host_built:
 	$(call MESSAGE,"Host Building")
-	PATH=$(TARGET_PATH) $($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE) $($(PKG)_HOST_MAKE_OPT) -C $(@D)/$($(PKG)_SUBDIR)
+	PATH=$(HOST_PATH) $($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE) $($(PKG)_HOST_MAKE_OPT) -C $(@D)/$($(PKG)_SUBDIR)
 	$(Q)touch $@
 
 # Install to host dir
