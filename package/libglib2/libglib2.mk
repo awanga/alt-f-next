@@ -13,6 +13,7 @@ LIBGLIB2_AUTORECONF = NO
 LIBGLIB2_LIBTOOL_PATCH = NO
 LIBGLIB2_INSTALL_STAGING = YES
 LIBGLIB2_INSTALL_TARGET = YES
+
 LIBGLIB2_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) LDFLAGS=-L$(STAGING_DIR)/usr/lib install
 
 LIBGLIB2_CONF_ENV =	\
@@ -48,10 +49,11 @@ LIBGLIB2_CONF_ENV =	\
 		ac_cv_func_posix_getgrgid_r=no \
 		gt_cv_c_wchar_t=$(if $(BR2_USE_WCHAR),yes,no)
 
-LIBGLIB2_CONF_OPT = --enable-shared \
-		--enable-static
+LIBGLIB2_CONF_OPT = --enable-shared -enable-static
+LIBGLIB2_HOST_CONF_OPT = --enable-shared -disable-static --enable-debug=no
 
-LIBGLIB2_DEPENDENCIES = uclibc gettext libintl host-pkgconfig host-libglib2
+LIBGLIB2_DEPENDENCIES = uclibc gettext libintl host-pkgconfig libglib2-host
+LIBGLIB2_HOST_DEPENDENCIES = host-pkgconfig
 
 ifneq ($(BR2_ENABLE_LOCALE),y)
 LIBGLIB2_DEPENDENCIES+=libiconv
@@ -64,64 +66,18 @@ endif
 
 $(eval $(call AUTOTARGETS,package,libglib2))
 
+$(eval $(call AUTOTARGETS_HOST,package,libglib2))
+
 $(LIBGLIB2_HOOK_POST_INSTALL):
 	rm -rf $(TARGET_DIR)/usr/share/gtk-doc \
-	$(TARGET_DIR)/usr/share/aclocal/ \
-	$(TARGET_DIR)/usr/lib/glib-2.0 \
-	$(TARGET_DIR)/usr/share/glib-2.0
-	# PKG_CONFIG_SYSROOT_DIR is defined by build root, .pc files don't need patch, only <pkg>-config
-	#for i in glib-2.0.pc gobject-2.0.pc gmodule-2.0.pc gio-2.0.pc gthread-2.0.pc; do \
-	#$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
-	#	-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
-	#	-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
-	#	$(STAGING_DIR)/usr/lib/pkgconfig/$$i; \
-	#done
+		$(TARGET_DIR)/usr/share/aclocal/ \
+		$(TARGET_DIR)/usr/lib/glib-2.0 \
+		$(TARGET_DIR)/usr/share/glib-2.0
+		# PKG_CONFIG_SYSROOT_DIR is defined by build root, .pc files don't need patch, only <pkg>-config
+		#for i in glib-2.0.pc gobject-2.0.pc gmodule-2.0.pc gio-2.0.pc gthread-2.0.pc; do \
+		#$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
+		#	-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
+		#	-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+		#	$(STAGING_DIR)/usr/lib/pkgconfig/$$i; \
+		#done
 	touch $@
-
-# libglib2 for the host
-LIBGLIB2_HOST_DIR:=$(BUILD_DIR)/libglib2-$(LIBGLIB2_VERSION)-host
-LIBGLIB2_HOST_BINARY:=$(HOST_DIR)/usr/bin/glib-genmarshal
-
-$(DL_DIR)/$(LIBGLIB2_SOURCE):
-	$(call DOWNLOAD,$(LIBGLIB2_SITE),$(LIBGLIB2_SOURCE))
-
-$(STAMP_DIR)/host_libglib2_unpacked: $(DL_DIR)/$(LIBGLIB2_SOURCE)
-	mkdir -p $(LIBGLIB2_HOST_DIR)
-	$(INFLATE$(suffix $(LIBGLIB2_SOURCE))) $< | \
-		$(TAR) $(TAR_STRIP_COMPONENTS)=1 -C $(LIBGLIB2_HOST_DIR) $(TAR_OPTIONS) -
-	touch $@
-
-$(STAMP_DIR)/host_libglib2_configured: $(STAMP_DIR)/host_libglib2_unpacked $(STAMP_DIR)/host_pkgconfig_installed
-	(cd $(LIBGLIB2_HOST_DIR); rm -rf config.cache; \
-		$(HOST_CONFIGURE_OPTS) \
-		CFLAGS="$(HOST_CFLAGS)" \
-		LDFLAGS="$(HOST_LDFLAGS)" \
-		./configure \
-		--prefix="$(HOST_DIR)/usr" \
-		--sysconfdir="$(HOST_DIR)/etc" \
-		--enable-shared \
-		--disable-static \
-		--disable-gtk-doc \
-		--enable-debug=no \
-	)
-	touch $@
-
-$(STAMP_DIR)/host_libglib2_compiled: $(STAMP_DIR)/host_libglib2_configured
-	$(MAKE) -C $(LIBGLIB2_HOST_DIR)
-	touch $@
-
-$(STAMP_DIR)/host_libglib2_installed: $(STAMP_DIR)/host_libglib2_compiled
-	$(HOST_MAKE_ENV) $(MAKE) -C $(LIBGLIB2_HOST_DIR) install
-	touch $@
-
-host-libglib2: $(STAMP_DIR)/host_libglib2_installed
-
-host-libglib2-source: libglib2-source
-
-host-libglib2-clean:
-	rm -f $(addprefix $(STAMP_DIR)/host_libglib2_,unpacked configured compiled installed)
-	-$(MAKE) -C $(LIBGLIB2_HOST_DIR) uninstall
-	-$(MAKE) -C $(LIBGLIB2_HOST_DIR) clean
-
-host-libglib2-dirclean:
-	rm -rf $(LIBGLIB2_HOST_DIR)
