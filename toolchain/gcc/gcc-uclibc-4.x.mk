@@ -388,7 +388,7 @@ endif
 	touch $@
 
 cross_compiler:=$(STAGING_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
-cross_compiler gcc: uclibc-configured binutils gcc_initial \
+cross_compiler gcc: uclibc-configured binutils texinfo-host gcc_initial \
 	$(LIBFLOAT_TARGET) uclibc $(GCC_BUILD_DIR2)/.installed \
 	$(PROJECT_BUILD_DIR)/autotools-stamps/gcc_libs_target_installed \
 	$(GCC_TARGETS)

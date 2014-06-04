@@ -13,7 +13,7 @@ ifneq ($(findstring y,$(BR2_KERNEL_HEADERS_LZMA)),)
 DEPENDENCIES_HOST_PREREQ+=host-lzma
 endif
 
-dependencies: host-sed texinfo-host $(DEPENDENCIES_HOST_PREREQ)
+dependencies: host-sed $(DEPENDENCIES_HOST_PREREQ)
 	@HOSTCC="$(firstword $(HOSTCC))" MAKE="$(MAKE)" \
 		HOST_SED_DIR="$(HOST_SED_DIR)" \
 		$(TOPDIR)/toolchain/dependencies/dependencies.sh
