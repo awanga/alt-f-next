@@ -42,6 +42,10 @@ $(AT_DIR)/.configured: $(AT_DIR)/.unpacked
 		--with-daemon_username=at \
 		--with-daemon_groupname=at \
 	)
+	$(SED) 's|$$(INSTALL) -g $$(DAEMON_GROUPNAME) -o $$(DAEMON_USERNAME)|$$(INSTALL) -g 8 -o 5|' \
+		-e 's|chown $$(DAEMON_USERNAME):$$(DAEMON_GROUPNAME)|chown 5:8|' \
+		-e 's|$$(INSTALL) -o root -g $$(DAEMON_GROUPNAME)|$$(INSTALL) -o root -g 8|' \
+		$(AT_DIR)/Makefile
 	touch $@
 
 $(AT_DIR)/$(AT_BINARY): $(AT_DIR)/.configured
