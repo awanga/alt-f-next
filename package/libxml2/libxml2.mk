@@ -44,3 +44,11 @@ $(LIBXML2_HOOK_POST_INSTALL):
 	       $(TARGET_DIR)/usr/share/doc/libxml2-$(LIBXML2_VERSION) \
 	       $(TARGET_DIR)/usr/share/gtk-doc
 	touch $@
+
+$(LIBXML2_HOST_HOOK_POST_INSTALL):
+	$(SED) "s|^prefix=.*|prefix=\'$(HOST_DIR)/usr\'|g" \
+		-e "s|^exec_prefix=.*|exec_prefix=\'$(HOST_DIR)/usr\'|g" \
+		-e "s|^libdir=.*|libdir=\'$(HOST_DIR)/usr/lib\'|g" \
+		-e "s|echo -L${libdir}|echo $(HOST_RPATH) -L${libdir}|" \
+		$(HOST_DIR)/usr/bin/xml2-config
+	
