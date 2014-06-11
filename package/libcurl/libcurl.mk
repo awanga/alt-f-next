@@ -3,10 +3,11 @@
 # libcurl
 #
 #############################################################
-#LIBCURL_VERSION = 7.19.6
+
 LIBCURL_VERSION = 7.22.0
 LIBCURL_SOURCE = curl-$(LIBCURL_VERSION).tar.bz2
 LIBCURL_SITE = http://curl.haxx.se/download/
+
 LIBCURL_INSTALL_STAGING = YES
 LIBCURL_LIBTOOL_PATCH = NO
 LIBCURL_CONF_OPT = --disable-verbose --disable-manual --enable-hidden-symbols
@@ -33,7 +34,8 @@ endif
 $(eval $(call AUTOTARGETS,package,libcurl))
 
 $(LIBCURL_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/bin/curl-config \
+	rm -f $(STAGING_DIR)/usr/bin/curl
+	rm -f $(TARGET_DIR)/usr/bin/curl-config \
 	       $(if $(BR2_PACKAGE_CURL),,$(TARGET_DIR)/usr/bin/curl)
 	touch $@
 
