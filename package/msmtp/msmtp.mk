@@ -14,8 +14,7 @@ MSMTP_BINARY:=src/msmtp
 MSMTP_TARGET_BINARY:=usr/bin/msmtp
 
 MSMTP_CONF_OPT = --program-prefix="" --with-ssl=openssl --without-gnome-keyring --without-libidn
-MSMTP_CONF_ENV = PKG_CONFIG=/usr/bin/pkg-config
 
-MSMTP_DEPENDENCIES = uclibc openssl
+MSMTP_DEPENDENCIES = uclibc openssl host-pkgconfig
 
 $(eval $(call AUTOTARGETS,package,msmtp))
