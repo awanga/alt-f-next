@@ -4,7 +4,7 @@
 #
 #############################################################
 
-NETATALK_VERSION = 3.1.1
+NETATALK_VERSION = 3.1.2
 NETATALK_SOURCE = netatalk-$(NETATALK_VERSION).tar.bz2
 NETATALK_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/netatalk/netatalk/$(NETATALK_VERSION)
 
