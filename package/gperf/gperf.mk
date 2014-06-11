@@ -20,6 +20,8 @@ GPERF_DEPENDENCIES = uclibc
 
 $(eval $(call AUTOTARGETS,package,gperf))
 
+$(eval $(call AUTOTARGETS_HOST,package,gperf))
+
 $(GPERF_HOOK_POST_INSTALL): $(GPERF_TARGET_INSTALL_TARGET)
 	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/usr/bin/gperf
 	touch $@
