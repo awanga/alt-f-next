@@ -18,7 +18,7 @@ AUTOMATIC_INSTALL_STAGING = NO
 AUTOMATIC_INSTALL_TARGET = YES
 AUTOMATIC_LIBTOOL_PATCH = NO
 
-AUTOMATIC_DEPENDENCIES = host-pkgconfig uclibc libxml2 pcre libcurl libiconv openssl
+AUTOMATIC_DEPENDENCIES = uclibc host-pkgconfig libxml2 pcre libcurl libiconv openssl
 
 AUTOMATIC_CONF_ENV = LIBXML_CFLAGS="-I$(STAGING_DIR)/usr/include/libxml2" \
 	LIBXML_LIBS="-L$(STAGING_DIR)/usr/lib -lxml2"
