@@ -149,8 +149,8 @@ BR2_PACKAGE_NZBGET="etc/nzbget.conf etc/nzbget-pp.conf usr/bin/nzbget-pp.sh etc/
 BR2_PACKAGE_NZBGETWEB="etc/nzbget-example.conf etc/nzbget-pp-example.conf"
 
 # BR2_PACKAGE_NETATALK and BR2_PACKAGE_NETATALK2 should not be configured simultaneously
-if grep -q '^BR2_PACKAGE_NETATALK=' .config-pkgs && \
-	grep -q '^BR2_PACKAGE_NETATALK2=' .config-pkgs; then
+if grep -q '^BR2_PACKAGE_NETATALK=' .config && \
+	grep -q '^BR2_PACKAGE_NETATALK2=' .config; then
 	echo "Error: netatalk and netatalk2 packages can't be used at the same time"
 	exit 1
 fi
@@ -191,34 +191,3 @@ fi
 echo NEWS_CHK=$(date +%s) >> $1/etc/misc.conf
 echo FILES_CHK=$(date +%s) >> $1/etc/misc.conf
 
-# 7-generate /etc/preinst with name of built-in packages than can be upgraded latter
-# through the webUI package manager.
-#
-# notice that mkinitramfs.sh also does a similar work, for spliting the rootfs into
-# a image and sqimage for the dns325.
-#
-# also, some packages are not explicitly define in .config, but they are installed as dependencies
-# think again...
-
-if false; then
-rm $1/etc/preinst
-for i in $(sed -n 's/^BR2_PACKAGE_\(.*\)=y/\1/p' .config); do
-	p=$(echo $i | tr '[:upper:]_' '[:lower:]-')
-	if test -f ipkgfiles/$p.control; then
-		echo $p $(awk '/Version:/{print $2}' ipkgfiles/$p.control) >> $1/etc/preinst
-	fi
-done
-fi
-
-# 8 - strip rootfs binaries and libraries, as some makefile install targets don't do it
-# BR2_GNU_TARGET_SUFFIX="linux-uclibcgnueabi"
-# BR2_ARCH="arm"
-
-#STRIP=$BR2_ARCH-$BR2_GNU_TARGET_SUFFIX-strip
-
-#for i in $(find $1 -path '*/usr/lib/modules' -prune -o -print); do
-#	if file $i | grep -q 'not stripped'; then
-#		echo stripping $i
-#		$STRIP --strip-unneeded --remove-section=.comment --remove-section=.note $i
-#	fi
-#done
