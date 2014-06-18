@@ -5,14 +5,17 @@
 #############################################################
 
 GS_VERSION = 8.71
-GS_NAME = gs-$(GS_VERSION)
-GS_DIR = $(BUILD_DIR)/$(GS_NAME)
 GS_SOURCE = ghostscript-$(GS_VERSION).tar.gz
 GS_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/ghostscript/GPL%20Ghostscript/$(GS_VERSION)
+
+GS_NAME = gs-$(GS_VERSION)
+GS_DIR = $(BUILD_DIR)/$(GS_NAME)
+
 GS_AUTORECONF = YES
 GS_LIBTOOL_PATCH = NO
 GS_INSTALL_STAGING = YES
 GS_INSTALL_TARGET = YES
+
 GS_DEPENDENCIES = uclibc host-autoconf cups tiff jpeg libpng
 GS_TARGET_BINARY = /usr/bin/gs
 
@@ -31,6 +34,7 @@ $(GS_DIR)/.unpacked: $(DL_DIR)/$(GS_SOURCE)
 	$(ZCAT) $(DL_DIR)/$(GS_SOURCE) | tar $(TAR_STRIP_COMPONENTS)=1 -C $(BUILD_DIR)/$(GS_NAME) $(TAR_OPTIONS) -
 	toolchain/patch-kernel.sh $(GS_DIR) package/gs/ \*.patch
 	# I'm not in the mood to make a patch
+	$(SED) 's|INCLUDE=/usr/include|INCLUDE=$(STAGING_DIR)/usr/include|' $(GS_DIR)/base/unix-aux.mak
 	cp $(GS_DIR)/base/unix-aux.mak $(GS_DIR)/base/unix-aux.mak-safe
 	cp package/gs/cups.mak $(GS_DIR)/cups/ # prevents rebuilding mkromfs
 	$(CONFIG_UPDATE) $(GS_DIR)
@@ -62,7 +66,7 @@ $(GS_DIR)/.hosttools: $(GS_DIR)/.configured
 		rm -f obj/arch.h; \
 		cp $(GS_DIR)/base/unix-aux.mak-safe $(GS_DIR)/base/unix-aux.mak; \
 		for i in genarch genconf mkromfs echogs gendev genht; do \
-			rm obj/$$i; \
+			rm -f obj/$$i; \
 			$(MAKE1) CC=$(HOSTCC) CCAUX="$(HOSTCC)" EXTRALIBS="" obj/$$i; \
 		done; \
 		rm -f obj/*.o; \
@@ -74,6 +78,7 @@ $(GS_DIR)/.hosttools: $(GS_DIR)/.configured
 $(GS_DIR)/.compiled: $(GS_DIR)/.hosttools
 	cp package/gs/dns323-arch.h $(GS_DIR)/obj/arch.h
 	cp package/gs/unix-aux.mak $(GS_DIR)/base/
+	$(SED) 's|INCLUDE=/usr/include|INCLUDE=$(STAGING_DIR)/usr/include|' $(GS_DIR)/base/unix-aux.mak
 	$(MAKE1) -C $(GS_DIR)
 	touch $@
 
