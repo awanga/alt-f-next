@@ -32,7 +32,10 @@ $(AUTOMATIC_TARGET_SOURCE):
 	touch $@
 
 $(AUTOMATIC_HOOK_POST_EXTRACT):
-	(cd $(AUTOMATIC_DIR); ./autogen.sh)
+	(cd $(AUTOMATIC_DIR); \
+	$(SED) 's|aclocal|aclocal -I $(STAGING_DIR)/usr/share/aclocal|' autogen.sh; \
+	./autogen.sh; \
+	)
 	touch $@
 
 $(AUTOMATIC_HOOK_POST_INSTALL):
