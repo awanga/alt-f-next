@@ -52,12 +52,7 @@ if test "$(dirname $0)" != "."; then
 fi
 
 if test -z "$BLDDIR"; then
-	cat<<-EOF
-		Set the environment variable BLDDIR to the build directory, e.g
-		   export BLDDIR=<path to where you which the build dir>
-		Keep it out of this tree.
-		Exiting.
-	EOF
+	echo "Run '. exports [board]' first."
 	exit 1
 fi
 
@@ -90,8 +85,6 @@ if test -z "$ME" -o -z "$MG"; then
 	export ME=$(id -un)
 	export MG=$(id -gn)
 fi
-
-#PATH=$(pwd)/bin:$PATH
 
 . .config 2> /dev/null
 board=$BR2_PROJECT
@@ -131,6 +124,11 @@ case $board in
 		all_pkgs=$fw_pkgs
 		;;
 	dns325)
+		if test $# = 0; then
+			TYPE="sqsplit"
+			COMP=xz
+		fi
+
 		SQFSBLK=131072
 		fw_pkgs="$base_pkgs gptfdisk mtd-utils"
 		sq_pkgs="$base_pkgs2 ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission"
