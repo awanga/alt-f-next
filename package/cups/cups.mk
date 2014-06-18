@@ -6,11 +6,14 @@
 
 CUPS_VERSION = 1.4.8
 CUPS_NAME = cups-$(CUPS_VERSION)
-CUPS_DIR = $(BUILD_DIR)/$(CUPS_NAME)
-CUPS_SITE = https://www.cups.org/software/$(CUPS_VERSION)
 CUPS_SOURCE:=$(CUPS_NAME)-source.tar.bz2
-CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
+CUPS_SITE = https://www.cups.org/software/$(CUPS_VERSION)
+
 CUPS_CAT:=$(BZCAT)
+CUPS_DIR = $(BUILD_DIR)/$(CUPS_NAME)
+CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
+CUPS_MAKE_ENV = STRIPPROG=arm-linux-strip
+
 CUPS_TARGET_BINARY:=usr/sbin/cupsd
 CUPS_DEPENDENCIES = uclibc openssl libusb libpng jpeg tiff host-autoconf
 
@@ -80,7 +83,7 @@ $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 CUPS_CONF_OPT = --without-perl --without-java --without-php	--without-python \
 	--disable-pam --disable-dnssd --disable-ldap \
 	--disable-gnutls --disable-dbus --disable-gssapi \
-	--with-cups-user=cups  --with-cups-group=lpadmin --with-system_groups="sys root" \
+	--with-cups-user=9  --with-cups-group=9 --with-system_groups="sys root" \
 	--enable-openssl --enable-libusb --with-pdftops=/usr/bin/gs \
 	--with-languages=none --with-docdir=/usr/share/cups/doc
 
@@ -100,6 +103,7 @@ $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked
 		--libdir=/usr/lib \
 		--sysconfdir=/etc \
 		--localstatedir=/var \
+		--with-icondir=/usr/share/icons \
 		--disable-gnutls \
 		--disable-gssapi \
 		$(CUPS_CONF_OPT) \
@@ -116,8 +120,8 @@ $(CUPS_DIR)/.compiled: $(CUPS_DIR)/.configured
 
 $(TARGET_DIR)/$(CUPS_TARGET_BINARY): $(CUPS_DIR)/.compiled
 	-rm -rf $(STAGING_DIR)/usr/share/cups/mime $(TARGET_DIR)/usr/share/cups/mime
-	$(MAKE) -C $(CUPS_DIR) DESTDIR=$(STAGING_DIR) DSTROOT=$(STAGING_DIR) install
-	$(MAKE) -C $(CUPS_DIR) DESTDIR=$(TARGET_DIR) DSTROOT=$(TARGET_DIR) install
+	$(MAKE) -C $(CUPS_DIR) $(CUPS_MAKE_ENV) DESTDIR=$(STAGING_DIR) DSTROOT=$(STAGING_DIR) install
+	$(MAKE) -C $(CUPS_DIR) $(CUPS_MAKE_ENV) DESTDIR=$(TARGET_DIR) DSTROOT=$(TARGET_DIR) install
 	$(SED) "s,^prefix=.*,prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/cups-config
 	$(SED) "s,^exec_prefix=.*,exec_prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/cups-config
 	$(SED) "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include\',g" $(STAGING_DIR)/usr/bin/cups-config
