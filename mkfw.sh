@@ -18,11 +18,7 @@ if test "$(dirname $0)" != "."; then
 fi
 
 if test -z "$BLDDIR"; then
-	cat<<-EOF
-		Set the environment variable BLDDIR to the build directory, e.g
-		   export BLDDIR=<path to where you which the build dir>\nkeep it out of this tree."
-		exiting.
-	EOF
+	echo "Run '. exports [board]' first."
 	exit 1
 fi
 
@@ -51,20 +47,23 @@ if test $TYPE != "cpio" -a $TYPE != "squsr" -a $TYPE != "sqall" -a $TYPE != "sqs
 	usage
 fi
 
-rootfs=rootfs.arm.$TYPE.$COMP
-if test $TYPE = "sqsplit"; then
-	rootfs=rootfs.arm.sqall.$COMP
-	sqimage=rootfs.arm.sqimage.$COMP
-fi
-
-PATH=$(pwd)/bin:$PATH
-
 . .config 2> /dev/null
 board=$BR2_PROJECT
+
+if test $# = 0 -a "$board" = "dns325"; then
+	TYPE="sqsplit"
+	COMP=xz
+fi
 
 if test $TYPE = "sqsplit" -a "$board" != "dns325"; then
 	echo "mkfw: ERROR, \"sqsplit\" is only for a dns-320/325"
 	exit 1
+fi
+
+rootfs=rootfs.arm.$TYPE.$COMP
+if test $TYPE = "sqsplit"; then
+	rootfs=rootfs.arm.sqall.$COMP
+	sqimage=rootfs.arm.sqimage.$COMP
 fi
 
 DESTD=$BLDDIR/binaries/$board
@@ -124,8 +123,8 @@ esac
 
 # FIXME: use associative arrays
 # the brand models
-name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1 DNS-320L)
-working=(y y y y n y y n n)
+name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1 DNS-320L-rev-A1)
+working=(y y y y n y y n y)
 
 # the buildroot boards .config used
 hwboard=(dns323 dns323 dns323 dns321 dns343 dns325 dns325 dns325 dns325)
@@ -138,22 +137,15 @@ sub=(  1 1 1  2 2 2 2  1  1)
 nver=( 4 4 4  1 1 0 0  1  1)
 type=( 0 0 0  1 2 3 4  5  6)
 
-# the real flash partion capacities for each board.
-# notice that the capacity is a multiple of the eraseblock size,
-# which is 64KiB for the DNS-321/323 and 128KiB for the DNS-320/325
-#
-#kernel_max=(1572864 1572864 1572864 1572864 1572864 5242880 5242880)
-#initramfs_max=(6488064 6488064 6488064 10485760 14417920 5242880 5242880)
-
-# the amount of NAND flash partition that u-boot copies to ram at bootm for each board
-# this only differs from the above for the DNS-325/320 (read the NOTE-2 bellow)
+# the amount of NAND flash bytes that u-boot copies to ram at bootm for each board
+# read the NOTE-2 bellow)
 kernel_max=(1572864 1572864 1572864 1572864 1572864 3145728 3145728 3145728 3145728)
 initramfs_max=(6488064 6488064 6488064 10485760 14417920 3145728 3145728 3145728 3145728)
-sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 0)
+sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 104857600)
 
 # some kernels need a prologue to change the device_id set by the bootloader
 # read NOTE-1 bellow
-prez=(mach_id mach_id mach_id mach_id mach_id  "" ""  "" "")
+prez=(0606 0606 0606 0606 0606  "" ""  "" 128a)
 
 # other kernels needs an epilogue with a hardware device tree description
 postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
@@ -171,7 +163,7 @@ postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
 #   0:   e3a01c06        mov     r1, #1536       ; 0x600
 #   4:   e3811006        orr     r1, r1, #6      ; 0x6
 #
-# 1536 + 6 = 1542, as 1542 can't be put directly into r1 (Error: invalid constant (606))
+# this adds MSB (1st instruction) to LSB (2nd instruction): 0x0600 + 0x06 (1536 + 6 = 1542)
 #
 # DNS-325/DNS320:
 # u-boot passes 0x020f as mach-id: (after setting CONFIG_DEBUG_LL enabled:
@@ -184,10 +176,13 @@ postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
 # 00000ed8	3800  D-Link DNS-325
 # 00000f91	3985  D-Link DNS-320
 #
-# devio 'wl 0xe3a01c0e,4' 'wl 0xe38110d8,4' > arch/arm/boot/tImage # dns-325
-# devio 'wl 0xe3a01c0f,4' 'wl 0xe3811091,4' > arch/arm/boot/tImage # dns-320
+# devio 'wl 0xe3a01c0e,4' 'wl 0xe38110d8,4' (0x0e00 + 0xd8)
+# devio 'wl 0xe3a01c0f,4' 'wl 0xe3811091,4' (0x0f00 + 0x91)
 #
 # for the DNS-325, instead of the above 'devio' stuff, append the dts to the kernel_max
+#
+# DNS-320L: mach_id is 4746 (0x128A)
+# devio 'wl 0xe3a01c12,4' 'wl 0xe381108a,4' (0x1200 + 0x8a)
 
 # NOTE-2: about kernel_max/initramfs_max above for the DNS-325:
 #
@@ -228,14 +223,19 @@ for i in ${!name[*]}; do
 
 	# build prologue
 	if test -n "${prez[i]}" -a ! -f ${DESTD}/${prez[i]}; then
-		devio 'wl 0xe3a01c06,4' 'wl 0xe3811006,4' > ${DESTD}/${prez[i]}
+		#devio 'wl 0xe3a01c06,4' 'wl 0xe3811006,4' > ${DESTD}/${prez[i]}
+		MSB=${prez[i]:0:2}; LSB=${prez[i]:2:2}
+		devio "wl 0xe3a01c${MSB},4" "wl 0xe38110${LSB},4" > ${DESTD}/${prez[i]}
 		check $? devio
 		rm -f ${DESTD}/tImage
 	fi
 
 	# build epilogue
 	if test -n "${postz[i]}" -a ! -f ${DESTD}/${postz[i]}; then
-		if test -z "$KERNEL"; then echo "Error, '. exports' first."; exit 1; fi
+		if test -z "$KERNEL"; then
+			echo "Error, execute '. exports' first."
+			exit 1
+		fi
 		make -C ${KERNEL} ARCH=arm CROSS_COMPILE=arm-linux- ${postz[i]}
 		check $? dts
 		cp ${KERNEL}/arch/arm/boot/dts/${postz[i]} ${DESTD}/
