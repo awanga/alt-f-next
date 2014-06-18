@@ -76,6 +76,7 @@ else
 	bdir=$PWD/build
 fi
 
+BLDDIR=$bdir
 BR2_PROJECT=""
 
 if test $# = 0 -a ! -f .config; then
