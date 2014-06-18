@@ -64,10 +64,7 @@ if test "$(dirname $0)" != "."; then
 fi
 
 if test -z "$BLDDIR"; then
-	cat<<-EOF
-		Set the environment variable BLDDIR to the build directory, e.g
-		   export BLDDIR=<path to where you which the build dir>\nkeep it out of this tree.
-	EOF
+	echo "Run '. exports [board]' first."
 	exit 1
 fi
 
@@ -339,7 +336,8 @@ if test "$force" != "y"; then
 				MPKGMK=$(echo $pkg | awk -v CDIR=$CDIR -F - '{
 					res = $1
 					for (i=2; i<=NF+1; i++) {
-						if ("find "CDIR"/package -name " res ".mk" | getline var) {
+						cmd="find "CDIR"/package -name " res ".mk"
+						if (cmd | getline var) {
 							print var; exit;
 						} else {
 							res=res "-" $i
