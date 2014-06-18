@@ -7,9 +7,11 @@
 APR_UTIL_VERSION = 1.5.1
 APR_UTIL_SITE = http://archive.apache.org/dist/apr
 APR_UTIL_SOURCE = apr-util-$(APR_UTIL_VERSION).tar.gz
+
 APR_UTIL_INSTALL_STAGING = YES
 APR_UTIL_LIBTOOL_PATCH = NO
-APR_UTIL_DEPENDENCIES = apr libiconv sqlite zlib expat db
+APR_UTIL_DEPENDENCIES = openssl libiconv sqlite zlib expat db apr
+
 APR_UTIL_CONF_OPT = \
 	--with-apr=$(STAGING_DIR)/usr/bin/apr-1-config \
 	--with-berkeley-db=$(STAGING_DIR)/usr --with-dbm=db48 \
