@@ -1,0 +1,14 @@
+config BR2_PACKAGE_BTRFS_PROGS
+	bool "btrfs-progs"
+    select BR2_PACKAGE_ACL
+    select BR2_PACKAGE_ATTR
+    select BR2_PACKAGE_E2FSPROGS
+    select BR2_PACKAGE_LZO
+	select BR2_PACKAGE_ZLIB
+    #select BR2_PACKAGE_UTIL_LINUX
+    #select BR2_PACKAGE_UTIL_LINUX_LIBBLKID
+    #select BR2_PACKAGE_UTIL_LINUX_LIBUUID
+	help
+	  Utility programs for Btrfs, a new copy on write (CoW) filesystem for Linux.
+	
+	  http://btrfs.wiki.kernel.org
