@@ -3,11 +3,11 @@
 # nano
 #
 #############################################################
-#NANO_VERSION:=1.3.12
+
 NANO_VERSION:=2.2.4
 NANO_SOURCE:=nano-$(NANO_VERSION).tar.gz
-#NANO_SITE:=http://www.nano-editor.org/dist/v1.3/
 NANO_SITE:=http://www.nano-editor.org/dist/v2.2/
+
 NANO_CAT:=$(ZCAT)
 NANO_DEPENDENCIES = ncurses
 
