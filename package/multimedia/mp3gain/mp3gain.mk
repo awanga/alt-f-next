@@ -5,7 +5,7 @@
 ################################################################################
 
 MP3GAIN_VERSION = 1.5.2
-MP3GAIN_SOURCE = mp3gain-$(MP3GAIN_VERSION2)_r2-src.zip
+MP3GAIN_SOURCE = mp3gain-$(subst .,_,$(MP3GAIN_VERSION))_r2-src.zip
 MP3GAIN_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/mp3gain/mp3gain/$(MP3GAIN_VERSION)
 
 MP3GAIN_AUTORECONF = NO
