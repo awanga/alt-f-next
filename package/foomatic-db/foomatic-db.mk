@@ -82,7 +82,7 @@ foomatic-db-build: $(FOOMATIC_DB_ENGINE_DIR)/.build
 
 foomatic-db-install: $(FOOMATIC_DB_ENGINE_DIR)/.installed
 	
-foomatic-db: uclibc libxml2-host foomatic-db-install
+foomatic-db: uclibc libxml2-host foomatic-filters foomatic-db-install
 
 ifeq ($(BR2_PACKAGE_FOOMATIC_DB),y)
 TARGETS+=foomatic-db
