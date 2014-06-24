@@ -3,12 +3,20 @@
 # util-linux
 #
 #############################################################
-#UTIL-LINUX_VERSION:=2.13-pre7
-UTIL-LINUX_VERSION:=2.24
+
+
+UTIL-LINUX_VERSION:=2.24.2
 UTIL-LINUX_SOURCE:=util-linux-$(UTIL-LINUX_VERSION).tar.xz
-UTIL-LINUX_SITE:=$(BR2_KERNEL_MIRROR)/linux/utils/util-linux
+UTIL-LINUX_SITE:=$(BR2_KERNEL_MIRROR)/linux/utils/util-linux/v$(UTIL-LINUX_VERSION)
 UTIL-LINUX_DIR:=$(BUILD_DIR)/util-linux-$(UTIL-LINUX_VERSION)
+
+#UTIL-LINUX_VERSION:=2.18
+#UTIL-LINUX_SOURCE:=util-linux-ng-$(UTIL-LINUX_VERSION).tar.xz
+#UTIL-LINUX_SITE:=$(BR2_KERNEL_MIRROR)/linux/utils/util-linux/v$(UTIL-LINUX_VERSION)
+#UTIL-LINUX_DIR:=$(BUILD_DIR)/util-linux-ng-$(UTIL-LINUX_VERSION)
+
 UTIL-LINUX_CAT:=$(XZCAT)
+
 UTIL-LINUX_BINARY:=$(UTIL-LINUX_DIR)/misc-utils/chkdupexe
 UTIL-LINUX_TARGET_BINARY:=$(TARGET_DIR)/usr/bin/chkdupexe
 
@@ -54,6 +62,16 @@ $(UTIL-LINUX_DIR)/.configured: $(UTIL-LINUX_DIR)/.unpacked
 		$(DISABLE_LARGEFILE) \
 		ARCH=$(ARCH) \
 	)
+	(echo '#include <errno.h>'; \
+	echo '#define err(exitcode, format, args...) \
+		errx(exitcode, format ": %s", ## args, strerror(errno))'; \
+	echo '#define errx(exitcode, format, args...) \
+		{ warnx(format, ## args); exit(exitcode); }'; \
+	echo '#define warn(format, args...) \
+		warnx(format ": %s", ## args, strerror(errno))'; \
+	echo '#define warnx(format, args...) \
+		fprintf(stderr, format, ## args)'; \
+	) > $(UTIL-LINUX_DIR)/err.h
 	touch $(UTIL-LINUX_DIR)/.configured
 
 $(UTIL-LINUX_BINARY): $(UTIL-LINUX_DIR)/.configured
