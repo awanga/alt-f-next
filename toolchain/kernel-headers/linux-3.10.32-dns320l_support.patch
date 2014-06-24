@@ -1,0 +1,326 @@
+DNS320L support patch created for linux-3.11 that applies to linux-3.10.32
+There is a device-tree implementation for linux-3.12 that does not applies to 3.10.32
+
+http://www.aboehler.at/hg/linux-dns320l/file/ba7a60ad7687/linux-3.11
+
+
+diff -purN linux-3.11.orig/arch/arm/mach-kirkwood/common.c linux-3.11/arch/arm/mach-kirkwood/common.c
+--- linux-3.11.orig/arch/arm/mach-kirkwood/common.c	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/arm/mach-kirkwood/common.c	2013-09-09 19:39:04.839177000 +0200
+@@ -665,6 +665,11 @@ char * __init kirkwood_id(void)
+ 			return "MV88F6282-Rev-A1";
+ 		else
+ 			return "MV88F6282-Rev-Unsupported";
++	} else if (dev == MV88F6702_DEV_ID) {
++		if (rev == MV88F6702_REV_A1)
++			return "MV88F67-2-Rev-A1";
++		else
++			return "MV88F6702-Rev-Unsupported";			
+ 	} else {
+ 		return "Device-Unknown";
+ 	}
+diff -purN linux-3.11.orig/arch/arm/mach-kirkwood/dns320l-setup.c linux-3.11/arch/arm/mach-kirkwood/dns320l-setup.c
+--- linux-3.11.orig/arch/arm/mach-kirkwood/dns320l-setup.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-3.11/arch/arm/mach-kirkwood/dns320l-setup.c	2013-09-09 20:31:07.965673261 +0200
+@@ -0,0 +1,242 @@
++/*
++ * arch/arm/mach-kirkwood/dns320l-setup.c
++ *
++ * D-Link DNS-320L Setup File
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/ata_platform.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mv643xx_eth.h>
++#include <linux/gpio.h>
++#include <linux/leds.h>
++#include <asm/mach-types.h>
++#include <asm/mach/arch.h>
++#include <mach/kirkwood.h>
++#include "common.h"
++#include "mpp.h"
++#include <linux/sysfs.h>
++#include <linux/kobject.h>
++#include <linux/mtd/nand.h>
++#include <linux/i2c.h>
++#include <linux/gpio_keys.h>
++#include <linux/gpio-fan.h>
++#include <linux/input.h>
++
++#define DNS320L_GPIO_LED_SATA1_BLUE	20
++#define DNS320L_GPIO_LED_SATA0_BLUE	21
++#define DNS320L_GPIO_LED_SATA1_RED		22
++#define DNS320L_GPIO_LED_SATA0_RED	 	23
++#define DNS320L_GPIO_POWER_SATA		24
++#define DNS320L_GPIO_LED_USB_BLUE		25
++#define DNS320L_GPIO_LED_USB_ORANGE	26
++#define DNS320L_GPIO_BUTTON_USB		27
++#define DNS320L_GPIO_BUTTON_RESET		28
++#define DNS320L_GPIO_BUTTON_POWER		29
++
++static struct mtd_partition dns320l_nand_parts[] = {
++	{
++		.name = "u-boot",
++		.offset = 0,
++		.size = SZ_1M
++	}, {
++		.name = "uImage",
++		.offset = MTDPART_OFS_NXTBLK,
++		.size = 5 * SZ_1M
++	}, {
++		.name = "ramdisk",
++		.offset = MTDPART_OFS_NXTBLK,
++		.size = 5 * SZ_1M
++	}, {
++		.name = "image",
++		.offset = MTDPART_OFS_NXTBLK,
++		.size = 100 * SZ_1M
++	}, {
++		.name = "rescue firmware",
++		.offset = MTDPART_OFS_NXTBLK,
++		.size = 10 * SZ_1M
++	}, {
++		.name = "config",
++		.offset = MTDPART_OFS_NXTBLK,
++		.size = 5 * SZ_1M
++	}, {
++		.name = "my-dlink",
++		.offset = MTDPART_OFS_NXTBLK,
++		.size = 2 * SZ_1M
++	},
++};
++
++
++static struct mv643xx_eth_platform_data dns320l_ge00_data = {
++	.phy_addr = MV643XX_ETH_PHY_ADDR(0),
++};
++
++static struct mv_sata_platform_data dns320l_sata_data = {
++	.n_ports = 2,
++};
++
++static void __init dns320l_gpio_register_output(unsigned gpio, char *name, int def)
++{
++	if (gpio_request(gpio, name) == 0 &&
++		gpio_direction_output(gpio, 0) == 0) {
++		gpio_set_value(gpio, def);
++		if (gpio_export(gpio, 0) != 0)
++			pr_err("dns320l: Failed to export GPIO %s\n", name);
++	} else
++		pr_err("dns320l: Failed to register %s\n", name);
++}
++
++static void __init dns320l_gpio_register_input(unsigned gpio, char *name)
++{
++	if (gpio_request(gpio, name) == 0 && 
++		gpio_direction_input(gpio) == 0) {
++		if(gpio_export(gpio, 0) != 0)
++			pr_err("dns320L: Failed to export GPIO %s\n", name);
++	} else
++		pr_err("dns32l: Failed to register %s\n", name);
++}
++
++/*****************************************************************************
++ * Buttons
++ ****************************************************************************/
++
++static struct gpio_keys_button dns320l_button_pins[] = {
++	{
++		.code		= KEY_COPY,
++		.type		= EV_KEY,
++		.gpio		= DNS320L_GPIO_BUTTON_USB,
++		.desc		= "USB Copy button",
++		.active_low	= 1,
++		.debounce_interval = 100,
++	},
++	{
++		.code		= KEY_RESTART,
++		.type		= EV_KEY,
++		.gpio		= DNS320L_GPIO_BUTTON_RESET,
++		.desc		= "Reset Button",
++		.active_low = 1,
++		.debounce_interval = 100,
++	},
++};
++
++static struct gpio_keys_platform_data dns320l_button_data = {
++	.buttons	= dns320l_button_pins,
++	.nbuttons	= ARRAY_SIZE(dns320l_button_pins),
++};
++
++static struct platform_device dns320l_button_device = {
++	.name	= "gpio-keys",
++	.id		= -1,
++	.dev	= {
++		.platform_data	= &dns320l_button_data,
++	}
++};
++
++/*****************************************************************************
++ * LEDs
++ ****************************************************************************/
++
++static struct gpio_led dns320l_led_pins[] = {
++	{
++		.name = "dns320l:blue:usb",
++		.gpio = DNS320L_GPIO_LED_USB_BLUE,
++		.default_trigger = "default-on",
++	},
++	{
++		.name = "dns320l:orange:usb",
++		.gpio = DNS320L_GPIO_LED_USB_ORANGE,
++	},
++	{
++		.name = "dns320l:blue:sata0",
++		.gpio = DNS320L_GPIO_LED_SATA0_BLUE,
++		.default_trigger = "ide-disk"
++	},
++	{
++		.name = "dns320l:blue:sata1",
++		.gpio = DNS320L_GPIO_LED_SATA1_BLUE,
++		.default_trigger = "ide-disk"
++	},
++	{
++		.name = "dns320l:red:sata0",
++		.gpio = DNS320L_GPIO_LED_SATA0_RED,
++	},
++	{
++		.name = "dns320l:red:sata1",
++		.gpio = DNS320L_GPIO_LED_SATA1_RED,
++	},
++};
++
++static struct gpio_led_platform_data dns320l_led_data = {
++	.num_leds	= ARRAY_SIZE(dns320l_led_pins),
++	.leds		= dns320l_led_pins,
++};
++
++static struct platform_device dns320l_led_device = {
++	.name	= "leds-gpio",
++	.id		= -1,
++	.dev	= {
++		.platform_data	= &dns320l_led_data,
++	},
++};
++
++/*****************************************************************************
++ * Fan
++ ****************************************************************************/
++
++static unsigned int dns320l_mpp_config[] __initdata = {
++	MPP13_UART1_TXD,
++	MPP14_UART1_RXD,
++	MPP20_GPIO,	// SATA LED BLUE
++	MPP21_GPIO,	// SATA LED BLUE
++	MPP22_GPIO,	// SATA LED RED
++	MPP23_GPIO,	// SATA LED RED
++	MPP24_GPIO,	// SATA Power
++	MPP25_GPIO,	// USB LED Blue
++	MPP26_GPIO,	// USB LED Orange
++	MPP27_GPIO,	// Button USB Copy
++	MPP28_GPIO,	// Button Reset
++	MPP29_GPIO,	// Button Power
++	0
++};
++
++static void __init dns320l_init(void)
++{
++	/*
++	 * Basic setup. Needs to be called early.
++	 */
++	
++	kirkwood_init();
++	/* setup gpio pin select */
++	kirkwood_mpp_conf(dns320l_mpp_config);
++	kirkwood_uart0_init();
++	kirkwood_uart1_init();
++	kirkwood_nand_init(ARRAY_AND_SIZE(dns320l_nand_parts), 40);
++
++	kirkwood_ehci_init();
++	kirkwood_i2c_init();
++	kirkwood_ge00_init(&dns320l_ge00_data);
++	platform_device_register(&dns320l_led_device);
++	dns320l_gpio_register_output(DNS320L_GPIO_POWER_SATA, "dns320l:power:sata", 1);
++	dns320l_gpio_register_input(DNS320L_GPIO_BUTTON_POWER, "dns320l:button:power");
++	kirkwood_sata_init(&dns320l_sata_data);
++	
++	platform_device_register(&dns320l_button_device);
++}
++
++MACHINE_START(DNS320L, "DNS-320L-A1")
++	/* Maintainer: Andreas Boehler <andreas@aboehler.at> */
++	.atag_offset	= 0x00000100,
++	.init_machine	= dns320l_init,
++	.map_io			= kirkwood_map_io,
++	.init_early		= kirkwood_init_early,
++	.init_irq		= kirkwood_init_irq,
++	.init_time		= kirkwood_timer_init,
++	.restart	  	= kirkwood_restart,
++MACHINE_END
++
+diff -purN linux-3.11.orig/arch/arm/mach-kirkwood/include/mach/kirkwood.h linux-3.11/arch/arm/mach-kirkwood/include/mach/kirkwood.h
+--- linux-3.11.orig/arch/arm/mach-kirkwood/include/mach/kirkwood.h	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/arm/mach-kirkwood/include/mach/kirkwood.h	2013-09-09 20:35:39.848991746 +0200
+@@ -139,4 +139,7 @@
+ #define MV88F6282_DEV_ID	0x6282
+ #define MV88F6282_REV_A0	0
+ #define MV88F6282_REV_A1	1
++
++#define MV88F6702_DEV_ID	0x6702
++#define MV88F6702_REV_A1	3
+ #endif
+diff -purN linux-3.11.orig/arch/arm/mach-kirkwood/Kconfig linux-3.11/arch/arm/mach-kirkwood/Kconfig
+--- linux-3.11.orig/arch/arm/mach-kirkwood/Kconfig	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/arm/mach-kirkwood/Kconfig	2013-09-09 19:40:16.162506000 +0200
+@@ -123,6 +123,12 @@ config MACH_TS41X
+ 	  Say 'Y' here if you want your kernel to support the
+ 	  QNAP TS-410, TS-410U, TS-419P, TS-419P+ and TS-419U Turbo
+ 	  NAS devices.
++	  
++config MACH_DNS320L
++	bool "D-Link DNS-320L NAS"
++	help
++	  Say 'Y' here if you want your kernel to support the
++	  D-Link DNS-320L.	  
+ 
+ comment "Device tree entries"
+ 
+diff -purN linux-3.11.orig/arch/arm/mach-kirkwood/Makefile linux-3.11/arch/arm/mach-kirkwood/Makefile
+--- linux-3.11.orig/arch/arm/mach-kirkwood/Makefile	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/arm/mach-kirkwood/Makefile	2013-09-09 19:40:34.945838000 +0200
+@@ -17,6 +17,7 @@ obj-$(CONFIG_MACH_SHEEVAPLUG)		+= sheeva
+ obj-$(CONFIG_MACH_T5325)		+= t5325-setup.o
+ obj-$(CONFIG_MACH_TS219)		+= ts219-setup.o tsx1x-common.o
+ obj-$(CONFIG_MACH_TS41X)		+= ts41x-setup.o tsx1x-common.o
++obj-$(CONFIG_MACH_DNS320L)	   += dns320l-setup.o
+ 
+ obj-$(CONFIG_ARCH_KIRKWOOD_DT)		+= board-dt.o
+ obj-$(CONFIG_MACH_CLOUDBOX_DT)		+= board-ns2.o
+diff -purN linux-3.11.orig/arch/arm/mach-kirkwood/mpp.c linux-3.11/arch/arm/mach-kirkwood/mpp.c
+--- linux-3.11.orig/arch/arm/mach-kirkwood/mpp.c	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/arm/mach-kirkwood/mpp.c	2013-09-09 19:39:36.232508000 +0200
+@@ -26,7 +26,8 @@ static unsigned int __init kirkwood_vari
+ 		return MPP_F6281_MASK;
+ 	if (dev == MV88F6282_DEV_ID)
+ 		return MPP_F6282_MASK;
+-	if (dev == MV88F6192_DEV_ID && rev >= MV88F6192_REV_A0)
++	if ((dev == MV88F6192_DEV_ID && rev >= MV88F6192_REV_A0) ||
++		(dev == MV88F6702_DEV_ID))
+ 		return MPP_F6192_MASK;
+ 	if (dev == MV88F6180_DEV_ID)
+ 		return MPP_F6180_MASK;
+diff -purN linux-3.11.orig/arch/arm/tools/mach-types linux-3.11/arch/arm/tools/mach-types
+--- linux-3.11.orig/arch/arm/tools/mach-types	2013-09-02 22:46:10.000000000 +0200
++++ linux-3.11/arch/arm/tools/mach-types	2013-09-09 19:43:44.112495000 +0200
+@@ -1007,3 +1007,4 @@ eco5_bx2		MACH_ECO5_BX2		ECO5_BX2		4572
+ eukrea_cpuimx28sd	MACH_EUKREA_CPUIMX28SD	EUKREA_CPUIMX28SD	4573
+ domotab			MACH_DOMOTAB		DOMOTAB			4574
+ pfla03			MACH_PFLA03		PFLA03			4575
++dns320l		 MACH_DNS320L		DNS320L	 4746

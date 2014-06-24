@@ -77,3 +77,20 @@
  			status = "okay";
  		};
  	};
+--- linux-3.10.32/arch/arm/boot/dts/kirkwood-dnskw.dtsi-orig	2014-06-23 16:27:28.152906125 +0100
++++ linux-3.10.32/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2014-06-23 16:31:14.548901487 +0100
+@@ -11,12 +11,12 @@
+ 		#size-cells = <0>;
+ 		button@1 {
+ 			label = "Power button";
+-			linux,code = <116>;
++			linux,code = <0x74>;
+ 			gpios = <&gpio1 2 1>;
+ 		};
+ 		button@2 {
+ 			label = "USB unmount button";
+-			linux,code = <161>;
++			linux,code = <0x85>;
+ 			gpios = <&gpio1 15 1>;
+ 		};
+ 		button@3 {
