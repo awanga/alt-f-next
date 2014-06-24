@@ -8,6 +8,7 @@
  More work is needed, please report any issue.
 
 -All packages in the base firmware updated, most require RC4, upgrade to RC4 to use them.
+ As such, all Disk-installable packages must be updated (Packages->Alt-F, UpdatePackagList, then UpdateAll)
  As there are almost 200 packages available, only the most used ones have been tested.
  Please use https://sourceforge.net/p/alt-f/_list/tickets for bug reports or requests.
 
