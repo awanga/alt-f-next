@@ -158,7 +158,7 @@ fi
 # set system clock from RTC, in UTC
 # kernel do it at boot time, but seems to not wait for second change
 if test $board = "DNS-320L-A1"; then
-	echo -e 'hctosys\r' | nc /var/run/dns320l.socket
+	echo -e 'hctosys\r' | nc local:/var/run/dns320l.socket
 else
 	if ! test -e /dev/rtc0; then mknod /dev/rtc0 c 254 0; fi
 	i=0; o="$(hwclock)"
