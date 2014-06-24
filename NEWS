@@ -1,3 +1,62 @@
+=== June 24, 2014: Alt-F-0.1RC4 is released
+
+-The DNS-320/325 is now supported. Supported devices are the DNS-320-rev-A1/A2, DNS-321-rev-A1/A2,
+ DNS-323-rev-A1/B1/C1, DNS-325-rev-A1/A2, Conceptronic CH3SNAS, and Fujitsu-Siemens DUO 35-LR
+
+-Preliminary support for the DNS-320L/LW-A1, thanks to Steven Samson collaboration and
+ Andreas Böhler work (http://www.aboehler.at/cms/projects-a-hacks/50-dns320l).
+ More work is needed, please report any issue.
+
+-All packages in the base firmware updated, most require RC4, upgrade to RC4 to use them.
+ As there are almost 200 packages available, only the most used ones have been tested.
+ Please use https://sourceforge.net/p/alt-f/_list/tickets for bug reports or requests.
+
+-Most packages in the base firmware are now individually upgradable on disk, avoiding the need
+ for a new Alt-F release whenever any of those packages has a new release.
+
+-For the DNS-320/321/325 some packages are pre-installed in the firmware.
+ You still HAVE TO CREATE A USER (Setup->Users) and SETUP ALT-F PACKAGES (Packages->Alt-F) on disk.
+
+-The build system has been extensively reviewed and tested on openSUSE-12.1/13.1 and on Debian 7.0.
+
+-Package updates, fixes, releases, as well as Announcements, are checked twice a week and shown
+ in the Status page through the News service (Services->System). It has nothing to do with USENET News.
+
+-There is the possibility of applying simple fixes using the webUI, avoiding the need
+ for a new Alt-F release (System->Utilities->Fixes).
+ If the "News" service is running you will be warned of the fixes existence in the Status page.
+
+-The linux kernel 3.10.32 is now used.
+
+-The reloaded/run-on-top mode has been discontinued
+
+-The inady DDNS client has been replaced by inadyn-mt, which supports 14 DDNS providers
+
+-Added Disk and Users Quotas webUI
+
+-The Status pages now has a Errors/Warning section
+
+-The ftp server can be launched standalone (not under inetd control).
+
+-Themable webUI
+
+-Simple ffp services start/stop control
+
+-Setup->Host Samba related items moved to Samba Setup
+
+-Added Samba online help.
+
+-Most known bugs are fixed.
+
+-Setup->Debian now installs "wheezy"
+
+known issues:
+
+-kexec is not working on the DNS-320/325, no TryIt in Firmware Update nor Debian kexec (only chroot)
+-starting Transmission deploy a "save settings" warning on the DNS-320/325
+-leds might work differently than described on different hardware revision boards
+-the transmitted/received bytes on the Status page wraps to zero at 4GB
+
 === March 23, 2013: Alt-F-0.1RC3 is released
 
 One year after 0.1RC2 and three years after 0.1B1, I'm pleased to announce 0.1RC3.
