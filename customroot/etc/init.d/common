@@ -1,7 +1,5 @@
 #set -x
 
-# dummy comment
-
 # Add "enable" and "disable" options for all scripts.
 # Notice that S41inetd also uses enable/disable, but with arguments
 if test "$1" = "enable" -a -z "$2" ; then
@@ -157,30 +155,14 @@ omsg() {
 	return $1	
 }
 
-# lock file for adduser/addgroup (busybox don't support concurrency on them)
-initlock=/tmp/.checkuser-lock
-dolock() {
-	logger -t $1 "waiting for lock"
-	while ! mkdir $initlock >& /dev/null; do usleep 500000; done
-	logger -t $1 "got lock"
-}
-
-# remove lock upon termination
-cleanlock() {
-	logger -t $1 "remove lock"
-	rmdir $initlock
-}
-
 # some services need to create its own user/group
 check_user() {
 	if test -n "$RC_USER" -a -n "$RC_USERN" -a -n "$RC_GROUP" -a -n "$RC_GROUPN" -a -n "$RC_DESC"; then
 		srva=$(basename $0); srv=${srva:3}
 		user_home=/var/lib/$RC_USER
 		if ! id $RC_USER >& /dev/null; then
-			dolock $srv
 			addgroup -S -g $RC_GROUPN $RC_GROUP >& /dev/null
 			adduser -S -g "$RC_DESC" -G $RC_GROUP -u $RC_USERN -h $user_home $RC_USER >& /dev/null
-			cleanlock $srv
 		fi
 		if ! test -d $user_home; then
 			mkdir -p $user_home
