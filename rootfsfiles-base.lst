@@ -272,6 +272,7 @@
 ./usr/bin/mail
 ./usr/bin/md5sum
 ./usr/bin/mkfifo
+./usr/bin/nc
 ./usr/bin/news.sh
 ./usr/bin/nohup
 ./usr/bin/nslookup
@@ -330,6 +331,7 @@
 ./usr/lib/modules/3.10.32/modules.seriomap
 ./usr/lib/modules/3.10.32/modules.symbols
 ./usr/lib/modules/3.10.32/modules.usbmap
+./usr/lib/sftp-server
 ./usr/sbin
 ./usr/sbin/adjtime
 ./usr/sbin/aufs.sh
