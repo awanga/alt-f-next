@@ -354,17 +354,21 @@ sib=sib.conf
 # configuration files to save on flash
 files=$(cat /etc/settings)
 
-BRD=/tmp/board
-if grep -q Unknown $BRD; then
-	echo "Unsupported board"
-	exit 1
-elif grep -qE "DNS-320-A1A2|DNS-325-A1A2" $BRD; then
-	fs_type="jffs2"
-	MTD=/dev/mtdblock5
-else
-	fs_type="minix"
-	MTD=/dev/mtdblock0
-fi
+board=$(cat /tmp/board)
+case "$board" in
+	DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2)
+		fs_type="jffs2"
+		MTD=/dev/mtdblock5
+		;;
+	DNS-323-[ABC]1|DNS-321-A1A2)
+		fs_type="minix"
+		MTD=/dev/mtdblock0
+		;;
+	*)
+		echo "Unsupported board"
+		exit 1
+		;;
+esac
 
 case $1 in
 	"-ls") 	listflashdef ;;
