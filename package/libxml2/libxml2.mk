@@ -51,4 +51,3 @@ $(LIBXML2_HOST_HOOK_POST_INSTALL):
 		-e "s|^libdir=.*|libdir=\'$(HOST_DIR)/usr/lib\'|g" \
 		-e "s|echo -L${libdir}|echo $(HOST_RPATH) -L${libdir}|" \
 		$(HOST_DIR)/usr/bin/xml2-config
-	
