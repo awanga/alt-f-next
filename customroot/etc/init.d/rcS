@@ -34,6 +34,19 @@ if grep -q 'DNS-321/323' /proc/cpuinfo; then
 		0002) board="DNS-323-C1" ;;
 		0003) board="DNS-321-A1A2" ;; 
 	esac
+elif grep -q 'DNS-320L' /proc/cpuinfo; then
+	board="DNS-320L-A1"
+elif grep -q 'DNS-320.*A1/A2' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-320-A1A2"
+elif grep -q 'DNS-325.*A1/A2' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-325-A1A2"
+else
+	board="Unknown"
+fi
+
+echo $board > /tmp/board
+
+if echo $board | grep -qE "DNS-321|DNS-323"; then
 	kernel_mtd=/dev/mtd2; kernel_mn="90 4"
 	config_mtd=/dev/mtdblock0; config_mn="31 0"
 	
@@ -41,28 +54,18 @@ if grep -q 'DNS-321/323' /proc/cpuinfo; then
 	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
 	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
 
-elif grep -q 'DNS-320.*A1/A2' /proc/device-tree/model 2> /dev/null; then
-	board="DNS-320-A1A2"
-
-elif grep -q 'DNS-325.*A1/A2' /proc/device-tree/model 2> /dev/null; then
-	board="DNS-325-A1A2"
-
-else
-	board="Unknown"
-fi
-
-echo $board > /tmp/board
-
-if test $board = "DNS-320-A1A2" -o $board = "DNS-325-A1A2"; then
+elif echo $board | grep -qE "DNS-320|DNS-325"; then
 	kernel_mtd=/dev/mtd1; kernel_mn="90 2"
 	config_mtd=/dev/mtdblock5; config_mn="31 5"
 
 	# Tell PMU to turn back on after a power failure
 	# From http://jamie.lentin.co.uk/devices/dlink-dns325/userland-configuration/
-	echo 37 > /sys/class/gpio/export
-	echo out > /sys/class/gpio/gpio37/direction
-	echo 1 > /sys/class/gpio/gpio37/value
-	echo 37 > /sys/class/gpio/unexport
+	if test $board = "DNS-320-A1A2" -o $board = "DNS-325-A1A2"; then
+		echo 37 > /sys/class/gpio/export
+		echo out > /sys/class/gpio/gpio37/direction
+		echo 1 > /sys/class/gpio/gpio37/value
+		echo 37 > /sys/class/gpio/unexport
+	fi
 
 	# MAC is stored in /dev/mtd4, configure eth0
 	if ! test -e /dev/mtd4; then mknod /dev/mtd4 c 90 8; fi
@@ -90,9 +93,23 @@ if test $board = "DNS-320-A1A2" -o $board = "DNS-325-A1A2"; then
 		ln -sf "/sys/class/leds/dns320:orange:r_hdd" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns320:orange:usb" /tmp/sys/usb_led
 		ln -sf "/sys/class/leds/dns320:blue:usb" /tmp/sys/usb2_led
-		sed -i 's/^#[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
+
+		# launch dns320-temp.sh
 		echo 40 > /tmp/sys/temp1_input
+		sed -i 's/^#[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
 		kill -1 1
+
+	elif test $board = "DNS-320L-A1"; then
+		ln -sf "/sys/class/leds/dns320l:red:sata0" /tmp/sys/left_led
+		ln -sf "/sys/class/leds/dns320l:red:sata1" /tmp/sys/right_led
+		ln -sf "/sys/class/leds/dns320l:orange:usb" /tmp/sys/usb_led
+		ln -sf "/sys/class/leds/dns320l:blue:usb" /tmp/sys/usb2_led
+		mkdir -p /tmp/sys/power_led
+
+		# launch dns320l-daemon
+		sed -i 's/^#[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
+		kill -1 1
+
 	elif test $board = "DNS-325-A1A2"; then
 		ln -sf "/sys/class/leds/dns325:white:power" /tmp/sys/power_led
 		ln -sf "/sys/class/leds/dns325:red:l_hdd" /tmp/sys/left_led
@@ -110,36 +127,47 @@ if test "$board" != "Unknown"; then
 		ln -sf /sys/class/hwmon/hwmon0/device/pwm1 /tmp/sys/pwm1
 	elif test -f /sys/class/hwmon/hwmon1/device/pwm1; then
 		ln -sf /sys/class/hwmon/hwmon1/device/pwm1 /tmp/sys/pwm1
+	else
+		touch /tmp/sys/pwm1
 	fi
 
 	if test -f /sys/class/hwmon/hwmon0/device/temp1_input; then
 		ln -sf /sys/class/hwmon/hwmon0/device/temp1_input /tmp/sys/temp1_input
 	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
 		ln -sf /sys/class/hwmon/hwmon1/device/temp1_input /tmp/sys/temp1_input
+	else
+		touch /tmp/sys/temp1_input
 	fi
 
 	if test -f /sys/class/hwmon/hwmon0/device/fan1_input; then
 		ln -sf /sys/class/hwmon/hwmon0/device/fan1_input /tmp/sys/fan1_input
 	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
 		ln -sf /sys/class/hwmon/hwmon1/device/fan1_input /tmp/sys/fan1_input
+	else
+		touch /tmp/sys/fan1_input
 	fi
 
 	# start fan because the disks might have to be fsck and might warm up a lot in the process
+	# For the DNS-320L the dns320l-daemon handles fan/temp
 	echo 127 > /tmp/sys/pwm1
 
-	# stop blinking power-led
+	# stop blinking power-led.
 	echo "none" > /tmp/sys/power_led/trigger
+fi
+
+# set system clock from RTC, in UTC
+# kernel do it at boot time, but seems to not wait for second change
+if test $board = "DNS-320L-A1"; then
+	echo -e 'hctosys\r' | nc /var/run/dns320l.socket
+else
+	if ! test -e /dev/rtc0; then mknod /dev/rtc0 c 254 0; fi
+	i=0; o="$(hwclock)"
+	while test "$o" = "$(hwclock)" -a "$i" -lt 200; do i=$((i+1)); done
+	hwclock -su
 fi
 
 logger -st rcS "Board: $board"
 logger -st rcS "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"
-
-# set system clock from RTC, in UTC
-# kernel do it at boot time, but seems to not wait for second change
-if ! test -e /dev/rtc0; then mknod /dev/rtc0 c 254 0; fi
-i=0; o="$(hwclock)"
-while test "$o" = "$(hwclock)" -a "$i" -lt 200; do i=$((i+1)); done
-hwclock -su
 
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
@@ -230,9 +258,9 @@ else
 			sleep 3
 			for i in $(seq 254 -1 230); do
 				res=$(arping -Dw 2 192.168.1.$i)
-				st = $?
+				st=$?
 				logger -st rcS "$res"
-				if test $? = 0; then break; fi
+				if test $st = 0; then break; fi
 			done
 			logger -st rcS "using 192.168.1.$i"
 			ifconfig eth0 192.168.1.$i
