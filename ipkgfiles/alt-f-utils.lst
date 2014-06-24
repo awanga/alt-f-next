@@ -1,6 +1,7 @@
 ./etc/init.d/S21sysctrl
 ./usr/sbin/rpcinfo
 ./usr/sbin/sysctrl
+./usr/sbin/dns320l-daemon
 ./usr/sbin/dns323-fw
 ./usr/www/cgi-bin/sysctrl_proc.cgi
 ./usr/www/cgi-bin/sysctrl.cgi
