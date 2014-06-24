@@ -112,7 +112,7 @@ elif test "$flash" = "FlashIt"; then
 		initramfs_mtd=mtd3
 		defaults_mtd=mtdblock0
 		sqimage_mtd=""
-	elif grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board; then
+	elif grep -qE 'DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2' /tmp/board; then
 		kernel_mtd=mtd1
 		initramfs_mtd=mtd2
 		defaults_mtd=mtdblock5

@@ -22,7 +22,7 @@ st=$?
 
 rm -f $upfile
 
-supported="D-Link DNS-320-A1/A2, D-Link DNS-321-A1/A2, D-Link DNS-323-A1/B1/C1, D-Link DNS-325-A1/A2, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
+supported="D-Link DNS-320-A1/A2, DNS-320L-A1, D-Link DNS-321-A1/A2, D-Link DNS-323-A1/B1/C1, D-Link DNS-325-A1/A2, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
 
 if test $st != "0"; then
 	rm -f kernel initramfs sqimage defaults
@@ -58,8 +58,8 @@ brd=$(cat /tmp/board)
 case "$sig" in
 	"0851"|"0852") ftype="DNS-325-A1A2" ;; # DNS-325-rev-A1A2
 	"0871"|"0872") ftype="DNS-320-A1A2" ;; # DNS-320-rev-A1A2
-	#"08c1") ftype="DNS-320" ;; # DNS-320-rev-B
-	#"08b1") ftype="DNS-320L" ;; # DNS-320L-rev-?
+	#"08c1") ftype="DNS-320-B1" ;; # DNS-320-rev-B
+	"08b1") ftype="DNS-320L-A1" ;; # DNS-320L-rev-A1
 	"a111"|"a112") ftype="DNS-321-A1A2" ;; # DNS-321-rev-A1A2
 	"9111"|"9112") ftype="DNS-343" ;; # DNS-343-rev-?
 	"7111") ftype="DNS-323" ;; # DNS-323-rev-A1B1C1
@@ -76,6 +76,7 @@ nomsg="Your box is a $brd and this firmware is for the $ftype"
 case "$brd" in
 	"DNS-325-A1A2") if test $ftype != "DNS-325-A1A2"; then notcomp=yes; fi ;;
 	"DNS-320-A1A2") if test $ftype != "DNS-320-A1A2"; then notcomp=yes; fi ;;
+	"DNS-320L-A1") if test $ftype != "DNS-320L-A1"; then notcomp=yes; fi ;;
 	"DNS-321-A1A2") if test $ftype != "DNS-321-A1A2"; then notcomp=yes; fi ;;
 	"DNS-323-A1"|"DNS-323-B1"|"DNS-323-C1")
 		if test $ftype != "DNS-323" -a $ftype != "CH3SNAS" -a $ftype != "DUO35LR"; then notcomp=yes; fi
