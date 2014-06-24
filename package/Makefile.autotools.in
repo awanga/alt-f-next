@@ -307,6 +307,7 @@ $(BUILD_DIR)/%/.stamp_uninstalled:
 
 $(BUILD_DIR)/%/.stamp_dircleaned:
 	rm -Rf $(@D)
+	rm -f $($(PKG)_TARGET_INSTALL_TARGET) $($(PKG)_HOOK_POST_INSTALL)
 
 ################################################################################
 # AUTOTARGETS -- the target generator macro; define a set of human-readable
@@ -504,7 +505,11 @@ $(BUILD_DIR)/%/.stamp_host_cleaned:
 $(BUILD_DIR)/%/.stamp_host_uninstalled:
 	$(call MESSAGE,"Uninstalling host dir")
 	$($(PKG)_HOST_MAKE_ENV) $($(PKG)_HOST_MAKE) $($(PKG)_HOST_UNINSTALL_OPT) -C $(@D)/$($(PKG)_SUBDIR)
-	rm -f $(@D)/.stamp_staging_installed
+	rm -f $(@D)/.stamp_host_installed $(@D)/.stamp_host_hook_post_install
+
+$(BUILD_DIR)/%/.stamp_host_dircleaned:
+	rm -Rf $(@D)
+	rm -f $(@D)/.stamp_host_installed  $(@D)/.stamp_host_hook_post_install
 
 ################################################################################
 # AUTOTARGETS -- the target generator macro; define a set of human-readable
@@ -586,7 +591,7 @@ $(1)-host-uninstall:	$(1)-host-configure $$($(2)_HOST_UNINSTALL)
 $(1)-host-clean:	$(1)-host-uninstall \
 			$$($(2)_HOST_CLEAN)
 
-$(1)-host-dirclean:	$$($(2)_DIRCLEAN)
+$(1)-host-dirclean:	$$($(2)_HOST_DIRCLEAN)
 
 # define the PKG variable for all targets, containing the
 # uppercase package variable prefix
