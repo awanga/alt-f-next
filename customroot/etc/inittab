@@ -22,6 +22,9 @@ ttyS0::respawn:/sbin/getty -n -l /bin/sh -L ttyS0 115200 vt100
 # DNS-320 temperature reading
 #null::respawn:/usr/sbin/dns320-temp.sh
 
+# DNS-320L MCU daemon
+#null::respawn:/usr/sbin/dns320l-daemon
+
 # Logging junk
 #null::sysinit:/bin/touch /var/log/messages
 
