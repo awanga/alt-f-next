@@ -1,5 +1,6 @@
 
-BINS = sysctrl dns323-fw rpcinfo unbuffer.so
+BINS = sysctrl dns323-fw rpcinfo dns320l-daemon
+# unbuffer.so
 
 all: $(BINS)
 
@@ -8,11 +9,13 @@ clean:
 
 install install-strip: $(BINS)
 	$(STRIP) $(BINS)
-	mkdir -p $(DESTDIR)/usr/sbin $(DESTDIR)/usr/lib
-	cp -a sysctrl $(DESTDIR)/usr/sbin/
-	cp -a dns323-fw $(DESTDIR)/usr/sbin/
-	cp -a rpcinfo  $(DESTDIR)/usr/sbin/
+	mkdir -p $(DESTDIR)/usr/sbin
+	cp -a $(BINS) $(DESTDIR)/usr/sbin/
+	#mkdir -p $(DESTDIR)/usr/lib
 	#cp -a unbuffer.so $(DESTDIR)/usr/lib/
+
+uninstall:
+	cd $(DESTDIR)/usr/sbin && rm -f $(BINS)
 
 unbuffer.so: unbuffer.c
 	$(CC) unbuffer.c -fPIC -shared -o $@

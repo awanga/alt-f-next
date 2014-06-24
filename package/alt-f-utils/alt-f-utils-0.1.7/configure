@@ -1,4 +1,0 @@
-#!/bin/bash
-#echo -e "\nCC = $CC\nSTRIP = $STRIP\n" >> Makefile
-
-true

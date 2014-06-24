@@ -101,7 +101,7 @@ args_t args =
     { 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2};
+enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2, DNS_320L_A1};
 int board;
 
 enum Buttons { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
@@ -679,6 +679,10 @@ void check_board() {
 		board = DNS_320_A1A2;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
+	else if (strcmp("DNS-320L-A1", res) == 0) {
+		board = DNS_320L_A1;
+		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+	}
 	else {
 		char buf[BUFSZ];
 		snprintf(buf, BUFSZ, "Hardware board %s not supported, exiting.", res);
@@ -1060,6 +1064,18 @@ int md_stat() {
 }
 
 /*
+struct input_event { // /usr/include/linux/input.h
+	struct timeval time;
+	__u16 type;
+	__u16 code;
+	__s32 value;
+};
+
+struct timeval { // /usr/include/linux/time.h
+        __kernel_time_t         tv_sec; 
+        __kernel_suseconds_t    tv_usec; 
+};
+
 	front-button: should be debounced!
 
 	sec=1246624645 usec=916710 type=1 code=74 value=1
@@ -1085,16 +1101,20 @@ int md_stat() {
 	code:
 	74 FRONT_BUTTON
 	198 BACK_BUTTON
-	a1 USB_BUTTON
+	a1 or 85 USB_BUTTON
 
 	};
 */
 
 #define GPIO_INPUT_DEVICE "/dev/event0"
-#define FRONT_EV	0x074	// front button event
-#define RESET_EV	0x198	// reset back button event
-#define USB_EV		0x0a1	// USB back button event
-#define PRESSED 7	// bit 7 - pressed: 1, released 0
+
+// KEY_POWER,KEY_POWER, KEY_COPY defined in /usr/include/linux/input.h
+#define FRONT_EV	0x0074	// DNS-320/320L/323/325 front button event (KEY_POWER)
+#define RESET_EV	0x0198	// DNS-320/320L/323/325 reset back button event (KEY_RESTART)
+#define USB_EV		0x0085	// DNS-320/320L/325 USB back button event (KEY_COPY)
+
+#define PRESSED		7		// bit 7 - pressed: 1, released 0
+
 
 int button() {
 	static int fd = 0;	// odd, if fd is not static read() *always* return EAGAIN
@@ -1123,7 +1143,7 @@ int button() {
 		// syslog(LOG_INFO, "sec=%d usec=%d type=%x code=%x value=%x but=%x\n",
 		// (int) ev.time.tv_sec, (int) ev.time.tv_usec, ev.type, ev.code, ev.value, but);
 
-		// wait for EV_SYN, from 3 ro 17 usec
+		// wait for EV_SYN, from 3 to 17 usec
 		do {
 			usleep(10);
 		} while ((n = read(fd, &ev, sizeof(struct input_event))) == 0);
