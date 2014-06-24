@@ -449,70 +449,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	fi
 	return $ret	
 
-# linux-2.6.35.14:
-# DEVNAME=usb/lp0
-# ACTION=add
-# HOME=/
-# SEQNUM=321
-# MAJOR=180
-# MDEV=lp0
-# DEVPATH=/class/usb/lp0
-# SUBSYSTEM=usb
-# PATH=/sbin:/bin:/usr/sbin:/usr/bin
-# MINOR=0
-# PHYSDEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0
-# PHYSDEVDRIVER=usblp
-# PHYSDEVBUS=usb
-# PWD=/dev
-# elif test "$ACTION" = "add" -a "$PHYSDEVDRIVER" = "usblp"; then
-#	sysd="/sys/class/usb/$MDEV/device/ieee1284_id"
-#
-# linux-3.8.11 (usbfs deprecated and removed):
-# DEVNAME=usb/lp0
-# ACTION=add
-# HOME=/
-# SEQNUM=339
-# MAJOR=180
-# MDEV=lp0
-# DEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0/usbmisc/lp0
-# SUBSYSTEM=usbmisc
-# PATH=/sbin:/bin:/usr/sbin:/usr/bin
-# MINOR=0
-# PWD=/dev
-
-#----------------
-# linux-2.6.35.14
-# DEVNAME=usb/lp0
-# ACTION=remove
-# HOME=/
-# SEQNUM=313
-# MAJOR=180
-# MDEV=lp0
-# DEVPATH=/class/usb/lp0
-# SUBSYSTEM=usb
-# PATH=/sbin:/bin:/usr/sbin:/usr/bin
-# MINOR=0
-# PHYSDEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0
-# PHYSDEVDRIVER=usblp
-# PHYSDEVBUS=usb
-# PWD=/dev
-# elif test "$ACTION" = "remove" -a "$PHYSDEVDRIVER" = "usblp"; then
-#
-# linux-3.8.11 (usbfs deprecated and removed):
-# DEVNAME=usb/lp0
-# ACTION=remove
-# HOME=/
-# SEQNUM=340
-# MAJOR=180
-# MDEV=lp0
-# DEVPATH=/devices/platform/orion-ehci.0/usb1/1-1/1-1:1.0/usbmisc/lp0
-# SUBSYSTEM=usbmisc
-# PATH=/sbin:/bin:/usr/sbin:/usr/bin
-# MINOR=0
-# PWD=/dev
-
-#
-elif test ${MDEV%[0-9]} = "lp" -a \( $SUBSYSTEM = "usbmisc" -o $SUBSYSTEM = "usb" \); then
+elif test ${MDEV%[0-9]} = "lp" -a $SUBSYSTEM = "usbmisc"; then
 	sysd="/sys/class/$SUBSYSTEM/$MDEV/device/ieee1284_id"
 	if test "$ACTION" = "add" -a -f "$sysd"; then
 		eval $(awk -F':' 'BEGIN{RS=";"} {printf "%s=\"%s\";", $1,$2}' "$sysd") >& /dev/null
