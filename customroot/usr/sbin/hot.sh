@@ -312,7 +312,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 		sed -i '/^'$bay'_/d' $BAYC
 		sed -i '/^'$MDEV'/d' $BAYC
 		if test ${bay:0:3} = "usb" -a -h /tmp/sys/usb2_led; then
-			echo 1 > /tmp/sys/usb2_led/brightness
+			echo 0 > /tmp/sys/usb2_led/brightness
 		fi
 	fi
 
