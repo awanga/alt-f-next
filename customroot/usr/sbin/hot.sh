@@ -212,7 +212,7 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 	else # "normal" disk (not md)
 
 		lhost="/host0/"; rhost="/host1/"
-		if grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board; then
+		if grep -qE 'DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2' /tmp/board; then
 			lhost="/host1/"; rhost="/host0/"
 		fi
 		# which bay?	
@@ -234,8 +234,8 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 			sed -i '/^'$MDEV'/d' $BAYC
 
 			eval $(smartctl -i $PWD/$MDEV | awk '
-				/^Model Family/ {printf "fam=\"%s\";", substr($0, index($0,$3))}
-				/^Device Model/ {printf "mod=\"%s\";", substr($0, index($0,$3))}
+				/^Model Family/ {printf "fam=\"%s\";", gensub("\"","","g",substr($0, index($0,$3)))}
+				/^Device Model/ {printf "mod=\"%s\";", gensub("\"","","g",substr($0, index($0,$3)))}
 				/^SMART support is:.*Enabled/ {print "smart=yes;"}')
 
 			if test -z "$smart"; then
@@ -248,11 +248,11 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 				if (siz >= 1000) {siz=siz/1e3; unit="GB"};
 				if (siz >= 1000) {siz=siz/1e3; unit="TB"};
 				printf "%.1f%s\n", siz, unit}' /sys/block/$MDEV/size)
-			echo ${bay}_dev=$MDEV >> $BAYC
-			echo $MDEV=${bay} >> $BAYC
-			echo ${bay}_cap=\"$cap\" >> $BAYC
-			echo ${bay}_fam=\"$fam\" >> $BAYC
-			echo ${bay}_mod=\"$mod\" >> $BAYC
+				echo ${bay}_dev=$MDEV >> $BAYC
+				echo $MDEV=${bay} >> $BAYC
+				echo ${bay}_cap=\"$cap\" >> $BAYC
+				echo ${bay}_fam=\"$fam\" >> $BAYC
+				echo ${bay}_mod=\"$mod\" >> $BAYC
 
 			if test -s $MISCC; then
 				. $MISCC
