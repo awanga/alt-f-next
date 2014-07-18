@@ -42,7 +42,7 @@ if test "$mail" = "1"; then
 fi
 
 if test -e $CONFM; then
-	SENDTO=$(awk -F= '/^MAILTO/{ print $2}' $CONFM)
+	SENDTO=$(awk -F= '/^MAILTO/{print $2}' $CONFM)
 	if test -z "$SENDTO"; then NOMAILF=disabled; fi
 fi
 
@@ -82,7 +82,7 @@ case "$board" in
 	EOF
 	;;
 
-	"DNS-323-C1"|"DNS-321-A1A2"|"DNS-320-A1A2"|"DNS-325-A1A2")
+	"DNS-323-C1"|"DNS-321-A1A2"|"DNS-320-A1A2"|"DNS-320L-A1"|"DNS-325-A1A2")
 	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	lo_temp=45
 
@@ -97,7 +97,7 @@ case "$board" in
 	;;
 	
 	*)
-	echo "Unknown board</table></fieldset>"
+	echo "Unknown board $board</table></fieldset>"
 	;;
 esac
 

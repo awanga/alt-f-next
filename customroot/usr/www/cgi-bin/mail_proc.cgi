@@ -38,6 +38,14 @@ user=$(httpd -d "$user")
 to=$(httpd -d "$to")
 from=$(httpd -d "$from")
 
+if echo $from | grep -q '.*<.*>'; then
+	from=$(echo $from | sed -n "s/.*<\(.*\)>.*/\1/p")
+fi
+
+if echo $to | grep -q '.*<.*>'; then
+	to=$(echo $to | sed -n "s/.*<\(.*\)>.*/\1/p")
+fi
+
 #debug
 
 echo "
@@ -53,7 +61,7 @@ sed -i '/^MAILTO=/d' $CONFM
 echo "MAILTO=$to" >> $CONFM
 
 sed -i '/^default/d' $CONFA >&/dev/null
-echo -e "default\t$to" >> $CONFA
+echo -e "default: $to" >> $CONFA
 
 if test -n "$port"; then echo -e "port\t$port" >> $CONFF; fi
 if test -n "$user"; then echo -e "user\t$user" >> $CONFF; fi

@@ -11,7 +11,7 @@ CONFO=/etc/misc.conf
 
 mailto() {
 	if test -e $CONFO; then
-		SENDTO=$(grep '^MAILTO' $CONFO | cut -d= -f2)
+		SENDTO=$(awk -F= '/^MAILTO/{print $2}' $CONFO)
 	fi
 
 	if test -z "$SENDTO"; then

@@ -86,7 +86,7 @@ else
 fi
 
 if test -e $CONFO; then
-	SENDTO=$(grep '^MAILTO' $CONFO | cut -d= -f2)
+	SENDTO=$(awk -F= '/^MAILTO/{print $2}' $CONFO)
 	if test -z "$SENDTO"; then NOMAILF=disabled; fi
 fi
 

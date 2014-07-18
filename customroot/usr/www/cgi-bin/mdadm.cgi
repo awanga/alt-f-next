@@ -14,8 +14,7 @@ if test -z "$MDADM_INTERVAL"; then
 	MDADM_INTERVAL=30
 fi
 
-SENDTO=$(grep '^MAILTO' $CONFF | cut -d= -f2)
-
+SENDTO=$(awk -F= '/^MAILTO/{print $2}' $CONFF)
 if test -z "$SENDTO"; then
 	msg "Please setup Mail first"
 fi
