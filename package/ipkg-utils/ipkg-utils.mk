@@ -10,7 +10,7 @@ IPKG_UTILS_SOURCE = ipkg-utils-$(IPKG_UTILS_VERSION).tar.gz
 # IPKG_UTILS_SITE = http://www.handhelds.org/download/packages/ipkg/
 IPKG_UTILS_SITE = http://ftp.gwdg.de/linux/handhelds/packages/ipkg-utils
 
-IPKG_UTILS_DEPENDENCIES = uclibc
+IPKG_UTILS_DEPENDENCIES = uclibc python-host
 
 $(eval $(call AUTOTARGETS_HOST,package,ipkg-utils))
 
@@ -22,9 +22,10 @@ $(IPKG_UTILS_HOST_BUILD):
 
 $(IPKG_UTILS_HOST_INSTALL):
 	( cd $(IPKG_UTILS_HOST_DIR); \
-		sed -i 's|*control|./control|' ipkg.py; \
-		sed -i '1s/python/python -W ignore/' ipkg-make-index; \
-		sed -i 's/.*Packaged contents.*/#&/' ipkg-build; \
+		$(SED) 's|*control|./control|' ipkg.py; \
+		$(SED) '1s|/usr/bin/python|$(HOSTDIR)/usr/bin/python|' ipkg-make-index; \
+		$(SED) 's/.*Packaged contents.*/#&/' \
+			-e 's/tar /tar --format=gnu /' ipkg-build; \
 		cp ipkg-build ipkg-make-index ipkg.py $(HOST_DIR)/usr/bin \
 	)
 	touch $@
