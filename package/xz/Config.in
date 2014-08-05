@@ -6,14 +6,20 @@ config BR2_PACKAGE_XZ
 	  http://tukaani.org/xz/
 
 config BR2_PACKAGE_XZ_HOST
-	bool "Install xz/lzma for the host/build system"
+	bool "xz-host"
 	depends on BR2_PACKAGE_XZ
 	help
-	  xz utils on the host
+	  Install xz/lzma utils on the host/build system
 
-config BR2_PACKAGE_XZ_TARGET
-	bool "Install xz/lzma for the target"
+config BR2_PACKAGE_XZ_LIBS
+	bool "xz-libs"
 	depends on BR2_PACKAGE_XZ
 	help
-	  xz utils on the target
+	  install xz/lzma libraries on the target
+
+config BR2_PACKAGE_XZ_PROGS
+	bool "xz-progs"
+	depends on BR2_PACKAGE_XZ_LIBS
+	help
+	  install xz/lzma utils on the target
 

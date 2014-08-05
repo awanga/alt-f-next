@@ -1,0 +1,9 @@
+Package: xz-libs
+Description: provide a general-purpose data-compression library plus command-line tools.
+Version: 5.0.5
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://tukaani.org/xz/
+Maintainer: jcard

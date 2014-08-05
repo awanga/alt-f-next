@@ -18,7 +18,7 @@ ifeq ($(BR2_PACKAGE_XZ_HOST),y)
 $(eval $(call AUTOTARGETS_HOST,package,xz))
 endif
 
-ifeq ($(BR2_PACKAGE_XZ_TARGET),y)
+ifeq ($(BR2_PACKAGE_XZ_LIBS),y)
 XZ_INSTALL_STAGING = YES
 XZ_INSTALL_TARGET = YES
 $(eval $(call AUTOTARGETS,package,xz))
