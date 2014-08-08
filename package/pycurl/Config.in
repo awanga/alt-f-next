@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PYCURL
+	bool "pycurl"
+	select BR2_PACKAGE_PYTHON
+	help
+	  Python interface to libcurl
+
+	  http://pycurl.sourceforge.net/
