@@ -1,0 +1,9 @@
+Package: pycrypto
+Description: The Python Cryptography Toolkit
+Version: 2.6.1
+Depends: python, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://www.dlitz.net/software/pycrypto
+Maintainer: jcard
