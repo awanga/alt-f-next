@@ -1,0 +1,5 @@
+./etc/pyload/pyload.conf
+./etc/pyload/files.db-
+./etc/init.d/S81pyload
+./usr/www/cgi-bin/pyload.cgi
+./usr/www/cgi-bin/pyload_proc.cgi

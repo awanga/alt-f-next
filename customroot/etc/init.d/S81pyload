@@ -1,0 +1,70 @@
+#! /bin/sh
+
+DESC="Pyhton-based download manager"
+NAME=pyload
+TYPE=user
+NEED_ALTF_DIR=1
+
+RC_USER=pyload
+RC_USERN=25
+RC_GROUP=BT
+RC_GROUPN=201
+RC_DESC="pyLoad user"
+
+CONF_DIR=/etc/pyload
+CONFF=$CONF_DIR/pyload.conf
+
+DATA_DIR=/var/lib/pyload
+PROG_DIR=/opt/pyLoad
+PID_DIR=/var/run/pyload
+LOG_DIR=/var/log
+
+PROG=${PROG_DIR}/pyLoadCore.py
+
+LOG_FILE=$LOG_DIR/pyload.log
+RC_PIDFILE=$PID_DIR/pyload.pid
+
+OPTS="--pidfile=$RC_PIDFILE --configdir=$DATA_DIR"
+
+RC_STOP_CMD="$PROG $OPTS --quit"
+
+. /etc/init.d/common
+
+DL_DIR=$(sed -n '/download_folder/s/.*=[[:space:]]*\(.*\)[[:space:]]*/\1/p' $CONFF)
+
+if test "$(basename "$DL_DIR")" = "Public"; then
+	echo "Fail: you have to configure pyLoad first."
+	exit 1
+fi
+	
+for i in $CONF_DIR $PID_DIR; do
+	if ! test -d "$i"; then mkdir -p "$i"; fi
+done
+
+# first run setup
+if ! test -h $DATA_DIR/pyload.conf; then
+	if ! test -d $DATA_DIR; then mkdir -p $DATA_DIR; fi
+	ln -sf $CONFF $DATA_DIR/pyload.conf
+	cp $CONF_DIR/files.db- $DATA_DIR/files.db
+	
+	echo -e ".\n.\n.\nAlt-F\n$(cat /tmp/board)\n$(hostname)\nroot@$(hostname -f)\n" | \
+		openssl req -x509 -nodes -days 3650 -newkey rsa:1024 \
+		-keyout $DATA_DIR/ssl.key -out $DATA_DIR/ssl.crt 2>/dev/null
+	chmod o-r $DATA_DIR/ssl.key $DATA_DIR/ssl.crt
+fi
+
+if ! test -h $LOG_FILE; then
+	ln -sf $DATA_DIR/Logs/log.txt $LOG_FILE
+fi
+
+check_user $PROG_DIR $CONF_DIR $PID_DIR $DATA_DIR $DL_DIR
+
+chmod g+rwxs "$DL_DIR"
+
+case "$1" in
+	start) start $PROG --chuid $RC_USER:$RC_GROUP -- $OPTS --daemon ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

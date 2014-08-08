@@ -1,0 +1,5 @@
+#!/bin/sh 
+
+deluser pyload >& /dev/null
+delgroup BT >& /dev/null
+rm -f /sbin/rcpyload 

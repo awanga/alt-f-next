@@ -1,0 +1,9 @@
+Package: pyload
+Description: fast, lightweight and full featured Pyhton-based download manager
+Version: 0.4.9
+Depends: pyopenssl, pycurl, pycrypto, sqlite, unrar, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://pyload.org/
+Maintainer: jcard

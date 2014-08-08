@@ -1,0 +1,10 @@
+config BR2_PACKAGE_PYLOAD
+	bool "pyload"
+	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_PYOPENSSL
+	select BR2_PACKAGE_PYCURL
+	select BR2_PACKAGE_PYCRYPTO
+	help
+	  fast, lightweight and full featured Pyhton-based download manager
+
+	  http://pyload.org/

@@ -1,0 +1,32 @@
+#!/bin/sh
+
+SITE=https://github.com/pyload/pyload/archive
+SOURCE=v0.4.9.tar.gz
+TBALL=pyload-$SOURCE
+
+PYLPROG=/Alt-F/opt/pyLoad
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$SOURCE; then
+	rm -f /tmp/$TBALL
+	echo "Downloading of pyLoad from its homepage failed."
+	exit 1
+fi
+
+if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
+	rm -f /tmp/$TBALL
+	echo "Extraction of pyLoad failed."
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+if test -d $PYLPROG; then rm -rf $PYLPROG; fi
+mv /Alt-F/opt/pyload-0.4.9 $PYLPROG
+mv $PYLPROG/module/Utils.py $PYLPROG/module/utils.py
+sed -i '/<input type="submit" value="Login" class="button" \/>/a \
+<p><em>Initial<\/em> Username\/Password: admin\/admin<\/p>' \
+$PYLPROG//module/web/templates/default/login.html
+
+ln -sf /usr/sbin/rcscript /sbin/rcpyload
+
+rcpyload status # fails (must be configured first), so must return OK for ipk to succeed
+return 0
