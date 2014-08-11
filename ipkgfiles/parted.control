@@ -1,6 +1,6 @@
 Package: parted
 Description: A program for manipulating partition tables.
-Version: 2.2-2
+Version: 3.2
 Depends: ipkg
 Architecture: arm
 Priority: optional
