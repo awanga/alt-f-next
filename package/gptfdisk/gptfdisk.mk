@@ -4,7 +4,8 @@
 #
 #############################################################
 
-GPTFDISK_VERSION:=0.8.6
+#GPTFDISK_VERSION:=0.8.6
+GPTFDISK_VERSION:=0.8.10
 GPTFDISK_SOURCE:=gptfdisk-$(GPTFDISK_VERSION).tar.gz
 GPTFDISK_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/gptfdisk/gptfdisk/$(GPTFDISK_VERSION)
 
@@ -43,6 +44,7 @@ CC = \$$CC\\n\
 CXX = \$$CXX\\n\
 CFLAGS = \$$CFLAGS\\n\
 CXXFLAGS = \$$CXXFLAGS\\n\" >> Makefile" > $(GPTFDISK_DIR)/configure
+	sed -i 's/ncursesw/ncurses/' $(GPTFDISK_DIR)/Makefile
 	chmod +x $(GPTFDISK_DIR)/configure
 	touch $@
 
