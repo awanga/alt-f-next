@@ -46,6 +46,7 @@ $(FOOMATIC_DB_ENGINE_DIR)/.unpacked: $(DL_DIR)/$(FOOMATIC_DB_ENGINE_SOURCE)
 
 $(FOOMATIC_DB_ENGINE_DIR)/.configured: $(FOOMATIC_DB_ENGINE_DIR)/.unpacked $(FOOMATIC_DB_DIR)/.unpacked
 	(cd $(FOOMATIC_DB_ENGINE_DIR); \
+		$(SED) 's/$$(CC).*foomatic-perl-data.c/& $$(XML_LIBS)/' Makefile.in; \
 		$(HOST_CONFIGURE_OPTS) \
 		$(HOST_CONFIGURE_ENV) \
 		./configure \
