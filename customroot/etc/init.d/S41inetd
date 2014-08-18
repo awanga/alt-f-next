@@ -60,8 +60,8 @@ avahi_remove() {
 
 istart() {
 		if grep -q "^printer" $CONFF; then modprobe usblp; fi
-		if ! grep -q '^ftps.*implicit_ssl=' $CONFF; then # FIXME: to remove after RC4
-			sed -i "/ftp/a \
+		if ! grep -qE '(^ftps|^#ftps).*implicit_ssl=' $CONFF; then # FIXME: to remove after RC4
+			sed -i "/^ftp/a \
 ftps	stream	tcp	nowait	root	/usr/sbin/vsftpd	vsftpd -oimplicit_ssl=yes" $CONFF
 		fi
 		rcdropbear init
