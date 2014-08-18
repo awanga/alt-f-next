@@ -31,7 +31,7 @@ fi
 echo $denyusers | tr ' ' '\n' > $CONFU
 
 for i in $vars; do
-	sed -i '/^'$i'/d' $CONFF
+	sed -i "/^$i=/d" $CONFF
 	echo "$i=$(eval echo \$$i)" >> $CONFF
 done
 
