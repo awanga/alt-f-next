@@ -19,7 +19,7 @@ It is recommended, although not necessary, to dedicate the selected filesystem t
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
 After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
 
-if grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then
+if grep -qE 'DNS-320L-A1|DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then
 	SoC=kirkwood
 	kexec_dis=disabled
 else
