@@ -12,7 +12,11 @@ GROFF_MAKE_ENV = TROFFBIN=troff GROFFBIN=groff GROFF_BIN_PATH="/usr/bin" GROFF_B
 
 GROFF_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
+GROFF_HOST_CONF_OPT = --datarootdir=$(HOST_DIR)/usr/share
+
 $(eval $(call AUTOTARGETS,package,groff))
+
+$(eval $(call AUTOTARGETS_HOST,package,groff))
 
 # the handling (existence!) of GROFF_BIN_DIR, GROFFBIN, etc, is, well...
 $(GROFF_HOOK_POST_EXTRACT):
