@@ -1,0 +1,9 @@
+Package: cryptopp
+Description: a free C++ class library of cryptographic schemes
+Version: 562
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.cryptopp.com
+Maintainer: jcard

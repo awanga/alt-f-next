@@ -1,0 +1,6 @@
+config BR2_PACKAGE_CRYPTOPP
+	bool "cryptopp"
+	help
+	  a free C++ class library of cryptographic schemes
+
+	  http://www.cryptopp.com
