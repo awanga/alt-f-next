@@ -1,6 +1,6 @@
 Package: libpar2
 Description: Parity Archive Volume recovery of multi-part archives on Usenet
-Version: 0.2-1
+Version: 0.4
 Depends: libsigcpp, ipkg
 Architecture: arm
 Priority: optional
