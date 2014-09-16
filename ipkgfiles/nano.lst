@@ -18,6 +18,7 @@
 ./usr/share/nano/man-html/nanorc.5.html
 ./usr/share/nano/man-html/rnano.1.html
 ./usr/share/nano/man.nanorc
+./usr/share/nano/mgp.nanorc
 ./usr/share/nano/mutt.nanorc
 ./usr/share/nano/nanorc.nanorc
 ./usr/share/nano/objc.nanorc
@@ -32,3 +33,4 @@
 ./usr/share/nano/tcl.nanorc
 ./usr/share/nano/tex.nanorc
 ./usr/share/nano/xml.nanorc
+
