@@ -1,0 +1,6 @@
+config BR2_PACKAGE_P7ZIP
+	bool "p7zip"
+	help
+	  a quick port of 7-zip for Unix.
+
+	  http://sourceforge.net/projects/p7zip

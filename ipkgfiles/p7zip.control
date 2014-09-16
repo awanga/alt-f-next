@@ -1,0 +1,9 @@
+Package: p7zip
+Description: a quick port of 7-zip for Unix.
+Version: 9.20.1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sourceforge.net/projects/p7zip
+Maintainer: jcard
