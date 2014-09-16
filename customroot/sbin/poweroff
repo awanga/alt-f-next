@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if test "$(cat /tmp/board)" = "DNS-320L-A1"; then
+	# /etc/init.d/rcE will invoke dns320l-daemon -x DeviceShutdown
+	touch /tmp/.poweroff
+fi
+
+busybox poweroff
