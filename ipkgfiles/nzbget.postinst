@@ -1,5 +1,12 @@
  #!/bin/sh
 
+CONFF=/etc/nzbget.conf
+
+if test -f $CONFF.old; then
+	maindir=$(awk -F= '/^\$MAINDIR/{print $2}' $CONFF.old)
+	sed -i "s|^MainDir=.*|MainDir=$maindir|" $CONFF
+fi
+
 ln -sf /usr/sbin/rcscript /sbin/rcnzbget
 rcnzbget status
 return 0

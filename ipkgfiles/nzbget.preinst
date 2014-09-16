@@ -1,6 +1,21 @@
 #/bin/sh
 
 DAEMON=rcnzbget
+CONFF=/etc/nzbget.conf
+
+iout=$(ipkg-cl status nzbget)
+
+if echo "$iout" | grep -q ^Status.*installed && echo "$iout" | grep -q ^Version.*0.8; then
+	cp $CONFF $CONFF.old
+	echo
+	echo "*******************************************************************************"
+	echo "* This version of NZBGet is incompatible with the installed 0.8 version.      *"
+	echo "* You have to unistall nzbget first, loosing its configuration (not the data) *"
+	echo "* Your current $CONFF has been saved as $CONFF.old        *"
+	echo "*******************************************************************************"
+	echo
+	exit 1
+fi
 
 if test -e /sbin/$DAEMON; then
 	$DAEMON stop

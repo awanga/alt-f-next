@@ -4,6 +4,8 @@ config BR2_PACKAGE_NZBGET
 	select BR2_PACKAGE_LIBSIGCPP
 	select BR2_PACKAGE_LIBXML2
 	select BR2_PACKAGE_NCURSES
+	select BR2_PACKAGE_P7ZIP
+	select BR2_PACKAGE_UNRAR
 	help
 	  NZBGet is a command-line based binary newsgrabber for nzb files
 

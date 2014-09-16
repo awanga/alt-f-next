@@ -7,18 +7,10 @@ read_args
 write_header "NZBget Setup"
 
 NZBCONF=/etc/nzbget.conf
-NZBGW=/opt/nzbgetweb/index.php
+maindir=$(sed -n 's|^MainDir=\(.*\)|\1|p' $NZBCONF)
 
-maindir=$(sed -n 's|^$MAINDIR=\(.*\)|\1|p' $NZBCONF)
-
-rcnzbget status >& /dev/null
-nzbst=$?
-
-rclighttpd status >& /dev/null
-lightyst=$?
-
-if test "$nzbst" != 0 -o "$lightyst" != 0 -o ! -e $NZBGW; then
-		webbut="disabled"
+if ! rcnzbget status >& /dev/null; then
+	webbut="disabled"
 fi
 
 cat<<-EOF

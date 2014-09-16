@@ -15,13 +15,29 @@ CONFF=/etc/nzbget.conf
 LOG_DIR=/var/log/nzbget
 PID_DIR=/var/run/nzbget
 RC_PIDFILE=$PID_DIR/nzbget.pid
-DATA_DIR=$(sed -n '/^$MAINDIR=/s/$MAINDIR=\(.*\)/\1/p' $CONFF)
+DATA_DIR=$(sed -n '/^MainDir=/s/MainDir=\(.*\)/\1/p' $CONFF)
+BOX_SSL=/etc/ssl/certs/server
+NZB_SSL=/etc/ssl/certs/nzbget
 
 OPTS="--daemon -c $CONFF"
 
 . /etc/init.d/common
 
-umask 002
+check_net() {
+	network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
+	if ! grep -q "^AuthorizedIP.*$network" $CONFF; then
+		sed -i "s/^AuthorizedIP.*/AuthorizedIP=127.0.0.1,$network/" $CONFF
+	fi
+}
+
+check_certs() {
+	if ! test -f $NZB_SSL.crt -a -f $NZB_SSL.key ; then
+		ln $BOX_SSL.crt $NZB_SSL.crt
+		ln $BOX_SSL.key $NZB_SSL.key
+		chown nzbget:root $NZB_SSL.*
+		chmod og-r $NZB_SSL.*
+	fi
+}
 
 if test "$(basename $DATA_DIR)" = "Public"; then
 	check_user $CONFF
@@ -39,7 +55,11 @@ chmod g+rw,o-r $CONFF
 check_user $CONFF $LOG_DIR $PID_DIR "$DATA_DIR"
 
 case "$1" in
-	start) start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS ;;
+	start) 
+		check_net
+		check_certs
+		start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS
+		;;
 	stop) stop $NAME ;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
