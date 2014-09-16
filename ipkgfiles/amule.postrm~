@@ -1,5 +1,0 @@
-#!/bin/sh
-
-deluser transmission
-delgroup BT
-rm -f /sbin/rctransmission
