@@ -1,6 +1,6 @@
 Package: groff
 Description: Compatible versions of troff, nroff, eqn, tbl, and other Unix text formatting utilities.
-Version: 1.21-1
+Version: 1.22.2
 Depends: ipkg
 Architecture: arm
 Priority: optional

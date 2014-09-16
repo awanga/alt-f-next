@@ -3,7 +3,8 @@
 # groff
 #
 #############################################################
-GROFF_VERSION:=1.21
+
+GROFF_VERSION:=1.22.2
 GROFF_SOURCE:=groff-$(GROFF_VERSION).tar.gz
 GROFF_SITE:=$(BR2_GNU_MIRROR)/groff
 
@@ -12,7 +13,14 @@ GROFF_MAKE_ENV = TROFFBIN=troff GROFFBIN=groff GROFF_BIN_PATH="/usr/bin" GROFF_B
 
 GROFF_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
-GROFF_HOST_CONF_OPT = --datarootdir=$(HOST_DIR)/usr/share
+# groff DESTDIR seems to be broken (does --prefix becomes hardcoded?)
+GROFF_HOST_CONF_OPT = --prefix=$(HOST_DIR)/usr \
+	--exec-prefix=$(HOST_DIR)/usr \
+	--libdir=$(HOST_DIR)/usr/lib \
+	--libexecdir=$(HOST_DIR)/usr/lib \
+	--without-x
+
+GROFF_HOST_INSTALL_OPT = install
 
 $(eval $(call AUTOTARGETS,package,groff))
 
