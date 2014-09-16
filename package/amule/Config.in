@@ -1,0 +1,12 @@
+config BR2_PACKAGE_AMULE
+	bool "amule"
+	select BR2_PACKAGE_WXWIDGETS
+	select BR2_PACKAGE_CRYPTOPP
+	select BR2_PACKAGE_PERL
+	select BR2_PACKAGE_LIBUPNP
+	select BR2_PACKAGE_LIBPNG
+	select BR2_PACKAGE_READLINE
+	help
+	  an eMule-like client for the eD2k and Kademlia networks, supporting multiple platforms
+
+	  http://www.amule.org

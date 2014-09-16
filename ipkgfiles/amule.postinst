@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ln -sf /usr/sbin/rcscript /sbin/rcamule
+rcamule status
+return 0

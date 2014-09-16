@@ -1,0 +1,77 @@
+#! /bin/sh
+
+#set -x
+
+DESC="an eMule-like client for the eD2k and Kademlia networks"
+NAME=amuled
+TYPE=user
+NEED_ALTF_DIR=1
+
+RC_USER=amule
+RC_USERN=26
+RC_GROUP=BT
+RC_GROUPN=201
+RC_DESC="aMule daemon"
+
+LOGDIR=/var/log/amule
+LOGFILE=$LOGDIR/amule.log
+
+PIDDIR=/var/run/amule
+RC_PIDFILE=$PIDDIR/amule.pid
+
+AMULE_HOME=/var/lib/amule
+AMULE_CONF=$AMULE_HOME/amule.conf
+
+AMULE_CDIR=/etc/amule
+AMULE_CONF2=$AMULE_CDIR/amule.conf
+
+AMULE_DIRS="$LOGDIR $PIDDIR $AMULE_HOME $AMULE_CDIR"
+
+SMB_CONF=/etc/samba/smb.conf
+
+OPTS="--full-daemon --pid-file=$RC_PIDFILE --config-dir=$AMULE_HOME"
+
+. /etc/init.d/common
+
+for i in $AMULE_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+if ! test -f $AMULE_CONF; then
+	rm -f $AMULE_HOME/* >& /dev/null
+	$NAME --reset-config --config-dir=$AMULE_HOME >& /dev/null
+	pass=$(cat /etc/web-secret | md5sum | cut -d" " -f1)
+
+	sed -i -e 's|^AcceptExternalConnections=.*|AcceptExternalConnections=1|' \
+		-e 's|^TempDir=.*|TempDir=/Public/Temp|' \
+		-e 's|^IncomingDir=.*|IncomingDir=/Public/Incoming|' \
+		-e "s|^ECPassword=.*|ECPassword=$pass|" \
+		-e 's|^Enabled=.*|Enabled=1|' \
+		-e "s|^Password=.*|Password=$pass|" \
+		-e '/\[WebServer\]/,/\[/{s|^Port=.*|Port=8087|}' $AMULE_CONF
+
+	if grep -q "^\[aMule\]" $SMB_CONF; then
+		sed -i "/\[aMule\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
+	fi
+fi
+
+if ! test -h $AMULE_CONF2; then ln -sf $AMULE_CONF $AMULE_CONF2; fi
+
+if ! test -h $LOGFILE; then ln -sf $AMULE_HOME/logfile $LOGFILE; fi
+
+check_user $AMULE_DIRS
+
+DL_DIR=$(dirname $(awk -F= '/^IncomingDir=/{print $2}' $AMULE_CONF))
+if test "$(basename "$DL_DIR")" = "Public"; then
+	echo "Fail: you have to configure aMule first."
+	exit 1
+fi
+
+case "$1" in
+	start) start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	reload) reload $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
+esac

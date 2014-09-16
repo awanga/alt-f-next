@@ -1,0 +1,9 @@
+Package: amule
+Description: an eMule-like client for the eD2k and Kademlia networks
+Version: 2.3.1
+Depends: libupnp, libpng, readline, cryptopp, wxwidgets, perl, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.amule.org
+Maintainer: jcard
