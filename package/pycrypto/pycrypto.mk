@@ -60,7 +60,7 @@ $(TARGET_DIR)/$(PYCRYPTO_TARGET_BINARY): $(PYCRYPTO_DIR)/.build
 	tar -C $(TARGET_DIR)/usr -xf $(PYCRYPTO_DIR)/dist/pycrypto-$(PYCRYPTO_VERSION).$(GNU_TARGET_NAME).tar.gz
 	find $(TARGET_DIR)/$(PYCRYPTO_SITE_PACKAGE_DIR) -name \*.pyc -delete
 
-pycrypto: uclibc python $(TARGET_DIR)/$(PYCRYPTO_TARGET_BINARY)
+pycrypto: uclibc python pycurl $(TARGET_DIR)/$(PYCRYPTO_TARGET_BINARY)
 
 pycrypto-unpack: $(PYCRYPTO_DIR)/.unpacked
 
@@ -76,6 +76,6 @@ pycrypto-dirclean:
 # Toplevel Makefile options
 #
 #############################################################
-ifeq ($(BR2_PACKAGE_PYCURL),y)
+ifeq ($(BR2_PACKAGE_PYCRYPTO),y)
 TARGETS+=pycrypto
 endif
