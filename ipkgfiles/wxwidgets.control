@@ -1,0 +1,9 @@
+Package: wxwidgets
+Description: single, easy-to-use API/Framework for writing applications on multiple platforms and languages 
+Version: 2.8.12
+Depends: ipkg, expat
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.wxwidgets.org
+Maintainer: jcard

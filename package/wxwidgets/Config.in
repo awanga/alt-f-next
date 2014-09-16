@@ -1,0 +1,6 @@
+config BR2_PACKAGE_WXWIDGETS
+	bool "wxwidgets"
+	help
+	  single, easy-to-use API/Framework for writing applications on multiple platforms and languages 
+
+	  http://www.wxwidgets.org
