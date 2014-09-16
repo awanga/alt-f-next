@@ -8,6 +8,8 @@ if ! test -f /etc/ssh/ssh_host_rsa_key; then
 		/etc/dropbear/dropbear_rsa_host_key /etc/ssh/ssh_host_rsa_key 
 	dropbearconvert dropbear openssh \
 		/etc/dropbear/dropbear_dss_host_key /etc/ssh/ssh_host_dsa_key 
+	dropbearconvert dropbear openssh \
+		/etc/dropbear/dropbear_ecdsa_host_key /etc/ssh/ssh_host_ecdsa_key 
 fi
 
 if ! test -f /etc/ssh/ssh_host_ecdsa_key; then
