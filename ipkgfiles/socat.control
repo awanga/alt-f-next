@@ -1,0 +1,9 @@
+Package: socat
+Description: Multipurpose socket relay program.
+Version: 2.0.0-b7
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.dest-unreach.org/socat
+Maintainer: jcard
