@@ -1,0 +1,9 @@
+Package: aria2
+Description: lightweight multi-protocol download command-line utility supporting HTTP/HTTPS, FTP, BitTorrent and Metalink.
+Version: 1.17.1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: networking
+Source: https://github.com/tatsuhiro-t/aria2
+Maintainer: jcard
