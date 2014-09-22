@@ -1,0 +1,9 @@
+Package: fdupes
+Description: a program for identifying or deleting duplicate files residing within specified directories
+Version: 1.51
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/adrianlopezroche/fdupes
+Maintainer: jcard
