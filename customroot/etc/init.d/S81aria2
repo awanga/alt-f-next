@@ -1,0 +1,56 @@
+#! /bin/sh
+
+#set -x
+
+DESC="download utility supporting HTTP/HTTPS, FTP, BitTorrent and Metalink."
+NAME=aria2
+NAME2=aria2c
+TYPE=user
+NEED_ALTF_DIR=1
+
+RC_USER=$NAME
+RC_USERN=27
+RC_GROUP=BT
+RC_GROUPN=201
+RC_DESC="$NAME daemon"
+
+LOGDIR=/var/log/$NAME
+LOGFILE=$LOGDIR/$NAME.log
+
+ARIA2_DIR=/etc/aria2
+ARIA2_CONF=$ARIA2_DIR/aria2.conf
+
+ARIA2_DIRS="$LOGDIR $ARIA2_DIR"
+
+SMB_CONF=/etc/samba/smb.conf
+
+OPTS="--daemon --conf-path $ARIA2_CONF"
+
+. /etc/init.d/common
+
+for i in $ARIA2_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+if grep -q "^\[Aria2\]" $SMB_CONF; then
+	sed -i "/\[Aria2\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
+fi
+
+check_user $ARIA2_DIRS
+
+DL_DIR=$(awk -F= '/^dir=/{print $2}' $ARIA2_CONF)
+if test "$(basename "$DL_DIR")" = "Public"; then
+	echo "Fail: you have to configure aria2 first."
+	exit 1
+else
+	chown -R $RC_USER:$RC_GROUP "$DL_DIR"
+	chmod -R g+rws "$DL_DIR"
+fi
+
+case "$1" in
+	start) start $NAME2 --chuid $RC_USER:$RC_GROUP -- $OPTS ;;
+	stop) stop $NAME2 ;;
+	status) status $NAME2 ;;
+	restart) restart $NAME2 ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

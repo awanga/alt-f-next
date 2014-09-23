@@ -1,1 +1,5 @@
+./etc/aria2/aria2.conf
+./etc/init.d/S81aria2
 ./usr/bin/aria2c
+./usr/www/cgi-bin/aria2.cgi
+./usr/www/cgi-bin/aria2_proc.cgi

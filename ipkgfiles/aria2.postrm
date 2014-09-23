@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser aria2
+delgroup BT
+rm -f /sbin/rcaria2
