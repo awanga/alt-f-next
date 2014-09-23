@@ -1,0 +1,41 @@
+#!/bin/sh
+
+SITE=https://github.com/ziahamza/webui-aria2/archive
+TBALL=master.tar.gz
+PROGDIR=/Alt-F/opt/aria2web
+TARDIR=webui-aria2-master
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+eval $(awk '/^var.server_root/{printf "sroot=%s", $3}' $CONF_LIGHTY)
+
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	echo "Downloading of webui-aria2 from its homepage failed."
+	exit 1
+fi
+
+mkdir -p /Alt-F/opt
+if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
+	rm -f /tmp/$TBALL
+	echo "Extraction of webui-aria2 failed."
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+if test -d $PROGDIR; then
+	cp $PROGDIR/configuration.js /opt
+	rm -rf $PROGDIR
+	rm -f $sroot/htdocs/aria2web
+fi
+
+mv /Alt-F/opt/$TARDIR $PROGDIR
+
+if test -f /opt/configuration.js; then
+	mv $PROGDIR/configuration.js $PROGDIR/configuration.js-orig
+	mv /opt/configuration.js $PROGDIR/configuration.js
+fi
+
+chown -R lighttpd:network $PROGDIR
+ln -sf $PROGDIR $sroot/htdocs/aria2web
+
+return 0

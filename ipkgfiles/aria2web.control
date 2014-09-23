@@ -1,0 +1,9 @@
+Package: aria2web
+Description: web interface to interact with aria2
+Version: 1.17.1
+Depends: lighttpd, aria2, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/ziahamza/webui-aria2
+Maintainer: jcard

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+
+#-a -x /usr/bin/aria2c
+
+if ! test -x /usr/sbin/lighttpd; then
+	cat<<-EOF
+
+		****************************************************
+		* You have to install and configure lighttpd first *
+		****************************************************
+
+	EOF
+	exit 1
+fi
+
+eval $(awk '/^var.server_root/{printf "sroot=%s", $3}' $CONF_LIGHTY)
+
+if test "$sroot" = "/Public"; then
+	cat<<-EOF
+
+		****************************************
+		* You have to configure lighttpd first *
+		****************************************
+
+	EOF
+	exit 1
+fi
