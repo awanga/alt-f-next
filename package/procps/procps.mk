@@ -3,9 +3,11 @@
 # procps
 #
 #############################################################
-PROCPS_VERSION:=3.2.7
+
+PROCPS_VERSION:=3.2.8
 PROCPS_SOURCE:=procps-$(PROCPS_VERSION).tar.gz
 PROCPS_SITE:=http://procps.sourceforge.net/
+
 PROCPS_DIR:=$(BUILD_DIR)/procps-$(PROCPS_VERSION)
 PROCPS_BINARY:=ps/ps
 PROCPS_TARGET_BINARY:=usr/bin/vmstat
@@ -23,13 +25,16 @@ $(PROCPS_DIR)/$(PROCPS_BINARY): $(PROCPS_DIR)/.source
 
 $(TARGET_DIR)/$(PROCPS_TARGET_BINARY): $(PROCPS_DIR)/$(PROCPS_BINARY)
 	$(MAKE) $(TARGET_CONFIGURE_OPTS) DESTDIR=$(TARGET_DIR) \
-		install='install -D' -C $(PROCPS_DIR) lib64=/lib \
+		install='install -D' -C $(PROCPS_DIR) lib64=/usr/lib \
+		SKIP='/bin/kill /bin/ps /sbin/sysctl' \
 		ldconfig='/bin/true' install
 	rm -Rf $(TARGET_DIR)/usr/share/man
 
 procps: uclibc ncurses $(TARGET_DIR)/$(PROCPS_TARGET_BINARY)
 
 procps-source: $(DL_DIR)/$(PROCPS_SOURCE)
+
+procps-build: $(PROCPS_DIR)/$(PROCPS_BINARY)
 
 procps-clean:
 	for bin in uptime tload free w \

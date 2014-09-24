@@ -1,0 +1,11 @@
+--- procps-3.2.8/ps/module.mk	2005-10-30 03:19:46.000000000 +0000
++++ procps-3.2.8-/ps/module.mk	2014-09-21 21:17:30.536879902 +0100
+@@ -20,7 +20,7 @@
+ TARFILES += $(PSSRC) $(addprefix ps/,$(PS_X))
+ 
+ ps/ps: $(PSOBJ) $(LIBPROC)
+-	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -o $@ $^ $(ldl)
++	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $^ $(LIBPROC) -o $@ $(ldl)
+ 
+ # This just adds the stacktrace code
+ ps/debug: $(PSOBJ) stacktrace.o $(LIBPROC)
