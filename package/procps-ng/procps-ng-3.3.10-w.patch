@@ -1,0 +1,13 @@
+--- procps-ng-3.3.10/w.c	2014-09-23 12:40:36.000000000 +0100
++++ procps-ng-3.3.10/w.c	2014-09-24 10:22:30.029281898 +0100
+@@ -388,8 +388,8 @@
+ 	 * added to optionally show it with a prefix of (stale)
+ 	 * in front of cmd or something like that.
+ 	 */
+-	if (!ut_pid_found)
+-		return;
++//	if (!ut_pid_found)
++//		return;
+ 
+ 	/* force NUL term for printf */
+ 	strncpy(uname, u->ut_user, UT_NAMESIZE);

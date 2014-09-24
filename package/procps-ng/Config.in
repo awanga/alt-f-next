@@ -1,0 +1,7 @@
+config BR2_PACKAGE_PROCPS_NG
+	bool "procps-ng"
+	select BR2_PACKAGE_NCURSES
+	help
+	  A fork of procps: contains free, kill, pkill, pgrep, pmap, ps, pwdx, skill, slabtop, snice, sysctl, tload, top, uptime, vmstat, w, and watch
+
+	  https://sourceforge.net/projects/procps-ng

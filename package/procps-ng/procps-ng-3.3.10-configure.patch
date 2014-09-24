@@ -1,0 +1,12 @@
+diff -ruN procps-ng-3.3.10-orig/configure procps-ng-3.3.10/configure
+--- procps-ng-3.3.10-orig/configure	2014-09-23 12:52:49.841198173 +0100
++++ procps-ng-3.3.10/configure	2014-09-24 14:25:33.627738754 +0100
+@@ -18166,7 +18166,7 @@
+ fi
+ 
+ 
+-usrbin_execdir='${exec_prefix}/usr/bin'
++usrbin_execdir='${exec_prefix}/bin'
+ 
+ 
+ 

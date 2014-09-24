@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sed -i '\|/usr/sbin:\\|a /usr/local/bin:\\' /etc/profile

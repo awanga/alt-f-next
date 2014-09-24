@@ -1,0 +1,9 @@
+Package: procps-ng
+Description: A fork of procps: contains free, kill, pkill, pgrep, pmap, ps, pwdx, skill, slabtop, snice, sysctl, tload, top, uptime, vmstat, w, and watch
+Version: 3.3.10
+Depends: ncurses, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://sourceforge.net/projects/procps-ng
+Maintainer: jcard
