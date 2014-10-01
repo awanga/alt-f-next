@@ -25,6 +25,19 @@ read_args
 
 #debug
 
+if test -n "$WebPage"; then
+	PORT=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
+	PROTO="http"
+	if echo $HTTP_REFERER | grep -q 'https://'; then
+		if grep -q '^include "conf.d/ssl.conf"' $CONF_LIGHTY; then
+			PORT=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
+			PROTO="https"
+		fi
+	fi
+	
+	embed_page "$PROTO://${HTTP_HOST%%:*}:${PORT}" "Lighttpd Page"
+fi
+
 if test -z "$sslport"; then sslport="8443"; fi
 if test -z "$port"; then port="8080"; fi
 
@@ -60,6 +73,7 @@ if ! grep -q '\[WebData\]' $SMBCF; then
 	available = yes
 	read only = yes
 EOF
+
 else
 	sed -i "/\[WebData\]/,/\[.*\]/ { s|path.*|path = $sroot/htdocs|}" $SMBCF
 fi

@@ -2,7 +2,7 @@
 
 CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
 
-if test -e $CONF_LIGHTY; then
+if test -f $CONF_LIGHTY; then
 	DAEMON=rclighttpd
 
 	$DAEMON stop

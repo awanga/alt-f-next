@@ -16,6 +16,8 @@ if test $(grep ^server.use-ipv6 $CONF_LIGHTY | cut -d" " -f3) = '"enable"'; then
 	IPV6_CHK="checked"
 fi
 
+if ! rclighttpd status >& /dev/null; then web_dis=disabled; fi
+
 sroot=$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF_LIGHTY)
 port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
 sslport=$(sed -n 's/$SERVER\["socket"\] == ":\(.*\)".*/\1/p' $CONF_SSL)
@@ -162,5 +164,6 @@ cat<<-EOF
 	<div id="php_id"><table>$php_opt</table></div>
 
 	<p><input type="submit" value="Submit">$(back_button)
+	<input type=submit $web_dis name="webPage" value="WebPage">
 	</form></body></html>
 EOF

@@ -1,6 +1,6 @@
 Package: lighttpd
 Description: A secure, fast, compliant and very flexible web-server
-Version: 1.4.30-2
+Version: 1.4.35
 Depends: ipkg, sqlite, libxml2, pcre
 Architecture: arm
 Priority: optional

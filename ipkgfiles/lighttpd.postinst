@@ -1,5 +1,5 @@
 #!/bin/sh
 
 ln -sf /usr/sbin/rcscript /sbin/rclighttpd
-rclighttpd status
+#rclighttpd status
 return 0

@@ -1,13 +1,17 @@
-#! /bin/sh
+#!/bin/sh
+
+#set -x
 
 DESC="A secure, fast, compliant and very flexible web-server"
 TYPE=net
 NAME=lighttpd
 NEED_ALTF_DIR=1
 
-CONF=/etc/$NAME/$NAME.conf
+CONF_DIR=/etc/$NAME
 LOG_DIR=/var/log/$NAME 
 HOME_DIR=/var/lib/$NAME
+
+CONFF=$CONF_DIR/$NAME.conf
 
 SECR_DIGST=/etc/$NAME/lighttpd-digest.user
 SECR_RSYNC=/etc/rsyncd.secrets 
@@ -23,10 +27,20 @@ RC_DESC="Lighttpd daemon"
 
 . /etc/init.d/common
 
-if ! test -d $LOG_DIR; then mkdir -p $LOG_DIR; fi
-if ! test -d $HOME_DIR/sockets; then mkdir -p $HOME_DIR/sockets; fi
+if ! test -d $LOG_DIR; then
+	mkdir -p $LOG_DIR
+fi
 
-check_user $CONF $LOG_DIR $HOME_DIR
+if ! test -d $HOME_DIR/sockets; then
+	mkdir -p $HOME_DIR/sockets
+fi
+
+check_user $LOG_DIR $HOME_DIR $CONFF
+
+if test "$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONFF)" = "/Public"; then
+	echo "$NAME: you have to configure $NAME first."
+	exit 1
+fi
 
 digs_pass() {
 	realm="WebDAV"
@@ -57,18 +71,8 @@ istart() {
 case "$1" in
 	init) istart ;;
 	start)
-		if ! test -f $CONF; then
-			echo "Starting $NAME: No $CONF configuration file, fail"
-			exit 1
-		fi
-
-		if test "$(sed -n 's|^var.server_root.*=.*"\(.*\)"|\1|p' $CONF)" = "/Public"; then
-			echo "$NAME: \"Server Root\" not set, you have to configure $NAME first."
-			exit 1
-		fi
-
 		istart
-		start $NAME -- -f $CONF
+		start $NAME -- -f $CONFF
 		;;
 	stop) stop $NAME ;;
 	status)	status $NAME ;;

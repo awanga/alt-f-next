@@ -4,7 +4,7 @@
 #
 #############################################################
 
-LIGHTTPD_VERSION = 1.4.30
+LIGHTTPD_VERSION = 1.4.35
 LIGHTTPD_SOURCE = lighttpd-$(LIGHTTPD_VERSION).tar.bz2
 LIGHTTPD_SITE = http://download.lighttpd.net/lighttpd/releases-1.4.x
 LIGHTTPD_LIBTOOL_PATCH = NO
