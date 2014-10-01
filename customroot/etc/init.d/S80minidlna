@@ -6,6 +6,8 @@ TYPE=user
 NEED_ALTF_DIR=1
 
 CONF_MINIDLNA=/etc/$NAME.conf
+LOG_MINIDLNA=/var/log/$NAME
+RUN_MINIDLNA=/var/run/$NAME
 
 RC_USER=$NAME
 RC_USERN=11
@@ -13,8 +15,9 @@ RC_GROUP=multimedia
 RC_GROUPN=80
 RC_DESC="minidlna daemon"
 
-RC_PIDFILE=/var/run/$NAME/$NAME.pid
-MINIDLNA_ARGS="-u $RC_USER "
+RC_PIDFILE=$RUN_MINIDLNA/$NAME.pid
+
+MINIDLNA_ARGS=""
 
 . /etc/init.d/common
 
@@ -35,7 +38,6 @@ check_shares() {
 			if ! test -d "$mdir"; then
 				echo "$NAME: Share $mdir does not exists."
 				exit 1
-				#sed -i 's|^media_dir='$i'|# directory not found: &|' $CONF_MINIDLNA
 			else
 				conf_ok="yes"
 			fi
@@ -51,12 +53,14 @@ check_shares() {
 	exit 1
 }
 
-check_user $CONF_MINIDLNA /var/lib/$RC_USER
+mkdir -p $RUN_MINIDLNA $LOG_MINIDLNA
+
+check_user $CONF_MINIDLNA /var/lib/$RC_USER $RUN_MINIDLNA $LOG_MINIDLNA
 
 case "$1" in
 	start)
 		check_shares
-		start $NAME -- $RESCAN $MINIDLNA_ARGS 
+		start $NAME --chuid $RC_USER:$RC_GROUP -- $RESCAN $MINIDLNA_ARGS 
 		;;
 
 	stop) stop $NAME ;;

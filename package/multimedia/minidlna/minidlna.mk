@@ -4,7 +4,7 @@
 #
 #############################################################
 
-MINIDLNA_VERSION = 1.1.3
+MINIDLNA_VERSION = 1.1.4
 MINIDLNA_SOURCE = minidlna-$(MINIDLNA_VERSION).tar.gz
 MINIDLNA_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/minidlna/minidlna/$(MINIDLNA_VERSION)
 
