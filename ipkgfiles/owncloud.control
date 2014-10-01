@@ -1,6 +1,6 @@
 Package: owncloud
 Description: Universal access to files through the WebDAV standard.
-Version: 3.0.2
+Version: 7.0.2
 Depends: php, lighttpd, ipkg
 Architecture: arm
 Priority: optional

@@ -1,0 +1,22 @@
+#/bin/sh
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+eval $(awk '/^var.server_root/{printf "sroot=%s", $3}' $CONF_LIGHTY)
+
+cat<<-EOF
+Package owncloud:
+	******************************************************************
+	* ownCloud data and configuration was using folders
+	* $sroot/owncloud-data
+	* $sroot/owncloud-config
+	* 
+	* As they might contain important data, they will not be deleted
+	* 
+	* You can delete the folders using the Setup->Folder web page
+	******************************************************************
+
+EOF
+
+rm -rf /opt/owncloud $sroot/htdocs/owncloud
+
+sleep 5

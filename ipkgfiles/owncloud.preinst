@@ -1,19 +1,59 @@
 #!/bin/sh
 
 CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
-
-if ! test -x /usr/bin/php -a -x /usr/sbin/lighttpd; then
-	echo -e "\n*********************************************************************"
-	echo      "* First you have to install lighttpd and php and configure lighttpd *"
-	echo -e   "*********************************************************************\n"
-	exit 1
-fi
+CONF_OWNCLOUD=/etc/owncloud.conf
+WARNF=/tmp/.owncloud-warn
 
 eval $(awk '/^var.server_root/{printf "sroot=%s", $3}' $CONF_LIGHTY)
 
 if test "$sroot" = "/Public"; then
-	echo -e "\n****************************************"
-	echo      "* First you have to configure lighttpd *"
-	echo -e   "****************************************\n"
+	cat<<-EOF
+
+		****************************************
+		* You have to configure lighttpd first *
+		****************************************
+
+	EOF
 	exit 1
 fi
+
+# if exists $CONF_OWNCLOUD contains previous install path
+# echo $sroot/htdocs/owncloud > $CONF_OWNCLOUD
+
+tf=$sroot/htdocs/owncloud
+if test -d $tf -a ! -h $tf -a ! -f $WARNF; then # 3.0.x installed
+	cat<<-EOF
+
+		*********************************************************
+		* A previous installation of owncloud-3.0 was found,    *
+		* and it is not compatible with the current one.        *
+		*                                                       *
+		* If you repeat this instalation again it will continue *
+		* and your current installation will be renamed to      *
+		* $sroot/htdocs/old-owncloud-3.0-old.
+		*********************************************************
+
+	EOF
+	touch $WARNF
+	exit 1
+fi
+
+if test -f $CONF_OWNCLOUD; then
+	old_oc=$(cat $CONF_OWNCLOUD)
+	if test -d $old_oc -a ! $old_oc = $sroot/htdocs/owncloud; then
+	cat<<-EOF
+
+		***************************************************************
+		* An old and inactive installation of owncloud-3.0 was found *
+		* at $old_oc, you migh want to delete it
+		***************************************************************
+
+	EOF
+	fi
+	sleep 5
+	rm -f $CONF_OWNCLOUD
+fi
+
+rm -f $WARNF
+
+exit 0
