@@ -43,15 +43,19 @@ AVAHI_SRV_DIR=/etc/avahi/services
 avahi() {
 	if ! test -d $AVAHI_SRV_DIR; then return 0; fi
  
-	if test "$1" = "add"; then
-		if test -f $AVAHI_SRV_DIR/$2.service-; then
-			mv $AVAHI_SRV_DIR/$2.service- $AVAHI_SRV_DIR/$2.service
+	stype=$(sed -n "s|.*<type>\(.*$2.*\)</type>|\1|p" $AVAHI_SRV_DIR/$2.service*)
+	
+	for i in $(grep -l "<type>$stype</type>" $AVAHI_SRV_DIR/*.service*); do
+		sext=${i##*.}
+		sname=$(basename $i)
+		sname=${sname%%.*}
+		
+		if test "$1" = "add" -a "$sext" = "service-"; then
+				mv $AVAHI_SRV_DIR/$sname.service- $AVAHI_SRV_DIR/$sname.service
+		elif test "$1" = "remove" -a "$sext" = "service"; then
+				mv $AVAHI_SRV_DIR/$sname.service $AVAHI_SRV_DIR/$sname.service-
 		fi
-	elif test "$1" = "remove"; then
-		if test -f $AVAHI_SRV_DIR/$2.service; then
-			mv $AVAHI_SRV_DIR/$2.service $AVAHI_SRV_DIR/$2.service-
-		fi
-	fi
+	done
 }
 
 # to use at start
