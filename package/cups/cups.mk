@@ -4,6 +4,9 @@
 #
 ################################################################################
 
+#CUPS_VERSION = 1.7.5 works, but cups-filters is needed: 
+# http://www.linuxfoundation.org/collaborate/workgroups/openprinting/cups-filters
+
 CUPS_VERSION = 1.4.8
 CUPS_NAME = cups-$(CUPS_VERSION)
 CUPS_SOURCE:=$(CUPS_NAME)-source.tar.bz2
@@ -15,7 +18,7 @@ CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
 CUPS_MAKE_ENV = STRIPPROG=arm-linux-strip
 
 CUPS_TARGET_BINARY:=usr/sbin/cupsd
-CUPS_DEPENDENCIES = uclibc openssl libusb libpng jpeg tiff host-autoconf
+CUPS_DEPENDENCIES = uclibc openssl libusb1 dbus avahi gs libpng jpeg tiff host-autoconf
 
 ifeq ($(BR2_PACKAGE_DBUS),y)
 	CUPS_CONF_OPT += --enable-dbus
@@ -40,7 +43,9 @@ else
 	CUPS_CONF_OPT +=	--disable-perl
 endif
 
-ifeq ($(BR2_PACKAGE_PHP),y)
+# disable PHP
+#ifeq ($(BR2_PACKAGE_PHP),y)
+ifeq ($(BR2_PACKAGE_PHP),foo)
 	CUPS_CFLAGS += 		-I$(STAGING_DIR)/usr/include/php
 	CUPS_CFLAGS += 		-I$(STAGING_DIR)/usr/include/php/main
 	CUPS_CFLAGS += 		-I$(STAGING_DIR)/usr/include/php/regex
@@ -78,14 +83,14 @@ $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 	$(CONFIG_UPDATE) $(CUPS_DIR)
 	touch $@
 
-# jc: dbus 1.2.16 not compiling, disabled, perhaps dbus-1.4 works?
-
 CUPS_CONF_OPT = --without-perl --without-java --without-php	--without-python \
 	--disable-pam --disable-dnssd --disable-ldap \
-	--disable-gnutls --disable-dbus --disable-gssapi \
-	--with-cups-user=9  --with-cups-group=9 --with-system_groups="sys root" \
+	--disable-gnutls --disable-gssapi --disable-acl --disable-dbus \
+	--with-cups-user=cups --with-cups-group=lpadmin --with-system_groups="sys root" \
 	--enable-openssl --enable-libusb --with-pdftops=/usr/bin/gs \
 	--with-languages=none --with-docdir=/usr/share/cups/doc
+
+#		CFLAGS="$(CUPS_CFLAGS)" \
 
 $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked
 	cd $(CUPS_DIR) && $(AUTOCONF)
@@ -93,7 +98,6 @@ $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(CUPS_CONF_ENV) \
-		CFLAGS="$(CUPS_CFLAGS)" \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -115,7 +119,8 @@ $(CUPS_DIR)/.configured: $(CUPS_DIR)/.unpacked
 #	conf data doc fonts ppd templates
 
 $(CUPS_DIR)/.compiled: $(CUPS_DIR)/.configured
-	$(MAKE) CFLAGS="$(CUPS_CFLAGS)" -C $(CUPS_DIR)
+	#$(MAKE) CFLAGS="$(CUPS_CFLAGS)" -C $(CUPS_DIR)
+	$(MAKE) -C $(CUPS_DIR)
 	touch $@
 
 $(TARGET_DIR)/$(CUPS_TARGET_BINARY): $(CUPS_DIR)/.compiled

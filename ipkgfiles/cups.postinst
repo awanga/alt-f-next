@@ -1,5 +1,17 @@
 #!/bin/sh
 
+MDEV_CONF=/etc/mdev.conf
+
+# remove group and others permission, so backend will be run as root,
+# allowing detecting new USB printers
+chmod go-rx /usr/lib/cups/backend/usb
+
+# to be remove after RC4.
+# Printer must be plugged after powerup to be detected.
+if ! grep -q '=bus/usb' $MDEV_CONF; then
+	echo '$DEVNAME=bus/usb/([0-9]+)/([0-9]+) 0:sys 660 =bus/usb/%1/%2' >> $MDEV_CONF
+fi
+
 ln -sf /usr/sbin/rcscript /sbin/rccups
 rccups status
 return 0
