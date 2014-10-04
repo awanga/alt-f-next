@@ -31,14 +31,15 @@ istart() {
 	fi
 	ntout=$(netstat -ln 2> /dev/null)
 
-	for i in /etc/avahi/services/*; do
+	for i in $(ls $CONF_AVAHI/services/* 2> /dev/null); do
 		srv=$(basename $i)
 		srvn=${srv%.*}
-		pt=$(sed -n '\|<type>_'$srvn'.*</type>|{ns|.*<port>\(.*\)</port>|\1|p}' $i)
+		pt=$(sed -n '\|<type>.*</type>|{n;s|.*<port>\(.*\)</port>|\1|p}' $i)
+		if test -z "$pt" -o "$pt" = 0; then continue; fi
 		if echo "$ntout" | grep -q ":$pt "; then
-			avahi add ${srv%.*} 
+			avahi add $srvn 
 		else
-			avahi remove ${srv%.*}
+			avahi remove $srvn
 		fi
 	done
 
@@ -49,7 +50,7 @@ istart() {
 # when a service is stoped its own initscript or the daemon de-registers itself
 istop() {
 	stop $NAME
-	for i in /etc/avahi/services/*.service; do
+	for i in $(ls $CONF_AVAHI/services/*.service 2> /dev/null); do
 		srv=$(basename $i)
 		avahi remove ${srv%.*}
 	done
