@@ -13,13 +13,9 @@ rcall stop
 
 echo "rcE: saving date and time to RTC"
 # write system time to RTC, waiting for second change
-if test $board = "DNS-320L-A1"; then
-	echo -e 'systohc\r' | nc local:/var/run/dns320l.socket
-else
-	i=0; o="$(date +%s)"
-	while test "$o" = "$(date +%s)" -a "$i" -lt 200; do i=$((i+1)); done
-	hwclock -wu
-fi
+i=0; o="$(date +%s)"
+while test "$o" = "$(date +%s)" -a "$i" -lt 200; do i=$((i+1)); done
+hwclock -wu
 
 # wait for services to stop
 sleep 5
@@ -77,6 +73,11 @@ echo "------------------------------"
 mount
 echo "------------------------------"
 
+echo "rcE: still running processes"
+echo "------------------------------"
+ps -opid,ppid,pgid,user,group,tty,vsz,stat,rss,args
+echo "------------------------------"
+
 echo "rcE: bringing network down"
 ifconfig eth0 down
 
@@ -114,6 +115,6 @@ fi
 mount / -o remount,ro
 echo "rcE: Poweroff NOW!"
 
-if test "$board" = "DNS-320L-A1"; then
-	echo -e 'DeviceShutdown\r' | nc local:/var/run/dns320l.socket # has the daemon survived till this point?
+if test -f /tmp/.poweroff; then
+	dns320l-daemon -x DeviceShutdown
 fi
