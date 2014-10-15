@@ -3,9 +3,11 @@
 # git
 #
 #############################################################
-GIT_VERSION = 1.7.7
-GIT_SOURCE = git-$(GIT_VERSION).tar.gz
-GIT_SITE = http://git-core.googlecode.com/files/
+
+GIT_VERSION = 2.1.2
+GIT_SOURCE = git-$(GIT_VERSION).tar.xz
+GIT_SITE = https://www.kernel.org/pub/software/scm/git
+
 GIT_INSTALL_STAGING = NO
 GIT_INSTALL_TARGET = YES
 GIT_DEPENDENCIES = uclibc openssl libcurl expat pcre perl-host
@@ -16,7 +18,7 @@ GIT_CONF_ENV = ac_cv_fread_reads_directories=yes \
 GIT_CONF_OPT = --without-python --without-tcltk \
 	-with-libpcre --with-perl=$(HOST_DIR)/usr/bin/perl
 
-#GIT_MAKE_ENV = NO_PERL=no
+GIT_MAKE_OPT = CHARSET_LIB=-lcharset
 
 GIT_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
