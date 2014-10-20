@@ -57,6 +57,10 @@ $(STAMP_DIR)/host_libtool_installed: $(STAMP_DIR)/host_libtool_compiled
 		$(STAGING_DIR)/usr/share/aclocal/ltdl.m4
 	touch $@
 
+host-libtool-configure: $(STAMP_DIR)/host_libtool_configured
+
+host-libtool-build: $(STAMP_DIR)/host_libtool_compiled
+
 host-libtool: $(STAMP_DIR)/host_libtool_installed
 
 host-libtool-clean:
