@@ -1,0 +1,140 @@
+#!/bin/sh
+
+# http://www.networkupstools.org/docs/user-manual.chunked/ar01s06.html
+# http://www.networkupstools.org/docs/user-manual.chunked/ar01s09.html#_system_level_privileges_and_ownership
+# 
+# -nut.conf set as 'none', NUT not configured, don't start anything.
+# 
+# the UPS is controlled by this computer:
+# -nut.conf set as 
+# 	-'standalone' (no other computer running NUT),
+# 	-or 'netserver' (to be able to shutdown other computers running NUT)
+# 	
+# 	-needs to fill ups.conf with the UPS type and access driver
+# 		-start upsdrvctl (/usr/lib/nut/drivers/upsdrvctl start|stop|shutdown (UPS?))
+# 	-needs to fill upsd.conf 
+# 		-start upsd (-c reload, -c stop, or use upsd.pid?)
+# 	-needs to fill upsmon.conf in master mode
+# 		-start upsmon (-c reload, -c stop, or use upsd.pid?)
+# 	-start upslog, a log daemon (uses upslog.pid?)
+# 
+# this computer is powered by an UPS controlled by another computer:
+# 	-nut.conf set as 'netclient'
+# 
+# 	-need to fill upsmon.conf for slave mode
+# 		-start upsmon
+# 
+
+################################
+# this script is UNTESTED!     #
+# please fixit and report back #
+################################
+
+NAME=nut
+DESC="Network UPS Tools"
+TYPE=system
+
+CONF_DIR=/etc/nut
+
+UPS_CONF=$CONF_DIR/ups.conf
+UPSD_CONF=$CONF_DIR/upsd.conf
+NUT_CONF=$CONF_DIR/nut.conf
+MON_CONF=$CONF_DIR/upsmon.conf
+
+DRV_DIR=/usr/lib/nut/drivers
+
+STATE_DIR=/var/state/ups
+RUN_DIR=/var/run
+
+RC_USER=ups
+RC_USERN=69
+RC_GROUP=nut
+RC_GROUPN=84
+RC_DESC="NUT daemons"
+
+. /etc/init.d/common
+
+if ! test -d $STATE_DIR; then
+	mkdir -p $STATE_DIR
+	chmod 0770 $STATE_DIR
+	chown root:nut $STATE_DIR
+fi
+
+check_user
+
+# secure configuartion files, they contain passwords
+chown -R ups:nut $CONF_DIR
+chmod -R 640 $CONF_DIR
+
+mode=$(sed -n '/^MODE/s/.*=[[:space:]]*\(.*\)[[:space:]]*/\1/p' $NUT_CONF)
+if test "$mode" = "none"; then
+	echo "NUT ($NUT_CONF) not configured."
+	exit 1
+elif test "$mode" = "standalone" -o "$mode" = "netserver"; then
+	if ! grep -q '^[[:space:]]*driver.*=' $UPS_CONF ; then
+        echo "NUT ($UPS_CONF) not configured."
+        exit 1
+	fi
+fi
+
+if ! grep -q '^MONITOR' $MON_CONF; then
+	echo "NUT ($MON_CONF) not configured."
+	exit 1
+fi
+
+case "$1" in
+	start)
+		if test "$mode" = "standalone" -o "$mode" = "netserver"; then
+			if ! test -f $RUN_DIR/upsdrvctl; then # not fail-safe!
+				if ! res=$($DRV_DIR/upsdrvctl start 2>&1); then
+					echo "$res"
+					exit 1
+				fi
+				touch $RUN_DIR/upsdrvctl
+			fi
+
+			# should upsd be started as root? it will drop privileges
+			if ! res=$(RC_PIDFILE=$RUN_DIR/upsd.pid start upsd --chuid $RC_USER:$RC_GROUP); then
+				$DRV_DIR/upsdrvctl stop >& /dev/null
+				rm -f $RUN_DIR/upsdrvctl
+				echo "$res"
+				exit 1
+			fi
+		fi
+		start upsmon
+		;;
+
+	stop)
+		# use '-c stop'?
+		stop upsmon
+		if test "$mode" = "standalone" -o "$mode" = "netserver"; then
+			RC_PIDFILE=$RUN_DIR/upsd.pid stop upsd
+			$DRV_DIR/upsdrvctl stop >& /dev/null
+			rm -f $RUN_DIR/upsdrvctl
+		fi
+		;;
+
+	status)
+		status upsmon
+		if test "$mode" = "standalone" -o "$mode" = "netserver"; then
+			status upsd
+		fi
+		;;
+
+	reload)
+		# use '-c reload'?
+		reload upsmon
+		if test "$mode" = "standalone" -o "$mode" = "netserver"; then
+			reload upsd
+		fi
+		;;
+
+	restart)
+		restart
+		;;
+		
+	*)
+		echo "Usage: $0 {start|stop|status|reload|restart}"
+		exit 1
+		;;
+esac

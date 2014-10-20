@@ -1,6 +1,6 @@
 Package: nuts
 Description: Network UPS Tools is a collection of programs for monitoring and administering UPS, PDU and SCD hardware.
-Version: 2.6.1-2
+Version: 2.6.1-3
 Depends: libusb, libgd, netsnmp, neon, ipkg, kernel-modules
 Architecture: arm
 Priority: optional

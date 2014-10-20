@@ -1,0 +1,12 @@
+#!/bin/sh 
+
+# location of configuration files has changed from /etc to /etc/nut, save them
+CONFS="hosts.conf nut.conf ups.conf upsd.conf upsd.users upsmon.conf upssched.conf upsset.conf upsstats.html upsstats-single.html"
+
+if ! test -d /etc/nut; then mkdir -p /etc/nut; fi
+
+for i in $CONFS; do
+	if test -f /etc/$i; then
+		mv /etc/$i /etc/nut/
+	fi
+done
