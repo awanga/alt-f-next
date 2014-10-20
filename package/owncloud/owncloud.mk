@@ -1,3 +1,3 @@
 # this is a dummy (no code) package
 
-OWNCLOUD_VERSION:=3.0.2
+OWNCLOUD_VERSION:=7.0.2
