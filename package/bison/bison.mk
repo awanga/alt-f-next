@@ -3,11 +3,13 @@
 # bison
 #
 #############################################################
-BISON_VERSION:=2.3
-BISON_SOURCE:=bison-$(BISON_VERSION).tar.bz2
+
+BISON_VERSION:=2.5.1
+BISON_SOURCE:=bison-$(BISON_VERSION).tar.xz
 BISON_SITE:=$(BR2_GNU_MIRROR)/bison
+
 BISON_DIR:=$(BUILD_DIR)/bison-$(BISON_VERSION)
-BISON_CAT:=$(BZCAT)
+BISON_CAT:=$(XZCAT)
 BISON_BINARY:=src/bison
 BISON_TARGET_BINARY:=usr/bin/bison
 
@@ -71,6 +73,8 @@ bison-clean:
 
 bison-dirclean:
 	rm -rf $(BISON_DIR)
+
+$(eval $(call AUTOTARGETS_HOST,package,bison))
 
 #############################################################
 #
