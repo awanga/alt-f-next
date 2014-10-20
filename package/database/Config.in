@@ -1,6 +1,6 @@
 menu "Database"
 source "package/database/db/Config.in"
 source "package/database/gdbm/Config.in"
-source "package/database/mysql_client/Config.in"
+source "package/database/mysql/Config.in"
 source "package/database/sqlite/Config.in"
 endmenu
