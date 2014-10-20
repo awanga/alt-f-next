@@ -33,7 +33,7 @@ else
 SQLITE_CONF_OPT += --disable-readline
 endif
 
-$(eval $(call AUTOTARGETS,package,sqlite))
+$(eval $(call AUTOTARGETS,package/database,sqlite))
 
 $(SQLITE_HOOK_POST_INSTALL):
 ifneq ($(BR2_PACKAGE_SQLITE_PROGS),y)
