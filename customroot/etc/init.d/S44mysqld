@@ -1,0 +1,53 @@
+#!/bin/sh
+
+DESC="The MySQL Open Source Database System"
+TYPE=sys
+NAME=mysqld
+
+RC_USER=mysql
+RC_USERN=28
+RC_GROUP=mysql
+RC_GROUPN=35
+RC_DESC="mysql daemon"
+
+MYSQL_HOMED=/var/lib/$RC_USER
+MYSQL_RUND=/var/run/$RC_USER
+MYSQL_LOGD=/var/log/$RC_USER
+MYSQL_LOG=$MYSQL_LOGD/$NAME.log
+MYSQL_CONFD=/etc/mysql
+
+RC_PIDFILE=$MYSQL_RUND/$NAME.pid
+RC_START_BG=yes
+
+MYSQL_DIRS="$MYSQL_RUND $MYSQL_LOGD $MYSQL_CONFD"
+ 
+for i in $MYSQL_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+. /etc/init.d/common
+
+check_user $MYSQL_DIRS
+
+case "$1" in
+	start)
+		if ! test -d $MYSQL_HOMED/$RC_USER; then
+			echo "Creating MySQL system tables..."
+			mysql_install_db --user=$RC_USER --datadir=$MYSQL_HOMED
+		fi
+
+		start mysqld_safe -- --pid-file=$RC_PIDFILE --log-error=$MYSQL_LOG
+		;;
+	stop)
+		stop $NAME
+		;;
+	status)
+		status $NAME
+		;;
+	restart)
+		restart $NAME
+		;;
+	*)
+		echo "Usage: $0 start|stop|status|restart"
+		;;
+esac

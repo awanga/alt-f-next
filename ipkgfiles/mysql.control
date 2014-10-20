@@ -1,0 +1,9 @@
+Package: mysql
+Description: The MySQL Database client
+Version: 5.1.73
+Depends: mysql-libs, readline, ipkg
+Architecture: arm
+Priority: optional
+Section: database
+Source: http://www.mysql.com
+Maintainer: jcard

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+RC_USER=mysql
+
+MYSQL_CONFD=/etc/mysql
+MYSQL_CONFF=$MYSQL_CONFD/my.cnf
+
+MYSQL_SHARE=/usr/share/mysql
+SMALL=$MYSQL_SHARE/my-small.cnf
+MEDIUM=$MYSQL_SHARE/my-medium.cnf
+
+if ! test -f $MYSQL_CONFF; then
+	mkdir -p $MYSQL_CONFD
+	if grep -q DNS-323 /tmp/board; then
+		cp $SMALL $MYSQL_CONFF
+	else
+		cp $MEDIUM $MYSQL_CONFF
+	fi
+fi
+
+ln -sf /usr/sbin/rcscript /sbin/rcmysqld
+

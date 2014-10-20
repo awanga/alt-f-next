@@ -1,0 +1,13 @@
+#/bin/sh
+
+DAEMON=rcmysqld
+
+if test -e /sbin/$DAEMON; then
+	$DAEMON stop
+
+	for i in $(seq 1 30); do
+		if ! $DAEMON status >& /dev/null; then break; fi
+		sleep 1
+	done
+fi
+ 

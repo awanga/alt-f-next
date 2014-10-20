@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser mysql
+delgroup mysql
+rm -f /sbin/rcmysqld
