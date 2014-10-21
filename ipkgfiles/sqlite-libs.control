@@ -1,5 +1,5 @@
 Package: sqlite-libs
-Version: 3080200
+Version: 3080700
 Description: A small C library that implements a self-contained, embeddable, zero-configuration SQL database engine.
 Depends: readline, ipkg
 Architecture: arm

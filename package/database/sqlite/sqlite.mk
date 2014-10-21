@@ -4,12 +4,11 @@
 #
 #############################################################
 
-SQLITE_VERSION = 3080200
+SQLITE_VERSION = 3080700
+SQLITE_SITE = http://www.sqlite.org/2014
 SQLITE_SOURCE = sqlite-autoconf-$(SQLITE_VERSION).tar.gz
-SQLITE_SITE = http://www.sqlite.org/2013
 
 SQLITE_LIBTOOL_PATCH = NO
-
 SQLITE_INSTALL_STAGING = YES
 SQLITE_INSTALL_TARGET = YES
 
@@ -18,9 +17,12 @@ SQLITE_DEPENDENCIES = uclibc
 SQLITE_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 SQLITE_PROGS = sqlite3
 
+# don't use none to use the default serialized mode: https://www.sqlite.org/threadsafe.html
+# --enable-threadsafe # causes PHP seg fault
+# --disable-threadsafe # this cause single thread model to be select
+
 SQLITE_CONF_OPT = --enable-shared \
 			--disable-static \
-			--enable-threadsafe \
 			--enable-dynamic-extensions \
 			--localstatedir=/var
 
