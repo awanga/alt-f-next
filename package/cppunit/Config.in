@@ -1,0 +1,6 @@
+config BR2_PACKAGE_CPPUNIT
+	bool"cppunit"
+	help
+	  the C++ port of the famous JUnit framework for unit testing
+
+	  http://www.freedesktop.org/wiki/Software/cppunit
