@@ -12,6 +12,7 @@ if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$SOURCE; then
 	exit 1
 fi
 
+mkdir -p /Alt-F/opt
 if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
 	rm -f /tmp/$TBALL
 	echo "Extraction of pyLoad failed."
