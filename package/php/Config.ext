@@ -173,6 +173,11 @@ comment "Database extensions"
 
 config BR2_PACKAGE_PHP_EXT_SQLITE
 	bool "sqlite"
+	select BR2_PACKAGE_SQLITE
+
+config BR2_PACKAGE_PHP_EXT_MYSQL
+	bool "mysql"
+	select BR2_PACKAGE_MYSQL
 
 config BR2_PACKAGE_PHP_EXT_PDO
 	bool "PDO"
@@ -195,8 +200,15 @@ config BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL
 config BR2_PACKAGE_PHP_EXT_PDO_MYSQL
 	bool "PDO_MySQL"
 	depends on BR2_PACKAGE_PHP_EXT_PDO
-	#select BR2_PACKAGE_MYSQL_CLIENT
+	select BR2_PACKAGE_MYSQL
 	help
 	  PDO driver for MySQL
+
+config BR2_PACKAGE_PHP_EXT_PDO_MYSQL_EXTERNAL
+	bool "PDO_MySQL external"
+	depends on BR2_PACKAGE_PHP_EXT_PDO_MYSQL
+	select BR2_PACKAGE_MYSQL
+	help
+	  Use external mysql library
 
 endmenu

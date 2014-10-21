@@ -4,8 +4,9 @@
 #
 #############################################################
 
-PHP_VERSION = 5.4.4
-PHP_SITE = http://museum.php.net/php5
+PHP_SITE = http://php.net/distributions
+PHP_VERSION = 5.4.34
+
 PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
 PHP_INSTALL_STAGING = YES
 PHP_INSTALL_STAGING_OPT = INSTALL_ROOT=$(STAGING_DIR) install
@@ -13,7 +14,11 @@ PHP_INSTALL_TARGET_OPT = INSTALL_ROOT=$(TARGET_DIR) install
 PHP_LIBTOOL_PATCH = NO
 PHP_DEPENDENCIES = uclibc
 
-PHP_CONF_ENV = ac_cv_func_dlopen=yes ac_cv_lib_dl_dlopen=yes ac_cv_func_libiconv=yes EXTENSION_DIR=/usr/lib/php5/extensions
+PHP_CONF_ENV = ac_cv_func_dlopen=yes \
+	ac_cv_lib_dl_dlopen=yes \
+	ac_cv_func_libiconv=yes \
+	ac_cv_pthreads_lib=-lpthread \
+	EXTENSION_DIR=/usr/lib/php5/extensions
 
 PHP_CONF_OPT = $(DISABLE_IPV6) \
 		--mandir=/usr/share/man \
@@ -188,32 +193,49 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_PCRE),y)
 	PHP_CONF_OPT += --with-pcre-regex
 endif
 
-# php seg faults if compiled/linked against external sqlite!
-# even tried compiling the same version of sqlite bundled with php.
-# so, don't use --with*sqlite=shared,$(STAGING_DIR)/usr
+# PHP segfaults if linked agains a threadsafe compiled sqlite!
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE),y)
 	#PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_ENABLE_UNLOCK_NOTIFY"
-	PHP_CONF_OPT += --with-sqlite3=shared
+	PHP_CONF_OPT += --with-sqlite3=shared,$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += sqlite
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_MYSQL),y)
+	PHP_CONF_OPT += --with-mysql=shared,$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += mysql
 endif
 
 ### PDO
 # see above comment regarding sqlite
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO),y)
-  PHP_CONF_OPT += --enable-pdo=shared
-  ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
-    ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
-      PHP_CONF_OPT += --with-pdo-sqlite=shared,$(STAGING_DIR)/usr
-      PHP_DEPENDENCIES += sqlite
-    else
-      PHP_CONF_OPT += --with-pdo-sqlite=shared
-    endif
-  endif
+	PHP_CONF_OPT += --enable-pdo=shared
 
-  ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
-    #PHP_CONF_OPT += --with-pdo-mysql=shared,$(STAGING_DIR)/usr
-    PHP_CONF_OPT += --with-mysql=shared --with-pdo-mysql=shared
-  endif
+	ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
+		ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
+			PHP_CONF_OPT += --with-pdo-sqlite=shared,$(STAGING_DIR)/usr
+		else
+			PHP_CONF_OPT += --with-pdo-sqlite=shared
+		endif
+		PHP_DEPENDENCIES += sqlite
+	endif
+
+	ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
+		ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL_EXTERNAL),y)
+			PHP_CONF_OPT += --with-pdo-mysql=shared,$(STAGING_DIR)/usr
+		else
+			PHP_CONF_OPT += --with-pdo-mysql=shared
+		endif
+		PHP_DEPENDENCIES += mysql
+	endif
+endif
+
+ifeq (y,n)
+PHP_CONF_OPT += --enable-pdo=shared \
+	--with-sqlite3=shared,$(STAGING_DIR)/usr --with-pdo-sqlite=shared,$(STAGING_DIR)/usr \
+	--with-mysql=shared,$(STAGING_DIR)/usr --with-pdo-mysql=shared,$(STAGING_DIR)/usr
+
+PHP_DEPENDENCIES += mysql sqlite
 endif
 
 $(eval $(call AUTOTARGETS,package,php))
@@ -223,7 +245,6 @@ $(PHP_HOOK_POST_EXTRACT):
 	touch $@
 	
 $(PHP_HOOK_POST_CONFIGURE):
-	patch -d $(PHP_DIR) -p1 < package/php/php-5.4.4-Makefile.patch2
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
 	# configure can't check for some C types (cross-compiling)
 	touch $(PHP_DIR)/ext/mysqlnd/php_mysqlnd_config.h
@@ -243,7 +264,7 @@ $(PHP_HOOK_POST_INSTALL):
 $(PHP_TARGET_UNINSTALL):
 	$(call MESSAGE,"Uninstalling")
 	rm -rf $(STAGING_DIR)/usr/include/php
-	rm -rf $(STAGING_DIR)/usr/lib/php
+	rm -rf $(STAGING_DIR)/usr/lib/php5
 	rm -f $(STAGING_DIR)/usr/bin/php*
 	rm -f $(STAGING_DIR)/usr/share/man/man1/php*.1
 	rm -f $(TARGET_DIR)/etc/php.ini
