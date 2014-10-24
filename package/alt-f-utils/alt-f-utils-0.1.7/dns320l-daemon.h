@@ -3,12 +3,9 @@
 
 
 typedef struct {
-  int fanPollTime;
-  int pollGpio;
-  int gpioPollTime;
   int goDaemon;
+  int xcmd;
   int debug;
-  char *gpioDir;
   char *serverName;
   char *portName;
   int nRetries;
@@ -16,6 +13,7 @@ typedef struct {
 
 int simple_cmd(char *mcmd, char *retMessage, int bufSize);
 int simple_cmd2(char *mcmd, char *retMessage, int bufSize);
+int setpowerled_cmd(char *mcmd, char *retMessage, int bufSize);
 int setfan_cmd(char *mcmd, char *retMessage, int bufSize);
 int readrtc_cmd(char *mcmd, char *retMessage, int bufSize);
 int systohc_cmd(char *mcmd, char *retMessage, int bufSize);
@@ -44,9 +42,9 @@ cmd_t cmds[] = {
 	{"SetFanStop", FanStopCmd, setfan_cmd},
 	{"SetFanHalf", FanHalfCmd, setfan_cmd},
 	{"SetFanFull", FanFullCmd, setfan_cmd},
-	{"PowerLedOn", PwrLedOnCmd, simple_cmd},
-	{"PowerLedOff", PwrLedOffCmd, simple_cmd},
-	{"PowerLedBlink", PwrLedBlinkCmd, simple_cmd},
+	{"PowerLedOn", PwrLedOnCmd, setpowerled_cmd},
+	{"PowerLedOff", PwrLedOffCmd, setpowerled_cmd},
+	{"PowerLedBlink", PwrLedBlinkCmd, setpowerled_cmd},
 	{"ReadRtc", RDateAndTimeCmd, readrtc_cmd},
 	{"systohc", WDateAndTimeCmd, systohc_cmd},
 	{"hctosys", RDateAndTimeCmd, hctosys_cmd},
@@ -74,7 +72,7 @@ void cleanup(int shut,int s,int howmany);
     to the application
  @param sig The signal number received
 */
-static void sighandler(int sig);
+static void quithandler(int sig);
 
 /** <i>Function</i> that sets interface attributes on a given
   serial port.
