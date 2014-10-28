@@ -1,0 +1,28 @@
+#!/bin/sh
+
+usage() {
+	cat<<-EOF
+		Usage: hwclock [-ru | -su | -wu]
+
+		Query and set hardware clock (RTC)
+
+			-ru	Show hardware clock time
+			-su	Set system time from hardware clock
+			-wu	Set hardware clock from system time
+	EOF
+	exit 1;
+}
+
+if test "$(cat /tmp/board)" = "DNS-320L-A1"; then
+	if test $# -gt 1; then usage; fi
+	if test $# = 0; then set -- -ru; fi
+	case "$1" in
+		-ru) cmd=ReadRtc ;;
+		-su) cmd=hctosys ;;
+		-wu) cmd=systohc ;;
+		*) usage ;;
+	esac
+	dns320l-daemon -x $cmd
+else
+	busybox hwclock $@
+fi

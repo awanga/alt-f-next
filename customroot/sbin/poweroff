@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if test "$(cat /tmp/board)" = "DNS-320L-A1"; then
+	touch /boot/.poweroff
+fi
+
+busybox poweroff
