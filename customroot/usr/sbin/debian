@@ -37,7 +37,7 @@ deactivate_chroot() {
 	done
 }
 
-if grep -qE 'DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+if grep -qE 'DNS-320L-A1|DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
 
 inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-$SoC)
 
@@ -69,7 +69,7 @@ if test $# != 0 -a "$1" = "-chroot"; then
 elif test $# != 0 -a "$1" = "-kexec"; then
 
 	if test "$SoC" = "kirkwood"; then
-		echo "kexec not working on DNS-320/DNS-325, exiting."
+		echo "kexec not working on DNS-320L/DNS-320/DNS-325, exiting."
 		exit 1
 	fi
 
@@ -150,6 +150,7 @@ cat<<-NEOF > /tmp/deb
 NEOF
 
 chmod +x /tmp/deb
+cd /tmp
 nohup /tmp/deb &
 
 else
