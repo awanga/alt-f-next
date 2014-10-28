@@ -12,17 +12,17 @@
 configure several items that enables you to keep your box cool and not
 too noisy.
 
-<p> In <strong>System Temperature / Fan Speed relationship</strong>, you
+<p> In the <strong>System Temperature / Fan Speed relationship</strong> section, you
 establish how fast the fan turns, depending on the box current
 temperature.<br>
 
 <ul>
 <li><h4>DNS-323 rev-A1/B1 hardware boards:</h4>
 
-For the A1 and B1 hardware boards, the fan speed can
-vary continuously between 2000 and 6500 RPM.<br>
+<p>For the A1 and B1 hardware boards, the fan speed can
+vary continuously between 2000 and 6500 RPM.
 
-To calibrate the fan speed with the system temperature, you must specify
+<p>To calibrate the fan speed with the system temperature, you must specify
 a <strong>Low</strong> and a <strong>High</strong> reference point.<br>
 
 The <strong>Low Fan Speed</strong> entry specify the desired fan speed when the
@@ -33,40 +33,59 @@ system is at the <strong>High Temp</strong> temperature.<br>
 The low and high temperatures are not the maximum and minimum values
 that you which for you box, are only reference points.
 
-For example, with the default settings, the fan speed is 300RPM/ºC.
-If the system temperature is 42 degrees, the fan will rotate at 2600 RPM.<br>
+For example, with the default settings, the fan speed is 300RPM/º (5000 - 2000) / (50 - 40)
+If the system temperature is 42 degrees, the fan will rotate at 2600 RPM (2000 + 2*300).
 
-<p> In the <strong>Maximum ratings</strong>, in the <strong>Fan Off
+<p>In the <strong>Maximum ratings</strong>, in the <strong>Fan Off
 Temp</strong> entry, you can specify at what temperature  should the fan
-stop.<br>
+stop.
 
-In the <strong>Max Fan Speed</strong>, you specify the maximum fan speed
+<p>In the <strong>Temp hysteresis</strong> entry you specify the temperature windows around the
+Fan Off Temp change point. E.g., if the current temperature is 42, and the fan is
+running, the Fan Off Temp value is 40 and the Temp hysteresis is 1, the fan will only
+stop turning when the current temperature drops to 39 (Fan Off Temp - Temp hysteresis);
+then, as the system temperature starts raising, the fan will only start turning slow again
+when the system temperature reaches 41 (Fan Off Temp + Temp hysteresis).
+
+<p>In the <strong>Max Fan Speed</strong>, you specify the maximum fan speed
 that the fan must turn at. The value depends on the characteristics of
 the fan, and the manufacturer specifies between 6000 and 7000 RPM. You
-should not exceed this value. </p>
+should not exceed this value.
 </li>
 
-<li><h4>DNS-323 rev-C1, DNS-320/321/325 rev-A1/A2 hardware boards:</h4>
+<li><h4>DNS-323 rev-C1, DNS-320/320L//321/325 rev-A1/A2 hardware boards:</h4>
 
-The hardware board fan on these box models can only have three fan settings: off,
-low speed and fast speed.<br>
+<p>The fan on these box models can only have three fan settings: off, low speed and fast speed.
 
-In the <strong>Fan Off Temp</strong> entry, you can specify at what temperature
-should the fan stop.<br>
+<p>In <strong>Fan Mode</strong> you can select how the fan will be controlled: in the
+On/Off mode, the fan speed will be controlled by the current system temperature and
+the "Low Temp" and the "Fan Off Temp" values explained bellow tell at speed the fan will
+turn. The Always mode are self-explanatory.
 
-In the <strong>Low Temp</strong> entry you specify the threshold temperature
+<p>In the <strong>Fan Off Temp</strong> entry, you can specify at what temperature
+should the fan stop.
+
+<p>In the <strong>Low Temp</strong> entry you specify the threshold temperature
 between the low and fast fan speed: at lower temperatures the fan turns at low
 speed, while at higher temperatures it turns at the fast speed.
+
+<p>In the <strong>Temp hysteresis</strong> entry you specify the temperature windows around the
+Fan Off Temp and the Low Temp change points. E.g., if the current temperature is 42, the fan is
+running at slow speed, the Low Temp value is 40 and the Temp hysteresis is 1, the fan will only
+stop turning when the current temperature drops to 39 (Low Temp - Temp hysteresis); then, as the
+system temperature starts raising, the fan will only start turning slow again when the system
+temperature reaches 41 (Low Temp + Temp hysteresis). The same happens around the Low Temp.  
+
 </li>
 </ul>
 
-<p> In <strong>System Safety</strong>, you can specify a warning and
+<p> In the <strong>System Safety</strong> section, you can specify a warning and
 critical temperature limits of the box, as well as the full path name
 of a script that you wrote and that must be executed when the box
 temperature attains those limits.<br>
 
 The default command to execute when the <strong>Critical Temperature
-</strong> limit is attained, "/sbin/poweroff", makes the box shut
+</strong> limit is attained, "/usr/sbin/poweroff", makes the box shut
 down.<br>
 
 If you check the <strong>Send email</strong> checkbox, an email will be
@@ -74,7 +93,7 @@ sent when any of the temperatures limits are exceeded. The email will be
 sent only once; no email will be sent if the temperature drops below
 the setpoints.</p>
 
-<p> In the <strong>Action to execute on Button press</strong>, you can
+<p> In the <strong>Action to execute on Button press</strong> section, you can
 specify the full path name of scripts that you wrote and that must be
 executed when your press the box buttons:<ol>
 
