@@ -860,9 +860,7 @@ int main(int argc, char *argv[]) {
 	}
 		
 	while(1) {
-		
-		sleepCount++;
-		
+				
 		// read desired power led state twice a second
 		if(((sleepCount * pollTimeMs) % 500) == 0) {
 			if (read_str_from_file(sys_pled_trigger, led_trigger, sizeof(led_trigger)))
@@ -924,6 +922,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		sleepCount++;
+				
 		// sleep, waiting for a client command
 		ret = poll(fds, nfds, pollTimeMs); // Time out after pollTimeMs
 		
