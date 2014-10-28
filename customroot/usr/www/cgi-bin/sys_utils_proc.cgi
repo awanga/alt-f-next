@@ -116,7 +116,7 @@ case "$action" in
 	Poweroff)
 		html_header "<br><br>The box is being powered off."
 		echo "</body></html>"
-		/sbin/poweroff
+		/usr/sbin/poweroff
 		exit 0
 		;;
 
