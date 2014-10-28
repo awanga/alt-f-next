@@ -27,7 +27,7 @@ elif test "$Submit" = "ntpserver"; then
 	sntp -s $ntps >& /dev/null
 fi
 
-hwclock -w -u >& /dev/null
+hwclock -wu >& /dev/null
 
 #enddebug
 gotopage /cgi-bin/time.cgi
