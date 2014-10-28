@@ -38,7 +38,7 @@ if test $# = 0; then
 	usage
 
 elif test "$1" = "-show"; then
-	echo "RTC:  $(hwclock -u | awk '{print $4}')"
+	echo "RTC:  $(hwclock -ru | awk '{print $4}')"
 	echo "date: $(date | awk '{print $4}')"
 	echo "sntp: $(sntp $NTPD_SERVER | tail -1 | awk '{print $4 " " $5 $6}')"
 
