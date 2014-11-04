@@ -1,3 +1,4 @@
+./etc/init.d/S41pptpd
 ./etc/ppp/options.pptpd
 ./etc/pptpd.conf
 ./usr/lib/pptpd

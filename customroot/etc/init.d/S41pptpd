@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Starts pptpd
+#
+
+DESC="PPTP server for the MS-PPTP VPN client"
+NAME=pptpd
+TYPE=net
+
+RC_PIDFILE=/var/run/pptpd.pid
+
+. /etc/init.d/common
+
+case "$1" in
+	start)
+		modprobe ppp_generic
+		start $NAME
+		;;
+	stop)
+		stop $NAME
+		modprobe -r ppp_mppe ppp_deflate ppp_async sha1_generic ppp_generic
+		;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart" ;;
+esac

@@ -1,6 +1,6 @@
 Package: pptpd
 Description: An implementation of a PPTP server providing full interoperability with the Microsoft PPTP VPN client.
-Version: 1.3.4
+Version: 1.3.4-2
 Depends: pppd, ipkg
 Architecture: arm
 Priority: optional
