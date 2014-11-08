@@ -106,10 +106,7 @@ fi
 isflashed
 flashed=$?
 
-# somehow blkid only reports /dev/mapper/ devices, not /dev/dm-* ones.
-# not blkid cache problem, is because /dev/mapper/* and /dev/dm-* has the same major,minor?
 blk=$(blkid -s LABEL -s TYPE)
-blk="$blk $(blkid -s LABEL -s TYPE /dev/dm-[0-9]*)"
 
 ppart=$(cat /proc/partitions)
 i=1
