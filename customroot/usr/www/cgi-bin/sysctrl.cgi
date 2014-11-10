@@ -108,7 +108,7 @@ case "$board" in
 	fmode="<select name=fan_mode id=fanmode_id onChange=\"tdis()\">"
 
 	i=0
-	for mode in "On/Off" "Always Off" "Always Low" "Always Fast"; do
+	for mode in "Auto" "Always Off" "Always Low" "Always Fast"; do
 		sel=""; if test "$fan_mode" = $i; then sel="selected"; fi
 		fmode="${fmode}<option $sel value=$i>$mode</option>"
 		i=$((++i))
@@ -132,6 +132,8 @@ case "$board" in
 	echo "Unknown board $board</table></fieldset>"
 	;;
 esac
+
+if test "$board" = "DNS-320L-A1"; then fb_dis="disabled"; fi
 
 cat<<-EOF
 	<fieldset><legend>System Safety</legend><table>
@@ -158,10 +160,10 @@ cat<<-EOF
 
 	<fieldset><legend>Action to execute on Button press</legend><table>
 			<tr><td>Front button 1st cmd:</td>
-				<td colspan=3><input type=text name=front_button_command1  value="$front_button_command1" $(ttip tt_1cmd)></td>
+				<td colspan=3><input $fb_dis type=text name=front_button_command1  value="$front_button_command1" $(ttip tt_1cmd)></td>
 			</tr>
 			<tr><td>Front button 2nd cmd:</td>
-				<td colspan=3><input type=text name=front_button_command2 value="$front_button_command2" $(ttip tt_2cmd)></td>
+				<td colspan=3><input $fb_dis type=text name=front_button_command2 value="$front_button_command2" $(ttip tt_2cmd)></td>
 			</tr>
 			<tr><td>Back button cmd:</td>
 				<td colspan=3><input type=text name=back_button_command value="$back_button_command" $(ttip tt_3cmd)></td>
