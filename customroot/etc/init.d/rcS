@@ -95,9 +95,9 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		ln -sf "/sys/class/leds/dns320:orange:r_hdd" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns320:orange:usb" /tmp/sys/usb_led
 		ln -sf "/sys/class/leds/dns320:blue:usb" /tmp/sys/usb2_led
+		echo 0 > /tmp/sys/temp1_input
 
 		# launch dns320-temp.sh
-		echo 40 > /tmp/sys/temp1_input
 		sed -i 's/^#[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
 		kill -1 1
 
@@ -111,6 +111,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		echo none > /tmp/sys/power_led/trigger
 		echo 1 > /tmp/sys/power_led/brightness
 		echo 0 > /tmp/sys/usb2_led/brightness
+		echo 0 > /tmp/sys/fan1_input
 
 		# the dns320l-daemon needs ttyS1, not yet available
 		if ! test -e /dev/ttyS1; then mknod /dev/ttyS1 c 4 65; fi
@@ -145,7 +146,7 @@ if test "$board" != "Unknown"; then
 	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
 		ln -sf /sys/class/hwmon/hwmon1/device/temp1_input /tmp/sys/temp1_input
 	else
-		touch /tmp/sys/temp1_input
+		echo 0 > /tmp/sys/temp1_input
 	fi
 
 	if test -f /sys/class/hwmon/hwmon0/device/fan1_input; then
