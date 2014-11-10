@@ -316,9 +316,9 @@ html_header() {
 
 	cat<<-EOF
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<head profile="http://www.w3.org/2005/10/profile">
-		<link rel="icon" type="image/png" href="../dns-323.png"/>
+		<html><head profile="http://www.w3.org/2005/10/profile">
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="icon" type="image/png" href="../dns-323.png">
 		<style type="text/css">
 			$(echo "$LOCAL_STYLE")
 			html { height: 100%; }
@@ -726,10 +726,10 @@ write_header() {
 	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
 	cat<<-EOF
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-		<html><head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<html>
 		<head profile="http://www.w3.org/2005/10/profile">
-		<link rel="icon" type="image/png" href="../dns-323.png"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="icon" type="image/png" href="../dns-323.png">
 	EOF
 
 	if ! loadsave_settings -st >/dev/null; then
