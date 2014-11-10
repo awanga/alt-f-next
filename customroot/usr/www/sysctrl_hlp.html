@@ -1,8 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head>
+<html><head profile="http://www.w3.org/2005/10/profile">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<head profile="http://www.w3.org/2005/10/profile">
-<link rel="icon" type="image/png" href="dns-323.png"/>
+<link rel="icon" type="image/png" href="dns-323.png">
 <title>System Control Help</title>
 </head><body>
 
@@ -58,7 +57,7 @@ should not exceed this value.
 <p>The fan on these box models can only have three fan settings: off, low speed and fast speed.
 
 <p>In <strong>Fan Mode</strong> you can select how the fan will be controlled: in the
-On/Off mode, the fan speed will be controlled by the current system temperature and
+Auto mode, the fan speed will be controlled by the current system temperature and
 the "Low Temp" and the "Fan Off Temp" values explained bellow tell at speed the fan will
 turn. The Always mode are self-explanatory.
 
@@ -95,45 +94,62 @@ the setpoints.</p>
 
 <p> In the <strong>Action to execute on Button press</strong> section, you can
 specify the full path name of scripts that you wrote and that must be
-executed when your press the box buttons:<ol>
+executed when your press the box buttons.
 
-<li>Three seconds after you start pressing the box front button, the
-right LED starts flashing,  and if you release the button the box will
-do a controlled reboot, but first will execute the script that you
-specified in the <strong>Front button 1st cmd entry</strong>.</li>
+<ul>
+	<li><strong>Front Power button</strong>:
+	The  <strong>DNS320L</strong> front power button can only be used to power
+	off the box. For the other boxes:
+	
+<ol>
+	<li>Three seconds after you start pressing the box front button, the
+	right LED starts flashing,  and if you release the button the box will
+	do a controlled reboot, but first will execute the script that you
+	specified in the <strong>Front button 1st cmd entry</strong>.</li>
 
-<li>If you keep pressing the button, the left LED will start flashing,
-and if you then release the button the box will do a controlled
-shutdown, but first will execute  the script that you specified in the
-<strong>Front button 2nd cmd entry</strong>.</li>
+	<li>If you keep pressing the button, the left LED will start flashing,
+	and if you then release the button the box will do a controlled
+	shutdown, but first will execute  the script that you specified in the
+	<strong>Front button 2nd cmd entry</strong>.</li>
 
-<li>If you keep pressing the button, both LEDs will stop flashing and if
-you then release the button no action will be taken.</li>
-
-<li>Finally, if you press the box back button for one or two seconds,
-both LEDs will start flashing, and the script that you specified in the
-<strong>Back button cmd</strong> will be executed.<br>
-If no script is specified all USB mounted filesystems will be unmounted,
-making it safe to remove the attached USB device. Notice that unmounting
-will be unsuccessful if any service is accessing the USB filesystems.<br>
-
-The back button also has two <em>recovery actions</em> if the
-<strong>Enable Recovery</strong> checkbox is checked:<ul>
-
-<li>If you keep the back button pressed for more than ten seconds, you
-can telnet the box at port 26, as root and without password. This is a
-safeguard in case you forget the password.</li>
-
-<li>As a last safeguard, if you press the back button for more that
-twenty seconds, all the settings saved in flash will be erased, and the
-box will do a controlled reboot. This is a last resort safeguard, in
-case you mess the box configuration so much that you can't do anything
-with it; after the reboot the box will behave as if no settings has
- ever been saved, and you have to struggle to find its IP address
-(if you have a DHCP server enabled in your network, the box will use it).</li>
-</ul></li>
-
+	<li>If you keep pressing the button, both LEDs will stop flashing and if
+	you then release the button no action will be taken.</li>
 </ol>
+</li>
+
+	<li><strong>USB/Reset button</strong>:
+	The <strong>DNS320, DNS320L, DNS325</strong>, in addition to the back or
+	bottom recessed Reset button also have a front or back USB button,
+	but currently both perform the same functionality.
+
+<ul>
+	<li>If you press the Reset/USB buttons for one or two seconds,
+	both LEDs will start flashing, and the script that you specified in the
+	<strong>Back button cmd</strong> will be executed.<br>
+	If no script is specified all USB mounted filesystems will be unmounted,
+	making it safe to remove the attached USB device. Notice that unmounting
+	will be unsuccessful if any service is accessing the USB filesystems.</li>
+
+	<li>The Reset/USB button also has two <em>recovery actions</em> if the
+	<strong>Enable Recovery</strong> checkbox is checked:
+	<ul>
+		<li>If you keep it pressed for more than ten seconds, you
+		can telnet the box at port 26, as root and without password. This is a
+		safeguard in case you forget the password.</li>
+
+		<li>As a last safeguard, if you press it for more that
+		twenty seconds, all the settings saved in flash will be erased, and the
+		box will do a controlled reboot. This is a last resort safeguard, in
+		case you mess the box configuration so much that you can't do anything
+		with it; after the reboot the box will behave as if no settings has
+		ever been saved, and you have to struggle to find its IP address
+		(if you have a DHCP server enabled in your network, the box will use it).</li>
+	</ul>
+	</li>
+</ul>
+</li>
+
+</ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
 </html>
