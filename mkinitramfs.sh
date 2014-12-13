@@ -266,7 +266,13 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	# remove empty dirs on sqimage (image itself *has* to have them)
 	find sqimage -depth -type d -empty -exec rmdir {} \;
 	
-	rm image/dev/null image/dev/console # mksquashfs can create device nodes
+	rm -f image/dev/null image/dev/console # mksquashfs can create device nodes
+	if ! test -f $CWD/mksquashfs.pf; then
+		cat<<-EOF > $CWD/mksquashfs.pf
+		/dev/null c 666 root root 1 3
+		/dev/console c 600 root root 5 1
+		EOF
+	fi
 	mksquashfs image rootfs.arm.sqall.$EXT -comp $COMP -noappend -b $SQFSBLK \
 		-always-use-fragments -all-root -pf $CWD/mksquashfs.pf
 
