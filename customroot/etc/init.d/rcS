@@ -16,7 +16,7 @@ for i in lib run log cache spool db lock; do
 	ln -sf /tmp/$i /var/$i
 done
 
-mkdir -p /mnt /var/spool/lpd /var/spool/samba
+mkdir -p /mnt /var/spool/lpd /var/spool/samba /var/run/mdadm
 chmod a+wt /var/spool/lpd /var/spool/samba
 
 echo > /etc/bay
@@ -98,7 +98,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		echo 0 > /tmp/sys/temp1_input
 
 		# launch dns320-temp.sh
-		sed -i 's/^#[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
+		sed -i 's/^#*[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
 		kill -1 1
 
 	elif test $board = "DNS-320L-A1"; then
@@ -117,7 +117,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		if ! test -e /dev/ttyS1; then mknod /dev/ttyS1 c 4 65; fi
 
 		# make init launch dns320l-daemon
-		sed -i 's/^#[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
+		sed -i 's/^#*[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
 		kill -1 1
 
 	elif test $board = "DNS-325-A1A2"; then
