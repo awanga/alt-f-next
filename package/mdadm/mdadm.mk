@@ -4,13 +4,20 @@
 #
 #############################################################
 
+# 3.1.5 incremental NOT OK
 MDADM_VERSION:=3.1.5
+# 3.2.6 incremental OK, +63KB then 3.1.5
+#MDADM_VERSION:=3.2.6
+# 3.3.2 incremental OK, + 54KB than 3.2.6
+#MDADM_VERSION:=3.3.2
+
 MDADM_SOURCE:=mdadm-$(MDADM_VERSION).tar.gz
 MDADM_CAT:=$(ZCAT)
 MDADM_SITE:=http://www.kernel.org/pub/linux/utils/raid/mdadm/
 MDADM_DIR:=$(BUILD_DIR)/mdadm-$(MDADM_VERSION)
 MDADM_BINARY:=mdadm
 MDADM_TARGET_BINARY:=sbin/mdadm
+MDADM_CFLAGS=-Os
 
 $(DL_DIR)/$(MDADM_SOURCE): $(MDADM_PATCH_FILE)
 	$(call DOWNLOAD,$(MDADM_SITE),$(MDADM_SOURCE))
@@ -22,7 +29,7 @@ $(MDADM_DIR)/.unpacked: $(DL_DIR)/$(MDADM_SOURCE)
 	touch $@
 
 $(MDADM_DIR)/.built: $(MDADM_DIR)/.unpacked
-	$(MAKE) CFLAGS="$(TARGET_CFLAGS) -DUCLIBC -DHAVE_STDINT_H" CC=$(TARGET_CC) -C $(MDADM_DIR)
+	$(MAKE) CFLAGS="$(TARGET_CFLAGS) $(MDADM_CFLAGS) -DUCLIBC -DHAVE_STDINT_H" CC=$(TARGET_CC) -C $(MDADM_DIR)
 	touch $@
 
 $(TARGET_DIR)/$(MDADM_TARGET_BINARY): $(MDADM_DIR)/.built
