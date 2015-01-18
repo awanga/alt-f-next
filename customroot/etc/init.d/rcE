@@ -14,6 +14,12 @@ rcall stop
 echo "rcE: saving date and time to RTC"
 hwclock -wu
 
+# terminate dns320 daemons
+if echo "$board" | grep -q "DNS-320"; then
+	sed -i 's/\(.*dns320.*\)/#\1/' /etc/inittab
+	kill -1 1
+fi
+
 # wait for services to stop
 sleep 5
 
@@ -40,19 +46,19 @@ for i in nfs cifs iso9660 davfs ext2 ext3 ext4 vfat ntfs; do
 		umount -t $i -rf -a 
 done
 
-echo "rcE: stopping RAID"
-for i in /dev/md[0-9]; do
-  if test -b $i; then
-	mdadm --stop $i
-  fi
-done
-
 echo "rcE: unmouting tmpfs /tmp"
 umount /tmp
 
 echo "rcE: stopping swap"
 for i in $(cat /proc/swaps | grep -o '/dev/.* '); do
 	swapoff $i
+done
+
+echo "rcE: stopping RAID"
+for i in /dev/md[0-9]; do
+  if test -b $i; then
+	mdadm --stop $i
+  fi
 done
 
 echo "rcE: ejecting all drives"
