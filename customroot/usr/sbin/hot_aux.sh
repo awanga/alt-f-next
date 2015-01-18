@@ -122,14 +122,6 @@ if test -d "/mnt/$lbl/Backup"; then
 	fi
 fi
 
-if test -n "$USER_SCRIPT" -a ! -f $USERLOCK; then
-	if test "/mnt/$lbl" = "$(dirname $USER_SCRIPT)" -a -x "/mnt/$lbl/$(basename $USER_SCRIPT)"; then
-		touch $USERLOCK
-		logger -st hot_aux "Executing \"$USER_SCRIPT start\" in background"
-		$USER_SCRIPT start &
-	fi
-fi
-
 if test -d "/mnt/$lbl/ffp"; then
 	if ! test -h /ffp -a -d "$(readlink -f /ffp)" ; then
 		logger -st hot_aux "ffp directory found in $lbl"
@@ -176,3 +168,13 @@ OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > /Alt-F/README.txt
 		logger -st hot_aux "Alt-F directory found in $lbl but not used, as fs is read-only!"
 	fi
 fi
+
+# the user script might need the Alt-F dir aufs mounted, so run it last
+if test -n "$USER_SCRIPT" -a ! -f $USERLOCK; then
+	if test "/mnt/$lbl" = "$(dirname $USER_SCRIPT)" -a -x "/mnt/$lbl/$(basename $USER_SCRIPT)"; then
+		touch $USERLOCK
+		logger -st hot_aux "Executing \"$USER_SCRIPT start\" in background"
+		$USER_SCRIPT start &
+	fi
+fi
+
