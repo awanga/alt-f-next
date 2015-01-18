@@ -47,9 +47,9 @@ eject_all() {
 	rm -f /home
 
 	# stop swap
-	for i in $(cat /proc/swaps | grep -o '/dev/sd..'); do
+	for i in $(cat /proc/swaps | grep -oE '/dev/(sd|md)..'); do
 		swapoff $i
-		sed -i '\|'$i'|d' /etc/fstab
+		sed -i '\|'^$i'|d' /etc/fstab
 		ns=$(awk '/SwapTotal:/{ns=$2*0.1/1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo);
 		mount -o remount,size=${ns}M /tmp
 	done
