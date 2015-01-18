@@ -11,6 +11,7 @@ GPTFDISK_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/gptfdisk/gptfdisk/$(GPTFDISK_VE
 GPTFDISK_DIR:=$(BUILD_DIR)/gptfdisk-$(GPTFDISK_VERSION)
 GPTFDISK_INSTALL_STAGING = NO
 GPTFDISK_LIBTOOL_PATCH = NO
+GPTFDISK_CFLAGS = -Os
 
 GPTFDISK_DEPENDENCIES = popt libuuid ncurses
 
@@ -41,8 +42,8 @@ $(GPTFDISK_HOOK_POST_EXTRACT):
 	echo -e "#!/bin/bash\necho \"\
 CC = \$$CC\\n\
 CXX = \$$CXX\\n\
-CFLAGS = \$$CFLAGS\\n\
-CXXFLAGS = \$$CXXFLAGS\\n\" >> Makefile" > $(GPTFDISK_DIR)/configure
+CFLAGS = \$$CFLAGS $(GPTFDISK_CFLAGS)\\n\
+CXXFLAGS = \$$CXXFLAGS $(GPTFDISK_CFLAGS)\\n\" >> Makefile" > $(GPTFDISK_DIR)/configure
 	chmod +x $(GPTFDISK_DIR)/configure
 	touch $@
 

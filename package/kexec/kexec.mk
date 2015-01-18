@@ -7,8 +7,10 @@
 KEXEC_VERSION = 2.0.6
 KEXEC_SOURCE = kexec-tools-$(KEXEC_VERSION).tar.xz
 KEXEC_SITE = http://kernel.org/pub/linux/utils/kernel/kexec/
+
 KEXEC_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
+KEXEC_CFLAGS = -Os
 KEXEC_DEPENDENCIES = uclibc
 
 ifeq ($(BR2_PACKAGE_KEXEC_ZLIB),y)
@@ -17,6 +19,8 @@ KEXEC_DEPENDENCIES += zlib
 else
 KEXEC_CONF_OPT += --without-zlib
 endif
+
+KEXEC_CONF_ENV = CC="$(TARGET_CC) $(KEXEC_CFLAGS)" CFLAGS="$(TARGET_CFLAGS) $(KEXEC_CFLAGS)" 
 
 $(eval $(call AUTOTARGETS,package,kexec))
 

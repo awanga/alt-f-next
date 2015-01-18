@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#NTP_VERSION:=4.2.6p3
 NTP_VERSION:=4.2.6p5
 NTP_SOURCE:=ntp-$(NTP_VERSION).tar.gz
 NTP_SITE:=http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/
@@ -12,6 +11,8 @@ NTP_DIR:=$(BUILD_DIR)/ntp-$(NTP_VERSION)
 NTP_CAT:=$(ZCAT)
 NTP_BINARY:=ntpd/ntpd
 NTP_TARGET_BINARY:=usr/sbin/ntpd
+
+NTP_CFLAGS=-Os
 
 ifeq ($(BR2_INET_IPV6),y)
 NTP_CONF_OPT += --enable-ipv6
@@ -44,6 +45,7 @@ $(NTP_DIR)/.configured: $(NTP_DIR)/.patched
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ENV) \
 		$(TARGET_CONFIGURE_ARGS) \
+		CFLAGS="$(TARGET_CFLAGS) $(NTP_CFLAGS)" \
 		ac_cv_lib_md5_MD5Init=no \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
