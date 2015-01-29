@@ -250,14 +250,11 @@ case "$action" in
 		;;
 
 	SystemConf)
-		for i in /mnt/*; do
-			if mountpoint -q $i; then
-				if test -f $i/alt-f.log; then
-					showlog $i/alt-f.log SystemConf "System Configuration"
-					break
-				fi
-			fi
-		done
+		df=/tmp/alt-f.log
+		if ! test -f $df; then
+			echo "No diagnostics file found, configure at Services->User, user" > $df
+		fi
+		showlog $df SystemConf "System Configuration"
 		exit 0
 		;;
 
