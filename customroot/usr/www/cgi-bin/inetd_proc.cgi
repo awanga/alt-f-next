@@ -31,8 +31,8 @@ elif test -n "$Submit"; then
 		rcstunnel disable >& /dev/null
 	fi
 
-	rcinetd enable $to_enable >& /dev/null
-	rcinetd disable $to_disable >& /dev/null
+	if test -n "$to_enable"; then rcinetd enable $to_enable >& /dev/null; fi
+	if test -n "$to_disable"; then rcinetd disable $to_disable >& /dev/null; fi
 
 	#enddebug
 	gotopage /cgi-bin/net_services.cgi
