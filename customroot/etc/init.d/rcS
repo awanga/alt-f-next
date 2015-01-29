@@ -73,16 +73,28 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 	if ! test -e /dev/mtd4; then mknod /dev/mtd4 c 90 8; fi
 	ifconfig eth0 hw ether $(nanddump -ql 2048 /dev/mtd4 | grep -E '..(:..){5}')
 
-	# get squashfs image from NAND and loop/aufs mount it.
-	# squashfs can't be run from a NAND flash (dns-320/325), in contrast to a NOR flash (dns-323/321)
-	if ! test -e /dev/mtd3; then mknod /dev/mtd3 c 90 6; fi
-	eval $(nanddump -ql 2048 /dev/mtd3 | strings) # contains sqimage_size=bytes_of_sqimage;
-	if test -n "$sqimage_size"; then
-		if test "$sqimage_size" -gt 0 -a "$sqimage_size" -lt 30000000; then
-			nanddump -qf /tmp/sqimage.xz -s 2048 -l $sqimage_size /dev/mtd3
+	# get sqimage from tftp if bootargs contains tftpargs=myip:tftpip[:netmask]
+	tftpargs=$(sed -n 's/.*tftpargs=\([.:[:digit:]]*\).*/\1/p' /proc/atags)
+	if test -n "$tftpargs"; then
+		eval $(echo $tftpargs | awk -F: '{printf "myip=%s tftpip=%s netmsk=%s", $1, $2, $3}')
+		logger -st rcS "tftp getting sqimage from $tftpip, myip $myip"
+		ifconfig eth0 up $myip $netmsk
+		if ! tftp -g -r rootfs.arm.sqimage.xz -l /tmp/sqimage.xz $tftpip; then
+			logger -st rcS "tftp get failed"
+		fi
+		ifconfig eth0 down
+	else # get squashfs image from NAND
+		# can't be run from a NAND (dns-320/325), in contrast to a NOR (dns-323/321)
+		if ! test -e /dev/mtd3; then mknod /dev/mtd3 c 90 6; fi
+		eval $(nanddump -ql 2048 /dev/mtd3 | strings) # contains sqimage_size=bytes_of_sqimage;
+		if test -n "$sqimage_size"; then
+			if test "$sqimage_size" -gt 0 -a "$sqimage_size" -lt 30000000; then
+				nanddump -qf /tmp/sqimage.xz -s 2048 -l $sqimage_size /dev/mtd3
+			fi
 		fi
 	fi
 
+	# loop/aufs mount sqimage
 	if test -s /tmp/sqimage.xz; then
 		mkdir -p /rootmnt/sqimage
 		mount -o loop /tmp/sqimage.xz /rootmnt/sqimage
