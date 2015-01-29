@@ -182,7 +182,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 		mtdf="*"
 	else
 		# filesystem does not have to fill the partiton, signal it
-		pcap=$(awk '/'$part'/{printf "<span class=\"blue\">%.1fGB</span>", $3/1048576}' /proc/partitions)
+		pcap=$(awk '/'$part'$/{printf "<span class=\"blue\">%.1fGB</span>", $3/1048576}' /proc/partitions)
 		mtd="<option>Mount</option>"
 	fi
 
