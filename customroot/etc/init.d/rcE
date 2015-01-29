@@ -85,8 +85,8 @@ echo "rcE: bringing network down"
 ifconfig eth0 down
 
 # do a kexec to a new kernel/rootfs instead of a reboot
-if test -f /root/zImage -o -f /root/rootfs.arm.*; then
-	cd /root
+if test -f /boot/zImage -o -f /boot/rootfs.arm.*; then
+	cd /boot
 
 	# no kernel image, use flashed kernel
 	if ! test -f zImage -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-320L-A1" -o "$board" = "DNS-325-A1A2"; then
