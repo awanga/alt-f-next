@@ -14,7 +14,7 @@ parse() {
 			if test "$key" = "password"; then
 				password=$(httpd -e "$value")
 			else
-				eval "$key=$value"
+				eval "$key=\"$value\""
 			fi
 		fi
 	done < $1
