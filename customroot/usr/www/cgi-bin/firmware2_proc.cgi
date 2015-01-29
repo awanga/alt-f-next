@@ -64,6 +64,17 @@ nand_flash() {
 	rm -f $TF
 }
 
+# remove aufs shadowed files under /Alt-F.
+rm_fixes() {
+	for i in $(find /rootmnt/ro /rootmnt/sqimage -type f 2> /dev/null | sed "s|^/rootmnt/[^/]*/||"); do
+		# it exists under /Alt-F, is not a conf file nor a file from a disk-installed package
+		#if test -f /Alt-F/$i && ! grep -q $i /etc/settings; then
+		if test -f /Alt-F/$i && ! grep -q $i /etc/settings /usr/lib/ipkg/info/*.list /usr/lib/ipkg/info/*.conffiles; then
+			rm -f /Alt-F/$i
+		fi
+	done
+}
+
 html_header "Firmware Updater"
 
 if ! test -f $kernel_file -a -f $initramfs_file; then
@@ -90,12 +101,12 @@ fi
 
 if test "$flash" = "SpecialReboot"; then
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
-	dd if=/dev/mtdblock2 of=/root/zImage bs=64 skip=1 >& /dev/null
-	dd if=/dev/mtdblock3 of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+	dd if=/dev/mtdblock2 of=/boot/zImage bs=64 skip=1 >& /dev/null
+	dd if=/dev/mtdblock3 of=/boot/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 
 elif test "$flash" = "TryIt"; then
-	dd if=$kernel_file of=/root/zImage bs=64 skip=1 >& /dev/null
-	dd if=$initramfs_file of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+	dd if=$kernel_file of=/boot/zImage bs=64 skip=1 >& /dev/null
+	dd if=$initramfs_file of=/boot/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
 
 elif test "$flash" = "FlashIt"; then
@@ -155,6 +166,17 @@ elif test "$flash" = "FlashIt"; then
 			loadsave_settings -rc
 			;;
 	esac
+
+	if aufs.sh -s > /dev/null; then
+
+		# bug-334 related: remove applied fixes and other customizations under /Alt-F,
+		# avoiding that changed files with the same name in the new firmware will be shadowed
+		aufs.sh -n
+		rm_fixes
+		aufs.sh -r
+
+		# remove previously updated packages under /Alt-F (bug-334)?
+	fi
 
 	rcsysctrl start >& /dev/null
 	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
