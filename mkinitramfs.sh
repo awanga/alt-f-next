@@ -107,10 +107,11 @@ fi
 # sq_pkgs: pre-installed packages on sqimage 
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
-base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools dropbear rsync portmap nfs-utils kexec gptfdisk-sgdisk sfdisk ntfs-3g zlib libiconv popt"
-base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp samba-small openssl openssh-sftp vsftpd wget msmtp stunnel"
+base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear  portmap nfs-utils kexec openssl zlib popt"
+base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp samba-small openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
+SQFSBLK=131072
 
 case $board in
 	dns323)
@@ -119,7 +120,6 @@ case $board in
 		all_pkgs=$fw_pkgs
 		;;
 	dns321)
-		SQFSBLK=131072
 		fw_pkgs="$base_pkgs $base_pkgs2 minidlna"
 		all_pkgs=$fw_pkgs
 		;;
@@ -128,10 +128,8 @@ case $board in
 			TYPE="sqsplit"
 			COMP=xz
 		fi
-
-		SQFSBLK=131072
-		fw_pkgs="$base_pkgs gptfdisk mtd-utils"
-		sq_pkgs="$base_pkgs2 ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission"
+		fw_pkgs="$base_pkgs mtd-utils"
+		sq_pkgs="$base_pkgs2 gptfdisk ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission sqlite"
 		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
 	*) echo "Unsupported \"$board\" board"; exit 1;;
@@ -230,6 +228,11 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 	sq_pkgs_deps=$(for i in $sq_pkgs; do rdeps $i; done | sort -u)
 
+	# bug 363: remove from sq_pkgs_deps any entries already in fw_pkgs_deps
+	sq_pkgs_deps=$(echo -e "$fw_pkgs_deps\n$fw_pkgs_deps\n$sq_pkgs_deps" | sort | uniq -u)
+	# echo -e "$fw_pkgs_deps" | sort -u > $CWD/fw
+	# echo -e "$sq_pkgs_deps" | sort -u > $CWD/sq
+
 	echo -e "$fw_pkgs_deps\n$sq_pkgs_deps" | sort -u > root/etc/preinst
 
 	# create ipkg status file stating which packages are pre installed
@@ -254,6 +257,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	sqimagefiles=$(cat $TF | sort -u)
 	rm $TF
 
+	rm -rf image sqimage
 	cp -a root image
 	mkdir -p sqimage
 	cd image
@@ -279,7 +283,6 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	mksquashfs sqimage rootfs.arm.sqimage.$EXT -comp $COMP -noappend -b $SQFSBLK \
 		-always-use-fragments -all-root
 
-	rm -rf image sqimage
 	mv rootfs.arm.sqall.$EXT rootfs.arm.sqimage.$EXT ${BLDDIR}/binaries/$board
 
 else
