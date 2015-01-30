@@ -123,7 +123,7 @@ esac
 
 # FIXME: use associative arrays
 # the brand models
-name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2A3 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B2 DNS-320L-rev-A1A2A3)
+name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2A3 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1B2 DNS-320L-rev-A1A2A3)
 working=(y y y y n y y y y)
 
 # the buildroot boards .config used
@@ -292,9 +292,9 @@ for i in ${!name[*]}; do
 done
 
 # DNS-320/325 devel only
-if true; then
-	cp ${DESTD}/urootfs ${DESTD}/uImage /srv/tftpboot/
-else
-	rm kernel initramfs defaults ${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage
+if test "$board" = dns325; then
+	(cd ${DESTD}; cp urootfs uImage rootfs.arm.sqimage.xz /srv/tftpboot/)
 fi
 
+rm -f kernel initramfs defaults \
+	${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage ${DESTD}/tsqimage
