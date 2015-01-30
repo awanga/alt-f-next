@@ -44,6 +44,7 @@ do_exports() {
 	linux_version=$BR2_CUSTOM_LINUX26_VERSION
 
 	export BLDDIR=$bdir
+	export PKGDIR=$BLDDIR/build_arm
 	export ROOTFS=$BLDDIR/project_build_arm/$board/root
 	export KERNEL=$BLDDIR/project_build_arm/$board/linux-$linux_version
 	export UCLIBC=$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3
