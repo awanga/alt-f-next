@@ -178,6 +178,7 @@ fi
 
 # notice, settings not yet loaded, TZ set to NONE-0
 logger -st rcS "Reading RCT in UTC and setting system time and date"
+if ! test -e /dev/rtc0; then mknod /dev/rtc0 c 254 0; fi
 hwclock -su
 
 logger -st rcS "Board: $board"
