@@ -64,17 +64,6 @@ nand_flash() {
 	rm -f $TF
 }
 
-# remove aufs shadowed files under /Alt-F.
-rm_fixes() {
-	for i in $(find /rootmnt/ro /rootmnt/sqimage -type f 2> /dev/null | sed "s|^/rootmnt/[^/]*/||"); do
-		# it exists under /Alt-F, is not a conf file nor a file from a disk-installed package
-		#if test -f /Alt-F/$i && ! grep -q $i /etc/settings; then
-		if test -f /Alt-F/$i && ! grep -q $i /etc/settings /usr/lib/ipkg/info/*.list /usr/lib/ipkg/info/*.conffiles; then
-			rm -f /Alt-F/$i
-		fi
-	done
-}
-
 html_header "Firmware Updater"
 
 if ! test -f $kernel_file -a -f $initramfs_file; then
@@ -167,16 +156,9 @@ elif test "$flash" = "FlashIt"; then
 			;;
 	esac
 
-	if aufs.sh -s > /dev/null; then
-
-		# bug-334 related: remove applied fixes and other customizations under /Alt-F,
-		# avoiding that changed files with the same name in the new firmware will be shadowed
-		aufs.sh -n
-		rm_fixes
-		aufs.sh -r
-
-		# remove previously updated packages under /Alt-F (bug-334)?
-	fi
+	# remove applied fixes and other customizations under /Alt-F,
+	# avoiding that changed files with the same name in the new firmware will be shadowed
+	fixup clean >& /dev/null
 
 	rcsysctrl start >& /dev/null
 	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file

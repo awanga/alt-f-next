@@ -13,7 +13,7 @@
 # a FILES variable lists affected files
 
 usage() {
-	echo usage: $0 "[force] apply <fix> | [force] rollback <fix> | status <fix> | download | list"
+	echo usage: $0 "[force] apply <fix> | [force] rollback <fix> | status <fix> | download | list | clean"
 	exit 1
 }
 
@@ -23,6 +23,18 @@ create_dirs() {
 	aufs.sh -n
 	for i in $FILES; do
 		mkdir -p /Alt-F/$(dirname $i)
+	done
+	aufs.sh -r
+}
+
+# remove aufs shadowed files under /Alt-F.
+rm_fixes() {
+	aufs.sh -n
+	for i in $(find /rootmnt/ro /rootmnt/sqimage -type f 2> /dev/null | sed "s|^/rootmnt/[^/]*/||"); do
+		# it exists under /Alt-F, is not a conf file nor a file from a disk-installed package
+		if test -f /Alt-F/$i && ! grep -q $i /etc/settings /usr/lib/ipkg/info/*.list; then
+			rm -f /Alt-F/$i
+		fi
 	done
 	aufs.sh -r
 }
@@ -175,6 +187,8 @@ case "$1" in
 	list) list ;;
 
 	download) download ;;
+
+	clean) rm_fixes ;;
 
 	*) usage ;;
 esac
