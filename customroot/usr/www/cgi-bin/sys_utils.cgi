@@ -74,6 +74,7 @@ cat<<-EOF
 	<input type="submit" name="action" value="UpdateList">
 	<input type="submit" name="action" value="Apply">
 	<input type="submit" name="action" value="Rollback">
+	<input type="submit" name="action" value="RemoveAll">
 	</fieldset>
 
 	<fieldset><legend>Administering password</legend>

@@ -157,6 +157,11 @@ case "$action" in
 		fi
 		;;
 
+	RemoveAll)
+		res=$(fixup clean)
+		if test $? != 0; then msg "$res"; fi
+		;;
+
 	StartAll) rcall start >& /dev/null ;;
 
 	StopAll) rcall stop >& /dev/null ;;
