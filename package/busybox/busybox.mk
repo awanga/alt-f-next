@@ -19,6 +19,7 @@ BUSYBOX_SITE:=http://www.busybox.net/downloads
 endif
 
 BUSYBOX_UNZIP=$(BZCAT)
+BUSYBOX_CFLAGS=-Os
 
 ifndef BUSYBOX_CONFIG_FILE
 BUSYBOX_CONFIG_FILE=$(subst ",, $(strip $(BR2_PACKAGE_BUSYBOX_CONFIG)))
@@ -102,13 +103,13 @@ $(BUSYBOX_DIR)/busybox: $(BUSYBOX_DIR)/.config
 	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
 		CROSS="$(TARGET_CROSS)" PREFIX="$(TARGET_DIR)" \
 		ARCH=$(KERNEL_ARCH) \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS)" -C $(BUSYBOX_DIR)
+		EXTRA_CFLAGS="$(TARGET_CFLAGS) $(BUSYBOX_CFLAGS)" -C $(BUSYBOX_DIR)
 ifeq ($(BR2_PREFER_IMA)$(BR2_PACKAGE_BUSYBOX_SNAPSHOT),yy)
 	rm -f $@
 	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
 		CROSS="$(TARGET_CROSS)" PREFIX="$(TARGET_DIR)" \
 		ARCH=$(KERNEL_ARCH) STRIP="$(STRIPCMD)" \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS)" -C $(BUSYBOX_DIR) \
+		EXTRA_CFLAGS="$(TARGET_CFLAGS) $(BUSYBOX_CFLAGS)" -C $(BUSYBOX_DIR) \
 		-f scripts/Makefile.IMA
 endif
 
@@ -117,7 +118,7 @@ ifeq ($(BR2_PACKAGE_BUSYBOX_FULLINSTALL),y)
 	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
 		CROSS="$(TARGET_CROSS)" CONFIG_PREFIX="$(TARGET_DIR)" \
 		ARCH=$(KERNEL_ARCH) \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS)" -C $(BUSYBOX_DIR) install
+		EXTRA_CFLAGS="$(TARGET_CFLAGS) $(BUSYBOX_CFLAGS)" -C $(BUSYBOX_DIR) install
 else
 	install -D -m 0755 $(BUSYBOX_DIR)/busybox $(TARGET_DIR)/bin/busybox
 endif
@@ -131,6 +132,8 @@ busybox-source: $(DL_DIR)/$(BUSYBOX_SOURCE)
 busybox-unpacked: host-sed $(BUILD_DIR) $(BUSYBOX_DIR)/.unpacked
 
 busybox-config: host-sed $(BUILD_DIR) $(BUSYBOX_DIR)/.config
+
+busybox-build: $(BUSYBOX_DIR)/busybox
 
 busybox-menuconfig: host-sed $(BUILD_DIR) busybox-source $(BUSYBOX_DIR)/.config
 	$(MAKE) __TARGET_ARCH=$(ARCH) -C $(BUSYBOX_DIR) menuconfig
