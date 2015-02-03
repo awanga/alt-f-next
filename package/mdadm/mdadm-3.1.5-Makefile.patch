@@ -1,0 +1,11 @@
+--- mdadm-3.1.5/Makefile.orig	2015-01-16 18:11:05.823027980 +0000
++++ mdadm-3.1.5/Makefile	2015-01-16 18:11:44.151232086 +0000
+@@ -73,7 +73,7 @@
+ MDMON_DIR = /dev/.mdadm
+ DIRFLAGS = -DMAP_DIR=\"$(MAP_DIR)\" -DMAP_FILE=\"$(MAP_FILE)\"
+ DIRFLAGS += -DMDMON_DIR=\"$(MDMON_DIR)\"
+-CFLAGS = $(CWFLAGS) $(CXFLAGS) -DSendmail=\""$(MAILCMD)"\" $(CONFFILEFLAGS) $(DIRFLAGS)
++override CFLAGS += $(CWFLAGS) $(CXFLAGS) -DSendmail=\""$(MAILCMD)"\" $(CONFFILEFLAGS) $(DIRFLAGS)
+ 
+ # The glibc TLS ABI requires applications that call clone(2) to set up
+ # TLS data structures, use pthreads until mdmon implements this support

@@ -1,0 +1,22 @@
+--- mdadm-3.2.6/Makefile.orig	2015-01-16 18:06:56.573593941 +0000
++++ mdadm-3.2.6/Makefile	2015-01-15 15:04:12.511151321 +0000
+@@ -67,16 +67,16 @@
+ # Both MAP_DIR and MDMON_DIR should be somewhere that persists across the
+ # pivotroot from early boot to late boot.
+ # /run is best, but for distros that don't support that, /dev can work.
+-MAP_DIR=/run/mdadm
++MAP_DIR=/var/run/mdadm
+ MAP_FILE = map
+ MAP_PATH = $(MAP_DIR)/$(MAP_FILE)
+ MDMON_DIR = $(MAP_DIR)
+ # place for autoreplace cookies
+-FAILED_SLOTS_DIR = /run/mdadm/failed-slots
++FAILED_SLOTS_DIR = $(MAP_DIR)/failed-slots
+ DIRFLAGS = -DMAP_DIR=\"$(MAP_DIR)\" -DMAP_FILE=\"$(MAP_FILE)\"
+ DIRFLAGS += -DMDMON_DIR=\"$(MDMON_DIR)\"
+ DIRFLAGS += -DFAILED_SLOTS_DIR=\"$(FAILED_SLOTS_DIR)\"
+-CFLAGS = $(CWFLAGS) $(CXFLAGS) -DSendmail=\""$(MAILCMD)"\" $(CONFFILEFLAGS) $(DIRFLAGS)
++override CFLAGS += $(CWFLAGS) $(CXFLAGS) -DSendmail=\""$(MAILCMD)"\" $(CONFFILEFLAGS) $(DIRFLAGS)
+ 
+ # The glibc TLS ABI requires applications that call clone(2) to set up
+ # TLS data structures, use pthreads until mdmon implements this support
