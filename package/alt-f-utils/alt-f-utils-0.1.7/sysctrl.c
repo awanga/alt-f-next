@@ -90,31 +90,34 @@ void print_config();
 void print_disks();
 
 typedef struct {
+	float hist_temp;
 	int lo_fan, hi_fan, lo_temp, hi_temp, mail, recovery, fan_off_temp,
-		max_fan_speed, warn_temp, crit_temp;
+		max_fan_speed, warn_temp, crit_temp, fan_mode;
 	char *warn_temp_command, *crit_temp_command,
 		*front_button_command1, *front_button_command2, *back_button_command;
 } args_t;
 
+enum FanMode {FAN_ON_OFF = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST};
+
 // configuration default values, overriden by configuration files
 args_t args =
-    { 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, NULL, "/sbin/poweroff", NULL, NULL,
+    { 1.0, 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, FAN_ON_OFF, NULL, "/usr/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum Boards { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2, DNS_320L_A1};
+enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2, DNS_320L_A1};
 int board;
 
-enum Buttons { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
-enum FanSpeed { FAN_OFF = 0, FAN_LOW = 127, FAN_FAST = 255 };
-enum RPMSpeed { RPM_OFF = 0, RPM_LOW = 3000, RPM_FAST = 6000 };
+enum Button { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
+enum PwdValue { PWM_OFF = 0, PWM_LOW = 127, PWM_FAST = 255 };
+enum RPMValue { RPM_OFF = 0, RPM_LOW = 3000, RPM_FAST = 6000 };
 
-enum Leds { left_led = 0, right_led, usb_led, power_led};
+enum Led { left_led = 0, right_led, usb_led, power_led};
 char *leds[] = { "/tmp/sys/left_led/", "/tmp/sys/right_led/", "/tmp/sys/usb_led/", "/tmp/sys/power_led/"};
 
 #define NSLOTS 3
 int nslots = NSLOTS;
 
-enum Slots { left_dev = 0, right_dev, usb_dev};
+enum Slot { left_dev = 0, right_dev, usb_dev};
 typedef struct {
 	char *dev;
 	char *slot;
@@ -128,12 +131,10 @@ disk_t disks[NSLOTS];
 
 char sys_pwm[] = "/tmp/sys/pwm1",
 	sys_fan_input[] = "/tmp/sys/fan1_input",
-	sys_temp_input[] = "/tmp/sys/temp1_input";
+	sys_temp_input[] = "/tmp/sys/temp1_input",
+	sys_power_button[] = "/tmp/sys/power_button";
 
 int fd_ev, wd_bay, wd_misc, wd_conf;
-
-// temperature hysteresis for fan control
-#define T_HIST 1.0
 
 // hack! blink_leds() use it to signal hdd_powercheck()
 int leds_changed = 0;
@@ -146,6 +147,11 @@ int leds_changed = 0;
 #define ABORT	9
 
 #define BUFSZ 256
+
+void quit_handler() {
+	syslog(LOG_INFO, "signaled to quit, quiting");
+	exit(0);
+}
 
 void alarm_handler() {
 }
@@ -213,6 +219,9 @@ int main(int argc, char *argv[]) {
 	new.sa_mask = smask;
 	new.sa_flags = 0;
 
+	new.sa_handler = quit_handler;
+	sigaction(SIGTERM, &new, NULL);
+	
 	// avoid zombie processes due to user scripts
 	new.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &new, NULL);
@@ -234,7 +243,7 @@ int main(int argc, char *argv[]) {
 	sigaction(SIGIO, &new, NULL);
 
 	/* log messages with syslog and write to /dev/console */
-	openlog("sysctrl", LOG_CONS, LOG_DAEMON);
+	openlog("sysctrl", LOG_CONS , LOG_DAEMON);
 	syslog(LOG_INFO, "Starting");
 
 	/* register inotify for changes in config files */
@@ -270,7 +279,7 @@ void mainloop() {
 	int powercheck_interval = 5;
 	int powercheck_count = powercheck_interval - 1;
 
-	int fan_interval = 30;
+	int fan_interval = 15;
 	int fan_count = fan_interval - 1;
 	
 	/* block all signals mask */
@@ -282,7 +291,7 @@ void mainloop() {
 	while (1) {
 		sigprocmask(SIG_BLOCK, &set, NULL); // block signal delivery (critical section)
 
-		if ((++fan_count % fan_interval) == 0)
+		if ((fan_count++ % fan_interval) == 0)
 			fanctl();
 
 		bt = debounce();
@@ -374,13 +383,13 @@ void back_button() {
 void reboot() {
 	syslog(LOG_INFO, "Rebooting NOW");
 	exec_userscript(args.front_button_command1, SCRIPT_TIMEOUT, NULL);
-	execl("/bin/busybox", "reboot", NULL);
+	execl("/sbin/reboot", "reboot", NULL);
 }
 
 void poweroff() {
 	syslog(LOG_INFO, "Poweroff NOW");
 	exec_userscript(args.front_button_command2, SCRIPT_TIMEOUT, NULL);
-	execl("/bin/busybox", "poweroff", NULL);
+	execl("/usr/sbin/poweroff", "poweroff", NULL);
 }
 
 char *checkfile(char *fname) {
@@ -491,7 +500,7 @@ void check_other_daemon() {
 		FILE *fp = fopen(pidf, "r");
 		pid_t opid;
 		if (fscanf(fp, "%d", &opid) != 1) {
-			syslog(LOG_ERR, " file %s exists but can't be read: %m",
+			syslog(LOG_ERR, "file %s exists but can't be read: %m",
 			       pidf);
 			exit(1);
 		}
@@ -594,7 +603,7 @@ int syserrorlog(char *emsg) {
 int read_str_from_file(const char *filename, char *str, int sz) {
 	int fd;
 	int len;
-
+	
 	fd = open(filename, O_RDONLY);
 	if (fd == -1) {
 		syslog(LOG_ERR, "open %s: %m", filename);
@@ -602,24 +611,27 @@ int read_str_from_file(const char *filename, char *str, int sz) {
 	}
 	len = read(fd, str, sz);
 	close(fd);
-
+	
 	if (len < 1)
 		return -1;
-	str[len - 1] = 0;
+	str[len-1] = 0;
 	return 0;
 }
 
 int write_str_to_file(const char *filename, char *str) {
-	int fd;
-
-	if ((fd = open(filename, O_WRONLY)) == -1) {
-		fd = open(filename, O_WRONLY | O_CREAT, 0644);
-		if (fd == -1) {
+	int fd, len;
+	char buf[64];
+	
+	if ((fd = open(filename, O_WRONLY | O_TRUNC)) == -1) {
+		if ((fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644)) == -1) {
 			syslog(LOG_ERR, "open %s: %m", filename);
 			return -1;
 		}
 	}
-	write(fd, str, strlen(str));
+	strcpy(buf, str);
+	len = strlen(buf);
+	buf[len]='\n';
+	write(fd, buf, len+1);
 	close(fd);
 	return 0;
 }
@@ -628,23 +640,14 @@ int read_int_from_file(const char *filename, int *u) {
 	char buf[64];
 	if (read_str_from_file(filename, buf, 64))
 		return -1;
-	*u = atoi(buf);
+	sscanf(buf, "%d", u);
 	return 0;
 }
 
 int write_int_to_file(const char *filename, int u) {
-	int fd;
 	char buf[64];
-
-	fd = open(filename, O_WRONLY);
-	if (fd == -1) {
-		syslog(LOG_ERR, "open %s: %m", filename);
-		return -1;
-	}
 	sprintf(buf, "%d", u);
-	write(fd, buf, strlen(buf));
-	close(fd);
-	return 0;
+	return write_str_to_file(filename, buf);
 }
 
 void check_board() {
@@ -698,7 +701,11 @@ int read_fan(void) {
 }
 
 void write_pwm(int u) {
-	write_int_to_file(sys_pwm, u);
+	static int old = -1;
+	if (u != old) {
+		old = u;
+		write_int_to_file(sys_pwm, u);
+	}
 }
 
 int read_pwm(void) {
@@ -707,7 +714,11 @@ int read_pwm(void) {
 	return u;
 }
 
-/* for the DNS-320, a sh script is asynchronously writing the temperature to the file */
+/* -for the DNS-320, a sh script is asynchronously writing the temperature to a file.
+ * -for the DNS320L, the dns320l-daemon is asynchronously writing the temperature 
+ * and fanspeed and reading desired fanspeed to a file, but using read() and write()
+ * which are atomic and dont need a lock.
+ */
 #define LOCK_DIR "/var/lock/temp-lock"
 
 void clearlock() {
@@ -732,7 +743,7 @@ int dolock() {
 				} else {
 					if (kill(u, 0)) {
 						 /* reuse lock and continue */
-						syslog(LOG_INFO, "owner of "LOCK_DIR" dissapeared, removing stale lock.");
+						syslog(LOG_INFO, "owner of "LOCK_DIR" disappeared, removing stale lock.");
 					} else {
 						syserrorlog("owner of "LOCK_DIR" is alive, can't get lock, exiting.");
 						exit(1);
@@ -760,61 +771,67 @@ int read_temp(void) {
 }
 
 void fanctl(void) {
-	static float last_temp = 0.;
-	static int warn = 0, crit = 0;
-	int pwm;
+	static float temp = 0., log_temp = 0.;
+	static int warn = 0, crit = 0, log_fan = 0;
+	int fan, pwm;
 
-	if (last_temp == 0.) // zero has an exact float representation
-		last_temp = read_temp() / 1000.;
+	if (temp == 0.) // zero has an exact float representation
+		temp = read_temp() / 1000.;
+	else
+		temp = 0.9 * read_temp() / 1000. + 0.1 * temp;
 	
-	float temp = 0.5 * read_temp() / 1000. + 0.5 * last_temp;
-	int fan = read_fan();
-	
+	fan = read_fan();
+	pwm = read_pwm();
+
+	if ( (fabsf(temp - log_temp) > 1.0) || (abs(fan - log_fan) > 400)) {
+		log_temp = temp;
+		log_fan = fan;
+		syslog(LOG_INFO, "temp=%.1f	pwm=%d fan=%d", temp, pwm, fan);
+	}
+
 	if (board == DNS_323_A1 || board == DNS_323_B1 ) {
 		float m = (args.hi_fan - args.lo_fan) * 1. / (args.hi_temp - args.lo_temp);
 		float b = args.lo_fan - m * args.lo_temp;
 		
-		if (temp < (args.fan_off_temp - T_HIST))
+		if (temp < (args.fan_off_temp - args.hist_temp))
 			pwm = 0;
-		else if (temp > (args.fan_off_temp + T_HIST))
+		else if (temp > (args.fan_off_temp + args.hist_temp))
 			pwm = (int)poly(temp * m + b, f2p);
-		else
-			pwm = read_pwm();
 		
 		if (fan >= args.max_fan_speed) {
 			int tpwm = poly(args.max_fan_speed, f2p);
 			if ( tpwm < pwm)
 				pwm = tpwm;
 		}
-		
 	} else { // Augusto Bott code
-		switch (fan) {
-			case RPM_OFF:
-				pwm = FAN_OFF;
-				if (temp > (args.fan_off_temp + T_HIST))
-					pwm = FAN_LOW;
-				break;
-			case RPM_LOW:
-				pwm = FAN_LOW;
-				if (temp < (args.fan_off_temp - T_HIST))
-					pwm = FAN_OFF;
-				else if (temp > (args.lo_temp + T_HIST))
-					pwm = FAN_FAST;
-				break;
-			case RPM_FAST:
-				pwm = FAN_FAST;
-				if (temp < (args.lo_temp - T_HIST))
-					pwm = FAN_LOW;
+		switch (args.fan_mode) {
+			case FAN_ALWAYS_OFF: pwm = PWM_OFF; break;
+			case FAN_ALWAYS_SLOW: pwm = PWM_LOW; break;
+			case FAN_ALWAYS_FAST: pwm = PWM_FAST; break;
+			case FAN_ON_OFF:
+				switch (fan) {
+					case RPM_OFF:
+						pwm = PWM_OFF;
+						if (temp > (args.fan_off_temp + args.hist_temp))
+							pwm = PWM_LOW;
+						break;
+					case RPM_LOW:
+						pwm = PWM_LOW;
+						if (temp < (args.fan_off_temp - args.hist_temp))
+							pwm = PWM_OFF;
+						else if (temp > (args.lo_temp + args.hist_temp))
+							pwm = PWM_FAST;
+						break;
+					case RPM_FAST:
+						pwm = PWM_FAST;
+						if (temp < (args.lo_temp - args.hist_temp))
+							pwm = PWM_LOW;
+						break;
+				}
 				break;
 		}
-	}	
-	write_pwm(pwm);
-	fan = read_fan();
-
-	if (fabsf(temp - last_temp) > 0.2) {
-		last_temp = temp;
-		syslog(LOG_INFO, "temp=%.1f	 fan=%d", temp, fan);
 	}
+	write_pwm(pwm);
 
 	if (temp > args.warn_temp && temp < args.crit_temp && warn == 0) {
 		char buf[BUFSZ];
@@ -833,7 +850,7 @@ void fanctl(void) {
 	if (temp > args.crit_temp && crit == 0) {
 		char buf[BUFSZ];
 		if (args.mail)
-		smail(CRITT, fan, temp, args.crit_temp);
+			smail(CRITT, fan, temp, args.crit_temp);
 		snprintf(buf, BUFSZ, "OVERHEAT: fan=%d temp=%.1f exceeded critical=%d",
 		       fan, temp, args.crit_temp);
 		exec_userscript(args.crit_temp_command, 20, NULL);
@@ -993,12 +1010,13 @@ void hdd_powercheck(int noleds) {
 		dpmf += dpm;
 	}
 	
-	get_led(power_led, pled); // power led not in use by other script...
-	if (strcmp(pled, "none") == 0) {
-		if (dpmf) // at least one disk is active
-			set_led(power_led, "1");
-		else
-			set_led(power_led, "0");
+	if (get_led(power_led, pled) != -1) { // power led not in use by other script...
+		if (strcmp(pled, "none") == 0) {
+			if (dpmf) // at least one disk is active
+				set_led(power_led, "1");
+			else
+				set_led(power_led, "0");
+		}
 	}
 }
 
@@ -1063,52 +1081,8 @@ int md_stat() {
 	return ret;
 }
 
-/*
-struct input_event { // /usr/include/linux/input.h
-	struct timeval time;
-	__u16 type;
-	__u16 code;
-	__s32 value;
-};
-
-struct timeval { // /usr/include/linux/time.h
-        __kernel_time_t         tv_sec; 
-        __kernel_suseconds_t    tv_usec; 
-};
-
-	front-button: should be debounced!
-
-	sec=1246624645 usec=916710 type=1 code=74 value=1
-	sec=1246624645 usec=916724 type=0 code=0 value=0
-	sec=1246624645 usec=916752 type=1 code=74 value=0
-	sec=1246624645 usec=916755 type=0 code=0 value=0
-	sec=1246624645 usec=916805 type=1 code=74 value=1
-	sec=1246624645 usec=916811 type=0 code=0 value=0
-	sec=1246624648 usec=688130 type=1 code=74 value=0
-	sec=1246624648 usec=688138 type=0 code=0 value=0
-
-	back-button: no bounce
-
-	sec=1246624676 usec=125396 type=1 code=198 value=1
-	sec=1246624676 usec=125410 type=0 code=0 value=0
-	sec=1246624678 usec=70803 type=1 code=198 value=0
-	sec=1246624678 usec=70813 type=0 code=0 value=0
-
-	type:
-	1 EV_KEY
-	0 EV_SYN
-
-	code:
-	74 FRONT_BUTTON
-	198 BACK_BUTTON
-	a1 or 85 USB_BUTTON
-
-	};
-*/
-
 #define GPIO_INPUT_DEVICE "/dev/event0"
 
-// KEY_POWER,KEY_POWER, KEY_COPY defined in /usr/include/linux/input.h
 #define FRONT_EV	0x0074	// DNS-320/320L/323/325 front button event (KEY_POWER)
 #define RESET_EV	0x0198	// DNS-320/320L/323/325 reset back button event (KEY_RESTART)
 #define USB_EV		0x0085	// DNS-320/320L/325 USB back button event (KEY_COPY)
@@ -1140,10 +1114,6 @@ int button() {
 		else if (ev.code == USB_EV)
 			but = USB_BT | (ev.value << PRESSED);
 
-		// syslog(LOG_INFO, "sec=%d usec=%d type=%x code=%x value=%x but=%x\n",
-		// (int) ev.time.tv_sec, (int) ev.time.tv_usec, ev.type, ev.code, ev.value, but);
-
-		// wait for EV_SYN, from 3 to 17 usec
 		do {
 			usleep(10);
 		} while ((n = read(fd, &ev, sizeof(struct input_event))) == 0);
@@ -1161,6 +1131,14 @@ int debounce() {
 	static int bt = NO_BT;
 	int count, tbt;
 	
+	if (board == DNS_320L_A1) {
+		int but;
+		if (read_int_from_file(sys_power_button, & but) == 0 && but == 0) {
+			syslog(LOG_INFO, "DNS320L power button pressed, poweroff.");
+			poweroff();
+		}
+	}
+		
 	tbt = button();
 	if (tbt == -1 || tbt == 0)	// no new event, return last button
 		return bt;
@@ -1183,15 +1161,8 @@ int debounce() {
 }
 
 void syswrite(char *fname, char *value) {
-	int fd;
-	if ((fd = open(fname, O_WRONLY)) == -1) {
-		syslog(LOG_INFO, "open %s: %m", fname);
-		return;
-	}
-	write(fd, value, strlen(value));
-	close(fd);
+	write_str_to_file(fname, value);
 }
-
 
 void set_led(int which, char *mode) {
 	char buf[128];
@@ -1206,19 +1177,28 @@ void set_led(int which, char *mode) {
 }
 
 int get_led(int which, char *mode) {
-	char buf1[128], buf2[128];
+	char buf1[128], buf2[128], *ts, *te;
 	int u;
 	
 	if (leds[which] == NULL)
 		return -1;
 	
 	sprintf(buf1, "%s%s", leds[which], "trigger");	
-	read_str_from_file(buf1, buf2, 128);
-	*(strchr(buf2,']')) = '\0';
-	strcpy(mode, strchr(buf2,'[') + 1);
+	if (read_str_from_file(buf1, buf2, 128))
+		return -1;
+	
+	ts = strchr(buf2,'[');
+	te = strchr(buf2,']');
+	
+	if (ts != NULL && te != NULL) {
+		*te = '\0';
+		strcpy(mode, ts + 1);
+	} else if (ts == NULL && te == NULL)
+		strcpy(mode, buf2);;
 	
 	sprintf(buf1, "%s%s", leds[which], "brightness");
-	read_int_from_file(buf1, &u);
+	if (read_int_from_file(buf1, &u))
+		return -1;
 	return u;
 }
 
@@ -1264,6 +1244,17 @@ void config(char *n, char *v) {
 		args.lo_temp = atoi(v);
 	} else if (strcmp(n, "hi_temp") == 0) {
 		args.hi_temp = atoi(v);
+	} else if (strcmp(n, "hist_temp") == 0) {
+		args.hist_temp = atof(v);
+	} else if (strcmp(n, "fan_mode") == 0) {
+		args.fan_mode = atoi(v);
+		switch (args.fan_mode) {
+			case FAN_ALWAYS_OFF: break;
+			case FAN_ALWAYS_SLOW: break;
+			case FAN_ALWAYS_FAST: break;
+			case FAN_ON_OFF: break;
+			default: args.fan_mode = FAN_ON_OFF; break;
+		}
 	} else if (strcmp(n, "fan_off_temp") == 0) {
 		args.fan_off_temp = atoi(v);
 	} else if (strcmp(n, "max_fan_speed") == 0) {
@@ -1330,13 +1321,10 @@ void read_misc() {
 			continue;
 		sscanf(val, "%d", &sl);
 		if (strcmp(cmd, "HDSLEEP_LEFT") == 0) {
-			//syslog(LOG_INFO, "HDSLEEP_LEFT=%d", sl);
 			disks[left_dev].spindow_time = sl*60;
 		} else if (strcmp(cmd, "HDSLEEP_RIGHT") == 0) {
-			//syslog(LOG_INFO, "HDSLEEP_RIGHT=%d", sl);
 			disks[right_dev].spindow_time = sl*60;
 		} else if (strcmp(cmd, "HDSLEEP_USB") == 0) {
-			//syslog(LOG_INFO, "HDSLEEP_USB=%d", sl);
 			disks[usb_dev].spindow_time = sl*60;
 		}
 	}
@@ -1367,15 +1355,12 @@ void read_bay() {
         if (opt == NULL || dev == NULL || strlen(opt) == 0 || strlen(dev) == 0)
 			continue;
 		if (strcmp(opt, "left_dev") == 0) {
-			//syslog(LOG_INFO, "left_dev=%s", dev);
 			disks[left_dev].dev = strdup(dev);
 			disks[left_dev].slot = "left";
 		} else if (strcmp(opt, "right_dev") == 0) {
-			//syslog(LOG_INFO, "right_dev=%s", dev);
 			disks[right_dev].dev = strdup(dev);
 			disks[right_dev].slot = "right";
 		} else if (strncmp(opt, "usb", 3) == 0 && strncmp(&opt[4], "_dev", 4) == 0) {
-			//syslog(LOG_INFO, "usb_dev=%s", dev);
 			disks[usb_dev].dev = strdup(dev);
 			disks[usb_dev].slot = "usb";
 		}
@@ -1387,9 +1372,9 @@ void print_disks() {
 	int i;
 	for(i = 0; i < nslots; i++) {
 		syslog(LOG_INFO, "%s %s rdwr=%lu last=%lu spindow=%lu power=%d\n",
-			   disks[i].dev, disks[i].slot, disks[i].rdwr_cnt,
-				(unsigned long) disks[i].last_access, (unsigned long) disks[i].spindow_time,
-				disks[i].power_state);
+			disks[i].dev, disks[i].slot, disks[i].rdwr_cnt,
+			(unsigned long) disks[i].last_access, (unsigned long) disks[i].spindow_time,
+			disks[i].power_state);
 	}
 }
 
@@ -1401,8 +1386,7 @@ void read_config() {
 	syslog(LOG_INFO, "reading /etc/sysctrl.conf");
 	fp = fopen("/etc/sysctrl.conf", "r");
 	if (fp == NULL) {
-		syslog(LOG_INFO,
-		       "can't open /etc/sysctrl.conf: %m\nUsing defaults");
+		syslog(LOG_INFO, "can't open /etc/sysctrl.conf: %m\nUsing defaults");
 		return;
 	}
 
@@ -1420,9 +1404,8 @@ void read_config() {
 		// name = value
 		n = str;
 		v = strchr(str, '=');
-		if (v == NULL) {
+		if (v == NULL)
 			syserrorlog("Error in sysctrl.conf, '=' expected.");
-		}
 		trim(&n, v++);
 		trim(&v, NULL);
 		config(n, v);
@@ -1431,10 +1414,19 @@ void read_config() {
 }
 
 void print_config() {
+	char *mode;
 	syslog(LOG_INFO, "args.lo_fan=%d", args.lo_fan);
 	syslog(LOG_INFO, "args.hi_fan=%d", args.hi_fan);
 	syslog(LOG_INFO, "args.lo_temp=%d", args.lo_temp);
 	syslog(LOG_INFO, "args.hi_temp=%d", args.hi_temp);
+	syslog(LOG_INFO, "args.hist_temp=%.1f", args.hist_temp);
+	switch(args.fan_mode) {
+		case FAN_ALWAYS_OFF: mode="ALWAYS_OFF"; break;
+		case FAN_ALWAYS_SLOW: mode="ALWAYS_SLOW"; break;
+		case FAN_ALWAYS_FAST: mode="ALWAYS_FAST"; break;
+		case FAN_ON_OFF: mode="ON_OFF"; break;
+	}
+	syslog(LOG_INFO, "args.fan_mode=%s", mode);
 	syslog(LOG_INFO, "args.mail=%d", args.mail);
 	usleep(1000); /* give syslog a break */
 	syslog(LOG_INFO, "args.recovery=%d", args.recovery);
