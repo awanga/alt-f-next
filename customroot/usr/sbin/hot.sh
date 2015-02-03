@@ -27,6 +27,7 @@ if test -z "$ACTION"; then
 	else
 		return 0
 	fi
+	echo "Using ACTION=$ACTION DEVTYPE=$DEVTYPE"
 	#SEQNUM=$(($(cat /dev/mdev.seq) + 1))
 fi
 
@@ -79,25 +80,27 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 
 	if test -z "$MDEV"; then return 0; fi
 
-	res=$(mdadm --query --examine --export --test $PWD/$MDEV)
-	if test $? = 0; then
-		mdadm --examine --scan --config=partitions > $MDADMC
-		echo "DEVICES /dev/sd*" >> $MDADMC
-		mdadm --incremental --no-degraded $PWD/$MDEV
-		eval $res
-		if test -z "$MD_NAME"; then # version 0.9 doesnt have the MD_NAME attribute
-			MD_NAME=$(ls /sys/block/${MDEV:0:3}/$MDEV/holders/)
-			MD_NAME=${MD_NAME:2}
-		else
-			MD_NAME=${MD_NAME##*:} # remove host: part
-		fi
-		if test -e $PWD/md$MD_NAME -a -b $PWD/md$MD_NAME; then
-			mdadm --query --detail $PWD/md$MD_NAME
-			if test $? = 0; then # generate hotplug event for /dev/md?. 
-				(cd /dev && ACTION=add DEVTYPE=partition PWD=/dev MDEV=md$MD_NAME /usr/sbin/hot.sh)
+	if test -d "/sys/block/${MDEV:0:3}/$MDEV"; then # only process partition-based RAID
+		res=$(mdadm --query --examine --export --test $PWD/$MDEV)
+		if test $? = 0; then
+			mdadm --examine --scan --config=partitions > $MDADMC
+			echo "DEVICES /dev/sd*" >> $MDADMC
+			mdadm --incremental $PWD/$MDEV
+			eval $res
+			if test -z "$MD_NAME"; then # version 0.9 doesnt have the MD_NAME attribute
+				MD_NAME=$(ls /sys/block/${MDEV:0:3}/$MDEV/holders/)
+				MD_NAME=${MD_NAME:2}
+			else
+				MD_NAME=${MD_NAME##*:} # remove host: part
 			fi
+			if test -e $PWD/md$MD_NAME -a -b $PWD/md$MD_NAME; then
+				mdadm --query --detail $PWD/md$MD_NAME
+				if test $? = 0; then # generate hotplug event for /dev/md?. 
+					(cd /dev && ACTION=add DEVTYPE=partition PWD=/dev MDEV=md$MD_NAME /usr/sbin/hot.sh)
+				fi
+			fi
+			return 0
 		fi
-		return 0
 	fi
 
 	eval $(blkid -c /dev/null $PWD/$MDEV | sed 's|^.*: ||')
@@ -130,7 +133,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			sed -i '\|^'$PWD/$MDEV'|d' $FSTAB
 			echo "$PWD/$MDEV none swap pri=1 0 0" >> $FSTAB
 			touch -r /tmp/fstab_date $FSTAB
-			rm /tmp/fstab_date
+			rm -f /tmp/fstab_date
 			return 0
 			;;
 		lvm2pv) # LVM
@@ -311,7 +314,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "disk"; then
 	if test -n "$bay"; then
 		sed -i '/^'$bay'_/d' $BAYC
 		sed -i '/^'$MDEV'/d' $BAYC
-		if test ${bay:0:3} = "usb" -a -h /tmp/sys/usb2_led; then
+		if test ${bay:0:3} = "usb" -a -h /tmp/sys/usb2_led && ! grep -q ^usb $BAYC; then
 			echo 0 > /tmp/sys/usb2_led/brightness
 		fi
 	fi
@@ -445,7 +448,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 		touch -r $FSTAB /tmp/fstab_date
 		sed -i '\|^'$PWD/$MDEV'|d' $FSTAB
 		touch -r /tmp/fstab_date $FSTAB
-		rm /tmp/fstab_date
+		rm -f /tmp/fstab_date
 	fi
 	return $ret	
 
