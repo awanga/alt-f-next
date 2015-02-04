@@ -14,6 +14,12 @@ rcall stop
 echo "rcE: saving date and time to RTC"
 hwclock -wu
 
+# terminate dns320 daemons
+if echo "$board" | grep -q "DNS-320"; then
+	sed -i 's/\(.*dns320.*\)/#\1/' /etc/inittab
+	kill -1 1
+fi
+
 # wait for services to stop
 sleep 5
 
