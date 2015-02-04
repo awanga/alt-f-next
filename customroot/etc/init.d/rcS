@@ -1,5 +1,7 @@
 #!/bin/sh
 
+#set -x
+
 /bin/mount -t proc proc /proc
 /bin/mount -o remount,rw /
 /bin/mount -t sysfs sysfs /sys
@@ -104,9 +106,16 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		ln -sf "/sys/class/leds/dns320l:red:sata1" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns320l:orange:usb" /tmp/sys/usb_led
 		ln -sf "/sys/class/leds/dns320l:blue:usb" /tmp/sys/usb2_led
+		ln -sf /sys/class/gpio/gpio29/value /tmp/sys/power_button
 		mkdir -p /tmp/sys/power_led
+		echo none > /tmp/sys/power_led/trigger
+		echo 1 > /tmp/sys/power_led/brightness
+		echo 0 > /tmp/sys/usb2_led/brightness
 
-		# launch dns320l-daemon
+		# the dns320l-daemon needs ttyS1, not yet available
+		if ! test -e /dev/ttyS1; then mknod /dev/ttyS1 c 4 65; fi
+
+		# make init launch dns320l-daemon
 		sed -i 's/^#[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
 		kill -1 1
 
@@ -148,23 +157,15 @@ if test "$board" != "Unknown"; then
 	fi
 
 	# start fan because the disks might have to be fsck and might warm up a lot in the process
-	# For the DNS-320L the dns320l-daemon handles fan/temp
 	echo 127 > /tmp/sys/pwm1
 
 	# stop blinking power-led.
 	echo "none" > /tmp/sys/power_led/trigger
 fi
 
-# set system clock from RTC, in UTC
-# kernel do it at boot time, but seems to not wait for second change
-if test $board = "DNS-320L-A1"; then
-	echo -e 'hctosys\r' | nc local:/var/run/dns320l.socket
-else
-	if ! test -e /dev/rtc0; then mknod /dev/rtc0 c 254 0; fi
-	i=0; o="$(hwclock)"
-	while test "$o" = "$(hwclock)" -a "$i" -lt 200; do i=$((i+1)); done
-	hwclock -su
-fi
+# notice, settings not yet loaded, TZ set to NONE-0
+logger -st rcS "Reading RCT in UTC and setting system time and date"
+hwclock -su
 
 logger -st rcS "Board: $board"
 logger -st rcS "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"

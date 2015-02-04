@@ -12,9 +12,6 @@ echo "rcE: stopping all services"
 rcall stop
 
 echo "rcE: saving date and time to RTC"
-# write system time to RTC, waiting for second change
-i=0; o="$(date +%s)"
-while test "$o" = "$(date +%s)" -a "$i" -lt 200; do i=$((i+1)); done
 hwclock -wu
 
 # wait for services to stop
@@ -38,16 +35,9 @@ if mount -t squashfs | grep -q /rootmnt/sqimage; then
 	umount /rootmnt/sqimage
 fi
 
-echo "rcE: unmounting all mounted filesystems"
+echo "rcE: unmounting or remounting read-only all mounted filesystems"
 for i in nfs cifs iso9660 davfs ext2 ext3 ext4 vfat ntfs; do
-		umount -t $i -rf -a 
-done
-
-echo "rcE: stopping RAID"
-for i in /dev/md[0-9]; do
-  if test -b $i; then
-	mdadm --stop $i
-  fi
+	umount -t $i -rf -a 
 done
 
 echo "rcE: unmouting tmpfs /tmp"
@@ -56,6 +46,13 @@ umount /tmp
 echo "rcE: stopping swap"
 for i in $(cat /proc/swaps | grep -o '/dev/.* '); do
 	swapoff $i
+done
+
+echo "rcE: stopping RAID"
+for i in /dev/md[0-9]; do
+  if test -b $i; then
+	mdadm --stop $i
+  fi
 done
 
 echo "rcE: ejecting all drives"
@@ -82,8 +79,8 @@ echo "rcE: bringing network down"
 ifconfig eth0 down
 
 # do a kexec to a new kernel/rootfs instead of a reboot
-if test -f /root/zImage -o -f /root/rootfs.arm.*; then
-	cd /root
+if test -f /boot/zImage -o -f /boot/rootfs.arm.*; then
+	cd /boot
 
 	# no kernel image, use flashed kernel
 	if ! test -f zImage -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-320L-A1" -o "$board" = "DNS-325-A1A2"; then
@@ -92,7 +89,7 @@ if test -f /root/zImage -o -f /root/rootfs.arm.*; then
 	
 	initrfs=$(ls rootfs.arm.*)
 	# no rootfs, use flashed rootfs
-	if ! test -f "$initrfs" -o "$board" = "DNS-320-A1A2" "$board" = "DNS-320L-A1" -o "$board" = "DNS-325-A1A2"; then
+	if ! test -f "$initrfs" -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-320L-A1" -o "$board" = "DNS-325-A1A2"; then
 		dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
 		initrfs=rootfs.arm.sqmtd
 	fi
@@ -115,6 +112,6 @@ fi
 mount / -o remount,ro
 echo "rcE: Poweroff NOW!"
 
-if test -f /tmp/.poweroff; then
+if test -f /boot/.poweroff; then
 	dns320l-daemon -x DeviceShutdown
 fi
