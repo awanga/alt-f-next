@@ -116,7 +116,7 @@ case "$action" in
 	Poweroff)
 		html_header "<br><br>The box is being powered off."
 		echo "</body></html>"
-		/sbin/poweroff
+		/usr/sbin/poweroff
 		exit 0
 		;;
 
@@ -143,6 +143,24 @@ case "$action" in
 		if test $? != 0; then msg "$res"; fi
 		;;
 
+	Details)
+		if test "$fixaction" != "Select+one"; then
+			msg "$(fixup status $fixaction)"
+		else
+			html_header "Fixes details"
+			echo "<ul>"
+			fixup list | while read st fx; do
+				fxi=$(echo $fx | cut -d"-" -f1)
+				msg=""; if test "$st" = "0"; then msg="(applied)"; fi
+				echo "<li>$fx $msg</li><pre>"
+				fixup status $fxi
+				echo "</pre>"
+			done
+			echo "</ul>$(back_button)</body></html>"
+			exit 0
+		fi
+		;;
+
 	Apply)
 		if test "$fixaction" != "Select+one"; then
 			res=$(fixup apply $fixaction)
@@ -155,6 +173,11 @@ case "$action" in
 			res=$(fixup rollback $fixaction)
 			if test $? != 0; then msg "$res"; fi
 		fi
+		;;
+
+	RemoveAll)
+		res=$(fixup clean)
+		if test $? != 0; then msg "$res"; fi
 		;;
 
 	StartAll) rcall start >& /dev/null ;;
@@ -250,14 +273,11 @@ case "$action" in
 		;;
 
 	SystemConf)
-		for i in /mnt/*; do
-			if mountpoint -q $i; then
-				if test -f $i/alt-f.log; then
-					showlog $i/alt-f.log SystemConf "System Configuration"
-					break
-				fi
-			fi
-		done
+		df=/tmp/alt-f.log
+		if ! test -f $df; then
+			echo "No diagnostics file found, configure at Services->User, user" > $df
+		fi
+		showlog $df SystemConf "System Configuration"
 		exit 0
 		;;
 
