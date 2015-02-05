@@ -83,7 +83,6 @@ checkname() {
 	echo "$1" | grep -v -q -e '^[^a-zA-Z]' -e '[^a-zA-Z0-9-].*'
 }
 
-
 find_mp() {
 	if ! test -d "$1"; then return 1; fi
 	tmp=$(readlink -f "$1")
@@ -200,6 +199,7 @@ disk_power() {
 	fi
 }
 
+# FIXME: relies on NOR /dev/mtd2 (kernel for DNS-321|DNS-323, initramfs for DNS-320|DNS-320L|DNS-325)
 isflashed() {
 	flashed_firmware=$(dd if=/dev/mtd2 ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
 	echo $flashed_firmware | grep -q Alt-F
@@ -218,7 +218,7 @@ isdirty() {
 
 # $1=part (sda2, eg)
 ismount() {
-	grep -q ^/dev/$1 /proc/mounts
+	grep -q ^/dev/$1[[:space:]] /proc/mounts
 }
 
 find_dm() {
@@ -480,6 +480,8 @@ check_cookie() {
 	exit 0
 }
 
+# FIXME: use sha1 to encode passwords.
+# The exception will be the first login, where the password has to be transmited in the clear to be used as the root password.
 js_sha1() {
 	cat<<-EOF
 	<script type="text/javascript">
@@ -638,7 +640,7 @@ embed_page() {
 
 # Contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com, adapted by Joao Cardoso
 # draws a bar graph, $1 is the percentage to display (1-100) and $2 is the text to display,
-# if $2 is not present $1 is displayed for the text.  Normally $2 is used when graphing data
+# if $2 is not present $1 is displayed for the text. Normally $2 is used when graphing data
 # that has a range other than 1-100. Since this graph uses a div it doesn't display inline
 drawbargraph() {
 
