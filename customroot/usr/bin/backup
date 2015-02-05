@@ -62,7 +62,7 @@ clean_logs() {
 		clogs=$((clogs-1))
 		last=$(ls $ddname | grep '^....-..-.._..-..-..$' | head -1)
 		logger -st backup "backup $id with $clogs backups ($nlogs configured), removing oldest $last"
-		rm -rf "$last"
+		rm -rf "$last" "${last}.log" 
 	done
 }
 
@@ -115,7 +115,8 @@ do_backup() {
 
 	if test -z "$first_time"; then
 		# the '/' in "$srcpath" is to copy directory contents, not directory
-		res=$(su -c "nice rsync -ax --stats --log-file=$destname/${date}.log $rsync_opt \
+		res=$(su -c "nice rsync -ax -F --delete-excluded --stats \
+			--log-file=$destname/${date}.log $rsync_opt \
 			\"${rsync_host}${srcpath}/\" \"$destname/$date\" " ${runas} )
 		st=$?
 	else
@@ -138,7 +139,7 @@ do_backup() {
 
 	ln -sf "$date" current
 	echo "$res"
-	logger -st backup "Backup $id finished"
+	logger -st backup "Backup $id finished at $(date)"
 	if test $nlogs -gt 0; then clean_logs; fi
 }
 
@@ -305,7 +306,7 @@ You must now setup a trusted password-less connection from host $(hostname)
 to host $host. This can't be automated, manual intervention is needed:
 1-Logged in as user $runas at host $host you should execute the commands
 	cd	# change to your home directory
-	scp $(hostname):.ssh/id_rsa.pub . # copy public key generated at $hostname to $host
+	scp $(hostname):.ssh/id_rsa.pub . # copy public key generated at $(hostname) to $host
 	cat id_rsa.pub >> .ssh/authorized_keys # allow password-less connection from $(hostname)
 2-Login as user $runas to host $(hostname) and execute the command
 	ssh $host # this will make $(hostname) a trusted host to host $host
