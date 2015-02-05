@@ -7,6 +7,7 @@ check_cookie
 #debug
 
 MIN_SIZE=20000 # minimum size of a partition or filesystem, in 512 bytes sectors (10MB)
+TWOTB=4294967296 # 2.2TB
 
 # $1=error message
 err() {
@@ -34,7 +35,7 @@ loadall() {
 # lower common size of all disks (in sectors)
 minsize() {
 	local i
-	msz=9999999999 # 5.2TB
+	msz=99999999999 # 52TB
 
 	for i in $disks; do
 		sz=$(cat /sys/block/$(basename $i)/size)
@@ -107,8 +108,8 @@ else
 	maxsect=$(cat /sys/block/$(basename $i)/size)
 fi
 
-	if test "$maxsect" -gt 4294967296; then # 2^32, 2.2 TB
-		maxsect=4294967296
+	if test "$maxsect" -gt $TWOTB; then
+		maxsect=$TWOTB
 	fi
 
 	if test "$3" = "equal"; then
@@ -229,7 +230,7 @@ partition() {
 	fi
 
 	for i in $disks; do
-		if test "$(cat /sys/block/$(basename $i)/size)" -gt 4294967296; then # 2^32, 2.2 TB
+		if test "$(cat /sys/block/$(basename $i)/size)" -gt $TWOTB; then
 			gpt_partition $i $1 $2 "$commonsect"
 		else
 			mbr_partition $i $1 $2 "$commonsect"
