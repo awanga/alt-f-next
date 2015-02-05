@@ -123,8 +123,8 @@ esac
 
 # FIXME: use associative arrays
 # the brand models
-name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1 DNS-320L-rev-A1)
-working=(y y y y n y y n y)
+name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2A3 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1B2 DNS-320L-rev-A1A2A3)
+working=(y y y y n y y y y)
 
 # the buildroot boards .config used
 hwboard=(dns323 dns323 dns323 dns321 dns343 dns325 dns325 dns325 dns325)
@@ -145,7 +145,7 @@ sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 104857600)
 
 # some kernels need a prologue to change the device_id set by the bootloader
 # read NOTE-1 bellow
-prez=(0606 0606 0606 0606 0606  "" ""  "" 128a)
+prez=(0606 0606 0606 0606 0606  "" ""  128a 128a)
 
 # other kernels needs an epilogue with a hardware device tree description
 postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
@@ -292,9 +292,9 @@ for i in ${!name[*]}; do
 done
 
 # DNS-320/325 devel only
-if true; then
-	cp ${DESTD}/urootfs ${DESTD}/uImage /srv/tftpboot/
-else
-	rm kernel initramfs defaults ${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage
+if test "$board" = dns325; then
+	(cd ${DESTD}; cp urootfs uImage rootfs.arm.sqimage.xz /srv/tftpboot/)
 fi
 
+rm -f kernel initramfs defaults \
+	${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage ${DESTD}/tsqimage
