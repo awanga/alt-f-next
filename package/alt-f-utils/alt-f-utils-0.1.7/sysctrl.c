@@ -97,11 +97,11 @@ typedef struct {
 		*front_button_command1, *front_button_command2, *back_button_command;
 } args_t;
 
-enum FanMode {FAN_ON_OFF = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST};
+enum FanMode {FAN_AUTO = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST};
 
 // configuration default values, overriden by configuration files
 args_t args =
-    { 1.0, 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, FAN_ON_OFF, NULL, "/usr/sbin/poweroff", NULL, NULL,
+    { 1.0, 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL,
   NULL };
 
 enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2, DNS_320L_A1};
@@ -808,7 +808,7 @@ void fanctl(void) {
 			case FAN_ALWAYS_OFF: pwm = PWM_OFF; break;
 			case FAN_ALWAYS_SLOW: pwm = PWM_LOW; break;
 			case FAN_ALWAYS_FAST: pwm = PWM_FAST; break;
-			case FAN_ON_OFF:
+			case FAN_AUTO:
 				switch (fan) {
 					case RPM_OFF:
 						pwm = PWM_OFF;
@@ -1252,8 +1252,8 @@ void config(char *n, char *v) {
 			case FAN_ALWAYS_OFF: break;
 			case FAN_ALWAYS_SLOW: break;
 			case FAN_ALWAYS_FAST: break;
-			case FAN_ON_OFF: break;
-			default: args.fan_mode = FAN_ON_OFF; break;
+			case FAN_AUTO: break;
+			default: args.fan_mode = FAN_AUTO; break;
 		}
 	} else if (strcmp(n, "fan_off_temp") == 0) {
 		args.fan_off_temp = atoi(v);
@@ -1424,7 +1424,7 @@ void print_config() {
 		case FAN_ALWAYS_OFF: mode="ALWAYS_OFF"; break;
 		case FAN_ALWAYS_SLOW: mode="ALWAYS_SLOW"; break;
 		case FAN_ALWAYS_FAST: mode="ALWAYS_FAST"; break;
-		case FAN_ON_OFF: mode="ON_OFF"; break;
+		case FAN_AUTO: mode="AUTO"; break;
 	}
 	syslog(LOG_INFO, "args.fan_mode=%s", mode);
 	syslog(LOG_INFO, "args.mail=%d", args.mail);
