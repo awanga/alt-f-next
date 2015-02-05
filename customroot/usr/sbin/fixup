@@ -7,71 +7,102 @@
 # status() returns 0 if the fix is already applied.
 # A REQUIRE variable might exist, containing fix <version>-<number> that
 # shall be recursively applied before, e.g. REQUIRE="0.1RC4-04 0.1RC4-02"
-# rollback() does not recursively remove REQUIRE fixes. Shall it?
-
-CONFM=/etc/misc.conf
-
-. $CONFM 
-
-if test -z "$FIXSITE"; then # to remove after RC4
-	FIXSITE=http://sourceforge.net/projects/alt-f/files/fixes
-	echo FIXSITE=$FIXSITE >> $CONFM
-fi
-
-VER=$(cat /etc/Alt-F)
-FIXDIR=/usr/share/fixes
-
-if ! test -d $FIXDIR; then mkdir -p $FIXDIR; fi
-cd $FIXDIR
+# rollback() does not recursively remove REQUIRE fixes
+# rollback() doesn't rollback a fix if it is required by another applied fix
+# add a force option
+# a FILES variable lists affected files
 
 usage() {
-	echo usage: $0 "apply <fix> | rollback <fix> | status <fix> | download | list"
+	echo usage: $0 "[force] apply <fix> | [force] rollback <fix> | status <fix> | download | list | clean"
 	exit 1
 }
 
+create_dirs() {
+	if test -z "$FILES"; then return; fi
+	
+	aufs.sh -n
+	for i in $FILES; do
+		mkdir -p /Alt-F/$(dirname $i)
+	done
+	aufs.sh -r
+}
+
+# remove aufs shadowed files under /Alt-F.
+rm_fixes() {
+	aufs.sh -n
+	for i in $(find /rootmnt/ro /rootmnt/sqimage -type f 2> /dev/null | sed "s|^/rootmnt/[^/]*/||"); do
+		# it exists under /Alt-F, is not a conf file nor a file from a disk-installed package
+		if test -f /Alt-F/$i && ! grep -q $i /etc/settings /usr/lib/ipkg/info/*.list; then
+			rm -f /Alt-F/$i
+		fi
+	done
+	aufs.sh -r
+}
+
 args() {
-	if test $# != 2; then usage; else include $2; fi
+	if test $# != 2; then usage; fi
+	include $*
+	create_dirs
 }
 
 include() {
 	if ! test -f fixes.lst; then download; fi
 
-	if test ${1%%-*} != "$VER"; then
-		fix=$(ls $VER-$1-*.fix 2> /dev/null)
+	if test ${2%%-*} != "$VER"; then
+		fix=$(ls $VER-$2-*.fix 2> /dev/null)
 	else
-		fix=$(ls $1-*.fix 2> /dev/null)
+		fix=$(ls $2-*.fix 2> /dev/null)
 	fi
 
 	if test -z "$fix"; then
-		echo "No such \"$1\" fix."
+		echo "No such \"$2\" fix."
 		exit 1
 	fi
 
 	. $fix
-	#echo $fix REQUIRE: $REQUIRE
 }
 
 download() {
 	# mirroring with wget doesn't work on sourceforge
-	rm * >& /dev/null
+
+	rm -f fixes.lst
 	if ! wget -q $FIXSITE/fixes.lst; then
 		echo "No No fixes available or can't download fixes."
 		touch fixes.lst
 		exit 1
 	fi
 
-	for i in $(cat fixes.lst | grep $VER); do
-		flst="$flst $FIXSITE/$i"
+	for i in $(cat fixes.lst | grep ^$VER-); do
+		if ! test -f $i; then
+			echo $i
+			flst="$flst $FIXSITE/$i"
+		fi
 	done
 
 	if test -n "$flst"; then
 		wget -q $flst
 	fi
+
+	# remove repository deleted fixes, rolling then back first if applied 
+	for i in $(ls -r $VER-*.fix 2> /dev/null); do
+		if ! grep -q "^$i" fixes.lst; then
+			lfix=$(echo $i | cut -d"-" -f2)
+			if fixup status $lfix >& /dev/null; then
+				echo rollingback $lfix
+				fixup rollback $lfix
+			fi
+			echo removing $i
+			rm -f $i
+		fi
+	done
 }
 
 recurse() {
 	for i in $REQUIRE; do
-		if test -s $i-*.fix; then fixup apply $i; fi
+		if test -s $i-*.fix; then
+			echo Applying $i
+			fixup apply $i
+		fi
 	done
 }
 
@@ -86,29 +117,78 @@ list() {
 	done
 }
 
+depends() {
+	fix2=$(echo $fix | cut -d"-" -f1,2)     
+	dep=$(grep -l "^REQUIRE=.*$fix2" *.fix)         
+	if test -n "$dep"; then
+			fix3=$(echo $dep | cut -d"-" -f2)    
+			if fixup status $fix3 >& /dev/null; then
+					echo Can\'t rollback $(basename $fix .fix) because $(basename $dep .fix) is applied and depends on it
+					exit 1
+			fi
+	fi
+}
+
+VER=$(cat /etc/Alt-F)
+FIXDIR=/usr/share/fixes
+CONFM=/etc/misc.conf
+
+. $CONFM 
+
+if test -z "$FIXSITE"; then # FIXME: to remove after RC4
+	FIXSITE=http://sourceforge.net/projects/alt-f/files/fixes
+	echo FIXSITE=$FIXSITE >> $CONFM
+fi
+
+if ! aufs.sh -s >/dev/null; then
+	echo "Fixup: an Alt-F package must be installed for fixes to survive a reboot."
+	#return 1
+fi
+
+if ! test -d $FIXDIR; then
+	aufs.sh -n
+	mkdir -p /Alt-F/$FIXDIR
+	aufs.sh -r
+fi
+
+cd $FIXDIR
+
 case "$1" in
+	force)
+		shift
+		FIXFORCE=yes exec fixup $*
+		;;
+
 	apply)
 		args $*
-		if status; then return; fi
+		if test -z "$FIXFORCE"; then
+			if status; then return; fi
+		fi
 		if test -n "$REQUIRE"; then recurse; fi
 		apply
 		;;
 
 	rollback)
 		args $*
-		if ! status; then return; fi
+		if test -z "$FIXFORCE"; then
+			if ! status; then return; fi
+		fi
+		depends
 		rollback
 		;;
 
 	status)
 		args $*
 		if ! test -f fixes.lst; then download; fi
+		sed -n '1,/^$/s/^#/\t/p' $fix
 		status
 		;;
 
 	list) list ;;
 
 	download) download ;;
+
+	clean) rm_fixes ;;
 
 	*) usage ;;
 esac

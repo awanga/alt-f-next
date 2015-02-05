@@ -90,12 +90,12 @@ fi
 
 if test "$flash" = "SpecialReboot"; then
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
-	dd if=/dev/mtdblock2 of=/root/zImage bs=64 skip=1 >& /dev/null
-	dd if=/dev/mtdblock3 of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+	dd if=/dev/mtdblock2 of=/boot/zImage bs=64 skip=1 >& /dev/null
+	dd if=/dev/mtdblock3 of=/boot/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 
 elif test "$flash" = "TryIt"; then
-	dd if=$kernel_file of=/root/zImage bs=64 skip=1 >& /dev/null
-	dd if=$initramfs_file of=/root/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+	dd if=$kernel_file of=/boot/zImage bs=64 skip=1 >& /dev/null
+	dd if=$initramfs_file of=/boot/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
 
 elif test "$flash" = "FlashIt"; then
@@ -155,6 +155,10 @@ elif test "$flash" = "FlashIt"; then
 			loadsave_settings -rc
 			;;
 	esac
+
+	# remove applied fixes and other customizations under /Alt-F,
+	# avoiding that changed files with the same name in the new firmware will be shadowed
+	fixup clean >& /dev/null
 
 	rcsysctrl start >& /dev/null
 	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
