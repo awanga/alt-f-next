@@ -78,13 +78,9 @@ component its partition type must be RAID.
 to create a filesystem on it, see <a
 href="diskmaint_hlp.html">Filesystem Maintenance</a>.
 
-However, RAID 1 and JBOD can be built on partitions that already have a
-filesystem (and data) on them, as long as it is the first RAID
-component. In this case, if you which to maintain the data the
-filesystem contains you should not create a filesystem on the new RAID
-device, and instead you should "Enlarge" the filesystem <a
-href="diskmaint_hlp.html">Filesystem Maintenance</a> after the RAID
-creation. 
+However, RAID 1 and JBOD can be built from partitions that already have a
+filesystem (and data) on them. In this case, if you which to maintain the
+data you should not create a filesystem on the new RAID device.
 
 <p>In the upper <strong>RAID Creation</strong> section, you
 have to select the RAID level you wish, select its components, and hit
