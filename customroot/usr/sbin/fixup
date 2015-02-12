@@ -142,7 +142,7 @@ fi
 
 if ! aufs.sh -s >/dev/null; then
 	echo "Fixup: an Alt-F package must be installed for fixes to survive a reboot."
-	#return 1
+	return 1
 fi
 
 if ! test -d $FIXDIR; then
