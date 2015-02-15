@@ -5,6 +5,7 @@
 #############################################################
 
 GETTEXT_VERSION:=0.16.1
+#GETTEXT_VERSION:=0.18.3
 GETTEXT_SOURCE:=gettext-$(GETTEXT_VERSION).tar.gz
 GETTEXT_SITE:=$(BR2_GNU_MIRROR)/gettext
 
@@ -135,6 +136,10 @@ $(STAGING_DIR)/usr/include/libintl.h: $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
 gettext: uclibc host-pkgconfig $(if $(BR2_PACKAGE_LIBICONV),libiconv) $(STAGING_DIR)/$(GETTEXT_TARGET_BINARY)
 
 gettext-unpacked: $(GETTEXT_DIR)/.unpacked
+
+gettext-configure: $(GETTEXT_DIR)/.configured
+
+gettext-build: $(GETTEXT_DIR)/$(GETTEXT_BINARY)
 
 gettext-clean:
 	-$(MAKE) DESTDIR=$(STAGING_DIR) CC=$(TARGET_CC) -C $(GETTEXT_DIR) uninstall
