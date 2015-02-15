@@ -4,11 +4,6 @@
 #
 #############################################################
 
-#AUTOMATIC_VERSION = 0.7.2
-#AUTOMATIC_SOURCE = automatic-$(AUTOMATIC_VERSION)-src.tar.gz
-#AUTOMATIC_SITE = http://kylek.is-a-geek.org:31337/files/
-
-# moved to github: https://github.com/1100101/Automatic/archive/v0.8.3.tar.gz
 AUTOMATIC_VERSION = 0.8.3
 AUTOMATIC_SOURCE = automatic-$(AUTOMATIC_VERSION).tar.gz
 AUTOMATIC_SITE = https://github.com/1100101/Automatic/archive
