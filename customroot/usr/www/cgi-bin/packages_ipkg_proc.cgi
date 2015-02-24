@@ -6,6 +6,10 @@ read_args
 
 CONFF=/etc/ipkg.conf
 
+# FIXME: When updating packages with libraries, if the library is in use by some program
+# the update/upgrade might fail without notice.
+# The fast cure is to always stop all services before updating or upgrading packages.
+
 #debug
 
 change_feeds() {
