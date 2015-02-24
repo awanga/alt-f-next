@@ -42,9 +42,9 @@ case $action in
 		fi
 		;;
 
-	ClearSettings)
-		loadsave_settings -cf >& /dev/null
-		;;
+	ClearSettings) loadsave_settings -cf >& /dev/null ;;
+
+	FormatFlashSettings) loadsave_settings -fm >& /dev/null ;;
 
 	LoadSettings)
 		settings=$(httpd -d "$(echo $settings)")

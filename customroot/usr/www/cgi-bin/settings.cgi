@@ -24,6 +24,12 @@ cat<<-EOF
 			"You should afterwards restart all running services, so they will apply changes." + "\n\nContinue?");
 
 	}
+	function format_ask() {
+		return confirm("Formating the Flash makes it loose all saved settings.\n" +
+			"It might be necessary if Settings can't be saved or loaded." +
+			"\n\nContinue?");
+
+	}
 	</script>
 
 	<fieldset><legend>Flash Memory</legend>
@@ -33,6 +39,7 @@ cat<<-EOF
 	<option value="">Select one</option>$sets</select>
 	<input type=submit name=action value=LoadSettings onclick="return load_ask()"><br><br>
 	<input type=submit $clear_dis name=action value=ClearSettings onclick="return ask()">
+	<input type=submit $clear_dis name=action value=FormatFlashSettings onclick="return format_ask()">
 	</form>
 	</fieldset>
 

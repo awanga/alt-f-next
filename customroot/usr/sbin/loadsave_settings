@@ -1,6 +1,30 @@
 #!/bin/sh
 
+format() {
+	if test "$fs_type" = "minix"; then
+		mkfs.minix -i 64 $MTD
+	elif test "$fs_type" = "jffs2"; then
+		flash_erase -j $MTDR 0 0
+	else
+		exit 1
+	fi
+}
+
+check() {
+	if test "$fs_type" = "minix"; then
+		if ! fsck -t minix -a $MTD; then
+			echo "loadsave_settings: $MTD damaged, force fsck it."
+			if ! fsck -t minix -af $MTD; then
+				echo "loadsave_settings: Can't fix $MTD, reformating it."
+				format
+			fi
+		fi
+	fi
+}
+
 lmount() {
+	check
+
 	if ! mount -t $fs_type $MTD $save_dir; then
 		rmdir $save_dir
 		exit 1
@@ -244,18 +268,6 @@ llistflashdef() {
 	lumount
 }
 
-check() {
-	if test "$fs_type" = "minix"; then
-		fsck -av $MTD
-	fi
-}
-
-format() {
-	if test "$fs_type" = "minix"; then
-		mkfs.minix -i 64 $MTD
-	fi
-}
-
 # from http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=30;filename=oldsys-preseed.patch;att=1;bug=502821
 # Parse the sib.conf file, as found in the Dlink DNS-323
 # Get the value from a string in the form of var = "value" from a file.
@@ -331,7 +343,8 @@ from_AltF() {
 		if test -e /Alt-F/$i; then
 			bd=$(dirname $i)
 			if ! test -d $bd; then mkdir -p $bd; fi
-			cp /Alt-F/$i $i # dont remove, copy instead, in case of catastrophic failure
+			#cp /Alt-F/$i $i # dont remove, copy instead, in case of catastrophic failure
+			rm /Alt-F/$i $i
 		fi
 	done
 }
@@ -359,6 +372,7 @@ case "$board" in
 	DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2)
 		fs_type="jffs2"
 		MTD=/dev/mtdblock5
+		MTDR=/dev/mtd5
 		;;
 	DNS-323-[ABC]1|DNS-321-A1A2)
 		fs_type="minix"
