@@ -8,25 +8,33 @@ NEED_ALTF_DIR=1
 EXCLUDEDBY="mt_daapd"
 REQUIRE="avahi_daemon"
 
+CONF_FORKED=/etc/$NAME.conf
+LOG_FORKED=/var/log/$NAME
+RUN_FORKED=/var/run/$NAME
+
 RC_USER=daapd
 RC_USERN=16
 RC_GROUP=multimedia
 RC_GROUPN=80
 RC_DESC="forked-daapd daemon"
 
-CONF_FORKED=/etc/$NAME.conf
+RC_PIDFILE=$RUN_FORKED/$NAME.pid
 
-FORKED_LOG=/var/log/$NAME.log
+FORKED_LOG=$LOG_FORKED/$NAME.log
 FORKED_OVRW_LOG="yes" # overwrite log file on each start
+
+OPTS="-P $RC_PIDFILE"
 
 . /etc/init.d/common
 
-check_user $CONF_FORKED /var/lib/$RC_USER
+mkdir -p $LOG_FORKED $RUN_FORKED
+
+check_user $CONF_FORKED /var/lib/$RC_USER $LOG_FORKED $RUN_FORKED
 
 case "$1" in
 	start)
-		if test "$FORKED_OVRW_LOG" = "yes"; then rm  -f $FORKED_LOG; fi
-		start $NAME -- $OPTS 2> /dev/null
+		if test "$FORKED_OVRW_LOG" = "yes"; then rm -f $FORKED_LOG; fi
+		start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS 2> /dev/null
 		;;
 	stop) stop $NAME ;;
 	status) status $NAME ;;
