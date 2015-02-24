@@ -21,6 +21,7 @@ fi
 
 if ! ipkg list_installed | grep -q kernel-modules; then
 	ipv6_dis="disabled"
+	ipv6_msg="(You have to install the kernel-modules package)"
 fi
 
 if test -f $CONF_MODPROBE; then
@@ -101,7 +102,7 @@ cat<<-EOF
 	<tr><td>Name server 1:</td><td><input type=text name="ns1" value="$ns1"></td></tr>
 	<tr><td>Name server 2:</td><td><input type=text name="ns2" value="$ns2"></tr>
 	<tr><td>Frame size:</td><td><input type=text name="mtu" value="$mtu" onchange="mtu_warn()" $(ttip mtu_tt)></td></tr>
-	<tr><td>Enable IPv6:</td><td><input type=checkbox $ipv6_dis $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse </td></tr>
+	<tr><td>Enable IPv6:</td><td><input type=checkbox $ipv6_dis $ipv6_chk name="ipv6" value="yes" $(ttip tt_ipv6)> $ipv6_inuse $ipv6_msg</td></tr>
 	</table>
 
 	<p><input type=hidden name=cflg value="$cflg">
