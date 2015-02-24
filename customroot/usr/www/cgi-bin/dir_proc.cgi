@@ -189,7 +189,8 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 
 	touch /tmp/folders_op.$bpid
 	td="$wdir/$(basename "$srcdir")"
-	sleep_time=$(expr $src_sz / 100 + 1)
+	# FIXME: not suitable to TB operations, don't limit it, use an exponential waiting time
+	sleep_time=$(expr $src_sz / 100 + 1) 
 	if test $sleep_time -gt 10; then sleep_time=10; fi
 		cat<<-EOF
 		<script type="text/javascript">
