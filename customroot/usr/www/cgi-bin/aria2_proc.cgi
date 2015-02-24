@@ -19,7 +19,7 @@ if test -n "$WebPage"; then
 		rcaria2 start  >& /dev/null
 	fi
 
-	port=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
+	PORT=$(grep ^server.port $CONF_LIGHTY | cut -d" " -f3)
 	PROTO="http"
 	if echo $HTTP_REFERER | grep -q 'https://'; then
 		if grep -q '^include "conf.d/ssl.conf"' $CONF_LIGHTY; then
@@ -28,7 +28,7 @@ if test -n "$WebPage"; then
 		fi
 	fi
 	
-	embed_page "$PROTO://${HTTP_HOST%%:*}:${port}/aria2web" "Aria2 Page"
+	embed_page "$PROTO://${HTTP_HOST%%:*}:${PORT}/aria2web" "Aria2 Page"
 
 elif test -n "$Submit"; then
 
