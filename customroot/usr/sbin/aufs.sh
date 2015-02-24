@@ -31,15 +31,16 @@ OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > $mp/Alt-F/README.txt
 	rm -f /Alt-F
 	ln -s $mp/Alt-F /Alt-F
 	
-	mkdir -p /Alt-F/var/lib /Alt-F/var/spool
+	#mkdir -p /Alt-F/var/lib /Alt-F/var/spool
+	mkdir -p /Alt-F/var/lib
 	for i in nfs misc; do
 		cp -a /var/lib/$i /Alt-F/var/lib 
 	done
-	for i in atjobs atspool cron lpd samba; do
-		if test -d /var/spool/$i; then
-			cp -a /var/spool/$i /Alt-F/var/spool
-		fi
-	done
+	#for i in atjobs atspool cron lpd samba; do
+	#	if test -d /var/spool/$i; then
+	#		cp -a /var/spool/$i /Alt-F/var/spool
+	#	fi
+	#done
 	
 	loadsave_settings -ta
 	mount -t aufs -o remount,prepend:$mp/Alt-F=rw /
@@ -128,15 +129,16 @@ case $1 in
 		dolock
 		trap cleanlock exit 
 
-		mkdir -p /Alt-F/var/spool /Alt-F/var/lib
+		#mkdir -p /Alt-F/var/lib /Alt-F/var/spool
+		mkdir -p /Alt-F/var/lib 
 		for i in nfs misc; do
 			cp -a /var/lib/$i /Alt-F/var/lib 
 		done
-		for i in atjobs atspool cron lpd samba; do
-			if test -d /var/spool/$i; then
-				cp -a /var/spool/$i /Alt-F/var/spool
-			fi
-		done
+		#for i in atjobs atspool cron lpd samba; do
+		#	if test -d /var/spool/$i; then
+		#		cp -a /var/spool/$i /Alt-F/var/spool
+		#	fi
+		#done
 
 		loadsave_settings -ta
 		mount -t aufs -o remount,prepend:${mp}=rw /
@@ -158,17 +160,18 @@ case $1 in
 		trap cleanlock exit
 
 		loadsave_settings -fa
-		mkdir -p /tmp/lib /tmp/spool
+		#mkdir -p /tmp/lib /tmp/spool
+		mkdir -p /tmp/lib
 		for i in nfs misc; do
 			cp -a /Alt-F/var/lib/$i /tmp/lib/
 		done
-		for i in atjobs atspool cron lpd samba; do
-			if test -d /Alt-F/var/spool/$i; then
-				cp -a /Alt-F/var/spool/$i /tmp/spool/
-			fi
-		done
+		#for i in atjobs atspool cron lpd samba; do
+		#	if test -d /Alt-F/var/spool/$i; then
+		#		cp -a /Alt-F/var/spool/$i /tmp/spool/
+		#	fi
+		#done
 		ln -sf /tmp/lib /var/lib
-		ln -sf /tmp/spool /var/spool
+		#ln -sf /tmp/spool /var/spool
 		;;
 
 	-n)
