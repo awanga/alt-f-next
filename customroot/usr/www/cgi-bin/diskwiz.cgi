@@ -97,6 +97,8 @@ if blkid | grep -qE 'TYPE="ext(2|3|4)"'; then
 	has_linuxfs=yes
 fi
 
+# FIXME: if a disk with no ext2/3/4 is plugged, should't the "no touch disk" checkbox be enabled?
+
 if test -z "$has_linuxfs" -a -f /tmp/firstboot; then
 	notouch_dis="disabled"
 	std_chk="checked"
