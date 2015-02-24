@@ -254,31 +254,39 @@ cat<<-EOF
 	</fieldset>
 
 	<fieldset><legend>Folders to import from other hosts</legend>
-	<table>
-	<tr align=center>
-	<th>Disable</th>
-	<th></th>
-	<th>Host</th>
-	<th>Share</th>
-	<th>Discover</th>
-	<th>Local Folder</th>
-	<th>Search</th>
-	<th>Mount Options</th>
-	</tr>
 EOF
 
-cnt=1
-while read -r ln; do
-	if echo "$ln" | grep -q cifs; then
-		fstab_row "$ln" $cnt
-		cnt=$((cnt+1))
-	fi
-done < $CONF_FST
+if modprobe -D cifs >& /dev/null; then
+	cat<<-EOF
+		<table>
+		<tr align=center>
+		<th>Disable</th>
+		<th></th>
+		<th>Host</th>
+		<th>Share</th>
+		<th>Discover</th>
+		<th>Local Folder</th>
+		<th>Search</th>
+		<th>Mount Options</th>
+		</tr>
+	EOF
 
-i=$cnt
-for i in $(seq $cnt $((cnt+2))); do
-	fstab_row "" $i	# ln cnt
-done
+	cnt=1
+	while read -r ln; do
+		if echo "$ln" | grep -q cifs; then
+			fstab_row "$ln" $cnt
+			cnt=$((cnt+1))
+		fi
+	done < $CONF_FST
+
+	i=$cnt
+	for i in $(seq $cnt $((cnt+2))); do
+		fstab_row "" $i	# ln cnt
+	done
+
+else
+	echo "<p>You have to install the kernel-modules package</p>"
+fi
 
 if grep -q "# Samba config file created using SWAT" $CONF_SMB; then
 	swat="<h4 class=\"warn\">The Advanced SWAT configuration tool has been used.<br>
