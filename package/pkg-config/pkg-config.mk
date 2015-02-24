@@ -37,9 +37,10 @@ $(STAMP_DIR)/host_pkgconfig_configured: $(STAMP_DIR)/host_pkgconfig_unpacked
 		--sysconfdir="$(HOST_DIR)/etc" \
 		--with-pc-path="$(STAGING_DIR)/usr/lib/pkgconfig" \
 		--disable-static \
-		--with-installed-glib \
 	)
 	touch $@
+
+#--with-installed-glib \
 
 $(STAMP_DIR)/host_pkgconfig_compiled: $(STAMP_DIR)/host_pkgconfig_configured
 	$(MAKE) -C $(PKG_CONFIG_HOST_DIR)
