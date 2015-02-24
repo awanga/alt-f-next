@@ -10,7 +10,10 @@ PHP_EDIR=/usr/lib/php5/extensions
 CONF_SSL=/etc/lighttpd/conf.d/ssl.conf
 CONF_AUTH=/etc/lighttpd/conf.d/auth.conf
 
-if ! ipkg list_installed | grep -q kernel-modules; then IPV6_DIS="disabled"; fi
+if ! ipkg list_installed | grep -q kernel-modules; then
+	IPV6_DIS="disabled"
+	IPV6_MSG="(You have to install the kernel-modules package)"
+fi
 
 if test $(grep ^server.use-ipv6 $CONF_LIGHTY | cut -d" " -f3) = '"enable"'; then
 	IPV6_CHK="checked"
@@ -34,16 +37,16 @@ if grep -q '^include.*userdir.conf' $CONF_LIGHTY2; then	USERDIR_CHK="checked"; f
 if grep -q '^include.*fastcgi.conf' $CONF_LIGHTY2; then
 	PHP_CHK="checked"
 	PHP_VIS="visible"
-	PHP_DIS="block"
+	PHP_DISP="block"
 else
 	PHP_VIS="hidden"
-	PHP_DIS="none"
+	PHP_DISP="none"
 fi
 
 LOCAL_STYLE="
 #php_id {
 	visibility: $PHP_VIS;
-	display: $PHP_DIS;
+	display: $PHP_DISP;
 }
 .cellfill {
 	width: 100%;
@@ -143,13 +146,14 @@ cat<<-EOF
 		<td><input class="cellfill" type=text size=2 name=port value="$port" $(ttip sport_tt)></td>
 		<td></td></tr>
 	<tr><td>Enable IPv6</td>
-		<td colspan=4><input type=checkbox $IPV6_DIS $IPV6_CHK name=ipv6 value=yes></td></tr>
+		<td><input type=checkbox $IPV6_DIS $IPV6_CHK name=ipv6 value=yes></td>
+		<td colspan=3>$IPV6_MSG</td></tr>
 	<tr><td>Enable SSL</td>
-		<td><input type=checkbox $SSL_CHK name=ssl value=yes $(ttip ssl_tt)>
+		<td><input type=checkbox $SSL_CHK name=ssl value=yes $(ttip ssl_tt)></td>
 		<td>on port</td><td><input class="cellfill" type=text size=2 name=sslport value="$sslport" $(ttip sslport_tt)></td>
 		<td></td></tr>
 	<tr><td>Enable WebDAV</td>
-		<td><input type=checkbox $WDAV_DIS $WDAV_CHK id=wdav_id name=wdav value=yes $(ttip wdav_tt)>
+		<td><input type=checkbox $WDAV_DIS $WDAV_CHK id=wdav_id name=wdav value=yes $(ttip wdav_tt)></td>
 		<td>for user</td><td><select class="cellfill" $WDAV_DIS id=user_id name=user $(ttip udav_tt)>$useropt</select></td>
 		<td></td></tr>
 	<tr><td>Enable User Pages</td>
