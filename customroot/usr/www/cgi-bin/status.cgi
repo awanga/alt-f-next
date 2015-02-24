@@ -15,6 +15,13 @@ launch() {
 # Modified and adapted by Joao Cardoso
 jscripts() {
 	cat<<-EOF
+		<noscript>
+			<p class="error"><strong>
+				JavaScript is needed by Alt-F web pages, and you don't have it enabled.<br>
+				See <a href="http://www.enable-javascript.com" target="_blank">
+				how to enable JavaSCript</a> on your browser.
+			</strong></p>
+		</noscript>
 		<script type="text/javascript">
 			arefresh = false
 			function requestfromserver(target, refresh) {
