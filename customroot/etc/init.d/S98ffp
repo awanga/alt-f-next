@@ -9,8 +9,7 @@ NAME=ffp
 iffp() {
 	if test -f /ffp/etc/rc; then
 		if test -x /ffp/etc/rc; then
-			export PATH=$PATH:/ffp/bin:/ffp/sbin
-			/ffp/etc/rc $1
+			PATH=/ffp/bin:/ffp/sbin:$PATH /ffp/etc/rc $1
 			echo "OK."
 		else
 			echo "Fail."
