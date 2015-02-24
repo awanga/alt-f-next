@@ -23,7 +23,7 @@ cnt=1
 for srv in $(ls /ffp/start/*.sh); do
 	nm=$(basename $srv .sh)
 	chkf=""; if test -x $srv; then chkf=checked; fi
-	res=$(PATH=/ffp/bin:/ffp/sbin:$PATH /ffp/bin/sh $srv status)
+	res=$(PATH=/ffp/bin:/ffp/sbin:$PATH /ffp/bin/sh $srv status 2>&1)
 
 	st=""
 	if echo $res | grep -q 'not.*running'; then
