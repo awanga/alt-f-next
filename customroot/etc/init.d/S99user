@@ -68,7 +68,7 @@ writelog() {
 	sfdisk -luS
 
 	echo -e "\n\n$SEP DISKS (GPT) $SEP\n"
-	for j in /dev/sd?; do
+	for j in $(ls /dev/sd? 2>/dev/null); do
 		sgdisk -p $j
 	done
 
