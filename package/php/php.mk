@@ -194,6 +194,7 @@ ifeq ($(BR2_PACKAGE_PHP_EXT_PCRE),y)
 endif
 
 # PHP segfaults if linked agains a threadsafe compiled sqlite!
+# and it also segfaults when mysql is enabled!
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE),y)
 	#PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_ENABLE_UNLOCK_NOTIFY"
