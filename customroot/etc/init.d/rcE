@@ -16,7 +16,7 @@ hwclock -wu
 
 # terminate dns320 daemons
 if echo "$board" | grep -q "DNS-320"; then
-	sed -i 's/\(.*dns320.*\)/#\1/' /etc/inittab
+	sed -i 's/^#*[[:space:]]*\(.*dns320.*\)/#\1/' /etc/inittab
 	kill -1 1
 fi
 
