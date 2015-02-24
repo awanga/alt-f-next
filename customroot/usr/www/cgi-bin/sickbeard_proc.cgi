@@ -55,7 +55,7 @@ if test -n "$submit"; then
 	fi
 
 	sed -i "s|^root_dirs.*=.*|root_dirs = 0\|$conf_dir|" $SBCONF
-	sed -i "s|^nzb_dir.*=.*|nzb_dir = $conf_dir|" $SBCONF # for BlackHole
+	#sed -i "s|^nzb_dir.*=.*|nzb_dir = $conf_dir|" $SBCONF # for BlackHole
 
 	if test -n "$downld"; then
 		sed -i "s/nzb_method.*=.*/nzb_method = $downld/" $SBCONF
