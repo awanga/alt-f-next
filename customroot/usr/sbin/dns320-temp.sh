@@ -124,7 +124,7 @@ while true; do
 		fi
 	) < $sdev || exit 1
 
-	sleep 30
+	sleep 15
 done
 
 # generate a test file with both std and chk packets
