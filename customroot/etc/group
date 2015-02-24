@@ -9,6 +9,7 @@ ftp:x:7:
 at:x:8:
 #lpadmin 9
 backup:x:34:
+#mysql 35
 utmp:x:43:
 sshd:x:67
 #avahi 68
