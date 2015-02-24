@@ -5,6 +5,7 @@ check_cookie
 read_args
 
 CONF=/etc/backup.conf
+SMB_CONF=/etc/samba/smb.conf
 
 #debug
 
@@ -90,16 +91,16 @@ elif test -n "$CreateDir"; then
 	chmod g+rwx,o+rx "$mp"/Backup
 	ln -sf "$mp"/Backup /Backup
 
-	if ! grep -q "^\[Backup\]" /etc/samba/smb.conf; then
-		cat<<-EOF >> /etc/samba/smb.conf
+	if ! grep -q "^\[Backup\]" $SMB_CONF; then
+		cat<<EOF >> $SMB_CONF
 
-			[Backup]
-			comment = Backup Area
-			path = /Backup
-			public = yes
-			read only = yes
-			available = yes
-		EOF
+[Backup]
+	comment = Backup Area
+	path = /Backup
+	public = yes
+	read only = yes
+	available = yes
+EOF
 
 		if rcsmb status >& /dev/null; then
 			rcsmb reload >& /dev/null
