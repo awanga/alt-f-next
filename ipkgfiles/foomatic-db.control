@@ -1,6 +1,6 @@
 Package: foomatic-db
 Description: Foomatic PPD files (non-HP printers)
-Depends: ipkg
+Depends: cups, foomatic-filters, ipkg
 Version: 4.0-4
 Architecture: arm
 Priority: optional
