@@ -42,7 +42,15 @@ if test "$fsckcmd" != "echo"; then
 	trap "" 1
 
 	check
-	logger -st hot_aux "Start fscking $MDEV"
+
+	if test "$fsopt" = "-"; then fsopt=""; fi
+
+	if test -f /tmp/fsckboot && echo $fstype | grep -q 'ext.' ; then
+		fsopt="-fp"
+		cmsg="force"
+	fi
+
+	logger -st hot_aux "Start $cmsg fscking $MDEV"
 
 	xf=/tmp/check-$MDEV
 	logf=${xf}.log
@@ -51,10 +59,6 @@ if test "$fsckcmd" != "echo"; then
 	touch $xf
 	echo $$ > $pidf
 	rmdir /tmp/fsck_lock 2> /dev/null
-
-	if test "$fsopt" = "-"; then
-		fsopt=""
-	fi
 
 	echo heartbeat > $PLED
 	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> $logf)"

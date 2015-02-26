@@ -78,7 +78,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 	if test -n "$tftpargs"; then
 		eval $(echo $tftpargs | awk -F: '{printf "myip=%s tftpip=%s netmsk=%s", $1, $2, $3}')
 		logger -st rcS "tftp getting sqimage from $tftpip, myip $myip"
-		ifconfig eth0 up $myip netmask ${netmsk:-255.255.255:0}
+		ifconfig eth0 up $myip netmask ${netmsk:-255.255.255.0}
 		if ! tftp -g -r rootfs.arm.sqimage.xz -l /tmp/sqimage.xz $tftpip; then
 			logger -st rcS "tftp get failed"
 		fi
@@ -100,6 +100,9 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		mount -o loop /tmp/sqimage.xz /rootmnt/sqimage
 		mount -t aufs -o remount,append:/rootmnt/sqimage=rr /
 	fi
+
+	# the dns320-temp.sh/dns320l-daemon needs ttyS1, not yet available
+	if ! test -e /dev/ttyS1; then mknod /dev/ttyS1 c 4 65; fi
 
 	if test $board = "DNS-320-A1A2"; then
 		ln -sf "/sys/class/leds/dns320:blue:power" /tmp/sys/power_led
@@ -124,9 +127,6 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		echo 1 > /tmp/sys/power_led/brightness
 		echo 0 > /tmp/sys/usb2_led/brightness
 		echo 0 > /tmp/sys/fan1_input
-
-		# the dns320l-daemon needs ttyS1, not yet available
-		if ! test -e /dev/ttyS1; then mknod /dev/ttyS1 c 4 65; fi
 
 		# make init launch dns320l-daemon
 		sed -i 's/^#*[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
@@ -187,13 +187,15 @@ logger -st rcS "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! grep -q "nodef" /proc/cmdline; then
-	if ! res=$(loadsave_settings -ck); then
-		logger -st rcS "$res"
-	fi
 	res=$(loadsave_settings -lf)
 	no_defaults=$?
 	logger -st rcS "$res"
 	
+	if loadsave_settings -gb; then
+		touch /tmp/fsckboot
+		logger -st rcS "Forcing fsck at boot"
+	fi
+
 	if test -s /etc/misc.conf; then
 		. /etc/misc.conf
 	fi

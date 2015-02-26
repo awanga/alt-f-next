@@ -35,6 +35,21 @@ lumount() {
 	umount $save_dir
 }
 
+set_fsckboot() {
+	lmount
+	touch $save_dir/fsckboot
+	lumount
+}
+
+# remove fsckboot if it exists and return 0
+get_fsckboot() {
+	lmount
+	rm $save_dir/fsckboot 2>/dev/null
+	st=$?
+	lumount
+	return $st
+}
+
 listchanged() {
 	for i in $files /etc/fstab /var/spool/cron/crontabs/root; do
 		if test $i -nt $stamp; then
@@ -102,9 +117,7 @@ createdef() {
 }
 
 saveflashdef() { 
-	if status; then
-		return 1
-	fi
+	if status; then return 1; fi
 
 	lmount
 	rm -f system.log
@@ -142,9 +155,7 @@ saveflashdef() {
 checkfile() {
 	TD=$(mktemp -d)
 
-	if ! tar -C $TD -xzf $1; then
-		ret=1
-	fi
+	if ! tar -C $TD -xzf $1; then ret=1; fi
 
 if false; then
 	# FIXME: stupid test. Store a signature instead!
@@ -152,9 +163,7 @@ if false; then
 		rm -f $TD/$i
 	done
 
-	if test "$(find $TD -type f | wc -l)" != "0"; then
-		ret=1
-	fi
+	if test "$(find $TD -type f | wc -l)" != "0"; then ret=1; fi
 fi
 
 	rm -rf $TD
@@ -237,9 +246,7 @@ clearflashdef() {
 # As Alt-F only uses mtd0, the original settings are still in mtd1 
 recover() {
 	rmdir $save_dir
-	if grep -qE "DNS-320-A1A2|DNS-325-A1A2" $BRD; then	
-		return 1
-	fi
+	if grep -qE "DNS-320-A1A2|DNS-325-A1A2" $BRD; then return 1; fi
  
 	mtd0=$(mktemp -d)
 	mtd1=$(mktemp -d)
@@ -355,6 +362,7 @@ usage() {
 	-cf (clear flash) | -rc (recover from mtd1) |\n\
 	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
+	-gb (get fsckboot) | -sb (set fsckboot) | \n\
 	-rs (read sib ip) | -st (status) | -ck (check) | -fm (format)"
 	return 1;
 }
@@ -398,6 +406,8 @@ case $1 in
 	"-rc")	recover ;;
 	"-ta")	to_AltF ;;
 	"-fa")	from_AltF ;;
+	"-sb")  set_fsckboot;;
+	"-gb") 	get_fsckboot;;
 	"-rs")	read_sib ;;
 	"-st")	status ;;
 	"-ck")	check ;;

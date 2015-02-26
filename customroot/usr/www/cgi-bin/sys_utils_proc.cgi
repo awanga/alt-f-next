@@ -58,6 +58,48 @@ showlog() {
 	EOF
 }
 
+lreboot() {
+	html_header
+	cat<<-EOF
+		<script type="text/javascript">
+
+		var count = 20;
+		var server = location.protocol + "//" + location.host
+		var page = server + "/cgi-bin/status.cgi"
+		var testimg = server + "/help.png?" + Math.random()
+
+		function testServer() {    
+			var img = new Image()
+
+			img.onload = function() {
+				if (img.naturalHeight > 0)
+					window.location.assign(page)
+			}
+
+			img.onerror = function() {
+				if (count) {
+					count--
+					setTimeout(testServer, 3000)
+				} else
+					window.location.assign(page)
+			}
+			img.src = testimg
+		}
+
+		setTimeout(testServer, 20000)
+
+		</script>
+
+		<br><br><fieldset><legend>The box is rebooting</legend>
+		<center><h4>
+		$(wait_count_start "Waiting 60 seconds")
+		</h4></center></fieldset>
+		</body></html>
+	EOF
+	/sbin/reboot
+	exit 0
+}
+
 if test -n "$theme"; then
 	action="Theme"
 elif test -n "$Refresh"; then
@@ -71,48 +113,13 @@ elif test -n "$logaction" -a "$logaction" != "Select+one"; then
 fi
 
 case "$action" in
-	Reboot)
-		html_header
-		cat<<-EOF
-			<script type="text/javascript">
+	Reboot) lreboot ;;
 
-			var count = 20;
-			var server = location.protocol + "//" + location.host
-			var page = server + "/cgi-bin/status.cgi"
-			var testimg = server + "/help.png?" + Math.random()
-
-			function testServer() {    
-				var img = new Image()
-
-				img.onload = function() {
-					if (img.naturalHeight > 0)
-						window.location.assign(page)
-				}
-
-				img.onerror = function() {
-					if (count) {
-						count--
-						setTimeout(testServer, 3000)
-					} else
-						window.location.assign(page)
-				}
-				img.src = testimg
-			}
-	
-			setTimeout(testServer, 20000)
-
-			</script>
-
-			<br><br><fieldset><legend>The box is rebooting</legend>
-			<center><h4>
-			$(wait_count_start "Waiting 60 seconds")
-			</h4></center></fieldset>
-			</body></html>
-		EOF
-		/sbin/reboot
-		exit 0
+	RebootAndCheck)
+		loadsave_settings -sb
+		lreboot
 		;;
-	
+
 	Poweroff)
 		html_header "<br><br>The box is being powered off."
 		echo "</body></html>"

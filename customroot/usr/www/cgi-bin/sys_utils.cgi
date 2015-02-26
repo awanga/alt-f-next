@@ -56,6 +56,7 @@ cat<<-EOF
 
 	<fieldset><legend>Reboot or Poweroff</legend>
 	<input type="submit" name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
+	<input type="submit" name="action" value="RebootAndCheck" onClick="return confirm('The box will reboot now and perform a complete filesystem check, during which its data will not be available.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
 	<input type="submit" name="action" value="Poweroff" onClick="return confirm('The box will poweroff now.\n\nProceed?')">
 	</fieldset>
 
