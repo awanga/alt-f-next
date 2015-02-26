@@ -10,9 +10,12 @@ if test "$brd" = "Unknown"; then
 	exit 1
 fi
 
-fw="the vendor's firmware"
-if isflashed; then
+# FIXME: relies on NOR /dev/mtd2 (kernel for DNS-321|DNS-323, initramfs for DNS-320|DNS-320L|DNS-325)
+flashed_firmware=$(dd if=/dev/mtd2 ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
+if echo $flashed_firmware | grep -q Alt-F; then
 	fw="$flashed_firmware"
+else
+	fw="the vendor's firmware"
 fi
 
 cat<<-EOF

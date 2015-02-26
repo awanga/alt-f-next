@@ -9,7 +9,7 @@ write_header "Filesystem Maintenance" "document.diskm.reset()"
 
 cat<<-EOF
 	<script type="text/javascript">
-	function msubmit(id, part, notflashed) {
+	function msubmit(id, part) {
 		obj = document.getElementById(id)
 		opi = obj.selectedIndex
 		op = obj.options[opi].value
@@ -26,12 +26,6 @@ but the operation evolution can be verified in the status page.\n\n"
 				alert("Select a FS first.")
 				obj.selectedIndex = 0
 				return false
-			}
-			if (document.getElementById(id).selectedIndex == 3 && notflashed == 1) {
-				if (! confirm("Your box is not Alt-F flashed and the ext4 filesystem is not recognized by the stock firmware." + '\n' + "Proceed anyway?")) {
-					obj.selectedIndex = 0
-					return false
-				}
 			}
 
 			if (op == "Format")
@@ -102,9 +96,6 @@ ntfs_dis="disabled"
 if test -f /usr/sbin/mkntfs; then
 	ntfs_dis=""
 fi
-
-isflashed
-flashed=$?
 
 blk=$(blkid -s LABEL -s TYPE)
 
@@ -200,7 +191,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 			<td align=center>$mtdf</td>
 			<td><input $all_dis type=text size=10 name=lab_$i value="$LABEL"></td>
 			<td><input $all_dis type=text size=16 name=mopts_$i value="$mount_opts"></td>
-			<td><select id="op_$i" $all_dis name="$i" onChange="msubmit('op_$i', '$part', '$flashed')">
+			<td><select id="op_$i" $all_dis name="$i" onChange="msubmit('op_$i', '$part')">
 				<option>Operation</option>
 				$mtd
 				<option $clean_en>Check</option>
@@ -220,7 +211,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 				<option>vfat</option>
 				<option $ntfs_dis>ntfs</option>
 			</select></td>
-			<td class="highcol"><select id="fsfs_$i" name="$i" onChange="msubmit('fsfs_$i', '$part', '$flashed')">
+			<td class="highcol"><select id="fsfs_$i" name="$i" onChange="msubmit('fsfs_$i', '$part')">
 				<option>Operation</option>
 				<option>Format</option>
 				<option $all_dis $conv_en >Convert</option>

@@ -12,15 +12,6 @@ mktt tt_pstart "Partition start sector."
 mktt tt_plen "Partition length, in sectors."
 mktt tt_free "Free disk space. Rounding can occur."
 
-if ! isflashed; then
-	cat<<-EOF
-		<script type="text/javascript">
-			alert("Your box is not flashed, make sure that you partition" + '\n' +
-				"your disks in a way compatible with the stock firmware.")
-		</script>
-	EOF
-fi
-
 cat<<EOF
 	<script type="text/javascript">
 	// Erase, Save, Load and Convert operations
@@ -317,12 +308,6 @@ cat<<EOF
 	<th>Type</th>
 	</tr>
 EOF
-
-if test "$in_use" = "GPT" -o "$rawcap" -gt 3907024065; then
-	if ! isflashed; then
-		echo "<h4 class=\"red\">This disk is partitioned with GPT or is bigger then 2.2TB, but the box is not <br>Alt-F flashed, the stock firmware will not recognize GPT partitioned disks.</h4>" 
-	fi
-fi
 
 if $(echo $fout | grep -q "doesn't contain a valid partition table"); then
 	fout="${dsk}1          0       -       0          0    0  Empty

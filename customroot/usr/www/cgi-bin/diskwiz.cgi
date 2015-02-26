@@ -113,21 +113,6 @@ else
 	notouch_chk="checked"
 fi
 
-if isflashed; then
-	ext4_chk="checked"
-else
-	ext3_chk="checked"
-	ext4_dis="disabled"
-	raid5_dis="disabled"
-	cat<<-EOF
-		<script type="text/javascript">
-			alert("Your box is not Alt-F flashed, some options not recognized by the stock firmware," + '\n' +
-			"such as the ext4 filesystem, RAID-5 and GPT partitioning, are not available," + '\n' +
-			"as the stock firmware would not recognize them.")
-		</script>
-	EOF
-fi
-
 cat<<-EOF
 	<fieldset>
 	<legend>Whirl your magic wand...</legend>
@@ -150,7 +135,7 @@ cat<<-EOF
 		<input type=radio name=wish_part value=raid1></td>
 		<td>Data security, duplicate everything on two disks (and use an external USB disk, if available, as a spare) (raid1)</td></tr>
 	<tr><td align=center>
-		<input type=radio $raid5_dis name=wish_part value=raid5></td>
+		<input type=radio name=wish_part value=raid5></td>
 		<td>Data security and space, with two disks plus an external USB disk (raid5)</td></tr>
 
 	<tr><td colspan=2><br>And I want the filesystems to be:<br></td></tr>
@@ -158,10 +143,10 @@ cat<<-EOF
 		<input type=radio name=wish_fs value=ext2></td>
 		<td>older, stable and faster (ext2)</td></tr>
 	<tr><td align=center>
-		<input type=radio $ext3_chk name=wish_fs value=ext3></td>
+		<input type=radio name=wish_fs value=ext3></td>
 		<td>fast cleaning time, improved reliability (ext3)</td></tr>
 	<tr><td align=center>
-		<input type=radio $ext4_dis $ext4_chk name=wish_fs value=ext4></td>
+		<input type=radio checked name=wish_fs value=ext4></td>
 		<td>recent, faster cleaning time, best reliability, low fragmentation, big files support (ext4)</td></tr>
 	</table></fieldset>
 

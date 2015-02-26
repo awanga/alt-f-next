@@ -199,12 +199,6 @@ disk_power() {
 	fi
 }
 
-# FIXME: relies on NOR /dev/mtd2 (kernel for DNS-321|DNS-323, initramfs for DNS-320|DNS-320L|DNS-325)
-isflashed() {
-	flashed_firmware=$(dd if=/dev/mtd2 ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
-	echo $flashed_firmware | grep -q Alt-F
-}
-
 # $1=part (sda2, eg)
 isdirty() {
 	res="$(tune2fs -l /dev/$1 2> /dev/null)"

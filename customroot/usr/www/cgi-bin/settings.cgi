@@ -5,10 +5,6 @@ check_cookie
 
 write_header "Settings Management"
 
-if ! isflashed; then
-	clear_dis="disabled"
-fi
-
 res=$(loadsave_settings -ls)
 for i in $res; do
 	sets="$sets <option>$i</option>"
@@ -38,8 +34,8 @@ cat<<-EOF
 	<select name=settings>
 	<option value="">Select one</option>$sets</select>
 	<input type=submit name=action value=LoadSettings onclick="return load_ask()"><br><br>
-	<input type=submit $clear_dis name=action value=ClearSettings onclick="return ask()">
-	<input type=submit $clear_dis name=action value=FormatFlashSettings onclick="return format_ask()">
+	<input type=submit name=action value=ClearSettings onclick="return ask()">
+	<input type=submit name=action value=FormatFlashSettings onclick="return format_ask()">
 	</form>
 	</fieldset>
 
