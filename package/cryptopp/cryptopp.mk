@@ -31,6 +31,7 @@ $(eval $(call AUTOTARGETS,package,cryptopp))
 $(CRYPTOPP_TARGET_EXTRACT):
 	if ! which unzip; then /bin/echo -e "\n\nYou must install 'unzip' on your build machine\n"; fi
 	unzip -a $(DL_DIR)/$(CRYPTOPP_SOURCE) -d $(CRYPTOPP_DIR)
+	sed -i 's/\(.*march=native\)/#\1/' $(CRYPTOPP_DIR)/GNUmakefile
 	touch $@
 
 $(CRYPTOPP_TARGET_CONFIGURE):
