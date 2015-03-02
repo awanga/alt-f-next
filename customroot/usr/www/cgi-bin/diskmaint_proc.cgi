@@ -13,8 +13,6 @@ tune() {
 			if test $cnt -ge $mounts; then tuneopts="-C $mounts -T now"; fi
 
 			tune2fs -c $mounts $tuneopts -i $days $part >& /dev/null
-			mounts=$((mounts - 2)) # try to avoid simultaneous fsck at mount time
-			days=$((days - 2))
 		fi
 	done < /proc/mounts
 } 
