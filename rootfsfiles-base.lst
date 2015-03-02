@@ -1,4 +1,3 @@
-.
 ./bin
 ./bin/addgroup
 ./bin/adduser
@@ -268,7 +267,6 @@
 ./usr/bin/logname
 ./usr/bin/lpq
 ./usr/bin/lpr
-./usr/bin/lsof
 ./usr/bin/mail
 ./usr/bin/md5sum
 ./usr/bin/mkfifo
@@ -296,6 +294,7 @@
 ./usr/bin/tee
 ./usr/bin/telnet
 ./usr/bin/test
+./usr/bin/tftp
 ./usr/bin/time
 ./usr/bin/top
 ./usr/bin/tr
@@ -317,6 +316,7 @@
 ./usr/lib/libstdc++.so.6
 ./usr/lib/libstdc++.so.6.0.10
 ./usr/lib/modules/3.10.32/kernel/drivers/usb/class/usblp.ko
+./usr/lib/modules/3.10.32/kernel/fs/cifs/cifs.ko
 ./usr/lib/modules/3.10.32/kernel/fs/fuse/fuse.ko
 ./usr/lib/modules/3.10.32/modules.alias
 ./usr/lib/modules/3.10.32/modules.builtin
@@ -345,10 +345,12 @@
 ./usr/sbin/hot_aux.sh
 ./usr/sbin/hot.sh
 ./usr/sbin/httpd
+./usr/sbin/hwclock
 ./usr/sbin/inetd
 ./usr/sbin/ldconfig
 ./usr/sbin/loadsave_settings
 ./usr/sbin/lpd
+./usr/sbin/poweroff
 ./usr/sbin/rcscript
 ./usr/sbin/rdate
 ./usr/sbin/recover
