@@ -4,7 +4,8 @@
 #
 #############################################################
 
-AUTOCONF_VERSION = 2.65
+AUTOCONF_VERSION = 2.67
+
 AUTOCONF_SOURCE = autoconf-$(AUTOCONF_VERSION).tar.bz2
 AUTOCONF_SITE = $(BR2_GNU_MIRROR)/autoconf
 
@@ -37,7 +38,7 @@ $(STAMP_DIR)/host_autoconf_unpacked: $(DL_DIR)/$(AUTOCONF_SOURCE)
 
 $(STAMP_DIR)/host_autoconf_configured: $(STAMP_DIR)/host_autoconf_unpacked $(STAMP_DIR)/host_m4_installed  $(STAMP_DIR)/host_libtool_installed
 	(cd $(AUTOCONF_HOST_DIR); rm -rf config.cache; autoreconf; \
-		$(HOST_CONFIGURE_OPTS) \
+		$(HOST_CONFIGURE_OPTS) $(AUTOCONF_CONF_ENV) \
 		CFLAGS="$(HOST_CFLAGS)" \
 		LDFLAGS="$(HOST_LDFLAGS)" \
 		./configure \
