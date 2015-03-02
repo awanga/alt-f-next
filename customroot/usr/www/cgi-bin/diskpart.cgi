@@ -205,6 +205,8 @@ else
 	done
 fi
 
+TWOTB=4294967296 # 2.2TB 
+
 ntfs_avail="disabled"
 if test -f /usr/sbin/mkntfs; then
 	ntfs_avail=""
@@ -269,11 +271,14 @@ cat<<EOF
 EOF
 
 ddsk=$(basename $dsk)
-rawcap=$(cat /sys/block/$ddsk/size) # sectors
-#rawcap=3907024065 # 2 TB 
-#rawcap=5860536096 # 3 TB
+rawcap=$(cat /sys/block/$ddsk/size) # 512 bytes sectors
 
 disk_details $ddsk
+
+swapneeded=""
+if test "$dbay" != "usb"; then
+	swapneeded="<p>Every internal disk must have a swap partition as its first partition, 0.5GB is generally enough.</p>"
+fi
 
 fout=$(fdisk -lu $dsk 2> /dev/null | tr '*' ' ') # *: the boot flag...
 
@@ -281,15 +286,28 @@ npart=4
 keepchk="checked"
 keepdis="disabled"
 windd_dis="disabled"
-in_use="MBR"
-if $(echo $fout | grep -q "Found valid GPT with protective MBR; using GPT"); then
-	in_use="GPT"
-	windd_dis=""; ntfsd="disabled"; vfatd="disabled"
-fi
 
-swapneeded=""
-if test "$dbay" != "usb"; then
-	swapneeded="<p>Every internal disk must have a swap partition as its first partition, 0.5GB is generally enough.</p>"
+if echo $fout | grep -q "doesn't contain a valid partition table"; then
+	if test $rawcap -lt $TWOTB; then
+		in_use="MBR"
+	else
+		in_use="GPT"
+	fi
+
+	fout="${dsk}1          0       -       0          0    0  Empty
+${dsk}2          0       -       0          0    0  Empty
+${dsk}3          0       -       0          0    0  Empty
+${dsk}4          0       -       0          0    0  Empty"
+	keepchk=""
+	keepdis=""
+
+elif echo $fout | grep -q "Found valid GPT with protective MBR; using GPT"; then
+	in_use="GPT"
+	windd_dis=""
+	ntfsd="disabled"
+	vfatd="disabled"
+else
+	in_use="MBR"
 fi
 
 cat<<EOF
@@ -308,15 +326,6 @@ cat<<EOF
 	<th>Type</th>
 	</tr>
 EOF
-
-if $(echo $fout | grep -q "doesn't contain a valid partition table"); then
-	fout="${dsk}1          0       -       0          0    0  Empty
-${dsk}2          0       -       0          0    0  Empty
-${dsk}3          0       -       0          0    0  Empty
-${dsk}4          0       -       0          0    0  Empty"
-keepchk=""
-keepdis=""
-fi
 
 used=0
 for pl in $(seq 1 $npart); do
