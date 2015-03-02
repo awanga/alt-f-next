@@ -112,13 +112,16 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 		# show LV name?
 		dname=$(cat /sys/block/$part/dm/name)
 		# don't show internal LVM devices for mirror, snapshot, etc volumes
-		if echo $dname | grep -qE _mlog\|_mimage\|-real\|-cow\|-pvmove\|-missing_; then continue; fi
-	elif blkid /dev/$part >& /dev/null ; then # non-partitioned disk, filesystem uses all device
-		:
-	elif ! test -d /sys/block/${part:0:3}/$part; then # standard partitioned disk
+		if echo $dname | grep -qE '_mlog|_mimage|-real|-cow|-pvmove|-missing_'; then continue; fi
+	# non-partitioned disk, filesystem uses all device
+	elif blkid /dev/$part >& /dev/null; then
+		if ls /sys/block/$part/${part}? >& /dev/null; then continue; fi
+	# standard partitioned disk
+	elif ! test -d /sys/block/${part:0:3}/$part; then
 		continue
-	else # is an extended partition?
-		if test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then continue; fi
+	# is an extended partition?
+	elif test "$(cat /sys/block/${part:0:3}/$part/size)" -le 2; then
+		continue
 	fi
 
 	LABEL=""; TYPE="none"
