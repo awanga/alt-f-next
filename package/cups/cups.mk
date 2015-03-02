@@ -18,7 +18,7 @@ CUPS_DESTDIR:=$(STAGING_DIR)/usr/lib
 CUPS_MAKE_ENV = STRIPPROG=arm-linux-strip
 
 CUPS_TARGET_BINARY:=usr/sbin/cupsd
-CUPS_DEPENDENCIES = uclibc openssl libusb1 dbus avahi gs libpng jpeg tiff host-autoconf
+CUPS_DEPENDENCIES = uclibc openssl libusb dbus avahi libpng jpeg tiff host-autoconf
 
 ifeq ($(BR2_PACKAGE_DBUS),y)
 	CUPS_CONF_OPT += --enable-dbus
@@ -83,7 +83,7 @@ $(CUPS_DIR)/.unpacked: $(DL_DIR)/$(CUPS_SOURCE)
 	$(CONFIG_UPDATE) $(CUPS_DIR)
 	touch $@
 
-CUPS_CONF_OPT = --without-perl --without-java --without-php	--without-python \
+CUPS_CONF_OPT = --without-perl --without-java --without-php --without-python \
 	--disable-pam --disable-dnssd --disable-ldap \
 	--disable-gnutls --disable-gssapi --disable-acl --disable-dbus \
 	--with-cups-user=cups --with-cups-group=lpadmin --with-system_groups="sys root" \
