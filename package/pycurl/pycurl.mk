@@ -45,7 +45,7 @@ $(TARGET_DIR)/$(PYCURL_TARGET_BINARY): $(PYCURL_DIR)/.build
 	tar -C $(TARGET_DIR)/usr -xf $(PYCURL_DIR)/dist/pycurl-$(PYCURL_VERSION).$(GNU_TARGET_NAME).tar.gz
 	find $(TARGET_DIR)/$(PYCURL_SITE_PACKAGE_DIR) -name \*.pyc -delete
 
-pycurl: uclibc python $(TARGET_DIR)/$(PYCURL_TARGET_BINARY)
+pycurl: uclibc libcurl python $(TARGET_DIR)/$(PYCURL_TARGET_BINARY)
 
 pycurl-unpack: $(PYCURL_DIR)/.unpacked
 

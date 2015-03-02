@@ -1,6 +1,7 @@
 config BR2_PACKAGE_PYCURL
 	bool "pycurl"
 	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_LIBCURL
 	help
 	  Python interface to libcurl
 
