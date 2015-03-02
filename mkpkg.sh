@@ -467,19 +467,22 @@ cd ${BLDDIR}/project_build_arm/$BOARD
 # cpio creates needed directories ignoring umask, so use tar
 # but using tar with a pipe, if the first tar fails we can't know it,
 # so check files first
-for i in $(cat $IPKGDIR/$pkg.lst); do
+grep -v '^#' $IPKGDIR/$pkg.lst > $IPKGDIR/$pkg.lst-noc
+for i in $(cat $IPKGDIR/$pkg.lst-noc); do
 	if test ! -e root/$i -a ! -h root/$i; then
 		echo "failed creating $pkg package ($i not found)"
 		exit 1
 	fi
 done
 
-tar -C root -c --no-recursion -T $IPKGDIR/$pkg.lst | tar -C $CDIR/tmp -x
+tar -C root -c --no-recursion -T $IPKGDIR/$pkg.lst-noc | tar -C $CDIR/tmp -x
 if test $? = 1; then 
 	echo failed creating $pkg package
 	exit 1
 fi
 cd "$CDIR"
+
+rm -f $IPKGDIR/$pkg.lst-noc
 
 for i in control conffiles preinst postinst prerm postrm; do
 	if test -f $IPKGDIR/$pkg.$i; then
