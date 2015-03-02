@@ -12,6 +12,5 @@ LIBUSB1_LIBTOOL_PATCH = NO
 LIBUSB1_INSTALL_STAGING = YES
 
 LIBUSB1_CONF_OPT = --disable-udev --disable-static --enable-system-log
-LIBUSB1_CONF_NV = CFLAGS
 
 $(eval $(call AUTOTARGETS,package,libusb1))
