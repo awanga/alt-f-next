@@ -364,6 +364,10 @@ endif
 ifneq ($(BR2_HAVE_INFOPAGES),y)
 	rm -rf $(TARGET_DIR)/usr/info $(TARGET_DIR)/usr/share/info
 endif
+ifneq ($(BR2_HAVE_DOCUMENTATION),y)
+	rm -rf $(TARGET_DIR)/usr/share/doc
+endif
+	rm -rf $(TARGET_DIR)/usr/share/aclocal
 	find $(TARGET_DIR) -type f -perm /111 | xargs $(STRIPCMD) 2>/dev/null || true
 ifeq ($(BR2_PTHREAD_DEBUG),y)
 	cp $(STAGING_DIR)/lib/libpthread-0.9.30.3.so $(TARGET_DIR)/lib
