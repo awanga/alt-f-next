@@ -126,12 +126,15 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 					return 0
 				fi
 			fi
-			swapon -p 1 $PWD/$MDEV
+
+			eval swap_pri=$(echo \$swapp_$UUID | tr '-' '_')
+			if test -z "$swap_pri"; then swap_pri=1; fi
+			swapon -p $swap_pri $PWD/$MDEV
 			ns=$(awk '/SwapTotal:/{ns = $2 * 0.15 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
 			mount -o remount,size=${ns}M /tmp
 			touch -r $FSTAB /tmp/fstab_date
 			sed -i '\|^'$PWD/$MDEV'|d' $FSTAB
-			echo "$PWD/$MDEV none swap pri=1 0 0" >> $FSTAB
+			echo "$PWD/$MDEV none swap pri=$swap_pri 0 0" >> $FSTAB
 			touch -r /tmp/fstab_date $FSTAB
 			rm -f /tmp/fstab_date
 			return 0

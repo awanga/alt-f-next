@@ -16,6 +16,12 @@ Low power saving, higher performance, can't spindown."
 mktt spindown_tt "After this minutes of inactivity the disk will spin down,<br>
 depending on the Power Saving Settings"
 
+mktt swap_tt "Disk Swap Priority:<br>
+If grayed disk doesn't has a swap partition.<br>
+High priority makes disk swap area to be used before low priority disks swap area.<br>
+With equal priorities disk swap areas will be equaly used, faster.<br>
+None disables swap on that disk."
+
 has_disks
 
 if test -f $CONFT; then
@@ -29,12 +35,15 @@ done
 
 cat<<EOF
 	<script type="text/javascript">
-	function submit() {
-			document.getElementById("diskf").submit;
+	function msubmit(action) {
+		document.getElementById("action_id").value = action;
+		document.getElementById("disku").submit();
 	}
 	</script>
 
 	<form id=disku name=disku action="/cgi-bin/diskutil_proc.cgi" method="post">
+	<input type="hidden" name="action" id="action_id" value="">
+	<input type="hidden" name="count" value="$ndisks">
 	<fieldset>
 	<legend>Disks</legend>
 	<table>
@@ -44,14 +53,33 @@ cat<<EOF
 	<th>Disk Model</th>
 	<th></th>
 	<th>Health</th>
+	<th>Swap Pri.</th>
 	<th>Power Mode</th>
 	<th>Power Sav.</th>
 	<th class="highcol">Spindown</th> 
 EOF
 
+cnt=0
 for disk in $disks; do
+	cnt=$((++cnt))
 	dsk=$(basename $disk)
 	disk_details $dsk
+
+	swap_dev=""; swap_pri=""; swap_dis=""; swap_none=""; swap_low=""; swap_med=""; swap_high=""
+	eval $(awk '/\/dev\/'$dsk'/{printf "swap_dev=%s swap_pri=%d\n", substr($1,6), $5}' /proc/swaps)
+	case $swap_pri in
+		1) swap_low="selected" ;;
+		2) swap_med="selected" ;;
+		3) swap_high="selected" ;;
+		*) swap_none="selected" ;;
+	esac
+	if test -z $swap_dev; then
+		swap_dev=$(blkid -t TYPE=swap | awk '/\/dev\/'$dsk'/{print substr($1,6,4)}')
+		if test -z $swap_dev; then
+			swap_dev=$(sgdisk -p /dev/$dsk 2>/dev/null | awk '/swap/{printf "'$dsk'%d",$1}')
+			if test -z $swap_dev; then swap_dis="disabled"; fi
+		fi
+	fi
 
 	power_dis="disabled"; hdtimeout_dis=""
 	if hdparm -I $disk 2> /dev/null | grep -q "Adv. Power Management"; then
@@ -88,14 +116,21 @@ for disk in $disks; do
 	cat<<-EOF	 
 		<tr><td>$dbay</td><td>$dsk</td><td>$dcap</td><td>$dmod</td>
 		<td><input type="submit" name="$dsk" value="$ejectop"></td>
-		<td><select name="$dsk" onChange="return submit()">
+		<td><select name="$dsk" onChange="return msubmit('smart')">
 			<option value="">Select Action</option>
 			<option value="hstatus">Show Status</option>
 			<option value="shorttest">Start short test</option>
 			<option value="longtest">Start long test</option>
 			</select></td>
-		<td> <input type="submit" $paction_dis name="$dsk" value="$paction"> </td>
-		<td><select $power_dis name=$power onchange="return submit()" $(ttip power_tt)>
+		<td><input type="hidden" name="swapd_$cnt" value="$swap_dev">
+			<select $swap_dis name="swapp_$cnt" onchange="return msubmit('swap')" $(ttip swap_tt)>
+			<option $swap_none value="0">None</option>
+			<option $swap_low value="1">Low</option>
+			<option $swap_med value="2">Medium</option>
+			<option $swap_high value="3">High</option>
+			</select></td>
+		<td><input type="submit" $paction_dis name="$dsk" value="$paction"></td>
+		<td><select $power_dis name="$power" onchange="return msubmit('power')" $(ttip power_tt)>
 			<option $dispower_sel value=255>Disable</option>
 			<option $highpower_sel value=1>High</option>
 			<option $medpower_sel value=127>Medium</option>
@@ -111,8 +146,8 @@ if test "$USB_SWAP" = "yes"; then
 fi
 
 cat<<-EOF
-	<tr><td colspan=8></td>
-	<td class="highcol"><input type="submit" name="standby" value="Submit"></td></tr>
+	<tr><td colspan=9></td>
+	<td class="highcol"><input type="submit" name="standby" value="Submit" onclick="return msubmit('power')"></td></tr>
 	</table>
 	</fieldset>     
 	<p>Swapping on USB devices: <input type="submit" name=usb_swap value="$usb_swap_val">

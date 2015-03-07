@@ -71,6 +71,7 @@ read_args
 #debug
 
 CONFT=/etc/misc.conf
+FSTAB=/etc/fstab
 
 if test -n "$StandbyNow"; then
 	sync
@@ -86,27 +87,6 @@ elif test -n "$Eject"; then
 elif test -n "$Load"; then
 	bay_eject $Load -r
 
-elif test -n "$hstatus"; then
-	health $hstatus
-	exit
-
-elif test -n "$shorttest"; then
-	if res=$(smartctl -t short /dev/$shorttest); then
-		res=$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')
-		msg "$res\n\nYou can see the result using Health Status."
-	else
-		msg "Fail: $res"
-	fi
-
-elif test -n "$longtest"; then
-	if res=$(smartctl -t long /dev/$longtest); then
-		res=$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')
-		hdparm -S 0 /dev/$longtest >& /dev/null
-		msg "$res\n\nYou can see the result using Health Status.\n\nDisk spindown has been disable."
-	else
-		msg "Fail: $res"
-	fi
-
 elif test -n "$Enable"; then
 	sed -i '/USB_SWAP/d' $CONFT >& /dev/null
 	echo USB_SWAP=yes >> $CONFT
@@ -114,15 +94,67 @@ elif test -n "$Enable"; then
 elif test -n "$Disable"; then
 	sed -i '/USB_SWAP/d' $CONFT >& /dev/null
 
-# this must the last else. Currently HDPOWER_* is always visible
-elif test -n "$standby" -o -n "$HDPOWER_LEFT" -o -n "$HDPOWER_RIGHT" -o -n "$HDPOWER_USB"; then
-	for i in HDPOWER_LEFT HDPOWER_RIGHT HDPOWER_USB HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
-		if test -n "$(eval echo \$$i)"; then
-			sed -i '/^'$i'/d' $CONFT >& /dev/null
-			echo "$i=$(eval echo \$$i)" >> $CONFT
-			prog $i $(eval echo \$$i)
+elif test "$action" = "smart"; then
+	if test -n "$hstatus"; then
+		health $hstatus
+		exit
+
+	elif test -n "$shorttest"; then
+		if res=$(smartctl -t short /dev/$shorttest); then
+			res=$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')
+			msg "$res\n\nYou can see the result using Health Status."
+		else
+			msg "Fail: $res"
 		fi
+
+	elif test -n "$longtest"; then
+		if res=$(smartctl -t long /dev/$longtest); then
+			res=$(echo $res | sed -n 's/.*successful\.\(.*\)Use.*/\1/p')
+			hdparm -S 0 /dev/$longtest >& /dev/null
+			msg "$res\n\nYou can see the result using Health Status.\n\nDisk spindown has been disable."
+		else
+			msg "Fail: $res"
+		fi
+	fi
+
+elif test "$action" = "swap"; then
+	for i in $(seq 1 $count); do
+		swap_dev=$(eval echo \$swapd_$i)
+		swap_pri=$(eval echo \$swapp_$i)
+
+		cur_pri=$(awk '/\/dev\/'$swap_dev'/{print $5}' /proc/swaps)
+		if test "$cur_pri" = "$swap_pri"; then continue; fi
+
+		swapoff /dev/$swap_dev >& /dev/null
+		eval $(blkid /dev/$swap_dev | cut -d" " -f3 | tr '-' '_')
+
+		if test -z "$UUID" -o "$swap_pri" != "0"; then
+			if test -z "$UUID" || ! blkid -t TYPE=swap /dev/$swap_dev >&/dev/null; then
+				mkswap /dev/$swap_dev >& /dev/null
+				eval $(blkid /dev/$swap_dev | cut -d" " -f3 | tr '-' '_')
+			fi
+			if ! res=$(swapon -p $swap_pri /dev/$swap_dev 2>&1); then msg "$res"; fi
+		fi
+		sed -i "/swapp_$UUID/d" $CONFT
+		echo "swapp_$UUID=$swap_pri" >> $CONFT
+
+		touch -r $FSTAB /tmp/fstab_date
+		sed -i '\|^/dev/'$swap_dev'|d' $FSTAB
+		echo "/dev/$swap_dev none swap pri=$swap_pri 0 0" >> $FSTAB
+		touch -r /tmp/fstab_date $FSTAB
+		rm -f /tmp/fstab_date
 	done
+
+elif test "$action" = "power"; then
+	if test -n "$standby" -o -n "$HDPOWER_LEFT" -o -n "$HDPOWER_RIGHT" -o -n "$HDPOWER_USB"; then
+		for i in HDPOWER_LEFT HDPOWER_RIGHT HDPOWER_USB HDSLEEP_LEFT HDSLEEP_RIGHT HDSLEEP_USB; do
+			if test -n "$(eval echo \$$i)"; then
+				sed -i '/^'$i'/d' $CONFT >& /dev/null
+				echo "$i=$(eval echo \$$i)" >> $CONFT
+				prog $i $(eval echo \$$i)
+			fi
+		done
+	fi
 fi
 
 #enddebug

@@ -30,7 +30,23 @@ You can use Services->System->smart->Configure to automate tests.
 
 <li><strong>Power Mode</strong> - can show <strong>StandbyNow</strong> to attempt putting the disk in standby, not spinning, or <strong>WakeupNow</strong> to take the disk out of standby. If some programs or services are using the disk, it can't be put in standby.</li>
 
-<li><strong>Power Sav.</strong> - if the disk supports A.P.M (Advanced Power Management), three levels of power saving can be set. If grayed out, the disk does not supported APM.</li>
+<li><strong>Swap Priority</strong> - allows specifying the swap priority of each disk.
+On systems with low physical memory (RAM), the Operating System uses a special partition on disk to
+emulate memory; when more memory is needed, the contents of a portion of RAM is moved to disk and a
+portion of a previously saved memory contents on the disk is moved back to RAM -- thus the name 
+<a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swap or swapping</a>.
+As disks are much slower than RAM this process slows down the overal system and can spinup the disks.
+Swap <strong>is necessary</strong>, at least to allow the system to periodically check filesystem at boot time.
+</li>
+<ul>
+<li><strong>None</strong> - no swapping will be done on this disk.</li>
+<li><strong>Low</strong> - this disk will only be used for swap if a higher priority disk is available for swap and is not full.</li>
+<li><strong>Medium</strong> - same as above.</li>
+<li><strong>High</strong> - same as above.</li>
+</ul>
+Disks with the same swap priority will be used in a round-robin mode, which provides faster swapping. This is the default.
+
+<li><strong>Power Saving</strong> - if the disk supports A.P.M (Advanced Power Management), three levels of power saving can be set. If grayed out, the disk does not supported APM.</li>
 <ul>
 <li><strong>Low</strong> - Low power saving, higher performance, can't spindown</li>
 <li><strong>Med</strong> - Medium power savings and performance, can spindown</li>
@@ -43,8 +59,9 @@ You can use Services->System->smart->Configure to automate tests.
 
 <strong>Swapping on USB devices: </strong> <em>Enable</em> if you want to enable 
 <a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.<ul>
-<li>By default swapping is not enabled on USB flash pens or USB hard disks, as it will degrade performance and can shorten the life of your USB flash pen (that has a limited number
-of write cycles).</li>
+<li>By default swapping is not enabled on USB attached flash pens or disks,
+as it will degrade performance and can shorten the life of the USB flash pen 
+(which has a limited number of write cycles).</li>
 <li>Swap <strong>is necessary</strong> and is enabled for internal disks,
 that must have a swap partition as its first partition.</li>
 </ul>
