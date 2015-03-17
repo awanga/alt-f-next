@@ -264,13 +264,13 @@ recover() {
 }
 
 listflashdef() {
-	lmount
+	lmount > /dev/null
 	(cd $save_dir; ls -1 set_* 2>/dev/null)
 	lumount
 }
 
 llistflashdef() {
-	lmount
+	lmount > /dev/null
 	(cd $save_dir; ls -l set_* 2>/dev/null)
 	lumount
 }
