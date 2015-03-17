@@ -260,6 +260,7 @@ source "package/socat/Config.in"
 source "package/spawn-fcgi/Config.in"
 source "package/stunnel/Config.in"
 source "package/svn/Config.in"
+source "package/syncthing/Config.in"
 source "package/tcpdump/Config.in"
 source "package/tftpd/Config.in"
 if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
