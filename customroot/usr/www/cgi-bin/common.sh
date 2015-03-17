@@ -224,13 +224,13 @@ find_dm() {
 fs_progress() {
 	part=$1
 	ln=""
-	for k in check format convert shrink enlarg wip; do
+	for k in check fix format convert shrink enlarg wip; do
 		if test -f /tmp/${k}-${part}; then
 			if kill -1 $(cat /tmp/${k}-${part}.pid) 2> /dev/null; then
 				if test -s /tmp/${k}-${part}.log; then
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
 				fi
-				if test $k = "check"; then
+				if test $k = "check" -o $k = "fix"; then
 					ln=$(echo $ln | awk '{if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
 				elif test $k = "format"; then
 					ln=$(echo $ln | awk -F/ '/.*\/.*/{if ($2 != 0) printf "%d%%", $1*100/$2}')
@@ -266,7 +266,7 @@ firstboot() {
 		exit 0
 	fi
 
-msg1="Welcome to your first login to Alt-F.<br> Logout to skip this wizard.<br><br>"
+msg1="Welcome to your first login to Alt-F.<br><br> <em>If you know what you are doing</em>, Logout to skip this wizard.<br><br>"
 msg_host="You should now fill-in all the host details and Submit them."
 msg_time_1="You should now specify the Continent/City where you live and Submit it.<br>"
 msg_time_2="You should now adjust the current date and time, either through the internet or manually, and Submit it."

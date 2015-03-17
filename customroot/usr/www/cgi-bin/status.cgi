@@ -530,8 +530,8 @@ backup_st() {
 }
 
 filesystem_maintenance_st() {
-	if ! test -n "$(ls /tmp/check-* /tmp/format-* /tmp/convert-* /tmp/shrink-* \
-		/tmp/enlarg-* /tmp/wip-* 2> /dev/null)"; then
+	if ! test -n "$(ls /tmp/check-* /tmp/fix-* /tmp/format-* /tmp/convert-* \
+		/tmp/shrink-* /tmp/enlarg-* /tmp/wip-* 2> /dev/null)"; then
 		return 0
 	fi
 
