@@ -18,7 +18,8 @@ PHP_CONF_ENV = ac_cv_func_dlopen=yes \
 	ac_cv_lib_dl_dlopen=yes \
 	ac_cv_func_libiconv=yes \
 	ac_cv_pthreads_lib=-lpthread \
-	EXTENSION_DIR=/usr/lib/php5/extensions
+	EXTENSION_DIR=/usr/lib/php5/extensions \
+	EXTRA_LIBS=-lpthread
 
 PHP_CONF_OPT = $(DISABLE_IPV6) \
 		--mandir=/usr/share/man \
