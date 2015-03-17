@@ -79,7 +79,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		eval $(echo $tftpargs | awk -F: '{printf "myip=%s tftpip=%s netmsk=%s", $1, $2, $3}')
 		logger -st rcS "tftp getting sqimage from $tftpip, myip $myip"
 		ifconfig eth0 up $myip netmask ${netmsk:-255.255.255.0}
-		if ! tftp -g -r rootfs.arm.sqimage.xz -l /tmp/sqimage.xz $tftpip; then
+		if ! tftp -g -r rootfs.arm.sqimage.xz-dns325 -l /tmp/sqimage.xz $tftpip; then
 			logger -st rcS "tftp get failed"
 		fi
 		ifconfig eth0 down

@@ -289,12 +289,18 @@ for i in ${!name[*]}; do
 	echo
 	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat --format=%s kernel)) bytes
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat --format=%s initramfs)) bytes
+
+	(cd ${DESTD}; cp uImage /srv/tftpboot/uImage-${name[i]})
+
 done
 
-# DNS-320/325 devel only
+(
+cd ${DESTD};
+cp urootfs /srv/tftpboot/urootfs-$board
 if test "$board" = dns325; then
-	(cd ${DESTD}; cp urootfs uImage rootfs.arm.sqimage.xz /srv/tftpboot/)
+	cp rootfs.arm.sqimage.xz /srv/tftpboot/rootfs.arm.sqimage.xz-$board
 fi
+)
 
 rm -f kernel initramfs defaults \
 	${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage ${DESTD}/tsqimage
