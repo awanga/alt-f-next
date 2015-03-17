@@ -213,7 +213,10 @@ echo > /dev/mdev.seq
 # "hotplug", mdev.conf registers /usr/sbin/hot.sh, 
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 
-# set a default hostname
+# set a default hostname based on box model and network MAC
+if ! test -s /etc/hostname; then
+	echo $(cut -d"-" -f1,2  /tmp/board)-$(cut -d: -f4-6 /sys/class/net/eth0/address | tr -d ':' | tr '[a-f]' '[A-F]') > /etc/hostname 
+fi
 hostname -F /etc/hostname
 
 # setup loopback interface

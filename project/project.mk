@@ -13,7 +13,7 @@ $(TARGET_DIR)/etc/issue: .config
 
 $(TARGET_DIR)/etc/hostname: .config
 	mkdir -p $(TARGET_DIR)/etc
-	echo "$(TARGET_HOSTNAME)" > $@
+	echo -n > $@
 
 $(TARGET_DIR)/etc/br-version: .config
 	mkdir -p $(TARGET_DIR)/etc
