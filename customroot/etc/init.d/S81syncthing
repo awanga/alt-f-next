@@ -1,0 +1,64 @@
+#!/bin/sh
+
+#set -x
+
+DESC="Open Source Continuous File Synchronization"
+NAME=syncthing
+TYPE=user
+
+NEED_ALTF_DIR=1
+
+RC_DESC="Syncthing daemon"
+RC_USER=syncthing
+RC_USERN=29
+RC_GROUP=sync
+RC_GROUPN=203
+
+LOGDIR=/var/log/$NAME
+LOGFILE=$LOGDIR/$NAME.log
+
+PIDDIR=/var/run/$NAME
+PIDFILE=$PIDDIR/$NAME.pid
+
+SYNCTHING_DIRS="$LOGDIR $PIDDIR"
+SYNCTHING_HOME="/var/lib/$NAME"
+SYNCTHING_CONF=$SYNCTHING_HOME/config.xml
+SYNCTHING_ARGS="-home=$SYNCTHING_HOME"
+
+RC_START_CMD="eval start-stop-daemon -S -v -b -o \
+--make-pidfile --pidfile $PIDFILE --chuid $RC_USER:$RC_GROUP \
+-x /bin/sh -- -c \"exec $NAME $SYNCTHING_ARGS > $LOGFILE 2>&1 \" "
+
+. /etc/init.d/common
+
+for i in $SYNCTHING_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+check_user $SYNCTHING_DIRS
+
+if ! test -f $SYNCTHING_CONF; then
+	# this would be much faster, but see the FIXME in S11sslcert
+	# cp /etc/ssl/certs/server.crt $SYNCTHING_HOME/cert.pem
+	# cp /etc/ssl/certs/server.crt $SYNCTHING_HOME/https-cert.pem
+	# cp /etc/ssl/certs/server.key $SYNCTHING_HOME/key.pem
+	# cp /etc/ssl/certs/server.key $SYNCTHING_HOME/https-key.pem
+
+	echo -e "\n$NAME: Please wait..."
+	echo "Generating RSA key and certificate, it takes 1 to 2 minutes."
+	echo "The first Syncthing start will takes another 1 to 2 minutes."
+
+	$NAME -generate=$SYNCTHING_HOME > /dev/null
+	sed -i -e 's|<address>127.0.0.1:8080</address>|<address>0.0.0.0:8088</address>|' \
+		-e  '/<folder/,/<\/folder/d' \
+		-e  '/<device.*name=/,/<\/device/d' $SYNCTHING_CONF
+	chown -R $RC_USER:$RC_GROUP $SYNCTHING_HOME
+fi
+
+case "$1" in
+	start) start $NAME ;;
+    stop) stop $NAME ;;
+    status) status $NAME ;;
+    restart) restart $NAME ;;
+    *) usage $0 "start|stop|status|restart" ;;
+esac

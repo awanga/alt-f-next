@@ -1,0 +1,2 @@
+./etc/init.d/S81syncthing
+./usr/www/cgi-bin/syncthing.cgi

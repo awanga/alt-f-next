@@ -1,0 +1,9 @@
+Package: syncthing
+Description: Open Source Continuous File Synchronization
+Version: 0.10.27
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: networking
+Source: https://github.com/syncthing
+Maintainer: jcard

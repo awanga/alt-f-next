@@ -1,0 +1,8 @@
+#!/bin/sh
+
+delgroup syncthing sync
+deluser syncthing
+delgroup sync
+
+rm -rf /opt/syncthing
+rm -f /sbin/rcsyncthing /usr/bin/syncthing
