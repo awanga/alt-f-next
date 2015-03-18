@@ -340,7 +340,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 	if grep -q ^$PWD/$MDEV' ' /proc/swaps; then
 		swapoff $PWD/$MDEV
 		ret=$?
-		ns=$(awk '/SwapTotal:/{ns = $2 * 0.1 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
+		ns=$(awk '/SwapTotal:/{ns = $2 * 0.15 / 1000; if (ns < 32) ns = 32; printf "%d", ns}' /proc/meminfo)
 		mount -o remount,size=${ns}M /tmp
 	elif grep -q ^$PWD/$MDEV' ' /proc/mounts; then
 		if test -n "$USER_SCRIPT" -a -f $USERLOCK; then
