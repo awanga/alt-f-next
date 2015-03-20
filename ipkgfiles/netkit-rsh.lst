@@ -1,0 +1,7 @@
+./usr/bin/rcp
+./usr/bin/rexec
+./usr/bin/rlogin
+./usr/bin/rsh
+./usr/sbin/in.rexecd
+./usr/sbin/in.rlogind
+./usr/sbin/in.rshd

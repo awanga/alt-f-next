@@ -1,0 +1,6 @@
+config BR2_PACKAGE_NETKIT_RSH
+	bool "netkit-rsh"
+	help
+	  programs for remote shell connections
+
+	  http://ftp.de.debian.org/debian/pool/main/n/netkit-rsh/netkit-rsh_0.17.orig.tar.gz

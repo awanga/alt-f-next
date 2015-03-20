@@ -1,0 +1,20 @@
+#!/bin/sh
+
+INETD_CONF=/etc/inetd.conf
+SERV=/etc/services
+
+cat<<-EOF >> $INETD_CONF
+	#rlogin	stream	tcp	nowait	root	/usr/sbin/in.rlogind	in.rlogind
+	#rexec	stream	tcp	nowait	root	/usr/sbin/in.rexecd		in.rexecd
+	#rcmd	stream	tcp	nowait	root	/usr/sbin/in.rshd		in.rshd -L
+EOF
+
+if ! grep -q -E '512.*rexec|513.*rlogin|514.*rcmd' $SERV; then
+	sed -i -e '/^exec.*512/s/\(.*\)/&\t\trexec/' \
+		-e '/^login.*513/s/\(.*\)/&\t\trlogin/' \
+		-e '/^shell.*514/s/\(.*\)cmd\(.*\)/\1rcmd\2/' $SERV
+fi
+
+chmod u+s /usr/bin/rlogin /usr/bin/rsh /usr/bin/rcp
+
+rcinetd reload

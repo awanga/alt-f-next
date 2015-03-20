@@ -1,0 +1,9 @@
+#!/bin/sh
+
+INETD_CONF=/etc/inetd.conf
+
+sed -i -e '/^#*rlogin.*in.rlogind/d' \
+	-e '/^#*rexec.*in.rexecd/d' \
+	-e '/^#*rcmd.*in.rshd/d' $INETD_CONF
+
+rcinetd reload
