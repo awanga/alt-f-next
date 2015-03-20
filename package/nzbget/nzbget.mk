@@ -4,8 +4,7 @@
 #
 #############################################################
 
-#NZBGET_VERSION = 0.8.0
-NZBGET_VERSION = 13.0
+NZBGET_VERSION = 14.2
 NZBGET_SOURCE = nzbget-$(NZBGET_VERSION).tar.gz
 NZBGET_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/nzbget/nzbget-stable/$(NZBGET_VERSION)
 
@@ -21,4 +20,6 @@ NZBGET_CONF_ENV = LIBPREF=$(STAGING_DIR) libxml2_CFLAGS="-I$(STAGING_DIR)/usr/in
 
 $(eval $(call AUTOTARGETS,package,nzbget))
 
-
+$(NZBGET_HOOK_POST_INSTALL):
+	$(RM) $(TARGET_DIR)/usr/sbin/nzbgetd
+	touch $@

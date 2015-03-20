@@ -1,6 +1,6 @@
 Package: nzbget
 Description: A command-line based binary newsgrabber for nzb files
-Version: 13.0-1
+Version: 14.2
 Depends: ncurses, libxml2, libsigcpp, libpar2, unrar, p7zip, ipkg
 Architecture: arm
 Priority: optional
