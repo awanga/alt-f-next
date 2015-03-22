@@ -340,6 +340,7 @@ source "package/pciutils/Config.in"
 source "package/pcmcia/Config.in"
 source "package/quota-tools/Config.in"
 source "package/sane/Config.in"
+source "package/secure-delete/Config.in"
 source "package/setserial/Config.in"
 if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
 # busybox has fdisk
@@ -348,6 +349,7 @@ endif
 source "package/sg3_utils/Config.in"
 source "package/smartmontools/Config.in"
 source "package/squashfs/Config.in"
+source "package/srm/Config.in"
 source "package/sysstat/Config.in"
 if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
 # mdev

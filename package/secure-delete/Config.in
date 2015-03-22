@@ -1,0 +1,6 @@
+config BR2_PACKAGE_SECURE_DELETE
+	bool "secure-delete"
+	help
+	  tools to wipe files, free disk space, swap and memory
+
+	  https://packages.debian.org/source/sid/secure-delete

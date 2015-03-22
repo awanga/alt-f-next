@@ -1,0 +1,6 @@
+config BR2_PACKAGE_SRM
+	bool "srm"
+	help
+	  command-line program to delete files securely
+
+	  https://sourceforge.net/projects/srm

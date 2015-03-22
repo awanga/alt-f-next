@@ -1,0 +1,9 @@
+Package: secure-delete
+Description: tools to wipe files, free disk space, swap and memory
+Version: 3.1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://packages.debian.org/source/sid/secure-delete
+Maintainer: jcard

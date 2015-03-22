@@ -1,0 +1,9 @@
+Package: srm
+Description: command-line program to delete files securely
+Version: 1.2.15
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://sourceforge.net/projects/srm
+Maintainer: jcard
