@@ -1,0 +1,7 @@
+ config BR2_PACKAGE_LIBRSYNC
+	bool "librsync"
+	help
+	  librsync implements the rolling-checksum algorithm of remote file synchronization that was popularized by the rsync utility.
+	  This algorithm transfers the differences between 2 files without needing both files on the same system.
+
+	  http://sourceforge.net/projects/librsync
