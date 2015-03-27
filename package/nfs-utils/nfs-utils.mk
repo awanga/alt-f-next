@@ -88,7 +88,7 @@ nfs-utils-configure: $(NFS_UTILS_DIR)/.configured
 
 nfs-utils-build: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
 
-nfs-utils: uclibc host-fakeroot $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY)
+nfs-utils: uclibc host-autoconf host-fakeroot $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY)
 
 nfs-utils-uninstall:
 	$(MAKE) -i DESTDIR=$(TARGET_DIR) -C $(NFS_UTILS_DIR) uninstall
