@@ -60,6 +60,8 @@ for i in $TRANSMISSION_DIRS; do
 	if ! test -d $i; then mkdir -p $i; fi
 done
 
+# FIXME: this is not fail-safe!
+
 if ! test -s $TRANSMISSION_CONF; then
 	if test -s $TRANSMISSION_CONF2 -a ! -h $TRANSMISSION_CONF2; then
 		mv $TRANSMISSION_CONF2 $TRANSMISSION_CONF
@@ -79,7 +81,6 @@ if ! test -s $TRANSMISSION_CONF; then
 		sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
 	fi
 fi
-
 
 check_user $TRANSMISSION_DIRS
 
