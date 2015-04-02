@@ -1,7 +1,7 @@
 Package: pycrypto
 Description: The Python Cryptography Toolkit
 Version: 2.6.1
-Depends: python, ipkg
+Depends: ipkg, python
 Architecture: arm
 Priority: optional
 Section: admin
