@@ -1,0 +1,12 @@
+Package: duplicity
+Description: Duplicity backs directories by producing encrypted tar-format volumes
+	  and uploading them to a remote or local file server.
+	  Because duplicity uses librsync, the incremental archives are space efficient
+	  and only record the parts of files that have changed since the last backup.
+Version: 0.6.25
+Depends: ipkg, librsync, gnupg, pycrypto, lftp, ncftp
+Architecture: arm
+Priority: optional
+Section: interpreters
+Source: http://duplicity.nongnu.org
+Maintainer: jcard

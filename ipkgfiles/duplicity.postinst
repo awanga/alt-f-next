@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# this is already done at python postinstall script, but because the ipkg order of dependent
+# packages postinstall scripts execution is reversed it needs to be done also here in case
+# python was not previously installed
+
+PVER=2.7
+
+INCDIR=/usr/include/python$PVER
+CONFDIR=/usr/lib/python$PVER/config
+
+PIP_SITE=https://bootstrap.pypa.io
+PIP_SOURCE=get-pip.py
+
+ELEMT_SITE=http://effbot.org/media/downloads
+ELEMT_VERSION=1.2.6-20050316
+ELEMT_TB=elementtree-$ELEMT_VERSION.tar.gz
+
+if ! test -f $INCDIR/pyconfig.h -o -f $CONFDIR/Makefile; then
+	mkdir -p $INCDIR $CONFDIR
+	mv /usr/lib/python$PVER/pyconfig.h $INCDIR
+	mv /usr/lib/python$PVER/Makefile $CONFDIR
+fi
+
+if ! test -f /usr/bin/pip -a -d /usr/lib/python$PVER/site-packages/pip; then
+	echo "Downloading pip... "
+	if ! wget -P /tmp --progress=dot:mega $PIP_SITE/$PIP_SOURCE -P /tmp/; then
+		echo "failed"
+		exit 1
+	fi
+	echo -n "Installing pip, please wait... "
+	if ! python /tmp/$PIP_SOURCE; then
+		echo "failed"
+		exit 1
+	fi
+	rm -f /tmp/$PIP_SOURCE
+fi
+
+# duplicity extra backends
+
+echo "Installing elementtree, lockfile, paramiko, boto, dropbox, gdata, please wait..."
+if ! pip install $ELEMT_SITE/$ELEMT_TB lockfile paramiko boto dropbox gdata; then
+	echo " failed"
+	exit 1
+fi
