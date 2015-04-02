@@ -273,7 +273,7 @@ case "$action" in
 
 	Processes)
 		TF=$(mktemp -t)
-		top -bn1 > $TF
+		top -bn1 | grep -v '\[.*\]' > $TF
 		showlog $TF Processes "Running Processes"
 		rm -f $TF
 		exit 0
