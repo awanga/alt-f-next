@@ -1,6 +1,6 @@
 Package: git
 Description: A free & open source, distributed version control system.
-Version: 2.1.2
+Version: 2.1.2-1
 Depends: libcurl, pcre, expat, ipkg, perl
 Architecture: arm
 Priority: optional
