@@ -49,7 +49,6 @@ elif test -n "$Submit"; then
 	read only = no
 	available = yes
 EOF
-
 	else
 		sed -i "/\[aMule\]/,/\[.*\]/ { s|path.*|path = $DL_DIR|}" $SMBCONF
 	fi

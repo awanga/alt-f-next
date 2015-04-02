@@ -64,7 +64,6 @@ elif test -n "$Submit"; then
 	read only = no
 	available = yes
 EOF
-
 	else
 		sed -i "/\[Transmission\]/,/\[.*\]/ { s|path.*|path = $WATCH_DIR|}" $SMBCONF
 	fi
