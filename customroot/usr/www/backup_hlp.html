@@ -110,9 +110,10 @@ this way is out of scope. </li>
 <p><li><strong>CIFS</strong> - this mode of operation is similar to the
 NFS mode, but mounts a folder from the remote <strong>Host</strong>
 using CIFS/SMB (samba).  It's purpose is mainly to create backups from
-remote MS-Windows machines.<ul>
-<li>For this mode of operation to work, there must exist a user with
-the same name and password on both machines, and the <strong>Run As
+remote MS-Windows machines. The kernel-modules package must be
+installed.<ul>
+<li>For this mode of operation to work there must exist a user with the
+same name and password on both machines, and the <strong>Run As
 </strong> entry should be the user who owns the files to backup on the
 remote machine.</li>
 <li>Notice that the user name is the full MS-Windows user name, such as
