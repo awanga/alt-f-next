@@ -11,6 +11,12 @@ VSFTP_CERT=/etc/ssl/certs/vsftpd.pem
 
 . /etc/init.d/common
 
+# FIXME: this key is generated when the host name is still a generic one, and a new key is not
+# generated when the host name is changed. Programs that check the key's host name against the
+# host name will fail.
+# Generating a new server certificate whenever the host name changes means that the user has to
+# make apps accept the the certificate, which is not friendly.
+
 case "$1" in
 	start)
 
