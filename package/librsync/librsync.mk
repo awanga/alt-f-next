@@ -17,6 +17,5 @@ LIBRSYNC_CONF_OPT = --disable-static --enable-shared
 $(eval $(call AUTOTARGETS,package,librsync))
 
 $(LIBRSYNC_HOOK_POST_INSTALL):
-	$(RM) $(TARGET_DIR)/usr/bin/rdiff
 	$(RM) $(STAGING_DIR)/usr/bin/rdiff
 	touch $@

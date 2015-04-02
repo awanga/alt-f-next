@@ -1,3 +1,4 @@
+./usr/bin/rdiff
 ./usr/lib/librsync.so
 ./usr/lib/librsync.so.1
 ./usr/lib/librsync.so.1.0.2
