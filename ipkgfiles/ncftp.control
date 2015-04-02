@@ -1,0 +1,9 @@
+Package: ncftp
+Description: NcFTP Client is a set of FREE application programs implementing FTP.
+Version: 3.2.5
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: networking
+Source: http://www.ncftp.com/ncftp
+Maintainer: jcard

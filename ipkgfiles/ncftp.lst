@@ -1,0 +1,7 @@
+./usr/bin/ncftp
+./usr/bin/ncftpbatch
+./usr/bin/ncftpbookmarks
+./usr/bin/ncftpget
+./usr/bin/ncftpls
+./usr/bin/ncftpput
+./usr/bin/ncftpspooler

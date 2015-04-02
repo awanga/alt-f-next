@@ -3,10 +3,16 @@
 # ncftp client
 #
 #############################################################
-NCFTP_VERSION:=3.2.2
-NCFTP_SOURCE:=ncftp-$(NCFTP_VERSION)-src.tar.bz2
+
+#NCFTP_VERSION:=3.2.2
+#NCFTP_SITE:=ftp://ftp.ncftp.com/ncft/polder_versions
+
+# 3.2.5 not working? it is!
+# according to http://git.buildroot.net/buildroot/tree/package/ncftp/ncftp.mk some issue with configure/autoconf, 
+NCFTP_VERSION:=3.2.5
 NCFTP_SITE:=ftp://ftp.ncftp.com/ncftp
 
+NCFTP_SOURCE:=ncftp-$(NCFTP_VERSION)-src.tar.bz2
 NCFTP_TARGET_BINS:=ncftp
 
 ifeq ($(BR2_PACKAGE_NCFTP_GET),y)
