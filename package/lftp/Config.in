@@ -1,0 +1,12 @@
+config BR2_PACKAGE_LFTP
+	bool "lftp"
+	select BR2_PACKAGE_READLINE
+	select BR2_PACKAGE_EXPAT
+	select BR2_PACKAGE_LIBICONV
+	select BR2_PACKAGE_GETTEXT
+	select BR2_PACKAGE_OPENSSL
+	help
+	  lftp is sophisticated file transfer program with command line interface. It
+	  supports FTP/FTPS/SFTP/HFTP, HTTP/HTTPS, FISH, FILE and BitTorrent protocols.
+
+	  http://lftp.yar.ru

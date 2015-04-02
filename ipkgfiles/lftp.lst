@@ -1,0 +1,9 @@
+./etc/lftp.conf
+./usr/bin/lftp
+./usr/bin/lftpget
+./usr/share/lftp
+./usr/share/lftp/convert-mozilla-cookies
+./usr/share/lftp/import-ncftp
+./usr/share/lftp/import-netscape
+./usr/share/lftp/verify-file
+./usr/share/lftp/xdg-move

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+sed -i '1i \
+\#\# uncomment to not verify certificates \
+\#set ssl:verify-certificate no \' /etc/lftp.conf

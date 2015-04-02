@@ -1,0 +1,9 @@
+Package: lftp
+Description: a sophisticated ftp client program supporting FTP, HTTP, FISH, SFTP, FILE and BitTorrent.
+Version: 4.6.1
+Depends: openssl, gettext, libiconv, expat, readline, ipkg
+Architecture: arm
+Priority: optional
+Section: networking
+Source: http://lftp.yar.ru
+Maintainer: jcard
