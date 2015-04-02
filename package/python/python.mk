@@ -9,6 +9,10 @@ PYTHON_VERSION_MAJOR=2.7
 
 PYTHON_SOURCE:=Python-$(PYTHON_VERSION).tar.bz2
 PYTHON_SITE:=http://www.python.org/ftp/python/$(PYTHON_VERSION)
+
+PYTHON_PIP_SITE=https://bootstrap.pypa.io
+PYTHON_PIP_SOURCE=get-pip.py
+
 PYTHON_DIR:=$(BUILD_DIR)/Python-$(PYTHON_VERSION)
 PYTHON_CAT:=$(BZCAT)
 PYTHON_BINARY:=python
@@ -107,7 +111,8 @@ BR2_PYTHON_DISABLED_MODULES += _locale
 endif
 
 $(DL_DIR)/$(PYTHON_SOURCE):
-	 $(call DOWNLOAD,$(PYTHON_SITE),$(PYTHON_SOURCE))
+	$(call DOWNLOAD,$(PYTHON_SITE),$(PYTHON_SOURCE))
+	$(call DOWNLOAD,$(PYTHON_PIP_SITE),$(PYTHON_PIP_SOURCE))
 
 $(PYTHON_DIR)/.unpacked: $(DL_DIR)/$(PYTHON_SOURCE)
 	$(PYTHON_CAT) $(DL_DIR)/$(PYTHON_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
@@ -130,6 +135,8 @@ $(PYTHON_DIR)/.hostpython: $(PYTHON_DIR)/.patched
 		$(MAKE) all install DESTDIR=$(HOST_DIR); \
 		$(MAKE) -i distclean \
 	)
+	# install pip (pip installs setuptools by default)
+	LD_LIBRARY_PATH=$(HOST_DIR)/usr/lib/ $(HOST_DIR)/usr/bin/python $(DL_DIR)/$(PYTHON_PIP_SOURCE)
 	touch $@
 
 #		OPT="$(HOST_CFLAGS)" \
