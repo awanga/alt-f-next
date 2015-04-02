@@ -5,5 +5,5 @@ Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: network
-Source: http://ftp.de.debian.org/debian/pool/main/n/netkit-rsh/netkit-rsh_0.17.orig.tar.gz
+Source: https://packages.debian.org/source/squeeze/netkit-rsh
 Maintainer: jcard

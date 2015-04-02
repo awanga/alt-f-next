@@ -6,7 +6,7 @@
 
 NETKIT_RSH_VERSION:=0.17
 NETKIT_RSH_SOURCE:=netkit-rsh_$(NETKIT_RSH_VERSION).orig.tar.gz
-NETKIT_RSH_SITE:= http://ftp.de.debian.org/debian/pool/main/n/netkit-rsh
+NETKIT_RSH_SITE:= $(BR2_DEBIAN_MIRROR)/debian/pool/main/n/netkit-rsh
 
 # uclibc doesn't has rcmd_af() nor ruserok_af(), don't apply patch
 # NETKIT_RSH_PATCH = netkit-rsh_0.17-15.diff.gz
@@ -22,10 +22,11 @@ $(NETKIT_RSH_TARGET_CONFIGURE):
 	CC=$(TARGET_CC)\\n\
 	CFLAGS=$(TARGET_CFLAGS)\\n\
 	LDFLAGS=$(TARGET_LDFLAGS)\\n\
-	WITHOUT_PAM=1\\n\
+	USE_PAM=\\n\
 	USE_SHADOW=1\\n\
 	USE_GLIBC=1\\n\
 	LIBTERMCAP=-lncurses\\n\
+	LIBSHADOW=\\n\
 	LIBS=-lcrypt -lutil\\n\
 	INSTALLROOT=$(TARGET_DIR)\\n\
 	BINDIR=/usr/bin\\n\
