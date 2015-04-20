@@ -1,0 +1,6 @@
+config BR2_PACKAGE_SHINE
+	bool "shine"
+	help
+	  fast mp3 encoding library implemented in fixed-point arithmetic
+
+	  https://github.com/savonet/shine
