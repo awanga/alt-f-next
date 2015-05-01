@@ -1,0 +1,13 @@
+--- EV-4.03/EV.xs.orig	2011-06-08 11:48:12.000000000 -0400
++++ EV-4.03/EV.xs	2011-06-08 11:49:56.000000000 -0400
+@@ -396,7 +396,9 @@
+     const_iv (EV_, VERSION_MINOR)
+   };
+ 
+-  for (civ = const_iv + sizeof (const_iv) / sizeof (const_iv [0]); civ-- > const_iv; )
++  /* To work around MacOS llvm-gcc bug: http://llvm.org/bugs/show_bug.cgi?id=9891 */
++  const void* civ_start = const_iv;
++  for (civ = const_iv + sizeof (const_iv) / sizeof (const_iv [0]); civ-- > civ_start; )
+     newCONSTSUB (stash, (char *)civ->name, newSViv (civ->iv));
+ 
+   stash_loop     = gv_stashpv ("EV::Loop"    , 1);

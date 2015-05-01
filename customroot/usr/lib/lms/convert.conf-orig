@@ -1,0 +1,308 @@
+# $Id$
+#
+# Configuration file for transcoding
+#
+# If you wish to create custom transcoding entries that won't be overwritten
+# by a new release of Logitech Media Server, create a custom-convert.conf file in the
+# Logitech Media Server root directory, or the root of the Plugins directory.
+#
+# On Debian, you can also create this file in # /etc/slimserver/custom-convert.conf
+#
+# first line is the source format, destination format and the destination device.  Asterisk matches all
+# second line is the command line for the conversion
+#
+# First line format: 
+#      <source_format> <dest_format> <destination_device_type> <destination_device_id>
+# 
+#   <source_format>:   Source music format:  mp3, mp4, ogg, wav, etc...
+#   <dest_format>  :   Destination music format:  Generally mp3, or
+#                      possibly aif or others depending on the types
+#                      your player supports.  SliMP3 supports only
+#                      MP3.  Squeezebox currently supports mp3, aif
+#                      and pcm. Squeezebox2 adds support for Flac and WMA.
+#   <destination_device_type>:  currently slimp3, squeezebox, or *.
+#                      The * is a wildcard that matches all device
+#                      types. 
+#   <destination_device_id>:  The ID of the destination device.  The
+#                      ID of the destination device is the MAC address
+#                      of a SliMP3 or Squeezebox device, or the IP of
+#                      an HTTP client (such as your computer running
+#                      WinAmp). The '*' wildcard matches all hosts
+# 
+#   either or both of <destination_device_type> and
+# <destination_device_id> may be the '*' wildcard
+# 
+#
+# $FILE$ is the absolute path to the local source file
+# $URL$ is the full URL for remote streams
+# [bin] is the executable binary for the encoder or decoder
+# - is a special command line that implies passthrough of data
+#
+# Capabilities
+# I - can transcode from stdin
+# F - can transcode from a named file
+# R - can transcode from a remote URL (URL types unspecified)
+# 
+# O - can seek to a byte offset in the source stream (not yet implemented)
+# T - can seek to a start time offset
+# U - can seek to start time offset and finish at end time offset
+#
+# D - can downsample
+# B - can limit bitrate
+#
+# default is "IF"
+#
+# Substitution strings for variable capabilities
+# %f - file path (local files)
+# %F - full URL (remote streams)
+#
+# %o - stream start byte offset
+# 
+# %S - stream samples start offset (not yet implemented)
+# %s - stream seconds start offset
+# %t - stream time (m:ss) start offset
+# %U - stream samples end offset (not yet implemented)
+# %u - stream seconds end offset
+# %v - stream time (m:ss) end offset
+# %w - stream seconds duration
+#
+# %b - limit bitrate: b/s
+# %B - limit bitrate: kb/s
+# %d - samplerate: samples/s
+# %D - samplerate: ksamples/s
+
+# specific combinations match before wildcards
+
+mp4 mp3 * *
+	# FB:{BITRATE=-B %B}T:{START=-j %s}U:{END=-e %u}
+	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [lame] --silent -q $QUALITY$ $BITRATE$ - -
+
+aac mp3 * *
+	# IFB:{BITRATE=-B %B}
+	[faad] -q -w -f 1 $FILE$ | [lame] --silent -q $QUALITY$ $BITRATE$ - -
+
+sls mp3 * *
+	# FB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[sls] $FILE$ - -s | [lame] --silent -q $QUALITY$ $RESAMPLE$ $BITRATE$ - -
+
+alc mp3 * *
+	# FB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}T:{START=-j %s}U:{END=-e %u}
+	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+ogg mp3 * *
+	# IFB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[sox] -q -t ogg $FILE$ -t wav - | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+wav mp3 * *
+	# IFB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ $FILE$ -
+
+aif mp3 * *
+	# IFB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ $FILE$ -
+
+flc mp3 * *
+	# FB:{BITRATE=-B %B}T:{START=--skip=%t}U:{END=--until=%v}D:{RESAMPLE=--resample %D}
+	[flac] -dcs $START$ $END$ -- $FILE$ | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+wma mp3 * *
+	# F:{PATH=%f}R:{PATH=%F}B:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[wmadec] -w $PATH$ | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+wmal mp3 * *
+	# F:{PATH=%f}R:{PATH=%F}B:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[wmadec] -w $PATH$ | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+wmap mp3 * *
+	# F:{PATH=%f}R:{PATH=%F}B:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[wmadec] -w $PATH$ | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+mpc mp3 * *
+	# IRB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[mppdec] --silent --prev --gain 3 - - | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+ape mp3 * *
+	# FB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[mac] $FILE$ - -d | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+wvp mp3 * *
+	# FB:{BITRATE=-B %B}T:{START=--skip=%t}U:{END=--until=%v}D:{RESAMPLE=--resample %D}
+	[wvunpack] $FILE$ -wq $START$ $END$ -o - | [lame] --silent -q $QUALITY$ $RESAMPLE$ -v $BITRATE$ - -
+
+mp3 mp3 * *
+	-
+
+# Non-mp3 starts here
+aif aif * *
+	-
+
+wav pcm * *
+	-
+
+flc pcm * *
+	# FT:{START=--skip=%t}U:{END=--until=%v}
+	[flac] -dcs --force-raw-format --endian=little --sign=signed $START$ $END$ -- $FILE$
+
+flc aif * *
+	# FT:{START=--skip=%t}U:{END=--until=%v}
+	[flac] -dcs --force-raw-format --endian=big --sign=signed $START$ $END$ -- $FILE$
+
+ogf ogf * *
+	-
+
+ogf flc * *
+	[flac] --ogg -dcs -- $FILE$ | [flac] -cs --ignore-chunk-sizes --totally-silent --compression-level-0 - 
+
+ogg ogg * *
+	-
+
+ogg aif * *
+	[sox] -q -t ogg $FILE$ -t raw -r 44100 -c 2 -2 -s $-x$ -
+
+ogg pcm * *
+	[sox] -q -t ogg $FILE$ -t raw -r 44100 -c 2 -2 -s -
+
+wma pcm * *
+	# F:{PATH=%f}R:{PATH=%F}
+	[wmadec] -r 44100 -b 16 -n 2 $PATH$ 
+
+wmal pcm * *
+	# F:{PATH=%f}R:{PATH=%F}
+	[wmadec] -r 44100 -b 16 -n 2 $PATH$ 
+
+wmap pcm * *
+	# F:{PATH=%f}R:{PATH=%F}
+	[wmadec] -r 44100 -b 16 -n 2 $PATH$ 
+
+mpc pcm * *
+	# IR
+	[mppdec] --raw-le --silent --prev --gain 2 - -
+
+ape pcm * *
+	# F
+	[mac] $FILE$ - -d
+
+mpc aif * *
+	# IR
+	[mppdec] --raw-be --silent --prev --gain 2 - -
+
+alc pcm * *
+	# FT:{START=-j %s}U:{END=-e %u}
+	[faad] -q -w -f 2 $START$ $END$ $FILE$
+
+wvp pcm * *
+	# FT:{START=--skip=%t}U:{END=--until=%v}
+	[wvunpack] $FILE$ -rq $START$ $END$ -o -
+
+mp4 pcm * *
+	# FT:{START=-j %s}U:{END=-e %u}
+	[faad] -q -w -f 2 -b 1 $START$ $END$ $FILE$
+
+aac pcm * *
+	# IF
+	[faad] -q -w -f 2 -b 1 $FILE$
+
+sls pcm * *
+	# F
+	[sls] $FILE$ - -r -s
+
+wma wma * *
+	-
+
+wmal wmal * *
+ 	-
+ 
+wmap wmap * *
+	-
+
+# FLAC output starts here 
+
+#mp3 flc * *
+#	[lame] --mp3input --decode -t --silent $FILE$ - | [flac] -cs --totally-silent --compression-level-0 -
+
+flc flc * *
+	-
+
+aif flc * *
+	# FT:{START=--skip=%t}U:{END=--until=%v}D:{RESAMPLE=-r %d}
+	[flac] -cs --totally-silent --compression-level-0 $START$ $END$ -- $FILE$ | [sox] -q -t flac - -t flac -C 0 $RESAMPLE$ -	
+
+wav flc * *
+	# FT:{START=--skip=%t}U:{END=--until=%v}D:{RESAMPLE=-r %d}
+	[flac] -cs --totally-silent --compression-level-0 $START$ $END$ -- $FILE$ | [sox] -q -t flac - -t flac -C 0 $RESAMPLE$ -
+
+ogg flc * *
+	# IFRD:{RESAMPLE=-r %d}
+	[sox] -t ogg $FILE$ -t flac -C 0 $RESAMPLE$ -
+
+wma flc * *
+	# F:{PATH=%f}R:{PATH=%F}
+	[wmadec] -w $PATH$ | [flac] -cs --totally-silent --compression-level-0 -
+
+wmal flc * *
+	# F:{PATH=%f}R:{PATH=%F}
+	[wmadec] -w $PATH$ | [flac] -cs --totally-silent --compression-level-0 -
+
+wmap flc * *
+	# F:{PATH=%f}R:{PATH=%F}
+	[wmadec] -w $PATH$ | [flac] -cs --totally-silent --compression-level-0 -
+
+mpc flc * *
+	# IR
+	[mppdec] --silent --prev --gain 2 - - | [flac] -cs --totally-silent --compression-level-0 -
+
+ape flc * *
+	# F
+	[mac] $FILE$ - -d | [flac] -cs --totally-silent --compression-level-0 -
+
+mp4 flc * *
+	# FT:{START=-j %s}U:{END=-e %u}
+	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [flac] -cs --totally-silent --compression-level-0 --ignore-chunk-sizes -
+
+aac flc * *
+	# IF
+	[faad] -q -w -f 1 $FILE$ | [flac] -cs --totally-silent --compression-level-0 --ignore-chunk-sizes -
+
+sls flc * *
+	# FD:{RESAMPLE=-r %d}
+	[sls] $FILE$ - -s | [sox] -q -t wav - -t flac -C 0 $RESAMPLE$ -
+
+alc flc * *
+	# FT:{START=-j %s}U:{END=-e %u}D:{RESAMPLE=-r %d}
+	[faad] -q -w -f 1 $START$ $END$ $FILE$ | [sox] -q -t wav - -t flac -C 0 $RESAMPLE$ -
+
+wvp flc * *
+	# FT:{START=--skip=%t}U:{END=--until=%v}D:{RESAMPLE=-r %d}
+	[wvunpack] $FILE$ -wq $START$ $END$ -o - | [sox] -q -t wav - -t flac -C 0 $RESAMPLE$ -
+
+# AAC & ALAC output start here
+
+aac aac * *
+	-
+
+mp4 aac * *
+	-
+
+sls aac * *
+	-
+
+alc alc * *
+	-
+
+# special case for smart bitrates on mp3 input
+mp3 mp3 transcode *
+	# IFB:{BITRATE=-B %B}D:{RESAMPLE=--resample %D}
+	[lame] --silent -q $QUALITY$ -v $BITRATE$ $RESAMPLE$ --mp3input $FILE$ -
+
+flc flc transcode *
+	# FT:{START=--skip=%t}U:{END=--until=%v}D:{RESAMPLE=-r %d}
+	[flac] -dcs $START$ $END$ -- $FILE$ | [sox] -q -t wav - -t flac -C 0 $RESAMPLE$ - 
+
+# This example transcodes MP3s to MP3s, if the target machine has the 
+# given MAC address. This rule will take precedence over the
+# previous rule because it's more specific. 
+#mp3 mp3 squeezebox 00:02:dd:34:e9:62
+#	./brute_filter $FILE$ -
+
+spdr spdr * *
+	 -

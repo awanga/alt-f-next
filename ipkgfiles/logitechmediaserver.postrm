@@ -1,0 +1,8 @@
+#!/bin/sh
+
+delgroup lms multimedia
+deluser lms
+delgroup multimedia
+
+rm -rf /usr/lib/lms
+rm -f /sbin/rclms /usr/bin/lms

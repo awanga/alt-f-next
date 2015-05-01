@@ -1,0 +1,81 @@
+diff -ur ../DBD-SQLite-1.32_01-orig/Makefile.PL ./Makefile.PL
+--- DBD-SQLite-1.34_01/Makefile.PL	2011-01-11 16:44:59.000000000 -0500
++++ DBD-SQLite-1.34_01/Makefile.PL	2011-01-11 16:45:09.000000000 -0500
+@@ -201,9 +201,12 @@
+ 	push @CC_LIBS, '-lsqlite3';
+ }
+ 
++push @CC_LIBS, '-L../build/lib -licudata_s -licui18n_s -licuuc_s -lstdc++';
++
+ my @CC_INC = (
+ 	'-I.',
+ 	'-I$(DBI_INSTARCH_DIR)',
++	'-I../build/include',
+ );
+ if ( $sqlite_inc ) {
+ 	push @CC_INC, "-I$sqlite_inc";
+@@ -221,6 +224,7 @@
+ 	'-DSQLITE_ENABLE_FTS3_PARENTHESIS',  # for sqlite >= 3.6.10
+ 
+ 	'-DSQLITE_ENABLE_COLUMN_METADATA',
++	'-DSQLITE_ENABLE_ICU',
+ 	'-DNDEBUG=1',
+ );
+ if ( $Config{d_usleep} || $Config{osname} =~ m/linux/ ) {
+@@ -236,12 +240,19 @@
+ 	push @CC_DEFINE, '-DSQLITE_ENABLE_LOCKING_STYLE=0';
+ }
+ 
++my $MYEXTLIB = join( ' ', (
++	'../build/lib/libicuuc.a',
++	'../build/lib/libicudata.a',
++	'../build/lib/libicui18n.a',
++) );
++
+ my @CC_OPTIONS = (
+ 	INC          => join( ' ', @CC_INC    ),
+ 	DEFINE       => join( ' ', @CC_DEFINE ),
+ 	( @CC_LIBS ? (
+ 		LIBS => join( ' ', @CC_LIBS )
+ 	) : () ),
++	MYEXTLIB     => $MYEXTLIB,
+ );
+ 
+ #####################################################################
+diff -ur ../DBD-SQLite-1.32_01-orig/sqlite3.c ./sqlite3.c
+--- DBD-SQLite-1.34_01/sqlite3.c	2011-01-11 16:44:59.000000000 -0500
++++ DBD-SQLite-1.34_01/sqlite3.c	2011-01-11 17:01:32.000000000 -0500
+@@ -122611,6 +122611,9 @@
+   UErrorCode status = U_ZERO_ERROR;
+   const char *zLocale;      /* Locale identifier - (eg. "jp_JP") */
+   const char *zName;        /* SQL Collation sequence name (eg. "japanese") */
++#ifdef _WIN32
++  const char *zDataPath;
++#endif
+   UCollator *pUCollator;    /* ICU library collation object */
+   int rc;                   /* Return code from sqlite3_create_collation_x() */
+ 
+@@ -122621,6 +122624,11 @@
+   if( !zLocale || !zName ){
+     return;
+   }
++  
++#ifdef _WIN32
++  zDataPath = (const char *)sqlite3_value_text(apArg[2]);
++  u_setDataDirectory(zDataPath);
++#endif
+ 
+   pUCollator = ucol_open(zLocale, &status);
+   if( !U_SUCCESS(status) ){
+@@ -122664,7 +122672,11 @@
+     {"like",   2, SQLITE_UTF8,         0, icuLikeFunc},
+     {"like",   3, SQLITE_UTF8,         0, icuLikeFunc},
+ 
++#ifdef _WIN32
++    {"icu_load_collation",  3, SQLITE_UTF8, (void*)db, icuLoadCollation},
++#else
+     {"icu_load_collation",  2, SQLITE_UTF8, (void*)db, icuLoadCollation},
++#endif
+   };
+ 
+   int rc = SQLITE_OK;

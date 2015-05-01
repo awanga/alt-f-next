@@ -1,0 +1,11 @@
+#!/bin/sh
+
+LMS_DIR=/usr/lib/lms
+
+ln -sf /usr/sbin/rcscript /sbin/rclms
+
+rclms status
+
+chown -R lms:multimedia $LMS_DIR
+
+exit 0

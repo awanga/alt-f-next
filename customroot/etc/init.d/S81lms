@@ -1,0 +1,43 @@
+#!/bin/sh
+
+#set -x
+
+DESC="a streaming audio server supported by Logitech"
+NAME=lms
+TYPE=user
+
+NEED_ALTF_DIR=1
+
+RC_DESC="logitech media server daemon"
+RC_USER=lms
+RC_USERN=30
+RC_GROUP=multimedia
+RC_GROUPN=80
+
+LMS_LOGDIR=/var/log/$NAME
+LMS_PIDDIR=/var/run/$NAME
+LMS_CONFDIR=/etc/$NAME
+LMS_HOME=/var/lib/$NAME
+
+LMS_DIRS="$LMS_LOGDIR $LMS_PIDDIR $LMS_CONFDIR"
+
+RC_PIDFILE=$LMS_PIDDIR/$NAME.pid
+
+LMS_ARGS="--cachedir=$LMS_HOME --logdir=$LMS_LOGDIR --prefsdir=$LMS_CONFDIR --pidfile=$RC_PIDFILE \
+--user=lms --group=multimedia --charset=utf8 --quiet --daemon"
+
+. /etc/init.d/common
+
+for i in $LMS_DIRS; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+check_user $LMS_DIRS
+
+case "$1" in
+	start) start $NAME --chuid $RC_USER:$RC_GROUP -- $LMS_ARGS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

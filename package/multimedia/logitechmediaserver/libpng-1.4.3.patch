@@ -1,0 +1,92 @@
+--- libpng-1.4.3/pngconf.h-orig	2015-04-29 18:42:42.343982988 +0100
++++ libpng-1.4.3/pngconf.h	2015-04-29 18:43:09.952611383 +0100
+@@ -148,18 +148,22 @@
+ 
+ /* Enabled by default in 1.2.0.  You can disable this if you don't need to
+    support PNGs that are embedded in MNG datastreams */
++/*
+ #ifndef PNG_NO_MNG_FEATURES
+ #  ifndef PNG_MNG_FEATURES_SUPPORTED
+ #    define PNG_MNG_FEATURES_SUPPORTED
+ #  endif
+ #endif
++*/
+ 
+ /* Added at libpng version 1.4.0 */
++/*
+ #ifndef PNG_NO_FLOATING_POINT_SUPPORTED
+ #  ifndef PNG_FLOATING_POINT_SUPPORTED
+ #    define PNG_FLOATING_POINT_SUPPORTED
+ #  endif
+ #endif
++*/
+ 
+ /* Added at libpng-1.4.0beta49 for testing (this test is no longer used
+    in libpng and png_calloc() is always present)
+@@ -265,9 +269,9 @@
+  * macros and functions (FILE *, printf, etc.) from being compiled and used,
+  * unless (PNG_DEBUG > 0) has been #defined.
+  *
+- * #define PNG_NO_CONSOLE_IO
+- * #define PNG_NO_STDIO
+- */
++#define PNG_NO_CONSOLE_IO
++#define PNG_NO_STDIO
++*/
+ 
+ #if !defined(PNG_NO_STDIO) && !defined(PNG_STDIO_SUPPORTED)
+ #  define PNG_STDIO_SUPPORTED
+@@ -787,6 +791,24 @@
+  * a bit smaller.
+  */
+ 
++/* Disable some read features -andy */
++#define PNG_NO_READ_TEXT
++#define PNG_NO_READ_cHRM
++#define PNG_NO_READ_gAMA
++#define PNG_NO_READ_hIST
++#define PNG_NO_READ_iCCP
++#define PNG_NO_READ_oFFs
++#define PNG_NO_READ_pCAL
++#define PNG_NO_READ_sCAL
++#define PNG_NO_READ_pHYs
++#define PNG_NO_READ_sBIT
++#define PNG_NO_READ_sPLT
++#define PNG_NO_READ_sRGB
++#define PNG_NO_READ_tIME
++#define PNG_NO_READ_UNKNOWN_CHUNKS
++#define PNG_NO_READ_USER_CHUNKS
++#define PNG_NO_HANDLE_AS_UNKNOWN
++
+ /* The size of the png_text structure changed in libpng-1.0.6 when
+  * iTXt support was added.  iTXt support was turned off by default through
+  * libpng-1.2.x, to support old apps that malloc the png_text structure
+@@ -924,6 +946,28 @@
+ #  endif
+ #endif
+ 
++/* Disable some write features -andy */
++#define PNG_NO_WRITE_TEXT
++#define PNG_NO_WRITE_bKGD
++#define PNG_NO_WRITE_cHRM
++#define PNG_NO_WRITE_gAMA
++#define PNG_NO_WRITE_hIST
++#define PNG_NO_WRITE_iCCP
++#define PNG_NO_WRITE_oFFs
++#define PNG_NO_WRITE_pCAL
++#define PNG_NO_WRITE_sCAL
++#define PNG_NO_WRITE_pHYs
++#define PNG_NO_WRITE_sBIT
++#define PNG_NO_WRITE_sPLT
++#define PNG_NO_WRITE_sRGB
++#define PNG_NO_WRITE_tIME
++#define PNG_NO_WRITE_tRNS
++#define PNG_NO_WRITE_UNKNOWN_CHUNKS
++#define PNG_NO_INFO_IMAGE
++
++/* Needed to compile -andy */
++#define PNG_gAMA_SUPPORTED
++
+ #ifdef PNG_WRITE_SUPPORTED
+ #ifdef PNG_WRITE_ANCILLARY_CHUNKS_SUPPORTED
+ 

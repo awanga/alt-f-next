@@ -1,0 +1,60 @@
+#!/bin/sh
+
+DAEMON=rclms
+
+if test -e /sbin/$DAEMON; then
+	$DAEMON stop
+
+	for i in $(seq 1 30); do
+		if ! $DAEMON status >& /dev/null; then break; fi
+		sleep 1
+	done
+fi
+
+VERSION=7.8.0
+SITE=http://downloads.slimdevices.com/LogitechMediaServer_v${VERSION}
+TBALL=logitechmediaserver-${VERSION}-noCPAN.tgz
+
+LMS_DIR=/usr/lib/lms
+
+if ! test -f /tmp/$TBALL; then
+echo "Downloading $SITE/${TBALL}..."
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	cat<<-EOF
+
+		****************************************************************
+		* Downloading of LogitechMediaServer from its home site failed *
+		****************************************************************
+
+	EOF
+	exit 1
+fi
+fi
+
+echo "Extracting ${TBALL}..."
+if ! tar -C /usr/lib -xzf /tmp/$TBALL; then
+	rm -f /tmp/$TBALL
+	cat<<-EOF
+
+		********************************************
+		* Extraction of LogitechMediaServer failed *
+		********************************************
+
+	EOF
+	exit 1
+fi
+
+mv /usr/lib/logitechmediaserver-${VERSION}-noCPAN $LMS_DIR
+rm -f /tmp/$TBALL
+
+# "fixes"
+sed -i "s/VERSION = '1.05'/VERSION = '1.18'/" $LMS_DIR/CPAN/Class//XSAccessor.pm
+sed -i 's/.*rmtree.*/\teval { & };/' $LMS_DIR/scanner.pl
+
+cat <<-EOF > /usr/bin/lms
+	#!/bin/sh
+
+	$LMS_DIR/slimserver.pl \$@ 
+EOF
+chmod +x /usr/bin/lms

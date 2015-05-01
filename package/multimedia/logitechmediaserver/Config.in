@@ -1,0 +1,10 @@
+config BR2_PACKAGE_LOGITECHMEDIASERVER
+	bool "logitechmediaserver"
+	select BR2_PACKAGE_PERL
+	select BR2_PACKAGE_ICU
+	select BR2_PACKAGE_SOX
+	select BR2_PACKAGE_SHINE
+	help
+	  a streaming audio server supported by Logitech (formerly Slim Devices), developed in particular to support their Squeezebox range of digital audio receivers.
+
+	  http://www.mysqueezebox.com/download

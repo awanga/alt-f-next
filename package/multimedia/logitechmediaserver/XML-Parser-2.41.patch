@@ -1,0 +1,11 @@
+--- XML-Parser-2.41/Expat/Makefile.PL.orig	2009-10-03 04:04:21.000000000 -0400
++++ XML-Parser-2.41/Expat/Makefile.PL	2009-10-03 04:04:35.000000000 -0400
+@@ -2,7 +2,7 @@
+ use Config;
+ use English;
+ 
+-my $libs = "-lexpat";
++my $libs = "-lexpat_s";
+ my @extras = ();
+ 
+ push(@extras, INC => "-I$expat_incpath") if $expat_incpath;
