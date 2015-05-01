@@ -54,10 +54,6 @@ $(FFMPEG_DIR)/.configured: $(FFMPEG_DIR)/.unpacked
 	)
 	touch $@
 
-#		--disable-programs --disable-bsfs --disable-safe-bitstream-reader \
-#		--disable-filters --disable-avfilter --disable-avformat --disable-swresample \
-#		--disable-zlib --disable-network
-
 $(FFMPEG_DIR)/$(FFMPEG_BINARY): $(FFMPEG_DIR)/.configured
 	$(MAKE) -C $(FFMPEG_DIR)
 	touch -c $@
@@ -73,17 +69,6 @@ ifneq ($(BR2_PACKAGE_FFMPEG_PROGS),y)
 endif
 	touch -c $@
 
-#$(TARGET_DIR)/$(FFMPEG_TARGET_BINARY): $(STAGING_DIR)/$(FFMPEG_TARGET_BINARY)
-#	mkdir -p $(STAGING_DIR)/usr/include/ffmpeg
-#	for i in libavcodec libavformat libavdevice libavutil libswscale libavfilter libswresample; do \
-#		cp -dpf $(STAGING_DIR)/usr/lib/$$i.so* $(TARGET_DIR)/usr/lib/; \
-#		$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/$$i.so*; \
-#		cp $(STAGING_DIR)/usr/include/$$i/* $(STAGING_DIR)/usr/include/ffmpeg; \
-#	done
-#	(cd $(STAGING_DIR)/usr/bin; cp -dpf $(FFMPEG_BINARIES) $(TARGET_DIR)/usr/bin)
-#	(cd $(TARGET_DIR)/usr/bin; $(STRIPCMD) $(FFMPEG_BINARIES) )
-#	touch -c $@
-
 ffmpeg: $(FFMPEG_DEPENDENCIES) $(TARGET_DIR)/$(FFMPEG_TARGET_LIBS)
 
 ffmpeg-source: $(DL_DIR)/$(FFMPEG_SOURCE)
@@ -92,9 +77,11 @@ ffmpeg-unpacked: $(FFMPEG_DIR)/.unpacked
 
 ffmpeg-configure: $(FFMPEG_DIR)/.configured
 
+ffmpeg-build: $(FFMPEG_DIR)/$(FFMPEG_BINARY)
+
 ffmpeg-clean:
 	rm -f $(TARGET_DIR)/$(FFMPEG_TARGET_BINARY) \
-		$(TARGET_DIR)/$(FFMPEG_TARGET_BINARY2) \
+		$(TARGET_DIR)/$(FFMPEG_TARGET_BINARY) \
 		$(TARGET_DIR)/usr/lib/libavcodec.so* \
 		$(TARGET_DIR)/usr/lib/libavformat.so* \
 		$(TARGET_DIR)/usr/lib/libavdevice.so* \
@@ -103,8 +90,8 @@ ffmpeg-clean:
 	-$(MAKE) -C $(FFMPEG_DIR) clean
 
 ffmpeg-uninstall:
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(FFMPEG_DIR) uninstall
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(FFMPEG_DIR) uninstall
+	-$(MAKE) DESTDIR=$(STAGING_DIR) -C $(FFMPEG_DIR) uninstall
+	-$(MAKE) DESTDIR=$(TARGET_DIR) -C $(FFMPEG_DIR) uninstall
 	touch -c $@	
 
 ffmpeg-dirclean:
