@@ -14,13 +14,6 @@ SHINE_LIBTOOL_PATCH = NO
 SHINE_INSTALL_TARGET = YES
 SHINE_INSTALL_STAGING = NO
 
-SHINE_CONF_OPT = --disable-shared \
+SHINE_CONF_OPT = --disable-shared
 
 $(eval $(call AUTOTARGETS,package/multimedia,shine))
-
-# $(SHINE_HOOK_POST_INSTALL):
-# 	rm -f $(TARGET_DIR)/usr/share/aclocal/libFLAC.m4
-# ifneq ($(BR2_PACKAGE_SHINE_PROGS),y)
-# 	(cd $(TARGET_DIR)/usr/bin; rm -f $(SHINE_PROGS))
-# endif
-# 	touch $@
