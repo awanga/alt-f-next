@@ -1,0 +1,28 @@
+config BR2_PACKAGE_SOX
+	bool "sox"
+	select BR2_PACKAGE_LIBVORBIS       
+	select BR2_PACKAGE_FLAC
+	select BR2_PACKAGE_LIBMAD
+	select BR2_PACKAGE_WAVPACK
+	select BR2_PACKAGE_LAME
+	select BR2_PACKAGE_TWOLAME
+	select BR2_PACKAGE_LIBPNG
+	select BR2_PACKAGE_LIBID3TAG
+	select BR2_PACKAGE_ALSA_LIB
+	help
+	  the Swiss Army knife of sound processing programs
+
+	  http://sox.sourceforge.net/Main/HomePage
+
+config BR2_PACKAGE_SOX_LIBS
+        default y
+        bool "sox-libs"
+        depends on BR2_PACKAGE_SOX
+        help
+          install sox libraries on the target
+
+config BR2_PACKAGE_SOX_PROGS
+        depends on BR2_PACKAGE_SOX_LIBS
+        bool "sox-progs"
+        help
+          install sox programs on the target

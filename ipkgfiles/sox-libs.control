@@ -1,0 +1,9 @@
+Package: sox-libs
+Description: the Swiss Army knife of sound processing libraries
+Version: 14.4.2
+Depends: alsa-lib, libid3tag, libpng, twolame, lame, libmad, flac, libvorbis, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sox.sourceforge.net/Main/HomePage
+Maintainer: jcard

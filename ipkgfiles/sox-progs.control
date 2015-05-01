@@ -1,0 +1,9 @@
+Package: sox-progs
+Description: the Swiss Army knife of sound processing programs
+Version: 14.4.2
+Depends: sox-libs, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://sox.sourceforge.net/Main/HomePage
+Maintainer: jcard
