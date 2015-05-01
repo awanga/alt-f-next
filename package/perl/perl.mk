@@ -30,6 +30,14 @@ $(PERL_DIR)/.stamp_cross: $(PERL_DIR)/.stamp_extracted
 	chmod -R ug+rw $(PERL_DIR)
 	touch $@
 
+# When using threads, perl uses a dynamically-sized buffer for some of
+# the thread-safe library calls, such as those in the getpw*() family.
+# This buffer starts small, but it will keep growing until the result
+# fits.  To get a fixed upper limit, you should compile Perl with
+# PERL_REENTRANT_MAXSIZE defined to be the number of bytes you want.  One
+# way to do this is to run Configure with
+#   -Accflags=-DPERL_REENTRANT_MAXSIZE=65536
+
 $(PERL_DIR)/.stamp_configured: $(PERL_DIR)/.stamp_cross
 	( \
 	cd $(PERL_DIR); \
@@ -38,7 +46,7 @@ $(PERL_DIR)/.stamp_configured: $(PERL_DIR)/.stamp_cross
 	--target=arm-linux-uclibc \
 	--target-tools-prefix=arm-linux- \
 	-Accflags="$(TARGET_CFLAGS)" \
-	-Duseopcode \
+	-Duseopcode -Dusethreads \
 	)
 	touch $@
 
@@ -47,6 +55,7 @@ $(PERL_DIR)/.stamp_build: $(PERL_DIR)/.stamp_configured
 	touch $@
 
 $(PERL_DIR)/.stamp_installed: $(PERL_DIR)/.stamp_build
+	$(MAKE1) -C $(PERL_DIR) DESTDIR=$(STAGING_DIR) install.perl
 	$(MAKE1) -C $(PERL_DIR) DESTDIR=$(TARGET_DIR) install.perl
 	chmod +w $(TARGET_DIR)/usr/lib/perl/arm-linux/Config.pm $(TARGET_DIR)/usr/lib/perl/arm-linux/Config_heavy.pl
 	sed -i "s/cc *=> *'arm-linux-gcc'/cc => 'gcc'/" $(TARGET_DIR)/usr/lib/perl/arm-linux/Config.pm
@@ -79,7 +88,7 @@ perl-configure: $(PERL_DIR)/.stamp_configured
 
 perl-build: $(PERL_DIR)/.stamp_build
 
-perl: uclibc gdbm $(PERL_DIR)/.stamp_installed
+perl: uclibc gdbm perl-host $(PERL_DIR)/.stamp_installed
 
 #############################################################
 #
