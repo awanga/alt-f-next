@@ -1,0 +1,19 @@
+config BR2_PACKAGE_FAAD2
+	bool "faad2"
+	help
+	  an open source MPEG-4 and MPEG-2 AAC decoder
+
+	  http://www.audiocoding.com/faad2.html
+
+config BR2_PACKAGE_FAAD2_LIBS
+        default y
+        bool "faad2-libs"
+        depends on BR2_PACKAGE_FAAD2
+        help
+          install faad2 libraries on the target
+
+config BR2_PACKAGE_FAAD2_PROGS
+        depends on BR2_PACKAGE_FAAD2_LIBS
+        bool "faad2-progs"
+        help
+          install faad2 programs on the target

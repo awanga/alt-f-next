@@ -1,0 +1,9 @@
+Package: faad2-progs
+Description: an open source MPEG-4 and MPEG-2 AAC decoder
+Version: 2.7
+Depends: faad2-libs, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.audiocoding.com/faad2.html
+Maintainer: jcard
