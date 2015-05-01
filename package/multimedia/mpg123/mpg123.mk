@@ -3,13 +3,10 @@
 # mpg123
 #
 #############################################################
-#MPG123_VERSION=0.66
-MPG123_VERSION=1.14.4
+
+MPG123_VERSION=1.22.1
 MPG123_SOURCE=mpg123-$(MPG123_VERSION).tar.bz2
 MPG123_SITE=$(BR2_SOURCEFORGE_MIRROR)/project/mpg123/$(MPD_VERSION)
-
-#MPG123_CAT:=$(BZCAT)
-#MPG123_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/mpg123
 
 MPG123_AUTORECONF = NO
 MPG123_INSTALL_STAGING = NO
@@ -71,6 +68,10 @@ $(TARGET_DIR)/$(MPG123_TARGET_BIN): $(MPG123_DIR)/$(MPG123_BIN)
 mpg123: uclibc $(MPG123_ALSA_DEP) $(TARGET_DIR)/$(MPG123_TARGET_BIN)
 
 mpg123-unpacked: $(MPG123_DIR)/.unpacked
+
+mpg123-configure: $(MPG123_DIR)/.configured
+
+mpg123-build: $(MPG123_DIR)/$(MPG123_BIN)
 
 mpg123-clean:
 	-$(MAKE) -C $(MPG123_DIR) clean

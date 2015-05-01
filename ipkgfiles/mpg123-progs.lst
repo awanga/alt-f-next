@@ -1,0 +1,4 @@
+./usr/bin/mpg123
+./usr/bin/mpg123-id3dump
+./usr/bin/mpg123-strip
+./usr/bin/out123

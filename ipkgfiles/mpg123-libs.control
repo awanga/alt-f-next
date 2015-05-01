@@ -1,0 +1,9 @@
+Package: mpg123-libs
+Description: Fast, free and portable MPEG audio player for Unix.  It supports MPEG 1.0/2.0 layers 1, 2 and 3.
+Version: 1.22.1
+Depends: alsa-lib, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.mpg123.de/
+Maintainer: jcard
