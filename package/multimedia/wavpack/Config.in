@@ -1,0 +1,20 @@
+config BR2_PACKAGE_WAVPACK
+	bool "wavpack"
+	select BR2_PACKAGE_LIBICONV
+	help
+	  a completely open audio compression format providing lossless and high-quality lossy
+
+	  http://www.wavpack.com/
+ 
+config BR2_PACKAGE_WAVPACK_LIBS
+        default y
+        bool "wavepack-libs"
+        depends on BR2_PACKAGE_WAVPACK
+        help
+          install wavepack libraries on the target
+
+config BR2_PACKAGE_WAVPACK_PROGS
+        depends on BR2_PACKAGE_WAVPACK_LIBS
+        bool "wavepack-progs"
+        help
+          install wavepack programs on the target

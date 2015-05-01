@@ -1,0 +1,9 @@
+Package: wavpack-libs
+Description: a completely open audio compression format providing lossless and high-quality lossy
+Version: 4.70.0
+Depends: libiconv, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.wavpack.com/
+Maintainer: jcard
