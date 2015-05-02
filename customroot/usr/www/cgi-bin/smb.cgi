@@ -80,19 +80,6 @@ cat<<EOF
 			window.open("browse_cifs.cgi?id1=" + host_id + "?id2=" + dir_id, "Browse", "scrollbars=yes, width=500, height=500");
 			return false;
         }
-		function swat_popup() {
-			if (confirm("On the next SWAT Authentication dialogue you have to enter\n" + 
-				"'root' for the 'User Name' and the web password for 'Password'.\n\n" +
-				"Changes made might not be recognized latter in this page.\n\nContinue?")) {
-				if (location.protocol == "http:")
-					port = ":901";
-				else if (location.protocol == "https:")
-					port = ":902";
-				else
-					return;
-				window.open(location.protocol + "//" + location.hostname + port, "SWAT", "scrollbars=yes, width=800, height=600");
-			}
-        }
 		function def_opts(id) {
 			var opts = document.getElementById(id);
 			if (opts.value != "")
@@ -300,7 +287,10 @@ cat<<EOF
 	</fieldset>
 	$swat
 	<input type=submit name=submit value="Submit">
-	<input type=button value="Advanced" onClick="return swat_popup()">
+	<input type=submit name=submit value="Advanced" onClick="return confirm('\
+On the next SWAT Authentication dialogue you have to enter' + '\n' +
+'\'root\' for the \'User Name\' and the web password for \'Password\'.' + '\n\n' +
+'Changes made might not be recognized latter in this web page.' + '\n\n' + 'Continue?')">
 	$(back_button)
 	</form></body></html>
 EOF

@@ -9,7 +9,15 @@ read_args
 CONF_FSTAB=/etc/fstab
 CONF_SMB=/etc/samba/smb.conf
 
-if test -n "$unMount"; then
+if test "$submit" = "Advanced"; then
+
+	PROTO="http"; PORT=901
+	if echo $HTTP_REFERER | grep -q 'https://'; then
+		PROTO="https"; PORT=902
+	fi
+	embed_page "$PROTO://${HTTP_HOST%%:*}:${PORT}" "SWAT Page"
+
+elif test -n "$unMount"; then
 	mp=$(httpd -d "$unMount")
 	res="$(umount "$mp" 2>&1)"
 	st=$?
