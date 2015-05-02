@@ -77,6 +77,10 @@ and such recovery information is missing.<br>Checking this checkbox delays the N
 Alt-F directory becomes available. Notice that if the checkbox is checked and the Alt-F directory
 never appears, then NFS will not auto-start.</li>
 
+<li><p><h4>Max NFS Block size:</h4> Allows specifying the max NFS block size, potentially improving NFS throughput. The default value is otherwise automatically calculated on the running system.<br>
+Specifying values too high will reduce the amount of memory available for other OS sub-systems, such as page/file caching, and the overall effect can be negative. Global system performance has to be taken into account.
+</li>
+
 </ul>
 
 <br><button type=button onclick="history.back()">Back</button></body>
