@@ -105,7 +105,7 @@ elif test -n "$Submit"; then
 		rm $CONFT-
 	fi
 
-	sed -i '/^DELAY_NFS=/d;/^CLEAN_STALE_NFS=/d' $CONFM
+	sed -i '/^DELAY_NFS=/d;/^CLEAN_STALE_NFS=/d;/^NFS_BLKSIZE=/d' $CONFM
 
 	if test -n "$delay_nfs"; then
 		echo DELAY_NFS=y >> $CONFM
@@ -115,6 +115,9 @@ elif test -n "$Submit"; then
 		echo CLEAN_STALE_NFS=y >> $CONFM
 	fi
 
+	if test "$NFS_BLKSIZE" != "auto"; then
+		echo NFS_BLKSIZE=$NFS_BLKSIZE >> $CONFM
+	fi
 fi
 
 #enddebug

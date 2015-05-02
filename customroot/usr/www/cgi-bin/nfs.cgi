@@ -251,11 +251,24 @@ fi
 
 mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages folder becomes available"
 mktt rmtab_tt "Remove remote mount entries at service start."
+mktt blksz_tt "Applied only on next server start. Use 'auto' to use an automaticaly computed value.<br>Value will be rounded to the near 4KiB boundary. The displayed value is the one currenty used (not set) value"
+
+curr_blksz=$(cat /proc/fs/nfsd/max_block_size 2>/dev/null)
+
+if test -z "$NFS_BLKSIZE"; then
+	NFS_BLKSIZE="auto"
+elif test "$curr_blksz" -gt 0 2>/dev/null; then
+	if test "$NFS_BLKSIZE" != "$curr_blksz"; then
+		dmsg="(set to $NFS_BLKSIZE)"
+	fi
+	NFS_BLKSIZE=$curr_blksz
+fi
 
 cat<<-EOF
 	<table>
 	<tr><td>Delay NFS start on boot</td><td><input $dnfs_dis $dnfs_chk type=checkbox name=delay_nfs value=yes $(ttip dnfs_tt)></td></tr>
 	<tr><td>Clean stale entries</td><td><input type=checkbox $rmtab_chk name=clean_rmtab value=yes $(ttip rmtab_tt)></td></tr>
+	<tr><td>Max NFS Block size</td><td><input type=text size=7 name="NFS_BLKSIZE" value="$NFS_BLKSIZE" $(ttip blksz_tt)> $dmsg</td></tr>
 	</table>
 	<p><input type="submit" name="submit" value="Submit">$(back_button)
 	</form></body></html>

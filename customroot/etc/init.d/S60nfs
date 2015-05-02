@@ -53,6 +53,10 @@ istart() {
 
 	if ! test -f /proc/fs/nfsd/exports; then
 		mount -t nfsd nfsd /proc/fs/nfsd
+		sleep 1
+		if test -n "$NFS_BLKSIZE"; then
+			echo $NFS_BLKSIZE > /proc/fs/nfsd/max_block_size
+		fi
 	fi
 
 	exportfs -r
