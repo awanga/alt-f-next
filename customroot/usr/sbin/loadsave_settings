@@ -382,7 +382,7 @@ case "$board" in
 		MTD=/dev/mtdblock5
 		MTDR=/dev/mtd5
 		;;
-	DNS-323-[ABC]1|DNS-321-A1A2)
+	qemu|DNS-323-[ABC]1|DNS-321-A1A2)
 		fs_type="minix"
 		MTD=/dev/mtdblock0
 		;;

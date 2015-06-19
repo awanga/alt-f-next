@@ -29,7 +29,9 @@ start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
 # what box/board?
 mkdir -p /tmp/sys
 
-if grep -q 'DNS-321/323' /proc/cpuinfo; then
+if grep -q 'ARM-Versatile PB' /proc/cpuinfo; then
+	board="qemu"
+elif grep -q 'DNS-321/323' /proc/cpuinfo; then
 	case $(sed -n 's/Revision.*:.\([[:digit:]]*\).*/\1/p' /proc/cpuinfo) in
 		0000) board="DNS-323-A1" ;;
 		0001) board="DNS-323-B1" ;;
@@ -48,7 +50,12 @@ fi
 
 echo $board > /tmp/board
 
-if echo $board | grep -qE "DNS-321|DNS-323"; then
+if echo $board | grep -qE "qemu"; then
+	config_mtd=/dev/mtdblock0; config_mn="31 0"
+	mkdir -p /tmp/sys/power_led
+	sed -i 's/ttyS0/ttyAMA0/g' /etc/inittab
+	kill -1 1
+elif echo $board | grep -qE "DNS-321|DNS-323"; then
 	kernel_mtd=/dev/mtd2; kernel_mn="90 4"
 	config_mtd=/dev/mtdblock0; config_mn="31 0"
 	
@@ -166,7 +173,7 @@ if test "$board" != "Unknown"; then
 	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
 		ln -sf /sys/class/hwmon/hwmon1/device/fan1_input /tmp/sys/fan1_input
 	else
-		touch /tmp/sys/fan1_input
+		echo 0 > /tmp/sys/fan1_input
 	fi
 
 	# start fan because the disks might have to be fsck and might warm up a lot in the process

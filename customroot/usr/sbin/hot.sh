@@ -217,9 +217,27 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 
 	else # "normal" disk (not md)
 
+# qemu:
+# sda-left:  /sys/devices/pci0000:00/0000:00:0c.0/host0/target0:0:0/0:0:0:0
+# sdb-right: /sys/devices/pci0000:00/0000:00:0c.0/host0/target0:0:1/0:0:1:0
+# 
+# 325:
+# sda-left:  /sys/devices/ocp.0/f1080000.sata/ata1/host0/target0:0:0/0:0:0:0
+# sdb-right: /sys/devices/ocp.0/f1080000.sata/ata2/host1/target1:0:0/1:0:0:0
+# 
+# 320l:
+# sda-left:  /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0/0:0:0:0
+# sdb-right: /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0/1:0:0:0
+# 
+# 323:
+# sdb-left:  /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0/1:0:0:0
+# sda-right: /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0/0:0:0:0
+
 		lhost="/host0/"; rhost="/host1/"
 		if grep -qE 'DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2' /tmp/board; then
 			lhost="/host1/"; rhost="/host0/"
+		elif grep -qE 'qemu' /tmp/board; then
+			lhost="/0:0:1:0"; rhost="/0:0:0:0"
 		fi
 		# which bay?	
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
