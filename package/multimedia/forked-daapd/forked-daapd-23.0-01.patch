@@ -1,8 +1,7 @@
---- forked-daapd-0.15/config.h.in-orig	2011-03-14 21:46:59.634888301 +0000
-+++ forked-daapd-0.15/config.h.in	2011-03-14 21:48:45.257012263 +0000
-@@ -1,5 +1,20 @@
- /* config.h.in.  Generated from configure.in by autoheader.  */
- 
+--- forked-daapd-0.15/config2.h-orig       2015-05-08 15:37:24.000000000 +0100
++++ forked-daapd-0.15/config2.h 2015-05-08 17:34:21.760145085 +0100
+@@ -0,0 +1,17 @@
++
 +/*  
 +  uclibc does not has pipe2() neither inotify_init1()
 +  The uclibc version in use also does not have fdtimer, a patch was applied
@@ -18,9 +17,7 @@
 +#define htobe16(a) htons((a))
 +#define be16toh(a) ntohs((a))
 +
- /* Define to 1 if you have the <dirent.h> header file. */
- #undef HAVE_DIRENT_H
- 
++#include <config.h>
 --- forked-daapd-0.15/src/raop.c-orig	2011-03-14 21:49:18.542011600 +0000
 +++ forked-daapd-0.15/src/raop.c	2011-03-14 21:49:52.136888965 +0000
 @@ -37,6 +37,7 @@
