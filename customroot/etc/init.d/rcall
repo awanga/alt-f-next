@@ -2,7 +2,7 @@
 
 case "$1" in
 	start)
-		for i in /etc/init.d/S* ;do		
+		for i in /etc/init.d/S* ;do
 			if ! test -f "$i" -a -x "$i"; then continue; fi
 			logger -s "$($i start)"
 		done
