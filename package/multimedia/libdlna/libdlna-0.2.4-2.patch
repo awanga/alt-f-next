@@ -1,0 +1,20 @@
+--- libdlna-0.2.4/src/profiles.c-orig	2015-05-05 18:52:53.066257372 +0100
++++ libdlna-0.2.4/src/profiles.c	2015-05-05 18:59:36.274384698 +0100
+@@ -287,7 +287,7 @@
+     return NULL;
+   }
+ 
+-  if (av_find_stream_info (ctx) < 0)
++  if (avformat_find_stream_info (ctx, NULL) < 0)
+   {
+     if (dlna->verbosity)
+       fprintf (stderr, "can't find stream info\n");
+@@ -334,7 +334,7 @@
+     p = p->next;
+   }
+ 
+-  av_close_input_file (ctx);
++  avformat_close_input (&ctx);
+   free (codecs);
+   return profile;
+ }
