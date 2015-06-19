@@ -230,7 +230,14 @@ stop() {
 	st=$?
 
 	if test -n "$REQUIRE"; then
-		while status $1 >& /dev/null; do usleep 200000; done
+		cnt=60
+		while status $1 >& /dev/null; do
+			usleep 200000
+			if test $((--cnt)) = "0"; then
+				echo -n "FORCE "
+				stop $1 9
+			fi
+		done
 		stoprequired $1 $REQUIRE
 	fi
 
