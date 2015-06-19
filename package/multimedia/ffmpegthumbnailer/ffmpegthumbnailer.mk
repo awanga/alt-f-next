@@ -4,6 +4,12 @@
 #
 #############################################################
 
+# requires cmake
+#https://github.com/dirkvdb/ffmpegthumbnailer/releases/download/2.0.10/ffmpegthumbnailer-2.0.10.tar.bz2
+# FFMPEGTHUMBNAILER_VERSION = 2.0.10
+# FFMPEGTHUMBNAILER_SOURCE = ffmpegthumbnailer-$(FFMPEGTHUMBNAILER_VERSION).tar.bz2
+# FFMPEGTHUMBNAILER_SITE = https://github.com/dirkvdb/ffmpegthumbnailer/releases/download/$(FFMPEGTHUMBNAILER_VERSION)
+
 FFMPEGTHUMBNAILER_VERSION = 2.0.8
 FFMPEGTHUMBNAILER_SOURCE = ffmpegthumbnailer-$(FFMPEGTHUMBNAILER_VERSION).tar.gz
 FFMPEGTHUMBNAILER_SITE = http://ffmpegthumbnailer.googlecode.com/files
