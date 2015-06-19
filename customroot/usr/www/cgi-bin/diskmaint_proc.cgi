@@ -55,7 +55,7 @@ check() {
 			;;
 		vfat) opts="-a" ;;
 		ntfs) opts="" ;;
-		*) 	opts="" ;;
+		*) 	msg "Unsuported $2 filesystem, you have to resort to the command line."
 	esac
 	logf=/tmp/${3}-${1}.log
 
