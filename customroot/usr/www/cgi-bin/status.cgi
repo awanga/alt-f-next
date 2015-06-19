@@ -6,7 +6,7 @@
 # Modified and adapted by Joao Cardoso
 launch() {
 	echo "<div id=\"$1\">"
-	eval ${1}_st
+	$1
 	echo "</div>"
 	return 0;
 }
@@ -47,18 +47,18 @@ jscripts() {
 	
 				if (arg == "yes") {
 					arefresh = true
-					requestfromserver('systems', 11)
-					requestfromserver('network', 11)
-					requestfromserver('disks', 13)
-					requestfromserver('raid', 13)
-					requestfromserver('mounted_filesystems', 17)
-					requestfromserver('mounted_remote_filesystems', 17)
-					requestfromserver('remotely_mounted_filesystems', 19)
-					requestfromserver('backup', 19)
-					requestfromserver('filesystem_maintenance', 23)
-					requestfromserver('printers', 23)
-					requestfromserver('error', 31)
-					requestfromserver('news', 59)
+					requestfromserver('systems_st', 11)
+					requestfromserver('network_st', 11)
+					requestfromserver('disks_st', 13)
+					requestfromserver('raid_st', 13)
+					requestfromserver('mounted_filesystems_st', 17)
+					requestfromserver('mounted_remote_filesystems_st', 17)
+					requestfromserver('remotely_mounted_filesystems_st', 19)
+					requestfromserver('backup_st', 19)
+					requestfromserver('filesystem_maintenance_st', 23)
+					requestfromserver('printers_st', 23)
+					requestfromserver('error_st', 31)
+					requestfromserver('news_st', 59)
 				}
 				else
 					arefresh = false
@@ -595,10 +595,16 @@ if test -s $MISCC; then
 	. $MISCC
 fi
 
+apl="error_st news_st systems_st network_st disks_st raid_st mounted_filesystems_st
+mounted_remote_filesystems_st remotely_mounted_filesystems_st backup_st
+filesystem_maintenance_st printers_st"
+
 if test -n "$refresh"; then
-	html_header
-	eval ${refresh}_st
-	echo "</body></html>"
+	if echo $apl | grep -qw $refresh; then
+		html_header
+		$refresh
+		echo "</body></html>"
+	fi
 	exit 0
 fi
 
@@ -611,18 +617,7 @@ mktt st_tt "Checking this will refresh different sections in the page every 10 t
 This consumes CPU, so if you are waiting for something lengthly to accomplish<br>
 it will actually take more time if autorefresh is enabled."
 
-launch error
-launch news
-launch systems
-launch network
-launch disks
-launch raid
-launch mounted_filesystems
-launch mounted_remote_filesystems
-launch remotely_mounted_filesystems
-launch backup
-launch filesystem_maintenance
-launch printers
+for i in $apl; do launch $i; done
 
 cat<<EOF
 	<form action="">

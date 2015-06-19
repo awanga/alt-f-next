@@ -231,9 +231,9 @@ fs_progress() {
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
 				fi
 				if test $k = "check" -o $k = "fix"; then
-					ln=$(echo $ln | awk '{if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
+					ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
 				elif test $k = "format"; then
-					ln=$(echo $ln | awk -F/ '/.*\/.*/{if ($2 != 0) printf "%d%%", $1*100/$2}')
+					ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
 				elif test $k = "shrink" -o $k = "enlarg"; then
 					ln=$(echo $ln | grep -o X)
 					if test -n "$ln"; then
@@ -454,12 +454,16 @@ js_gotopage() {
 }
 
 check_cookie() {
-	eval $HTTP_COOKIE >& /dev/null
-	if test -n "$HTTP_COOKIE" -a -f /tmp/cookie; then
-		if test $(expr $(date +%s) - $(date +%s -r /tmp/cookie) ) -lt 1800; then
-			if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
-				touch /tmp/cookie
-				return
+	if test -n "$HTTP_COOKIE" -a -O /tmp/cookie; then
+		ALTFID=$(echo $HTTP_COOKIE | sed -n 's/ALTFID=\([^[:space:],;]*\).*/\1/p')   
+        if test -n "$ALTFID"; then
+			if test $(expr $(date +%s) - $(date +%s -r /tmp/cookie) ) -lt 1800; then
+				if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
+					touch /tmp/cookie
+					return
+				else
+					logger -t httpd "Unautorized access attempted with cookie \"${ALTFID}\""
+				fi
 			fi
 		fi
 		rm /tmp/cookie
