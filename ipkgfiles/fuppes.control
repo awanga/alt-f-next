@@ -1,5 +1,5 @@
 Package: fuppes
-Version: 660-4
+Version: 660-5
 Depends: libxml2, sqlite, pcre, ipkg
 Description: The Free UPnP Entertainment Service
 Architecture: arm
