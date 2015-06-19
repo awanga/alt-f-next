@@ -33,6 +33,6 @@ $(DUPLICITY_TARGET_INSTALL_TARGET):
 	tar -C $(TARGET_DIR)/usr -xf $(DUPLICITY_DIR)/dist/duplicity-$(DUPLICITY_VERSION).$(GNU_TARGET_NAME).tar.gz
 	find $(TARGET_DIR)/$(DUPLICITY_SITE_PACKAGE_DIR) -name \*.pyc -delete
 	for i in duplicity rdiffdir; do \
-		sed -i '1s|^.*$|#!/usr/bin/python|' $(TARGET_DIR)/usr/bin/$i; \
+		sed -i '1s|^.*$$|#!/usr/bin/python|' $(TARGET_DIR)/usr/bin/$$i; \
 	done
 	touch $@
