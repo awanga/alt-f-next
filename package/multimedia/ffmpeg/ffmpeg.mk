@@ -4,7 +4,8 @@
 #
 #############################################################
 
-FFMPEG_VERSION = 1.2.4
+#FFMPEG_VERSION = 1.2.4
+FFMPEG_VERSION = 2.6.2
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.bz2
 FFMPEG_SITE = http://ffmpeg.org/releases/
 
@@ -12,7 +13,6 @@ FFMPEG_AUTORECONF = NO
 FFMPEG_LIBTOOL_PATCH = NO
 
 FFMPEG_INSTALL_STAGING = YES
-FFMPEG_INSTALL_TARGET = YES
 
 FFMPEG_DIR:=$(BUILD_DIR)/ffmpeg-$(FFMPEG_VERSION)
 FFMPEG_CAT:=$(BZCAT)
@@ -49,7 +49,7 @@ $(FFMPEG_DIR)/.configured: $(FFMPEG_DIR)/.unpacked
 		--arch=arm --cpu=armv5te --disable-armv6 --disable-armv6t2 --disable-runtime-cpudetect \
 		--disable-hwaccels --disable-vfp --disable-neon \
 		--enable-swscale --disable-devices \
-		--enable-small --disable-bzlib \
+		--enable-small --disable-bzlib --disable-lzma \
 		$(FFMPEG_CONF_OPT) \
 	)
 	touch $@
