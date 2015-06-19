@@ -114,7 +114,7 @@ base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp samba-small openssh-sftp vsft
 SQFSBLK=131072
 
 case $board in
-	dns323)
+	dns323|qemu)
 		SQFSBLK=262144
 		fw_pkgs="$base_pkgs $base_pkgs2"
 		all_pkgs=$fw_pkgs
