@@ -112,7 +112,7 @@ cat <<-EOF
 	<tr><td colspan=2>Apply also to files</td><td><input type=checkbox name=toFiles value=yes></td></tr>
 	</table>
 	<p><input type=submit name=Permissions value="Submit">$(back_button)
-	<input type=hidden name=newdir value="$esc_browse">
+	<input type=hidden name=newdir value="$browse">
 	<input type=hidden name=goto value="$HTTP_REFERER">
 	</form></body></html>
 EOF
