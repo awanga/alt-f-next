@@ -12,6 +12,9 @@ config BR2_PACKAGE_MPD
 	select BR2_PACKAGE_FFMPEG
 	select BR2_PACKAGE_LAME
 	select BR2_PACKAGE_TWOLAME
+	select BR2_PACKAGE_MPG123
+	select BR2_PACKAGE_WAVPACK
+	select BR2_PACKAGE_FAAD2
 	help
 	  A flexible, powerful, server-side application for playing music
 
