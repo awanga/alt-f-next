@@ -72,6 +72,7 @@
 ./usr/lib/git-core/git-init
 ./usr/lib/git-core/git-init-db
 ./usr/lib/git-core/git-instaweb
+./usr/lib/git-core/git-interpret-trailers
 ./usr/lib/git-core/git-log
 ./usr/lib/git-core/git-ls-files
 ./usr/lib/git-core/git-ls-remote
@@ -167,6 +168,7 @@
 ./usr/lib/git-core/git-write-tree
 ./usr/lib/git-core/mergetools
 ./usr/lib/git-core/mergetools/araxis
+./usr/lib/git-core/mergetools/bc
 ./usr/lib/git-core/mergetools/bc3
 ./usr/lib/git-core/mergetools/codecompare
 ./usr/lib/git-core/mergetools/deltawalker
