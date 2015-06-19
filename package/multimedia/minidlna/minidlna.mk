@@ -11,17 +11,12 @@ MINIDLNA_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/minidlna/minidlna/$(MINIDLNA_V
 MINIDLNA_AUTORECONF = NO
 MINIDLNA_LIBTOOL_PATCH = NO
 
-MINIDLNA_INSTALL_STAGING = NO
-MINIDLNA_INSTALL_TARGET = YES
-
 MINIDLNA_DEPENDENCIES = uclibc libexif jpeg libid3tag flac libvorbis sqlite ffmpeg
-
-MINIDLNA_CONF_ENV = DISABLE_NLS="$(DISABLE_NLS)"
 
 MINIDLNA_CONF_OPT = --enable-tivo \
 	--with-os-name=Alt-F \
-	--with-os-version=0.1RC3 \
-	--with-os-url=http://code.google.com/p/alt-f \
+	--with-os-version=0.1RC4.1 \
+	--with-os-url=https://sourceforge.net/projects/alt-f \
 	--program-prefix=""
 
 $(eval $(call AUTOTARGETS,package/multimedia,minidlna))
