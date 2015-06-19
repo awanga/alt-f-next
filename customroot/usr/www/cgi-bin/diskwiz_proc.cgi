@@ -83,6 +83,7 @@ clean_traces() {
 	for j in ${1}?; do
 		if test -b $j; then
 			dd if=/dev/zero of=$j count=1000 >& /dev/null
+			mdadm --zero-superblock $j >& /dev/null
 		fi
 	done
 }
@@ -108,7 +109,7 @@ else
 	maxsect=$(cat /sys/block/$(basename $i)/size)
 fi
 
-	if test "$maxsect" -gt $TWOTB; then
+	if test "$maxsect" -ge $TWOTB; then
 		maxsect=$TWOTB
 	fi
 
@@ -230,7 +231,7 @@ partition() {
 	fi
 
 	for i in $disks; do
-		if test "$(cat /sys/block/$(basename $i)/size)" -gt $TWOTB; then
+		if test "$(cat /sys/block/$(basename $i)/size)" -ge $TWOTB; then
 			gpt_partition $i $1 $2 "$commonsect"
 		else
 			mbr_partition $i $1 $2 "$commonsect"
@@ -283,7 +284,7 @@ create_fs() {
 	if test $(cat $sf) -lt $MIN_SIZE; then return; fi # don't create fs smaller than 10MB
 
 	sid=$(basename $(mktemp -u))
-	echo "<p>Creating $wish_fs filesystem on $(basename $1)... <span id=\"$sid\">0</span>"
+	echo "<p>Creating $wish_fs filesystem on $(basename $1)... <span id=\"$sid\"></span>"
 	cat<<-EOF > /tmp/format-$dev
 		#!/bin/sh
 		trap "" 1
@@ -309,6 +310,7 @@ create_fs() {
 
 	pgr="-\|/"; i=0;
 	while test -f /tmp/format-$dev; do
+		sleep 3
 		i=$(((i+1)%4))
 		fs_progress $dev
 		cat<<-EOF
@@ -316,7 +318,6 @@ create_fs() {
 			obj.innerHTML = '$ln \\${pgr:$i:1}'
 			</script>
 		EOF
-		sleep 3
 	done
 
 	if test -f /tmp/${dev}.err; then

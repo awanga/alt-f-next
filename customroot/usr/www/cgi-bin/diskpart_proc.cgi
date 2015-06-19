@@ -340,10 +340,10 @@ elif test -n "$Partition" -a "$in_use" = "MBR"; then
 elif test -n "$Partition" -a "$in_use" = "GPT"; then
 	dsk="$Partition"
 
-	fout=$(fdisk -lu /dev/$dsk 2> /dev/null)
+	fout=$(sgdisk -p /dev/$dsk 2> /dev/null)
 
 	maxsect=$(echo "$fout" | awk '/First/ {print $10}')
-	parts=$(echo "$fout" | awk '/Device/ { while (getline) printf " %d", substr($1,9)}')
+	parts=$(echo "$fout" | awk '/Number/ { while (getline) printf " %d", $1}')
 	pos=64 # 4k aligned, assuming offset=1.
         
 	for pl in 1 2 3 4; do
@@ -351,9 +351,9 @@ elif test -n "$Partition" -a "$in_use" = "GPT"; then
 		ppart=$(basename $part)
 		id=""; type=""; cap=""; dcmd=""
 
-		eval $(echo "$fout" | awk '
-			/'$ppart'/{printf "start=%.0f; end=%.0f; sects=%.0f; id=%s", \
-			$2,  $3, $4, $5}')
+		eval $(echo "$fout" | sed -n '/Number/,$p' | awk '
+			/ '$pl' /{printf "start=%.0f; end=%.0f; sects=%.0f; id=%s", \
+			$2,  $3, $3-$2, $6}')
 		
 		if test "$(eval echo \$keep_$ppart)" = "yes"; then
 			pos=$(expr $end + 1)
