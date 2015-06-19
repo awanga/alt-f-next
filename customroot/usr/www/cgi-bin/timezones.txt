@@ -384,7 +384,7 @@ Europe/Malta  CET-1CEST,M3.5.0,M10.5.0/3
 Europe/Mariehamn  EET-2EEST,M3.5.0/3,M10.5.0/4
 Europe/Minsk  EET-2EEST,M3.5.0,M10.5.0/3
 Europe/Monaco  CET-1CEST,M3.5.0,M10.5.0/3
-Europe/Moscow  MSK-3MSD,M3.5.0,M10.5.0/3
+Europe/Moscow  MSK-3
 Europe/Nicosia  EET-2EEST,M3.5.0/3,M10.5.0/4
 Europe/Oslo  CET-1CEST,M3.5.0,M10.5.0/3
 Europe/Paris  CET-1CEST,M3.5.0,M10.5.0/3
