@@ -144,7 +144,7 @@ has_disks
 
 # RAID components: RAID partitions plus RAID on generic linux partitions
 p1=$(fdisk -l /dev/sd? 2>/dev/null | \
-	awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00") {
+	awk 'substr($1,1,5) == "/dev/" && ($5 == "da" || $5 == "fd" || $5 == "fd00" || $5 == "0700") {
 		print substr($1, 6)}')
 p2=$(blkid -t TYPE="mdraid" | awk '{print substr($1, 6, 4)}')
 raidp=$(echo -e "$p1\n$p2" | sort -u)
