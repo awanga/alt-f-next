@@ -1,5 +1,19 @@
 #!/bin/sh
 
+CONF_USHARE=/etc/ushare.conf
+
+# previous to 1.1a-5 ushare.conf had wrong keys, fix then and assure they all exists set to no
+
+sed -i 's/^ENABLE_\(.*\)=.*/USHARE_ENABLE_\1=no/' $CONF_USHARE
+
+for i in WEB TELNET XBOX DLNA; do
+	if ! grep -q "^USHARE_ENABLE_$i" $CONF_USHARE; then
+		echo "USHARE_ENABLE_$i=no" >> $CONF_USHARE
+	elif grep -q "^USHARE_ENABLE_$i=yes" $CONF_USHARE; then
+		sed -i "s/^USHARE_ENABLE_$i=.*/USHARE_ENABLE_$i=no/" $CONF_USHARE
+	fi
+done
+
 ln -sf /usr/sbin/rcscript /sbin/rcushare
 rcushare status
 return 0

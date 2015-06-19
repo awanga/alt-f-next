@@ -11,16 +11,10 @@ USHARE_SITE = http://ushare.geexbox.org/releases/
 USHARE_AUTORECONF = NO
 USHARE_LIBTOOL_PATCH = NO
 
-USHARE_INSTALL_STAGING = NO
-USHARE_INSTALL_TARGET = YES
-
 USHARE_DEPENDENCIES = uclibc libupnp libdlna
 
-USHARE_CONF_OPT = --enable-dlna \
-	--disable-static \
-	--cross-compile \
-	--cross-prefix=arm-linux-uclibcgnueabi- \
-	--with-libdlna-dir=$(STAGING_DIR)/usr/ \
+USHARE_CONF_OPT = --disable-static --cross-compile --cross-prefix=arm-linux-uclibcgnueabi- \
+	--enable-dlna --with-libdlna-dir=$(STAGING_DIR)/usr/ \
 	--with-libupnp-dir=$(STAGING_DIR)/usr/
 
 $(eval $(call AUTOTARGETS,package/multimedia,ushare))
