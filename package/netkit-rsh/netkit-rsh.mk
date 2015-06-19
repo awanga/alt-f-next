@@ -14,6 +14,8 @@ NETKIT_RSH_SITE:= $(BR2_DEBIAN_MIRROR)/debian/pool/main/n/netkit-rsh
 NETKIT_RSH_LIBTOOL_PATCH = NO
 NETKIT_RSH_INSTALL_STAGING = NO
 
+NETKIT_RSH_DEPENDENCIES = host-fakeroot
+
 $(eval $(call AUTOTARGETS,package,netkit-rsh))
 
 $(NETKIT_RSH_TARGET_CONFIGURE):
