@@ -11,7 +11,6 @@ SOX_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/sox/sox/$(SOX_VERSION)
 SOX_AUTORECONF = NO
 SOX_LIBTOOL_PATCH = NO
 
-SOX_INSTALL_TARGET = YES
 SOX_INSTALL_STAGING = YES
 
 SOX_DEPENDENCIES = libvorbis flac libmad lame wavpack twolame libpng libid3tag alsa-lib
