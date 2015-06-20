@@ -25,15 +25,19 @@ for i in $(seq 1 $cnt); do
 done
 
 if test -n "$res"; then shares="$(httpd -d $res)"; fi
+if test -z "$sname"; then sname=uShare; fi
+if test -z "$USHARE_ENABLE_WEB"; then USHARE_ENABLE_WEB="no"; fi
+if test -z "$USHARE_ENABLE_DLNA"; then USHARE_ENABLE_DLNA="no"; fi
+if test -z "$USHARE_ENABLE_XBOX"; then USHARE_ENABLE_XBOX="no"; fi
 
-if test -z "$ENABLE_WEB"; then ENABLE_WEB="no"; fi
-
-sed -i 's|USHARE_DIR=.*$|USHARE_DIR='"$shares"'|' $CONF_USHARE
-sed -i 's|ENABLE_WEB=.*$|ENABLE_WEB='"$ENABLE_WEB"'|' $CONF_USHARE
-sed -i 's|USHARE_NAME=.*$|USHARE_NAME='"$(httpd -d $sname)"'|' $CONF_USHARE
+sed -i 's|^USHARE_DIR=.*$|USHARE_DIR='"$shares"'|' $CONF_USHARE
+sed -i 's|^USHARE_NAME=.*$|USHARE_NAME='"$(httpd -d $sname)"'|' $CONF_USHARE
+sed -i 's|^USHARE_ENABLE_WEB=.*$|USHARE_ENABLE_WEB='"$USHARE_ENABLE_WEB"'|' $CONF_USHARE
+sed -i 's|^USHARE_ENABLE_DLNA=.*$|USHARE_ENABLE_DLNA='"$USHARE_ENABLE_DLNA"'|' $CONF_USHARE
+sed -i 's|^USHARE_ENABLE_XBOX=.*$|USHARE_ENABLE_XBOX='"$USHARE_ENABLE_XBOX"'|' $CONF_USHARE
 
 if rcushare status >& /dev/null; then
-	rcushare reload >& /dev/null
+	rcushare restart >& /dev/null
 fi
 
 #enddebug

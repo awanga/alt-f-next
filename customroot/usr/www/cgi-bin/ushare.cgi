@@ -7,18 +7,17 @@ write_header "uShare Setup"
 
 CONF_USHARE=/etc/ushare.conf
 
+mktt dlna_tt "Some devices might require this. A full rescan will be needed each time the server starts."
+
 if test -e $CONF_USHARE; then
 	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)" 
-	USHARE_NAME="$(awk -F= '/^USHARE_NAME/{print $2}' $CONF_USHARE)" 
-	eval $(grep ^ENABLE_WEB $CONF_USHARE)
-	if test "$ENABLE_WEB" = "yes"; then
-		chkweb="checked"
-	fi
+	USHARE_NAME="$(awk -F= '/^USHARE_NAME/{print $2}' $CONF_USHARE)"
+	eval $(grep ^USHARE_ENABLE_ /etc/ushare.conf | sed 's/yes/checked/')
 fi
 
 webbut="enabled"
 rcushare status >& /dev/null
-if test $? != 0 -o "$chkweb" != "checked"; then
+if test $? != 0 -o "$USHARE_ENABLE_WEB" != "checked"; then
 		webbut="disabled"
 fi
 
@@ -67,8 +66,11 @@ for j in $(seq $k $((k+2))); do
 done
 
 cat<<-EOF
+	<tr><td>&emsp;</td></tr>
 	<tr><td>Server Name</td><td><input type=text name=sname value="$USHARE_NAME"></td></tr>
-	<tr><td>Enable Web</td><td><input type=checkbox id=chkweb $chkweb name="ENABLE_WEB" value="yes" onclick="edisable('chkweb','webbut', '$webbut')"></td></tr>
+	<tr><td>Enable DLNA</td><td><input type=checkbox $USHARE_ENABLE_DLNA name="USHARE_ENABLE_DLNA" value="yes" $(ttip dlna_tt)></td></tr>
+	<tr><td>Enable XboX</td><td><input type=checkbox $USHARE_ENABLE_XBOX name="USHARE_ENABLE_XBOX" value="yes"></td></tr>
+	<tr><td>Enable Web</td><td><input type=checkbox id=chkweb $USHARE_ENABLE_WEB name="USHARE_ENABLE_WEB" value="yes" onclick="edisable('chkweb','webbut', '$webbut')"></td></tr>
 	<tr><td></td><td>
 	<input type=hidden name=cnt value=$j>
 	<input type=submit value=Submit> $(back_button)
