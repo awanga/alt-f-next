@@ -291,8 +291,7 @@ dirs: $(DL_DIR) $(TOOL_BUILD_DIR) $(BUILD_DIR) $(STAGING_DIR) $(TARGET_DIR) \
 
 $(BASE_TARGETS): dirs
 
-world: dependencies dirs target-host-info $(BASE_TARGETS) $(TARGETS_ALL)
-
+world: dependencies dirs target-host-info $(BASE_TARGETS) host-dir-ccc $(TARGETS_ALL)
 
 .PHONY: all world dirs clean dirclean distclean source \
 	$(BASE_TARGETS) $(TARGETS) $(TARGETS_ALL) \
@@ -314,6 +313,17 @@ $(DL_DIR): $(BUILD_DIR)
 $(TOOL_BUILD_DIR) $(BUILD_DIR) $(HOST_DIR) $(PROJECT_BUILD_DIR) \
 	$(PROJECT_BUILD_DIR)/autotools-stamps $(BINARIES_DIR) $(STAMP_DIR):
 	@mkdir -p $@
+
+# Create links from STAGING_DIR to HOST_DIR for the cross toolchain,
+# enabling the user to add HOST_DIR/usr/bin to its PATH and use the cross toolchain
+# without needing to add STAGING_DIR/usr/bin to its PATH, which is wrong as it
+# contains binaries for arm.
+host-dir-ccc: $(BASE_TARGETS)
+	@mkdir -p $(HOST_DIR)/usr/bin
+	for i in $(STAGING_DIR)/usr/bin/arm-linux-*; do \
+		f=$$(basename $$i); \
+		ln -sf $$i $(HOST_DIR)/usr/bin/$$f; \
+	done
 
 $(STAGING_DIR):
 	@mkdir -p $(STAGING_DIR)/bin

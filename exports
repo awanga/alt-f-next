@@ -53,7 +53,7 @@ do_exports() {
 	export BINARIES=$BLDDIR/binaries/$board
 
 	if test -z $OPATH; then OPATH=$PATH; fi
-	export PATH=$HOSTDIR/usr/bin:$STAGING/usr/bin:$OPATH
+	export PATH=$HOSTDIR/usr/bin:$OPATH
 
 	export EDITOR=uemacs
 
