@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# find more than 2 pkgs:
+# ls sourceforge/pkgs/unstable/ | cut -d_ -f1 | uniq -c | grep ^[[:space:]]*3
+
 usage() {
 	echo -e "\nusage: pkgs-check.sh -n(ew) | -s(same) | -u(pgraded) | -c(opy) | -h(elp)"
 	echo -e "\tchecks packages in pkgs against sourceforge released package,
@@ -9,9 +12,11 @@ usage() {
 }
 
 copyf() {
-	echo cp pkgs/${1}_arm.ipk sourceforge/pkgs/unstable
+	cp pkgs/${1}_arm.ipk sourceforge/pkgs/unstable
 	cnt=$((cnt+1))
 }
+
+if test $# = 0; then usage; fi
 
 while getopts nsuch opt; do
 	case $opt in
@@ -19,7 +24,7 @@ while getopts nsuch opt; do
 	s) same=y ;; # identical 
 	u) upg=y ;;  # upgraded
 	c) copy=y;;  # copy
-	*|h) usage ;;
+	*h) usage ;;
 	esac
 done
 
@@ -59,5 +64,5 @@ done
 
 
 if test -n "$copy" -a -n "$cnt"; then
-	echo ./mkpkg -index sourceforge/pkgs/unstable/
+	./mkpkg.sh -index sourceforge/pkgs/unstable/
 fi
