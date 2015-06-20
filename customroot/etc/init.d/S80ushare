@@ -43,7 +43,6 @@ case "$1" in
 
 	stop) stop $NAME 2 ;;
 	status) status $NAME ;;	
-	reload) reload $NAME ;;
 	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart|reload" ;;
 esac
