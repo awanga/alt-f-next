@@ -1,0 +1,6 @@
+config BR2_PACKAGE_HFSPROGS
+	bool "hfsprogs"
+	help
+	  a port of Apple's mkfs and fsck tools for HFS+ filesystems.
+
+	  https://packages.debian.org/jessie/hfsprogs

@@ -1,0 +1,132 @@
+--- /dev/null	2015-05-21 00:13:58.912931907 +0100
++++ hfsprogs-332.25/include/err.h	2015-05-22 02:26:09.369288945 +0100
+@@ -0,0 +1,11 @@
++#ifndef _ERR_H_
++#define _ERR_H_
++
++/* Avoid err.h since uClibc can disable these things */
++#define vwarnx(format, args) ({ vfprintf(stderr, format, args); fprintf(stderr, "\n"); })
++#define warnx(format, args...) fprintf(stderr, format, ## args)
++#define warn(format, args...) warnx(format ": %s", ## args, strerror(errno))
++#define errx(exitcode, format, args...) ({ warnx(format, ## args); exit(exitcode); })
++#define err(exitcode, format, args...) errx(exitcode, format ": %s", ## args, strerror(errno))
++
++#endif
+--- hfsprogs-332.25/newfs_hfs.tproj/newfs_hfs.c-orig	2015-05-22 01:37:01.878343924 +0100
++++ hfsprogs-332.25/newfs_hfs.tproj/newfs_hfs.c	2015-05-22 01:38:43.277069170 +0100
+@@ -331,14 +331,14 @@
+ 
+ 	if (hfs_newfs(blkdevice, forceHFS, true) < 0) {
+ #if LINUX
+-		err(1, NULL);
++		err(1, "");
+ #else
+ 		/* On ENXIO error use the block device (to get de-blocking) */
+ 		if (errno == ENXIO) {
+ 			if (hfs_newfs(blkdevice, forceHFS, false) < 0)
+-				err(1, NULL);
++				err(1, "");
+ 		} else
+-			err(1, NULL);
++			err(1, "");
+ #endif
+ 	}
+ 
+--- hfsprogs-332.25/newfs_hfs.tproj/makehfs.c-orig	2015-05-22 01:37:22.894079721 +0100
++++ hfsprogs-332.25/newfs_hfs.tproj/makehfs.c	2015-05-22 02:13:46.638626334 +0100
+@@ -211,7 +211,7 @@
+ 	mdbp = (HFS_MDB*)malloc((size_t)kBytesPerSector);
+ 	nodeBuffer = malloc(8192);  /* max bitmap bytes is 8192 bytes */
+ 	if (nodeBuffer == NULL || mdbp == NULL) 
+-		err(1, NULL);
++		err(1, "");
+ 
+ 	defaults->encodingHint = getencodinghint(defaults->volumeName);
+ 
+@@ -342,7 +342,7 @@
+ 
+ 	header = (HFSPlusVolumeHeader*)malloc((size_t)kBytesPerSector);
+ 	if (header == NULL)
+-		err(1, NULL);
++		err(1, "");
+ 
+ 	defaults->encodingHint = getencodinghint(defaults->volumeName);
+ 
+@@ -376,7 +376,7 @@
+ 	
+ 	nodeBuffer = valloc((size_t)temp);
+ 	if (nodeBuffer == NULL)
+-		err(1, NULL);
++		err(1, "");
+ 
+ 
+ 		
+@@ -1700,7 +1700,7 @@
+ 		errx(1, "hfsbootdata file too big.");
+ 
+ 	if ((buf = malloc(writesize)) == NULL)
+-		err(1, NULL);
++		err(1, "");
+ 	
+ 	if ((fd = open(HFS_BOOT_DATA, O_RDONLY, 0)) < 0)
+ 		err(1, "open %s", HFS_BOOT_DATA);
+@@ -1735,7 +1735,7 @@
+ 	writesize = ROUNDUP(datasize, dip->sectorSize);
+ 
+ 	if ((buf = malloc(writesize)) == NULL)
+-		err(1, NULL);
++		err(1, "");
+ 	
+ 	bcopy(hfswrap_readme, buf, datasize);
+ 	if (writesize > datasize)
+@@ -1814,7 +1814,7 @@
+ 
+ 	tempBuffer = valloc((size_t)bufferSize);
+ 	if (tempBuffer == NULL)
+-		err(1, NULL);
++		err(1, "");
+ 
+ 	bzero(tempBuffer, bufferSize);
+ 
+@@ -2052,6 +2052,41 @@
+ #endif
+ }
+ 
++/* 
++uclibc and dietlibc do not have this junk -ReneR
++
++https://github.com/stschake/buildroot-grasshopper/blob/master/package/torsmo/torsmo-0.18-uclibc-getloadavg.patch
++*/
++#if defined (__UCLIBC__) || defined (__dietlibc__)
++static int getloadavg (double loadavg[], int nelem) {
++	int i, fd;
++	char buf[65], *p;
++	ssize_t nread;
++
++	fd = open ("/proc/loadavg", O_RDONLY);
++	if (fd < 0)
++		return -1;
++
++	nread = read (fd, buf, sizeof buf - 1);
++	close (fd);
++	if (nread <= 0)
++		return -1;
++	
++	buf[nread - 1] = '\0';
++	if (nelem > 3)
++		nelem = 3;
++	
++	p = buf;
++	for (i = 0; i < nelem; ++i) {
++		char *endp;
++		loadavg[i] = strtod (p, &endp);
++		if (endp == p)
++			return -1;
++		p = endp;
++	}
++	return i;
++}
++#endif
+ 
+ /* Generate Volume UUID - similar to code existing in hfs_util */
+ void GenerateVolumeUUID(VolumeUUID *newVolumeID) {
