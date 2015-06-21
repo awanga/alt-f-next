@@ -6,7 +6,7 @@
 
 FORKED_DAAPD_VERSION = 23.0
 FORKED_DAAPD_SOURCE = forked-daapd-$(FORKED_DAAPD_VERSION).tar.gz
-FORKED_DAAPD_SITE = http://backports.debian.org/debian-backports/pool/main/f/forked-daapd
+FORKED_DAAPD_SITE = https://github.com/ejurgensen/forked-daapd/archive
 
 FORKED_DAAPD_AUTORECONF = NO
 FORKED_DAAPD_LIBTOOL_PATCH = NO
@@ -19,6 +19,12 @@ FORKED_DAAPD_CONF_OPT = --localstatedir=/var --sysconfdir=/etc \
 	--enable-flac --enable-musepack --disable-rpath
 
 $(eval $(call AUTOTARGETS,package/multimedia,forked-daapd))
+
+$(FORKED_DAAPD_TARGET_SOURCE):
+	$(call DOWNLOAD,$(FORKED_DAAPD_SITE),$(FORKED_DAAPD_VERSION).tar.gz)
+	(cd $(DL_DIR); ln -sf $(FORKED_DAAPD_VERSION).tar.gz forked-daapd-$(FORKED_DAAPD_VERSION).tar.gz )
+	mkdir -p $(BUILD_DIR)/forked-daapd-$(FORKED_DAAPD_VERSION)
+	touch $@
 
 $(FORKED_DAAPD_HOOK_POST_EXTRACT):
 	sed -i 's/@CONFUSE_CFLAGS@ @TAGLIB_CFLAGS@/& @LIBEVENT_CFLAGS@/' $(FORKED_DAAPD_DIR)/src/Makefile.am 

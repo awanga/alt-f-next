@@ -6,7 +6,7 @@
 
 IPKG_UTILS_VERSION = 050831
 IPKG_UTILS_SOURCE = ipkg-utils-$(IPKG_UTILS_VERSION).tar.gz
-IPKG_UTILS_SITE = ftp://ftp.gwdg.de/linux/handhelds/packages/ipkg-utils
+IPKG_UTILS_SITE = ftp://ftp.gwdg.de/pub/linux/handhelds/packages/ipkg-utils
 
 IPKG_UTILS_DEPENDENCIES = uclibc python-host
 
