@@ -1,6 +1,6 @@
 Package: smartmontools
 Description: Control and monitor storage systems using S.M.A.R.T.
-Version: 6.2
+Version: 6.4
 Depends: ipkg
 Architecture: arm
 Priority: optional
