@@ -23,7 +23,10 @@ RC_PIDFILE=$RUN_FORKED/$NAME.pid
 FORKED_LOG=$LOG_FORKED/$NAME.log
 FORKED_OVRW_LOG="yes" # overwrite log file on each start
 
-OPTS="-P $RC_PIDFILE"
+# it has to start in foreground!, so create pid and background it
+RC_MAKE_PID=y
+RC_START_BG=y
+OPTS="-f"
 
 . /etc/init.d/common
 
