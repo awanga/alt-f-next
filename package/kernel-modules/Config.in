@@ -3,3 +3,20 @@ config BR2_PACKAGE_KERNEL_MODULES
 	help
 	  Aditional kernel modules
 
+if BR2_PACKAGE_KERNEL_MODULES
+
+choice
+	prompt "CPU architecture"
+	default BR2_PACKAGE_KERNEL_MODULES_ARMV5
+	help
+		Selects CPU Architecture
+
+	config BR2_PACKAGE_KERNEL_MODULES_ARMV5
+	bool "armv5: DNS-320/320L/321/323/325"
+
+	config BR2_PACKAGE_KERNEL_MODULES_ARMV7
+	bool "armv7: DNS-327L"
+
+endchoice
+
+endif

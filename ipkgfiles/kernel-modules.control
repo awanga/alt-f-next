@@ -1,6 +1,6 @@
 Package: kernel-modules
 Description: Aditional linux kernel modules
-Version: 3.10.32-1
+Version: 3.18.21
 Depends: ipkg
 Architecture: arm
 Priority: optional

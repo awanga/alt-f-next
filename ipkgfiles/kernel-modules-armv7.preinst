@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if ! $(uname -m) = "armv5tel"; then
+	echo "This package is only for the Orion and Kirkwood SoC (DNS-321/323/320/320L/325)
+	exit 1
+fi
