@@ -1,0 +1,397 @@
+Path: news.gmane.org!not-for-mail
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Newsgroups: gmane.linux.ports.arm.kernel,gmane.linux.drivers.sensors
+Subject: [PATCH 4/4] hwmon: DNS323 rev C1 fan support
+Date: Sun, 13 Jun 2010 11:10:43 +1000
+Lines: 337
+Approved: news@gmane.org
+Message-ID: <1276391443.1962.268.camel@pasglop>
+NNTP-Posting-Host: lo.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Trace: dough.gmane.org 1276391513 14500 80.91.229.12 (13 Jun 2010 01:11:53 GMT)
+X-Complaints-To: usenet@dough.gmane.org
+NNTP-Posting-Date: Sun, 13 Jun 2010 01:11:53 +0000 (UTC)
+Cc: hvr@gnu.org, Nicolas Pitre <nico@fluxnic.net>, lm-sensors@lm-sensors.org
+To: "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>
+Original-X-From: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org Sun Jun 13 03:11:51 2010
+connect(): No such file or directory
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Envelope-to: linux-arm-kernel@m.gmane.org
+Original-Received: from [18.85.46.34] (helo=bombadil.infradead.org)
+	by lo.gmane.org with esmtp (Exim 4.69)
+	(envelope-from <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>)
+	id 1ONbjq-0006Vo-UD
+	for linux-arm-kernel@m.gmane.org; Sun, 13 Jun 2010 03:11:51 +0200
+Original-Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.72 #1 (Red Hat Linux))
+	id 1ONbjC-0000KK-Th; Sun, 13 Jun 2010 01:11:10 +0000
+Original-Received: from gate.crashing.org ([63.228.1.57])
+	by bombadil.infradead.org with esmtps (Exim 4.72 #1 (Red Hat Linux))
+	id 1ONbj8-0000Jc-Fi for linux-arm-kernel@lists.infradead.org;
+	Sun, 13 Jun 2010 01:11:09 +0000
+Original-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.13.8) with ESMTP id o5D1AmX0031030;
+	Sat, 12 Jun 2010 20:10:50 -0500
+X-Mailer: Evolution 2.28.3 
+X-CRM114-Version: 20090807-BlameThorstenAndJenny ( TRE 0.7.6 (BSD) )
+	MR-646709E3 
+X-CRM114-CacheID: sfid-20100612_211107_827531_C497BF91 
+X-CRM114-Status: GOOD (  26.22  )
+X-Spam-Score: -0.0 (/)
+X-Spam-Report: SpamAssassin version 3.3.1 on bombadil.infradead.org summary:
+	Content analysis details:   (-0.0 points)
+	pts rule name              description
+	---- ----------------------
+	--------------------------------------------------
+	-0.0 T_RP_MATCHES_RCVD Envelope sender domain matches handover relay
+	domain
+X-BeenThere: linux-arm-kernel@lists.infradead.org
+X-Mailman-Version: 2.1.12
+Precedence: list
+List-Id: <linux-arm-kernel.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>, 
+	<mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Original-Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+X-Broken-Reverse-DNS: no host name found for IP address 18.85.46.34
+Xref: news.gmane.org gmane.linux.ports.arm.kernel:82358 gmane.linux.drivers.sensors:22276
+Archived-At: <http://permalink.gmane.org/gmane.linux.ports.arm.kernel/82358>
+
+The hardware only supports 3 settings: off, slow and fast.
+
+In order to have a chance to work with existing fan control systems,
+we emulate a PWM device with the following mapping:
+
+   0.. 15  off		0 RPM input
+  16..127  slow	    3000 RPM input
+ 128..255  fast     6000 RPM input
+
+This provides something more/less working with fancontrol, though
+it does have a tendency to work by doing short bursts of "slow"
+speed every half a minute as it settles around my min temp. Not
+a big deal a specialized script could probably do better, or even
+tweaks to fancontrol config. At leats it should be safe, and appears
+to work well enough for me with fancontrol.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: lm-sensors@lm-sensors.org
+---
+ drivers/hwmon/Kconfig       |   12 ++
+ drivers/hwmon/Makefile      |    1 +
+ drivers/hwmon/dns323c-fan.c |  271 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 284 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/hwmon/dns323c-fan.c
+
+--- linux-3.10.11/drivers/hwmon/Kconfig.orig	2013-05-01 17:56:10.000000000 +0100
++++ linux-3.10.11/drivers/hwmon/Kconfig	2013-05-14 18:21:19.746406876 +0100
+@@ -344,6 +344,18 @@
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called da9055-hwmon.
+ 
++config SENSORS_DNS323C_FAN
++       tristate "D-Link DNS323 rev C1 Fan"
++       depends on MACH_DNS323
++       help
++         Support for the GPIO based fan control on the D-Link DNS323
++	 HW revision C1. This exposes a pseudo pwm device with the
++	 following values supported:
++
++	 	    0..15	: Fan off
++		   16..127	: Fan on low speed
++		  128..255	: Fan on high speed
++
+ config SENSORS_I5K_AMB
+ 	tristate "FB-DIMM AMB temperature sensor on Intel 5000 series chipsets"
+ 	depends on PCI
+--- linux-3.10.11/drivers/hwmon/Makefile.orig	2013-05-01 17:56:10.000000000 +0100
++++ linux-3.10.11/drivers/hwmon/Makefile	2013-05-14 18:22:35.488052407 +0100
+@@ -46,6 +46,7 @@
+ obj-$(CONFIG_SENSORS_DA9052_ADC)+= da9052-hwmon.o
+ obj-$(CONFIG_SENSORS_DA9055)+= da9055-hwmon.o
+ obj-$(CONFIG_SENSORS_DME1737)	+= dme1737.o
++obj-$(CONFIG_SENSORS_DNS323C_FAN)+= dns323c-fan.o
+ obj-$(CONFIG_SENSORS_DS620)	+= ds620.o
+ obj-$(CONFIG_SENSORS_DS1621)	+= ds1621.o
+ obj-$(CONFIG_SENSORS_EMC1403)	+= emc1403.o
+--- linux-3.10.11/drivers/hwmon/dns323c-fan.c.orig	2013-05-14 17:57:27.599861997 +0100
++++ linux-3.10.11/drivers/hwmon/dns323c-fan.c	2013-05-14 18:09:07.284464710 +0100
+@@ -0,0 +1,271 @@
++/*
++ *  dns323c_fan - Driver for the D-LINK DNS-323 rev C1 fan control
++ *
++ *  Copyright 2010 Benjamin Herrenschmidt
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/gpio.h>
++#include <linux/hwmon.h>
++
++#include <linux/hwmon-sysfs.h>
++#include <linux/gfp.h>
++#include <linux/slab.h>
++#include <linux/err.h>
++#include <linux/sysfs.h>
++#include <linux/platform_device.h>
++
++enum fan_speed {
++	FAN_OFF,
++	FAN_LOW	,
++	FAN_FAST,
++	FAN_FAST_LOCK,
++};
++
++#define DNS323C_GPIO_FAN_BIT1		18
++#define DNS323C_GPIO_FAN_BIT0		19
++
++struct dns323c_fan {
++	struct device	*hwmon;
++	struct mutex	lock;
++	enum fan_speed	speed;
++};
++
++static void __set_fan_speed(struct dns323c_fan *fan, enum fan_speed speed)
++{
++	if (speed == fan->speed)
++		return;
++
++	switch(speed) {
++	case FAN_OFF:
++		gpio_set_value(DNS323C_GPIO_FAN_BIT1, 0);
++		gpio_set_value(DNS323C_GPIO_FAN_BIT0, 0);
++		break;
++	case FAN_LOW:
++		gpio_set_value(DNS323C_GPIO_FAN_BIT1, 0);
++		gpio_set_value(DNS323C_GPIO_FAN_BIT0, 1);
++		break;
++	default:
++		gpio_set_value(DNS323C_GPIO_FAN_BIT0, 0);
++		gpio_set_value(DNS323C_GPIO_FAN_BIT1, 1);
++	};
++	fan->speed = speed;
++}
++
++static ssize_t show_name(struct device *dev, struct device_attribute *da,
++			   char *buf)
++{
++	return sprintf(buf, "dns323c-fan\n");
++}
++
++static ssize_t show_pwm(struct device *dev, struct device_attribute *da,
++			char *buf)
++{
++	struct dns323c_fan *fan = dev_get_drvdata(dev);
++	int pseudo_pwm;
++
++	switch(fan->speed) {
++	case FAN_OFF:
++		pseudo_pwm = 0;
++		break;
++	case FAN_LOW:
++		pseudo_pwm = 63;
++		break;
++	default:
++		pseudo_pwm = 255;
++	}
++	return sprintf(buf, "%d\n", pseudo_pwm);
++}
++
++static ssize_t set_pwm(struct device *dev, struct device_attribute *da,
++		       const char *buf, size_t count)
++{
++	struct dns323c_fan *fan = dev_get_drvdata(dev);
++	enum fan_speed speed;
++	unsigned long val;
++
++	if (kstrtoul(buf, 10, &val))
++		return -EINVAL;
++	if (fan->speed == FAN_FAST_LOCK)
++		return count;
++
++	mutex_lock(&fan->lock);
++	if (val < 16)
++		speed = FAN_OFF;
++	else if (val < 128)
++		speed = FAN_LOW;
++	else
++		speed = FAN_FAST;
++	__set_fan_speed(fan, speed);
++	mutex_unlock(&fan->lock);
++
++	return count;
++}
++
++static ssize_t show_pwm_en(struct device *dev, struct device_attribute *da,
++			   char *buf)
++{
++	struct dns323c_fan *fan = dev_get_drvdata(dev);
++
++	if (fan->speed == FAN_FAST_LOCK)
++		return sprintf(buf, "0\n");
++	else
++		return sprintf(buf, "1\n");
++}
++
++static ssize_t set_pwm_en(struct device *dev, struct device_attribute *da,
++			  const char *buf, size_t count)
++{
++	struct dns323c_fan *fan = dev_get_drvdata(dev);
++	enum fan_speed speed;
++	unsigned long val;
++
++	if (kstrtoul(buf, 10, &val))
++		return -EINVAL;
++	if (val != 0 && val != 1)
++		return -EINVAL;
++
++	mutex_lock(&fan->lock);
++	if (val == 0 && fan->speed != FAN_FAST_LOCK)
++		speed = FAN_FAST_LOCK;
++	else if (val != 0 && fan->speed == FAN_FAST_LOCK)
++		speed = FAN_FAST;
++	else
++		speed = fan->speed;
++	__set_fan_speed(fan, speed);
++	mutex_unlock(&fan->lock);
++
++	return count;
++}
++
++static ssize_t show_fake_rpm(struct device *dev, struct device_attribute *da,
++			     char *buf)
++{
++	struct dns323c_fan *fan = dev_get_drvdata(dev);
++	int pseudo_rpm;
++
++	switch(fan->speed) {
++	case FAN_OFF:
++		pseudo_rpm = 0;
++		break;
++	case FAN_LOW:
++		pseudo_rpm = 3000;
++		break;
++	default:
++		pseudo_rpm = 6000;
++	}
++	return sprintf(buf, "%d\n", pseudo_rpm);
++}
++
++static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
++static DEVICE_ATTR(pwm1, S_IRUGO | S_IWUSR, show_pwm, set_pwm);
++static DEVICE_ATTR(pwm1_enable, S_IRUGO | S_IWUSR, show_pwm_en, set_pwm_en);
++static DEVICE_ATTR(fan1_input, S_IRUGO, show_fake_rpm, NULL);
++
++static int dns323c_fan_probe(struct platform_device *pdev)
++{
++	struct dns323c_fan *fan = NULL;
++	int ret = -ENXIO;
++
++	/* Get the GPIOs */
++	if (gpio_request(DNS323C_GPIO_FAN_BIT0, "FAN0") != 0) {
++		pr_err("dns323c_fan: Failed to request fan GPIO 0 !\n");
++		return -ENXIO;
++	}
++	if (gpio_request(DNS323C_GPIO_FAN_BIT1, "FAN1") != 0) {
++		pr_err("dns323c_fan: Failed to request fan GPIO 1 !\n");
++		goto err_gpio;
++	}
++
++	/* Set directions to output and medium speed. We write bit 1 first
++	 * since it contains 0 to avoid having a transitory 11 state which
++	 * isn't supported
++	 */
++	gpio_direction_output(DNS323C_GPIO_FAN_BIT1, 0);
++	gpio_direction_output(DNS323C_GPIO_FAN_BIT0, 1);
++
++	/* Grab some memory for our state */
++	fan = kzalloc(sizeof(struct dns323c_fan), GFP_KERNEL);
++	if (!fan) {
++		ret = -ENOMEM;
++		goto err_alloc;
++	}
++	fan->speed = FAN_LOW;
++	mutex_init(&fan->lock);
++	platform_set_drvdata(pdev, fan);
++
++	ret = device_create_file(&pdev->dev, &dev_attr_name);
++	ret |= device_create_file(&pdev->dev, &dev_attr_pwm1);
++	ret |= device_create_file(&pdev->dev, &dev_attr_pwm1_enable);
++	ret |= device_create_file(&pdev->dev, &dev_attr_fan1_input);
++	if (ret)
++		goto err_file;
++
++	fan->hwmon = hwmon_device_register(&pdev->dev);
++	if (IS_ERR(fan->hwmon)) {
++		ret = PTR_ERR(fan->hwmon);
++		goto err_dev;
++	}
++	return 0;
++
++ err_dev:
++	device_remove_file(&pdev->dev, &dev_attr_name);
++	device_remove_file(&pdev->dev, &dev_attr_pwm1);
++	device_remove_file(&pdev->dev, &dev_attr_pwm1_enable);
++	device_remove_file(&pdev->dev, &dev_attr_fan1_input);
++ err_file:
++	kfree(fan);
++ err_alloc:
++	gpio_free(DNS323C_GPIO_FAN_BIT1);
++ err_gpio:
++	gpio_free(DNS323C_GPIO_FAN_BIT0);
++	return ret;
++}
++
++static int dns323c_fan_remove(struct platform_device *pdev)
++{
++	struct dns323c_fan *fan = platform_get_drvdata(pdev);
++
++	hwmon_device_unregister(fan->hwmon);
++	device_remove_file(&pdev->dev, &dev_attr_name);
++	device_remove_file(&pdev->dev, &dev_attr_pwm1);
++	device_remove_file(&pdev->dev, &dev_attr_pwm1_enable);
++	device_remove_file(&pdev->dev, &dev_attr_fan1_input);
++	kfree(fan);
++	gpio_free(DNS323C_GPIO_FAN_BIT1);
++	gpio_free(DNS323C_GPIO_FAN_BIT0);
++	return 0;
++}
++
++static struct platform_driver dns323c_fan_driver = {
++	.probe = dns323c_fan_probe,
++	.remove = dns323c_fan_remove,
++	.driver = {
++		.name = "dns323c-fan",
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init dns323c_fan_init(void)
++{
++	return platform_driver_register(&dns323c_fan_driver);
++}
++
++static void __exit dns323c_fan_exit(void)
++{
++	platform_driver_unregister(&dns323c_fan_driver);
++}
++
++MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
++MODULE_DESCRIPTION("DNS323 RevC1 Fan control");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:dns323c-fan");
++
++module_init(dns323c_fan_init);
++module_exit(dns323c_fan_exit);

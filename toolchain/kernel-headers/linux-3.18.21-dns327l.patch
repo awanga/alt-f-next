@@ -1,0 +1,550 @@
+--- linux-3.18.21-orig/arch/arm/boot/dts/Makefile	2014-12-07 22:21:05.000000000 +0000
++++ linux-3.18.21/arch/arm/boot/dts/Makefile	2015-10-28 17:20:16.423672913 +0000
+@@ -492,6 +492,7 @@
+ 	zynq-zed.dtb
+ dtb-$(CONFIG_MACH_ARMADA_370) += \
+ 	armada-370-db.dtb \
++	armada-370-dlink-dns327l.dtb \
+ 	armada-370-mirabox.dtb \
+ 	armada-370-netgear-rn102.dtb \
+ 	armada-370-netgear-rn104.dtb \
+--- linux-3.18.21-orig/arch/arm/boot/dts/armada-370.dtsi	2015-09-09 14:47:08.788687514 +0100
++++ linux-3.18.21/arch/arm/boot/dts/armada-370.dtsi	2015-11-01 17:46:35.943669408 +0000
+@@ -106,7 +106,7 @@
+ 				reg = <0x11100 0x20>;
+ 			};
+ 
+-			pinctrl {
++			pinctrl: pinctrl@18000 {
+ 				compatible = "marvell,mv88f6710-pinctrl";
+ 				reg = <0x18000 0x38>;
+ 
+@@ -257,11 +257,11 @@
+ 				status = "disabled";
+ 			};
+ 
+-			usb@50000 {
++			usb0: usb@50000 {
+ 				clocks = <&coreclk 0>;
+ 			};
+ 
+-			usb@51000 {
++			usb1: usb@51000 {
+ 				clocks = <&coreclk 0>;
+ 			};
+ 
+--- linux-3.18.21-orig/arch/arm/boot/dts/armada-370-xp.dtsi	2015-09-09 14:47:08.788687514 +0100
++++ linux-3.18.21/arch/arm/boot/dts/armada-370-xp.dtsi	2015-10-14 17:52:17.089129487 +0100
+@@ -103,7 +103,7 @@
+ 			#size-cells = <1>;
+ 			ranges = <0 MBUS_ID(0xf0, 0x01) 0 0x100000>;
+ 
+-			rtc@10300 {
++			rtc0: rtc@10300 {
+ 				compatible = "marvell,orion-rtc";
+ 				reg = <0x10300 0x20>;
+ 				interrupts = <50>;
+@@ -151,7 +151,7 @@
+ 				status = "disabled";
+ 			};
+ 
+-			serial@12000 {
++			uart0: serial@12000 {
+ 				compatible = "snps,dw-apb-uart";
+ 				reg = <0x12000 0x100>;
+ 				reg-shift = <2>;
+@@ -160,7 +160,8 @@
+ 				clocks = <&coreclk 0>;
+ 				status = "disabled";
+ 			};
+-			serial@12100 {
++			
++			uart1: serial@12100 {
+ 				compatible = "snps,dw-apb-uart";
+ 				reg = <0x12100 0x100>;
+ 				reg-shift = <2>;
+@@ -231,7 +232,7 @@
+ 				status = "disabled";
+ 			};
+ 
+-			mdio {
++			mdio0: mdio@72004 {
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 				compatible = "marvell,orion-mdio";
+@@ -246,7 +247,7 @@
+ 				status = "disabled";
+ 			};
+ 
+-			sata@a0000 {
++			sata0: sata@a0000 {
+ 				compatible = "marvell,armada-370-sata";
+ 				reg = <0xa0000 0x5000>;
+ 				interrupts = <55>;
+@@ -255,7 +256,7 @@
+ 				status = "disabled";
+ 			};
+ 
+-			nand@d0000 {
++			nand0: nand@d0000 {
+ 				compatible = "marvell,armada370-nand";
+ 				reg = <0xd0000 0x54>;
+ 				#address-cells = <1>;
+--- linux-3.18.21-orig/arch/arm/boot/dts/armada-370-dlink-dns327l.dts	2015-11-01 17:50:21.782429098 +0000
++++ linux-3.18.21/arch/arm/boot/dts/armada-370-dlink-dns327l.dts	2015-10-26 16:56:15.883663463 +0000
+@@ -0,0 +1,455 @@
++/*
++ * Device Tree file for DLINK DNS-327L
++ *
++ * Copyright (C) 2014, Andrew 'Necromant' Andrianov <andrew@ncrmnt.org>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++ /* A small TODO list: 
++  * * There's still something unknown on i2c address 0x13
++  * * 
++  */
++
++/dts-v1/;
++
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/gpio/gpio.h>
++#include "armada-370.dtsi"
++
++/ {
++	model = "D-Link DNS-327L-rev-Ax";
++	compatible = "dlink,dns327l", "marvell,armada370", "marvell,armada-370-xp";
++
++	chosen {
++		bootargs = "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk";
++		linux,stdout-path = &uart0;
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x20000000>; /* 512 MB */
++	};
++
++	soc {
++		ranges = <MBUS_ID(0xf0, 0x01) 0 0xd0000000 0x100000
++			  MBUS_ID(0x01, 0xe0) 0 0xfff00000 0x100000>;
++
++		pcie-controller {
++			status = "okay";
++
++			/* Connected to Marvell SATA controller */
++			pcie@1,0 {
++				/* Port 0, Lane 0 */
++				status = "okay";
++			};
++
++			/* Connected to NEC USB 3.0 controller */
++			pcie@2,0 {
++				/* Port 1, Lane 0 */
++				status = "okay";
++			};
++		};
++
++		internal-regs {
++/*
++			uart0: serial@12000 {
++				status = "okay";
++			};
++
++			uart1: serial@12100 {
++				status = "okay";
++			};
++*/
++/*
++			sata@a0000 {
++				nr-ports = <2>;
++				status = "okay";
++			};
++*/
++/*
++			pinctrl {
++				sata_l_white_pin: sata-l-white-pin {
++					marvell,pins = "mpp55";
++					marvell,function = "sata1";
++				};
++
++				sata_r_amber_pin: sata-r-amber-pin {
++					marvell,pins = "mpp52";
++					marvell,function = "gpio";
++				};
++
++				sata_r_white_pin: sata_r-white-pin {
++					marvell,pins = "mpp57";
++					marvell,function = "sata0";
++				};
++
++				sata_l_amber_pin: sata-l-amber-pin {
++					marvell,pins = "mpp53";
++					marvell,function = "gpio";
++				};
++
++				backup_led_pin: backup-led-pin {
++					marvell,pins = "mpp61";
++					marvell,function = "gpo";
++				};
++
++				xhci_pwr_pin: xhci-pwr-pin {
++					marvell,pins = "mpp13";
++					marvell,function = "gpio";
++				};
++
++				sata_r_pwr_pin: sata-r-pwr-pin {
++					marvell,pins = "mpp54";
++					marvell,function = "gpio";
++				};
++
++				sata_l_pwr_pin: sata-l-pwr-pin {
++					marvell,pins = "mpp56";
++					marvell,function = "gpio";
++				};
++
++				backup_button_pin: backup-button-pin {
++					marvell,pins = "mpp63";
++					marvell,function = "gpio";
++				};
++
++				reset_button_pin: reset-button-pin {
++					marvell,pins = "mpp64";
++					marvell,function = "gpio";
++				};
++				
++				power_button_pin: power-button-pin {
++					marvell,pins = "mpp65";
++					marvell,function = "gpio";
++				};
++			};
++*/
++/*
++			mdio {
++				phy0: ethernet-phy@0 { 
++					reg = <0>;
++				};
++			};
++*/
++/*	
++			ethernet@74000 {
++				status = "okay";
++				phy = <&phy0>;
++				phy-mode = "rgmii-id";
++			};
++*/
++/*
++			usb@50000 {
++				status = "okay";
++			};
++*/
++/*			
++			i2c@11000 {
++				status = "okay";
++			};
++*/
++/*
++			nand@d0000 {
++				status = "okay";
++				num-cs = <1>;
++				marvell,nand-keep-config;
++				marvell,nand-enable-arbiter;
++				nand-on-flash-bbt;
++				nand-ecc-strength = <4>;
++				nand-ecc-step-size = <512>;
++
++				partition@0 {
++					label = "u-Boot";
++					reg = <0x0000000 0x500000>;
++					read-only;
++				};
++
++				partition@500000 {
++					label = "uImage";
++					reg = <0x500000 0x500000>;
++				};
++
++				partition@a00000 {
++					label = "ramdisk";
++					reg = <0xa00000 0x500000>;
++				};
++				
++				partition@f00000 {
++					label = "image.cfs";
++					reg = <0xf00000 0x4e00000>;
++				};
++				
++				partition@5d00000 {
++					label = "rescue firmware";
++					reg = <0x5d00000 0xf00000>;
++				};
++
++				partition@6c00000 {
++					label = "config";
++					reg = <0x6c00000 0xa00000>;
++				};
++
++				partition@7600000 {
++					label = "mydlink";
++					reg = <0x7600000 0xa00000>;
++				};
++			};
++			*/
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		pinctrl-0 = < 
++			&backup_button_pin
++			&reset_button_pin
++			&power_button_pin>;
++			
++		pinctrl-names = "default";
++			      
++		backup-button {
++			label = "Backup Button";
++			linux,code = <KEY_COPY>;
++			gpios = <&gpio1 31 GPIO_ACTIVE_LOW>;
++		};
++		
++		reset-button {
++			label = "Reset Button";
++			linux,code = <KEY_RESTART>;
++			gpios = <&gpio2 0 GPIO_ACTIVE_LOW>;
++		};
++		/* Can't generate interrups, it's already (zero) active!
++		power-button {
++			label = "Power Button";
++			linux,code = <KEY_POWER>;
++			gpios = <&gpio2 1 GPIO_ACTIVE_LOW>;
++		};
++		*/
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-0 = <
++			&sata_l_amber_pin
++			&sata_r_amber_pin
++			&backup_led_pin>;
++
++		pinctrl-names = "default";
++
++		sata-r-amber-pin {
++			label = "dns327l:amber:sata-r";
++			gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
++			default-state = "keep";
++		};
++
++		sata-l-amber-pin {
++			label = "dns327l:amber:sata-l";
++			gpios = <&gpio1 21 GPIO_ACTIVE_HIGH>;
++			default-state = "keep";
++		};
++
++		backup-led-pin {
++			label = "dns327l:white:usb";
++			gpios = <&gpio1 29 GPIO_ACTIVE_HIGH>;
++			default-state = "keep";
++		};
++
++	};
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&xhci_pwr_pin
++			&sata_l_pwr_pin
++			&sata_r_pwr_pin>;
++
++		pinctrl-names = "default";
++
++		usb_power: regulator@1 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "USB3.0 Port Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-boot-on;
++			regulator-always-on;
++			gpio = <&gpio0 13 GPIO_ACTIVE_HIGH>;
++		};
++
++		sata_r_power: regulator@2 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "SATA-R Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-boot-on;
++			regulator-always-on;
++			gpio = <&gpio1 22 GPIO_ACTIVE_HIGH>;
++		};
++
++		sata_l_power: regulator@3 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "SATA-L Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-boot-on;
++			regulator-always-on;
++			gpio = <&gpio1 24 GPIO_ACTIVE_HIGH>;
++		};		
++	};
++};
++
++&pinctrl {
++	sata_l_white_pin: sata-l-white-pin {
++		marvell,pins = "mpp55";
++		marvell,function = "sata1";
++	};
++
++	sata_r_amber_pin: sata-r-amber-pin {
++		marvell,pins = "mpp52";
++		marvell,function = "gpio";
++	};
++
++	sata_r_white_pin: sata_r-white-pin {
++		marvell,pins = "mpp57";
++		marvell,function = "sata0";
++	};
++
++	sata_l_amber_pin: sata-l-amber-pin {
++		marvell,pins = "mpp53";
++		marvell,function = "gpio";
++	};
++
++	backup_led_pin: backup-led-pin {
++		marvell,pins = "mpp61";
++		marvell,function = "gpo";
++	};
++
++	xhci_pwr_pin: xhci-pwr-pin {
++		marvell,pins = "mpp13";
++		marvell,function = "gpio";
++	};
++
++	sata_r_pwr_pin: sata-r-pwr-pin {
++		marvell,pins = "mpp54";
++		marvell,function = "gpio";
++	};
++
++	sata_l_pwr_pin: sata-l-pwr-pin {
++		marvell,pins = "mpp56";
++		marvell,function = "gpio";
++	};
++
++	backup_button_pin: backup-button-pin {
++		marvell,pins = "mpp63";
++		marvell,function = "gpio";
++	};
++
++	reset_button_pin: reset-button-pin {
++		marvell,pins = "mpp64";
++		marvell,function = "gpio";
++	};
++	
++	power_button_pin: power-button-pin {
++		marvell,pins = "mpp65";
++		marvell,function = "gpio";
++	};
++};
++
++&nand0 {
++	status = "okay";
++	num-cs = <1>;
++	marvell,nand-keep-config;
++	marvell,nand-enable-arbiter;
++	nand-on-flash-bbt;
++	nand-ecc-strength = <4>;
++	nand-ecc-step-size = <512>;
++
++	partition@0 {
++		label = "u-Boot";
++		reg = <0x0000000 0x500000>;
++		read-only;
++	};
++
++	partition@500000 {
++		label = "uImage";
++		reg = <0x500000 0x500000>;
++	};
++
++	partition@a00000 {
++		label = "ramdisk";
++		reg = <0xa00000 0x500000>;
++	};
++	
++	partition@f00000 {
++		label = "image.cfs";
++		reg = <0xf00000 0x4e00000>;
++	};
++	
++	partition@5d00000 {
++		label = "rescue firmware";
++		reg = <0x5d00000 0xf00000>;
++	};
++
++	partition@6c00000 {
++		label = "config";
++		reg = <0x6c00000 0xa00000>;
++	};
++
++	partition@7600000 {
++		label = "mydlink";
++		reg = <0x7600000 0xa00000>;
++	};
++};
++
++&uart0 {
++	status = "okay";
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&rtc0 {
++	status = "disabled";
++};
++
++&sata0 {
++	nr-ports = <2>;
++	status = "okay";
++};
++
++&usb0 {
++	status = "okay";
++};
++
++&mdio0 {
++	phy0: ethernet-phy@0 { /* Marvell 88E1318 */
++		reg = <0>;
++	};
++};
++
++&eth1 {
++	status = "okay";
++	phy = <&phy0>;
++	phy-mode = "rgmii-id";
++};
++
++&L2 {
++	cache-level = <2>;
++	cache-unified;
++};
++
