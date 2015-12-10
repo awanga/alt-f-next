@@ -4,8 +4,7 @@
 #
 #############################################################
 
-#CRYPTODEV_VERSION:=1.0
-CRYPTODEV_VERSION:=1.5
+CRYPTODEV_VERSION:=1.7
 CRYPTODEV_SOURCE:=cryptodev-linux-$(CRYPTODEV_VERSION).tar.gz
 CRYPTODEV_SITE:=http://download.gna.org/cryptodev-linux
 CRYPTODEV_DIR:=$(BUILD_DIR)/cryptodev-$(CRYPTODEV_VERSION)
