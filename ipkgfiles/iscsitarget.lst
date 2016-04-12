@@ -2,7 +2,7 @@
 ./etc/iet/initiators.allow
 ./etc/iet/targets.allow
 ./etc/init.d/S64iscsitarget
-./usr/lib/modules/3.10.32/iscsi/iscsi_trgt.ko
+./usr/lib/modules/3.18.28/iscsi/iscsi_trgt.ko
 ./usr/sbin/ietadm
 ./usr/sbin/ietd
 

@@ -73,7 +73,7 @@ $(TARGET_DIR)/lib/modules/$(LINVER)/$(ISCSITARGET_TARGET_MOD): $(ISCSITARGET_DIR
 
 iscsitarget: uclibc linux26-modules $(TARGET_DIR)/lib/modules/$(LINVER)/$(ISCSITARGET_TARGET_MOD) $(TARGET_DIR)/$(ISCSITARGET_TARGET_BIN)
 
-iscsitarget-build: $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN)
+iscsitarget-build: $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN) $(ISCSITARGET_DIR)/$(ISCSITARGET_MOD)
 
 iscsitarget-extract: $(ISCSITARGET_DIR)/.source
 

@@ -1,6 +1,6 @@
 Package: iscsitarget
 Description: For building an iSCSI storage system on Linux.
-Version: 503
+Version: 503-1
 Depends: ipkg, kernel-modules
 Architecture: arm
 Priority: optional

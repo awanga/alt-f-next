@@ -1,5 +1,7 @@
 #!/bin/sh 
 
-echo /lib/modules/3.10.32/iscsi/iscsi_trgt.ko: >> /lib/modules/3.10.32/modules.dep
+KVER=$(uname -r)
+
+echo /lib/modules/$KVER/iscsi/iscsi_trgt.ko: >> /lib/modules/$KVER/modules.dep
 
 ln -sf /usr/sbin/rcscript /sbin/rciscsitarget
