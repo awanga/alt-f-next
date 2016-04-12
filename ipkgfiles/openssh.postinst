@@ -1,27 +1,23 @@
 #!/bin/sh 
 
 CONF=/etc/inetd.conf
-
-mkdir -p /etc/ssh
-if ! test -f /etc/ssh/ssh_host_rsa_key; then
-	dropbearconvert dropbear openssh \
-		/etc/dropbear/dropbear_rsa_host_key /etc/ssh/ssh_host_rsa_key 
-	dropbearconvert dropbear openssh \
-		/etc/dropbear/dropbear_dss_host_key /etc/ssh/ssh_host_dsa_key 
-	dropbearconvert dropbear openssh \
-		/etc/dropbear/dropbear_ecdsa_host_key /etc/ssh/ssh_host_ecdsa_key 
-fi
-
-if ! test -f /etc/ssh/ssh_host_ecdsa_key; then
-	ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ""
-fi
+CONFS=/etc/ssh/sshd_config
 
 if ! grep -q /usr/sbin/sshd $CONF; then
 	if grep -q ssh_alt $CONF; then
-		SSHP=ssh
+		ISSHP=ssh
+		SSHP=22
 	else
-		SSHP=ssh_alt
+		ISSHP=ssh_alt
+		SSHP=2222
 	fi
-	echo -e "$SSHP\tstream\ttcp\tnowait\troot\t/usr/sbin/sshd\tsshd\t-i" >> $CONF
+	echo -e "$ISSHP\tstream\ttcp\tnowait\troot\t/usr/sbin/sshd\tsshd\t-i -E /var/log/opensshd.log\t# OpenSSH SSH/SFTP server" >> $CONF
 	rcinetd reload
+
+	if ! grep -q '^Port[[:space:]]' $CONFS; then
+		sed -i 's/#Port[[:space:]]*.*/Port '$SSHP'/' $CONFS
+	fi
+
 fi
+
+ln -sf /usr/sbin/rcscript /sbin/rcopensshd

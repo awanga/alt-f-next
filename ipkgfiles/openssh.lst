@@ -1,3 +1,4 @@
+./etc/init.d/S62opensshd
 ./etc/ssh/moduli
 ./etc/ssh/ssh_config
 ./etc/ssh/sshd_config
@@ -12,5 +13,6 @@
 ./usr/lib/ssh-keysign
 ./usr/lib/ssh-pkcs11-helper
 ./usr/sbin/sshd
+./usr/www/cgi-bin/opensshd.cgi
 ./usr/www/cgi-bin/sshd.cgi
 ./usr/www/cgi-bin/sshd_proc.cgi

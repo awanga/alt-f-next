@@ -1,0 +1,77 @@
+#!/bin/sh
+
+DESC="OpenSSH SSH/SFTP daemon"
+NAME=sshd
+TYPE=net
+
+NEED_ALTF_DIR=1
+
+. /etc/init.d/common
+
+SSH_DIR=/etc/ssh
+SSHD_LOG=/var/log/opensshd.log
+SSHD_OPTS="-E $SSHD_LOG"
+DB_DIR=/etc/dropbear
+INETD_CONF=/etc/inetd.conf
+CONFS=/etc/ssh/sshd_config
+
+inetd_setup() {
+	if ! grep -q /usr/sbin/sshd $INETD_CONF; then
+		if grep -q ^ssh_alt $INETD_CONF; then
+			ISSHP=ssh
+			SSHP=22
+		else
+			ISSHP=ssh_alt
+			SSHP=2222
+		fi
+		echo -e "#$ISSHP\tstream\ttcp\tnowait\troot\t/usr/sbin/sshd\tsshd\t-i\t# OpenSSH SSH/SFTP server" >> $INETD_CONF
+		rcinetd reload
+
+		if ! grep -q '^Port[[:space:]]' $CONFS; then
+			sed -i 's/#Port[[:space:]]*.*/Port '$SSHP'/' $CONFS
+		fi
+	fi
+}
+
+keyconvert() {
+	dropbearconvert dropbear openssh $DB_DIR/dropbear_$1_host_key $SSH_DIR/ssh_host_$1_key >& /dev/null
+	if test "$1" = "dss"; then
+		mv $SSH_DIR/ssh_host_dss_key $SSH_DIR/ssh_host_dsa_key
+	fi
+}
+
+sinit() {
+	inetd_setup
+	rcdropbear init
+	mkdir -p $SSH_DIR
+	if ! test -f $SSH_DIR/ssh_host_rsa_key; then
+		keyconvert rsa
+		keyconvert dss
+		keyconvert ecdsa
+	fi
+	if ! test -f $SSH_DIR/ssh_host_ed25519_key; then
+		ssh-keygen -P "" -t ed25519 -f $SSH_DIR/ssh_host_ed25519_key >& /dev/null
+		rm -f $SSH_DIR/ssh_host_ed25519_key.pub
+	fi
+}
+
+if test "$1" = "init"; then
+	sinit
+	exit
+fi
+
+if check_inetd ssh sshd || check_inetd ssh_alt sshd;then
+	exit 2
+fi
+
+case "$1" in
+	start)
+		sinit
+		start /usr/sbin/$NAME -- $SSHD_OPTS
+		;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	reload) reload $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload|init" ;;
+esac
