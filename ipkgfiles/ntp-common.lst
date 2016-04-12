@@ -1,0 +1,6 @@
+./etc/ntp.conf
+./etc/init.d/S43ntp
+./usr/bin/fsntp
+./usr/www/cgi-bin/ntp.cgi
+./usr/www/cgi-bin/ntp_proc.cgi
+./usr/www/ntp_hlp.html

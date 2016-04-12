@@ -1,0 +1,9 @@
+Package: ntp-common
+Description: Network Time Protocol support files
+Version: 0.1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://sourceforge.net/projects/alt-f
+Maintainer: jcard

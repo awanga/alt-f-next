@@ -1,0 +1,5 @@
+config BR2_PACKAGE_NTP_COMMON
+	bool "ntp-common"
+	help
+	  Support files for ntpd and busybox ntpd
+
