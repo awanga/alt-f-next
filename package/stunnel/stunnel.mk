@@ -4,9 +4,10 @@
 #
 #############################################################
 
-STUNNEL_VERSION:=4.56
+STUNNEL_VERSION:=5.30
+STUNNEL_SITE:=http://www.usenix.org.uk/mirrors/stunnel/archive/5.x
+
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
-STUNNEL_SITE:=ftp://ftp.stunnel.org/stunnel/archive/4.x/
 STUNNEL_CAT:=$(ZCAT)
 STUNNEL_DIR:=$(BUILD_DIR)/stunnel-$(STUNNEL_VERSION)
 STUNNEL_LIBTOOL_PATCH = NO
@@ -25,6 +26,7 @@ $(STUNNEL_DIR)/.unpacked: $(DL_DIR)/$(STUNNEL_SOURCE)
 
 $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 	(cd $(STUNNEL_DIR); rm -rf config.cache; \
+		ax_cv_check_cflags___fstack_protector=no \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		./configure \
@@ -43,7 +45,9 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 		--mandir=/usr/man \
 		--infodir=/usr/info \
 		--with-random=/dev/urandom \
+		--with-threads=fork \
 		--disable-libwrap \
+		--disable-systemd \
 		--with-ssl=$(STAGING_DIR)/usr/ \
 		--disable-fips \
 		$(DISABLE_NLS) \
@@ -55,7 +59,7 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 	touch $(STUNNEL_DIR)/.configured
 
 $(STUNNEL_DIR)/src/stunnel: $(STUNNEL_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" -C $(STUNNEL_DIR)
+	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS) -fPIE" -C $(STUNNEL_DIR)
 
 $(TARGET_DIR)/usr/bin/stunnel: $(STUNNEL_DIR)/src/stunnel
 	install -c $(STUNNEL_DIR)/src/stunnel $(TARGET_DIR)/usr/bin/stunnel

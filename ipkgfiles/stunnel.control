@@ -1,6 +1,6 @@
 Package: stunnel
 Description: A utility that utilised OpenSSL to wrap plaintext TCP communications with SSL.
-Version: 4.56
+Version: 5.30
 Depends: ipkg
 Architecture: arm
 Priority: optional
