@@ -1,6 +1,6 @@
 Package: kernel-modules-armv7
 Description: Aditional linux kernel modules for Armada-370 SoC
-Version: 3.18.21
+Version: 3.18.28
 Depends: ipkg, kernel-modules
 Architecture: arm
 Priority: optional

@@ -1,7 +1,7 @@
 Package: kernel-modules-armv5
 Description: Aditional linux kernel modules for Orion and Kirkwood SoC
-Version: 3.18.21
-Depends: ipkg, kernel-modules
+Version: 3.18.28
+Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: admin
