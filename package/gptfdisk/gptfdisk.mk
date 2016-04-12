@@ -4,7 +4,7 @@
 #
 #############################################################
 
-GPTFDISK_VERSION:=0.8.10
+GPTFDISK_VERSION:=1.0.1
 GPTFDISK_SOURCE:=gptfdisk-$(GPTFDISK_VERSION).tar.gz
 GPTFDISK_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/gptfdisk/gptfdisk/$(GPTFDISK_VERSION)
 
