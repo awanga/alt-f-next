@@ -10,6 +10,7 @@
 ./usr/sbin/ftl_format
 ./usr/sbin/jffs2dump
 ./usr/sbin/mkfs.jffs2
+./usr/sbin/mkfs.ubifs
 ./usr/sbin/mtd_debug
 ./usr/sbin/mtdinfo
 ./usr/sbin/nanddump

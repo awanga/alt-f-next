@@ -102,6 +102,12 @@ config BR2_PACKAGE_MTD_UTILS_MTDINFO
 	bool "mtdinfo"
 	default y
 
+config BR2_PACKAGE_MTD_UTILS_MKFSUBIFS
+	bool "mkfs.ubifs"
+	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_LZO
+	default y
+
 config BR2_PACKAGE_MTD_UTILS_UBIATTACH
 	bool "ubiattach"
 	default y

@@ -1,6 +1,6 @@
 Package: mtd-utils
 Description: mtd and jffs utilities
-Version: 1.5.0-1
+Version: 1.5.0-2
 Depends: lzo, ipkg
 Architecture: arm
 Priority: optional
