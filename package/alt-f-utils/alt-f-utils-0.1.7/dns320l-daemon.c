@@ -383,7 +383,6 @@ int setpowerled_cmd(char *mcmd, char *retMessage, int bufSize) {
 				break;
 			case 2: // blink led
 				strcpy(curr_led_trigger, "timer");
-				curr_led_brightness = 0;
 				break;
 		}
 		write_str_to_file(sys_pled_trigger, curr_led_trigger);
@@ -870,9 +869,10 @@ int main(int argc, char *argv[]) {
 					strcpy(curr_led_trigger, led_trigger);
 					if (strcmp("heartbeat", led_trigger) == 0 ||
 						strcmp("timer", led_trigger) == 0) {
-						curr_led_brightness = 0;
 						if (setpowerled_cmd(PwrLedBlinkCmd, msgBuf, sizeof(msgBuf)))
 							syslog(LOG_ERR, "Error setting led power blinking!");
+						else
+							curr_led_brightness = -1;
 					}
 				}
 				
