@@ -4,7 +4,7 @@
 #
 #############################################################
 
-VSFTPD_VERSION:=3.0.2
+VSFTPD_VERSION:=3.0.3
 VSFTPD_SOURCE:=vsftpd-$(VSFTPD_VERSION).tar.gz
 VSFTPD_SITE:=https://security.appspot.com/downloads
 VSFTPD_DIR:=$(BUILD_DIR)/vsftpd-$(VSFTPD_VERSION)
@@ -13,7 +13,7 @@ VSFTPD_BINARY:=vsftpd
 VSFTPD_TARGET_BINARY:=usr/sbin/vsftpd
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
-VSFTPD_LIBS:=-lcrypt -lssl
+VSFTPD_LIBS:=-lcrypto -lcrypt -lssl
 else
 VSFTPD_LIBS:=-lcrypt
 endif
