@@ -1,6 +1,6 @@
 Package: wget
 Description: Network utility to retrieve files from http/ftp/etc...
-Version: 1.15
+Version: 1.17
 Depends: ipkg
 Architecture: arm
 Priority: optional

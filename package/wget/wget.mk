@@ -4,9 +4,10 @@
 #
 #############################################################
 
-WGET_VERSION:=1.15
+WGET_VERSION:=1.17
 WGET_SOURCE:=wget-$(WGET_VERSION).tar.gz
 WGET_SITE:=$(BR2_GNU_MIRROR)/wget
+
 WGET_DIR:=$(BUILD_DIR)/wget-$(WGET_VERSION)
 WGET_CAT:=$(ZCAT)
 WGET_BINARY:=src/wget
@@ -29,18 +30,20 @@ $(WGET_DIR)/.unpacked: $(DL_DIR)/$(WGET_SOURCE)
 	$(CONFIG_UPDATE) $(WGET_DIR)
 	touch $@
 
+#ac_cv_lib_pcre_pcre_compile=no \
+
 $(WGET_DIR)/.configured: $(WGET_DIR)/.unpacked
 	(cd $(WGET_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_ENV) \
-		ac_cv_lib_pcre_pcre_compile=no \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--with-libssl-prefix=$(STAGING_DIR) \
 		--prefix=/ \
+		--disable-pcre \
 		$(DISABLE_IPV6) \
 		$(DISABLE_NLS) \
 		$(DISABLE_SSL) \
