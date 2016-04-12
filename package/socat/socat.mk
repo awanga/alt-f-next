@@ -4,9 +4,9 @@
 #
 #############################################################
 
-SOCAT_VERSION=2.0.0-b7
+SOCAT_VERSION=2.0.0-b9
 SOCAT_SOURCE=socat-$(SOCAT_VERSION).tar.bz2
-SOCAT_SITE=http://www.dest-unreach.org/socat/download
+SOCAT_SITE=http://www.dest-unreach.org/socat/download/Archive
 
 SOCAT_DEPENDENCIES = host-autoconf
 
@@ -37,5 +37,8 @@ $(eval $(call AUTOTARGETS,package,socat))
 # so we can't use the normal autoreconf logic.
 
 $(SOCAT_HOOK_POST_EXTRACT):
-	(cd $(SOCAT_DIR); $(HOST_DIR)/usr/bin/autoconf)
+	(cd $(SOCAT_DIR); \
+	$(HOST_DIR)/usr/bin/autoconf; \
+	sed -i  's/#if OPENSSL_VERSION_NUMBER >= 0x00908000L/#if OPENSSL_VERSION_NUMBER >= 0x00908000L \&\& !defined OPENSSL_NO_COMP/' sslcls.h xio-openssl.c xioopts.c sslcls.c xio-openssl.h; \
+	)
 	touch $@

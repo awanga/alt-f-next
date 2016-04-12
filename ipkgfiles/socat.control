@@ -1,6 +1,6 @@
 Package: socat
 Description: Multipurpose socket relay program.
-Version: 2.0.0-b7
+Version: 2.0.0-b9
 Depends: ipkg
 Architecture: arm
 Priority: optional
