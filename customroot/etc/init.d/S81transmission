@@ -51,7 +51,7 @@ check_dirs() {
 		"$TRANSMISSION_CONF")
 
 	if ! test -d "$DOWNLOAD_DIR" -a -d "$WATCH_DIR" -a -d "$INCOMPLETE_DIR"; then
-		echo "$NAME: Directories does not exist, you must configure Transmission first."
+		echo "$NAME: Folders does not exist, you must configure Transmission first."
 		exit 1
 	fi
 }
@@ -60,26 +60,19 @@ for i in $TRANSMISSION_DIRS; do
 	if ! test -d $i; then mkdir -p $i; fi
 done
 
-# FIXME: this is not fail-safe!
+if ! test -s $TRANSMISSION_CONF -a -s $TRANSMISSION_CONF2; then
+	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
 
-if ! test -s $TRANSMISSION_CONF; then
-	if test -s $TRANSMISSION_CONF2 -a ! -h $TRANSMISSION_CONF2; then
-		mv $TRANSMISSION_CONF2 $TRANSMISSION_CONF
-	else
-		transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
-	fi
-
-	sed -i -e 's|.*"peer-port-random-on-start":.*|    "peer-port-random-on-start": true, |' \
-		-e 's|.*"umask":.*|    "umask": 2, |' \
+	sed -i	-e 's|.*"umask":.*|    "umask": 2, |' \
 		-e 's|.*"message-level":.*|    "message-level": 1, |' $TRANSMISSION_CONF
+fi
 
-	if ! test -h $TRANSMISSION_CONF2; then
-		ln -sf $TRANSMISSION_CONF $TRANSMISSION_CONF2
-	fi
+if test $TRANSMISSION_CONF2 -nt $TRANSMISSION_CONF; then
+	mv $TRANSMISSION_CONF2 $TRANSMISSION_CONF
+fi
 
-	if grep -q "^\[Transmission\]" $SMB_CONF; then
-		sed -i "/\[Transmission\]/,/\[.*\]/ { s|public.*|public = +BT|}" $SMB_CONF
-	fi
+if ! test -h $TRANSMISSION_CONF2; then
+	ln -sf $TRANSMISSION_CONF $TRANSMISSION_CONF2
 fi
 
 check_user $TRANSMISSION_DIRS

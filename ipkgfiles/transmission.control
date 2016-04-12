@@ -1,6 +1,6 @@
 Package: transmission
 Description: A Fast, Easy and Free Bittorrent client
-Version: 2.84-1
+Version: 2.92
 Depends: libcurl, libevent2, ipkg
 Architecture: arm
 Priority: optional
