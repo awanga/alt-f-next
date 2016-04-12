@@ -7,8 +7,7 @@
 #LSOF_VERSION:=4.84 # patches have LSOF_VERSION hardcoded
 LSOF_VERSION:=4.81
 LSOF_SOURCE:=lsof_$(LSOF_VERSION).tar.gz
-LSOF_SITE:=ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/OLD
-
+LSOF_SITE:=ftp://ftp.fu-berlin.de/pub/unix/tools/lsof/OLD/
 LSOF_CAT:=$(ZCAT)
 LSOF_DIR:=$(BUILD_DIR)/lsof_$(LSOF_VERSION)
 LSOF_BINARY:=lsof
@@ -54,6 +53,8 @@ $(TARGET_DIR)/$(LSOF_TARGET_BINARY): $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF
 	if test -h $(TARGET_DIR)/$(LSOF_TARGET_BINARY); then rm $(TARGET_DIR)/$(LSOF_TARGET_BINARY); fi
 	cp $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF_BINARY) $@
 	$(STRIPCMD) $@
+
+lsof-build: $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF_BINARY)
 
 lsof: uclibc $(TARGET_DIR)/$(LSOF_TARGET_BINARY)
 
