@@ -1,6 +1,6 @@
 Package: neon
 Description: HTTP and WebDAV client library, with a C interface.
-Version: 0.29.6-2
+Version: 0.29.6-3
 Depends: ipkg, libxml2
 Architecture: arm
 Priority: optional

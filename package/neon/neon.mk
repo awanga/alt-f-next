@@ -3,17 +3,16 @@
 # neon
 #
 #############################################################
-#NEON_VERSION:=0.28.3
 
 NEON_VERSION:=0.29.6
-NEON_LIBTOOL_PATCH:=no
 
 NEON_SITE:=http://www.webdav.org/neon/
 
+NEON_LIBTOOL_PATCH:=NO
 NEON_INSTALL_STAGING:=YES
 NEON_INSTALL_TARGET_OPT:=DESTDIR=$(TARGET_DIR) install
-NEON_CONF_OPT:=--enable-shared --without-gssapi --disable-rpath
 
+NEON_CONF_OPT:=--enable-shared --without-gssapi --disable-rpath
 NEON_DEPENDENCIES:=host-pkgconfig
 
 ifeq ($(BR2_PACKAGE_NEON_LIBXML2),y)

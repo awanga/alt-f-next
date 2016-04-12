@@ -1,0 +1,106 @@
+Description: Make Neon recognize that SSLv2 functions were disabled
+ SSLv2 support got disabled with OpenSSL v1.0.0 and the related SSLv2_*
+ method's got removed. Backport changes from Neon upstream to don't use those
+ functions anymore.
+---
+Origin: <upstream>, <http://svn.webdav.org/repos/projects/neon/trunk/>
+Bug-Debian: #622140 and #667043
+Last-Update: <2012-04-09>
+--- neon-0.29.6/test/ssl.c~
++++ neon-0.29.6/test/ssl.c
+@@ -416,6 +416,13 @@ static int simple_sslv2(void)
+     args.use_ssl2 = 1;
+     
+     ne_set_session_flag(sess, NE_SESSFLAG_SSLv2, 1);
++
++    if (ne_get_session_flag(sess, NE_SESSFLAG_SSLv2) != 1) {
++        t_context("no SSLv2 support in SSL library");
++        ne_session_destroy(sess);
++        return SKIP;
++    }
++
+     CALL(any_ssl_request(sess, ssl_server, &args, CA_CERT, NULL, NULL));
+     ne_session_destroy(sess);
+     return OK;
+--- neon-0.29.6/src/neon.vers~
++++ neon-0.29.6/src/neon.vers
+@@ -14,3 +14,7 @@ NEON_0_29 {
+     ne_strnqdup;
+     ne_iaddr_parse;
+ };
++
++NEON_0_30 {
++    ne_ssl_context_get_flag;
++};
+--- neon-0.29.6/src/ne_openssl.c~
++++ neon-0.29.6/src/ne_openssl.c
+@@ -569,8 +569,10 @@ ne_ssl_context *ne_ssl_context_create(in
+         ctx->ctx = SSL_CTX_new(SSLv23_server_method());
+         SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_CLIENT);
+     } else {
++#ifndef OPENSSL_NO_SSL2
+         ctx->ctx = SSL_CTX_new(SSLv2_server_method());
+         SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_CLIENT);
++#endif
+     }
+     return ctx;
+ }
+@@ -594,6 +596,22 @@ void ne_ssl_context_set_flag(ne_ssl_cont
+     SSL_CTX_set_options(ctx->ctx, opts);
+ }
+ 
++int ne_ssl_context_get_flag(ne_ssl_context *ctx, int flag)
++{
++    switch (flag) {
++    case NE_SSL_CTX_SSLv2:
++#ifdef OPENSSL_NO_SSL2
++        return 0;
++#else
++        return ! (SSL_CTX_get_options(ctx->ctx); & SSL_OP_NO_SSLv2);
++#endif
++    default:
++        break;
++    }
++
++    return 0;
++}
++
+ int ne_ssl_context_keypair(ne_ssl_context *ctx, const char *cert,
+                            const char *key)
+ {
+--- neon-0.29.6/src/ne_session.c~
++++ neon-0.29.6/src/ne_session.c
+@@ -361,6 +361,7 @@ void ne_set_session_flag(ne_session *ses
+ #ifdef NE_HAVE_SSL
+         if (flag == NE_SESSFLAG_SSLv2 && sess->ssl_context) {
+             ne_ssl_context_set_flag(sess->ssl_context, NE_SSL_CTX_SSLv2, value);
++            sess->flags[flag] = ne_ssl_context_get_flag(sess->ssl_context, NE_SSL_CTX_SSLv2);
+         }
+ #endif
+     }
+--- neon-0.29.6/src/ne_ssl.h~
++++ neon-0.29.6/src/ne_ssl.h
+@@ -182,6 +182,9 @@ int ne_ssl_context_set_verify(ne_ssl_con
+ /* Set a flag for the SSL context. */
+ void ne_ssl_context_set_flag(ne_ssl_context *ctx, int flag, int value);
+ 
++/* Return flag value. */
++int ne_ssl_context_get_flag(ne_ssl_context *ctx, int flag);
++
+ /* Destroy an SSL context. */
+ void ne_ssl_context_destroy(ne_ssl_context *ctx);
+ 
+--- neon-0.29.6/src/ne_gnutls.c~
++++ neon-0.29.6/src/ne_gnutls.c
+@@ -680,6 +680,11 @@ void ne_ssl_context_set_flag(ne_ssl_cont
+     /* SSLv2 not supported. */
+ }
+ 
++int ne_ssl_context_get_flag(ne_ssl_context *ctx, int flag)
++{
++    return 0;
++}
++
+ void ne_ssl_context_destroy(ne_ssl_context *ctx)
+ {
+     gnutls_certificate_free_credentials(ctx->cred); 
