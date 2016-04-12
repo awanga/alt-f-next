@@ -4,10 +4,9 @@
 #
 #############################################################
 
-#USBUTILS_VERSION:=0.86
 USBUTILS_VERSION:=0.87
 USBUTILS_SOURCE:=usbutils_$(USBUTILS_VERSION).orig.tar.gz
-USBUTILS_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/u/usbutils
+USBUTILS_SITE:=http://archive.debian.org/debian/pool/main/u/usbutils
 
 USBUTILS_DIR:=$(BUILD_DIR)/usbutils-$(USBUTILS_VERSION)
 USBUTILS_CAT:=$(ZCAT)
