@@ -1,0 +1,11 @@
+--- netatalk-3.1.8/etc/netatalk/netatalk.c-orig	2016-02-24 17:14:53.451221976 +0000
++++ netatalk-3.1.8/etc/netatalk/netatalk.c	2016-02-24 17:09:34.275296914 +0000
+@@ -300,7 +300,7 @@
+ static void netatalk_exit(int ret)
+ {
+     server_unlock(PATH_NETATALK_LOCK);
+-    exit(ret);
++    _exit(ret);
+ }
+ 
+ /* this forks() and exec() "path" with varags as argc[] */

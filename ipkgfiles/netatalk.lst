@@ -11,8 +11,8 @@
 ./usr/bin/dbd
 ./usr/bin/macusers
 ./usr/lib/libatalk.so
-./usr/lib/libatalk.so.16
-./usr/lib/libatalk.so.16.0.0
+./usr/lib/libatalk.so.17
+./usr/lib/libatalk.so.17.0.0
 ./usr/lib/netatalk/uams_clrtxt.so
 ./usr/lib/netatalk/uams_dhx2_passwd.so
 ./usr/lib/netatalk/uams_dhx2.so

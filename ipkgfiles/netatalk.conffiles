@@ -1,2 +1,2 @@
-/etc/afp.conf
-/etc/extmap.conf
+./etc/afp.conf
+./etc/extmap.conf
