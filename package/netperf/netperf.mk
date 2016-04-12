@@ -6,7 +6,8 @@
 
 NETPERF_VERSION:=2.6.0
 NETPERF_SOURCE:=netperf-$(NETPERF_VERSION).tar.gz
-NETPERF_SITE:=ftp://ftp.netperf.org/netperf
+NETPERF_SITE:=ftp://ftp.netperf.org/netperf/archive
+
 NETPERF_AUTORECONF:=NO
 NETPERF_INSTALL_STAGING:=NO
 NETPERF_INSTALL_TARGET:=YES
