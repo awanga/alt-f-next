@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rcntp status
+return 0

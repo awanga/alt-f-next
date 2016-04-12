@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# restore busybox ntpd
+
+ln -sf /bin/busybox /usr/sbin/ntpd

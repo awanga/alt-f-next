@@ -1,6 +1,2 @@
 ./usr/sbin/ntpd
 ./usr/bin/sntp
-./etc/init.d/S43ntp
-./usr/www/cgi-bin/ntp.cgi
-./usr/www/cgi-bin/ntp_proc.cgi
-./etc/ntp.conf

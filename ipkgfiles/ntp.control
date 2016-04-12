@@ -1,7 +1,7 @@
 Package: ntp
 Description: Network Time Protocol suite/programs
 Version: 4.2.6p5
-Depends: ipkg
+Depends: ntp-common, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
