@@ -2,13 +2,23 @@
 
 DESC="FTP/FTPS server"
 NAME=vsftpd
-#TYPE=net
+TYPE=net
 
 CONF=/etc/vsftpd.conf
 CONFU=/etc/vsftpd.user_list
 
 BOX_PEM=/etc/ssl/certs/server.pem
+
+RC_PIDDIR=/var/run/vsftpd
+FTP_PIDFILE=$RC_PIDDIR/vsftpd-ftp.pid
+FTPS_PIDFILE=$RC_PIDDIR/vsftpd-ftps.pid
+
+RC_MAKE_PID=y
 RC_START_BG=y
+
+OPTS="/etc/vsftpd.conf -olisten=yes"
+FTP_OPTS="-olisten_port=21"
+FTPS_OPTS="-olisten_port=990 -oimplicit_ssl=yes"
 
 . /etc/init.d/common
 
@@ -25,17 +35,42 @@ sinit() {
 		if test "$userlist_enable" = "yes" -a ! -f "$CONFU"; then
 			touch $CONFU
 		fi
+		# to remove after RC5
+		if grep -q 'listen=' $CONF; then
+			sed -i '/listen=/d' $CONF
+		fi
 	fi
 }
+
+if test "$1" = "init"; then
+	sinit
+	exit
+fi
+
+if check_inetd ftp || check_inetd ftps; then
+	exit 2
+fi
 
 case "$1" in
 	start)
 		sinit
-		start $NAME
+		if grep -q 'implicit_ssl=yes' $CONF; then
+			RC_PIDFILE=$FTPS_PIDFILE start $NAME -- $OPTS $FTPS_OPTS
+			avahi add ftps
+		fi
+		avahi add ftp
+		RC_PIDFILE=$FTP_PIDFILE start $NAME -- $OPTS $FTP_OPTS
 		;;
-	stop) stop $NAME ;;
-	status) status $NAME ;;
-	init) sinit ;;
+	stop)
+		avahi remove ftp
+		avahi remove ftps
+		RC_PIDFILE=$FTPS_PIDFILE stop $NAME
+		RC_PIDFILE=$FTP_PIDFILE stop $NAME
+		;;
+	status)
+		RC_PIDFILE=$FTPS_PIDFILE status $NAME
+		RC_PIDFILE=$FTP_PIDFILE status $NAME
+		;;
 	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart|init" ;;
 esac

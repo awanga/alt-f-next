@@ -9,6 +9,7 @@ mktt tt_wchroot "If checked, the user home folder is allowed to be writable<br>(
 mktt tt_dusers "Space separated list of usernames to deny ftp access"
 mktt tt_anon "Allow anonymous access (the password-less 'ftp' user)." 
 mktt tt_anonf "Folder for the anonymous user.<br>Must not be writable (sub folders can be, but must be previously created.)"
+mktt tt_impl "On port 990 only SSL protocol is expected.<br>For server mode a second server will be run."
 
 mktt ftpi_tt "Inetd mode: vsftpd runs only when necessary, slower to start, conserves memory."
 mktt ftps_tt "Server mode: vsfdtp always running, faster, always consuming memory<br>
@@ -16,6 +17,12 @@ mktt ftps_tt "Server mode: vsfdtp always running, faster, always consuming memor
 
 CONFF=/etc/vsftpd.conf
 CONFU=/etc/vsftpd.user_list
+INETD_CONF=/etc/inetd.conf
+
+# to remove after RC5
+if grep -q 'listen=' $CONFF; then
+	sed -i '/listen=/d' $CONFF
+fi
 
 hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 
@@ -65,9 +72,26 @@ if test "$allow_writeable_chroot" = "yes"; then
 	wchroot_chk=checked
 fi
 
-ftp_inetd="checked"; ftp_server=""
-if test "$listen" = "yes"; then
-	ftp_server=checked; ftp_inetd=""
+ssl_imp_chk=""
+if grep -q "implicit_ssl=yes" $CONFF || grep -q '^ftps' $INETD_CONF ; then
+	ssl_imp_chk=checked
+fi
+
+syslog_chk=""
+if test "$syslog_enable" = "yes"; then
+	syslog_chk=checked
+fi
+
+xferlog_chk=""
+if test "$xferlog_enable" = "yes"; then
+	xferlog_chk=checked
+fi
+
+ftp_inetd="checked"; ftp_server="";
+if grep -qE '(^ftp|^ftps)' $INETD_CONF; then
+	ftp_inetd=checked
+else
+	ftp_server=checked
 fi
 
 cat<<-EOF
@@ -112,12 +136,18 @@ cat<<-EOF
 	<tr><td>Enable SSL:</td><td><input type=checkbox $ssl_en_chk id=ssl name=ssl_enable value="yes"  onchange="toogle('ssl')"></td></tr>
 	<tr><td>Force SSL logins:</td><td><input type=checkbox $ssl_en $ssl_fl_chk name=force_local_logins_ssl value="yes"></td></tr>
 	<tr><td>Force SSL data:</td><td><input type=checkbox $ssl_en $ssl_fd_chk name=force_local_data_ssl value="yes"></td></tr>
-
+	<tr><td>Implict SSL:</td><td><input type=checkbox $ssl_en $ssl_imp_chk name=implicit_ssl value="yes" $(ttip tt_impl)></td></tr>
 	<tr><td colspan=2><br></td></tr>
-	<tr><td>inetd mode</td><td><input type=radio $ftp_inetd name=listen value="no" $(ttip ftpi_tt)></td></tr>
-	<tr><td>server mode</td><td><input type=radio $ftp_server name=listen value="yes" $(ttip ftps_tt)></td></tr>
+
+	<tr><td>Log acesses:</td><td><input type=checkbox $xferlog_chk name=xferlog_enable value="yes"></td></tr>
+	<tr><td>Log to syslog:</td><td><input type=checkbox $syslog_chk name=syslog_enable value="yes"></td></tr>
+	<tr><td colspan=2><br></td></tr>
+
+	<tr><td>inetd mode</td><td><input type=radio $ftp_inetd name=ftp_inetd value="inetd" $(ttip ftpi_tt)></td></tr>
+	<tr><td>server mode</td><td><input type=radio $ftp_server name=ftp_inetd value="server" $(ttip ftpi_tt)></td></tr>
 
 	</table>
+	<input type="hidden" name=from_url value="$HTTP_REFERER">
 	<p><input type="submit" value="Submit">$(back_button)
 	</form></body></html>
 EOF
