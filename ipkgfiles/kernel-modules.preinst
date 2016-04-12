@@ -1,5 +1,0 @@
-#!/bin/sh
-
-arch=$(uname -m)
-
-ipkg-cl install kernel-modules-${arch:0:5}
