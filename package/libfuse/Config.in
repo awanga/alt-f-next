@@ -4,7 +4,7 @@ config BR2_PACKAGE_LIBFUSE
 	help
 	  FUSE (Filesystem in UserSpacE)
 
-	  http://fuse.sourceforge.net/
+	  https://github.com/libfuse/libfuse
 
 comment "libfuse requires a toolchain with LARGEFILE support"
         depends on !BR2_LARGEFILE

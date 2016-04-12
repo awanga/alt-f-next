@@ -6,7 +6,8 @@
 
 LIBFUSE_VERSION:=2.8.5
 LIBFUSE_SOURCE:=fuse-$(LIBFUSE_VERSION).tar.gz
-LIBFUSE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/fuse/fuse-2.X/$(LIBFUSE_VERSION)
+#LIBFUSE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/fuse/fuse-2.X/$(LIBFUSE_VERSION)
+LIBFUSE_SITE:=https://github.com/libfuse/libfuse/releases/download/fuse_2_9_4
 
 LIBFUSE_DIR:=$(BUILD_DIR)/fuse-$(LIBFUSE_VERSION)
 LIBFUSE_BINARY:=libfuse
