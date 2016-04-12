@@ -4,3 +4,4 @@
 ./usr/bin/dropbearkey
 ./usr/bin/dbclient
 ./usr/bin/scp
+./usr/www/cgi-bin/dropbear.cgi

@@ -4,7 +4,6 @@
 #
 #############################################################
 
-#DROPBEAR_VERSION = 2014.66
 DROPBEAR_VERSION = 2015.71
 DROPBEAR_SOURCE = dropbear-$(DROPBEAR_VERSION).tar.bz2
 DROPBEAR_SITE = http://matt.ucc.asn.au/dropbear/releases
