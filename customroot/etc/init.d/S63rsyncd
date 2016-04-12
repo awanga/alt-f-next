@@ -1,0 +1,22 @@
+#! /bin/sh
+
+DESC="rsync server"
+NAME=rsync
+TYPE=net
+
+. /etc/init.d/common
+
+CONF=/etc/rsyncd.conf
+OPTS="--daemon"
+
+if check_inetd rsync; then
+	exit 2
+fi
+
+case "$1" in
+	start) start $NAME -- $OPTS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

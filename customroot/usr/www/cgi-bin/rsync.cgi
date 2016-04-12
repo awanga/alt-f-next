@@ -4,7 +4,19 @@
 check_cookie
 write_header "rsyncd Setup"
 
+mktt rsynci_tt "Inetd mode: rsyncd runs only when necessary, slower to start, conserves memory."
+mktt rsyncs_tt "Server mode: rsyncd always running, faster, always consuming memory<br>
+(the rsync checkboxes in the inetd web page will be unchecked)."
+
 CONF_RSYNC=/etc/rsyncd.conf
+INETD_CONF=/etc/inetd.conf
+
+if grep -q '^rsync' $INETD_CONF; then
+	RSYNC_INETD=checked
+else
+	RSYNC_SERVER=checked
+fi
+
 
 cat<<EOF
 	<script type="text/javascript">
@@ -61,7 +73,8 @@ awk -F = 'BEGIN {
 		i = 0; users[i++] = "anybody"
 		while (getline <"/etc/rsyncd.secrets") {
 			if (substr($1,1,1) == "#") continue
-			users[i++] = $1
+			if (system("id " $1 " >& /dev/null") == 0)
+				users[i++] = $1
 		}
 		FS = t
 	} 
@@ -156,6 +169,12 @@ function parse(share_name, line) {
 
 cat<<EOF
 	</fieldset>
+	<table>
+		<tr><td>inetd mode</td><td><input type=radio $RSYNC_INETD name=rsync value="inetd" $(ttip rsynci_tt)></td></tr>
+		<tr><td>server mode</td><td><input type=radio $RSYNC_SERVER name=rsync value="server" $(ttip rsyncs_tt)></td></tr>
+		<tr><td></td><tr>
+	</table>
+	<input type="hidden" name=from_url value="$HTTP_REFERER">
 	<input type=submit name=submit value="Submit">$(back_button)
 	</form></body></html>
 EOF

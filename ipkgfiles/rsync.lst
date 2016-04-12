@@ -1,5 +1,7 @@
-./usr/bin/rsync
+./etc/init.d/S63rsyncd
 ./etc/rsyncd.conf
 ./etc/rsyncd.secrets
+./usr/bin/rsync
 ./usr/www/cgi-bin/rsync.cgi
+./usr/www/cgi-bin/rsyncd.cgi
 ./usr/www/cgi-bin/rsync_proc.cgi

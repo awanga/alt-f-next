@@ -1,6 +1,6 @@
 Package: rsync
 Description: File transfer program to keep remote files in sync.
-Version: 3.1.1-1
+Version: 3.1.2
 Depends: ipkg
 Architecture: arm
 Priority: optional

@@ -7,6 +7,8 @@ read_args
 #debug
 
 CONF_RSYNC=/etc/rsyncd.conf
+INETD_CONF=/etc/inetd.conf
+CONFS=/etc/init.d/S63rsyncd
 
 if test "$submit" = "Submit"; then
 
@@ -44,7 +46,19 @@ if test "$submit" = "Submit"; then
 		echo
 	done  >> $CONF_RSYNC-
 	mv $CONF_RSYNC- $CONF_RSYNC
+
+	if test "$rsync" = "server"; then
+		rcinetd disable rsync >& /dev/null
+		rcrsyncd enable >& /dev/null
+		rcrsyncd restart >& /dev/null
+		#sed -i 's/^#TYPE=/TYPE=/' $CONFS
+	else
+		rcrsyncd disable >& /dev/null
+		rcrsyncd stop >& /dev/null
+		#sed -i 's/^TYPE=/#TYPE=/' $CONFS
+		rcinetd enable rsync >& /dev/null
+	fi
 fi
 
 #enddebug
-gotopage /cgi-bin/inetd.cgi
+gotoback $from_url rsync.cgi
