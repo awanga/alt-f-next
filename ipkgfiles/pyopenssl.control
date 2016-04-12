@@ -1,6 +1,6 @@
 Package: pyopenssl
 Description: Python interface to the OpenSSL library
-Version: 0.11-1
+Version: 0.11-2
 Depends: python, ipkg
 Architecture: arm
 Priority: optional
