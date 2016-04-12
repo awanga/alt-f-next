@@ -1,0 +1,6 @@
+config BR2_PACKAGE_UBOOT_ENVTOOLS
+	bool "uboot-envtools"
+	help
+	  read and write U-Boot environment variables from flash memory
+
+	  http://ftp.de.debian.org/debian/pool/main/u/uboot-envtools
