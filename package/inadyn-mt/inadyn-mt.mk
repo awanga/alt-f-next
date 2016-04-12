@@ -3,7 +3,8 @@
 # inadyn-mt
 #
 #############################################################
-INADYN_MT_VERSION = 02.24.38
+
+INADYN_MT_VERSION = 02.24.49
 INADYN_MT_SOURCE = inadyn-mt.v.$(INADYN_MT_VERSION).tar.gz
 INADYN_MT_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/inadyn-mt/inadyn-mt/inadyn-mt.v.$(INADYN_MT_VERSION)
 

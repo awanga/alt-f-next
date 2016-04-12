@@ -6,6 +6,7 @@ PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
 check_cookie
 write_header "Dynamic DNS Setup"
+check_https
 
 CONFF=/etc/inadyn.conf
 

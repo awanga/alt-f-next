@@ -1,6 +1,6 @@
 Package: inadyn-mt
 Description: A Dynamic DNS client with substantive bug fixes over inadyn
-Version: 02.24.38
+Version: 02.24.49
 Depends: ipkg
 Architecture: arm
 Priority: optional
