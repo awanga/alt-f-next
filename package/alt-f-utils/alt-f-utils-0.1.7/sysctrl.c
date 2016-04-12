@@ -1,4 +1,4 @@
-/* Copyright Joao Cardoso, 2009, 2010, 2011, 2012, 2013
+/* Copyright Joao Cardoso, 2009-2016
  * Licence: GPLv2 
  *
  * Some code stolen from fonz fanctl and dns323-utils, 
@@ -51,17 +51,22 @@ void fanctl(void);
 void hdd_powercheck(int noleds);
 int check_powermode(char *dev);
 unsigned long dstat(char *dsk);
-int md_stat();
+int md_stat(void);
+int check_syserrlog();
 
 int debounce();
 int button(void);
 
+void led_set(int which, char *mode);
+int led_get(int which, char *mode);
+void led_blink(int which, char *on, char *off);
+
 void leds_on();
 void leds_off();
-void set_led(int which, char *mode);
-int get_led(int which, char *mode);
-void blink_leds();
-void blink_led(int which, char *on, char *off);
+void leds_blink();
+
+void leds_proc();
+void leds_set(int mode, int priority);
 
 void syswrite(char *fname, char *value);
 
@@ -101,10 +106,10 @@ enum FanMode {FAN_AUTO = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST};
 
 // configuration default values, overriden by configuration files
 args_t args =
-    { 1.0, 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL,
+    { 2.0, 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL,
   NULL };
 
-enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_A1A2, DNS_325_A1A2, DNS_320_A1A2, DNS_320L_A1};
+enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_Ax, DNS_325_Ax, DNS_320_Ax, DNS_320_Bx, DNS_320L_Ax, DNS_327L_Ax};
 int board;
 
 enum Button { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
@@ -128,6 +133,7 @@ typedef struct {
 } disk_t;
 
 disk_t disks[NSLOTS];
+int ndisks = 0;
 
 char sys_pwm[] = "/tmp/sys/pwm1",
 	sys_fan_input[] = "/tmp/sys/fan1_input",
@@ -136,8 +142,8 @@ char sys_pwm[] = "/tmp/sys/pwm1",
 
 int fd_ev, wd_bay, wd_misc, wd_conf;
 
-// hack! blink_leds() use it to signal hdd_powercheck()
-int leds_changed = 0;
+char syserrorfn[] = "/var/log/systemerror.log";
+char fantemplog[] = "/var/log/fantemp.log";
 
 #define SCRIPT_TIMEOUT 5
 
@@ -269,6 +275,7 @@ int main(int argc, char *argv[]) {
 	mainloop();
 	
 	close(fd_ev);
+	closelog();
 	return 0;
 }
 
@@ -298,8 +305,13 @@ void mainloop() {
 		//syslog(LOG_INFO, "button %d ", bt);
 		count++;
 
-		if ((++powercheck_count % powercheck_interval) == 0 && bt == NO_BT)
-			hdd_powercheck(md_stat());
+		if ((++powercheck_count % powercheck_interval) == 0 && bt == NO_BT) {
+			//hdd_powercheck(md_stat(check_syserrlog()));
+			hdd_powercheck(0);
+			md_stat();
+			check_syserrlog();
+			leds_proc();
+		}
 
 		if (bt && state == IDLE)
 			leds_off();
@@ -315,7 +327,7 @@ void mainloop() {
 				count = 0;
 			} else if (count == REBOOT) {
 				state = REBOOT;
-				blink_led(right_led, "250", "250");
+				led_blink(right_led, "250", "250");
 			}
 			break;
 
@@ -327,8 +339,8 @@ void mainloop() {
 				reboot();
 			} else if (count == HALT) {
 				state = HALT;
-				set_led(right_led, "0");
-				blink_led(left_led, "250", "250");
+				led_set(right_led, "0");
+				led_blink(left_led, "250", "250");
 			}
 			break;
 
@@ -342,7 +354,6 @@ void mainloop() {
 				state = IDLE;
 				count = 0;
 				leds_off();
-				leds_changed = 1;
 			}
 			break;
 		}
@@ -358,7 +369,7 @@ void back_button() {
 	
 	syslog(LOG_INFO, "Entering back_button");
 
-	blink_leds();
+	leds_blink();
 	
 	do {
 		bt = debounce();
@@ -377,7 +388,6 @@ void back_button() {
 		exec_userscript("/usr/bin/eject", SCRIPT_TIMEOUT, "usb");
 	
 	leds_off();
-	leds_changed = 1;
 }
 
 void reboot() {
@@ -494,25 +504,21 @@ void logger(char *cmd) {
 
 void check_other_daemon() {
 	char *pidf = "/var/run/sysctrl.pid";
-	int fd =
-	    open(pidf, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IROTH);
+	int fd = open(pidf, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IROTH);
 	if (fd == -1 && errno == EEXIST) {
 		FILE *fp = fopen(pidf, "r");
 		pid_t opid;
 		if (fscanf(fp, "%d", &opid) != 1) {
-			syslog(LOG_ERR, "file %s exists but can't be read: %m",
-			       pidf);
+			syslog(LOG_ERR, "file %s exists but can't be read: %m", pidf);
 			exit(1);
 		}
 		if (kill(opid, 0) == 0) {
-			syslog(LOG_ERR, "Another instance with pid=%d, exists, exiting.",
-			       opid);
+			syslog(LOG_ERR, "Another instance with pid=%d, exists, exiting.", opid);
 			exit(1);
 		}
 		fclose(fp);
 		unlink(pidf);
-		fd = open(pidf, O_RDWR | O_CREAT | O_EXCL,
-			  S_IRUSR | S_IWUSR | S_IROTH);
+		fd = open(pidf, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IROTH);
 	}
 
 	FILE *fp = fdopen(fd, "r+");
@@ -528,7 +534,7 @@ for i in $(seq 5 5 180); do
 	cat /sys/class/hwmon/hwmon0/device/fan1_input
 done
 
-pwd=5 fan=1958
+// pwd=5 fan=1958
 pwd=10 fan=1998
 pwd=15 fan=2056
 pwd=20 fan=2082
@@ -585,19 +591,107 @@ float poly(float pwm, float coef[]) {
 
 int syserrorlog(char *emsg) {
 	int fd;
-	char buf[BUFSZ] = "<li><pre>sysctrl: ";
+	char buf[BUFSZ] = "<li>";
 
 	syslog(LOG_CRIT, emsg);
 	
-	if ((fd = open("/var/tmp/log/systemerror.log", O_CREAT | O_WRONLY | O_APPEND, 0644 )) == -1) {
-		syslog(LOG_ERR, "open /var/tmp/log/systemerror.log: %m");
+	if ((fd = open(syserrorfn, O_CREAT | O_WRONLY | O_APPEND, 0644 )) == -1) {
+		syslog(LOG_ERR, "open %s: %m", syserrorfn);
 		return -1;
 	}
 	strcat(buf, emsg);
-	strcat(buf, "</pre>\n");
+	strcat(buf, "</li>\n");
 	write(fd, buf, strlen(buf));
 	close(fd);
 	return 0;
+}
+
+/* log fan speed and system temperature to a file, to not flood syslog and loose important logs
+ * When the 32KB file maximum size is reached, logging continues at the file beginning.
+ * an "OLD:" line marks the beginning of old log entries
+ */
+void fanlog(float temp, int pwm, int fan) {
+	static int fd = -1;
+	int nc;
+	char outstr[128], buf[128];
+	time_t t;
+	struct tm *tmp;
+
+	if (fd == -1) {
+		if ((fd = open(fantemplog, O_WRONLY | O_CREAT, 0644)) == -1) {
+			syslog(LOG_ERR, "Can't open %s: %m", fantemplog);
+			return;
+		}
+		lseek(fd, 0, SEEK_END);
+	}
+	if (lseek(fd, 0, SEEK_CUR) > 32768)
+		lseek(fd, 0, SEEK_SET);
+	else
+		lseek(fd, -5, SEEK_CUR);
+
+	t = time(NULL);
+	tmp = localtime(&t);
+	strftime(outstr, sizeof(outstr), "%b %d %T", tmp);
+	nc = sprintf(buf, "%s\ttemp=%.1f\tpwm=%d\tfan=%d\nOLD:\n", outstr, temp, pwm, fan);
+	write(fd, buf, nc);
+}
+
+enum ledmode {NA=-1, LEDOFF, LEDON, LEDBLINK};
+enum ledprior {PHIGH=0, PMED, PLOW};
+int leds_pqueue[] = {LEDOFF, LEDOFF, LEDOFF};
+
+void leds_set(int priority, int mode) {
+	//syslog(LOG_INFO, "pri=%d md=%d", priority, mode);
+	leds_pqueue[priority] = mode;
+}
+
+/* this is a small improvement over leds handling, but not definitive!
+ * this only maintains a "priority queue" for all leds altogether, but each led should be handleded
+ * separately, together with its current state: trigger, brightness, delay_off, delay_on....
+ * When a new led is set in the queue, the led current state should be saved in a stack; when the
+ * led action is turned off, the state staved in the stack would be restored.
+ * But it is too much work: having a priority queue for each led, where each priority level has its own stack!
+ */
+void leds_proc() {
+	int i;
+	for (i=PHIGH; i<=PLOW; i++) {
+		switch (leds_pqueue[i]) {
+			case NA: break;
+			case LEDOFF: leds_off(); leds_pqueue[i] = NA; break;
+			case LEDON: leds_on(); break;
+			case LEDBLINK: leds_blink(); break;
+		}
+	}
+}
+
+int check_syserrlog() {
+	struct stat buf;
+	static int leds_state = 0;
+	
+	if (stat(syserrorfn, &buf)) {
+		if (leds_state == 1) {
+			// syslog(LOG_INFO, "Non existing \"%s\"", syserrorfn);
+			leds_state = 0;
+			leds_set(PLOW, LEDOFF); // leds_off();
+		}
+		return 0;
+	}
+
+	if (buf.st_size != 0) {
+		if (leds_state == 0) {
+			// syslog(LOG_INFO, "Non empty \"%s\"", syserrorfn);
+			leds_state = 1;
+			leds_set(PLOW, LEDON); //leds_on();
+		}
+		return 1;
+	} else {
+		if (leds_state == 1) {
+			// syslog(LOG_INFO, "Empty \"%s\"", syserrorfn);
+			leds_state = 0;
+			leds_set(PLOW, LEDOFF); //leds_off();
+		}
+		return 0;
+	}
 }
 
 int read_str_from_file(const char *filename, char *str, int sz) {
@@ -668,22 +762,31 @@ void check_board() {
 		leds[usb_led] = NULL;
 		args.lo_temp = 45;	// redefine defaults for C1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-321-A1A2", res) == 0) {
-		board = DNS_321_A1A2;
+	else if (strcmp("DNS-321-Ax", res) == 0) {
+		board = DNS_321_Ax;
 		leds[usb_led] = NULL;
-		nslots = 2; // box has no USB
+		nslots = 2; // box has no USB plug
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-325-A1A2", res) == 0) {
-		board = DNS_325_A1A2;
+	else if (strcmp("DNS-325-Ax", res) == 0) {
+		board = DNS_325_Ax;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-320-A1A2", res) == 0) {
-		board = DNS_320_A1A2;
+	else if (strcmp("DNS-320-Ax", res) == 0) {
+		board = DNS_320_Ax;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
-	else if (strcmp("DNS-320L-A1", res) == 0) {
-		board = DNS_320L_A1;
+	else if (strcmp("DNS-320L-Ax", res) == 0) {
+		board = DNS_320L_Ax;
+		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+	}
+	else if (strcmp("DNS-320-Bx", res) == 0) {
+		board = DNS_320_Bx;
+		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+	}
+	else if (strcmp("DNS-327L-Ax", res) == 0) {
+		board = DNS_327L_Ax;
+		leds[usb_led] = NULL; // box has no orange USB led
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 	}
 	else {
@@ -715,7 +818,7 @@ int read_pwm(void) {
 }
 
 /* -for the DNS-320, a sh script is asynchronously writing the temperature to a file.
- * -for the DNS320L, the dns320l-daemon is asynchronously writing the temperature 
+ * -for the DNS320L/DNS327L, the dns320l-daemon is asynchronously writing the temperature 
  * and fanspeed and reading desired fanspeed to a file, but using read() and write()
  * which are atomic and dont need a lock.
  */
@@ -775,21 +878,26 @@ void fanctl(void) {
 	static int warn = 0, crit = 0, log_fan = 0;
 	int fan, pwm;
 
-	if (temp == 0.) // zero has an exact float representation
+	if (temp == 0.) { // zero has an exact float representation
 		temp = read_temp() / 1000.;
-	else
+		pwm = 0;
+	} else {
 		temp = 0.9 * read_temp() / 1000. + 0.1 * temp;
+		pwm = read_pwm();
+	}
 	
 	fan = read_fan();
-	pwm = read_pwm();
+	
 
 	if ( (fabsf(temp - log_temp) > 1.0) || (abs(fan - log_fan) > 400)) {
 		log_temp = temp;
 		log_fan = fan;
-		syslog(LOG_INFO, "temp=%.1f	pwm=%d fan=%d", temp, pwm, fan);
+		//syslog(LOG_INFO, "temp=%.1f	pwm=%d fan=%d", temp, pwm, fan);
+		// temp/fan logs flood syslog for the 320L/327, use a file for logging
+		fanlog(temp, pwm, fan);
 	}
 
-	if (board == DNS_323_A1 || board == DNS_323_B1 ) {
+	if (board == DNS_323_A1 || board == DNS_323_B1) {
 		float m = (args.hi_fan - args.lo_fan) * 1. / (args.hi_temp - args.lo_temp);
 		float b = args.lo_fan - m * args.lo_temp;
 		
@@ -827,6 +935,8 @@ void fanctl(void) {
 						if (temp < (args.lo_temp - args.hist_temp))
 							pwm = PWM_LOW;
 						break;
+					default: // failsafe
+						pwm = PWM_LOW;
 				}
 				break;
 		}
@@ -852,7 +962,7 @@ void fanctl(void) {
 		if (args.mail)
 			smail(CRITT, fan, temp, args.crit_temp);
 		snprintf(buf, BUFSZ, "OVERHEAT: fan=%d temp=%.1f exceeded critical=%d",
-		       fan, temp, args.crit_temp);
+				 fan, temp, args.crit_temp);
 		exec_userscript(args.crit_temp_command, 20, NULL);
 		crit = 1;
 	}
@@ -959,11 +1069,10 @@ void spindown_disk(const char *name) {
   close(fd);
 }
 
-// FIXME to support more than one USB disk (although none I have supports this)
-// this is a mess, because bink_leds() and md_stat(), that also manipulate leds:
-// if noleds == 0, use leds and syslog
-// if noleds == 1, don't use leds, logs to syslog
-// if noleds == 2, don't use leds, don't log
+// FIXME support more than one USB disk
+// this is a mess, because bink_leds() and md_stat() and check_syserrlog() also manipulate leds:
+// if noleds == 0, use leds
+// if noleds == 1, don't use leds
 void hdd_powercheck(int noleds) {
 
 	int i, dpm, dpmf = 0;
@@ -998,39 +1107,36 @@ void hdd_powercheck(int noleds) {
 			char *slot = disks[i].slot;
 			if (dpm == 0) { // standby/sleep
 				syslog(LOG_INFO, "%s disk (%s) standby", slot, dev);
-				if (! noleds) // RAID degraded or rebuilding uses leds
-					blink_led(i, "50", "2000");
+				if (noleds == 0)
+					led_blink(i, "10", "2000");
 			} else { // active
 				syslog(LOG_INFO, "%s disk (%s) wakeup", slot, dev);
-				if (! noleds) 
-					set_led(i, "0");
+				if (noleds == 0) 
+					led_set(i, "0");
 			}
 		}
 		disks[i].power_state = dpm;
 		dpmf += dpm;
 	}
 	
-	if (get_led(power_led, pled) != -1) { // power led not in use by other script...
+	if (led_get(power_led, pled) != -1) { // power led not in use by other script...
 		if (strcmp(pled, "none") == 0) {
-			if (dpmf) // at least one disk is active
-				set_led(power_led, "1");
+			if (dpmf || ndisks == 0) // at least one disk is active
+				led_set(power_led, "1");
 			else
-				set_led(power_led, "0");
+				led_set(power_led, "0");
 		}
 	}
 }
 
-/* returns 0 if not degraded nor rebuilding
- * returns 1 if degraded but not rebuilding
- * returns 2 if degraded and rebuilding
- */
+/* returns 0 if not degraded */
 int md_stat() {
 	struct stat st;
 	char buf[64], msg[64];
-	int dev, degraded, ret = 0;
-	char state[16], level[16], action[16];
-	static int recover = 0;
-
+	int dev, cdegraded, ret = 0;
+	char state[16], level[16];
+	static int last_degraded = 0, degraded[10];
+		
 	if (stat("/proc/mdstat", &st))
 		return 0;
 
@@ -1041,65 +1147,59 @@ int md_stat() {
 
 		sprintf(buf, "/sys/block/md%d/md/array_state", dev);
 		read_str_from_file(buf, state, 64);
-		sprintf(msg, "md%d: state=%s ", dev, state);
-
 		if (strcmp(state, "inactive") != 0) {
 			sprintf(buf, "/sys/block/md%d/md/level", dev);
 			read_str_from_file(buf, level, 64);
-			sprintf(msg + strlen(msg), "level=%s ", level);
 
 			if (strcmp(level, "raid1") == 0 || strcmp(level, "raid5") == 0) {
 				sprintf(buf, "/sys/block/md%d/md/degraded", dev);
 				if (stat(buf, &st))
 					continue;
-				read_int_from_file(buf, &degraded);
-				sprintf(msg + strlen(msg), "degraded=%d ", degraded);
-
-				if (degraded != 0) {
-					sprintf(buf, "/sys/block/md%d/md/sync_action", dev);
-					read_str_from_file(buf, action, 64);
-					sprintf(msg + strlen(msg), "action=%s", action);
-					if (strcmp(action, "idle") == 0) {
-						leds_on();
-						ret = 1;
-					} else {
-						blink_leds();
-						ret = 2;
+				
+				read_int_from_file(buf, &cdegraded);
+				if (cdegraded == 0) 
+					degraded[dev] = 0;
+				else if (degraded[dev] == 0) {
+						degraded[dev] = 1;
+						last_degraded = 1;
+						leds_set(PHIGH, LEDON); //leds_on();
+						sprintf(msg, "Your md%d %s device is degraded!", dev, level);
+						syserrorlog(msg);
 					}
-					if (recover == 0)
-						syslog(LOG_INFO, msg);
-					recover = 1;
-				}
-			}
-		}
+			} else
+			degraded[dev] = 0;
+		} else
+			degraded[dev] = 0;
 	}
-	if (ret == 0 && recover == 1) {
-		recover = 0;
-		leds_off();
-		leds_changed = 1;
+	
+	for (dev=0; dev<9; dev++)
+		ret += degraded[dev];
+		
+	if (last_degraded == 1 && ret == 0) {
+		last_degraded = 0;
+		leds_set(PHIGH, LEDOFF); //leds_off();
 	}
 	return ret;
 }
 
 #define GPIO_INPUT_DEVICE "/dev/event0"
 
-#define FRONT_EV	0x0074	// DNS-320/320L/323/325 front button event (KEY_POWER)
-#define RESET_EV	0x0198	// DNS-320/320L/323/325 reset back button event (KEY_RESTART)
-#define USB_EV		0x0085	// DNS-320/320L/325 USB back button event (KEY_COPY)
+#define FRONT_EV	0x0074	// DNS-320/320L/323/325/327L front button event (KEY_POWER)
+#define RESET_EV	0x0198	// DNS-320/320L/323/325/327L reset button event (KEY_RESTART)
+#define USB_EV		0x0085	// DNS-320/320L/325/327L USB button event (KEY_COPY)
 
 #define PRESSED		7		// bit 7 - pressed: 1, released 0
 
 
 int button() {
-	static int fd = 0;	// odd, if fd is not static read() *always* return EAGAIN
+	static int fd = -1; /* file needs to be keept open, otherwise events might be lost between invocations */
 	struct input_event ev;
 	int n, but = NO_BT;
 
-	if (fd == 0) {
+	if (fd == -1) {
 		fd = open(GPIO_INPUT_DEVICE, O_RDONLY | O_NONBLOCK);
 		if (fd == -1) {
 			syslog(LOG_ERR, "open %s: %m", GPIO_INPUT_DEVICE);
-			fd = 0;
 			return -1;
 		}
 	}
@@ -1122,7 +1222,7 @@ int button() {
 		
 	} else if (n < 0 && errno != EAGAIN) {
 		syslog(LOG_ERR, "read from %s: %m", GPIO_INPUT_DEVICE);
-		return -1;
+		but = -1;
 	}
 	return but;
 }
@@ -1131,10 +1231,10 @@ int debounce() {
 	static int bt = NO_BT;
 	int count, tbt;
 	
-	if (board == DNS_320L_A1) {
+	if (board == DNS_320L_Ax || board == DNS_320_Bx || board == DNS_327L_Ax) {
 		int but;
 		if (read_int_from_file(sys_power_button, & but) == 0 && but == 0) {
-			syslog(LOG_INFO, "DNS320L power button pressed, poweroff.");
+			syslog(LOG_INFO, "DNS320L/DNS327L power button pressed, poweroff.");
 			poweroff();
 		}
 	}
@@ -1164,7 +1264,7 @@ void syswrite(char *fname, char *value) {
 	write_str_to_file(fname, value);
 }
 
-void set_led(int which, char *mode) {
+void led_set(int which, char *mode) {
 	char buf[128];
 	
 	if (leds[which] == NULL)
@@ -1176,7 +1276,7 @@ void set_led(int which, char *mode) {
 	syswrite(buf, mode);
 }
 
-int get_led(int which, char *mode) {
+int led_get(int which, char *mode) {
 	char buf1[128], buf2[128], *ts, *te;
 	int u;
 	
@@ -1202,25 +1302,13 @@ int get_led(int which, char *mode) {
 	return u;
 }
 
-void leds_on() {
-	int i;
-	for (i = 0; i < nslots; i++)
-		set_led(i, "1");
-}
-
-void leds_off() {
-	int i;
-	for (i = 0; i < nslots; i++)
-		set_led(i, "0");
-}
-
-void blink_led(int which, char *on, char *off) {
+void led_blink(int which, char *on, char *off) {
 	char buf[128];
 	
 	if (leds[which] == NULL)
 		return;
 
-	set_led(which, "0");
+	led_set(which, "0");
 	sprintf(buf, "%s%s", leds[which], "trigger");
 	syswrite(buf, "timer");
 	sprintf(buf, "%s%s", leds[which], "delay_on");
@@ -1229,10 +1317,22 @@ void blink_led(int which, char *on, char *off) {
 	syswrite(buf, off);
 }
 
-void blink_leds() {
+void leds_on() {
 	int i;
-	for (i = 0; i < nslots; i++)
-		blink_led(i, "250", "250");
+	for (i = 0; i < 2; i++)
+		led_set(i, "1");
+}
+
+void leds_off() {
+	int i;
+	for (i = 0; i < 2; i++)
+		led_set(i, "0");
+}
+
+void leds_blink() {
+	int i;
+	for (i = 0; i < 2; i++)
+		led_blink(i, "250", "250");
 }
 
 void config(char *n, char *v) {
@@ -1349,6 +1449,7 @@ void read_bay() {
 		disks[i].dev = NULL;
 	}
 
+	ndisks = 0;
 	while (fgets(buf, BUFSZ, fp) != NULL) {
 		opt = strtok(buf, "=");
 		dev = strtok(NULL, "\n");               
@@ -1357,19 +1458,24 @@ void read_bay() {
 		if (strcmp(opt, "left_dev") == 0) {
 			disks[left_dev].dev = strdup(dev);
 			disks[left_dev].slot = "left";
+			ndisks++;
 		} else if (strcmp(opt, "right_dev") == 0) {
 			disks[right_dev].dev = strdup(dev);
 			disks[right_dev].slot = "right";
+			ndisks++;
 		} else if (strncmp(opt, "usb", 3) == 0 && strncmp(&opt[4], "_dev", 4) == 0) {
 			disks[usb_dev].dev = strdup(dev);
 			disks[usb_dev].slot = "usb";
+			ndisks++;
 		}
+		
 	}
 	fclose(fp);	
 }
 
 void print_disks() {
 	int i;
+	syslog(LOG_INFO, "ndisks=%d", ndisks);
 	for(i = 0; i < nslots; i++) {
 		syslog(LOG_INFO, "%s %s rdwr=%lu last=%lu spindow=%lu power=%d\n",
 			disks[i].dev, disks[i].slot, disks[i].rdwr_cnt,
@@ -1386,7 +1492,7 @@ void read_config() {
 	syslog(LOG_INFO, "reading /etc/sysctrl.conf");
 	fp = fopen("/etc/sysctrl.conf", "r");
 	if (fp == NULL) {
-		syslog(LOG_INFO, "can't open /etc/sysctrl.conf: %m\nUsing defaults");
+		syslog(LOG_INFO, "No /etc/sysctrl.conf: %m\nUsing defaults");
 		return;
 	}
 
@@ -1414,7 +1520,7 @@ void read_config() {
 }
 
 void print_config() {
-	char *mode;
+	char *mode = "AUTO";
 	syslog(LOG_INFO, "args.lo_fan=%d", args.lo_fan);
 	syslog(LOG_INFO, "args.hi_fan=%d", args.hi_fan);
 	syslog(LOG_INFO, "args.lo_temp=%d", args.lo_temp);
