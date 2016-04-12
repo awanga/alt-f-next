@@ -4,7 +4,7 @@
 #
 #############################################################
 
-DNSMASQ_VERSION:=2.68
+DNSMASQ_VERSION:=2.75
 DNSMASQ_SITE:=http://thekelleys.org.uk/dnsmasq
 DNSMASQ_SOURCE:=dnsmasq-$(DNSMASQ_VERSION).tar.gz
 DNSMASQ_DIR:=$(BUILD_DIR)/dnsmasq-$(DNSMASQ_VERSION)
@@ -12,7 +12,7 @@ DNSMASQ_BINARY:=dnsmasq
 DNSMASQ_TARGET_BINARY:=usr/sbin/dnsmasq
 
 DNSMASQ_CFLAGS=-Os
-DNSMASQ_COPTS:=
+DNSMASQ_COPTS:=-DNO_INOTIFY
 
 ifneq ($(BR2_INET_IPV6),y)
 DNSMASQ_COPTS+=-DNO_IPV6
@@ -57,7 +57,7 @@ $(DNSMASQ_DIR)/src/$(DNSMASQ_BINARY): $(DNSMASQ_DIR)/.source $(DNSMASQ_DBUS)
 	touch -c $@
 
 $(TARGET_DIR)/$(DNSMASQ_TARGET_BINARY): $(DNSMASQ_DIR)/src/$(DNSMASQ_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) PREFIX=/usr -C $(DNSMASQ_DIR) install
+	$(MAKE) DESTDIR=$(TARGET_DIR) PREFIX=/usr -C $(DNSMASQ_DIR) install-common
 	$(STRIPCMD) $(TARGET_DIR)/$(DNSMASQ_TARGET_BINARY)
 	mkdir -p $(TARGET_DIR)/var/lib/misc
 	# Isn't this vulnerable to symlink attacks?

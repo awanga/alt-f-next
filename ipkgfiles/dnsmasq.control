@@ -1,6 +1,6 @@
 Package: dnsmasq
 Description: A lightweight DNS and DHCP server.
-Version: 2.68
+Version: 2.75
 Depends: ipkg
 Architecture: arm
 Priority: optional
