@@ -1,0 +1,134 @@
+diff -uNr dosfstools-3.0.28/Makefile dosfstools-3.0.28/Makefile
+--- dosfstools-3.0.28/Makefile	2015-05-16 01:56:17.000000000 +0100
++++ dosfstools-3.0.28/Makefile	2016-02-17 16:16:45.980569959 +0000
+@@ -24,6 +24,7 @@
+ DESTDIR =
+ PREFIX = /usr/local
+ SBINDIR = $(PREFIX)/sbin
++LIBDIR = $(PREFIX)/lib
+ DOCDIR = $(PREFIX)/share/doc
+ MANDIR = $(PREFIX)/share/man
+ 
+@@ -32,17 +33,27 @@
+ #WARNFLAGS = -Wall -pedantic -std=c99
+ WARNFLAGS = -Wall -Wextra -Wno-sign-compare -Wno-missing-field-initializers -Wmissing-prototypes -Wstrict-prototypes -Wwrite-strings
+ DEBUGFLAGS = -g
+-CFLAGS += $(OPTFLAGS) $(WARNFLAGS) $(DEBUGFLAGS)
++PICFLAGS = -fPIC
++SHFLAGS = -shared
++override CFLAGS += $(PICFLAGS) $(OPTFLAGS) $(WARNFLAGS) $(DEBUGFLAGS)
++override LDFLAGS += $(PICFLAGS)
+ 
+ VPATH = src
+ 
++LIBOBJ = boot.o check.o common.o fat.o file.o io.o lfn.o charconv.o
++
+ all: build
+ 
+-build: fatlabel fsck.fat mkfs.fat
++build: fatlabel fsck.fat mkfs.fat libfat.so
++
++libfat.so: $(LIBOBJ)
++	$(CC) $(LDFLAGS) $(SHFLAGS) $(LDLIBS) -o $@ $(LIBOBJ)
+ 
+-fatlabel: boot.o check.o common.o fat.o file.o io.o lfn.o charconv.o fatlabel.o
++fatlabel: fatlabel.o libfat.so
++	$(CC) $(CFLAGS) -o $@ $< -L. -lfat
+ 
+-fsck.fat: boot.o check.o common.o fat.o file.o io.o lfn.o charconv.o fsck.fat.o
++fsck.fat: fsck.fat.o libfat.so
++	$(CC) $(CFLAGS) -o $@ $< -L. -lfat
+ 
+ mkfs.fat: mkfs.fat.o
+ 
+@@ -51,8 +62,9 @@
+ install: install-bin install-doc install-man install-symlinks
+ 
+ install-bin: build
+-	install -d -m 0755 $(DESTDIR)/$(SBINDIR)
++	install -d -m 0755 $(DESTDIR)/$(SBINDIR) $(DESTDIR)/$(LIBDIR)
+ 	install -m 0755 fatlabel fsck.fat mkfs.fat $(DESTDIR)/$(SBINDIR)
++	install -m 0755 libfat.so  $(DESTDIR)/$(LIBDIR)
+ 
+ install-doc:
+ 	install -d -m 0755 $(DESTDIR)/$(DOCDIR)/dosfstools
+@@ -162,7 +174,7 @@
+ reinstall: distclean install
+ 
+ clean:
+-	rm -f *.o
++	rm -f *.o *.so
+ 
+ distclean: clean
+ 	rm -f fatlabel fsck.fat mkfs.fat
+diff -uNr dosfstools-3.0.28/src/common.h dosfstools-3.0.28/src/common.h
+--- dosfstools-3.0.28/src/common.h	2015-05-16 01:56:17.000000000 +0100
++++ dosfstools-3.0.28/src/common.h	2016-02-17 15:56:51.154780627 +0000
+@@ -23,6 +23,8 @@
+ #ifndef _COMMON_H
+ #define _COMMON_H
+ 
++#include "endian-compat.h"
++
+ void die(const char *msg, ...) __attribute((noreturn));
+ 
+ /* Displays a prinf-style message and terminates the program. */
+diff -uNr dosfstools-3.0.28/src/endian-compat.h dosfstools-3.0.28/src/endian-compat.h
+--- dosfstools-3.0.28/src/endian-compat.h	1970-01-01 01:00:00.000000000 +0100
++++ dosfstools-3.0.28/src/endian-compat.h	2016-02-17 16:00:19.725335105 +0000
+@@ -0,0 +1,44 @@
++/* 
++This patch adds support for convertion of values between host and
++big-/little-endian byte order.
++
++Signed-off-by: Vladimir Zapolskiy <vzapolskiy at gmail.com>
++
++http://lists.uclibc.org/pipermail/uclibc/2010-June/044107.html
++*/
++
++/* Conversion interfaces.  */ 
++# include <byteswap.h> 
++ 
++# if __BYTE_ORDER == __LITTLE_ENDIAN 
++#  define htobe16(x) __bswap_16 (x) 
++#  define htole16(x) (x) 
++#  define be16toh(x) __bswap_16 (x) 
++#  define le16toh(x) (x) 
++ 
++#  define htobe32(x) __bswap_32 (x) 
++#  define htole32(x) (x) 
++#  define be32toh(x) __bswap_32 (x) 
++#  define le32toh(x) (x) 
++ 
++#  define htobe64(x) __bswap_64 (x) 
++#  define htole64(x) (x) 
++#  define be64toh(x) __bswap_64 (x) 
++#  define le64toh(x) (x) 
++# else 
++#  define htobe16(x) (x) 
++#  define htole16(x) __bswap_16 (x) 
++#  define be16toh(x) (x) 
++#  define le16toh(x) __bswap_16 (x) 
++ 
++#  define htobe32(x) (x) 
++#  define htole32(x) __bswap_32 (x) 
++#  define be32toh(x) (x) 
++#  define le32toh(x) __bswap_32 (x) 
++ 
++#  define htobe64(x) (x) 
++#  define htole64(x) __bswap_64 (x) 
++#  define be64toh(x) (x) 
++#  define le64toh(x) __bswap_64 (x) 
++# endif 
++
+diff -uNr dosfstools-3.0.28/src/mkfs.fat.c dosfstools-3.0.28/src/mkfs.fat.c
+--- dosfstools-3.0.28/src/mkfs.fat.c	2015-05-16 01:56:17.000000000 +0100
++++ dosfstools-3.0.28/src/mkfs.fat.c	2016-02-17 15:55:40.207294712 +0000
+@@ -45,6 +45,7 @@
+ /* Include the header files */
+ 
+ #include "version.h"
++#include "endian-compat.h"
+ 
+ #include <fcntl.h>
+ #include <linux/hdreg.h>
