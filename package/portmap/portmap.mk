@@ -6,7 +6,7 @@
 
 PORTMAP_VERSION:=6.0.0
 PORTMAP_SOURCE:=portmap_$(PORTMAP_VERSION).orig.tar.gz
-PORTMAP_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/p/portmap
+PORTMAP_SITE:=http://archive.debian.org/debian/pool/main/p/portmap
 
 PORTMAP_DIR:=$(BUILD_DIR)/portmap-$(PORTMAP_VERSION)
 PORTMAP_CAT:=$(ZCAT)
