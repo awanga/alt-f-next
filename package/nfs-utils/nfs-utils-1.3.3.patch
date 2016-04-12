@@ -1,0 +1,39 @@
+--- nfs-utils-1.2.7/utils/statd/sm-notify.c.orig	2012-12-15 00:33:29.000000000 +0000
++++ nfs-utils-1.2.7/utils/statd/sm-notify.c	2012-12-15 00:37:06.000000000 +0000
+@@ -8,7 +8,6 @@
+ #include <config.h>
+ #endif
+ 
+-#include <err.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
+ #include <sys/stat.h>
+--- nfs-utils-1.2.7/support/nfs/conffile.c.orig	2012-12-15 00:35:24.000000000 +0000
++++ nfs-utils-1.2.7/support/nfs/conffile.c	2012-12-15 00:35:57.000000000 +0000
+@@ -43,7 +43,6 @@
+ #include <string.h>
+ #include <unistd.h>
+ #include <errno.h>
+-#include <err.h>
+ #include <syslog.h>
+ 
+ #include "conffile.h"
+--- nfs-utils-1.2.7/utils/Makefile.in-orig	2013-02-15 17:57:40.969195383 +0000
++++ nfs-utils-1.2.7/utils/Makefile.in	2013-02-15 17:58:03.975753940 +0000
+@@ -106,7 +106,7 @@
+ 	distdir
+ ETAGS = etags
+ CTAGS = ctags
+-DIST_SUBDIRS = exportfs mountd nfsd nfsstat showmount statd osd_login \
++DIST_SUBDIRS = exportfs mountd nfsd nfsstat showmount statd \
+ 	idmapd nfsidmap blkmapd gssd mount nfsdcltrack
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ am__relativize = \
+@@ -315,7 +315,6 @@
+ 	nfsstat \
+ 	showmount \
+ 	statd \
+-	osd_login \
+ 	$(OPTDIRS)
+ 
+ MAINTAINERCLEANFILES = Makefile.in

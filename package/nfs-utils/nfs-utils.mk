@@ -4,7 +4,7 @@
 #
 #############################################################
 
-NFS_UTILS_VERSION:=1.2.9
+NFS_UTILS_VERSION:=1.3.3
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
 NFS_UTILS_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/nfs/nfs-utils/$(NFS_UTILS_VERSION)
 
@@ -51,6 +51,7 @@ $(NFS_UTILS_DIR)/.configured: $(NFS_UTILS_DIR)/.unpacked
 		--disable-gss \
 		--disable-tirpc \
 		--disable-static \
+		--disable-ipv6 \
 	)
 	touch $@
 
@@ -71,7 +72,7 @@ NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPC_LOCKD) += usr/sbin/rpc.lockd
 
 $(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
 	# Use fakeroot to pretend to do 'make install' as root
-	echo '$(MAKE) RPCGEN=/usr/bin/rpcgen prefix=$(TARGET_DIR)/usr statedir=$(TARGET_DIR)/var/lib/nfs $(TARGET_CONFIGURE_OPTS) sbindir=$(TARGET_DIR)/usr/sbin -C $(NFS_UTILS_DIR) install-strip' > $@
+	echo '$(MAKE) $(TARGET_CONFIGURE_OPTS) RPCGEN=/usr/bin/rpcgen prefix=$(TARGET_DIR)/usr statedir=$(TARGET_DIR)/var/lib/nfs statdpath=$(TARGET_DIR)/var/lib/nfs sbindir=$(TARGET_DIR)/usr/sbin -C $(NFS_UTILS_DIR) install-strip' > $@
 	echo 'rm -f $(TARGET_DIR)/usr/bin/event_rpcgen.py $(TARGET_DIR)/usr/sbin/nhfs*' >> $@
 	echo 'rm -rf $(TARGET_DIR)/usr/share/man' >> $@
 	echo -n 'for file in $(NFS_UTILS_TARGETS_); do rm -f $(TARGET_DIR)/' >> $@
