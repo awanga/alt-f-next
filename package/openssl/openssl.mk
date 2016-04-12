@@ -4,7 +4,7 @@
 #
 #############################################################
 
-OPENSSL_VERSION:=1.0.1g
+OPENSSL_VERSION:=1.0.2g
 OPENSSL_SITE:=http://www.openssl.org/source
 
 OPENSSL_MAKE = $(MAKE1)
@@ -56,6 +56,7 @@ $(OPENSSL_TARGET_CONFIGURE):
 			threads shared \
 			no-idea no-md2 no-mdc2 no-rc5 no-camellia no-seed \
 			no-krb5 no-jpake no-store no-hw no-zlib \
+			no-ssl2 no-ssl3 no-comp no-err no-engines \
 			linux-$(OPENSSL_TARGET_ARCH) \
 	)
 	touch $@
@@ -64,7 +65,7 @@ $(OPENSSL_TARGET_BUILD):
 	# libs compiled with chosen optimization
 	$(SED) "s:-O[0-9]:$(OPENSSL_CFLAGS):" $(OPENSSL_DIR)/Makefile
 	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend build_crypto build_ssl build_engines
-	# apps (openssl program) compiled with -Os, saves 27KB
+	# openssl program compiled with -Os, saves 27KB
 	$(SED) "s:-O[0-9]:-Os:" $(OPENSSL_DIR)/Makefile
 	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
 	touch $@

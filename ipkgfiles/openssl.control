@@ -1,6 +1,6 @@
 Package: openssl
 Description: The Secure Sockets Layer (SSL v2/v3), Transport Security (TLS v1) and cryptography libraries.
-Version: 1.0.1g
+Version: 1.0.2g
 Depends: ipkg
 Architecture: arm
 Priority: optional
