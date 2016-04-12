@@ -1,6 +1,6 @@
 Package: kexec
 Description: A user space utility for loading another kernel
-Version: 2.0.6
+Version: 2.0.11
 Depends: ipkg
 Architecture: arm
 Priority: optional

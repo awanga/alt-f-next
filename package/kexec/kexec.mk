@@ -4,7 +4,7 @@
 #
 #############################################################
 
-KEXEC_VERSION = 2.0.6
+KEXEC_VERSION = 2.0.11
 KEXEC_SOURCE = kexec-tools-$(KEXEC_VERSION).tar.xz
 KEXEC_SITE = http://kernel.org/pub/linux/utils/kernel/kexec/
 
