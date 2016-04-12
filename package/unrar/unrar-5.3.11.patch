@@ -1,0 +1,114 @@
+--- unrar-5.3.11/sha1.cpp-orig	2016-03-20 20:01:50.905485337 +0000
++++ unrar-5.3.11/sha1.cpp	2016-03-20 20:04:03.955896058 +0000
+@@ -37,12 +37,12 @@
+ #define blk(i) (block->l[i&15] = rol(block->l[(i+13)&15]^block->l[(i+8)&15] \
+     ^block->l[(i+2)&15]^block->l[i&15],1))
+ 
+-/* (R0+R1), R2, R3, R4 are the different operations used in SHA1 */
+-#define R0(v,w,x,y,z,i) {z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30);}
+-#define R1(v,w,x,y,z,i) {z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30);}
+-#define R2(v,w,x,y,z,i) {z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30);}
+-#define R3(v,w,x,y,z,i) {z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);}
+-#define R4(v,w,x,y,z,i) {z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);}
++/* (RR0+RR1), RR2, RR3, RR4 are the different operations used in SHA1 */
++#define RR0(v,w,x,y,z,i) {z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30);}
++#define RR1(v,w,x,y,z,i) {z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30);}
++#define RR2(v,w,x,y,z,i) {z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30);}
++#define RR3(v,w,x,y,z,i) {z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);}
++#define RR4(v,w,x,y,z,i) {z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);}
+ 
+ #ifdef _MSC_VER
+ #pragma optimize( "", off )
+@@ -96,15 +96,15 @@
+       s[I]=state[I];
+ 
+     for (int I=0;I<16;I++)
+-      R0(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
++      RR0(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
+     for (int I=16;I<20;I++)
+-      R1(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
++      RR1(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
+     for (int I=20;I<40;I++)
+-      R2(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
++      RR2(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
+     for (int I=40;I<60;I++)
+-      R3(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
++      RR3(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
+     for (int I=60;I<80;I++)
+-      R4(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
++      RR4(s[pos[I][0]],s[pos[I][1]],s[pos[I][2]],s[pos[I][3]],s[pos[I][4]],I);
+ 
+     for (int I=0;I<sizeof(s)/sizeof(s[0]);I++)
+       state[I]+=s[I];
+@@ -116,26 +116,26 @@
+     d = state[3];
+     e = state[4];
+     /* 4 rounds of 20 operations each. Loop unrolled. */
+-    R0(a,b,c,d,e, 0); R0(e,a,b,c,d, 1); R0(d,e,a,b,c, 2); R0(c,d,e,a,b, 3);
+-    R0(b,c,d,e,a, 4); R0(a,b,c,d,e, 5); R0(e,a,b,c,d, 6); R0(d,e,a,b,c, 7);
+-    R0(c,d,e,a,b, 8); R0(b,c,d,e,a, 9); R0(a,b,c,d,e,10); R0(e,a,b,c,d,11);
+-    R0(d,e,a,b,c,12); R0(c,d,e,a,b,13); R0(b,c,d,e,a,14); R0(a,b,c,d,e,15);
+-    R1(e,a,b,c,d,16); R1(d,e,a,b,c,17); R1(c,d,e,a,b,18); R1(b,c,d,e,a,19);
+-    R2(a,b,c,d,e,20); R2(e,a,b,c,d,21); R2(d,e,a,b,c,22); R2(c,d,e,a,b,23);
+-    R2(b,c,d,e,a,24); R2(a,b,c,d,e,25); R2(e,a,b,c,d,26); R2(d,e,a,b,c,27);
+-    R2(c,d,e,a,b,28); R2(b,c,d,e,a,29); R2(a,b,c,d,e,30); R2(e,a,b,c,d,31);
+-    R2(d,e,a,b,c,32); R2(c,d,e,a,b,33); R2(b,c,d,e,a,34); R2(a,b,c,d,e,35);
+-    R2(e,a,b,c,d,36); R2(d,e,a,b,c,37); R2(c,d,e,a,b,38); R2(b,c,d,e,a,39);
+-    R3(a,b,c,d,e,40); R3(e,a,b,c,d,41); R3(d,e,a,b,c,42); R3(c,d,e,a,b,43);
+-    R3(b,c,d,e,a,44); R3(a,b,c,d,e,45); R3(e,a,b,c,d,46); R3(d,e,a,b,c,47);
+-    R3(c,d,e,a,b,48); R3(b,c,d,e,a,49); R3(a,b,c,d,e,50); R3(e,a,b,c,d,51);
+-    R3(d,e,a,b,c,52); R3(c,d,e,a,b,53); R3(b,c,d,e,a,54); R3(a,b,c,d,e,55);
+-    R3(e,a,b,c,d,56); R3(d,e,a,b,c,57); R3(c,d,e,a,b,58); R3(b,c,d,e,a,59);
+-    R4(a,b,c,d,e,60); R4(e,a,b,c,d,61); R4(d,e,a,b,c,62); R4(c,d,e,a,b,63);
+-    R4(b,c,d,e,a,64); R4(a,b,c,d,e,65); R4(e,a,b,c,d,66); R4(d,e,a,b,c,67);
+-    R4(c,d,e,a,b,68); R4(b,c,d,e,a,69); R4(a,b,c,d,e,70); R4(e,a,b,c,d,71);
+-    R4(d,e,a,b,c,72); R4(c,d,e,a,b,73); R4(b,c,d,e,a,74); R4(a,b,c,d,e,75);
+-    R4(e,a,b,c,d,76); R4(d,e,a,b,c,77); R4(c,d,e,a,b,78); R4(b,c,d,e,a,79);
++    RR0(a,b,c,d,e, 0); RR0(e,a,b,c,d, 1); RR0(d,e,a,b,c, 2); RR0(c,d,e,a,b, 3);
++    RR0(b,c,d,e,a, 4); RR0(a,b,c,d,e, 5); RR0(e,a,b,c,d, 6); RR0(d,e,a,b,c, 7);
++    RR0(c,d,e,a,b, 8); RR0(b,c,d,e,a, 9); RR0(a,b,c,d,e,10); RR0(e,a,b,c,d,11);
++    RR0(d,e,a,b,c,12); RR0(c,d,e,a,b,13); RR0(b,c,d,e,a,14); RR0(a,b,c,d,e,15);
++    RR1(e,a,b,c,d,16); RR1(d,e,a,b,c,17); RR1(c,d,e,a,b,18); RR1(b,c,d,e,a,19);
++    RR2(a,b,c,d,e,20); RR2(e,a,b,c,d,21); RR2(d,e,a,b,c,22); RR2(c,d,e,a,b,23);
++    RR2(b,c,d,e,a,24); RR2(a,b,c,d,e,25); RR2(e,a,b,c,d,26); RR2(d,e,a,b,c,27);
++    RR2(c,d,e,a,b,28); RR2(b,c,d,e,a,29); RR2(a,b,c,d,e,30); RR2(e,a,b,c,d,31);
++    RR2(d,e,a,b,c,32); RR2(c,d,e,a,b,33); RR2(b,c,d,e,a,34); RR2(a,b,c,d,e,35);
++    RR2(e,a,b,c,d,36); RR2(d,e,a,b,c,37); RR2(c,d,e,a,b,38); RR2(b,c,d,e,a,39);
++    RR3(a,b,c,d,e,40); RR3(e,a,b,c,d,41); RR3(d,e,a,b,c,42); RR3(c,d,e,a,b,43);
++    RR3(b,c,d,e,a,44); RR3(a,b,c,d,e,45); RR3(e,a,b,c,d,46); RR3(d,e,a,b,c,47);
++    RR3(c,d,e,a,b,48); RR3(b,c,d,e,a,49); RR3(a,b,c,d,e,50); RR3(e,a,b,c,d,51);
++    RR3(d,e,a,b,c,52); RR3(c,d,e,a,b,53); RR3(b,c,d,e,a,54); RR3(a,b,c,d,e,55);
++    RR3(e,a,b,c,d,56); RR3(d,e,a,b,c,57); RR3(c,d,e,a,b,58); RR3(b,c,d,e,a,59);
++    RR4(a,b,c,d,e,60); RR4(e,a,b,c,d,61); RR4(d,e,a,b,c,62); RR4(c,d,e,a,b,63);
++    RR4(b,c,d,e,a,64); RR4(a,b,c,d,e,65); RR4(e,a,b,c,d,66); RR4(d,e,a,b,c,67);
++    RR4(c,d,e,a,b,68); RR4(b,c,d,e,a,69); RR4(a,b,c,d,e,70); RR4(e,a,b,c,d,71);
++    RR4(d,e,a,b,c,72); RR4(c,d,e,a,b,73); RR4(b,c,d,e,a,74); RR4(a,b,c,d,e,75);
++    RR4(e,a,b,c,d,76); RR4(d,e,a,b,c,77); RR4(c,d,e,a,b,78); RR4(b,c,d,e,a,79);
+     /* Add the working vars back into context.state[] */
+     state[0] += a;
+     state[1] += b;
+--- unrar-5.3.11/ulinks.cpp-orig	2016-03-21 15:01:41.523521903 +0000
++++ unrar-5.3.11/ulinks.cpp	2016-03-21 15:05:33.957339209 +0000
+@@ -1,4 +1,22 @@
++static int lutimes(const char *file, const struct timeval tvp[2])
++{
++	struct timespec ts[2];
++
++	if (tvp != NULL)
++	{
++		if (tvp[0].tv_usec < 0 || tvp[0].tv_usec >= 1000000
++		    || tvp[1].tv_usec < 0 || tvp[1].tv_usec >= 1000000)
++		{
++			errno = EINVAL; // hack, non-thread safe
++			return -1;
++		}
++
++		TIMEVAL_TO_TIMESPEC(&tvp[0], &ts[0]);
++		TIMEVAL_TO_TIMESPEC(&tvp[1], &ts[1]);
++	}
+ 
++	return utimensat(AT_FDCWD, file, tvp ? ts : NULL, AT_SYMLINK_NOFOLLOW);
++}
+ 
+ static bool UnixSymlink(const char *Target,const wchar *LinkName,RarTime *ftm,RarTime *fta)
+ {

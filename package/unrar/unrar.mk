@@ -3,9 +3,10 @@
 # UNRAR
 #
 #############################################################
-UNRAR_VERSION = 3.9.7
+UNRAR_VERSION = 5.3.11
 UNRAR_SOURCE = unrarsrc-$(UNRAR_VERSION).tar.gz
 UNRAR_SITE = http://www.rarlab.com/rar
+
 UNRAR_DIR:=$(BUILD_DIR)/unrar-$(UNRAR_VERSION)
 UNRAR_AUTORECONF:=NO
 UNRAR_INSTALL_STAGING:=NO
@@ -19,7 +20,7 @@ $(DL_DIR)/$(UNRAR_SOURCE):
 $(UNRAR_DIR)/.source: $(DL_DIR)/$(UNRAR_SOURCE)
 	$(ZCAT) $(DL_DIR)/$(UNRAR_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	mv $(BUILD_DIR)/unrar $(UNRAR_DIR)
-	cp $(UNRAR_DIR)/makefile.unix $(UNRAR_DIR)/Makefile
+	toolchain/patch-kernel.sh $(UNRAR_DIR) package/unrar/ \*-$(UNRAR_VERSION).patch
 	touch $@
 
 $(UNRAR_DIR)/$(UNRAR_BINARY): $(UNRAR_DIR)/.source
@@ -29,6 +30,8 @@ $(TARGET_DIR)/$(UNRAR_TARGET_BINARY): $(UNRAR_DIR)/$(UNRAR_BINARY)
 	$(MAKE) DESTDIR=$(TARGET_DIR)/usr -C $(UNRAR_DIR) install
 	
 unrar: uclibc $(TARGET_DIR)/$(UNRAR_TARGET_BINARY)
+
+unrar-build: $(UNRAR_DIR)/$(UNRAR_BINARY)
 
 unrar-source: $(DL_DIR)/$(UNRAR_SOURCE)
 
