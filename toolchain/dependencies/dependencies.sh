@@ -309,6 +309,17 @@ if ! which intltool-update > /dev/null ; then \
 fi;
 echo "intltool installed:				Ok"
 
+#############################################################
+#
+# check build system 'python'
+#
+#############################################################
+if ! which python > /dev/null ; then
+	echo "python installed:		    FALSE"
+	/bin/echo -e "\n\nYou must install 'python' on your build machine\n";
+	exit 1;
+fi;
+echo "python installed:				Ok"
 
 #############################################################
 #
