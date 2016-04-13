@@ -5,7 +5,9 @@
 ./etc/avahi/services/afpovertcp.service-
 ./etc/avahi/services/daap.service-
 ./etc/avahi/services/ftp.service-
+./etc/avahi/services/ftps.service-
 ./etc/avahi/services/http.service-
+./etc/avahi/services/https.service-
 ./etc/avahi/services/ipp.service-
 ./etc/avahi/services/nfs.service-
 ./etc/avahi/services/ntp.service-
