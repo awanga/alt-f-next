@@ -49,6 +49,13 @@ endif
 
 ### Extensions
 
+ifeq ($(BR2_PACKAGE_PHP_EXT_PHAR),y)
+	PHP_CONF_OPT += --enable-phar=shared,${STAGING_DIR}/usr
+	PHP_DEPENDENCIES += zlib bzip2
+	# FIXME:php-hosthost should be build with phar extension enabled, cross-compiling phar extension needs it
+	PHP_MAKE_OPT = PHP_EXECUTABLE=/usr/bin/php
+endif
+
 ifeq ($(BR2_PACKAGE_PHP_EXT_LIBICONV),y)
 	PHP_CONF_OPT += --with-iconv=shared,${STAGING_DIR}/usr
 	PHP_DEPENDENCIES += libiconv
@@ -180,6 +187,11 @@ endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_ZIP),y)
 	PHP_CONF_OPT += --enable-zip=shared
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_BZIP2),y)
+	PHP_CONF_OPT += --with-bz2=shared,$(STAGING_DIR)/usr
+	PHP_DEPENDENCIES += bzip2
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_FILTER),y)

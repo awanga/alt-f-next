@@ -1,6 +1,9 @@
 ./etc/php.ini
+./usr/bin/phar
+./usr/bin/phar.phar
 ./usr/bin/php
 ./usr/bin/php-cgi
+./usr/lib/php5/extensions/bz2.so
 ./usr/lib/php5/extensions/calendar.so
 ./usr/lib/php5/extensions/ctype.so
 ./usr/lib/php5/extensions/curl.so
@@ -19,6 +22,7 @@
 ./usr/lib/php5/extensions/pdo_mysql.so
 ./usr/lib/php5/extensions/pdo.so
 ./usr/lib/php5/extensions/pdo_sqlite.so
+./usr/lib/php5/extensions/phar.so
 ./usr/lib/php5/extensions/posix.so
 ./usr/lib/php5/extensions/readline.so
 ./usr/lib/php5/extensions/session.so

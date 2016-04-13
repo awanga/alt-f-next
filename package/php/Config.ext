@@ -12,6 +12,13 @@ config BR2_PACKAGE_PHP_EXT_GD
 	select BR2_PACKAGE_JPEG
 	select BR2_PACKAGE_LIBPNG
 
+config BR2_PACKAGE_PHP_EXT_PHAR
+	bool "phar"
+	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_BZIP2
+	help
+	  PHAR Support
+
 config BR2_PACKAGE_PHP_EXT_CTYPE
 	bool "ctype"
 
@@ -70,22 +77,24 @@ config BR2_PACKAGE_PHP_EXT_SESSION
 
 config BR2_PACKAGE_PHP_EXT_OPENSSL
 	bool "openssl"
+	default y
 	select BR2_PACKAGE_OPENSSL
 	help
 	  openssl support
 
 config BR2_PACKAGE_PHP_EXT_LIBXML2
 	bool "xml2"
+	default y
 	select BR2_PACKAGE_LIBXML2
 	help
 	  libxml2 support
 
 config BR2_PACKAGE_PHP_EXT_MCRYPT
-        bool "mcrypt"
-        select BR2_PACKAGE_LIBMCRYPT
-        default y
-        help
-          mcrypt support
+    bool "mcrypt"
+	default y
+    select BR2_PACKAGE_LIBMCRYPT
+    help
+	  mcrypt support
 
 config BR2_PACKAGE_PHP_EXT_SIMPLEXML
 	bool "simplexml"
@@ -94,11 +103,16 @@ config BR2_PACKAGE_PHP_EXT_SIMPLEXML
 	  SimpleXML support
 
 config BR2_PACKAGE_PHP_EXT_ZLIB
-        bool "zlib"
-        select BR2_PACKAGE_ZLIB
-        default y
-        help
-          zlib support
+	bool "zlib"
+	select BR2_PACKAGE_ZLIB
+	help
+	  zlib support
+
+config BR2_PACKAGE_PHP_EXT_BZIP2
+	bool "bzip2"
+	select BR2_PACKAGE_BZIP2
+	help
+	  bzip2 support
 
 config BR2_PACKAGE_PHP_EXT_EXIF
 	bool "EXIF"
@@ -178,6 +192,7 @@ config BR2_PACKAGE_PHP_EXT_SQLITE
 config BR2_PACKAGE_PHP_EXT_MYSQL
 	bool "mysql"
 	select BR2_PACKAGE_MYSQL
+	select BR2_PACKAGE_MYSQL_LIBS
 
 config BR2_PACKAGE_PHP_EXT_PDO
 	bool "PDO"
