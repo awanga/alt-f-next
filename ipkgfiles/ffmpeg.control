@@ -1,6 +1,6 @@
 Package: ffmpeg
-Depends: ffmpeg-libs, ipkg
-Version: 2.6.2
+Depends: ffmpeg-libs, lame, ipkg
+Version: 2.6.8
 Description: A command line tool to convert multimedia files between formats.
  libavcodec is a library containing decoders and encoders for audio/video codecs.
  libavformat is a library containing demuxers and muxers for multimedia container formats.

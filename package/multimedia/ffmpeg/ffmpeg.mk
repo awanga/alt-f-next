@@ -4,8 +4,7 @@
 #
 #############################################################
 
-#FFMPEG_VERSION = 1.2.4
-FFMPEG_VERSION = 2.6.2
+FFMPEG_VERSION = 2.6.8
 FFMPEG_SOURCE = ffmpeg-$(FFMPEG_VERSION).tar.bz2
 FFMPEG_SITE = http://ffmpeg.org/releases/
 
@@ -23,8 +22,9 @@ FFMPEG_TARGET_LIBS = usr/lib/libavcodec.so
 
 # don't enable, libmp3lame causes issues
 #FFMPEG_CONF_OPT = --enable-libmp3lame --enable-libtheora --enable-libvorbis 
+FFMPEG_CONF_OPT = --enable-libmp3lame
 
-FFMPEG_DEPENDENCIES = uclibc libiconv
+FFMPEG_DEPENDENCIES = uclibc libiconv lame
 
 $(DL_DIR)/$(FFMPEG_SOURCE):
 	$(call DOWNLOAD,$(FFMPEG_SITE),$(FFMPEG_SOURCE))

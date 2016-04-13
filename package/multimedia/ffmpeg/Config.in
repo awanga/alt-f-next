@@ -1,7 +1,7 @@
 config BR2_PACKAGE_FFMPEG
 	bool "ffmpeg"
 	#select BR2_PACKAGE_BZIP2
-	#select BR2_PACKAGE_LAME
+	select BR2_PACKAGE_LAME
 	help
 	  ffmpeg is command line tool to convert multimedia files between formats
 	  libavcodec is a library containing decoders and encoders for audio/video codecs.
