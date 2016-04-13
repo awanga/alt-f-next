@@ -1,6 +1,6 @@
 Package: netkit-rsh
 Description: programs for remote shell connections
-Version: 0.17
+Version: 0.17-1
 Depends: ipkg
 Architecture: arm
 Priority: optional

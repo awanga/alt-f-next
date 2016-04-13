@@ -4,9 +4,9 @@ INETD_CONF=/etc/inetd.conf
 SERV=/etc/services
 
 cat<<-EOF >> $INETD_CONF
-	#rlogin	stream	tcp	nowait	root	/usr/sbin/in.rlogind	in.rlogind
-	#rexec	stream	tcp	nowait	root	/usr/sbin/in.rexecd		in.rexecd
-	#rcmd	stream	tcp	nowait	root	/usr/sbin/in.rshd		in.rshd -L
+	#rlogin	stream	tcp	nowait	root	/usr/sbin/in.rlogind	in.rlogind	# remote login daemon
+	#rexec	stream	tcp	nowait	root	/usr/sbin/in.rexecd		in.rexecd	# remote execute daemon
+	#rcmd	stream	tcp	nowait	root	/usr/sbin/in.rshd		in.rshd -L	# remote shell daemon
 EOF
 
 if ! grep -q -E '512.*rexec|513.*rlogin|514.*rcmd' $SERV; then
