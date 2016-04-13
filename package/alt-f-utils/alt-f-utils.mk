@@ -4,7 +4,7 @@
 #
 #############################################################
 
-ALT_F_UTILS_VERSION = 0.1.7
+ALT_F_UTILS_VERSION = 0.1.9
 ALT_F_UTILS_SOURCE = alt-f-utils-$(ALT_F_UTILS_VERSION).tar.gz
 ALT_F_UTILS_SITE = file://$(DL_DIR)
 
