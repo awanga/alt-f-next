@@ -13,10 +13,10 @@ config BR2_PACKAGE_FORKED_DAAPD
 	select BR2_PACKAGE_LIBANTLR
 	select BR2_PACKAGE_FFMPEG
 	select BR2_PACKAGE_LIBEVENT2
-	select BR2_PACKAGE_LIBAVL
+	#select BR2_PACKAGE_LIBAVL
 	select BR2_PACKAGE_ZLIB
-	select BR2_PACKAGE_TAGLIB
-	select BR2_PACKAGE_FLAC
+	#select BR2_PACKAGE_TAGLIB
+	#select BR2_PACKAGE_FLAC
 	help
 	 forked-daapd is a DAAP and RSP media server, with support for Linux and
 	 FreeBSD. It is a complete rewrite of mt-daapd (Firefly Media Server).
