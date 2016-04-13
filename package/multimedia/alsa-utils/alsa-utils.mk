@@ -27,13 +27,16 @@ $(ALSA_UTILS_DIR)/.configured: $(ALSA_UTILS_DIR)/.unpacked
 		$(TARGET_CONFIGURE_ARGS) \
 		CFLAGS="$(TARGET_CFLAGS)" \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
-		ac_cv_prog_ncurses5_config=$(STAGING_DIR)/bin/ncurses5-config \
+		NCURSES_LIBS="-lncurses" \
+		NCURSES_CFLAGS=" " \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
 		--disable-xmlto \
+		--with-curses=ncurses \
+		--disable-rpath \
 	)
 	touch $@
 
