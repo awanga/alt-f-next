@@ -6,6 +6,7 @@
 MPLAYER_VERSION:=1.0rc2
 MPLAYER_SOURCE:=MPlayer-$(MPLAYER_VERSION).tar.bz2
 MPLAYER_SITE:=http://www7.mplayerhq.hu/MPlayer/releases
+
 MPLAYER_DIR:=$(BUILD_DIR)/MPlayer-$(MPLAYER_VERSION)
 MPLAYER_CAT:=$(BZCAT)
 MPLAYER_BINARY:=mplayer
@@ -81,6 +82,10 @@ $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY): $(MPLAYER_DIR)/$(MPLAYER_BINARY)
 	touch -c $@
 
 mplayer: uclibc $(if $(BR2_PACKAGE_LIBMAD),libmad) $(if $(BR2_PACKAGE_ALSA_LIB),alsa-lib) $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY)
+
+mplayer-build: $(TARGET_DIR)/$(MPLAYER_TARGET_BINARY)
+
+mplayer-configure: $(MPLAYER_DIR)/.configured
 
 mplayer-source: $(DL_DIR)/$(MPLAYER_SOURCE)
 

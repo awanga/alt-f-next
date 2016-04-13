@@ -1,0 +1,20 @@
+--- MPlayer-1.0rc2/libavcodec/armv4l/jrevdct_arm.S-orig	2016-03-13 00:59:20.037119742 +0000
++++ MPlayer-1.0rc2/libavcodec/armv4l/jrevdct_arm.S	2016-03-13 01:00:02.099278814 +0000
+@@ -59,7 +59,7 @@
+         stmdb   sp!, { r4 - r12, lr }   @ all callee saved regs
+ 
+         sub sp, sp, #4                  @ reserve some space on the stack
+-        str r0, [ sp ]                  @ save the DCT pointer to the stack
++        str r0, [sp]                  @ save the DCT pointer to the stack
+ 
+         mov lr, r0                      @ lr = pointer to the current row
+         mov r12, #8                     @ r12 = row-counter
+@@ -209,7 +209,7 @@
+ 
+ start_column_loop:
+         @ Start of column loop
+-        ldr lr, [ sp ]
++        ldr lr, [sp]
+         mov r12, #8
+ column_loop:
+         ldrsh r0, [lr, #( 0*8)]             @ r0 = 'd0'
