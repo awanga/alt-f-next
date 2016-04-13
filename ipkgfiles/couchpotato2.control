@@ -1,6 +1,6 @@
 Package: couchpotato2
 Description: Searches and manages your movies
-Version: 2012-06-21-1
+Version: 2016-03-14
 Depends: python, cheetah, git
 Architecture: arm
 Priority: optional

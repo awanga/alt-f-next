@@ -19,8 +19,8 @@ if ! tar -C /Alt-F/opt -xzf /tmp/$TBALL >& /dev/null; then
 fi
 rm -f /tmp/$TBALL
 
-cp -a /Alt-F/opt/RuudBurger-CouchPotatoServer-*/* $CBPROG
-rm -rf /Alt-F/opt/RuudBurger-CouchPotatoServer-*
+( cd /opt/*-CouchPotatoServer-*; cp -a  . $CBPROG )
+rm -rf /Alt-F/opt/*-CouchPotatoServer-*
 
 ln -sf /usr/sbin/rcscript /sbin/rccouchpotato2
 rccouchpotato2 status
