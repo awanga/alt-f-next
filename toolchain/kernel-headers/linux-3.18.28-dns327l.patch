@@ -1,3 +1,15 @@
+--- drivers/pinctrl/mvebu/pinctrl-armada-370.c-orig     2015-12-28 19:08:22.397020124 +0000
+--- linux-3.18.21-orig/drivers/pinctrl/mvebu/pinctrl-armada-370.c	2015-12-28 19:08:22.397020124 +0000
++++ linux-3.18.21-orig/drivers/pinctrl/mvebu/pinctrl-armada-370.c	2015-12-28 19:08:40.698657261 +0000
+@@ -364,7 +364,7 @@
+ 	   MPP_FUNCTION(0x5, "audio", "mclk"),
+ 	   MPP_FUNCTION(0x6, "uart0", "cts")),
+ 	MPP_MODE(63,
+-	   MPP_FUNCTION(0x0, "gpo", NULL),
++	   MPP_FUNCTION(0x0, "gpio", NULL),
+ 	   MPP_FUNCTION(0x1, "spi0", "sck"),
+ 	   MPP_FUNCTION(0x2, "tclk", NULL)),
+ 	MPP_MODE(64,
 --- linux-3.18.21-orig/arch/arm/boot/dts/Makefile	2014-12-07 22:21:05.000000000 +0000
 +++ linux-3.18.21/arch/arm/boot/dts/Makefile	2015-10-28 17:20:16.423672913 +0000
 @@ -492,6 +492,7 @@
