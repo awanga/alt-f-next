@@ -1,3 +1,0 @@
-#!/bin/sh 
-
-ln -sf /usr/sbin/rcscript /sbin/rcafpd

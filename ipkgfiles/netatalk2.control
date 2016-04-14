@@ -1,9 +1,0 @@
-Package: netatalk2
-Description: Apple Filling Protocol, netatalk version 2.2
-Version: 2.2.4
-Depends: libgcrypt, db, avahi, ipkg
-Architecture: arm
-Priority: optional
-Section: admin
-Source: http://netatalk.sourceforge.net/
-Maintainer: jcard
