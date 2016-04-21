@@ -1,0 +1,19 @@
+#!/bin/sh
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+
+# lighttpd server root
+if test -f $CONF_LIGHTY; then
+	eval $(awk '/^var.server_root/{printf "SROOT=%s", $3}' $CONF_LIGHTY)
+fi
+
+if test "$SROOT" = "/Public"; then
+	cat<<-EOF
+
+		****************************************************
+		* You have to configure lighttpd Server Root first *
+		****************************************************
+
+	EOF
+	exit 1
+fi

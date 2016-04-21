@@ -1,0 +1,149 @@
+#!/bin/sh
+
+CONF_LIGHTY=/etc/lighttpd/lighttpd.conf
+CONF_LIGHTY2=/etc/lighttpd/modules.conf
+
+PHP_CONF=/etc/php.ini
+
+MYSQL_CONF=/etc/mysql/my.cnf
+
+SITE=https://tt-rss.org/gitlab/fox/tt-rss/repository
+TBALL=archive.tar.gz
+PROGDIR=/opt
+
+if rcmysqld status >& /dev/null; then
+	rcmysqld stop >& /dev/null
+fi
+
+# turn around bug #351: PHP can't find MySQL libmysqlclient library
+if ! test -f /usr/lib/libmysqlclient.so; then
+	LIBS="/usr/lib/mysql/libmysqlclient_r.so
+	/usr/lib/mysql/libmysqlclient_r.so.16
+	/usr/lib/mysql/libmysqlclient_r.so.16.0.0
+	/usr/lib/mysql/libmysqlclient.so
+	/usr/lib/mysql/libmysqlclient.so.16
+	/usr/lib/mysql/libmysqlclient.so.16.0.0"
+
+	for i in $LIBS; do
+		ln -sf $i /usr/lib/$(basename $i)
+	done
+fi
+
+# enable innodb mysql plugin
+#if ! mysql -uroot -e "show engines;" | grep -q InnoDB; then
+#	Q0="INSTALL PLUGIN InnoDB SONAME 'ha_innodb_plugin.so';"
+#	mysql -uroot -e "${Q0}"
+#fi
+
+# enable innodb mysql plugin
+if ! grep -q '^plugin-load=.*innodb=ha_innodb_plugin.so' $MYSQL_CONF; then
+	sed -i '/\[mysqld\]/a plugin-load=innodb=ha_innodb_plugin.so' $MYSQL_CONF
+fi
+
+# reduce mysql memory usage
+if ! grep -q ^innodb_buffer_pool_size $MYSQL_CONF; then
+	sed -i -e 's/#innodb_buffer_pool_size.*/innodb_buffer_pool_size = 5M/' \
+		-e 's/#innodb_additional_mem_pool_size.*/innodb_additional_mem_pool_size = 512K/' \
+		-e 's/#innodb_log_file_size.*/innodb_log_file_size = 1M/' \
+		-e 's/#innodb_log_buffer_size.*/innodb_log_buffer_size = 256k/' \
+		$MYSQL_CONF
+	rm -f /var/lib/mysql/ib_logfile*
+fi
+
+rcmysqld enable >& /dev/null
+rcmysqld start >& /dev/null
+
+# allow mysql to initialize
+while  ! mysql -uroot -e "status" >& /dev/null; do
+	usleep 200000
+done
+
+# create ttrss database
+if ! mysql -uroot -e "show databases;" | grep -q ttrss; then
+	DB=ttrss
+	USER=ttrss
+	PASS=ttrss
+
+	Q1="CREATE DATABASE IF NOT EXISTS $DB;"
+	Q2="GRANT USAGE ON *.* TO $USER@localhost IDENTIFIED BY '$PASS';"
+	Q3="GRANT ALL PRIVILEGES ON $DB.* TO $USER@localhost;"
+	Q4="FLUSH PRIVILEGES;"
+	SQL="${Q1}${Q2}${Q3}${Q4}"
+
+	mysql -uroot -e "$SQL"
+fi
+
+# lighttpd server root
+eval $(awk '/^var.server_root/{printf "SROOT=%s", $3}' $CONF_LIGHTY)
+
+if rclighttpd status >& /dev/null; then
+	rclighttpd stop >& /dev/null
+fi
+
+# enable needed PHP extentions
+for i in mysql json session mbstring gd curl ctype hash dom iconv; do
+	sed -i "s|^;extension="$i".so|extension="$i".so|" $PHP_CONF
+done
+
+# allow more than 32MB for PHP: Allowed memory size of 33554432 bytes exhausted...
+# and bigger uploads
+sed -i -e 's/^memory_limit.*/memory_limit = 64M/' \
+	-e 's/^post_max_size.*/post_max_size = 100M/' \
+	-e 's/^upload_max_filesize.*/upload_max_filesize = 100M/' $PHP_CONF
+
+# enable lighttpd CGI
+sed -i 's|.*\(include.*fastcgi.conf.*\)|\1|' $CONF_LIGHTY2
+
+if ! rclighttpd status >& /dev/null; then
+	rclighttpd start >& /dev/null
+fi
+rclighttpd enable >& /dev/null
+
+# Downloading and install tt-rss
+if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+	rm -f /tmp/$TBALL
+	cat<<-EOF
+
+		***************************************************
+		* Downloading of tt-rss from its homepage failed. *
+		***************************************************
+
+	EOF
+	exit 1
+fi
+
+mkdir -p $PROGDIR
+if ! tar -C $PROGDIR -xzf /tmp/$TBALL >& /dev/null; then
+	rm -f /tmp/$TBALL
+	cat<<-EOF
+
+		********************************
+		* Extraction of tt-rss failed. *
+		********************************
+
+	EOF
+	exit 1
+fi
+rm -f /tmp/$TBALL
+
+if test -d $PROGDIR/tt-rss; then
+	mv $PROGDIR/tt-rss $PROGDIR/tt-rss-old >& /dev/null
+fi
+
+mv $PROGDIR/tt-rss.git $PROGDIR/tt-rss
+
+sed -i '/@$DB_PORT = /a \
+	\
+	@$DB_TYPE = "mysql"; \
+	@$DB_USER = "ttrss"; \
+	@$DB_NAME = "ttrss"; \
+	@$DB_PASS = "ttrss"; \
+	@$DB_PORT = "3306"; \
+' /opt/tt-rss/install/index.php
+
+sed -i '/("Login:")/i \
+		<p>Initial default Login/Password: <b>admin/password</b></p>
+' /opt/tt-rss/include/login_form.php
+
+ln -sf $PROGDIR/tt-rss $SROOT/htdocs/tt-rss
+chown -R lighttpd:network $PROGDIR/tt-rss

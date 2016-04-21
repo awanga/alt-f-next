@@ -275,6 +275,7 @@ endif
 source "package/tn5250/Config.in"
 source "package/transmission/Config.in"
 source "package/ttcp/Config.in"
+source "package/tt-rss/Config.in"
 #if !BR2_PACKAGE_BUSYBOX_HIDE_OTHERS
 # ATTENTION! This was merged into busybox!
 #source "package/udhcp/Config.in"

@@ -1,0 +1,9 @@
+Package: tt-rss
+Description: a web-based news feed (RSS/Atom) reader and aggregator
+Version: 20160413
+Depends: php, lighttpd, mysql, mysql-server, ipkg
+Architecture: arm
+Priority: optional
+Section: networking
+Source: http://tt-rss.org
+Maintainer: jcard

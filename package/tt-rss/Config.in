@@ -1,0 +1,9 @@
+config BR2_PACKAGE_TT_RSS
+	bool "tt-rss"
+	select BR2_PACKAGE_PHP
+	select BR2_PACKAGE_LIGHTTPD
+	select BR2_PACKAGE_MYSQL_SERVER
+	help
+	  A web-based news feed (RSS/Atom) reader and aggregator
+
+	  http://tt-rss.org
