@@ -1,0 +1,79 @@
+--- busybox-1.20.2/networking/ntpd.c-orig	2016-01-17 19:53:54.647390887 +0000
++++ busybox-1.20.2/networking/ntpd.c	2016-01-27 16:00:16.261732627 +0000
+@@ -34,6 +34,7 @@
+ //usage:       "NTP client/server\n"
+ //usage:     "\n	-d	Verbose"
+ //usage:     "\n	-n	Do not daemonize"
++//usage:     "\n	-s	step clock now and quit, implies -qn"
+ //usage:     "\n	-q	Quit after clock is set"
+ //usage:     "\n	-N	Run at high priority"
+ //usage:     "\n	-w	Do not set time (only query peers), implies -n"
+@@ -258,6 +259,7 @@
+ 	OPT_p = (1 << 5),
+ 	OPT_S = (1 << 6),
+ 	OPT_l = (1 << 7) * ENABLE_FEATURE_NTPD_SERVER,
++	OPT_s = (1 << 8),
+ 	/* We hijack some bits for other purposes */
+ 	OPT_qq = (1 << 31),
+ };
+@@ -1322,7 +1324,7 @@
+ 	/* There are two main regimes: when the
+ 	 * offset exceeds the step threshold and when it does not.
+ 	 */
+-	if (abs_offset > STEP_THRESHOLD) {
++	if (abs_offset > STEP_THRESHOLD || option_mask32 & OPT_s) {
+ 		switch (G.discipline_state) {
+ 		case STATE_SYNC:
+ 			/* The first outlyer: ignore it, switch to SPIK state */
+@@ -1366,6 +1368,7 @@
+ 		VERB3 bb_error_msg("stepping time by %+f; poll_exp=MINPOLL", offset);
+ 		step_time(offset);
+ 		if (option_mask32 & OPT_q) {
++			printf("%+f\n", offset);
+ 			/* We were only asked to set time once. Done. */
+ 			exit(0);
+ 		}
+@@ -1706,6 +1709,13 @@
+ 	}
+ 
+ 	p->reachable_bits |= 1;
++	
++	// make -qw option to leave after first reply
++	if ((option_mask32 & OPT_q) && (option_mask32 & OPT_w)) {
++		printf("%+f\n", datapoint->d_offset); 
++		exit(0);
++	}
++
+ 	if ((MAX_VERBOSE && G.verbose) || (option_mask32 & OPT_w)) {
+ 		bb_error_msg("reply from %s: offset:%+f delay:%f status:0x%02x strat:%d refid:0x%08x rootdelay:%f reach:0x%02x",
+ 			p->p_dotted,
+@@ -1980,10 +1990,10 @@
+ 
+ 	/* Parse options */
+ 	peers = NULL;
+-	opt_complementary = "dd:p::wn"; /* d: counter; p: list; -w implies -n */
++	opt_complementary = "dd:p::wn:snq"; /* d: counter; p: list; -w implies -n; -s implies -n -q */
+ 	opts = getopt32(argv,
+ 			"nqNx" /* compat */
+-			"wp:S:"IF_FEATURE_NTPD_SERVER("l") /* NOT compat */
++			"wp:S:"IF_FEATURE_NTPD_SERVER("l")"s" /* NOT compat */
+ 			"d" /* compat */
+ 			"46aAbgL", /* compat, ignored */
+ 			&peers, &G.script_name, &G.verbose);
+@@ -2184,6 +2194,16 @@
+ 		}
+ 	} /* while (!bb_got_signal) */
+ 
++	/* take kernel out of PLL mode, which makes the clock drift if not regularly synced? */
++	struct timex tmx;
++	memset(&tmx, 0, sizeof(tmx));
++	adjtimex(&tmx);
++	tmx.modes = ADJ_STATUS | ADJ_TIMECONST;
++	tmx.status &= ~STA_PLL;
++	tmx.constant = 0;
++	if(adjtimex(&tmx) < 0)
++		bb_perror_msg_and_die("adjtimex unsetting kernel PLL mode");
++
+ 	kill_myself_with_sig(bb_got_signal);
+ }
+ 
