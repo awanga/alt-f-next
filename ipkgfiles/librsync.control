@@ -1,6 +1,6 @@
 Package: librsync
 Description: implements the rolling-checksum algorithm of remote file synchronization.
-Version: 0.9.7
+Version: 0.9.7-1
 Depends: ipkg
 Architecture: arm
 Priority: optional

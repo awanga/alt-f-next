@@ -1,0 +1,36 @@
+Author: n/a
+Description:
+ Fixes problem when transfering >4GB from a 32bit to 64bit host
+ (Closes: #355178).
+
+diff -Naurp librsync.orig/mdfour.h librsync/mdfour.h
+--- librsync.orig/mdfour.h	2008-06-21 14:50:55.000000000 +0200
++++ librsync/mdfour.h	2008-06-24 10:26:49.000000000 +0200
+@@ -24,7 +24,7 @@
+ #include "types.h"
+ 
+ struct rs_mdfour {
+-    int                 A, B, C, D;
++    unsigned int        A, B, C, D;
+ #if HAVE_UINT64
+     uint64_t            totalN;
+ #else
+diff -Naurp librsync.orig/patch.c librsync/patch.c
+--- librsync.orig/patch.c	2008-06-21 14:50:55.000000000 +0200
++++ librsync/patch.c	2008-06-24 10:26:49.000000000 +0200
+@@ -214,12 +214,12 @@ static rs_result rs_patch_s_copying(rs_j
+     void            *buf, *ptr;
+     rs_buffers_t    *buffs = job->stream;
+ 
+-    len = job->basis_len;
+-    
+     /* copy only as much as will fit in the output buffer, so that we
+      * don't have to block or store the input. */
+-    if (len > buffs->avail_out)
++    if (job->basis_len > buffs->avail_out)
+         len = buffs->avail_out;
++    else
++        len = job->basis_len;
+ 
+     if (!len)
+         return RS_BLOCKED;
