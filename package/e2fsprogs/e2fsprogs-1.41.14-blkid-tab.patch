@@ -1,0 +1,11 @@
+--- e2fsprogs-1.41.14/lib/blkid/blkidP.h-orig	2009-08-13 02:39:57.000000000 +0100
++++ e2fsprogs-1.41.14/lib/blkid/blkidP.h	2016-02-02 16:54:58.151997987 +0000
+@@ -104,7 +104,7 @@
+ extern char *blkid_strdup(const char *s);
+ extern char *blkid_strndup(const char *s, const int length);
+ 
+-#define BLKID_CACHE_FILE "/etc/blkid.tab"
++#define BLKID_CACHE_FILE "/dev/blkid.tab"
+ 
+ #define BLKID_ERR_IO	 5
+ #define BLKID_ERR_PROC	 9
