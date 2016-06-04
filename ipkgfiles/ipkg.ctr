@@ -1,8 +1,0 @@
-Package: ipkg
-Version: 0.99.163
-Architecture: arm
-Priority: optional
-Section: admin
-Source: http://google.com/Alt-F.tgz
-Maintainer: jcard
-Description: foo is the ever-present example program
