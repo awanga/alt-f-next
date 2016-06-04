@@ -1,0 +1,42 @@
+--- util-linux-2.27.1/include/c.h-orig	2016-05-25 18:46:59.924277222 +0100
++++ util-linux-2.27.1/include/c.h	2016-05-25 18:51:24.219795908 +0100
+@@ -320,6 +320,10 @@
+ # define SEEK_HOLE	4
+ #endif
+ 
++#ifdef __UCLIBC__
++/* uclibc does not implement mkostemp GNU extension, *hack* */
++#define mkostemp(x,y) mkstemp(x)
++#endif
+ 
+ /*
+  * Macros to convert #define'itions to strings, for example
+--- util-linux-2.27.1/lib/pager.c-orig	2015-10-05 15:18:43.381759606 +0100
++++ util-linux-2.27.1/lib/pager.c	2016-05-25 18:52:23.023578075 +0100
+@@ -8,7 +8,6 @@
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <err.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/wait.h>
+--- util-linux-2.27.1/lib/colors.c-orig	2016-05-25 17:24:21.663677701 +0100
++++ util-linux-2.27.1/lib/colors.c	2016-05-25 18:52:23.026578013 +0100
+@@ -810,14 +810,14 @@
+ /*
+  * Parses @str and exit(EXIT_FAILURE) on error
+  */
+-int colormode_or_err(const char *str, const char *errmsg)
++int colormode_or_err(const char *str, const char *errmsg2)
+ {
+ 	const char *p = str && *str == '=' ? str + 1 : str;
+ 	int colormode;
+ 
+ 	colormode = colormode_from_string(p);
+ 	if (colormode < 0)
+-		errx(EXIT_FAILURE, "%s: '%s'", errmsg, p);
++		errx(EXIT_FAILURE, "%s: '%s'", errmsg2, p);
+ 
+ 	return colormode;
+ }

@@ -4,21 +4,18 @@
 #
 #############################################################
 
+# this "package" is intended to only provide a recent static libblkid and libuuid for the btrfs-progs package
+# The libs and includes are installed in the btrfs-progs build dir, and not installed in the target or staging dir
 
-UTIL-LINUX_VERSION:=2.24.2
+UTIL-LINUX_VERSION:=2.27.1
 UTIL-LINUX_SOURCE:=util-linux-$(UTIL-LINUX_VERSION).tar.xz
 UTIL-LINUX_SITE:=$(BR2_KERNEL_MIRROR)/linux/utils/util-linux/v$(UTIL-LINUX_VERSION)
+
 UTIL-LINUX_DIR:=$(BUILD_DIR)/util-linux-$(UTIL-LINUX_VERSION)
-
-#UTIL-LINUX_VERSION:=2.18
-#UTIL-LINUX_SOURCE:=util-linux-ng-$(UTIL-LINUX_VERSION).tar.xz
-#UTIL-LINUX_SITE:=$(BR2_KERNEL_MIRROR)/linux/utils/util-linux/v$(UTIL-LINUX_VERSION)
-#UTIL-LINUX_DIR:=$(BUILD_DIR)/util-linux-ng-$(UTIL-LINUX_VERSION)
-
 UTIL-LINUX_CAT:=$(XZCAT)
 
 UTIL-LINUX_BINARY:=$(UTIL-LINUX_DIR)/misc-utils/chkdupexe
-UTIL-LINUX_TARGET_BINARY:=$(TARGET_DIR)/usr/bin/chkdupexe
+UTIL-LINUX_TARGET_BINARY:=$(BTRFS_PROGS_DIR)/util-linux/lib/libblkid.a
 
 # schedutils isn't support for all archs
 ifneq ($(BR2_i386)$(BR2_powerpc)$(BR2_x86_64)$(BR2_ia64)$(BR2_alpha),)
@@ -40,10 +37,13 @@ $(UTIL-LINUX_DIR)/.unpacked: $(DL_DIR)/$(UTIL-LINUX_SOURCE)
 	toolchain/patch-kernel.sh $(UTIL-LINUX_DIR) package/util-linux/ util-linux\*.patch
 	touch $(UTIL-LINUX_DIR)/.unpacked
 
+# build for btrfs only, as it needs recent libblkid/libuuid
+# build as static libs, to not conflict with e2fsprogs versions
 $(UTIL-LINUX_DIR)/.configured: $(UTIL-LINUX_DIR)/.unpacked
 	(cd $(UTIL-LINUX_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
+		CFLAGS="$(TARGET_CFLAGS)"  \
 		ac_cv_lib_blkid_blkid_known_fstype=no \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
@@ -61,17 +61,8 @@ $(UTIL-LINUX_DIR)/.configured: $(UTIL-LINUX_DIR)/.unpacked
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
 		ARCH=$(ARCH) \
+		--disable-shared --enable-static --disable-all-programs --enable-libblkid -enable-libuuid \
 	)
-	(echo '#include <errno.h>'; \
-	echo '#define err(exitcode, format, args...) \
-		errx(exitcode, format ": %s", ## args, strerror(errno))'; \
-	echo '#define errx(exitcode, format, args...) \
-		{ warnx(format, ## args); exit(exitcode); }'; \
-	echo '#define warn(format, args...) \
-		warnx(format ": %s", ## args, strerror(errno))'; \
-	echo '#define warnx(format, args...) \
-		fprintf(stderr, format, ## args)'; \
-	) > $(UTIL-LINUX_DIR)/err.h
 	touch $(UTIL-LINUX_DIR)/.configured
 
 $(UTIL-LINUX_BINARY): $(UTIL-LINUX_DIR)/.configured
@@ -79,14 +70,14 @@ $(UTIL-LINUX_BINARY): $(UTIL-LINUX_DIR)/.configured
 		-C $(UTIL-LINUX_DIR) \
 		ARCH=$(ARCH) \
 		CC=$(TARGET_CC) \
-		OPT="$(TARGET_CFLAGS)" \
+		CFLAGS="$(TARGET_CFLAGS)" \
 		$(UTIL-LINUX_MAKE_OPT) \
 		HAVE_SLANG="NO"
 
+# install for btrfs only, as it needs a recent libblkid
 $(UTIL-LINUX_TARGET_BINARY): $(UTIL-LINUX_BINARY)
-	$(MAKE) ARCH=$(ARCH) DESTDIR=$(TARGET_DIR) USE_TTY_GROUP=no -C $(UTIL-LINUX_DIR) install
-	rm -rf $(TARGET_DIR)/share/locale $(TARGET_DIR)/usr/share/info \
-		$(TARGET_DIR)/usr/share/man $(TARGET_DIR)/usr/share/doc
+	$(MAKE) ARCH=$(ARCH) DESTDIR=$(BTRFS_PROGS_DIR)/util-linux USE_TTY_GROUP=no -C $(UTIL-LINUX_DIR) install
+	(cd $(BTRFS_PROGS_DIR)/util-linux; rm -rf bin sbin usr)
 
 #If both util-linux and busybox are selected, make certain util-linux
 #wins the fight over who gets to have their utils actually installed
@@ -96,7 +87,9 @@ endif
 
 util-linux: uclibc $(UTIL-LINUX_DEPENDENCIES) $(UTIL-LINUX_TARGET_BINARY)
 
-util-linux-build:$(UTIL-LINUX_BINARY)
+util-linux-build: $(UTIL-LINUX_BINARY)
+
+util-linux-configure: $(UTIL-LINUX_DIR)/.configured
 
 util-linux-source: $(DL_DIR)/$(UTIL-LINUX_SOURCE)
 
