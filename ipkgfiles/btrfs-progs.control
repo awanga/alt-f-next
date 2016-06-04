@@ -1,0 +1,9 @@
+Package: btrfs-progs
+Description: Utility programs for Btrfs, a new copy on write (CoW) filesystem
+Version: 4.5.3
+Depends: kernel-modules, zlib, lzo, e2fsprogs, attr, acl, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://btrfs.wiki.kernel.org
+Maintainer: jcard

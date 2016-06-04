@@ -1,0 +1,57 @@
+#!/bin/sh
+
+DESC="Mounts btrfs filesystems"
+NAME=btrfs
+#TYPE=sys
+
+#set -x
+
+umask 077
+
+. /etc/init.d/common
+
+case "$1" in
+	start)
+		if ! lsmod | grep -q btrfs; then
+			modprobe -q btrfs
+		fi
+
+		echo -n "Starting $NAME: "
+		for i in $(blkid -t TYPE=btrfs -o device); do
+			(cd /dev/ && ACTION=add DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh)
+		done
+		omsg 0
+		;;
+
+	stop)
+		echo -n "Stopping $NAME: "
+		if ! btrfs filesystem show -m >& /dev/null; then
+			omsg 0
+			return 0
+		fi
+
+		for i in $(blkid -t TYPE=btrfs -o device); do
+			(cd /dev/ && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$(basename $i) /usr/sbin/hot.sh)
+		done
+
+		if  lsmod | grep -q btrfs; then
+			modprobe -qr btrfs
+		fi
+
+		omsg 0
+		;;
+
+	status)
+		if btrfs filesystem show -m >& /dev/null; then
+			echo "$NAME running"
+			return 0
+		else
+			echo "$NAME stopped"
+			return 1
+		fi
+		;;
+
+	restart) restart $NAME ;;
+
+	*)  usage $0 "start|stop|status|restart" ;;
+esac

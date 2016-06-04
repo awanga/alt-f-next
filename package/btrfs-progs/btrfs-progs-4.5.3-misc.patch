@@ -1,0 +1,58 @@
+*** btrfs-progs-4.5.3/cmds-fi-du.c-orig	2016-05-27 16:59:34.183789193 +0100
+--- btrfs-progs-4.5.3/cmds-fi-du.c	2016-05-27 17:00:23.000069166 +0100
+***************
+*** 285,290 ****
+--- 285,295 ----
+   * space they will use yet.
+   */
+  #define	SKIP_FLAGS	(FIEMAP_EXTENT_UNKNOWN|FIEMAP_EXTENT_DELALLOC|FIEMAP_EXTENT_DATA_INLINE)
++ 
++ #ifndef FIEMAP_EXTENT_SHARED
++ #define FIEMAP_EXTENT_SHARED           0x00002000
++ #endif
++ 
+  static int du_calc_file_space(int fd, struct rb_root *shared_extents,
+  			      u64 *ret_total, u64 *ret_shared)
+  {
+*** btrfs-progs-4.5.3/fsck.btrfs-orig	2016-05-11 15:40:33.000000000 +0100
+--- btrfs-progs-4.5.3/fsck.btrfs	2016-05-28 18:59:16.077221363 +0100
+***************
+*** 20,32 ****
+  # option (use with care!).
+  
+  AUTO=false
+! while getopts ":aApy" c
+! do
+! 	case $c in
+! 	a|A|p|y)	AUTO=true;;
+  	esac
+  done
+- shift $(($OPTIND - 1))
+  eval DEV=\${$#}
+  if [ ! -e $DEV ]; then
+  	echo "$0: $DEV does not exist"
+--- 20,34 ----
+  # option (use with care!).
+  
+  AUTO=false
+! O=`getopt -- ":aApy" "$@"`                
+! eval set -- "$O"
+! 
+! while true; do
+! 	case "$1" in
+! 		-a|-A|-p|-y) shift; AUTO=true;;
+! 		--) shift; break;;
+  	esac
+  done
+  eval DEV=\${$#}
+  if [ ! -e $DEV ]; then
+  	echo "$0: $DEV does not exist"
+***************
+*** 35,39 ****
+--- 37,42 ----
+  if ! $AUTO; then
+  	echo "If you wish to check the consistency of a BTRFS filesystem or"
+  	echo "repair a damaged filesystem, see btrfs(8) subcommand 'check'."
++ 	exit 16
+  fi
+  exit 0
