@@ -1,7 +1,7 @@
 Package: kernel-modules-armv7
-Description: Aditional linux kernel modules for Armada-370 SoC
+Description: Aditional linux kernel modules for the DNS-327L
 Version: 3.18.28
-Depends: ipkg, kernel-modules
+Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: admin

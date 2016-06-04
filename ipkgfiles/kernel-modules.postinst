@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-arch=$(uname -m)
-ipkg-cl install kernel-modules-${arch:0:5}
+#arch=$(uname -m)
+#ipkg-cl install kernel-modules-${arch:0:5}
 
 ln -sf /usr/sbin/rcscript /sbin/rcmodload

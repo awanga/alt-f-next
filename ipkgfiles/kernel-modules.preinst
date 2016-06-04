@@ -1,0 +1,15 @@
+#!/bin/sh 
+
+arch=$(uname -m)
+pkgname=kernel-modules-${arch:0:5}
+
+if test -z "$(ipkg-cl -V0 status $pkgname)"; then
+	cat<<-EOF
+
+		**************************************************
+		* You have to install $pkgname first *
+		**************************************************
+
+	EOF
+	exit 1
+fi

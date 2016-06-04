@@ -1,6 +1,12 @@
 #!/bin/sh
 
 if ! test $(uname -m) = "armv5tel"; then
-	echo "This package is only for the Orion and Kirkwood SoC (DNS-320/320L/321/323/325)"
+	cat<<-EOF
+
+		*********************************************************
+		* This package is only for the DNS-320/320L/321/323/325 *
+		*********************************************************
+
+	EOF
 	exit 1
 fi

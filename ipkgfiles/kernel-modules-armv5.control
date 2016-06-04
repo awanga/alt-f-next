@@ -1,5 +1,5 @@
 Package: kernel-modules-armv5
-Description: Aditional linux kernel modules for Orion and Kirkwood SoC
+Description: Aditional linux kernel modules for the DNS-320/320L/321/323/325
 Version: 3.18.28
 Depends: ipkg
 Architecture: arm

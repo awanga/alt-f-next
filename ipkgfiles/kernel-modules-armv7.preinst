@@ -1,6 +1,12 @@
 #!/bin/sh
 
 if ! test $(uname -m) = "armv7l"; then
-	echo "This package is only for the Armada-370 SoC (DNS-327L)"
+	cat<<-EOF
+
+		*****************************************
+		* This package is only for the DNS-327L *
+		*****************************************
+
+	EOF
 	exit 1
 fi
