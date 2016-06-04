@@ -59,6 +59,7 @@ $(STAGING_DIR)/usr/lib/libz.a: $(STAGING_DIR)/usr/include/zlib.h
 
 $(STAGING_DIR)/usr/lib/libz.so: $(STAGING_DIR)/usr/include/zlib.h
 	cp -dpf $(ZLIB_DIR)/libz.so* $(STAGING_DIR)/usr/lib/
+	cp -dpf $(ZLIB_DIR)/libz.pc $(PKG_CONFIG_PATH)
 	touch -c $@
 
 $(TARGET_DIR)/usr/lib/libz.so: $(STAGING_DIR)/usr/lib/libz.so
