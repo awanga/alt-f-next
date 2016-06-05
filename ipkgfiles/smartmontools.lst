@@ -1,8 +1,8 @@
 ./usr/sbin/smartctl
 ./usr/sbin/smartd
+./etc/init.d/S28smart
 ./etc/smartd.conf
 ./etc/smartd_warning.sh
+./etc/smartd_warning.d/systemerror.sh
 ./usr/www/cgi-bin/smart.cgi
 ./usr/www/cgi-bin/smart_proc.cgi
-./etc/init.d/S28smart
-
