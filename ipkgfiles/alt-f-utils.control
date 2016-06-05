@@ -1,6 +1,6 @@
 Package: alt-f-utils
 Description: Provides leds, buttons, temperature, fan control and firmware file creation/splitting
-Version: 0.1.7
+Version: 0.1.9
 Depends: ipkg
 Architecture: arm
 Priority: optional
