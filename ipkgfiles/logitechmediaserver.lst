@@ -3,6 +3,7 @@
 ./usr/lib/libmediascan.so.0
 ./usr/lib/libmediascan.so.0.0.0
 ./usr/lib/lms/convert.conf
+./usr/lib/lms/convert.conf-orig
 ./usr/lib/lms/CPAN/arch
 ./usr/lib/lms/CPAN/arch/5.16
 ./usr/lib/lms/CPAN/arch/5.16/arm-linux

@@ -1,6 +1,6 @@
 Package: logitechmediaserver
 Description: a streaming audio server supported by Logitech (formerly Slim Devices)
-Version: 7.8
+Version: 7.8-1
 Depends: perl, sox-progs, flac, faad2-progs, wavpack-progs, shine, ipkg
 Architecture: arm
 Priority: optional
