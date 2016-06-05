@@ -1,6 +1,6 @@
 Package: e2fsprogs
 Description: The EXT2/3/4 file system utilities and libraries
-Version: 1.41.14
+Version: 1.41.14-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
