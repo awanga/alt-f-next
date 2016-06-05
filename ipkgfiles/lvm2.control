@@ -1,6 +1,6 @@
 Package: lvm2
 Description: LVM supports enterprise level volume management of disk and disk subsystems by grouping arbitrary disks into volume groups.
-Version: 2.02.88-1
+Version: 2.02.88-2
 Depends: lvm2-device-mapper, readline, ipkg
 Architecture: arm
 Priority: optional
