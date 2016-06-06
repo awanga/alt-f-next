@@ -1,0 +1,9 @@
+Package: e2fsprogs-badblocks
+Description: e2fsprogs badblocks utility
+Version: 1.41.14
+Depends: e2fsprogs, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://e2fsprogs.sourceforge.net/
+Maintainer: jcard
