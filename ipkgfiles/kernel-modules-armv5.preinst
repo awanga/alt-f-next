@@ -1,6 +1,8 @@
 #!/bin/sh
 
-if ! test $(uname -m) = "armv5tel"; then
+arch=$(uname -m)
+
+if ! test ${arch:0:7} = "armv5te"; then
 	cat<<-EOF
 
 		*********************************************************
