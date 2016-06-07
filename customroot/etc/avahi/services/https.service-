@@ -1,9 +1,9 @@
 <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
-	<name replace-wildcards="yes">Alt-F webUI on %h</name>
+	<name replace-wildcards="yes">Secure Alt-F webUI on %h</name>
 	<service>
-		<type>_http._tcp</type>
-		<port>80</port>
+		<type>_https._tcp</type>
+		<port>443</port>
 	</service>
 </service-group>
