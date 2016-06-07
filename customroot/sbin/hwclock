@@ -13,7 +13,7 @@ usage() {
 	exit 1;
 }
 
-if test "$(cat /tmp/board)" = "DNS-320L-A1"; then
+if grep -qE "DNS-320-Bx|DNS-320L-Ax|DNS-327L-Ax" /tmp/board; then
 	if test $# -gt 1; then usage; fi
 	if test $# = 0; then set -- -ru; fi
 	case "$1" in

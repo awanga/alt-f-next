@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if test "$(cat /tmp/board)" = "DNS-320L-A1"; then
+if grep -qE "DNS-320-Bx|DNS-320L-Ax|DNS-327L-Ax" /tmp/board; then
 	touch /boot/.poweroff
 fi
 
