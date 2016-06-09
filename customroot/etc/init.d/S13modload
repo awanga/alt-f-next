@@ -12,9 +12,7 @@ umask 077
 
 . /etc/init.d/common
 
-if test -s $CONF_MISC; then
-	. $CONF_MISC
-fi
+. $CONF_MISC
 
 mload() {
 	if lsmod | grep -q $1; then return 0; fi
