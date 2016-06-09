@@ -16,13 +16,16 @@ case "$1" in
 	start)
 		echo -n "Starting $NAME: "
 		# Load and then save 512 bytes, which is the size of the entropy pool
+		loadsave_settings -gr
 		if test -f $RFILE; then
-			cat $RFILE >/dev/urandom
+			cat $RFILE > /dev/urandom
+		else
+			logger -st urandom "Missing random-seed"
 		fi
 
-		rm -f $RFILE
 		dd if=/dev/urandom of=$RFILE count=1 >& /dev/null
 		chmod og-rwx $RFILE
+		loadsave_settings -sr
 		echo "OK."
 		;;
 
@@ -31,10 +34,11 @@ case "$1" in
 		# Carry a random seed from shut-down to start-up;
 		dd if=/dev/urandom of=$RFILE count=1 >& /dev/null
 		chmod og-rwx $RFILE
+		loadsave_settings -sr
 		echo "OK."
 		;;
 
 	status) status $NAME ;;
-
-	*)  usage $0 "start|stop|status" ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart" ;;
 esac
