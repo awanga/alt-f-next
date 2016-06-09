@@ -13,7 +13,11 @@ umask 077
 
 case "$1" in
 	start) start $NAME ;;
-	stop)	stop $NAME ;;
+	stop)	stop $NAME
+		if test -e /tmp/sys/pwm1; then
+			echo 127 > /tmp/sys/pwm1 # make sure fan keeps running
+		fi
+		;;
 	status)	status $NAME ;;
 	reload) reload $NAME ;;
 	restart) restart $NAME ;;
