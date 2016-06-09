@@ -1,19 +1,15 @@
 #! /bin/sh
-#
-# System-V init script for the openntp daemon
-#
 
 DESC="Network Time Protocol Daemon"
 TYPE=net
 NAME=ntpd
 #REQUIRE="cron" does not works here.
 
+. /etc/init.d/common
+
 CONF=/etc/ntp.conf
 CONFM=/etc/misc.conf
-NTPD_CRON=/tmp/ntpd.cron
 CRONF=/var/spool/cron/crontabs/root
-
-. /etc/init.d/common
 
 if test -e $CONFM; then
 	. $CONFM
@@ -24,7 +20,7 @@ istatus() {
 		echo "$1 running"
 		return 0
 	else
-		crontab -l 2>/dev/null | grep -q adjtime 
+		crontab -l 2>/dev/null | grep -q /usr/sbin/adjtime 
 		if test $? = 0; then
 			echo "$1 running"
 			return 0
@@ -36,8 +32,12 @@ istatus() {
 }
 
 update_cron() {
+	NTPD_CRON=$(mktemp)
 	crontab -l > $NTPD_CRON 2> /dev/null
-	if test $? = 1 -a $# = 0 ; then return; fi
+	if test $? = 1 -a $# = 0 ; then
+		rm -f $NTPD_CRON
+		return
+	fi
 
 	sed -i '\|/usr/sbin/adjtime|d' $NTPD_CRON
 
@@ -47,38 +47,50 @@ update_cron() {
 	touch -r $CRONF $NTPD_CRON
 	crontab $NTPD_CRON
 	touch -r $NTPD_CRON $CRONF
-	rm $NTPD_CRON
+	rm -f $NTPD_CRON
 }
 
 get_server() {
+	servers=""
 	while read arg server; do
 		if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
-			echo $server
-			return
+			servers="$servers -p $server"
 		fi
 	done < $CONF
+	if test -z "$servers"; then
+		echo "$NAME: No NTP server configured, exiting."
+		exit 1
+	fi
+	echo $servers
 }
 
 case "$1" in
 	start)
 		if test "$NTPD_DAEMON" = "yes" ; then
+			ntpserver=$(get_server)
+			OPTS=""
+			if ! test -e /usr/bin/sntp; then
+				OPTS="-l $ntpserver"
+			fi
 			if test "$NTPD_BOOT" = "yes" ; then
-				echo -n "$NAME: Getting initial time via ntp: "
-				#ntpd -qg
-				sntp -t 2 -s $(get_server) >& /dev/null
+				echo -n "$NAME: Getting initial time through NTP: "
+				fsntp -s ${ntpserver##*-p} >& /dev/null
 				omsg $?
 			fi
 
 			echo -n "Starting $NAME: "
 			update_cron
 			avahi add ntp
-			adjtimex -f 0 >& /dev/null # if != 0 affects ntpd drift calculation 
-			start-stop-daemon -S -q -x $NAME
+			adjtimex -qf 0  # if != 0 affects ntpd drift calculation 
+			start $NAME -- $OPTS
 		else
+			if test "$NTPD_DAEMON" = "no"; then NTPD_DAEMON=24; fi
 			require $NAME cron
 			echo -n "$NAME: Setting up crontab... "
 			adjtime -restart >& /dev/null
-			update_cron "0 6 * * * /usr/sbin/adjtime -adjust #!# Alt-F cron"
+			min=$(expr $(date +%s) % 60)
+			hour=$(seq -s, 0 ${NTPD_DAEMON:-24} 23)
+			update_cron "$min $hour * * * /usr/sbin/adjtime -adjust #!# Alt-F cron"
 		fi
 		omsg $?
 		;;
