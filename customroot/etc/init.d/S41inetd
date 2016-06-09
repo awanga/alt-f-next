@@ -1,10 +1,10 @@
 #!/bin/sh
 
-DESC="ssh, telnet, rsync, ftp, http, swat, lpd...<br><strong>Don't disable unless you have a serial port!</strong>"
+DESC="ssh, ftp, rsync, http, https, swat, lpd, telnet,..."
 TYPE=net
 NAME=inetd
 CONFF=/etc/inetd.conf
-AVAHI_SRV="rsync ssh telnet ftp http printer swat"
+AVAHI_SRV="rsync ssh telnet ftp ftps http https printer swat swats"
 
 REQUIRE="inetd" # don't allow inetd to be stopped
 
@@ -60,19 +60,25 @@ avahi_remove() {
 
 istart() {
 		if grep -q "^printer" $CONFF; then modprobe usblp; fi
-		if ! grep -qE '(^ftps|^#ftps).*implicit_ssl=' $CONFF; then # FIXME: to remove after RC4
+		if ! grep -qE '(^ftps|^#ftps).*implicit_ssl=' $CONFF; then # FIXME: add ftps, to remove after RC4
 			sed -i "/^ftp/a \
 ftps	stream	tcp	nowait	root	/usr/sbin/vsftpd	vsftpd -oimplicit_ssl=yes" $CONFF
 		fi
+		if ! grep -qE '.+#' $CONFF; then  # FIXME: add comments, to remove after RC5
+			awk '{print $1, substr($0, index($0,"#"))}' /rootmnt/ro/$CONFF | while read srv cmt; do
+				if ! echo "$srv" | grep -qE '.+#'; then
+					sed -i "\|$srv[[:space:]]|s|.*|&\t$cmt|" $CONFF
+				fi
+			done
+		fi
+
 		rcdropbear init
 		rcvsftpd init
 		rcstunnel init
-		avahi_add
-		start $NAME
 }
 
 case "$1" in
-	start) istart ;;
+	start) istart; avahi_add; start $NAME ;;
 	stop) stop $NAME; avahi_remove ;;
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
