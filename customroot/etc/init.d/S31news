@@ -43,10 +43,12 @@ istart() {
 	TF=$(mktemp -t)
 	crontab -l > $TF 2> /dev/null
 	sed -i '\|/usr/bin/news.sh|d' $TF
-	hour=$(expr $(date +%s) % 24)
-	wday1=$(expr $(date +%s) % 7)
+	dt=$(date +%s)
+	sec=$((dt % 60))
+	hour=$((dt % 24))
+	wday1=$((dt % 7))
 	wday2=$(((wday1 + 3) % 7))
-	echo "0 $hour * * $wday1,$wday2 /usr/bin/news.sh #!# Alt-F cron" >> $TF
+	echo "$sec $hour * * $wday1,$wday2 /usr/bin/news.sh #!# Alt-F cron" >> $TF
 	touch -r $CRONF $TF
 	crontab $TF 2> /dev/null
 	touch -r $TF $CRONF
