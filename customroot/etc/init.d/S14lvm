@@ -53,5 +53,7 @@ case "$1" in
 		fi
 		;;
 
-	*)  usage $0 "start|stop|status" ;;
+	restart) restart $NAME ;;
+
+	*)  usage $0 "start|stop|status|restart" ;;
 esac
