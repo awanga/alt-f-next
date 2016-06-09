@@ -12,9 +12,7 @@ umask 077
 
 . /etc/init.d/common
 
-if test -f $CONFF; then
-	. $CONFF
-fi
+. $CONFF
 
 iload() {
 	require $NAME $REQUIRE
@@ -53,8 +51,7 @@ case "$1" in
 		if test "$st" = 0 -a -f "$CRYPT_KEYFILE"; then
 			for i in /dev/sd[a-z][1-9]; do
 				dev=$(basename $i)
-				if test -z "$(cryptsetup isLuks $i 2>&1)" -a ! -b /dev/mapper/${dev}-crypt; then
-					#usleep 1500000 # this is evil! looks like dm needs to settle... 0.5 sec is not enough
+				if cryptsetup isLuks $i && test ! -b /dev/mapper/${dev}-crypt; then
 					cryptsetup --key-file="$CRYPT_KEYFILE" luksOpen $i ${dev}-crypt
 					st=$((st+$?))
 				fi
@@ -104,7 +101,11 @@ case "$1" in
 		fi
 		;;
 
+	restart) restart $NAME ;;
+
 	load) iload ;;
+
 	unload) iunload ;;
-	*)  usage $0 "start|stop|status|load|unload" ;;
+
+	*)  usage $0 "start|stop|status|restart|load|unload" ;;
 esac
