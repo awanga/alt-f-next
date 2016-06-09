@@ -1,0 +1,27 @@
+#!/bin/sh
+
+DESC="Administrative HTTP server"
+NAME=httpd
+TYPE=net
+
+. /etc/init.d/common
+
+HTTPD_CONF=/etc/httpd.conf
+HTTPD_LOG=/var/log/httpd.log
+
+PORT=$(sed -n 's/#port=\([[:digit:]]*\).*/\1/p' $HTTPD_CONF)
+PORT=${PORT:-80}
+
+OPTS="-h /usr/www -p $PORT"
+
+if check_inetd http || check_inetd http_alt; then            
+	exit 2
+fi
+
+case "$1" in
+	start) start $NAME -- "$OPTS" ;;
+	stop)   stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart" ;;
+esac
