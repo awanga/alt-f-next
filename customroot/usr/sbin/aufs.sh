@@ -24,7 +24,7 @@ install() {
 		rm -f $mp/Alt-F/Alt-F $mp/Alt-F/ffp $mp/Alt-F/home
 	else
 		mkdir $mp/Alt-F
-		echo "DON'T ADD, REMOVE OR MODIFY ANY FILE IN THIS DIRECTORY
+		echo "DON'T ADD, REMOVE OR MODIFY ANY FILE UNDER /ALT-F or $(realpath /Alt-F 2> /dev/null)
 OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > $mp/Alt-F/README.txt
 	fi
 
