@@ -11,6 +11,7 @@ REQUIRE="avahi_daemon"
 CONF_FORKED=/etc/$NAME.conf
 LOG_FORKED=/var/log/$NAME
 RUN_FORKED=/var/run/$NAME
+CACHE_FORKED=/var/cache/$NAME
 
 RC_USER=daapd
 RC_USERN=16
@@ -30,9 +31,9 @@ OPTS="-f"
 
 . /etc/init.d/common
 
-mkdir -p $LOG_FORKED $RUN_FORKED
+mkdir -p $LOG_FORKED $RUN_FORKED $CACHE_FORKED
 
-check_user $CONF_FORKED /var/lib/$RC_USER $LOG_FORKED $RUN_FORKED
+check_user $CONF_FORKED /var/lib/$RC_USER $LOG_FORKED $RUN_FORKED $CACHE_FORKED
 
 case "$1" in
 	start)
