@@ -35,7 +35,7 @@ isnumber() {
 
 # Celsius to Fahrenheit 
 celtofar() {
-	awk 'END{ print 9 * '$1' / 5 + 32}' </dev/null
+	awk 'END{ printf "%d", 9 * '$1' / 5 + 32}' </dev/null
 }
 
 # Fahrenheit to Celsius
@@ -60,6 +60,13 @@ letters, numbers and ! \" # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\\ ] ^ _ \
 	fi
 }
 
+check_https() {
+	if echo $HTTP_REFERER | grep -q 'http://'; then
+		echo "<h4 class=\"warn\">You are using plain http, password will be transmited in clear.<br>
+	You should use instead a <a href=\"https://${HTTP_HOST%%:*}\" target=\"_top\">secure https connection</a>.<br>$1</h4>"
+	fi
+}
+
 checkip() {
 	echo $* | awk '{ nf = split($0, a, ".")
 		if (nf < 4) exit 1
@@ -75,8 +82,7 @@ checkmac() {
 }
 
 checkport() {
-	if netstat -ltn 2> /dev/null | grep -q ":$1 "; then return 0; fi
-	return 1
+	netstat -ltn 2> /dev/null | grep -q ":$1[[:space:]]"
 }
 
 checkname() {
@@ -226,14 +232,15 @@ fs_progress() {
 	ln=""
 	for k in check fix format convert shrink enlarg wip; do
 		if test -f /tmp/${k}-${part}; then
-			if kill -1 $(cat /tmp/${k}-${part}.pid) 2> /dev/null; then
+			if kill -0 $(cat /tmp/${k}-${part}.pid) 2> /dev/null; then
 				if test -s /tmp/${k}-${part}.log; then
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
 				fi
 				if test $k = "check" -o $k = "fix"; then
 					ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
 				elif test $k = "format"; then
-					ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
+					#ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
+					ln=""
 				elif test $k = "shrink" -o $k = "enlarg"; then
 					ln=$(echo $ln | grep -o X)
 					if test -n "$ln"; then
@@ -328,11 +335,11 @@ html_header() {
 debug() {
 	HTML_HEADER_DONE="yes"
 	echo -e "Content-Type: text/html; charset=UTF-8\r\n\r"
-	echo "<html><body><pre>$(set)</pre>"
+	echo "<html><body><pre>$(set)"
 }
 
 enddebug() {
-	echo "</body></html>"
+	echo "</pre></body></html>"
 }
 
 msg() {
@@ -356,11 +363,11 @@ goto_button() {
 	echo "<input type=button value=\"$1\" onclick=\"window.location.assign('$2')\">"
 }
 
-# $1=pre-select part (eg: sda4)
+# $1=pre-select part (eg: sda4) $2=name postfix, e.g. '1', optional
 select_part() {
 	if test -n "$1"; then presel=$1; fi
 
-	echo "<select name=part>"
+	echo "<select name=part$2>"
 	echo "<option value=none>Select a filesystem</option>"
 
 	df -h | while read ln; do
@@ -400,8 +407,6 @@ upload_file() {
 		fi
 	fi
 
-	upfile=$(mktemp -t)
-
 	read -r delim_line
 	read -r Content_Disposition
 	read -r Content_Type
@@ -411,17 +416,51 @@ upload_file() {
 		echo "$Content_Disposition" | grep -q form-data &&
 		echo "$Content_Type" | grep -q 'application/octet-stream'; then
 			cat > /dev/null # discard transfer
-			rm -f $upfile
 			echo "Not a (simple) POST response, try another browser?"
 			return 1
 	fi
 
+if false; then
 	# each var has 2 extra bytes (\r\n), and last boundary has two trailing '-'
 	fs=$((CONTENT_LENGTH - 2 \* ${#delim_line} - ${#Content_Disposition} - ${#Content_Type} - 10))
 
+	upfile=$(mktemp -t)
 	head -c $fs > $upfile
 
 	echo $upfile
+
+else
+	fname1=$(echo $Content_Disposition | sed -n 's/.*[[:space:]]name="\(.*\)";.*/\1/p')
+	hfname1=$(echo $Content_Disposition | sed -n 's/.*[[:space:]]filename="\(.*\)".*/\1/p')
+	if test -z "$hfname1"; then
+		cat > /dev/null # discard transfer
+		echo "Not a valid Content_Disposition POST response, try another browser?"
+		return 1
+	fi
+
+	fname1=/tmp/$fname1
+	cat > $fname1
+
+	# get next file name
+	fname2=$(sed -n '/^Content-Disposition:/s/.*[[:space:]]name="\(.*\)";.*/\1/p' $fname1)
+	hfname2=$(sed -n '/^Content-Disposition:/s/.*[[:space:]]filename="\(.*\)".*/\1/p' $fname1)
+
+	if test -n "$hfname2"; then
+		fname2=/tmp/$fname2
+		sed -n '/'$delim_line'/,$p' $fname1 > $fname2
+
+		# remove delim-line, cont-disp, cont-type, empty line, last empty line
+		sed -i '1,4d' $fname2
+		sed -i '$d' $fname2
+		sed -i '$d' $fname2
+	fi
+
+	# remove fname2 from fname1 end (\r\n empty lines)
+	sed -i '/'$delim_line'/,$d' $fname1
+	sed -i '$d' $fname1
+	echo $fname1
+fi
+
 }
 
 download_file() {
@@ -429,6 +468,16 @@ download_file() {
 	echo -e "Content-Disposition: attachment; filename=\"$(basename $1)\"\r"
 	echo -e "Content-Type: application/octet-stream\r\n\r"
 	cat $1
+}
+
+# from_url location
+gotoback() {
+	from_url=$(httpd -d "$1")
+	if echo "$from_url" | grep -q index.cgi; then
+		gotopage /cgi-bin/$2
+	else
+		gotopage $from_url
+	fi
 }
 
 gotopage() {
@@ -476,102 +525,6 @@ check_cookie() {
 		</script></body></html>
 	EOF
 	exit 0
-}
-
-# FIXME: use sha1 to encode passwords.
-# The exception will be the first login, where the password has to be transmited in the clear to be used as the root password.
-js_sha1() {
-	cat<<-EOF
-	<script type="text/javascript">
-	/*  SHA-1 implementation in JavaScript | (c) Chris Veness 2002-2013 | www.movable-type.co.uk      */
-	/*   - see http://csrc.nist.gov/groups/ST/toolkit/secure_hashing.html                             */
-	/*         http://csrc.nist.gov/groups/ST/toolkit/examples.html                                   */
-	/*  from http://www.movable-type.co.uk/scripts/sha1.html comments, Utf8.encode()/decode() removed */
-/* usage:
-<form name="f">
-<input type=text name="message" id="message" value="abc"> 
-<button type="button" onClick='f.hash.value = Sha1.hash(f.message.value)'>Generate Hash</button>
-<input type="text" size=40 name="hash" id="hash" readonly><br>
-SHA-1 hash of ‘abc’ should be: a9993e364706816aba3e25717850c26c9cd0d89d
-</form>
-*/
-	var Sha1 = {};
-
-	Sha1.hash = function(msg, utf8encode) {
-		var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
-
-		msg += String.fromCharCode(0x80);
-
-		var l = msg.length/4 + 2;
-		var N = Math.ceil(l/16);
-		var M = new Array(N);
-
-		for (var i=0; i<N; i++) {
-			M[i] = new Array(16);
-			for (var j=0; j<16; j++) {
-			M[i][j] = (msg.charCodeAt(i*64+j*4)<<24) | (msg.charCodeAt(i*64+j*4+1)<<16) | 
-				(msg.charCodeAt(i*64+j*4+2)<<8) | (msg.charCodeAt(i*64+j*4+3));
-			} 
-		}
-
-		M[N-1][14] = ((msg.length-1)*8) / Math.pow(2, 32); M[N-1][14] = Math.floor(M[N-1][14])
-		M[N-1][15] = ((msg.length-1)*8) & 0xffffffff;
-
-		var H0 = 0x67452301;
-		var H1 = 0xefcdab89;
-		var H2 = 0x98badcfe;
-		var H3 = 0x10325476;
-		var H4 = 0xc3d2e1f0;
-
-		var W = new Array(80); var a, b, c, d, e;
-		for (var i=0; i<N; i++) {
-
-			for (var t=0;  t<16; t++) W[t] = M[i][t];
-			for (var t=16; t<80; t++) W[t] = Sha1.ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16], 1);
-			
-			a = H0; b = H1; c = H2; d = H3; e = H4;
-			
-			for (var t=0; t<80; t++) {
-			var s = Math.floor(t/20);
-			var T = (Sha1.ROTL(a,5) + Sha1.f(s,b,c,d) + e + K[s] + W[t]) & 0xffffffff;
-			e = d;
-			d = c;
-			c = Sha1.ROTL(b, 30);
-			b = a;
-			a = T;
-			}
-			
-			H0 = (H0+a) & 0xffffffff;
-			H1 = (H1+b) & 0xffffffff; 
-			H2 = (H2+c) & 0xffffffff; 
-			H3 = (H3+d) & 0xffffffff; 
-			H4 = (H4+e) & 0xffffffff;
-		}
-
-		return Sha1.toHexStr(H0) + Sha1.toHexStr(H1) + 
-			Sha1.toHexStr(H2) + Sha1.toHexStr(H3) + Sha1.toHexStr(H4);
-	}
-
-	Sha1.f = function(s, x, y, z)  {
-		switch (s) {
-		case 0: return (x & y) ^ (~x & z);
-		case 1: return x ^ y ^ z;
-		case 2: return (x & y) ^ (x & z) ^ (y & z);
-		case 3: return x ^ y ^ z;
-		}
-	}
-
-	Sha1.ROTL = function(x, n) {
-		return (x<<n) | (x>>>(32-n));
-	}
-
-	Sha1.toHexStr = function(n) {
-		var s="", v;
-		for (var i=7; i>=0; i--) { v = (n>>>(i*4)) & 0xf; s += v.toString(16); }
-		return s;
-	}
-	</script>
-EOF
 }
 
 busy_cursor_start() {
@@ -766,4 +719,33 @@ write_header() {
 		$warn
 		$firstmsg
 	EOF
+}
+
+md5() {
+cat<<-EOF
+	<script type="text/javascript">
+	// https://github.com/jbt/js-crypto/blob/master/md5-min.js
+	md5=function(){
+		for(var m=[], l=0; 64>l;)
+			m[l] = 0|4294967296*Math.abs(Math.sin(++l));
+		return function(c){
+			var e,g,f,a,h=[];
+			c = unescape(encodeURI(c));
+			for(var b=c.length, k=[e=1732584193,g=-271733879,~e,~g], d=0; d<=b;)
+				h[d>>2] |= (c.charCodeAt(d)||128)<<8*(d++%4);
+			h[c=16*(b+8>>6)+14]=8*b;
+			for(d=0; d<c; d+=16){
+				b=k;
+				for(a=0; 64>a;)
+					b = [f=b[3],(e=b[1]|0)+((f=b[0]+[e&(g=b[2])|~e&f,f&e|~f&g,e^g^f,g^(e|~f)][b=a>>4]+(m[a]+(h[[a,5*a+1,3*a+5,7*a][b]%16+d]|0)))<<(b=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21][4*b+a++%4])|f>>>32-b),e,g];
+				for(a=4; a;)
+					k[--a] = k[a]+b[a]
+			}
+			for(c=""; 32>a;)
+				c += (k[a>>3]>>4*(1^a++&7)&15).toString(16);
+			return c
+		}
+	}()
+	</script>
+EOF
 }
