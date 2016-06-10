@@ -37,9 +37,9 @@ while read min hour monthday month weekday cmd; do
 	inp="<input type=checkbox $chkdis name=dis_$i>"
 
 	altf_cron=""
-	if echo $cmd | grep -q "#!#"; then
+	if echo "$cmd" | grep -q "#!#"; then
 		altf_cron="readonly class=\"cron\""
-		cmd=$(echo $cmd | sed -n 's/#.*$//p')
+		cmd=$(echo "$cmd" | sed -n 's/#.*$//p')
 		inp=""		 
 	fi
 
@@ -47,7 +47,7 @@ while read min hour monthday month weekday cmd; do
 		<tr><td align="center">$inp<input type=hidden name=altf_$i value=$altf_cron></td>
 		<td><input type=text $altf_cron size=10 name=weekday_$i value="$weekday" $(ttip wday_tt)></td>
 		<td><input type=text $altf_cron size=10 name=hour_$i value="$hour:$min" $(ttip hour_tt)></td>
-		<td><input type=text $altf_cron size=40 name=cmd_$i value="$cmd"></td></tr>
+		<td><input type=text $altf_cron size=40 name=cmd_$i value=$(httpd -e "$cmd")></td></tr>
 	EOF
 	i=$((i+1))
 done < $TF
