@@ -112,16 +112,29 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 	fstype=$TYPE
 	fsckcmd="fsck"
 	case $fstype in
-		ext2|ext3|ext4)	fsopt="-p" ;;
-		iso9660) fsckcmd="echo" ;;
-		vfat) fsopt="-a" ;;			
+		ext2|ext3|ext4) fsopt="-p" ;;
+		iso9660) fsckcmd="echo"; fsopt="-" ;; # FIXME, hack for hot_aux arguments (can't be empty)
+		vfat) fsopt="-a" ;;
+		btrfs)
+			if test -x /usr/bin/btrfs; then
+				fsopt="-p"
+				if ! lsmod | grep -q btrfs; then
+					modprobe -q btrfs
+				fi
+			else
+				emsg="No BTRFS support found for partition type \"$fstype\" in \"$MDEV\""
+				logger -st hot "$emsg"
+				echo "<li>$emsg</li>" >> $SERRORL
+				return 0
+			fi
+			;;
 		ntfs)
-			if ! test -f /usr/bin/ntfsfix; then fsckcmd="echo "; fi
+			if ! test -x /usr/bin/ntfsfix; then fsckcmd="echo "; fi
 			fstype="ntfs-3g"
 			fsopt="-" # FIXME, hack for hot_aux arguments (can't be empty)
 			;; 
 		swap) # don't mount swap on usb devices
-			if realpath /sys/block/${MDEV:0:3}/device | grep -q /usb1/; then
+			if realpath /sys/block/${MDEV:0:3}/device | grep -q /usb./; then
 				if test -z "$USB_SWAP" -o "$USB_SWAP" = "no"; then
 					return 0
 				fi
@@ -152,7 +165,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			else
 				emsg="No LVM support found for partition type \"$fstype\" in \"$MDEV\""
 				logger -st hot "$emsg"
-				echo "<li><pre>$emsg</pre>" >> $SERRORL
+				echo "<li>$emsg</li>" >> $SERRORL
 			fi
 			return 0
 			;;
@@ -178,7 +191,7 @@ if test "$ACTION" = "add" -a "$DEVTYPE" = "partition"; then
 			else
 				emsg="No cryptsetup support found for partition type \"$fstype\" in \"$MDEV\""
 				logger -st hot "$emsg"
-				echo "<li><pre>$emsg</pre>" >> $SERRORL
+				echo "<li>$emsg</li>" >> $SERRORL
 			fi
 			return 0
 			;;
@@ -232,9 +245,13 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 # 323:
 # sdb-left:  /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0/1:0:0:0
 # sda-right: /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0/0:0:0:0
+#
+# 327l:
+# sda-left: /sys/devices/soc/soc:internal-regs/d00a0000.sata/ata1/host0/target0:0:0/0:0:0:0
+# sda-right: /sys/devices/soc/soc:internal-regs/d00a0000.sata/ata2/host1/target1:0:0/1:0:0:0
 
 		lhost="/host0/"; rhost="/host1/"
-		if grep -qE 'DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2' /tmp/board; then
+		if grep -qE 'DNS-320-[AB]x|DNS-320L-Ax|DNS-325-Ax|DNS-327L-Ax' /tmp/board; then
 			lhost="/host1/"; rhost="/host0/"
 		elif grep -qE 'qemu' /tmp/board; then
 			lhost="/0:0:1:0"; rhost="/0:0:0:0"
@@ -246,11 +263,13 @@ elif test "$ACTION" = "add" -a "$DEVTYPE" = "disk"; then
 			bay="right"
 		elif echo $PHYSD | grep -q $rhost; then
 			bay="left"
-		elif echo $PHYSD | grep -q /usb1/; then
+		elif echo $PHYSD | grep -q /usb./; then
 			bay="usb"${MDEV:2}
 			if test -h /tmp/sys/usb2_led; then
 				echo 1 > /tmp/sys/usb2_led/brightness
 			fi
+		else
+			bay="unk"${MDEV:2}
 		fi
 	
 		if test -n "$bay"; then
@@ -429,7 +448,7 @@ elif test "$ACTION" = "remove" -a "$DEVTYPE" = "partition"; then
 				\( "$type" = "raid5" -a "$actdev" = 3 \) \) ; then
 				mdadm $PWD/$md --fail $PWD/$MDEV --remove $PWD/$MDEV
 				return $ret
-			elif grep -q ^$PWD/$md /proc/mounts; then
+			elif grep -q ^$PWD/$md /proc/mounts /proc/swaps; then
 				(cd /dev && ACTION=remove DEVTYPE=partition PWD=/dev MDEV=$md /usr/sbin/hot.sh)
 				if test $? != 0; then return 1; fi
 				mdadm --stop $PWD/$md
