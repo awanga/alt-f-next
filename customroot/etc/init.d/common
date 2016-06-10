@@ -43,7 +43,7 @@ AVAHI_SRV_DIR=/etc/avahi/services
 avahi() {
 	if ! test -d $AVAHI_SRV_DIR; then return 0; fi
  
-	stype=$(sed -n "s|.*<type>\(.*$2.*\)</type>|\1|p" $AVAHI_SRV_DIR/$2.service*)
+	stype=$(sed -n "s|.*<type>\(.*$2.*\)</type>|\1|p" $AVAHI_SRV_DIR/$2.service* 2> /dev/null)
 	
 	for i in $(grep -l "<type>$stype</type>" $AVAHI_SRV_DIR/*.service*); do
 		sext=${i##*.}
@@ -56,6 +56,17 @@ avahi() {
 				mv $AVAHI_SRV_DIR/$sname.service $AVAHI_SRV_DIR/$sname.service-
 		fi
 	done
+}
+
+INETD_CONF=/etc/inetd.conf
+
+# $1-service [$2-program]
+check_inetd() {
+	if grep -q "^$1[[:space:]].*$2" $INETD_CONF; then
+		echo "$NAME: $1 is currently managed through the inetd service."
+		return 0
+	fi
+	return 1
 }
 
 # to use at start
@@ -258,6 +269,7 @@ restart() {
 		RC_START_STOP=""
 	fi
 	while start-stop-daemon -K -t -q $RC_START_STOP $STOP_ARGS; do usleep 200000; done
+	usleep 200000
 
 	sh $0 start
 }
