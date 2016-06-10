@@ -1,9 +1,8 @@
 #!/bin/sh
 
-#set -x
-
 CONFF=/etc/adjtime.conf
 NTPD_CONF=/etc/ntp.conf
+ERRLOG=/var/log/systemerror.log
 
 usage() {
 	echo "Usage: adjtime -show | -setrtc | -adjust | -restart"
@@ -14,25 +13,21 @@ usage() {
 restore() {
 	if test -f /tmp/$(basename $CONFF); then
 		if awk '{last=curr; curr=$2} END {if (last != curr) exit 1}' $CONFF; then
-			touch -r /tmp/$(basename $CONFF) $CONFF
+			touch -r /tmp/$(basename $CONFF) $CONFF >& /dev/null
 		fi
 		rm /tmp/$(basename $CONFF)
 	fi
 	exit $1
 }
 
-if ! test -f $NTPD_CONF; then
-	echo "No $NTPD_CONF file, exiting"
-	exit 1
+if test -f $NTPD_CONF; then
+	while read arg server; do
+		if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
+			NTPD_SERVER=$server
+			break
+		fi
+	done < $NTPD_CONF
 fi
-
-while read arg server; do
-	if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
-		NTPD_SERVER=$server
-	elif test -z "$server"; then
-		eval "$arg"
-	fi
-done < $NTPD_CONF
 
 if test $# = 0; then
 	usage
@@ -40,7 +35,7 @@ if test $# = 0; then
 elif test "$1" = "-show"; then
 	echo "RTC:  $(hwclock -ru | awk '{print $4}')"
 	echo "date: $(date | awk '{print $4}')"
-	echo "sntp: $(sntp $NTPD_SERVER | tail -1 | awk '{print $4 " " $5 $6}')"
+	echo "sntp: $(fsntp $NTPD_SERVER)"
 
 elif test "$1" = "-setrtc"; then
 	# wait for second change
@@ -53,80 +48,87 @@ elif test "$1" = "-setrtc"; then
 	hwclock -wu
 
 elif test "$1" = "-restart"; then
-	touch -r $CONFF /tmp/$(basename $CONFF)
+	touch -r $CONFF /tmp/$(basename $CONFF) >& /dev/null
 
 	adj=0
 	if test -f $CONFF; then
 		adj=$(tail -1 $CONFF | cut -d" " -f2)
 	fi
-	adjtimex -f $adj > /dev/null 2>&1
-	# ntpd -qg # too slow, but accurate
-	sntp -s $NTPD_SERVER
-	echo "$(date +%s) $adj" >> $CONFF
+	adjtimex -qf $adj
+	fsntp -s $NTPD_SERVER
+	echo "$(date +%s).0 $adj 0" >> $CONFF
 	tail -20 $CONFF > /tmp/adjtime
 	mv /tmp/adjtime $CONFF
 	restore 0
 
 elif test "$1" = "-adjust"; then
-	touch -r $CONFF /tmp/$(basename $CONFF)
-	
-	if ! test -f $CONFF; then
-		echo "No config file."
-		adjtimex -f 0 > /dev/null 2>&1
-		#ntpd -qg
-		sntp -s $NTPD_SERVER
-		echo "$(date +%s) 0" > $CONFF
 
-	else	
+	if ! test -f $CONFF; then
+		adjtime -restart
+	else
+		touch -r $CONFF /tmp/$(basename $CONFF) >& /dev/null
+	
 		# drift (sec) --- delta (sec)
 		#   x (ppm)   --- 1000000
-		##
+		#
+		# 11.5 PPM correspond roughly to one second drift per day. Expect also 1 PPM/ºC 
+		#
 		#   1 (ppm) --- 65536
 		#   x (ppm) --- adj
 		#
-		#  adj = (x * 65536) = (drift * 1000000 ) / delta  * 65536
+		#  adj = drift *  65536E6  / delta (adjtimex frequency correction)
 
-		delta=$(expr $(date +%s) - $(tail -1 $CONFF | cut -d" " -f1)) # time since last adjust
+		last_time=$(tail -1 $CONFF | cut -d" " -f1) # time of last adjust, usec resolution
+		delta=$(expr $(date +%s) - ${last_time%%.*}) # time since last adjust, sec
+
 		if test -z "$delta"; then
-			echo "adjtime file possibly corrupted, not adjusting."
+			emsg="adjtime $CONFF file possibly corrupted, not adjusting."
+			logger -st $emsg
+			echo "<li>$emsg</li>" >> $ERRLOG
 			restore 1
 		fi
-	
-		if test $delta -lt 21600; then
-			echo "Wait at least six hours between adjustments, not adjusting."
+		if test $delta -lt 10800; then
+			logger -st adjtime Wait at least three hours between adjustments, not adjusting.
 			restore 1
 		fi
 	
 		up=$(cat /proc/uptime | cut -d'.' -f1)
 		if test $up -lt $delta; then
-			echo "System has been rebooted since last adjustment, reuse last adjustment."
+			logger -st adjtime System has been rebooted since last adjustment, reusing last adjustment.
 			adjtime -restart
 			restore 0
 		fi
+
+		if ! step=$(fsntp -s $NTPD_SERVER); then
+			logger -st adjtime NTP server error, not adjusting.
+			restore 1
+		fi
+
+		eval $(adjtimex | awk '/tv_sec/{ curr_time = $2 } \
+			/tv_usec/{ curr_time += $2/1e6 } \
+			/frequency/{ curr_adj = $3 } \
+			END {drift = '$step' * 1e6 / ( curr_time - '$last_time'); \
+				new_adj = curr_adj + drift * 65536; \
+				printf("curr_time=%f drift=%f new_adj=%d", curr_time, drift, new_adj)} ')
+
+		adjtimex -qf $new_adj
+
+		logger -st adjtime drift=$drift new_adj=$new_adj 
 	
-		curr_adj=$(adjtimex | awk '/frequency/{print $3}')
-	
-		# expr does not accept decimals, so use awk
-		# drift=$(ntpd -qg | awk '{printf "%d", $4 * -1000000}') # ntpd takes a variable execution time
-		drift=$(sntp $NTPD_SERVER | tail -1 | awk '{printf "%d", $4 * -1000000}') # ntpd takes a variable execution time
-		sntp -s $NTPD_SERVER
-		delta=$(expr $(date +%s) - $(tail -1 $CONFF | cut -d" " -f1)) # time since last adjust
-		adj=$(expr $drift \* 65536 / $delta)
-		new_adj=$(expr $curr_adj - $adj) 
-	
-		echo "drift=$drift delta_adj=$adj new_adj=$new_adj (current=$curr_adj)"
-	
-		echo "$(date +%s) $new_adj" >> $CONFF
+		echo "$curr_time $new_adj $drift" >> $CONFF
 		tail -20 $CONFF > /tmp/adjtime
 		mv /tmp/adjtime $CONFF
-
-		adjtimex -f $new_adj > /dev/null 2>&1
 	
 		adjtime -setrtc
+
+		if $(awk -v drift=$drift -v maxdrift=5 \
+			'BEGIN {if (drift < -maxdrift || drift > maxdrift) exit 0; exit 1}'); then
+			echo "<li>Clock is drifting by $(printf %.f $drift) PPM. This is normal during initial calibration. If it reappears after clearing for several consecutive days, use instead ntpd in server mode (Services->Network->ntp).</li>" >> $ERRLOG
+		fi
+
 	fi
 	restore 0
 
 else
 	usage
 fi
-
