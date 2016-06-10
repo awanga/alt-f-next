@@ -34,10 +34,11 @@ istop() {
 		fi
 	fi
 
+	# loaded modules: nfsv3 nfsv2 nfs (lockd grace sunrpc are common)
 	if ! rcnfs status >& /dev/null; then
 		stop $NAME
 		rm -f /var/run/sm-notify.pid
-		rmmod -f nfs lockd >& /dev/null
+		modprobe -r nfsv2 nfsv3 2> /dev/null
 		st=0 # return true, as rmmod might fail
 	fi
 	omsg $st

@@ -70,11 +70,13 @@ istart() {
 istop() {
 	stop nfsd 2
 
+# loaded modules: nfsd exportfs (lockd grace sunrpc are common)
+
 #	if ! rcnfs_client status >& /dev/null; then
 	if test -z "$(mount -t nfs)"; then
 		stop rpc.statd
 		rm -f /var/run/sm-notify.pid
-		rmmod -f lockd >& /dev/null
+		modprobe -r lockd 2> /dev/null
 	fi
 
 	stop rpc.mountd
@@ -82,9 +84,7 @@ istop() {
 	
 	if test -f /proc/fs/nfsd/exports; then
 		umount /proc/fs/nfsd
-		# blocks, as sunrpc modules has refcont = 2, although not in use
-		# modprobe -r nfsd 
-		rmmod -f nfsd exportfs >& /dev/null
+		modprobe -r nfsd 2> /dev/null
 	fi
 
 	avahi remove nfs
