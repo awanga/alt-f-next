@@ -2,12 +2,17 @@
 
 #set -x
 
-/bin/mount -t proc proc /proc
-/bin/mount -o remount,rw /
-/bin/mount -t sysfs sysfs /sys
-/bin/mount -t tmpfs tmpfs /tmp
+mount -t proc proc /proc
+mount -o remount,rw /
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /tmp
+
+#mount -t devtmpfs devtmpfs /dev
+#mount -t tmpfs tmpfs /dev
+#mknod /dev/null c 1 3
+#mknod /dev/console c 5 1
+#mkdir /dev/pts
 /bin/mount -t devpts devpts /dev/pts
-#mount -t devtmpfs devtmpfs /dev # no obvious advantage?
 
 rmdir /newroot/rootmnt /newroot >& /dev/null
 
@@ -36,14 +41,18 @@ elif grep -q 'DNS-321/323' /proc/cpuinfo; then
 		0000) board="DNS-323-A1" ;;
 		0001) board="DNS-323-B1" ;;
 		0002) board="DNS-323-C1" ;;
-		0003) board="DNS-321-A1A2" ;; 
+		0003) board="DNS-321-Ax" ;; 
 	esac
-elif grep -q 'DNS-320L' /proc/cpuinfo; then
-	board="DNS-320L-A1"
-elif grep -q 'DNS-320.*A1/A2' /proc/device-tree/model 2> /dev/null; then
-	board="DNS-320-A1A2"
-elif grep -q 'DNS-325.*A1/A2' /proc/device-tree/model 2> /dev/null; then
-	board="DNS-325-A1A2"
+elif grep -q 'DNS-320L-rev-Ax' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-320L-Ax"
+elif grep -q 'DNS-320-rev-Ax' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-320-Ax"
+elif grep -q 'DNS-320-rev-Bx' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-320-Bx"
+elif grep -q 'DNS-325-rev-Ax' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-325-Ax"
+elif grep -q 'DNS-327L-rev-Ax' /proc/device-tree/model 2> /dev/null; then
+	board="DNS-327L-Ax"
 else
 	board="Unknown"
 fi
@@ -63,13 +72,13 @@ elif echo $board | grep -qE "DNS-321|DNS-323"; then
 	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
 	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
 
-elif echo $board | grep -qE "DNS-320|DNS-325"; then
+elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 	kernel_mtd=/dev/mtd1; kernel_mn="90 2"
 	config_mtd=/dev/mtdblock5; config_mn="31 5"
 
 	# Tell PMU to turn back on after a power failure
 	# From http://jamie.lentin.co.uk/devices/dlink-dns325/userland-configuration/
-	if test $board = "DNS-320-A1A2" -o $board = "DNS-325-A1A2"; then
+	if test $board = "DNS-320-Ax" -o $board = "DNS-325-Ax"; then
 		echo 37 > /sys/class/gpio/export
 		echo out > /sys/class/gpio/gpio37/direction
 		echo 1 > /sys/class/gpio/gpio37/value
@@ -81,17 +90,20 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 	ifconfig eth0 hw ether $(nanddump -ql 2048 /dev/mtd4 | grep -E '..(:..){5}')
 
 	# get sqimage from tftp if bootargs contains tftpargs=myip:tftpip[:netmask]
-	tftpargs=$(sed -n 's/.*tftpargs=\([.:[:digit:]]*\).*/\1/p' /proc/atags)
+	tftpargs=$(sed -n 's/.*tftpargs=\([.:[:digit:]]*\).*/\1/p' /proc/cmdline)
 	if test -n "$tftpargs"; then
+		aboard="dns325"
+		if echo $board | grep -q DNS-327L; then aboard="dns327"; fi
+
 		eval $(echo $tftpargs | awk -F: '{printf "myip=%s tftpip=%s netmsk=%s", $1, $2, $3}')
 		logger -st rcS "tftp getting sqimage from $tftpip, myip $myip"
 		ifconfig eth0 up $myip netmask ${netmsk:-255.255.255.0}
-		if ! tftp -g -r rootfs.arm.sqimage.xz-dns325 -l /tmp/sqimage.xz $tftpip; then
+		if ! tftp -g -r rootfs.arm.sqimage.xz-$aboard -l /tmp/sqimage.xz $tftpip; then
 			logger -st rcS "tftp get failed"
 		fi
 		ifconfig eth0 down
 	else # get squashfs image from NAND
-		# can't be run from a NAND (dns-320/325), in contrast to a NOR (dns-323/321)
+		# can't be run from a NAND (dns-320/325/327), in contrast to a NOR (dns-323/321)
 		if ! test -e /dev/mtd3; then mknod /dev/mtd3 c 90 6; fi
 		eval $(nanddump -ql 2048 /dev/mtd3 | strings) # contains sqimage_size=bytes_of_sqimage;
 		if test -n "$sqimage_size"; then
@@ -111,7 +123,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 	# the dns320-temp.sh/dns320l-daemon needs ttyS1, not yet available
 	if ! test -e /dev/ttyS1; then mknod /dev/ttyS1 c 4 65; fi
 
-	if test $board = "DNS-320-A1A2"; then
+	if test $board = "DNS-320-Ax"; then
 		ln -sf "/sys/class/leds/dns320:blue:power" /tmp/sys/power_led
 		ln -sf "/sys/class/leds/dns320:orange:l_hdd" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns320:orange:r_hdd" /tmp/sys/right_led
@@ -123,11 +135,16 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		sed -i 's/^#*[[:space:]]*\(.*dns320-temp.sh.*\)/\1/' /etc/inittab
 		kill -1 1
 
-	elif test $board = "DNS-320L-A1"; then
+	elif test $board = "DNS-320-Bx" -o $board = "DNS-320L-Ax"; then
 		ln -sf "/sys/class/leds/dns320l:red:sata0" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns320l:red:sata1" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns320l:orange:usb" /tmp/sys/usb_led
-		ln -sf "/sys/class/leds/dns320l:blue:usb" /tmp/sys/usb2_led
+ 		ln -sf "/sys/class/leds/dns320l:blue:usb" /tmp/sys/usb2_led
+		if ! test -f /sys/class/gpio/gpio29/value; then # power button don't generate interrup!
+			echo 29 > /sys/class/gpio/export
+			echo out > /sys/class/gpio/gpio29/direction # sigh...
+			echo in > /sys/class/gpio/gpio29/direction # sigh...
+		fi
 		ln -sf /sys/class/gpio/gpio29/value /tmp/sys/power_button
 		mkdir -p /tmp/sys/power_led
 		echo none > /tmp/sys/power_led/trigger
@@ -139,12 +156,46 @@ elif echo $board | grep -qE "DNS-320|DNS-325"; then
 		sed -i 's/^#*[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
 		kill -1 1
 
-	elif test $board = "DNS-325-A1A2"; then
+	elif test $board = "DNS-325-Ax"; then
 		ln -sf "/sys/class/leds/dns325:white:power" /tmp/sys/power_led
 		ln -sf "/sys/class/leds/dns325:red:l_hdd" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns325:red:r_hdd" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns325:red:usb" /tmp/sys/usb_led
 		ln -sf "/sys/class/leds/dns325:white:usb" /tmp/sys/usb2_led
+
+	elif test $board = "DNS-327L-Ax"; then
+		ln -sf "/sys/class/leds/dns327l:amber:sata-l" /tmp/sys/left_led
+		ln -sf "/sys/class/leds/dns327l:amber:sata-r" /tmp/sys/right_led
+		ln -sf "/sys/class/leds/dns327l:white:usb" /tmp/sys/usb2_led
+		# FIXME	no red usb led ?
+		
+		if ! test -f /sys/class/gpio/gpio65/value; then # power button don't generate interrup!
+			echo 65 > /sys/class/gpio/export
+			echo out > /sys/class/gpio/gpio65/direction # sigh...
+			echo in > /sys/class/gpio/gpio65/direction # sigh...
+		fi
+ 		ln -sf /sys/class/gpio/gpio65/value /tmp/sys/power_button
+
+		ln -sf /sys/class/hwmon/hwmon0/temp1_input /tmp/sys/cpu_temp
+		mkdir -p /tmp/sys/power_led
+		echo none > /tmp/sys/power_led/trigger
+		echo 1 > /tmp/sys/power_led/brightness
+		echo 0 > /tmp/sys/usb2_led/brightness
+		echo 0 > /tmp/sys/fan1_input
+		echo 0 > /tmp/sys/temp1_input
+
+		# attach mtd5 (settings) to ubi0, for loadsave_settings
+		if ! test -e /dev/mtd5; then
+			mknod /dev/mtd5 c 90 10
+			mknod /dev/ubi_ctrl c 10 59
+			mknod /dev/ubi0 c 252 0
+			mknod /dev/ubi0_0 c 252 1
+		fi
+		ubiattach -p /dev/mtd5 -d 0
+
+		# make init launch dns320l-daemon
+		sed -i 's/^#*[[:space:]]*\(.*dns320l-daemon.*\)/\1/' /etc/inittab
+		kill -1 1
 	fi
 fi
 
@@ -152,26 +203,28 @@ if test "$board" != "Unknown"; then
 	if ! test -e $kernel_mtd; then mknod $kernel_mtd c $kernel_mn; fi
 	if ! test -e $config_mtd; then mknod $config_mtd b $config_mn; fi
 
-	if test -f /sys/class/hwmon/hwmon0/device/pwm1; then
-		ln -sf /sys/class/hwmon/hwmon0/device/pwm1 /tmp/sys/pwm1
-	elif test -f /sys/class/hwmon/hwmon1/device/pwm1; then
-		ln -sf /sys/class/hwmon/hwmon1/device/pwm1 /tmp/sys/pwm1
+	if test -f /sys/class/hwmon/hwmon0/pwm1; then
+		ln -sf /sys/class/hwmon/hwmon0/pwm1 /tmp/sys/pwm1
+	elif test -f /sys/class/hwmon/hwmon1/pwm1; then
+		ln -sf /sys/class/hwmon/hwmon1/pwm1 /tmp/sys/pwm1
 	else
 		touch /tmp/sys/pwm1
 	fi
 
-	if test -f /sys/class/hwmon/hwmon0/device/temp1_input; then
-		ln -sf /sys/class/hwmon/hwmon0/device/temp1_input /tmp/sys/temp1_input
-	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
-		ln -sf /sys/class/hwmon/hwmon1/device/temp1_input /tmp/sys/temp1_input
-	else
-		echo 0 > /tmp/sys/temp1_input
+	if ! test -f /tmp/sys/temp1_input; then
+		if test -f /sys/class/hwmon/hwmon0/temp1_input; then
+			ln -sf /sys/class/hwmon/hwmon0/temp1_input /tmp/sys/temp1_input
+		elif test -f /sys/class/hwmon/hwmon1/temp1_input; then
+			ln -sf /sys/class/hwmon/hwmon1/temp1_input /tmp/sys/temp1_input
+		else
+			echo 0 > /tmp/sys/temp1_input
+		fi
 	fi
 
-	if test -f /sys/class/hwmon/hwmon0/device/fan1_input; then
-		ln -sf /sys/class/hwmon/hwmon0/device/fan1_input /tmp/sys/fan1_input
-	elif test -f /sys/class/hwmon/hwmon1/device/temp1_input; then
-		ln -sf /sys/class/hwmon/hwmon1/device/fan1_input /tmp/sys/fan1_input
+	if test -f /sys/class/hwmon/hwmon0/fan1_input; then
+		ln -sf /sys/class/hwmon/hwmon0/fan1_input /tmp/sys/fan1_input
+	elif test -f /sys/class/hwmon/hwmon1/temp1_input; then
+		ln -sf /sys/class/hwmon/hwmon1/fan1_input /tmp/sys/fan1_input
 	else
 		echo 0 > /tmp/sys/fan1_input
 	fi
@@ -181,6 +234,7 @@ if test "$board" != "Unknown"; then
 
 	# stop blinking power-led.
 	echo "none" > /tmp/sys/power_led/trigger
+	echo 1 > /tmp/sys/power_led/brightness
 fi
 
 # notice, settings not yet loaded, TZ set to NONE-0
@@ -206,6 +260,11 @@ if ! grep -q "nodef" /proc/cmdline; then
 	if test -s /etc/misc.conf; then
 		. /etc/misc.conf
 	fi
+fi
+
+# rsyncd.secrets can be in sqimage
+if test -f /etc/rsyncd.secrets; then
+	chmod og-r /etc/rsyncd.secrets
 fi
 
 # create lock file for aufs.sh synchronization, minimizing (not solving!) hotpluging
