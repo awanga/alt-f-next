@@ -16,7 +16,7 @@ Setup->Proxy.
 packages. After you select a filesystem, a directory called 'Alt-F' (not 'alt-f', case is
  significant) will be created and the 'ipkg' package will be downloaded and installed.
 
-<p>You will then be presented with a list of installed and available packages that you can update or install.
+<p>You will then be presented with a list of pre-installed, installed and available packages that you can update, remove or install.
 You can read the simplified description of the package functionality and visit the package
 homepage for further information.
 
@@ -25,8 +25,11 @@ Many packages depends on others, and all needed packages will be automatically i
 
 <p>You can't remove a package that is needed by others, you have to remove the main package first.
 
+<p>When the "remove" button for a package is greyed out, it means that the package is pre-installed on the firmware and can't be uninstalled; when updating that package the "remove" button becomes enabled.
+
 <p>Removing a package does not necessary means a fresh start, as some configuration files
-are left; for a really fresh start you have to remove all packages and restart anew.
+are not removed; for a really fresh start you have to remove all packages and restart anew.
+The "RemoveAll" button is intended for that purpose, but it might fail at first, use it right after a reboot.
 
 <p>You can also install all available packages, which is not recommended, and remove all installed
 packages.

@@ -58,13 +58,17 @@ Disks with the same swap priority will be used in a round-robin mode, which prov
 </ul>
 
 <strong>Swapping on USB devices: </strong> <em>Enable</em> if you want to enable 
-<a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.<ul>
+<a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.
+<ul>
 <li>By default swapping is not enabled on USB attached flash pens or disks,
 as it will degrade performance and can shorten the life of the USB flash pen 
 (which has a limited number of write cycles).</li>
 <li>Swap <strong>is necessary</strong> and is enabled for internal disks,
 that must have a swap partition as its first partition.</li>
 </ul>
+
+<strong>Swap aggressiveness: </strong> <a href="https://en.wikipedia.org/wiki/Swappiness" target="_blank">Swappiness</a> specifies how aggressively swap is used, with 0 almost disabling it and 100 actively using it. The minimum value of 10 is sometimes recommended to improve performance when sufficient memory exists in a system. Swap is needed but might force disks spinup.<br>
+
 
 <br><button type=button onclick="history.back()">Back</button></body>
 </html>
