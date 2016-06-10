@@ -18,6 +18,9 @@ bootlog() {
 	writelog | sed 's/..:..:..\(:..:..:..\)/xx:xx:xx\1/' > $TLOG
 	for i in /mnt/*; do
 		if mountpoint -q $i; then
+			if test -f $i/$LOGF; then
+				mv -f $i/$LOGF $i/$LOGF-previous
+			fi
 			cp $TLOG $i/$LOGF
 			chmod a+rw $i/$LOGF
 		fi
@@ -43,9 +46,6 @@ writelog() {
 
 	echo -e "\n\n$SEP SYSLOG $SEP\n"
 	logread
-
-	echo -e "\n\n$SEP BOOTLOG $SEP\n"
-	cat /var/log/boot.log
 
 	if test -f /usr/sbin/ethtool; then
 		echo -e "\n\n$SEP ETHTOOL $SEP\n"
