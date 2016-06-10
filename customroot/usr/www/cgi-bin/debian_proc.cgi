@@ -46,7 +46,33 @@ if test "$submit" = "Install"; then
 	fi
 
 	board=$(cat /tmp/board)
-	if echo $board | grep -qE 'DNS-320L-A1|DNS-320-A1A2|DNS-325-A1A2'; then SoC=kirkwood; else SoC=orion5x; fi
+	mod=${board%-*}
+	rev=${board##*-}
+	if test "$mod" = 'DNS-323'; then
+		rev=AxBxCx;
+	fi
+
+	case "$mod" in
+		DNS-321|DNS-323)
+			SoC=orion5x
+			arch=armel
+			linuximg=linux-image-$SoC
+			;;
+		DNS-320|DNS-320L|DNS-325)
+			SoC=kirkwood
+			arch=armel
+			linuximg=linux-image-$SoC
+			;;
+		DNS-327L)
+# Alt-F kernel has to have Thumb user support and VFP configured
+# debian armhf requirements: ARMv7-A + Thumb-2 + VFPv3D16 
+			SoC=armmp 
+			arch=armhf
+			linuximg=linux-image-$SoC # armel doesn't has a linux-image for armmp in jessie
+			;;
+		*)
+			msg "Unknown Debian installer architecture for $board" ;;
+	esac
 
 	DEBMIRROR=$(httpd -d $mirror)
 
@@ -54,7 +80,10 @@ if test "$submit" = "Install"; then
 		msg "Debian is already installed in this filesystem."
 	fi
 
-	CDEBOOT=$(wget -q -O - $DEBMIRROR/pool/main/c/cdebootstrap/ | sed -n 's/.*>\(cdebootstrap-static_.*_armel.deb\)<.*/\1/p' | tail -1)
+	# cdebootstrap-static contains a static binary and a standalone tar.
+	# The standalone tar can be used on non-Debian systems. Use it instead under Alt-F?
+
+	CDEBOOT=$(wget -q -O - $DEBMIRROR/pool/main/c/cdebootstrap/ | sed -n "s/.*>\(cdebootstrap-static_.*_$arch.deb\)<.*/\1/p" | tail -1)
 
 	write_header "Installing Debian"
 
@@ -88,19 +117,21 @@ if test "$submit" = "Install"; then
 	echo "</pre><h4>Downloading and installing Debian, this might take some time...</h4><pre>"
 
 	mkdir -p $DEBDIR 
-	cdebootstrap-static --allow-unauthenticated --arch=armel \
-		--include=linux-image-$SoC,openssh-server,kexec-tools,mdadm \
-		wheezy $DEBDIR $DEBMIRROR
+	cdebootstrap-static --allow-unauthenticated --arch=$arch \
+		--include=openssh-server,kexec-tools,mdadm,$linuximg \
+		jessie $DEBDIR $DEBMIRROR
 	if test $? != 0; then cleanup; fi
 
 	echo "</pre><h4>Debian installed successfully.</h4>"
 
 	echo "<h4>Updating packages....</h4><pre>"
 
+	echo "deb $DEBMIRROR jessie-backports main" >> $DEBDIR/etc/apt/sources.list
+
 	chroot $DEBDIR /usr/bin/apt-get update
 
-	mdadm --detail --test /dev/$DEBDEV >& /dev/null
-	if test $? -lt 2; then # allow degraded but working RAID
+#	mdadm --detail --test /dev/$DEBDEV >& /dev/null
+#	if test $? -lt 2; then # allow degraded but working RAID
 
 		echo "</pre><h4>Adding RAID boot support....</h4><pre>"
 
@@ -113,68 +144,62 @@ if test "$submit" = "Install"; then
 		umount $DEBDIR/proc
 		umount $DEBDIR/sys
 		umount $DEBDIR/dev
-	fi
+#	fi
 
-	echo "</pre><h4>Fixing Debin links....</h4><pre>"
-	for i in vmlinuz initrd.img; do
-		if ! readlink -f $DEBDIR/$i > /dev/null; then
-			pf=$(basename $(readlink $DEBDIR/$i))
-			rm -f $DEBDIR/$i
-			(cd $DEBDIR; ln -sf boot/$pf $i)
+	if test -n "$linuximg"; then # no linux-image, can't kexec into debian
+		echo "</pre><h4>Fixing Debian links....</h4><pre>"
+		for i in vmlinuz initrd.img; do
+			if ! readlink -f $DEBDIR/$i > /dev/null; then
+				pf=$(basename $(readlink $DEBDIR/$i))
+				rm -f $DEBDIR/$i
+				(cd $DEBDIR; ln -sf boot/$pf $i)
+			fi
+		done
+		
+		echo "</pre><h4>Downloading and installing Alt-F into Debian...</h4><pre>"
+		
+		ver=$(cat /etc/Alt-F)
+		bfile=Alt-F-$ver-$mod-rev-$rev.bin
+		site="http://sourceforge.net/projects/alt-f/files/Releases"
+		
+		echo "</pre><p>Downloading $bfile from $site/$ver...</p><pre>"
+
+		if wget --progress=dot:mega $site/$ver/$bfile; then
+			echo "</pre><p>Extracting Alt-F kernel and rootfs into Debian /boot...</p><pre>"
+			if dns323-fw -s $bfile; then
+				dd if=kernel of=$DEBDIR/boot/Alt-F-zImage bs=64 skip=1 >& /dev/null
+				dd if=initramfs of=$DEBDIR/boot/Alt-F-rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
+
+				cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-debian
+				cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
+				sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
+					-e 's|^INITRD.*|INITRD="/boot/Alt-F-rootfs.arm.sqmtd"|' \
+					-e 's|^APPEND.*|APPEND=" "|' \
+					$DEBDIR/etc/default/kexec-alt-f
+				cat<<-EOF > $DEBDIR/usr/sbin/alt-f
+					#!/bin/bash
+					cp /etc/default/kexec-alt-f /etc/default/kexec
+					reboot
+				EOF
+				chmod +x $DEBDIR/usr/sbin/alt-f
+				altf=1
+			fi
 		fi
-	done
-	
-	echo "</pre><h4>Downloading and installing Alt-F into Debian...</h4><pre>"
-	
-	if echo $board | grep -qE 'DNS-323-A1|DNS-323-B1|DNS-323-C1'; then
-		board=DNS-323-A1B1C1;
-	fi
-	mod=$(echo $board | cut -f1,2 -d-)
-	rev=$(echo $board | cut -f3 -d-)
-	ver=$(cat /etc/Alt-F)
-	bfile=Alt-F-$ver-$mod-rev-$rev.bin
-	site="http://sourceforge.net/projects/alt-f/files/Releases"
-	
-	echo "</pre><p>Downloading $bfile from $site/$ver...</p><pre>"
 
-	if wget --progress=dot:mega $site/$ver/$bfile; then
-		echo "</pre><p>Extracting Alt-F kernel and rootfs into Debian /boot...</p><pre>"
-		if dns323-fw -s $bfile; then
-			dd if=kernel of=$DEBDIR/boot/Alt-F-zImage bs=64 skip=1 >& /dev/null
-			dd if=initramfs of=$DEBDIR/boot/Alt-F-rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
-
-			cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-debian
-			cp $DEBDIR/etc/default/kexec $DEBDIR/etc/default/kexec-alt-f
-			sed -i -e 's|^KERNEL_IMAGE.*|KERNEL_IMAGE="/boot/Alt-F-zImage"|' \
-				-e 's|^INITRD.*|INITRD="/boot/Alt-F-rootfs.arm.sqmtd"|' \
-				-e 's|^APPEND.*|APPEND=" "|' \
-				$DEBDIR/etc/default/kexec-alt-f
+		if test -z "$altf"; then
+			echo "</pre><p>Downloading $bfile or extraction failed, can't restart Alt-F from within Debian.</p><pre>"
 			cat<<-EOF > $DEBDIR/usr/sbin/alt-f
 				#!/bin/bash
-				cp /etc/default/kexec-alt-f /etc/default/kexec
 				reboot
 			EOF
 			chmod +x $DEBDIR/usr/sbin/alt-f
-			altf=1
 		fi
+		rm -f $bfile kernel initramfs defaults
 	fi
-
-	if test -z "$altf"; then
-		echo "</pre><p>Downloading $bfile or extraction failed, can't restart Alt-F from within Debian.</p><pre>"
-		cat<<-EOF > $DEBDIR/usr/sbin/alt-f
-			#!/bin/bash
-			reboot
-		EOF
-		chmod +x $DEBDIR/usr/sbin/alt-f
-	fi
-	rm -f $bfile kernel initramfs defaults
 	
 	echo "</pre><h4>Setting up some Debian installation details...</h4>"
-	
-	echo "<p>Enabling serial port acess..."
 
-	sed -i 's/^[1-6]:/#&/' $DEBDIR/etc/inittab
-	echo "T0:1235:respawn:/sbin/getty -n -l /bin/bash -L ttyS0 115200 vt100" >> $DEBDIR/etc/inittab
+	mkdir -p $DEBDIR/proc $DEBDIR/sys $DEBDIR/dev $DEBDIR/dev/pts $DEBDIR/tmp
 
 	echo "<p>Changing Debian message of the day..."
 
@@ -201,6 +226,9 @@ if test "$submit" = "Install"; then
 
 	chroot $DEBDIR /bin/bash -c "/bin/echo root:$(cat /etc/web-secret) | /usr/sbin/chpasswd"
 	if test $? != 0; then cleanup; fi
+
+	echo "<p>Allowing ssh root password logins..."
+	sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' $DEBDIR/etc/ssh/sshd_config
 
 	clean
 

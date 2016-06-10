@@ -19,12 +19,14 @@ It is recommended, although not necessary, to dedicate the selected filesystem t
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
 After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
 
-if grep -qE 'DNS-320L-A1|DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then
-	SoC=kirkwood
-	kexec_dis=disabled
-else
-	SoC=orion5x
-fi
+board=$(cat /tmp/board)
+board=${board%-*}
+case "$board" in
+	DNS-321|DNS-323) SoC=orion5x ;;
+	DNS-320|DNS-320L|DNS-325) SoC=kirkwood; kexec_dis=disabled ;;
+	DNS-327L) SoC=armmp ;;
+	*) SoC=unknown; kexec_dis=disabled ;;
+esac
 
 # check installed:
 
@@ -34,7 +36,7 @@ for i in $inst; do
 	dn=$(dirname $i)
 	dbpart=$(dirname $dn)
 	if test -f ${dn}/vmlinuz-*-$SoC -a -f ${dbpart}/etc/apt/sources.list; then
-		mirror=$(cut -d" " -f2 ${dbpart}/etc/apt/sources.list)
+		mirror=$(cut -d" " -f2 ${dbpart}/etc/apt/sources.list | head -1)
 		break;
 	fi
 done
