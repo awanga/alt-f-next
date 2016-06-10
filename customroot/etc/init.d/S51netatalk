@@ -6,8 +6,10 @@ NAME=netatalk
 NEED_ALTF_DIR=1
 
 REQUIRE=avahi_daemon
+RC_PIDFILE=/var/run/$NAME.pid
+
 NETATALK_CONF=/etc/afp.conf
-NETATALK_DIR=/var/lib/netatalk
+NETATALK_DIR=/var/lib/$NAME
 
 . /etc/init.d/common
 
