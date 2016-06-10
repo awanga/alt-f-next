@@ -75,19 +75,19 @@ wakeup() {
 		return 1
 	fi
 
-	logger -st backup "ID $id: Waking up $host"
+	logger -st backup "ID $id: waking up $host"
 	ether-wake $mac
 
 	for i in 1 2 3 4 5; do
 		sleep 30
 		if ping -W 3 -c 2 $host >& /dev/null; then
-			logger -st backup "ID $id: $host is wakeup"
+			logger -st backup "ID $id: $host is awake"
 			return 0
 		fi
 		logger -st backup "ID $id: still waking up $host"
 		ether-wake $mac
 	done
-	logger -st backup "ID $id: couldn't wake up $host"
+	logger -st backup "ID $id: couldn't awake up $host"
 	return 1
 }
 
