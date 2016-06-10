@@ -22,17 +22,16 @@ check_cookie
 write_header "Cryptsetup Setup"
 
 mktt crypt_tt "Location of file with the encrypt password.<br>
-Should be on removable medium, not on the<br>
-same disk or box as the encrypted filesystem."
+Should be on removable USB medium, not on the<br>
+same disk or box as the encrypted filesystem.<br>
+Only needed when formating, opening or closing."
 
-mktt cesa_tt "Using the hardware accelerator engine doubles performance<br>
-but will make some openSSL operations to fail (stunnel, e.g)"
+mktt cesa_tt "Using the hardware accelerator engine increases performance<br>
+but can make some openSSL operations to fail (stunnel, e.g)"
 
 CONFF=/etc/misc.conf
 
-if test -f $CONFF; then
-	. $CONFF
-fi
+. $CONFF
 
 if test "$MODLOAD_CESA" = "y"; then
 	cesa_chk=checked
@@ -49,7 +48,7 @@ cat<<EOF
 	<tr><td><select name=devto><option value=none>Select a Partition</option>$devs</select></td>
 		<td><input type=text name=cipher value="aes-cbc-essiv:sha256"></td>
 		<td><select name=nbits><option>128</option><option>192</option><option>256</option></select></td>
-		<td><input type="submit" name=action value="Format" onClick="return confirm('All data in partition will be lost.\nNo check will be done to see if the partition is currently in use.\n\nProceed?')"></td></tr>
+		<td><input type="submit" name=action value="Format" onClick="return confirm('All data in partition will be lost.\n\nProceed?')"></td></tr>
 	</table></fieldset>
 EOF
 
@@ -60,7 +59,7 @@ if test -n "$curr"; then
 	cat<<-EOF
 		<fieldset><legend>Encrypted devices</legend>
 		<table><tr><th>Dev</th><th>Size (GB)</th><th>Cipher</th>
-		<th>Mode</th><th>Bits</th><!--th>Hash</th--><th>State</th></tr>
+		<th>Mode</th><th>Bits</th><th>Hash</th><th>State</th></tr>
 	EOF
 	for i in $curr; do
 		if ! cryptsetup isLuks $i >& /dev/null; then continue; fi
@@ -77,7 +76,7 @@ if test -n "$curr"; then
 		<td align=center>$cipher</td>
 		<td align=center>$mode</td>
 		<td>$bits</td>
-		<!--td align=center>$hash</td-->
+		<td align=center>$hash</td>
 		<td>$state</td>
 		<td><input type=submit name=$dsk value="$action"></td>
 		</tr>

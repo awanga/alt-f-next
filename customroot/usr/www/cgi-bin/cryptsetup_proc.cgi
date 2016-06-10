@@ -9,24 +9,14 @@ read_args
 
 CONFF=/etc/misc.conf
 
-if test -f $CONFF; then
-	. $CONFF
-fi
-
-if test -z "$use_cesa"; then
-	use_cesa=no
-fi
+. $CONFF
 
 sed -i '/^MODLOAD_CESA=/d' $CONFF >& /dev/null
-if test \( -z "$MODLOAD_CESA" -o "$MODLOAD_CESA" = "n" \) -a "$use_cesa" = "yes"; then
+if test -z "$use_cesa"; then
+	rmmod mv_cesa >& /dev/null
+else
+	modprobe -q mv_cesa  >& /dev/null
 	echo MODLOAD_CESA=y >> $CONFF
-	cesa_chg=y
-elif test "$MODLOAD_CESA" = "y" -a "$use_cesa" = "no"; then
-	cesa_chg=y
-fi
-
-if test -n "$cesa_chg"; then
-	rcmodload restart >& /dev/null
 fi
 
 sed -i '/^CRYPT_KEYFILE=/d' $CONFF >& /dev/null
