@@ -1,46 +1,58 @@
 #!/bin/sh
-#
-# Starts dropbear sshd.
-#
 
-DESC="Light SSH/SFTP client/server"
+DESC="Light SSH/SFTP server"
 NAME=dropbear
+TYPE=net
 
 . /etc/init.d/common
 
+DB_DIR=/etc/dropbear
+OPTS=""
+
 sinit() {
 	# Make sure dropbear directory exists
-	if [ ! -d /etc/dropbear ] ; then
-		mkdir -p /etc/dropbear
+	if [ ! -d $DB_DIR ] ; then
+		mkdir -p $DB_DIR
 	fi
 
 	# Check for the Dropbear RSA key
-	if [ ! -f /etc/dropbear/dropbear_rsa_host_key ] ; then
+	if [ ! -f $DB_DIR/dropbear_rsa_host_key ] ; then
 		echo "$NAME: generating rsa key... "
-		/usr/bin/dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null 2>&1
+		/usr/bin/dropbearkey -t rsa -f $DB_DIR/dropbear_rsa_host_key >& /dev/null
 	fi
 
 	# Check for the Dropbear DSS key
-	if [ ! -f /etc/dropbear/dropbear_dss_host_key ] ; then
+	if [ ! -f $DB_DIR/dropbear_dss_host_key ] ; then
 		echo "$NAME: generating dsa key... "
-		/usr/bin/dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null 2>&1
+		/usr/bin/dropbearkey -t dss -f $DB_DIR/dropbear_dss_host_key >& /dev/null
 	fi
 
 	# Check for the Dropbear ECDSA key
-	if [ ! -f /etc/dropbear/dropbear_ecdsa_host_key ] ; then
+	if [ ! -f $DB_DIR/dropbear_ecdsa_host_key ] ; then
 		echo "$NAME: generating ecdsa key... "
-		/usr/bin/dropbearkey -t ecdsa -f /etc/dropbear/dropbear_ecdsa_host_key > /dev/null 2>&1
+		/usr/bin/dropbearkey -t ecdsa -s 384 -f $DB_DIR/dropbear_ecdsa_host_key >& /dev/null
 	fi
 
 	umask 077
 	#if ! test -e /var/log/lastlog; then touch /var/log/lastlog; fi
 }
 
+if test "$1" = "init"; then
+	sinit
+	exit
+fi
+
+if check_inetd ssh dropbear || check_inetd ssh_alt dropbear;then
+	exit 2
+fi
+
 case "$1" in
-	start) sinit; start $NAME ;;
+	start)
+		sinit
+		start $NAME -- $OPTS
+		;;
 	stop) stop $NAME ;;
 	status)	status $NAME ;;
 	restart) restart $NAME ;;
-	init) sinit ;;
 	*) usage $0 "start|stop|status|restart|init" ;;
 esac
