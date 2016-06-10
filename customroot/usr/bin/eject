@@ -37,7 +37,7 @@ eject_all() {
 	rm -f /Alt-F
 
 	# unmount all mounted filesystems (umount -a also unmounts /proc, /sys,...!)
-	for i in iso9660 ext2 ext3 ext4 vfat ntfs fuseblk; do
+	for i in iso9660 ext2 ext3 ext4 btrfs vfat ntfs fuseblk; do
 		if ! umount -t $i -a; then
 			exit 1
 		fi
