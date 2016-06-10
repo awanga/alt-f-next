@@ -8,14 +8,16 @@ activate_chroot() {
 
 	grep -Ev ^rootfs\|^/dev/loop0\|/rootmnt\|aufs /proc/mounts > $debdir/etc/mtab
 
+	#mkdir -p $debdir/proc $debdir/sys $debdir/dev $debdir/dev/pts $debdir/tmp
+
 	mount -o bind  /proc $debdir/proc
-	mount -t usbfs usbfs $debdir/proc/bus/usb
+	#mount -t usbfs usbfs $debdir/proc/bus/usb
 	mount -o bind  /sys  $debdir/sys
 	mount -o bind  /dev  $debdir/dev
 	mount -t devpts none $debdir/dev/pts
 	mount -o bind  /tmp  $debdir/tmp
 
-	grep -E ^/dev/md[0-9]\|^/dev/sd[a-z][1-9] /proc/mounts | while read mpart mpt rest; do
+	grep -E ^/dev/dm-[0-9]\|^/dev/md[0-9]\|^/dev/sd[a-z][1-9] /proc/mounts | while read mpart mpt rest; do
 		mkdir -p $debdir/$mpt
 		mount -o bind $mpt $debdir/$mpt
 	done
@@ -34,10 +36,18 @@ deactivate_chroot() {
 	# sort -rk2: unmount subdirs first. The / after $debdir must be there.
 	grep $debdir/ /proc/mounts | sort -rk2 | while read dev mpt rest; do
 		umount $mpt
+		#rmdir $mpt
 	done
 }
 
-if grep -qE 'DNS-320L-A1|DNS-320-A1A2|DNS-325-A1A2' /tmp/board ; then SoC=kirkwood; else SoC=orion5x; fi
+board=$(cat /tmp/board)
+model=${board%-*}
+case "$model" in
+	DNS-321|DNS-323) SoC=orion5x ;;
+	DNS-320|DNS-320L|DNS-325) SoC=kirkwood ;;
+	DNS-327L) SoC=armmp ;;
+	*) echo "Unknown Debian installer architecture for $board"; exit 1 ;;
+esac
 
 inst=$(find /mnt -maxdepth 3 -name initrd.img-\*-$SoC)
 
@@ -58,7 +68,7 @@ if test $# != 0 -a "$1" = "-chroot"; then
 		cmd="$*"
 	fi
 
-	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec
+	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec >& /dev/null
 
 	activate_chroot
 	chroot $debdir $cmd
@@ -68,8 +78,8 @@ if test $# != 0 -a "$1" = "-chroot"; then
 
 elif test $# != 0 -a "$1" = "-kexec"; then
 
-	if test "$SoC" = "kirkwood"; then
-		echo "kexec not working on DNS-320L/DNS-320/DNS-325, exiting."
+	if test "$SoC" != "orion5x"; then
+		echo "Debian -kexec not working on DNS-320/DNS-320L/DNS-325/DNS-327, exiting."
 		exit 1
 	fi
 
@@ -120,7 +130,7 @@ cat<<-NEOF > /tmp/deb
 		echo "\$i	swap	swap	defaults	0	0" >> $debdir/etc/fstab
 	done
 	
-	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec
+	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec >& /dev/null
 
 	echo "Now leaving Alt-F..."
 	rcall stop
