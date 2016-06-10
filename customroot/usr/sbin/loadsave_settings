@@ -5,6 +5,15 @@ format() {
 		mkfs.minix -i 64 $MTD
 	elif test "$fs_type" = "jffs2"; then
 		flash_erase -j $MTDR 0 0
+	elif test "$fs_type" = "ubifs"; then
+		# should a full
+		# ubidetach -p /dev/mtd5
+		# ubiformat /dev/mtd5
+		# ubiattach -p /dev/mtd5
+		# ubimkvol /dev/ubi0 -N config -s 7MiB
+		# be done instead? D-LINK just uses 'ubimkvol /dev/ubi0 -N config -s %siB'
+		ubiupdatevol -t $MTD
+		mkfs.ubifs -m 2048 -e 126976 -c 80 -x lzo -R 293871 $MTD
 	else
 		exit 1
 	fi
@@ -12,7 +21,7 @@ format() {
 
 check() {
 	if test "$fs_type" = "minix"; then
-		if ! fsck -t minix -a $MTD; then
+		if ! fsck -t minix -a $MTD >& /dev/null; then
 			echo "loadsave_settings: $MTD damaged, force fsck it."
 			if ! fsck -t minix -af $MTD; then
 				echo "loadsave_settings: Can't fix $MTD, reformating it."
@@ -48,6 +57,24 @@ get_fsckboot() {
 	st=$?
 	lumount
 	return $st
+}
+
+# save random-seed
+set_random() {
+	lmount
+	if test -f /var/lib/misc/random-seed; then
+		cp -f /var/lib/misc/random-seed $save_dir/random-seed
+	fi
+	lumount
+}
+
+# get random-seed
+get_random() {
+	lmount
+	if test -f $save_dir/random-seed; then
+		cp -f $save_dir/random-seed /var/lib/misc/random-seed
+	fi
+	lumount
 }
 
 listchanged() {
@@ -99,7 +126,15 @@ createdef() {
 		if test -x $i -o -n "$(grep ^TYPE=required $i)"; then
 			echo $i
 		fi
-	done > $initscript_perms
+	done > $initscripts_perms
+
+# find modified firmware initscripts. Don't use, dangerous for system boot
+#	for i in $(find /rootmnt/ro/etc/init.d/ /rootmnt/sqimage/etc/init.d/ -name S[0-9]\* 2> /dev/null); do
+#		f=$(echo $i | sed "s|^/rootmnt/[^/]*/||")
+#		if ! cmp -s $i /$f; then
+#			diff -u $i /$f
+#		fi
+#	done > $initscripts_patch
 
 	# special case, only save nfs, cifs and davfs mounts, as other entries are hotpluged
 	awk '$3 == "nfs" {print $0} $3 == "cifs" {print $0} $3 == "davfs" {print $0}' /etc/fstab > /tmp/xfstab
@@ -107,12 +142,12 @@ createdef() {
 	# another special case, only save user cron entries, not Alt-F ones
 	sed '/#!# Alt-F cron/d' /var/spool/cron/crontabs/root > /tmp/ucron 2> /dev/null
 
-	files="$files /tmp/xfstab /tmp/ucron $initscript_perms"
+	files="$files /tmp/xfstab /tmp/ucron $initscripts_patch $initscripts_perms"
 
 	dt=$(date +%F_%T)
 	nm=set_$dt.tgz
 	tar -czf /tmp/$nm $files >& /dev/null
-	rm -f /tmp/xfstab /tmp/ucron
+	rm -f /tmp/xfstab /tmp/ucron $initscripts_patch $initscripts_perms
 	echo $nm
 }
 
@@ -142,7 +177,7 @@ saveflashdef() {
 
 # TODO start using mtdblock1 when mtdblock0 fails
 
-	rm /tmp/$nm $initscript_perms
+	rm /tmp/$nm
 
 	if test "$res" != 0; then
 		echo "Error saving settings, not enough flash space available.\nYou might want to clear settings first."
@@ -156,15 +191,6 @@ checkfile() {
 	TD=$(mktemp -d)
 
 	if ! tar -C $TD -xzf $1; then ret=1; fi
-
-if false; then
-	# FIXME: stupid test. Store a signature instead!
-	for i in $files tmp/initd_perms tmp/xfstab; do
-		rm -f $TD/$i
-	done
-
-	if test "$(find $TD -type f | wc -l)" != "0"; then ret=1; fi
-fi
 
 	rm -rf $TD
 	return $ret
@@ -215,19 +241,25 @@ loadflashdef() {
 
 	lumount
 
-	if test -s $initscript_perms; then
+	if test -s $initscripts_perms; then
 		for i in /etc/init.d/S*; do
 			if ! grep -q ^TYPE=required $i; then
 				chmod -x $i
 			fi
 		done
-		for i in $(cat $initscript_perms ); do
+		for i in $(cat $initscripts_perms ); do
 			if test -f $i; then
 				chmod +x $i
 			fi
 		done
-		rm $initscript_perms
+		rm -f $initscripts_perms
 	fi
+
+# not in use, see createdef() above
+#	if test -s $initscripts_patch; then
+#		patch -Np0 < $initscripts_patch >& /dev/null
+#		rm -f $initscripts_patch
+#	fi
 
 	touch $stamp
 	return $res
@@ -246,7 +278,7 @@ clearflashdef() {
 # As Alt-F only uses mtd0, the original settings are still in mtd1 
 recover() {
 	rmdir $save_dir
-	if grep -qE "DNS-320-A1A2|DNS-325-A1A2" $BRD; then return 1; fi
+	if grep -qE "DNS-320-Ax|DNS-325-Ax" $BRD; then return 1; fi
  
 	mtd0=$(mktemp -d)
 	mtd1=$(mktemp -d)
@@ -334,7 +366,7 @@ read_sib() {
 to_AltF() {
 	wfiles="$files /etc/fstab /etc/bay"
 	for i in $wfiles; do
-		if test -e $i -a -e /Alt-F/$i; then
+		if test -s $i -a -e /Alt-F/$i; then
 #			cp -a $i /Alt-F/$i # no need to copy, they will be copied when changed/created
 #		elif test -e /Alt-F/$i; then
 			rm -f /Alt-F/$i # remove old, probably outdated, files
@@ -347,11 +379,11 @@ to_AltF() {
 from_AltF() {
 	wfiles="$files /etc/fstab /etc/bay"
 	for i in $wfiles; do
-		if test -e /Alt-F/$i; then
+		if test -s /Alt-F/$i; then
 			bd=$(dirname $i)
 			if ! test -d $bd; then mkdir -p $bd; fi
-			#cp /Alt-F/$i $i # dont remove, copy instead, in case of catastrophic failure
-			rm /Alt-F/$i $i
+			cp /Alt-F/$i $i # dont remove, copy instead, in case of catastrophic failure
+			#rm /Alt-F/$i
 		fi
 	done
 }
@@ -363,13 +395,15 @@ usage() {
 	-ls (list) | -ll (long list) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
 	-gb (get fsckboot) | -sb (set fsckboot) | \n\
+	-gr (get random-seed) | -sr (set random-seed) | \n\
 	-rs (read sib ip) | -st (status) | -ck (check) | -fm (format)"
 	return 1;
 }
 
 save_dir=$(mktemp -d)
 stamp=/tmp/settings_saved
-initscript_perms=/tmp/initd_perms
+initscripts_perms=/tmp/initd_perms
+initscripts_patch=/tmp/initd_patch
 sib=sib.conf
 
 # configuration files to save on flash
@@ -377,15 +411,19 @@ files=$(cat /etc/settings)
 
 board=$(cat /tmp/board)
 case "$board" in
-	DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2)
+	DNS-320-[AB]x|DNS-320L-Ax|DNS-325-Ax)
 		fs_type="jffs2"
 		MTD=/dev/mtdblock5
 		MTDR=/dev/mtd5
 		;;
-	qemu|DNS-323-[ABC]1|DNS-321-A1A2)
+	qemu|DNS-323-[ABC]1|DNS-321-Ax)
 		fs_type="minix"
 		MTD=/dev/mtdblock0
 		;;
+	DNS-327L-Ax)
+		fs_type="ubifs"
+		MTD=/dev/ubi0_0
+		;;		
 	*)
 		echo "Unsupported board"
 		exit 1
@@ -406,8 +444,10 @@ case $1 in
 	"-rc")	recover ;;
 	"-ta")	to_AltF ;;
 	"-fa")	from_AltF ;;
-	"-sb")  set_fsckboot;;
-	"-gb") 	get_fsckboot;;
+	"-sb")  set_fsckboot ;;
+	"-gb") 	get_fsckboot ;;
+	"-sr")	set_random ;;
+	"-gr")	get_random ;;
 	"-rs")	read_sib ;;
 	"-st")	status ;;
 	"-ck")	check ;;
