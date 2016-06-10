@@ -15,9 +15,14 @@ echo "rcE: saving date and time to RTC"
 hwclock -wu
 
 # terminate dns320 daemons
-if echo "$board" | grep -q "DNS-320"; then
+if echo "$board" | grep -qE "DNS-320|DNS-327"; then
 	sed -i 's/^#*[[:space:]]*\(.*dns320.*\)/#\1/' /etc/inittab
 	kill -1 1
+fi
+
+# detach mtd5 from ubi (for loadsave_settings)
+if echo "$board" | grep -q "DNS-327"; then
+	ubidetach -p /dev/mtd5
 fi
 
 # wait for services to stop
@@ -30,22 +35,23 @@ sleep 1
 
 if aufs.sh -s >& /dev/null ; then
 	echo "rcE: unmounting aufs"
-	if aufs.sh -l | grep -q /rootmnt/sqimage; then
-		mount -o remount,del=/rootmnt/sqimage /
-	fi
 	altf=$(readlink -f /Alt-F/)
 	aufs.sh -u
 	# remove inittab, otherwise when aufs is mounted rcS mods related with dns320 are undone
 	rm -f $altf/etc/inittab
 fi
 
+# remove sqimage as an aufs branch. not really needed, its read-only
 if mount -t squashfs | grep -q /rootmnt/sqimage; then
 	echo "rcE: unmounting sqimage"
+	if aufs.sh -l | grep -q /rootmnt/sqimage; then
+		mount -o remount,del=/rootmnt/sqimage /
+	fi
 	umount /rootmnt/sqimage
 fi
 
 echo "rcE: unmounting or remounting read-only all mounted filesystems"
-for i in nfs cifs iso9660 davfs ext2 ext3 ext4 vfat ntfs; do
+for i in nfs cifs iso9660 davfs ext2 ext3 ext4 btrfs vfat ntfs fuseblk; do
 	umount -t $i -rf -a 
 done
 
@@ -84,37 +90,62 @@ echo "------------------------------"
 ps -opid,ppid,pgid,user,group,tty,vsz,stat,rss,args
 echo "------------------------------"
 
-echo "rcE: bringing network down"
-ifconfig eth0 down
+#echo "rcE: bringing network down"
+# FIXME: on certain kernels, on reboot the DNS-320L u-boot don't turn network on
+#ifconfig eth0 down
 
 # do a kexec to a new kernel/rootfs instead of a reboot
-if test -f /boot/zImage -o -f /boot/rootfs.arm.*; then
+if test -f /boot/zImage -o -f /boot/rootfs.arm.* -o -f /boot/.kexec; then
 	cd /boot
 
+	if grep -q 'Hardware.*321/323' /proc/cpuinfo; then
+		orion=y
+	fi
+
 	# no kernel image, use flashed kernel
-	if ! test -f zImage -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-320L-A1" -o "$board" = "DNS-325-A1A2"; then
-		dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
+	if ! test -f zImage; then
+		if test -n "$orion"; then 
+			dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
+		else
+			nanddump -q /dev/mtd1 | dd of=zImage bs=64 skip=1
+		fi
 	fi
 	
-	initrfs=$(ls rootfs.arm.*)
+	initrfs=$(ls rootfs.arm.* 2> /dev/null)
 	# no rootfs, use flashed rootfs
-	if ! test -f "$initrfs" -o "$board" = "DNS-320-A1A2" -o "$board" = "DNS-320L-A1" -o "$board" = "DNS-325-A1A2"; then
-		dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
+	if ! test -f "$initrfs"; then
+		if test -n "$orion"; then
+			dd if=/dev/mtdblock3 of=rootfs.arm.sqmtd bs=64 skip=1
+		else
+			nanddump -q /dev/mtd2 | dd of=rootfs.arm.sqmtd bs=64 skip=1
+		fi
 		initrfs=rootfs.arm.sqmtd
 	fi
-	
+
 	if test -s "cmdline"; then
 		cmdline=$(cat cmdline);
 	elif test "$initrfs" = "rootfs.arm.cpio-sq.lzma"; then
 		cmdline="console=ttyS0,115200 squashcpio"
 	else # squashrd
-		cmdline="console=ttyS0,115200 root=/dev/ram0 init=/init"
+		tftpargs=$(sed -n 's/.*tftpargs=\([.:[:digit:]]*\).*/\1/p' /proc/cmdline)
+		if test -n "$tftpargs"; then
+			tftpargs="tftpargs=$tftpargs"
+		fi
+		cmdline="console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk kexecmode $tftpargs"
+	fi
+
+	if test -f /proc/atags; then
+		atags="--atags"
+	fi
+	dtb=$(ls *.dtb 2> /dev/null)
+	if test -n "$dtb"; then
+		atags="--dtb $dtb"
 	fi
 
 	if test -s zImage -a -n "$initrfs"; then
 		mount / -o remount,ro
 		echo "rcE: starting a new kernel and root filesystem"
-		kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" --atags && kexec -e
+		kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" $atags && kexec -e
 	fi
 fi
 
