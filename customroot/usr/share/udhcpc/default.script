@@ -10,7 +10,9 @@ MODFILES="/etc/hosts /etc/resolv.conf /etc/samba/smb.conf /etc/httpd.conf"
 
 # record current date on modifiable files
 for i in $MODFILES; do
-    touch -r $i /tmp/$(basename $i)
+	if test -f $i; then
+		touch -r $i /tmp/$(basename $i)
+	fi
 done
 
 RESOLV_CONF="/etc/resolv.conf"
@@ -79,8 +81,11 @@ esac
 
 # recover dates on modified files
 for i in $MODFILES; do
-    touch -r /tmp/$(basename $i) $i
-	rm /tmp/$(basename $i)
+	tfile=/tmp/$(basename $i)
+	if test -f $i -a -f $tfile; then
+		touch -r $tfile $i
+		rm $tfile
+	fi
 done
 
 exit 0
