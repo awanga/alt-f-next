@@ -2,7 +2,7 @@
 
 . common.sh
 check_cookie
-write_header "Backups Setup"
+write_header "Backup Server Setup"
 
 CONF_BACKUP=/etc/backup.conf
 
