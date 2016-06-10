@@ -1,0 +1,32 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head profile="http://www.w3.org/2005/10/profile">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="icon" type="image/png" href="dns-323.png">
+<title>RAID Help</title>
+</head><body>
+
+<center><h2>NTP Setup</h2></center>
+
+<p>A computer derives its time using a quartz crystal that vibrates at a given frequency.<br>
+The crystal frequency depends on the crystal quality, its age and temperature, so it is necessary to
+calibrate it regularly and compensate its inherent drift and wander.<br>
+That is accomplished by using a NTP (Network Time Protocol) server, that keeps its time accurate by
+synchronizing itself with other higher grade NTP servers.
+
+<p>Usually your ISP will have a NTP server that you should use, or you can instead use a public server based on <a href="http://www.pool.ntp.org/zone/@">your country or continent name</a>, such as <tt>europe.pool.ntp.org</tt>, <tt>us.pool.ntp.org</tt>, etc.<br>
+If the above does not fit, you are advised to use <tt>0.pool.ntp.org</tt>, <tt>1.pool.ntp.org</tt>, etc,
+which will use your country nearest public NTP server (and you should not use the generic pool.ntp.org).
+
+<p>At power up, an operating system reads the current time from a battery-powered RTC (Real Time Clock),
+that itself suffers deviations from the true time. It might thus be appropriate to synchronizes the time at boot time. At poweroff the RTC is updated with the current time.
+
+<p>Under Alt-F you can run a NTP server continuously, which synchronizes itself with another NTP server. The Alt-F NTP server can be used as the source to synchronize other computers in your network, and it continously keeps the current time  accurate slowly accelerating or decelerating the clock until the time is correct. That consumes resources such as CPU, memory and network, and that can be important on underpowered computers such as the DNS-323.
+
+<p>Or you can instead adjust the time periodically at hours intervals using a script called <tt>adjtime</tt> that also takes into account and corrects the clock drift. That suffers from two inconvenient:
+<ul>
+<li>it is only possible on systems that present a constant and predictable clock drift
+<li>when the time adjustment is done the system time might step abruptly (mostly by tens of miliseconds), which might impact some filesystem operations.
+</ul>
+
+<br><button type=button onclick="history.back()">Back</button></body>
+</html>

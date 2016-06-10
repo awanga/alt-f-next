@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head profile="http://www.w3.org/2005/10/profile">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="icon" type="image/png" href="dns-323.png">
+<title>RAID Help</title>
+</head><body>
+
+<center><h2>inetd Setup</h2></center>
+
+<p>inetd is a super-server that launches on demand other servers such as ssh or ftp.
+<p>This means that only one server (inetd) is continuously running, saving system resources such as CPU and memory for other usages; that is particularly important on underpowered computers such as the DNS-323.
+<p>The downside is that servers launched by inetd are a bit slower to start, although that is not generally human perceptible, and that the box becomes susceptible to DoS attacks. If any of these downsides is a concern, then run the servers in standalone mode.
+
+<p><strong>Service</strong>: the generic service name, as it appears in /etc/services.
+<p><strong>Program</strong>: the server program to be launched on demand.
+<p><strong>Enable</strong>: enables the service to be under inetd control.
+<ul><li>For a service to be under inetd control, the checkbox must be checked; changes are applied when the Submit button is pressed.</li>
+<li>When the checkbox is grayed (disabled) this means that the service has its own configuration webUI, where it can be put under inetd control or be run as a standalone server (in this case it will appear under Services->Network)</li>
+</ul>
+<p><strong>Configure</strong>: allows to specifically configure the server program.
+
+<br><button type=button onclick="history.back()">Back</button></body>
+</html>
