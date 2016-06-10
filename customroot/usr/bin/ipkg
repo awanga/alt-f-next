@@ -1,5 +1,8 @@
 #!/bin/sh
 
+CONFF=/etc/ipkg.conf
+IPKG_DIR=/usr/lib/ipkg
+
 usage() {
 	echo "This is a frontend to ipkg. Use it always!
 Usage:
@@ -8,7 +11,7 @@ Usage:
 	ipkg -help
 	ipkg standard ipkg command"
 	if ! test -f //usr/bin/ipkg-cl; then
-		echo -e "\nipkg is not installed, install using the web interface."
+		echo -e "\nipkg is not installed, install using the webUI."
 	fi
 	exit 1
 }
@@ -59,8 +62,10 @@ clean() {
 		if ! aufs.sh -u >& /dev/null; then # no hope
 			echo "ipkg: can't umount aufs branch, exiting."
 			aufs.sh -r
+			rcall start >& /dev/null
 			exit 1
 		fi
+		rcall start >& /dev/null
 	fi
 	
 	rm -rf $(readlink -f /Alt-F) /Alt-F
@@ -68,8 +73,7 @@ clean() {
 
 install() {
 	echo Installing ipkg
-	
-	CONFF=/etc/ipkg.conf
+
 	DESTD=$(awk '/^dest/{print $3}' $CONFF)
 
 	if test "$DESTD" != "/Alt-F"; then
@@ -144,21 +148,77 @@ and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 	cd /
 	rm -rf $TMPD
 
-	echo "FIXME: remount /Alt-F with inotify makes 3.10.32 crash here, the *first* time"
-	echo "FIXME: Take the risk and don't remount with inotify??"
-
+	# "FIXME: remount /Alt-F with inotify bellow makes 3.10.32/3.18.21 crash, the *first* time"
+	mkdir -p /usr/lib/ipkg # this seems to solve the issue. Is it warming-up aufs?
 	if test -z "$local"; then
-		#aufs.sh -n
+		aufs.sh -n
 		ipkg-cl update
 		ipkg-cl install ipkg
-		#aufs.sh -r
+		aufs.sh -r
 	fi
 
 	if test -s /etc/preinst.status; then
-		cat /etc/preinst.status >> /usr/lib/ipkg/status
+		cat /etc/preinst.status >> $IPKG_DIR/status
 	fi
 
+	cat /etc/Alt-F > $IPKG_DIR/.fixed
+
 	exit 0
+}
+
+# remove installed packages of same or lower version than a existing pre-installed package.
+# remove even if at the same version, as an on-disk version might have been installed
+# (an upgraded version was released and installed and it is now available pre-installed)
+ipkg_upgrade() {
+
+	echo "ipkg: Firmware upgrade detected, fixing installed/pre-installed packages:"
+
+	to_rm=""
+	to_save=""
+
+	while read pkg pver; do
+		iver=$(awk '/Package:[[:space:]]*'$pkg'$/{getline; printf $2}' $IPKG_DIR/status)
+		echo $pkg:$pver:$iver:
+		if test -n "$iver" -a -n "$pver"; then
+			# return value from ipkg compare version is reversed,
+			# and operator < equal to <=, > equal >=, use >>, <<
+
+			uninst=""
+			if ! ipkg-cl -V0 compare_versions "$pver" ">>" "$iver"; then
+				echo uninstall $pkg $iver, $pver is pre-installed
+				to_rm="$to_rm $pkg"
+				uninst=y
+			fi
+
+			# on-disk pkg updated
+			if ! ipkg-cl -V0 compare_versions "$pver" "=" "$iver"; then
+				if test -f $IPKG_DIR/info/$pkg.list; then
+					echo uninstall $pkg $iver, $iver is on-disk
+					to_rm="$to_rm $pkg"
+					uninst=y
+				fi
+			fi
+
+			if test -n "$uninst" -a -f $IPKG_DIR/info/$pkg.conffiles; then
+				to_save="$to_save $(cat $IPKG_DIR/info/$pkg.conffiles)"
+			fi
+		fi
+	done < /etc/preinst
+
+	# when removing, rc<service> links are removed, hot_aux recreates some
+	if test -n "$to_rm"; then
+		# backup conf files
+		for i in $to_save; do cp /$i /$i.bck; done
+		aufs.sh -n
+		ipkg-cl -force-depends remove $to_rm
+		aufs.sh -r
+		# restore conf-files 
+		for i in $to_save; do mv /$i.bck /$i; done
+	fi
+
+	if test -s /etc/preinst.status; then
+		cat /etc/preinst.status >> $IPKG_DIR/status
+	fi
 }
 
 if test "$#" != 0 -a "$1" = "-clean"; then
@@ -194,12 +254,18 @@ elif test "$#" != 0 -a "$1" = "-help"; then
 
 elif test -f /usr/bin/ipkg-cl; then
 
+	# this only needs to be done once for a new firmware upgrade
+	if test "$(cat $IPKG_DIR/.fixed 2> /dev/null)" != $(cat /etc/Alt-F) ; then
+		ipkg_upgrade
+		cat /etc/Alt-F > $IPKG_DIR/.fixed
+	fi
+
 	# removing a package if it is preinstalled requires ressurrecting/reinstalling it
 	if echo $* | grep -q '[[:space:]]*remove[[:space:]]*'; then
 		pkg=$(eval echo \$$#)   # assume pkg is last command argument
 		# some packages have a rcscript, remake it if it exists
 		if test -f /usr/lib/ipkg/info/$pkg.list && grep -q /etc/init.d/S.* /usr/lib/ipkg/info/$pkg.list; then
-			rclink=$(grep -ho '/sbin/rc.*' /usr/lib/ipkg/info/$pkg.postrm)
+			rclink=$(grep -ho '/sbin/rc.*' /usr/lib/ipkg/info/$pkg.postrm 2> /dev/null)
 		fi
 	fi
 
