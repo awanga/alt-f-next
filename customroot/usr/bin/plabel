@@ -38,7 +38,8 @@ case $type in
 	vfat) prog=dosfslabel ;;
 	ntfs) prog=ntfslabel; opt="-f" ;;
 	ext2|ext3|ext4) prog=e2label ;;
-	*) echo "Unknown filesystem"; exit 1;;
+	btrfs) prog=btrfs; opt="filesystem label" ;;
+	*) echo "Unknown filesystem"; exit 1 ;;
 esac
 
 which $prog >/dev/null
