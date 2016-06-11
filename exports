@@ -7,13 +7,21 @@ tailcmp() {
 	if ! test -f $1 -a -f $2; then
 		echo "No $3 configuration found"
 		return 0
-	elif cmp -si $(head -n 4 $1 | wc -c):$(head -n 4 $2 | wc -c) $1 $2; then
+	fi
+
+	f1=$(mktemp); f2=$(mktemp)
+	tail -n +5 $1 | grep -v CONFIG_PREFIX > $f1
+	tail -n +5 $2 | grep -v CONFIG_PREFIX > $f2
+
+	#elif cmp -si $(head -n 4 $1 | wc -c):$(head -n 4 $2 | wc -c) $1 $2; then
+	if cmp -s $f1 $f2; then
 		echo "No $3 configuration changes"
 	else
 		echo "Configuration for $3 has changed. To examine differences use"
 		echo "   diff $1 $(echo $2 | sed "s|$BLDDIR|\$BLDDIR|")"
 		st=1
 	fi
+	rm $f1 $f2
 	return $st
 }
 
@@ -29,7 +37,6 @@ check_current() {
 	cbusybox=$BLDDIR/build_arm/busybox-$BR2_BUSYBOX_VERSION/.config
 	cuclibc=$BLDDIR/toolchain_build_arm/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
 	ckernel=$BLDDIR/project_build_arm/$BR2_PROJECT/linux-$BR2_CUSTOM_LINUX26_VERSION/.config
-
 
 	tailcmp local/$BR2_PROJECT/$BR2_PROJECT.config .config board || ((st++))
 	tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc || ((st++))
