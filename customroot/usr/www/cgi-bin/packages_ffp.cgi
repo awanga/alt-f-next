@@ -18,7 +18,7 @@ if ! test -d /ffp/var/packages -o -d /ffp/funpkg/installed; then
 		<table>
 		<tr><td>Install ffp-0.5 (stable)</td><td><input type=radio checked name=ffpver value=0.5></td></tr>
 		<tr><td>Install ffp-0.7 (recent)</td><td><input type=radio name=ffpver value=0.7></td></tr>
-		<tr><td>into</td><td>$(select_part)</select></td></tr>
+		<tr><td>into</td><td>$(select_part)</td></tr>
 		<tr><td></td><td><input type=submit name=install value=Install></td></tr>
 		</table></form></body></html>
 	EOF
