@@ -159,6 +159,9 @@ elif test -n "$Stop"; then
 
 elif test -n "$Start"; then
 	mdev=$Start
+	if grep -q '^'$mdev'.*inactive' /proc/mdstat ; then
+		mdadm --stop /dev/$mdev > /dev/null 2>&1
+	fi
 	res="$(mdadm --assemble /dev/$mdev 2>&1)"
 	if test $? != 0; then
 		msg "Starting the $mdev RAID device failed:\n\n$res"
@@ -228,7 +231,7 @@ elif test -n "$Destroy_raid"; then
 		mdadm --zero-superblock /dev/$i >& /dev/null
 	done
 	sleep 3
-	rm /dev/$mdev
+	rm /dev/$mdev >& /dev/null
 	mdadm --examine --scan --config=partitions > /etc/mdadm.conf
 	echo "DEVICES /dev/sd*" >> /etc/mdadm.conf
 
