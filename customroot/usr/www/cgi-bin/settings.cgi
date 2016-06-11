@@ -41,11 +41,11 @@ cat<<-EOF
 
 	<fieldset><legend>Computer Disk</legend>
 	<form action="/cgi-bin/settings_proc.cgi" method="post">
-	Save current settings to file: <input type=submit name=action value="Download">
+	Backup current settings to file: <input type=submit name=action value="Download">
 	</form>
 
 	<form action="/cgi-bin/settings_proc.cgi" method="post" enctype="multipart/form-data"><br>
-	Load settings from file: <input type=file name=uploadedfile>
+	Load backup settings from file: <input type=file name=settings>
 	<input type=submit name=action value="Upload" onclick="return load_ask()">
 	</form>
 	</fieldset>
