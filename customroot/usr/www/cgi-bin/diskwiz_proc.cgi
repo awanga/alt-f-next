@@ -8,6 +8,7 @@ check_cookie
 
 MIN_SIZE=20000 # minimum size of a partition or filesystem, in 512 bytes sectors (10MB)
 TWOTB=4294967296 # 2.2TB
+# FIXME: the sh 'let'/'$((' range is limited to +/-2TB, a signed 32 bits int, use 'expr' !
 
 # $1=error message
 err() {
@@ -45,8 +46,6 @@ minsize() {
 	done
 	
 	# subtract 1MB(2048 sectors), as fdisk, sfdisk, sgdisk, /sys/block/.../size report different sizes
-	# subtract also 512MB(1048576 sectors) for swap size?
-#	echo $(expr $msz - 2048 - 1048576)
 	echo $(expr $msz - 2048)
 }
 
@@ -176,7 +175,11 @@ gpt_partition() {
 
 	clean_traces $i
 	sgdisk --zap-all $i >& /dev/null
-	res=$(sgdisk --set-alignment=8 --new=1:64:+512M --typecode=1:8200 $i)
+
+	swaps=$(sgdisk -p $i | awk '/last usable/ {printf "%d", $10/'$TWOTB'*512}') # 512M per 2TB
+	if test "$swaps" -lt 512; then swaps=512; fi
+
+	res=$(sgdisk --set-alignment=8 --new=1:64:+${swaps}M --typecode=1:8200 $i)
 	if test $? != 0; then
 		err "Error creating swap, st=$? $res"
 	fi
@@ -184,7 +187,7 @@ gpt_partition() {
 	firstend=$(sgdisk --set-alignment=8 --end-of-largest $i)
 	if test "$2" = "raid"; then
 		if test "$3" = "equal"; then
-			commonsect="+$(expr $4 \* 512 / 1024 - 524288)K"
+			commonsect="+$(expr $4 \* 512 / 1024 - \( $swaps \* 1024 \))K"
 			cmd="--new=2:0:$commonsect --typecode=2:fd00"
 		else
 			cmd="--new=2:0:$firstend --typecode=2:fd00"
@@ -301,6 +304,7 @@ create_fs() {
 	EOF
 	chmod +x /tmp/format-$dev
 	/tmp/format-$dev < /dev/console > /dev/null 2> /dev/null &
+	sleep 3
 	
 	cat<<-EOF
 		<script type="text/javascript">
@@ -309,16 +313,16 @@ create_fs() {
 	EOF
 
 	pgr="-\|/"; i=0;
-	while test -f /tmp/format-$dev; do
-		sleep 3
-		i=$(((i+1)%4))
-		fs_progress $dev
+	while kill -0 $(cat /tmp/format-${dev}.pid) 2> /dev/null; do
 		cat<<-EOF
 			<script type="text/javascript">
-			obj.innerHTML = '$ln \\${pgr:$i:1}'
+			obj.innerHTML = '\\${pgr:$i:1}'
 			</script>
 		EOF
+		sleep 3
+		i=$(((i+1)%4))
 	done
+	rm /tmp/format-${dev}*
 
 	if test -f /tmp/${dev}.err; then
 		msg=$(cat /tmp/${dev}.err)

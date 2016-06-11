@@ -61,8 +61,15 @@ EOF
 j=1;
 for i in $disks; do
 	disk=$(basename $i)
-
 	disk_details $disk
+	sectsz=$(cat /sys/block/$disk/queue/logical_block_size)
+	#sectsz=4096
+
+	wizdisk="checked"
+	if test "$sectsz" != "512"; then
+		bigsectsz="<span class=\"error\">Disk has 4KB logical sector size, not yet supported.</span>"
+		wizdisk="disabled"
+	fi
 
 	if test "$(cat /sys/block/${disk}/size)" -gt 3907024065; then
 		huge_disk="yes"
@@ -70,11 +77,12 @@ for i in $disks; do
 
 	cat<<-EOF
 		<tr>
-		<td align=center><input type=checkbox checked id="disk_$j" name="disk_$j" value="$disk"></td>
+		<td align=center><input type=checkbox $wizdisk id="disk_$j" name="disk_$j" value="$disk"></td>
 		<td>$dbay</td>
 		<td align=center>$disk</td>
 		<td align=right>$dcap</td>
 		<td>$dmod</td>
+		<td>$bigsectsz</td>
 		</tr>
 	EOF
 	j=$((j+1))
@@ -136,7 +144,7 @@ cat<<-EOF
 		<td>Data security, duplicate everything on two disks (and use an external USB disk, if available, as a spare) (raid1)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=raid5></td>
-		<td>Data security and space, with two disks plus an external USB disk (raid5)</td></tr>
+		<td>Data security and space, with two disks plus an external USB disk (raid5). Complex maintenance.</td></tr>
 
 	<tr><td colspan=2><br>And I want the filesystems to be:<br></td></tr>
 	<tr><td align=center>
