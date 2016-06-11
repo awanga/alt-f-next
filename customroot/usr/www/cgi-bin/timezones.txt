@@ -252,7 +252,7 @@ Asia/Irkutsk  IRKT-8IRKST,M3.5.0,M10.5.0/3
 Asia/Istanbul  EET-2EEST,M3.5.0/3,M10.5.0/4
 Asia/Jakarta  WIT-7
 Asia/Jayapura  EIT-9
-Asia/Jerusalem  IDDT
+Asia/Jerusalem  IST-2IDT,M3.4.5,M10.5.0
 Asia/Kabul  AFT-4:30
 Asia/Kamchatka  PETT-12PETST,M3.5.0,M10.5.0/3
 Asia/Karachi  PKT-5
@@ -291,7 +291,7 @@ Asia/Taipei  CST-8
 Asia/Tashkent  UZT-5
 Asia/Tbilisi  GET-4
 Asia/Tehran  IRDT
-Asia/Tel_Aviv  IDDT
+Asia/Tel_Aviv  IST-2IDT,M3.4.5,M10.5.0
 Asia/Thimbu  BTT-6
 Asia/Thimphu  BTT-6
 Asia/Tokyo  JST-9
