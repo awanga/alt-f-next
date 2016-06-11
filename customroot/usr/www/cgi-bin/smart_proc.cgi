@@ -58,9 +58,10 @@ if test -n "$ldays" -o -n "$sdays"; then
 	fi
 fi
 
+opt="$opt -m @systemerror.sh,"
 if test -n "$mailerror"; then
 	mailto
-	opt="$opt -m $SENDTO"
+	opt="${opt}$SENDTO"
 fi
 
 if test -n "$mailtest"; then

@@ -38,7 +38,7 @@ if test -e $CONFF; then
 		case $i in
 		-a|--) shift;;
 		-d|-S) shift; shift;;
-		-m) MAILF=checked; shift; shift;;
+		-m)  shift; if test -n "${1#*,}"; then MAILF=checked; fi; shift;;
 		-M) MAILTF=checked; shift; shift;;
 		-n) shift; if test "$1" = "never"; then WAKEF=checked; fi; shift;;
 		-s) shift; tests="$1"; shift;;
