@@ -34,11 +34,23 @@ flash_error() {
 	exit 1
 }
 
+# rev-A:
+# - Flashing kernel, it should take about 21 seconds: 23 Verifying... OK
+# - Flashing rootfs, it should take about 86 seconds: 91 Verifying... OK
+# 
+# rev-B:
+# - Flashing kernel, it should take about 21 seconds: 30 Verifying... OK
+# - Flashing rootfs, it should take about 86 seconds: 109 Verifying... OK
+# 
+# rev-C:
+# - Flashing kernel, it should take about 21 seconds: 47 Verifying... OK
+# - Flashing rootfs, it should take about 86 seconds: 195 Verifying... OK 
+
 nor_flash() {
 	sz=$(stat -t $1 | cut -d" " -f2)
-	tm=$(expr $sz / 75126 + 1)
-	wait_count_start "<p>Flashing $3, it should take about $tm seconds"
-	cat $1 > /dev/mtdblock${2:3} # use block device, don't need to use flash_erase?
+	tm=$(expr $sz / 75126 + 1); tm2=$(expr $tm \* 25 / 10)
+	wait_count_start "<p>Flashing $3, it should take between $tm and $tm2 seconds"
+	cat $1 > /dev/mtdblock${2:3} # use block device, no need to erase (no mtd-utils) 
 	wait_count_stop
 
 	echo "Verifying... "
@@ -64,29 +76,31 @@ nand_flash() {
 	rm -f $TF
 }
 
+check_fwfiles() {
+	if ! test -f $kernel_file -a -f $initramfs_file; then
+		rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
+		cat<<-EOF
+			<br>
+			<form action="/cgi-bin/firmware.cgi" method="post">
+			Kernel and/or ramdisk file missing <input type="submit" value="Retry">
+			</form></body></html>
+		EOF
+		exit 0
+	fi
+
+	if test "$flash_defaults" = "flash" -a ! -s $defaults_file; then
+		rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
+		cat<<-EOF
+			<br>
+			<form action="/cgi-bin/firmware.cgi" method="post">
+			defaults file missing or empty <input type="submit" value="Retry">
+			</form></body></html>
+		EOF
+		exit 0
+	fi
+}
+
 html_header "Firmware Updater"
-
-if ! test -f $kernel_file -a -f $initramfs_file; then
-	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
-	cat<<-EOF
-		<br>
-		<form action="/cgi-bin/firmware.cgi" method="post">
-		Kernel and/or ramdisk file missing <input type="submit" value="Retry">
-		</form></body></html>
-	EOF
-	exit 0
-fi
-
-if test "$flash_defaults" = "flash" -a ! -s $defaults_file; then
-	rm -f $kernel_file $initramfs_file $sqimage_file $defaults_file
-	cat<<-EOF
-		<br>
-		<form action="/cgi-bin/firmware.cgi" method="post">
-		defaults file missing or empty <input type="submit" value="Retry">
-		</form></body></html>
-	EOF
-	exit 0
-fi
 
 if test "$flash" = "SpecialReboot"; then
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
@@ -94,11 +108,13 @@ if test "$flash" = "SpecialReboot"; then
 	dd if=/dev/mtdblock3 of=/boot/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 
 elif test "$flash" = "TryIt"; then
+	check_fwfiles
 	dd if=$kernel_file of=/boot/zImage bs=64 skip=1 >& /dev/null
 	dd if=$initramfs_file of=/boot/rootfs.arm.sqmtd bs=64 skip=1 >& /dev/null
 	rm -f $initramfs_file $kernel_file $sqimage_file $defaults_file
 
 elif test "$flash" = "FlashIt"; then
+	check_fwfiles
 	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br><br>If you suspect that something went wrong,<br>you can try to upgrade again after stopping all running processes.</h3>"
 
 	rcall stop >& /dev/null
@@ -107,22 +123,27 @@ elif test "$flash" = "FlashIt"; then
 	echo 50 > /tmp/sys/power_led/delay_off 
 	echo 50 > /tmp/sys/power_led/delay_on
 
-	if grep -qE 'DNS-321-A1A2|DNS-323' /tmp/board; then
+	if grep -qE 'DNS-321-Ax|DNS-323' /tmp/board; then
 		kernel_mtd=mtd2
 		initramfs_mtd=mtd3
 		defaults_mtd=mtdblock0
 		sqimage_mtd=""
-	elif grep -qE 'DNS-320-A1A2|DNS-320L-A1|DNS-325-A1A2' /tmp/board; then
+	elif grep -qE 'DNS-327L|DNS-320-[AB]x|DNS-320L-Ax|DNS-325-Ax' /tmp/board; then
 		kernel_mtd=mtd1
 		initramfs_mtd=mtd2
-		defaults_mtd=mtdblock5
 		sqimage_mtd=mtd3
-		fs_type="-t jffs2"
+		if grep -qE 'DNS-327L' /tmp/board; then
+			fs_type="-t ubifs"
+			defaults_mtd=ubi0_0
+		else
+			fs_type="-t jffs2"
+			defaults_mtd=mtdblock5
+		fi
 	else
 		rcsysctrl start
 		msg "bummer!"
 	fi
- 
+
 	flash $kernel_file $kernel_mtd kernel
 	flash $initramfs_file $initramfs_mtd rootfs
 
@@ -136,7 +157,7 @@ elif test "$flash" = "FlashIt"; then
 
 		"clear")
 			echo "<p>Erasing flashed settings, it should take some 5 seconds..."
-			loadsave_settings -cf
+			loadsave_settings -cf >& /dev/null
 			;;
 
 		"flashfile")
@@ -152,7 +173,7 @@ elif test "$flash" = "FlashIt"; then
 
 		"recover")
 			echo "<p>Recovering vendors settings from backup, it should take some 5 seconds..."
-			loadsave_settings -rc
+			loadsave_settings -rc  >& /dev/null
 			;;
 	esac
 
@@ -167,8 +188,7 @@ fi
 
 cat<<-EOF
 	<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-	You can continue using the current firmware,
-	the new firmware will only be active after a reboot.<br>
+	You should reboot the box now for the new firmware to become active.
 	<input type=submit name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nYou will be connected again in 60 seconds.\n\nProceed?')">
 	</form></body></html>
 EOF

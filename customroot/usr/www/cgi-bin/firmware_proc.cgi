@@ -5,14 +5,19 @@ check_cookie
 
 #debug
 
+html_header "Firmware Updater"
+
+busy_cursor_start
+echo "<p>Uploading file... "
+
 if ! upfile=$(upload_file); then
-	msg "Uploading failed: $upfile"
+	msg "Error: Uploading failed: $upfile"
 	exit 0
 fi
 
 if ! test -s $upfile; then
 	rm -f $upfile
-	msg "The uploaded file is empty."
+	msg "Error: The uploaded file is empty."
 	exit 0
 fi
 
@@ -20,9 +25,23 @@ cd /tmp
 res=$(dns323-fw -s $upfile)
 st=$?
 
-rm -f $upfile
+echo "done.</p><p>Calculating uploaded file SHA1..."
+sha1=$(sha1sum $upfile | cut -d" " -f1)
+if test -s fw.sha1; then
+	if test "$sha1" != $(cat fw.sha1 | cut -d" " -f1); then
+		rm -f $upfile kernel initramfs sqimage defaults fw.sha1
+		msg "Error: The uploaded file does not match its sha1 file"
+		exit 0
+	fi
+	sha1chk=y
+fi
 
-supported="D-Link DNS-320-A1/A2/A3, DNS-320-B1/B2, DNS-320L-A1/A2/A3, DNS-321-A1/A2/A3, DNS-323-A1/B1/C1, DNS-325-A1/A2, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
+rm -f $upfile fw.sha1
+
+echo "done.</p>"
+busy_cursor_end
+
+supported="D-Link DNS-327L-Ax, DNS-320-Ax, DNS-320-Bx, DNS-320L-Ax, DNS-321-Ax, DNS-323-A1/B1/C1, DNS-325-Ax, Conceptronic CH3SNAS, Fujitsu-Siemens DUO 35-LR"
 
 if test $st != "0"; then
 	rm -f kernel initramfs sqimage defaults
@@ -43,6 +62,7 @@ fi
 # DNS320-A		0		8			7			1/2		0		4
 # DNS320-B		0		8			c			1		1		5
 # DNS320L		0		8			b			1		1		6
+# DNS327L		0		8			d			1		1		7
 # Alt-F-0.1B	1		2			3			4		5		0
 # Alt-F-0.1RC	7		1			1			1		4		0
 
@@ -56,11 +76,12 @@ sig=${product_id}${custom_id}${model_id}${sub_id}
 brd=$(cat /tmp/board)
 
 case "$sig" in
-	"0851"|"0852") ftype="DNS-325-A1A2" ;; # DNS-325-rev-A1A2
-	"0871"|"0872") ftype="DNS-320-A1A2" ;; # DNS-320-rev-A1A2
-	"08c1") ftype="DNS-320-B2" ;; # DNS-320-rev-B
-	"08b1") ftype="DNS-320L-A1" ;; # DNS-320L-rev-A1
-	"a111"|"a112") ftype="DNS-321-A1A2" ;; # DNS-321-rev-A1A2
+	"08d1") ftype="DNS-327L-Ax" ;; # DNS-327L-rev-Ax
+	"0851"|"0852") ftype="DNS-325-Ax" ;; # DNS-325-rev-Ax
+	"0871"|"0872") ftype="DNS-320-Ax" ;; # DNS-320-rev-Ax
+	"08c1") ftype="DNS-320-Bx" ;; # DNS-320-rev-B
+	"08b1") ftype="DNS-320L-Ax" ;; # DNS-320L-rev-A1
+	"a111"|"a112") ftype="DNS-321-Ax" ;; # DNS-321-rev-Ax
 	"9111"|"9112") ftype="DNS-343" ;; # DNS-343-rev-?
 	"7111") ftype="DNS-323" ;; # DNS-323-rev-A1B1C1
 	"7211") ftype="CH3SNAS" ;;
@@ -74,13 +95,14 @@ esac
 nomsg="Your box is a $brd and this firmware is for the $ftype"
 
 case "$brd" in
-	"DNS-325-A1A2") if test $ftype != "DNS-325-A1A2"; then notcomp=yes; fi ;;
-	"DNS-320-A1A2") if test $ftype != "DNS-320-A1A2"; then notcomp=yes; fi ;;
-	"DNS-320L-A1") if test $ftype != "DNS-320L-A1" -a $ftype != "DNS-320-B2"; then notcomp=yes; fi ;;
-	"DNS-321-A1A2") if test $ftype != "DNS-321-A1A2"; then notcomp=yes; fi ;;
+	"DNS-327L-Ax") if test $ftype != "DNS-327L-Ax"; then notcomp=yes; fi ;;
+	"DNS-325-Ax") if test $ftype != "DNS-325-Ax"; then notcomp=yes; fi ;;
+	"DNS-320-Ax") if test $ftype != "DNS-320-Ax"; then notcomp=yes; fi ;;
+	"DNS-321-Ax") if test $ftype != "DNS-321-Ax"; then notcomp=yes; fi ;;
+	"DNS-320-Bx"|"DNS-320L-Ax")
+		if test $ftype != "DNS-320-Bx" -a $ftype != "DNS-320L-Ax"; then notcomp=yes; fi ;;
 	"DNS-323-A1"|"DNS-323-B1"|"DNS-323-C1")
-		if test $ftype != "DNS-323" -a $ftype != "CH3SNAS" -a $ftype != "DUO35LR"; then notcomp=yes; fi
-		;;
+		if test $ftype != "DNS-323" -a $ftype != "CH3SNAS" -a $ftype != "DUO35LR"; then notcomp=yes; fi ;;
 	*)	notcomp=yes
 		nomsg="Your box is a $brd and it is not supported.\n\nOnly the $supported boxes are supported."
 		;;
@@ -91,8 +113,6 @@ if test -n "$notcomp"; then
 	msg "$nomsg"
 	exit 0
 fi
-
-html_header "Firmware Update"
 
 #echo "<pre>$res</pre>"
 
@@ -106,20 +126,26 @@ else
 	flashfile="checked"
 fi
 
-if echo $brd | grep -qE "DNS-325|DNS-320"; then
+if echo $brd | grep -qE "DNS-327L|DNS-325|DNS-320"; then
 	try_dis="disabled"
 	recover_dis="disabled"
 fi
 
-echo "<h4>Everything looks OK.<br>$nomsg.</h4>"
+echo "<h4>Everything looks OK.<br></h4>$nomsg."
+if test -n "$sha1chk"; then
+	echo "<p>The uploaded file matches its SHA1 signature.<br>"
+else
+	echo "<p>For further security you can manually verify the downloaded file integrity:<br>
+	SHA1: $sha1<br>"
+fi
 
 if losetup | grep -q /dev/mtdblock3; then
 	runfromflash="disabled"
-	flmsg='<h4 class="blue">Alt-F is running from flash memory,
-you have to reboot into a special mode by hitting the "SpecialReboot" button
-and after rebooting run again the "Firmware Updater" and hitting the "FlashIt" button.
-<br>Some Alt-F firmware can be tried without flashing, by hitting the "TryIt" button.</h4>
-<input type=submit name=flash value="SpecialReboot">'
+	flmsg='<h4 class="blue">To flash Alt-F you have to reboot into a special mode by hitting
+		the "SpecialReboot" button,<br> and afterwards the "Reboot" button.
+		After rebooting run again the "Firmware Updater".<br><br>
+		If however you only want to try a new Alt-F fw you can hit the "TryIt" button bellow.</h4>
+		<input type=submit name=flash value="SpecialReboot">'
 fi
 
 cat<<-EOF
