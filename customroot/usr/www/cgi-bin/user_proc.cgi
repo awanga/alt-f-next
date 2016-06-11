@@ -11,16 +11,15 @@ CONF_MISC=/etc/misc.conf
 uscript=$(httpd -d "$user_script")
 
 if test -n "$uscript"; then
-	if ! test -f "$uscript"; then
-		msg "File does not exists."
-	fi
 
-	if ! test -x "$uscript"; then
-		msg "File is not executable."
+	sdir=$(dirname $uscript)
+	if ! find_mp "$sdir" >& /dev/null; then
+		msg "The script must be on a filesystem such as /mnt/sda2 or /mnt/md0."
 	fi
-
-	# stat -t does give permissions in hex...
-	chmod og-w "$uscript" 
+	
+	mkdir -p "$sdir"
+	httpd -d "$userscript" | dos2unix > $uscript
+	chmod +x,og-wx "$uscript" 
 fi
 
 if test -z "$create_log"; then
