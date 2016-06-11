@@ -88,7 +88,6 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 	}
 
 	function advanced(dcap, disk) {
-
 		st = document.getElementById("adv_id").value == "Advanced" ? true : false 
 		if ( st == false)
 			updatesect(dcap, disk)
@@ -105,14 +104,30 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 		document.getElementById("adv_hid").value = (st == false ? "Basic" : "Advanced")
 	}
 
+	// update free space, check for NaNs, display error messages
+	function check_NaN(dcap, msg) {
+		document.getElementById("free_id").value = Math.round(dcap * 512 / 1e6)/1000;
+		if (dcap < 0 || isNaN(dcap))
+			document.getElementById("free_id").style.color = "red"
+		else
+			document.getElementById("free_id").style.color = ""
+
+		if (msg.length > 0)
+			alert(msg)
+	}
+
+	// update size view and free available space when in advance mode
 	function check_adv(dcap, disk, pn) {
-		free = dcap
 		ostart = 0
 		msg = ""
 		for (i=1; i<=4; i++) {
-			start = parseInt(document.getElementById("start_" + disk + i).value)
-			len = parseInt(document.getElementById("len_" + disk + i).value)
-			type = document.getElementById("type_" + disk + i).selectedIndex
+			start = Number(document.getElementById("start_" + disk + i).value)
+			len = Number(document.getElementById("len_" + disk + i).value)
+
+			if (isNaN(start))
+				msg += "Start of partition " + i + " is not a number" + '\n'
+			if (isNaN(len))
+				msg += "End of partition " + i + " is not a number" + '\n'
 
 			rem = start % 8
 			if (rem != 0)
@@ -121,69 +136,166 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 			if (rem != 0)
 				msg += "Length of partition " + i + " is not 4k aligned (by " + rem + " sectors)" + '\n'
 
-			off = ostart - start 
-			if (off > 0 && type != 0)
-				msg += "Partition " + i + " starts " + off + " sectors within partition " + (i-1) + '\n'
-			ostart = start + len
-
 			document.getElementById("cap_" + disk + i).value =  Math.round(len * 512 / 1e6)/1000;
-			free -= len;
+			dcap -= len;
 		}
-		if (free < 0)
-			msg += "More sectors allocated than available on disk."
-
-		document.getElementById("free_id").value = Math.round(free * 512 / 1e6)/1000;
-
-		if (msg.length > 0)
-			alert(msg)
+		check_NaN(dcap, msg)
 	}
 
 	// update sectors view and free available space when entering partition size in GB
-	function updatesect(dcap, dsk) {
-		free = dcap;
-		msg = ""
-		prev_end = 64
+	function updatesect(dcap, dsk, pn) {
+		var part = [], free = [], msg = "", curr = 64
+
+		// get displayed partition table
 		for (i=1; i<=4; i++) {
-			if (document.getElementById("keep_" + dsk + i).checked == false) {
-				start = prev_end
-				nsect = document.getElementById("cap_" + dsk + i).value * 1e9 / 512
-				nsect -= nsect % 8
-				document.getElementById("start_" + dsk + i).value = start
-				document.getElementById("len_" + dsk + i).value = nsect
+			cap = Number(document.getElementById("cap_" + dsk + i).value)
+			if (isNaN(cap))
+				msg += "Size of partition " + i + " is not a number" + '\n'
+			part.push({
+				pn: i,
+				chk: document.getElementById("keep_" + dsk + i).checked,
+				start: Number(document.getElementById("start_" + dsk + i).value),
+				len: Number(document.getElementById("len_" + dsk + i).value),
+				cap: cap})
+			}
+
+		// sort by increasing start sectors
+		part.sort(function(a,b){ return a.start - b.start})
+		for (i in part)
+			console.log("part: " + part[i].pn + " " + part[i].chk + " " + part[i].start + " " + part[i].len + " " + (part[i].start + part[i].len) + " " + part[i].cap)
+
+		// find free areas bettwin checked partitions
+		for (i in part) {
+			if (part[i].chk == true) {
+				ps = part[i].start
+				pl = part[i].len
+				if (pl == 0)
+					continue
+				fs = curr
+				fl = ps - fs
+				free.push({start: fs, len: fl})
+				curr = ps + pl
+				rem = curr % 8
+				if (rem != 0)
+					curr += 8 - rem
+			}
+		}
+		// last free area until the disk ends
+		if (curr < dcap) {
+			var t = {start: curr, len: dcap - curr}
+			free.push(t)
+		}
+		for (i in free)
+			console.log(i + " free: " + free[i].start + " " + free[i].len + " " + (free[i].start + free[i].len))
+
+		// sort by increasing part sectors
+		part.sort(function(a,b){ return a.pn - b.pn})
+
+		// fit partition to first free area
+		for (i in part) {
+			found = 0
+			if (part[i].chk == true) {
+				st = part[i].start
+				nsect = part[i].len
 			} else {
-				start = parseInt(document.getElementById("start_" + dsk + i).value)
-				nsect = parseInt(document.getElementById("len_" + dsk + i).value)
-				if (prev_end > start) {
-					pmaxsize = Math.round((prev_end - start) * 512 / 1e6)/1000
-					msg += "Partition " + (i - 1) + " capacity exceeded by " + pmaxsize + " GB" + '\n'
+				nsect = part[i].cap * 1e9 / 512
+				nsect -= nsect % 8
+				if (nsect == 0) {
+					st = 0 
+				} else {
+					for (j in free) {
+						if (free[j].len >= nsect) {
+							st = free[j].start
+							free[j].start += nsect
+							free[j].len -= nsect
+							found = 1
+							break	
+						}
+					}
+					if (found == 0)
+						msg += "No continuos free disk space for partition " + part[i].pn 
 				}
 			}
-			prev_end = start + nsect
-			free -= document.getElementById("len_" + dsk + i).value;
+			p = part[i].pn
+			document.getElementById("start_" + dsk + p).value = st
+			document.getElementById("len_" + dsk + p).value = nsect
+			document.getElementById("cap_" + dsk + p).value = Math.round(nsect * 512 / 1e6)/1000
+			//document.getElementById("cap_" + dsk + p).value = (nsect * 512 / 1e9).toFixed(3)
+			dcap -= nsect;
 		}
-		if (prev_end > dcap) {
-			pmaxsize = Math.round((prev_end - dcap) * 512 / 1e6)/1000
-			msg += "Partition 4 capacity exceeded by " + pmaxsize + " GB" + '\n'
-		}
+		check_NaN(dcap, msg)
+	}
 
-		cfree = Math.round(free * 512 / 1e6)/1000;
-		document.getElementById("free_id").value = cfree;
-		if (cfree < 0)
-			msg += '\n' + "Disk capacity exceeded by " + (-cfree) + " GB"
- 
-		if (msg.length > 0)
-			alert(msg)
+	// disable start/len when submission is canceled
+	function re_set(disk, pst) {
+		for (i=0; i<=4; i++) {
+			if (pst[i] == true) {
+				document.getElementById("start_" + disk + i).disabled = true;
+				document.getElementById("len_" + disk + i).disabled = true;
+			}
+		}
 	}
 
 	// partition submit
-	function psubmit(diskcap, bay, free) {
-		if (document.getElementById("free_id").value < 0 ) {
-			alert("The sum of the partitions size is greater than the disk capacity.\n\
-Decrease the size of some partitions and retry.")
-			return false
+	function psubmit(diskcap, disk, bay, rawcap) {
+		var start = [], len = [], end = [], type = [], pst = [];
+		emsg = "";
+		for (i=1; i<=4; i++) {
+			// _proc.cgi has to read start and len, set by update sectors on Basic mode
+			// but if user cancels the submission, previous state needs to be set
+			pst[i] = document.getElementById("start_" + disk + i).disabled
+			document.getElementById("start_" + disk + i).disabled = false;
+			document.getElementById("len_" + disk + i).disabled = false;
+
+			start[i] = Number(document.getElementById("start_" + disk + i).value)
+			len[i] = Number(document.getElementById("len_" + disk + i).value)
+			end[i] = start[i] + len[i]
+			type[i] = document.getElementById("type_" + disk + i).selectedIndex
+		}
+
+		for (i=1; i<=4; i++) {
+			if (isNaN(start[i])) 
+				emsg += "Start of partition " + i + " is not a number" + '\n'
+			if (isNaN(len[i]))
+				emsg += "Length of partition " + i + " is not a number" + '\n'
+
+			rawcap -= len[i]
+			rem = start[i] % 8
+			if (rem != 0)
+				emsg += "Start of partition " + i + " is not 4K aligned (by " + rem + " sectors)" + '\n'
+
+			rem = len[i] % 8
+			if (rem != 0)
+				emsg += "Length of partition " + i + " is not 4K aligned (by " + rem + " sectors)" + '\n'
+
+			for (j=1; j<=4; j++) {
+				if (i == j) continue
+				if (start[j] == undefined || len[j] == undefined) continue
+
+				if (start[i] >= start[j] && start[i] < end[j])
+					emsg += "Start of partition " + i + " conflicts with partition " + j + '\n'
+				if (end[i] > start[j] && end[i] < end[j])
+					emsg += "End of partition " + i + " conflicts with partition " + j + '\n'
+			}
+		}
+
+		dfree = Math.round(rawcap * 512 / 1e6)/1000;
+		document.getElementById("free_id").value = dfree;
+
+		if (dfree < 0)
+			emsg += '\n' + "Disk capacity exceeded by " + -dfree + " GB"
+
+		if (emsg.length != 0) {
+			re_set(disk, pst)
+			alert(emsg)
+			return false;
 		}
 		
-		return confirm("Partitioning the " + diskcap + " " + bay + " disk can make all its data inacessible.\n\nContinue?")
+		if (! confirm("Partitioning the " + diskcap + " " + bay + " disk can make all its data inacessible.\n\nContinue?")) {
+			re_set(disk, pst)
+			return false
+		}
+		return true
 	}
 
 	function reopen(dsk) {
@@ -205,7 +317,8 @@ else
 	done
 fi
 
-TWOTB=4294967296 # 2.2TB 
+TWOTB=4294967296 # 2.2TB
+# FIXME: the sh 'let'/'$((' range is limited to +/-2TB, a signed 32 bits int, use 'expr' !
 
 ntfs_avail="disabled"
 if test -f /usr/sbin/mkntfs; then
@@ -242,6 +355,10 @@ for i in $disks; do
 		conv_mbr_dis="disabled"
 	fi
 	
+	if test $(cat /sys/block/$disk/size) -gt $TWOTB; then
+		conv_mbr_dis="disabled"
+	fi
+
 	chkd=""	
 	if test "$i" = "$dsk"; then chkd="checked"; fi
 
@@ -272,12 +389,18 @@ EOF
 
 ddsk=$(basename $dsk)
 rawcap=$(cat /sys/block/$ddsk/size) # 512 bytes sectors
-
+sectsz=$(cat /sys/block/$ddsk/queue/logical_block_size)
+#sectsz=4096
 disk_details $ddsk
+
+if test "$sectsz" != "512"; then
+	bigsectsz="<p class=\"error\">Disk has 4KB logical sector size, use the command line to partition it.</p>"
+	partdis="disabled"
+fi
 
 swapneeded=""
 if test "$dbay" != "usb"; then
-	swapneeded="<p>Every internal disk must have a swap partition as its first partition, 0.5GB is generally enough.</p>"
+	swapneeded="<p>Every internal disk must have a swap partition as its first partition, 0.5GB per 2TB disk is generally enough.</p>"
 fi
 
 fout=$(fdisk -lu $dsk 2> /dev/null | tr '*' ' ') # *: the boot flag...
@@ -313,6 +436,7 @@ fi
 cat<<EOF
 	<fieldset>
 	<legend>Partition $dbay disk, $dcap, $dmod </legend>
+	$bigsectsz
 	<p>Using <strong>$in_use</strong> partitioning.</p>
 	$swapneeded
 	<input type=hidden name=in_use value="$in_use">
@@ -365,8 +489,10 @@ for pl in $(seq 1 $npart); do
 		onchange="check_adv('$rawcap', '$ddsk', '$pl')"  $(ttip tt_pstart)></td>
 	<td><input type=text disabled size=10 id=len_$ppart name=len_$ppart value="$len"
 		onchange="check_adv('$rawcap', '$ddsk', '$pl')" $(ttip tt_plen)></td>
+	<!--td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
+		value="$cap" onkeyup="updatesect('$rawcap', '$ddsk', '$pl')" $(ttip tt_psize)></td-->
 	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
-		value="$cap" onkeyup="updatesect('$rawcap', '$ddsk')" $(ttip tt_psize)></td>
+		value="$cap" onchange="updatesect('$rawcap', '$ddsk', '$pl')" $(ttip tt_psize)></td>
 	<td><select $keepdis id=type_$ppart name=type_$ppart>
 	<option $emptys>empty</option>
 	<option $raids>RAID</option>
@@ -391,8 +517,8 @@ cat<<EOF
 	<td colspan=2><input type=text readonly id="free_id" size=6 value="$free" $(ttip tt_free)></td>
 	</tr></table></fieldset>
 
-	<input type=submit name=$ddsk value=Partition onclick="return psubmit('$dcap', '$dbay', '$free')">
-	<input type=button id=adv_id name=adv_bt value="Advanced" onclick="return advanced('$rawcap','$ddsk')">
+	<input type=submit name=$ddsk $partdis value=Partition onclick="return psubmit('$dcap', '$ddsk', '$bay', '$rawcap')">
+	<input type=button id=adv_id $partdis name=adv_bt value="Advanced" onclick="return advanced('$rawcap','$ddsk')">
 	<input type=hidden id=adv_hid name=adv_fl value="Basic">
 	</form></body></html>
 EOF

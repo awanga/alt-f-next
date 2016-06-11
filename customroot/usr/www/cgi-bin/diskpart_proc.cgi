@@ -215,7 +215,7 @@ elif test -n "$Conv_MBR"; then # GPT to MBR
 	if test -z "$pn"; then
 		res=$(sgdisk --zap-all /dev/$dsk >& /dev/null)
 	else
-		res=$(sgdisk --gpttombr $pn --zap /dev/$dsk 2>&1)
+		res=$(sgdisk --gpttombr $pn /dev/$dsk 2>&1)
 	fi
 	if test $? != 0; then
 		msg "$res"
@@ -228,8 +228,8 @@ elif test -n "$Conv_GPT"; then # MBR to GPT
 
 	pre
 	echo "<p>Converting ${dsk} disk MBR partition table to GPT..."
-
-	res=$(sgdisk --zap --mbrtogpt /dev/$dsk 2>&1)
+	sgdisk --zap /dev/$dsk >& /dev/null
+	res=$(sgdisk --mbrtogpt /dev/$dsk 2>&1)
 	if test $? != 0; then
 		msg "Conv_GPT $dsk: $res"
 	fi
@@ -238,22 +238,9 @@ elif test -n "$Conv_GPT"; then # MBR to GPT
 	
 elif test -n "$Partition" -a "$in_use" = "MBR"; then
 	dsk="$Partition"
-
 	FMTFILE=$(mktemp -t sfdisk-XXXXXX)
 
 	fout=$(sfdisk -l -uS /dev/$dsk | tr '*' ' ') # *: the boot flag...
-
-	eval $(echo "$fout" | awk '
-		/cylinders/ {printf "cylinders=%d; heads=%d; sectors=%d", $3, $5, $7}')
-
-# 2TB
-#cylinders=243201
-#heads=255
-#sectors=63
-
-	pos=64 # 4k aligned, assuming offset=1. sfdisk will complain, use -f
-	sect_cyl=$(expr $heads \* $sectors) # number of sectors per cylinder
-	maxsect=$(expr $cylinders \* $sect_cyl)
 
 	if $(echo $fout | grep -q "No partitions found"); then
 		fout="/dev/${dsk}1          0       -       0          0    0  Empty
@@ -263,25 +250,12 @@ elif test -n "$Partition" -a "$in_use" = "MBR"; then
 	fi
 
 	for pl in 1 2 3 4; do
-
 		part=/dev/${dsk}${pl}
-		ppart=$(basename $part)
-		id=""; type="";cap=""
-		eval $(echo "$fout" | awk '
-			/'$ppart'/{printf "start=%.0f; end=%.0f; sects=%.0f; id=%s", \
-			$2,  $3, $4, $5}')
+		ppart=${dsk}${pl}
 
 		if test "$(eval echo \$keep_$ppart)" = "yes"; then
-			if test "$pos" -gt "$start" -a "$id" != 0 -a "$sects" != 0; then
-				rm -f $FMTFILE
-				msg "Partition $last is too big, it extends over $ppart,\nor\npartitions are not in order"
-			fi
-			if test "$id" = 0 -a "$sects" = 0; then
-				echo "0,0,0" >> $FMTFILE
-			else
-				echo "$start,$sects,$id" >> $FMTFILE
-				pos=$((start + sects))
-			fi
+			eval $(echo "$fout" | awk '
+				/'$ppart'/{printf "start=%.0f; sects=%.0f; id=%s", $2, $4, $5}')
 		else
 			case "$(eval echo \$type_$ppart)" in
 				empty) id=0 ;;
@@ -293,34 +267,15 @@ elif test -n "$Partition" -a "$in_use" = "MBR"; then
 				RAID) id=da  ;;
 			esac
 
-			if test "$adv_fl" = "Basic"; then
-				rem=$(expr $pos % 8)
-				if test $rem -ne 0; then
-					pos=$(expr $pos + 8 - $rem)	# ceil to next 4k alignement
-				fi
-
-				nsect=$(eval echo \$cap_$ppart | awk '{printf "%.0f", $0 * 1e9/512}')
-
-				if test "$id" = 0 -a "$nsect" = 0; then
-					echo "0,0,0" >> $FMTFILE
-				else
-					if test $(expr $pos + $nsect) -gt $maxsect; then
-						nsect=$(expr $maxsect - $pos)
-					fi
-					rem=$(expr $nsect % 8)
-					if test $rem -ne 0; then
-						nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
-					fi
-					echo "$pos,$nsect,$id" >> $FMTFILE
-					pos=$(expr $pos + $nsect)
-				fi
-			else
-				spos=$(eval echo \$start_$ppart)
-				slen=$(eval echo \$len_$ppart)
-				echo "$spos,$slen,$id" >> $FMTFILE
-			fi
+			start=$(eval echo \$start_$ppart)
+			sects=$(eval echo \$len_$ppart)
 		fi
-		last=$ppart
+
+		if test -z "$start" -o -z "$sects" -o "$sects" = 0; then
+			echo "0,0,0" >> $FMTFILE
+		else
+			echo "$start,$sects,$id" >> $FMTFILE
+		fi
 	done
 
 	pre
@@ -341,74 +296,42 @@ elif test -n "$Partition" -a "$in_use" = "GPT"; then
 	dsk="$Partition"
 
 	fout=$(sgdisk -p /dev/$dsk 2> /dev/null)
-
-	maxsect=$(echo "$fout" | awk '/First/ {print $10}')
 	parts=$(echo "$fout" | awk '/Number/ { while (getline) printf " %d", $1}')
-	pos=64 # 4k aligned, assuming offset=1.
-        
+
+	for pl in 1 2 3 4; do
+		ppart=${dsk}${pl}
+		if test "$(eval echo \$keep_$ppart)" = "yes"; then continue; fi
+		if echo $parts | grep -q $pl; then dcmd="$dcmd --delete=$pl"; fi
+	done
+
 	for pl in 1 2 3 4; do
 		part=/dev/${dsk}${pl}
-		ppart=$(basename $part)
-		id=""; type=""; cap=""; dcmd=""
+		ppart=${dsk}${pl}
+		id=""; type=""
 
-		eval $(echo "$fout" | sed -n '/Number/,$p' | awk '
-			/ '$pl' /{printf "start=%.0f; end=%.0f; sects=%.0f; id=%s", \
-			$2,  $3, $3-$2, $6}')
-		
-		if test "$(eval echo \$keep_$ppart)" = "yes"; then
-			pos=$(expr $end + 1)
-		else
-			type=$(httpd -d $(eval echo \$type_$ppart))
-			case "$type" in
-				empty) id=0 ;;
-				swap) id=8200 ;;
-				linux) id=8300 ;;
-				LVM) id=8e00 ;;
-				RAID) id=fd00 ;;
-				"Windows Data") id=0700 ;;
-			esac
+		if test "$(eval echo \$keep_$ppart)" = "yes"; then continue; fi
 
-			if test "$adv_fl" = "Basic"; then
-				rem=$(expr $pos % 8)
-				if test "$rem" -ne 0; then
-					pos=$(expr $pos + 8 - $rem)	# ceil to next 4k alignement
-				fi
+		type=$(httpd -d $(eval echo \$type_$ppart))
+		case "$type" in
+			empty) id=0 ;;
+			swap) id=8200 ;;
+			linux) id=8300 ;;
+			LVM) id=8e00 ;;
+			RAID) id=fd00 ;;
+			"Windows Data") id=0700 ;;
+		esac
 
-				nsect=$(eval echo \$cap_$ppart | awk '{printf "%.0f", $0 * 1e9 / 512}')
-
-				if test "$id" = 0 -o "$nsect" = 0; then
-					if echo $parts | grep -q $pl; then dcmd="--delete=$pl"; fi
-					cmd="$cmd $dcmd"
-					continue
-				else
-					if test $(expr $pos + $nsect) -gt $maxsect; then
-						nsect=$(expr $maxsect - $pos)
-					fi
-					rem=$(expr $nsect % 8)
-					if test $rem -ne 0; then
-						nsect=$(expr $nsect - $rem) # floor to previous 4k alignement
-					fi
-					if echo $parts | grep -q $pl; then dcmd="--delete=$pl"; fi
-					cmd="$cmd $dcmd --new=$pl:$pos:$(expr $pos + $nsect - 1) --typecode=$pl:$id"
-					pos=$(expr $pos + $nsect)
-				fi
-			else
-				spos=$(eval echo \$start_$ppart)
-				slen=$(eval echo \$len_$ppart)
-				if echo $parts | grep -q $pl; then dcmd="--delete=$pl"; fi
-				if test -z "$spos" -o -z "$slen" -o "$id" = 0; then
-					cmd="$cmd $dcmd"
-				else
-					cmd="$cmd $dcmd --new=$pl:$spos:$(expr $spos + $slen - 1) --typecode=$pl:$id"
-				fi
-			fi
+		spos=$(eval echo \$start_$ppart)
+		slen=$(eval echo \$len_$ppart)
+		if ! test -z "$spos" -o "$spos" = 0 -o -z "$slen" -o "$slen" = 0; then
+			cmd="$cmd --new=$pl:$spos:$(expr $spos + $slen - 1) --typecode=$pl:$id"
 		fi
 	done
 
 	pre
 	echo "<p>Partitioning disk $dsk..."
 
-	res=$(sgdisk --set-alignment=8 $cmd /dev/$dsk 2>&1)
+	res=$(sgdisk --set-alignment=8 $dcmd $cmd /dev/$dsk 2>&1)
 	if test $? != 0; then
 		err "$res"
 	fi
