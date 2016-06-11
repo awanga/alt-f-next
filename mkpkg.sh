@@ -50,6 +50,7 @@ usage() {
 	-cleanroot (remove all files not in rootfs base file list) |
 	-diffroot (show new files since last -setroot) |
 	-debris (shows files not owned by any package) |
+	-miss (shows base firmware missing files) |
 	-index <pkg_dir> (create ipkg package index) |
 	-html (output packages info in html format)
 	-all (recreates all packages in ipkfiles dir) |
@@ -266,6 +267,15 @@ case "$1" in
 		done
 		#echo $TF $TF1 $TF2
 		rm $TF $TF1 $TF2
+		exit 0
+		;;
+
+	-miss)
+		for i in $(cat $ROOTFSFILES); do
+			if ! test -f $ROOTFS/$i -o -d $ROOTFS/$i; then
+				echo $i
+			fi
+		done
 		exit 0
 		;;
 
