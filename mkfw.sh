@@ -50,13 +50,13 @@ fi
 . .config 2> /dev/null
 board=$BR2_PROJECT
 
-if test $# = 0 -a "$board" = "dns325"; then
+if test $# = 0 -a \( "$board" = "dns325" -o "$board" = "dns327" \); then
 	TYPE="sqsplit"
 	COMP=xz
 fi
 
-if test $TYPE = "sqsplit" -a "$board" != "dns325"; then
-	echo "mkfw: ERROR, \"sqsplit\" is only for a dns-320/325"
+if test $TYPE = "sqsplit" -a "$board" != "dns325" -a "$board" != "dns327"; then
+	echo "mkfw: ERROR, \"sqsplit\" is only for a dns-320/325/327"
 	exit 1
 fi
 
@@ -90,11 +90,12 @@ if test -n "$sqimage"; then
 		echo "${DESTD}/$rootfs is newer than ${DESTD}/$sqimage,  exiting"
 	fi
 	
-	# prepend to sqimage its size, so that one can know it at boot using nanddump in rcS
+	# prepend to sqimage its size and md5sum so that one can know it at boot using nanddump in rcS
 	MTD_PAGES=2048 # NAND flash page size
 	if test "${DESTD}/$sqimage" -nt "${DESTD}/tsqimage"; then
 		len=$(stat -c %s "${DESTD}/$sqimage")
-		echo "sqimage_size=$len;" | dd bs=$MTD_PAGES conv=sync > "$DESTD/tsqimage"
+		md5s=$(md5sum "${DESTD}/$sqimage" | awk '{print $1}')
+		echo "sqimage_size=$len; sqimage_md5s=$md5s;" | dd bs=$MTD_PAGES conv=sync > "$DESTD/tsqimage"
 		cat "${DESTD}/$sqimage" >> "${DESTD}/tsqimage"
 	fi
 	sqimage=tsqimage
@@ -102,8 +103,7 @@ fi
 
 case $board in
 	dns323) ;;
-	dns321) ;;
-	dns325) sq_opts="-a ${DESTD}/$sqimage" ;;
+	dns325|dns327) sq_opts="-a ${DESTD}/$sqimage" ;;
 	*) echo "Unsupported \"$board\" board"; exit 1;;
 esac
 
@@ -123,32 +123,36 @@ esac
 
 # FIXME: use associative arrays
 # the brand models
-name=(DNS-323-rev-A1B1C1 CH3SNAS DUO-35LR DNS-321-rev-A1A2A3 DNS-343 DNS-325-rev-A1A2 DNS-320-rev-A1A2 DNS-320-rev-B1B2 DNS-320L-rev-A1A2A3)
-working=(y y y y n y y y y)
+name=(DNS-323-rev-AxBxCx CH3SNAS DUO-35LR DNS-321-rev-Ax DNS-343 DNS-325-rev-Ax DNS-320-rev-Ax DNS-320-rev-Bx DNS-320L-rev-Ax DNS-327L-rev-Ax)
+working=(y y y y n y y y y y)
 
 # the buildroot boards .config used
-hwboard=(dns323 dns323 dns323 dns321 dns343 dns325 dns325 dns325 dns325)
+# better call it arch: orion (dns321/323), kirkwood(dns320/320L/325), armada-370(dns-327L)
+hwboard=(dns323 dns323 dns323 dns323 dns343 dns325 dns325 dns325 dns325 dns327)
 
 # the firmware file signatures
-prod=( 7 7 7 10 9 0 0  0  0)
-cust=( 1 2 3  1 1 8 8  8  8)
-model=(1 1 1  1 1 5 7 12 11)
-sub=(  1 1 1  2 2 2 2  1  1)
-nver=( 4 4 4  1 1 0 0  1  1)
-type=( 0 0 0  1 2 3 4  5  6)
+prod=( 7 7 7 10 9 0 0  0  0 0)
+cust=( 1 2 3  1 1 8 8  8  8 8)
+model=(1 1 1  1 1 5 7 12 11 13)
+sub=(  1 1 1  2 2 2 2  1  1 1)
+nver=( 4 4 4  1 1 0 0  1  1 1)
+type=( 0 0 0  1 2 3 4  5  6 7)
 
 # the amount of NAND flash bytes that u-boot copies to ram at bootm for each board
 # read the NOTE-2 bellow)
-kernel_max=(1572864 1572864 1572864 1572864 1572864 3145728 3145728 3145728 3145728)
-initramfs_max=(6488064 6488064 6488064 10485760 14417920 3145728 3145728 3145728 3145728)
-sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 104857600)
+kernel_max=(1572864 1572864 1572864 1572864 1572864 3145728 3145728 3145728 3145728 3145728)
+initramfs_max=(6488064 6488064 6488064 10485760 14417920 3145728 3145728 3145728 3145728 4194304)
+sqimage_max=(0 0 0 0 0 106954752 106954752 104857600 104857600 81788928)
 
 # some kernels need a prologue to change the device_id set by the bootloader
 # read NOTE-1 bellow
-prez=(0606 0606 0606 0606 0606  "" ""  128a 128a)
+#prez=(0606 0606 0606 0606 0606  "" ""  128a 128a)
+prez=(0606 0606 0606 0606 0606  "" "" "" "" "")
 
+DTSDIR=${KERNEL}/arch/arm/boot/dts
 # other kernels needs an epilogue with a hardware device tree description
-postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
+#postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320.dtb "" "")
+postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320-a.dtb kirkwood-dns320-b.dtb kirkwood-dns320l.dtb armada-370-dlink-dns327l.dtb)
 
 # NOTE-1: DNS-323/DNS-321:
 # Sets the cpu r1 to the machine ID, overriding the value that u-boot sets there.
@@ -231,14 +235,16 @@ for i in ${!name[*]}; do
 	fi
 
 	# build epilogue
-	if test -n "${postz[i]}" -a ! -f ${DESTD}/${postz[i]}; then
+	if test -n "${postz[i]}" -a \( ! -f ${DESTD}/${postz[i]} -o \
+			$DTSDIR/$(basename ${postz[i]} .dtb).dts -nt $DESTD/${postz[i]} \); then
 		if test -z "$KERNEL"; then
 			echo "Error, execute '. exports' first."
 			exit 1
 		fi
+
 		make -C ${KERNEL} ARCH=arm CROSS_COMPILE=arm-linux- ${postz[i]}
 		check $? dts
-		cp ${KERNEL}/arch/arm/boot/dts/${postz[i]} ${DESTD}/
+		cp $DTSDIR/${postz[i]} ${DESTD}/
 		rm -f ${DESTD}/tImage
 	fi
 
@@ -261,7 +267,10 @@ for i in ${!name[*]}; do
 	dns323-fw -m -p ${prod[i]} -c ${cust[i]} -l ${model[i]} \
 		-u ${sub[i]} -v ${nver[i]} -t ${type[i]} \
 		-k ${DESTD}/uImage -i ${DESTD}/urootfs $sq_opts ${DESTD}/Alt-F-${VER}-${name[i]}.bin
-	check $? merging
+	check $? "merging (max: ${kernel_max[i]}/${initramfs_max[i]}/${sqimage_max[i]})"
+
+	# generate SHA1
+	(cd ${DESTD}; sha1sum Alt-F-${VER}-${name[i]}.bin > Alt-F-${VER}-${name[i]}.sha1)
 
 	# verification, check that spliting the created fw works fine
 	err=$(dns323-fw -s ${DESTD}/Alt-F-${VER}-${name[i]}.bin)
@@ -295,11 +304,11 @@ for i in ${!name[*]}; do
 done
 
 (
-cd ${DESTD};
-cp urootfs /srv/tftpboot/urootfs-$board
-if test "$board" = dns325; then
-	cp rootfs.arm.sqimage.xz /srv/tftpboot/rootfs.arm.sqimage.xz-$board
-fi
+	cd ${DESTD};
+	cp urootfs /srv/tftpboot/urootfs-$board
+	if test "$board" = dns325 -o "$board" = dns327; then
+		cp rootfs.arm.sqimage.xz /srv/tftpboot/rootfs.arm.sqimage.xz-$board
+	fi
 )
 
 rm -f kernel initramfs defaults \
