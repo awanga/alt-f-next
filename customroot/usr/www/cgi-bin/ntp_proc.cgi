@@ -20,6 +20,10 @@ for i in $(seq 1 3); do
 	fi
 done
 
+if test "$runasdaemon" = "no"; then
+	runasdaemon=$croni
+fi
+
 echo "NTPD_DAEMON=$runasdaemon" >> $CONFF
 if test -z "$runatboot"; then
 	runatboot=no

@@ -13,16 +13,25 @@ if test -e $CONFF; then
 fi
 
 sel_cron=""; sel_daemon=""; sel_boot=""
-
 if test "$NTPD_DAEMON" = "yes"; then
 	sel_daemon="checked"
 else
 	sel_cron="checked"
+	croni=$NTPD_DAEMON
 fi
 
 if test "$NTPD_BOOT" = "yes"; then
 	sel_boot="CHECKED"
 fi
+
+opt=""
+for i in 24 12 6; do
+	if test "$i" = "$croni"; then
+		opt="$opt<option selected>$i</option>"
+	else
+		opt="$opt<option>$i</option>"
+	fi
+done
 
 cat <<-EOF
 	<script type="text/javascript">
@@ -35,7 +44,7 @@ cat <<-EOF
 	<input type=radio $sel_daemon name=runasdaemon value=yes>
 		Run continuously as a server<br>
 	<input type=radio $sel_cron name=runasdaemon value=no>
-		Run once everyday at 6:00<br><br>
+	Run once every <select name=croni>$opt</select> hours<br><br>
 	<input type=checkbox id=bootcheck $sel_boot name=runatboot value=yes>
 		Adjust time when starts<br> 
 	<br><table>
