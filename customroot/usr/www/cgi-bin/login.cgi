@@ -18,26 +18,46 @@ if test -n "$(ls /tmp/check-* 2> /dev/null)"; then
 	fi
 fi
 
+if ! test -s $SECR; then
+	check_https
+fi
+
+md5 # expand js md5()
+
 cat<<-EOF
+	<script type="text/javascript">
+	function csubmit() {
+		if (document.getElementById('passwd_again'))
+			return true
+		obj = document.getElementById('passwd_id')
+		obj.value = md5(obj.value + document.getElementById('salt_id').value)
+		return true
+	}
+
+	</script>
     <center>
 	<form name="loginf" action="/cgi-bin/login_proc.cgi" method="post">
     <table>
 	<tr><td>Password:</td>
-		<td><input type="password" autocomplete="off" name="passwd" $(ttip tt_login)></td>
+		<td><input type="password" autocomplete="off" name="passwd" id="passwd_id" onsubmit="return csubmit()" $(ttip tt_login)></td>
 EOF
 
 if ! test -s $SECR; then
 	cat<<-EOF
 		<td></td></tr>
 		<tr><td>Again:</td>
-			<td><input type="password" autocomplete="off" name="passwd_again" $(ttip tt_again)></td>
+			<td><input type="password" autocomplete="off" name="passwd_again" id="passwd_again" onsubmit="return csubmit()" $(ttip tt_again)></td>
 	EOF
+else
+	salt=$(uuidgen)
+	echo -n $salt > /tmp/salt
 fi
 
 cat<<-EOF
-	<td><input type="submit" value="Submit"></td></tr>
+	<td><input type="submit" value="Submit" onclick="return csubmit()"></td></tr>
 	</table>
 	<input type="hidden" name=from_url value="$QUERY_STRING">
+	<input type="hidden" id=salt_id name=salt value="$salt">
 	</form></center>
 	<script type="text/javascript">
 		document.loginf.passwd.focus();

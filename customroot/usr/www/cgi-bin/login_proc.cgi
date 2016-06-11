@@ -7,6 +7,7 @@ TZF=/etc/TZ
 read_args
 
 #debug
+#set -x
 
 if ! test -s "$SECR"; then
 	if test -z "$passwd"; then
@@ -15,14 +16,13 @@ if ! test -s "$SECR"; then
 		msg "The two passwords don't match."
 	fi
 
-	passwd=$(checkpass "$passwd")
-	if test $? != 0; then
+	if ! passwd=$(checkpass "$passwd"); then
     	msg "$passwd"
 	fi
 
 	echo -n $passwd > $SECR
 	chmod og-r $SECR
-# FIXME: if root already has a password, don't change it?
+	# FIXME: if root already has a password, don't change it?
 	echo "root:$passwd" | chpasswd > /dev/null 2>&1
 
 	echo -e "username=Administrator\npassword=$passwd" > /etc/samba/credentials.root
@@ -41,29 +41,26 @@ if ! test -s "$SECR"; then
 	else
 		loc="/cgi-bin/status.cgi"
 	fi
-else
-	passwd=$(checkpass "$passwd")
-	if test $? != 0; then
-    	msg "$passwd"
-	fi
 
+elif test "$passwd" = $(cat /etc/web-secret /tmp/salt | md5sum - | cut -d" " -f1); then
 	loc="/cgi-bin/status.cgi"
 	if test -n "$from_url"; then
 		loc=$(httpd -d "$from_url")
 	fi
-fi
-
-if test "$passwd" = "$(cat $SECR)"; then
-	id=$(uuidgen)
-	echo $id > /tmp/cookie
-	chmod og-r /tmp/cookie
-
-	echo -e "HTTP/1.1 303\r"
-	echo -e "Content-Type: text/html\r"
-	echo -e "Set-Cookie: ALTFID=$id;\r"
-	echo -e "Location: $loc\r\n\r"
 else
+	rm -f /tmp/salt
 	gotopage /cgi-bin/login.cgi
 fi
+
+rm -f /tmp/salt
+
+id=$(uuidgen)
+echo $id > /tmp/cookie
+chmod og-r /tmp/cookie
+
+echo -e "HTTP/1.1 303\r"
+echo -e "Content-Type: text/html\r"
+echo -e "Set-Cookie: ALTFID=$id; HttpOnly\r"
+echo -e "Location: $loc\r\n\r"
 
 #enddebug
