@@ -102,10 +102,9 @@ systems_st() {
 
 	mem=0; physmem=0
 	swap=0; swapv="None"
-	eval $(free | awk '{if ($1 == "Mem:") \
-			{printf "mem=%d; physmem=%d;", $3*100/$2, $2/1024}; \
-		if ($1 == "Swap:" && $2 != 0) \
-			{printf "swap=%d; swapv=\"%dMB\";", $3*100/$2, $2/1024}}')
+	eval $(free | awk '/^Mem:/ { physmem=$2 } \
+            /^-\/+/ { printf "mem=%d; physmem=%d;", $3*100/physmem, physmem/1024} \
+            /^Swap:/ { if ($2 != 0) { printf "swap=%d; swapv=\"%dMB\";", $3*100/$2, $2/1024}}')
 	if test "$swapv" = "None"; then
 		memalert=""
 		swap=100	# Trigger red alert if no swap
