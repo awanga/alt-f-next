@@ -57,12 +57,18 @@ for i in $srv; do
 		chkf="checked"
 	fi
 
-	if rc$i status >& /dev/null ; then
+	rc$i status >& /dev/null; rst=$?
+	if test "$rst" = 0; then
 		st="<strong>Running</strong>"
 		act="StopNow"
 	else
 		st="Stopped"
 		act="StartNow"
+	fi
+
+	ictrl=""
+	if test "$rst" = 2; then
+		ictrl="disabled"
 	fi
 
 	if test -f $PWD/${i}.cgi; then
@@ -78,7 +84,7 @@ for i in $srv; do
 
 	cat<<-EOF
 		<tr><td> $i </td>
-		<td class="highcol"><input type=checkbox $chkf name=$i value=enable></td>
+		<td class="highcol"><input type=checkbox $ictrl $chkf name=$i value=enable></td>
 		<td>$st</td>
 		<td><input type="submit" name=$i value="$act"></td>
 		$conf
