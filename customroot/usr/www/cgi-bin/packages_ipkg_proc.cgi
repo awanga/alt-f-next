@@ -11,6 +11,7 @@ CONFF=/etc/ipkg.conf
 # The fast cure is to always stop all services before updating or upgrading packages.
 
 #debug
+#set -x
 
 change_feeds() {
 	mv $CONFF $CONFF-
@@ -26,7 +27,6 @@ change_feeds() {
 }
 
 ipkg_cmd() {
-
 	if test $1 = "-install"; then
 		write_header "Installing Alt-F"
 	elif test $1 = "install"; then
@@ -72,9 +72,8 @@ ipkg_cmd() {
 }
 
 if test "$install" = "Install"; then
-
 	if test "$part" = "none"; then
-		msg "You must select a filesystem"
+		msg "You must select a filesystem first."
 	fi
 
 	part=$(httpd -d $part)
@@ -84,64 +83,92 @@ if test "$install" = "Install"; then
 
 	ipkg_cmd -install $mp
 
-elif test -n "$RemoveAll"; then
-
-	write_header "Removing all Alt-F packages"
-
-	cat<<-EOF
-		<script type="text/javascript">
-			function err() {
-				window.location.assign(document.referrer)
-			}
-		</script>
-		<pre>
-	EOF
-
-	busy_cursor_start
-	for i in  $(ls -r /Alt-F/etc/init.d/S* 2>/dev/null); do
-		if test -f $i; then
-			f=$(basename $i)
-			rcscript=rc${f:3}
-			$rcscript stop
-			for i in $(seq 1 60); do
-				if ! $rcscript status >& /dev/null; then
-					break
-				fi
-				usleep 500000
-			done
-			if test "$i" -eq 60; then
-				fail=yes
-			fi
+elif test -n "$BootEnable"; then
+	aufs.sh -n
+	for i in $(seq 1 $ninstall); do
+		af=$(eval echo \$altf_dir_$i)
+		af=$(httpd -d "$af")
+		touch $af/NOAUFS
+		if test -n "$(eval echo \$BootEnable_$i)"; then
+			rm -f $af/NOAUFS
 		fi
 	done
-	if test -n "$fail"; then
-		echo "<p><strong>It was not possible to stop some services, continuing anyway...</strong>"
-	fi
-	ipkg -clean
-	if test $? != 0; then
-		cat<<-EOF
-			</pre>
-			<p><strong>Failed</strong>
-			<input type="button" value="Back" onclick="err()">
-		EOF
-	else
-		cat<<-EOF
-			</pre>
-			<p><strong>Success</strong>
-			<script type="text/javascript">
-				setTimeout("err()", 2000);
-			</script>
-		EOF
-	fi
+	aufs.sh -r
+	gotopage /cgi-bin/packages_ipkg.cgi
 
+elif test -n "$Delete"; then
+	# FIXME: this does not remove package files installed elsewhere, e.g. /opt,
+	# and we can't use 'ipkg -clean'
+	altf_dir=$(httpd -d "$Delete")
+	curr_altf=$(realpath /Alt-F 2> /dev/null)
+	busy_cursor_start
+	if test "$curr_altf" = "$altf_dir"; then
+		if ! hot_aux.sh -stop-altf-dir "$curr_altf"; then
+			busy_cursor_end
+			msg "Current \"$curr_altf\" folder couldn't be deactivated to be deleted"
+		fi
+	fi
+	if mountpoint -q "$(dirname $altf_dir)" && test "$(basename $altf_dir)" = "Alt-F"; then
+		rm -rf "$altf_dir"
+	fi
 	busy_cursor_end
+	js_gotopage /cgi-bin/packages_ipkg.cgi
 
-	echo "</body></html>"
-	exit 0
+elif test -n "$ActivateNow"; then
+	busy_cursor_start
+	if curr_altf=$(realpath /Alt-F 2> /dev/null); then
+		if ! hot_aux.sh -stop-altf-dir "$curr_altf"; then
+			busy_cursor_end
+			msg "Current \"$curr_altf\" folder couldn't be deactivated"
+		fi
+	fi
+	altf_dir=$(httpd -d "$ActivateNow")
+	rm -f "$altf_dir/NOAUFS"
+	hot_aux.sh -start-altf-dir "$altf_dir"
+	busy_cursor_end
+	js_gotopage /cgi-bin/packages_ipkg.cgi
+
+elif test -n "$DeactivateNow"; then
+	altf_dir=$(httpd -d "$DeactivateNow")
+	busy_cursor_start
+	if ! hot_aux.sh -stop-altf-dir "$altf_dir"; then
+		busy_cursor_end
+		msg "Current \"$altf_dir\" folder couldn't be deactivated"
+	fi
+	busy_cursor_end
+	js_gotopage /cgi-bin/packages_ipkg.cgi
+
+elif test -n "$CopyTo"; then
+	idx=$CopyTo
+	part=$(eval echo \$part$idx)
+	part=$(httpd -d "$part")
+	if test "$part" = "none"; then
+		msg "You must select a filesystem"
+	fi
+
+	if ! blkid $(cat /proc/mounts | grep $part | cut -d" " -f1) | grep -qE 'ext(2|3|4)'; then
+		msg "The destination has to be a linux ext2/3/4 filesystem"
+	fi
+
+	dest=$(cat /proc/mounts | grep $part | cut -d" " -f2)
+	if test -d "$dest/Alt-F"; then
+		msg "The destination  already has an Alt-F folder"
+	fi
+
+	altf_dir=$(eval echo \$altf_dir_$idx)
+	altf_dir=$(httpd -d "$altf_dir")
+
+	if test "$(dirname $altf_dir)" = "$dest"; then
+		msg "The source and destinations are the same"
+	fi
+
+	busy_cursor_start
+	cp -a $altf_dir $dest >& /dev/null
+	busy_cursor_end
+	js_gotopage /cgi-bin/packages_ipkg.cgi
 
 elif test -n "$Submit"; then
 	change_feeds
-
 fi
 
 res=$(ipkg update)

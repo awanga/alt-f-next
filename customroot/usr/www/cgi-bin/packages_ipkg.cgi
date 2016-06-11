@@ -6,67 +6,80 @@ write_header "Alt-F Package Manager"
 
 #debug
 
-if ! ipkg status >/dev/null; then
-	has_disks
-	
-	CONFF=/etc/ipkg.conf
-	cat<<-EOF
-		<form action="/cgi-bin/packages_ipkg_proc.cgi" method=post>
-		<fieldset><legend>Package Feeds</legend><table>
-		<tr><th>Disabled</th><th>Feed</th></tr>
-	EOF
+has_disks
 
-	cnt=1
-	while read type name feed; do
-		cmt=""
-		if test \( "$type" = "src" -o "$type" = "#!#src" \) -a -n "$feed"; then
-			if test "$type" = "#!#src"; then
-				cmt=checked
-			fi
-			echo "<tr><td align=\"center\"><input type=checkbox $cmt name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
-			cnt=$((cnt+1))
+CONFF=/etc/ipkg.conf
+cat<<-EOF
+	<form name="form" action="/cgi-bin/packages_ipkg_proc.cgi" method=post>
+	<fieldset><legend>Package Feeds</legend><table>
+	<tr><th>Disabled</th><th>Feed</th></tr>
+EOF
+
+cnt=1
+while read type name feed; do
+	cmt=""
+	if test \( "$type" = "src" -o "$type" = "#!#src" \) -a -n "$feed"; then
+		if test "$type" = "#!#src"; then
+			cmt=checked
 		fi
-	done < $CONFF
+		echo "<tr><td align=\"center\"><input type=checkbox $cmt name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=\"$feed\"></td></tr>"
+		cnt=$((cnt+1))
+	fi
+done < $CONFF
 
+cat<<-EOF
+	<tr><td align="center"><input type=checkbox name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
+	<tr><td></td><td><input type=submit name=changeFeeds value=Submit>
+	<input type=submit name=updatelist value=UpdatePackageList>
+	</table>
+	<input type=hidden name=nfeeds value="$cnt">
+	</fieldset>
+	<fieldset><legend>Packages Installed On</legend>
+EOF
+
+install_loc=$(find /mnt -type d -maxdepth 2 -name Alt-F)
+if test -z "$install_loc"; then
 	cat<<-EOF
-		<tr><td align="center"><input type=checkbox name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
-		</table>
-		<input type=hidden name=nfeeds value="$cnt">
-		</fieldset>
-		<h4>No ipkg instalation found, install ipkg in:</h4>
+		<table><tr><td>No Alt-F package instalation found, install in:</td>
+		<td>$(select_part)</td>
+		<td><input type=submit name=install value=Install></td></table>
 	EOF
-
-	select_part
-	echo "</select><input type=submit name=install value=Install>
-	</form></body></html>"
-
 else
+	echo "<table><tr><th>FS</th><th class="highcol">Boot Enabled</th><th>Status</th></tr>"
+	j=0
+	for i in $install_loc; do
+		j=$((++j))
+		chk=""
+		if ! test -f "$i"/NOAUFS; then
+			chk=checked
+		fi
+		act="ActivateNow"; st="Inactive"
+		if test "$(realpath /Alt-F 2> /dev/null)" = "$i"; then
+			act="DeactivateNow"; st="<strong>Active</strong>"
+		fi
+
+		cat<<-EOF
+			<tr><td>$(basename $(dirname $i))</td>
+			<td class="highcol" align="center"><input type=checkbox $chk name="$i" value="BootEnable_$j"></td>
+			<td>$st</td>
+			<td><input style="width:100%" type=submit name="$i" value=$act></td>
+			<td><input type=submit name="$i" value=Delete onClick="return confirm('Delete $i and all its files and subfolders?\nAll packages files and configurations will be deleted.\nYou will have to reinstall all Alt-F packages.')"></td>
+			<td><input type=hidden name=altf_dir_$j value="$i">
+			<input type=submit name="$j" value=CopyTo>$(select_part "" $j)</td>
+			</tr>
+		EOF
+	done
+	cat<<-EOF
+		<tr><td></td><td class="highcol"><input type=submit name="BootEnable" value="Submit"></td></tr>
+		</table>
+		<input type=hidden name=ninstall value="$j"">
+	EOF
+fi
+echo "</fieldset>"
+
+if ipkg status >/dev/null; then
 	ipkg-cl -V0 info | awk '
 	BEGIN {
-		print "<script type=\"text/javascript\"> \
-				function ask() { \
-					return confirm(\"All packages files and configurations will be deleted.\\nYou will have to reinstall all Alt-F packages.\"); \
-				} \
-			</script> \
-			<form action=\"/cgi-bin/packages_ipkg_proc.cgi\" method=\"post\"> \
-			<fieldset><legend>Configure Feeds</legend> \
-			<table><tr><th>Disabled</th><th>Feed</th></tr>";
-		nf=1;
-		while (getline ln <"/etc/ipkg.conf") {
-			split(ln,a);
-			if (a[1] == "src")
-				a[1]="";
-			else if (a[1] == "#!#src")
-				a[1]="checked";
-			else
-				continue;
-			printf "<tr><td align=\"center\"><input type=checkbox %s name=dis_%d></td>", a[1], nf;
-			printf "<td><input type=text size=50 name=feed_%d value=\"%s\"></td></tr>\n", nf, a[3];
-			nf++
-		}
-		printf "<tr><td align=\"center\"><input type=checkbox name=dis_%d></td> \
-			<td><input type=text size=50 name=feed_%d value=\"\"></td></tr> \
-			<input type=hidden name=nfeeds value=\"%d\">", nf, nf, ++nf;
 		if (system("test -f /etc/preinst") == 0)
 			while (getline ln <"/etc/preinst") {
 				split(ln,a);
@@ -79,10 +92,7 @@ else
 	/Description:/ { des[i] = substr($0, index($0,$2)) }
 	/Status:/ { if ($4 == "installed") inst[nm] = i; else { uinst[nm] = i; ucnt++; } }
 	END {
-		print "<tr><td></td><td><input type=submit name=Submit value=Submit> \
-			<input type=submit name=updatelist value=UpdatePackageList> \
-			</table></fieldset> \
-			<fieldset><legend> Installed/Pre-installed Packages </legend> \
+		print "<fieldset><legend> Installed/Pre-installed Packages </legend> \
 			<table><tr> \
 				<th>Name</th><th>Version</th><th></th><th></th><th></th><th>Description</th> \
 			</tr>"
@@ -109,7 +119,7 @@ else
 					else
 						v = ver[inst[nm]];
 
-					if (system("ipkg compare_versions " v " \">\" " ver[uinst[nm]] " >/dev/null"))
+					if (system("ipkg -V0 compare_versions " v " \">\" " ver[uinst[nm]]))
 						upd="<td></td><td></td>";
 					else
 						upd = sprintf("<td><input type=submit name=%s value=Update></td><td>(%s)</td>", nm, ver[uinst[nm]]);
@@ -133,9 +143,7 @@ else
 			print "<tr><td colspan=2><strong>Update all installed</strong></td> \
 				<td><input type=submit name=updateall value=UpdateAll></td></tr>"
 
-		print "<tr><td colspan=2><strong>Remove all installed</strong></td> \
-				<td colspan=4><input type=submit name=removeall value=RemoveAll onclick=\"return ask()\"></td></tr> \
-			</table></fieldset> \
+		print "</table></fieldset> \
 			<fieldset><legend> Available Packages </legend><table>"
 
 		if (ucnt == 0) {
@@ -155,7 +163,9 @@ else
 			}
 		printf ("<tr><td colspan=4><br></td></tr><tr><td colspan=2><strong>Install all available</strong></td> \
 			<td colspan=2><input type=submit name=installall value=InstallAll></td></tr>\
-		</table></fieldset></form>", pkgfeed)
+		</table></fieldset>", pkgfeed)
 		}
 	}'
 fi
+
+echo "</form></body></html>"
