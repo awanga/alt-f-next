@@ -21,7 +21,7 @@ fi
 if test "$force_rescan" = "yes"; then RESCAN_CHK=checked; fi
 if test "$enable_tivo" = "yes"; then TV_CHK=checked; fi
 if test "$strict_dlna" = "yes"; then STRICT_CHK=checked; fi
-if test -z "$friendly_name"; then friendly_name=miniDLNA; fi
+if test -z "$friendly_name" -o "$friendly_name" = "miniDLNA"; then friendly_name="miniDLNA on $(hostname)"; fi
 if test -n "$presentation_url"; then XBOX_CHK=checked; fi
  
 cat<<-EOF

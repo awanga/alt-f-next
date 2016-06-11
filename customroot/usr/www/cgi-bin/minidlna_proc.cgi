@@ -73,7 +73,7 @@ done
 sed -i -e '/^#!#media_dir=.*$/d' -e 's/^!#!\(media_dir=.*$\)/\1/' $CONFF
 
 if rcminidlna status >& /dev/null; then
-	rcminidlna restart >& /dev/null
+	rcminidlna reload >& /dev/null
 fi
 
 #enddebug
