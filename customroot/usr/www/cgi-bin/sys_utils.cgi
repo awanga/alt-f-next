@@ -6,9 +6,11 @@ THM_DIR=/usr/www/scripts
 . common.sh
 check_cookie
 
-write_header "System utilities" "document.sysutilsf.reset()"
+#write_header "System utilities" "document.sysutilsf.reset()"
+write_header "System utilities"
 
-mktt ssl_tt "Erases current SSL certificate for https and creates a new one.<br>
+mktt ssl_tt "Erases current SSL certificates and creates a new one.<br>
+Needed when changing the host name.<br>
 WARNING: your browser will complain and you will have to delete<br>
 or revoke the old certificate and make the browser accept the new one.<br>
 Does not affects the ssh host key."
@@ -51,7 +53,19 @@ for i in $THM_DIR/*.thm; do
 	fi
 done
 
+salt=$(uuidgen)
+echo -n $salt > /tmp/salt
+
+md5 # expand js md5()
+
 cat<<-EOF
+	<script type="text/javascript">
+	function csubmit() {
+		obj = document.getElementById('passwd_id')
+		obj.value = md5(obj.value + document.getElementById('salt_id').value)
+		return true
+	}
+	</script>
 	<form id="sysutilsf" name="sysutilsf" action="/cgi-bin/sys_utils_proc.cgi" method="post">
 
 	<fieldset><legend>Reboot or Poweroff</legend>
@@ -80,8 +94,9 @@ cat<<-EOF
 	</fieldset>
 
 	<fieldset><legend>Administering password</legend>
-	Current Password:<input type="password" autocomplete="off" name="passwd" value="" onkeypress="return event.keyCode != 13">
-	<input type="submit" name="action" value="ChangePassword">
+	Current Password:<input type="password" autocomplete="off" id="passwd_id" name="passwd" value="" onkeypress="return event.keyCode != 13">
+	<input type="submit" name="action" value="ChangePassword" onclick="return csubmit()">
+	<input type="hidden" id=salt_id name=salt value="$salt">
 	</fieldset>
 
 	<fieldset><legend>Theme</legend>

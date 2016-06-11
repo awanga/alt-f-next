@@ -40,7 +40,7 @@ showlog() {
 
 	if test -n "$filter_str"; then
 		pat=$(httpd -d $filter_str)
-		cat $1 | grep -i "$pat"
+		cat $1 | grep -iE "$pat"
 	else
 		cat $1
 	fi
@@ -199,10 +199,12 @@ case "$action" in
 			msg "The password can't be empty"
 		fi
 
-		passwd="$(httpd -d $passwd)"
-		if test -n "$passwd" -a "$passwd" = "$(cat $SECR)"; then
-			rm -f $SECR
-			rm -f /tmp/cookie
+#		passwd="$(httpd -d $passwd)"
+#		if test -n "$passwd" -a "$passwd" = "$(cat $SECR)"; then
+#			rm -f $SECR
+#			rm -f /tmp/cookie
+		if test "$passwd" = $(cat /etc/web-secret /tmp/salt | md5sum - | cut -d" " -f1); then
+			rm -f $SECR /tmp/cookie /tmp/salt
 		else
 			msg "Password doesn't match."
 		fi
