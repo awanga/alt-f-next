@@ -5,6 +5,8 @@ check_cookie
 
 write_header "Mail Setup"
 
+check_https
+
 CONFF=/etc/msmtprc
 CONFM=/etc/misc.conf
 
