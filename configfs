@@ -39,7 +39,8 @@ echo kernel=$kver
 	# so TWO makes have to be done the first time!!! Isn't this already solved?
 
 	# the kernel modules in the base firmware:
-	KMOD="./kernel/drivers/usb/class/usblp.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/cifs/cifs.ko"
+	#KMOD="./kernel/drivers/usb/class/usblp.ko ./kernel/fs/fuse/fuse.ko ./kernel/fs/nfs/nfsv2.ko "  
+	KMOD="./kernel/drivers/usb/class/usblp.ko ./kernel/fs/cifs/cifs.ko ./kernel/fs/nfs/nfsv3.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/fs/lockd/lockd.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/fs/nfs_common/grace.ko"
 
 	if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
 		if ! test -d $BLDDIR/project_build_arm/$board/root/lib/modules/$kver; then
@@ -48,7 +49,8 @@ echo kernel=$kver
 			RMF="$RMF lib/libthread_db*"
 			OPWD=$PWD
 			cd $BLDDIR/project_build_arm/$board/root/lib/modules/$kver
-			echo "configfs: removing $(find . -name \*.ko | wc -l) unwanted kernel modules"
+			echo "configfs: removing unwanted kernel modules (total: $(find . -name \*.ko | wc -l))"
+			echo "configfs: and keeping $(echo $KMOD | wc -w) wanted kernel modules"
 			# remove unwanted kernel modules
 			for i in $(find . -name \*.ko); do
 				if ! echo $KMOD | grep -q $i; then
@@ -91,7 +93,7 @@ find $1 -depth -name .svn -exec rm -rf {} \;
 # 3-but some files in customroot might belong to packages not currently
 # configured, remove them in this case
 BR2_PACKAGES="BR2_PACKAGE_MDADM BR2_PACKAGE_DNSMASQ BR2_PACKAGE_WGET BR2_PACKAGE_RSYNC BR2_PACKAGE_NTP BR2_PACKAGE_MSMTP BR2_PACKAGE_TRANSMISSION BR2_PACKAGE_USHARE BR2_PACKAGE_MEDIATOMB BR2_PACKAGE_FUPPES BR2_PACKAGE_MINIDLNA BR2_PACKAGE_MT_DAAPD BR2_PACKAGE_CUPS BR2_PACKAGE_SAMBA_DOC BR2_PACKAGE_NTFS_3G_NTFSPROGS BR2_PACKAGE_AVAHI BR2_PACKAGE_NETATALK BR2_PACKAGE_AUTOMATIC BR2_PACKAGE_FORKED_DAAPD BR2_PACKAGE_DBUS BR2_PACKAGE_ISCSITARGET BR2_PACKAGE_LVM2 BR2_PACKAGE_LVM2_DEVICE_MAPPER BR2_PACKAGE_CRYPTSETUP BR2_PACKAGE_STUNNEL BR2_PACKAGE_KERNEL_MODULES BR2_PACKAGE_LIGHTTPD
-BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD BR2_PACKAGE_QUOTA_TOOLS BR2_PACKAGE_OPENVPN BR2_PACKAGE_AMULE BR2_PACKAGE_ARIA2 BR2_PACKAGE_NUTS BR2_PACKAGE_MYSQL BR2_PACKAGE_PPTPD BR2_PACKAGE_PYLOAD BR2_PACKAGE_SYNCTHING BR2_PACKAGE_LOGITECHMEDIASERVER"
+BR2_PACKAGE_PHP BR2_PACKAGE_SICKBEARD BR2_PACKAGE_SABNZBD BR2_PACKAGE_COUCHPOTATO BR2_PACKAGE_COUCHPOTATO2 BR2_PACKAGE_NZBGET BR2_PACKAGE_NZBGETWEB BR2_PACKAGE_POLIPO BR2_PACKAGE_MPD BR2_PACKAGE_QUOTA_TOOLS BR2_PACKAGE_OPENVPN BR2_PACKAGE_AMULE BR2_PACKAGE_ARIA2 BR2_PACKAGE_NUTS BR2_PACKAGE_MYSQL BR2_PACKAGE_PPTPD BR2_PACKAGE_PYLOAD BR2_PACKAGE_SYNCTHING BR2_PACKAGE_LOGITECHMEDIASERVER BR2_PACKAGE_BTRFS_PROGS"
 
 # special case, BR2_PACKAGE_OPENSSH is always defined, but BR2_PACKAGE_OPENSSH_SFTP
 # if only defined in the base firmware, so create a dummy openssh package for this case
@@ -102,9 +104,9 @@ fi
 BR2_PACKAGE_MDADM="usr/sbin/mdadm usr/sbin/mdmon etc/init.d/S29mdadm usr/www/cgi-bin/raid.cgi           usr/www/cgi-bin/raid_proc.cgi"
 BR2_PACKAGE_DNSMASQ="etc/dnsmasq-opts etc/dnsmasq.conf etc/init.d/S42dnsmasq usr/www/dnsmasq_hlp.html usr/www/cgi-bin/dnsmasq.cgi usr/www/cgi-bin/dnsmasq_proc.cgi"
 BR2_PACKAGE_WGET="usr/www/cgi-bin/proxy.cgi usr/www/cgi-bin/proxy_proc.cgi"
-BR2_PACKAGE_RSYNC="etc/rsyncd.conf etc/rsyncd.secrets usr/www/cgi-bin/rsync.cgi usr/www/cgi-bin/rsync_proc.cgi"
+BR2_PACKAGE_RSYNC="etc/rsyncd.conf etc/rsyncd.secrets usr/www/cgi-bin/rsync.cgi usr/www/cgi-bin/rsync_proc.cgi usr/www/cgi-bin/rsyncd.cgi"
 BR2_PACKAGE_MSMTP="etc/msmtprc usr/www/mail_hlp.html usr/www/cgi-bin/mail.cgi usr/www/cgi-bin/mail_proc.cgi"
-BR2_PACKAGE_NTP="etc/ntp.conf ./etc/init.d/S43ntp ./usr/www/cgi-bin/ntp.cgi ./usr/www/cgi-bin/ntp_proc.cgi"
+#BR2_PACKAGE_NTP="etc/ntp.conf ./etc/init.d/S43ntp ./usr/www/cgi-bin/ntp.cgi ./usr/www/cgi-bin/ntp_proc.cgi"
 BR2_PACKAGE_TRANSMISSION="etc/transmission etc/init.d/S81transmission usr/www/cgi-bin/transmission.cgi usr/www/cgi-bin/transmission_proc.cgi usr/www/transmission_hlp.html"
 BR2_PACKAGE_AUTOMATIC="etc/init.d/S82automatic etc/automatic.conf usr/www/cgi-bin/automatic.cgi usr/www/cgi-bin/automatic_proc.cgi usr/www/automatic_hlp.html"
 BR2_PACKAGE_USHARE="etc/init.d/S80ushare etc/ushare.conf usr/www/cgi-bin/ushare.cgi usr/www/cgi-bin/ushare_proc.cgi usr/www/ushare_hlp.html"
@@ -125,7 +127,7 @@ BR2_PACKAGE_DBUS="etc/init.d/S20dbus"
 BR2_PACKAGE_POLIPO="etc/init.d/S45polipo"
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
 BR2_PACKAGE_NETATALK="etc/init.d/S51netatalk etc/afp.conf usr/www/cgi-bin/netatalk.cgi usr/www/cgi-bin/netatalk_proc.cgi"
-BR2_PACKAGE_OPENSSH_EXTRA="usr/www/cgi-bin/sshd.cgi usr/www/cgi-bin/sshd_proc.cgi"
+BR2_PACKAGE_OPENSSH_EXTRA="etc/init.d/S62opensshd usr/www/cgi-bin/sshd.cgi usr/www/cgi-bin/sshd_proc.cgi usr/www/cgi-bin/opensshd.cgi"
 
 BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
@@ -136,6 +138,7 @@ BR2_PACKAGE_OPENVPN="etc/openvpn etc/init.d/S41openvpn"
 BR2_PACKAGE_PPTPD="etc/init.d/S41pptpd"
 BR2_PACKAGE_QUOTA_TOOLS="etc/init.d/S19quota usr/www/cgi-bin/quota.cgi usr/www/cgi-bin/quota_proc.cgi usr/www/cgi-bin/Disk_quotas.men"
 BR2_PACKAGE_KERNEL_MODULES="etc/init.d/S13modload"
+BR2_PACKAGE_BTRFS_PROGS="etc/init.d/S14btrfs"
 
 BR2_PACKAGE_LIGHTTPD="etc/init.d/S52lighttpd usr/www/cgi-bin/lighttpd.cgi
 usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
@@ -154,7 +157,7 @@ BR2_PACKAGE_AMULE="etc/init.d/S81amule usr/www/cgi-bin/amule.cgi usr/www/cgi-bin
 BR2_PACKAGE_ARIA2="etc/aria2 etc/init.d/S81aria2 usr/www/cgi-bin/aria2.cgi usr/www/cgi-bin/aria2_proc.cgi"
 BR2_PACKAGE_PYLOAD="etc/pyload etc/init.d/S81pyload usr/www/cgi-bin/pyload.cgi usr/www/cgi-bin/pyload_proc.cgi"
 BR2_PACKAGE_SYNCTHING="etc/init.d/S81syncthing usr/www/cgi-bin/syncthing.cgi"
-BR2_PACKAGE_LOGITECHMEDIASERVER="etc/init.d/S81lms usr/www/cgi-bin/lms.cgi usr/lib/lms/convert.conf"
+BR2_PACKAGE_LOGITECHMEDIASERVER="etc/init.d/S81lms usr/www/cgi-bin/lms.cgi usr/lib/lms/convert.conf usr/lib/lms/convert.conf-orig"
 
 for i in $BR2_PACKAGES; do
 	if ! grep -q ^${i}= .config; then
