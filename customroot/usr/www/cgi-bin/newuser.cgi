@@ -6,6 +6,8 @@ check_cookie
 LOCAL_STYLE='.dim {background-color: #dddddd;}'
 write_header "New User Setup"
 
+check_https
+
 CONFP=/etc/passwd
 
 has_disks
