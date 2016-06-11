@@ -139,12 +139,12 @@ cat<<-EOF
 	<tr><td>Implict SSL:</td><td><input type=checkbox $ssl_en $ssl_imp_chk name=implicit_ssl value="yes" $(ttip tt_impl)></td></tr>
 	<tr><td colspan=2><br></td></tr>
 
-	<tr><td>Log acesses:</td><td><input type=checkbox $xferlog_chk name=xferlog_enable value="yes"></td></tr>
+	<tr><td>Log accesses:</td><td><input type=checkbox $xferlog_chk name=xferlog_enable value="yes"></td></tr>
 	<tr><td>Log to syslog:</td><td><input type=checkbox $syslog_chk name=syslog_enable value="yes"></td></tr>
 	<tr><td colspan=2><br></td></tr>
 
 	<tr><td>inetd mode</td><td><input type=radio $ftp_inetd name=ftp_inetd value="inetd" $(ttip ftpi_tt)></td></tr>
-	<tr><td>server mode</td><td><input type=radio $ftp_server name=ftp_inetd value="server" $(ttip ftpi_tt)></td></tr>
+	<tr><td>server mode</td><td><input type=radio $ftp_server name=ftp_inetd value="server" $(ttip ftps_tt)></td></tr>
 
 	</table>
 	<input type="hidden" name=from_url value="$HTTP_REFERER">
