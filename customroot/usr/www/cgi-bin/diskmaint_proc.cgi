@@ -55,7 +55,10 @@ check() {
 			;;
 		vfat) opts="-a" ;;
 		ntfs) opts="" ;;
-		*) 	msg "Unsuported $2 filesystem, you have to resort to the command line."
+		btrfs) 
+			lmount $1
+			msg "Checking or Fixing a btrfs filesystem has to be done from the command line." ;;
+		*) msg "Unsuported $2 filesystem, you have to resort to the command line." ;;
 	esac
 	logf=/tmp/${3}-${1}.log
 
@@ -107,9 +110,10 @@ format() {
 	fi
 
 	case $2 in
-		ext2|ext3|ext4) opts="-m 0 $raidopts"; id=83 ;;
+		ext2|ext3|ext4) opts="-v -m 0 $raidopts"; id=83 ;;
+		btrfs) opts="-f"; id=83 ;;
 		vfat) opts="-v"; id=c ;; # c Win95 FAT32 (LBA)
-		ntfs) opts="-f"; id=7 ;; # 7 HPFS/NTFS
+		ntfs) opts="-v -f"; id=7 ;; # 7 HPFS/NTFS
 		*) msg "Wrong filesystem type." ;;
 	esac
 	logf=/tmp/format-${1}.log
@@ -118,7 +122,7 @@ format() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		nice mkfs.$2 $opts -v /dev/$1 > $logf 2>&1
+		nice mkfs.$2 $opts /dev/$1 > $logf 2>&1
 		st=\$?
 		if test \$st != 0; then
 			emsg="Formatting $1 with $2 failed with code \$st: \$(cat $logf)"
@@ -160,13 +164,23 @@ format() {
 
 # $1=part $2=shrink|enlarg 
 resize() {
-	nsz=""
-	if test "$2" = "shrink"; then
-		nsz="-M"
-	fi
-
-	if ismount $1; then
-		lumount $1 "${2}ing"
+	if test $type = "btrfs"; then
+		if ! ismount $1; then
+			lmount $1 "${2}ing"
+		fi
+		mp=$(awk '/^\/dev\/'$1'[[:space:]]/{print $2}' /proc/mounts)
+		nsz=max
+		if test "$2" = "shrink"; then
+			nsz=$(btrfs filesystem usage --raw $mp | awk '/Device allocated:/{printf "%.0f", 1.05 * $3 }')
+		fi
+	else
+		nsz=""
+		if test "$2" = "shrink"; then
+			nsz="-M"
+		fi
+		if ismount $1; then
+			lumount $1 "${2}ing"
+		fi
 	fi
 
 	logf=/tmp/${2}-${1}.log
@@ -186,7 +200,11 @@ resize() {
 		fi
 		logger "Checking /dev/$1 OK"
 		
-		nice resize2fs -p /dev/$1 $nsz > $logf 2>&1
+		if test $type = btrfs; then
+			nice btrfs filesystem resize $nsz $mp  > $logf 2>&1
+		else
+			nice resize2fs -p /dev/$1 $nsz > $logf 2>&1
+		fi
 		if test $? != 0; then
 			emsg="${2}ing $1 failed: \$(cat $logf)"
 			logger "\$emsg"
@@ -265,6 +283,7 @@ elif test -n "$setMountOpts"; then
 		mopts=$(httpd -d $mopts)
 	fi
 
+	# FIXME: if fs is mounted, use 'remount' mount option instead, as fs might be busy
 	lumount "$part"
 
 	TF=$(mktemp -t) 
@@ -355,10 +374,12 @@ elif test -n "$Convert"; then
 
 elif test -n "$Shrink"; then
 	eval part=\$part_$Shrink
+	type=$(blkid -s TYPE -o value /dev/$part)
 	resize "$part" "shrink"
 
 elif test -n "$Enlarge"; then
 	eval part=\$part_$Enlarge
+	type=$(blkid -s TYPE -o value /dev/$part)
 	resize "$part" "enlarg"
 
 elif test -n "$Wipe"; then

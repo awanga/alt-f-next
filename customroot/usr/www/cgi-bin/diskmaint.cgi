@@ -93,8 +93,14 @@ EOF
 
 # is ntfsprogs pkg installed?
 ntfs_dis="disabled"
-if test -f /usr/sbin/mkntfs; then
+if test -x /usr/sbin/mkntfs; then
 	ntfs_dis=""
+fi
+
+# is btrfs-progs installed?
+btrfs_dis="disabled"
+if test -x /usr/bin/btrfs; then
+	btrfs_dis=""
 fi
 
 blk=$(blkid -s LABEL -s TYPE)
@@ -145,16 +151,21 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 		otype="<span class=\"red\">$TYPE</span>"
 	fi
 
-	conv_en="disabled"
+	conv_en="disabled" # FIXME: btrfs convert seems broken!
 	if test "$TYPE" = "ext2" -o "$TYPE" = "ext3"; then conv_en=""; fi
 
-	details_en="disabled"
+	details_en="disabled" # FIXME: implement btrfs details
 	if test "$TYPE" = "ext2" -o "$TYPE" = "ext3" -o "$TYPE" = "ext4"; then details_en=""; fi
 
 	clean_en=""; label_en=""
 	if test "$TYPE" = "ntfs" -a -n "$ntfs_dis"; then
 		clean_en="disabled"
 		label_en="disabled"
+# 	elif test "$TYPE" = "btrfs"; then
+# 		clean_en="disabled"
+# 		if test -n "$btrfs_dis"; then
+# 			label_en="disabled"
+# 		fi
 	fi
 
 	resize_en=""
@@ -211,13 +222,14 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 				<option>ext2</option>
 				<option>ext3</option>
 				<option>ext4</option>
+				<option $btrfs_dis>btrfs</option>
 				<option>vfat</option>
 				<option $ntfs_dis>ntfs</option>
 			</select></td>
 			<td class="highcol"><select id="fsfs_$i" name="$i" onChange="msubmit('fsfs_$i', '$part')">
 				<option>Operation</option>
 				<option>Format</option>
-				<option $all_dis $conv_en >Convert</option>
+				<option $all_dis $conv_en>Convert</option>
 			</select></td></tr>
 		EOF
 	fi
