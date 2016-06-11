@@ -76,8 +76,9 @@ cat<<-EOF
 			ret = confirm("Your IP will change. Redirect your " +
 			'\n' + "browser to http://" + nip);
 		if (stat == false)
-			ret = confirm("The box IP might change. Consult your DHCP server to know" +
-			 '\n' + "the new IP and redirect your browser to it.");
+			ret = confirm("The box IP or name might change." + '\n' + 
+			"Consult your DHCP server to know the new IP and redirect your browser to it." + '\n' + 
+			"The SSL server certificate might also need to be recreated.");
 		return ret;
 	}
 	function mtu_warn() {
