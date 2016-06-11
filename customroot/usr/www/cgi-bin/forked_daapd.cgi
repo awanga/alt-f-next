@@ -10,7 +10,7 @@ mktt sname_tt "Advertised name.<br>A '%h' will be replaced with the host name."
 CONF_FORKED=/etc/forked-daapd.conf
 
 SHARE_DIRS=$(sed -n '
-\|[^#]directories|{
+\|^[^#]*directories|{
 s|.*directories.*=.*{\(.*\)}|\1|
 s|" *, *"|\n|g
 s|\\"|"|g
