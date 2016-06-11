@@ -12,7 +12,7 @@ if test -f $CONFF; then
 	. $CONFF
 fi
 
-#rclvm load >& /dev/null
+#rclvm start >& /dev/null
 
 blkid -t TYPE="lvm2pv" > /dev/null
 no_pv=$?

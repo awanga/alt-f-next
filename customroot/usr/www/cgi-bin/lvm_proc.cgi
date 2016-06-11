@@ -16,13 +16,15 @@ fi
 # default Alt-F Volume Group name
 VG=altf
 
+rclvm start >& /dev/null
+
 run() {
 	if ! res=$($* 2>&1); then msg "$res"; fi
 }
 
 # Volume Group options
 if test -n "$VGCreate"; then
-	if ! pvdisplay -s /dev/$pdev >/dev/null; then
+	if ! pvdisplay -s /dev/$pdev >& /dev/null; then
 		run pvcreate /dev/$pdev
 	fi
 
