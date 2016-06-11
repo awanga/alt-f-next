@@ -126,7 +126,7 @@ ltime="$(TZ=$tz date)"
 hour=$(date +%R)
 date=$(date +%F)
 
-ntps="pool.ntp.org"
+ntps="0.pool.ntp.org"
 if test -e $CONFNTP; then
 	while read server host; do
 		if test "$server" = "server" -a "$host" != "127.127.1.0"; then
@@ -236,7 +236,8 @@ cat<<-EOF
 		<td><input type=text size=20 name=ntps value="$ntps"></td>
 		<td><select name=ntps_opt onChange="update_smtp()">
 		$default_ntpd_server
-		<option value="pool.ntp.org">Worldwide</option>
+		<option value="0.pool.ntp.org">Worldwide</option>
+		<option value="africa.pool.ntp.org">Africa</option>
 		<option value="asia.pool.ntp.org">Asia</option>
 		<option value="europe.pool.ntp.org">Europe</option>
 		<option value="north-america.pool.ntp.org">North America</option>

@@ -23,8 +23,8 @@ elif test "$Submit" = "manual"; then
 	date -s "$date $hour" >& /dev/null
 
 elif test "$Submit" = "ntpserver"; then
-	if test -z "$ntps"; then ntps="pool.ntp.org"; fi
-	sntp -s $ntps >& /dev/null
+	if test -z "$ntps"; then ntps="0.pool.ntp.org"; fi
+	fsntp -s $ntps >& /dev/null
 fi
 
 hwclock -wu >& /dev/null
