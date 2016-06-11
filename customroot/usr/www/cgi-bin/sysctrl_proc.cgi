@@ -20,6 +20,7 @@ for i in $cmd; do
 done
 
 mv $CONFF- $CONFF
+rcsysctrl reload >& /dev/null
 
 #enddebug
 gotopage /cgi-bin/sysctrl.cgi

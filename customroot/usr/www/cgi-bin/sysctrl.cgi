@@ -68,7 +68,7 @@ cat<<-EOF
 EOF
 
 case "$board" in
-	"DNS-323-A1"|"DNS-323-B1")
+	DNS-323-[AB]1)
 
 	if test -z "$lo_temp"; then lo_temp=40; fi
 
@@ -101,7 +101,8 @@ case "$board" in
 	EOF
 	;;
 
-	"DNS-323-C1"|"DNS-321-A1A2"|"DNS-320-A1A2"|"DNS-320L-A1"|"DNS-325-A1A2")
+	DNS-320-[AB]x|DNS-320L-Ax|DNS-321-Ax|DNS-323-C1|DNS-325-Ax|DNS-327L-Ax)
+
 	mktt lofan_tt "The fan turns at low speed at system temperatures lower than this value<br> and at fast speed at higher temperatures"
 	if test -z "$lo_temp"; then lo_temp=45; fi
 
@@ -133,7 +134,7 @@ case "$board" in
 	;;
 esac
 
-if test "$board" = "DNS-320L-A1"; then fb_dis="disabled"; fi
+if test "$board" = "DNS-320L-Ax" -o "$board" = "DNS-320-Bx"; then fb_dis="disabled"; fi
 
 cat<<-EOF
 	<fieldset><legend>System Safety</legend><table>
