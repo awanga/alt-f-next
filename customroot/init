@@ -16,7 +16,7 @@ echo "pre-init started, pid=$$"
 
 mount -t proc proc /proc
 
-# enter iterative shell if cmdline has "initdbg"
+# enter iterative shell if cmdline contains "initdbg"
 # -use with a plain gzip/lzma or a squashfs compressed initramfs
 # -use with or without a aufs capable kernel
 # -runs inetd to telnet the box if networking is up (ip=... in the kernel cmd line)
@@ -24,6 +24,8 @@ if grep -q "initdbg" /proc/cmdline; then
 	echo "pre-init: initdbg"
 	mount -t sysfs sysfs /sys
 	mount -t tmpfs tmpfs /tmp
+	mount -t tmpfs tmpfs /dev
+	mkdir /dev/pts
 	mount -t devpts devpts /dev/pts
 	mount_usr_squashfs
 	mdev -s	# create device nodes
@@ -77,6 +79,7 @@ elif grep -q squashcpio /proc/cmdline; then
 	cd /newroot
 	exec switch_root . /sbin/init
 
+# DNS-321/323 in normal operation after powerup
 # RC3 and after: runs from squashfs (initrd) in mtdblock3, saves 6.6MB of RAM:
 #   rcall stop; echo 3 > /proc/sys/vm/drop_caches; free
 #                           total         used         free       shared      buffers
@@ -87,10 +90,12 @@ elif grep -q squashcpio /proc/cmdline; then
 # needs kernel cmdline with "init=/init root=/dev/ram0" but makes flashing harder,
 # as one can't flash the device the rootfs is running from.
 # one has to kexec a new system running from RAM before flashing, see bellow
-#   dd if=/dev/mtdblock2 of=/root/zImage bs=64 skip=1
-#   dd if=/dev/mtdblock3 of=/root/rootfs.arm.sqmtd bs=64 skip=1
+#   dd if=/dev/mtdblock2 of=/boot/zImage bs=64 skip=1
+#   dd if=/dev/mtdblock3 of=/boot/rootfs.arm.sqmtd bs=64 skip=1
 #   reboot
-elif grep -qE 'squashmtd|egiga0' /proc/cmdline; then # boot from u-boot
+#elif grep -qE 'squashmtd|egiga0' /proc/cmdline; then # DNS-321/323 boot from u-boot
+# FIXME: rcE sets 'kexecmode' to cmdline when kexecing a new kernel
+elif grep -q 'Hardware.*321/323' /proc/cpuinfo && ! grep -q 'kexecmode' /proc/cmdline; then
 	echo "pre-init: squash-mtd"
 	mount -t tmpfs tmpfs /rootmnt
 	mkdir -p /rootmnt/ro /rootmnt/rw
@@ -107,21 +112,29 @@ elif grep -qE 'squashmtd|egiga0' /proc/cmdline; then # boot from u-boot
 	umount /proc
 	cd /newroot
 	pivot_root . boot
-	exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; rm -rf /rootmnt/dev;  exec /sbin/init'
+	#exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; rm -rf /rootmnt/dev; exec /sbin/init'
+	exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; exec /sbin/init' < dev/console > dev/console 2>&1
 
+# DNS-321/323 after SpecialReboot (for flashing), DNS-320/320L/325/327 normal operation at powerup
 # same as above, but don't use mtd, use instead squashfs from ramdisk (initrd).
-# Mainly for development and flashing
 else # squashrd is the default
 	echo "pre-init: squash-rd"
 	mount -t tmpfs tmpfs /rootmnt
 	mkdir -p /rootmnt/ro /rootmnt/rw
 	mount --bind / /rootmnt/ro
 	mount -t aufs -o br:/rootmnt/rw:/rootmnt/ro aufs /newroot
+	#mount -t overlay -o lowerdir=/rootmnt/ro,upperdir=/rootmnt/rw,workdir=/rootmnt/wd overlayfs /newroot
 	mount --move /rootmnt /newroot/rootmnt
 	umount /proc
 	cd /newroot
-	exec chroot . /sbin/init
+	pivot_root . boot
+	exec chroot . sh -c 'umount /boot; exec /sbin/init' < dev/console > dev/console 2>&1
+	#exec chroot . /sbin/init < dev/console > dev/console 2>&1
+	#exec chroot . /bin/sh < dev/console > dev/console 2>&1
 fi
+
+# mount -t proc proc /proc
+# kexec -d -l zImage --initrd rootfs.arm.sqall.xz --atags --append "console=ttyS0,115200 root=/dev/ram0 init=/init initdbg" && kexec -e
 
 # enter iterative shell on serial line if above fails
 echo "pre-init: fail"
