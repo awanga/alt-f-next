@@ -22,7 +22,7 @@ deps_status() {
 	if test -f $CWD/ipkgfiles/$1.conffiles; then
 		echo Conffiles: 
 		for j in $(cat $CWD/ipkgfiles/$1.conffiles); do
-			echo "/Alt-F/$j $(md5sum $BLDDIR/project_build_arm/$board/root/$j | cut -d" " -f1)"
+			echo "$j $(md5sum $BLDDIR/project_build_arm/$board/root/$j | cut -d" " -f1)"
 		done
 	fi  
 	echo
@@ -88,6 +88,7 @@ fi
 
 . .config 2> /dev/null
 board=$BR2_PROJECT
+kver=$BR2_CUSTOM_LINUX26_VERSION
 
 EXT=$COMP
 if test "$COMP" = "xz"; then
@@ -107,8 +108,8 @@ fi
 # sq_pkgs: pre-installed packages on sqimage 
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
-base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear  portmap nfs-utils kexec openssl zlib popt"
-base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp samba-small openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
+base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear portmap nfs-utils kexec openssl zlib popt"
+base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp-common samba-small openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
 SQFSBLK=131072
@@ -119,11 +120,7 @@ case $board in
 		fw_pkgs="$base_pkgs $base_pkgs2"
 		all_pkgs=$fw_pkgs
 		;;
-	dns321)
-		fw_pkgs="$base_pkgs $base_pkgs2 minidlna"
-		all_pkgs=$fw_pkgs
-		;;
-	dns325)
+	dns325|dns327)
 		if test $# = 0; then
 			TYPE="sqsplit"
 			COMP=xz
@@ -215,11 +212,11 @@ elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 
 	mv rootfs.arm.sqall.$EXT ${BLDDIR}/binaries/$board
 
-# DNS-320/325
+# DNS-320/325/327
 elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage with extra files
 
-	if test "$board" != "dns325"; then
-		echo "mkinitramfs: ERROR, \"sqsplit\" is only for a dns-320/325"
+	if test "$board" != "dns325" -a "$board" != "dns327"; then
+		echo "mkinitramfs: ERROR, \"sqsplit\" is only for a dns-320/325/327"
 		exit 1
 	fi
 
@@ -228,10 +225,27 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 	sq_pkgs_deps=$(for i in $sq_pkgs; do rdeps $i; done | sort -u)
 
+# HACK! with the dns327 we now have two architectures, armv5 and armv7.
+# armv5 binaries are the default and runs on both archs, but kernel modules are different for both.
+# The ideal situation would be to have the kernel-modules pkg to depends on the armv5 OR the armv7 
+# kernel-modules pkg, and at install time 'ipkg' would read the running machine arch and install
+# the appropriate kernel-module pkg. But that does not seems to be possible.
+# instead, the no-files kernel-modules pkg install script does that.
+# So the kernel-modules pkg has no actual kernel modules files, and one has to determine the pkgs
+# file list at build time here:
+
+	if echo $sq_pkgs_deps | grep -q kernel-modules; then
+		if test $board = "dns327"; then
+			sq_pkgs_deps=$(echo -e "$sq_pkgs_deps\nkernel-modules-armv7 $kver")
+		else
+			sq_pkgs_deps=$(echo -e "$sq_pkgs_deps\nkernel-modules-armv5 $kver")
+		fi
+	fi
+
 	# bug 363: remove from sq_pkgs_deps any entries already in fw_pkgs_deps
 	sq_pkgs_deps=$(echo -e "$fw_pkgs_deps\n$fw_pkgs_deps\n$sq_pkgs_deps" | sort | uniq -u)
-	# echo -e "$fw_pkgs_deps" | sort -u > $CWD/fw
-	# echo -e "$sq_pkgs_deps" | sort -u > $CWD/sq
+	#echo -e "$fw_pkgs_deps" | sort -u > $CWD/fw
+	#echo -e "$sq_pkgs_deps" | sort -u > $CWD/sq
 
 	echo -e "$fw_pkgs_deps\n$sq_pkgs_deps" | sort -u > root/etc/preinst
 
