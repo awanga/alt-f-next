@@ -1,3 +1,4 @@
+[TOC]
 
 How to install:
 ===============
@@ -5,43 +6,42 @@ How to install:
 To use Alt-F you have to flash it using the same method used to upgrade the vendor’s firmware.
 This method replaces the D-Link firmware and probably will void the box warranty.
 
--Start uninstalling ffp if you have it installed.
- That's enough to rename the 'ffp' folder to 'ffp-orig'.
+1. Reboot the box before start performing any upgrade.
+
+2. Start uninstalling ffp if you have it installed. That's enough to rename the 'ffp' folder to 'ffp-orig'.
  You can latter install ffp using Alt-F "ffp Package Manager" and recover configuration
  files from the previous 'ffp-orig' install.
  When Alt-F starts, if a ffp directory is found in the root directory of any filesystem,
  its init script will be executed, so all non needed ffp init scripts should be disable,
  and only services that Alt-F don't have should be kept.
 
--If you are still using the "on top"/"reloaded" method, wich is now discontinued,
- you will have to flash Alt-F and after rebooting you can delete the 'alt-f' folder
- (NOT the 'Alt-F' folder, notice the case) and the fun_plug script.
-
--Clear the cache of the browser after rebooting, as this often causes problems.
- Also, try using Chrome or Firefox, as IE might also cause problems (and was not tested at all).
-
-  Download Alt-F-<version>.bin and use it as if it was a D-Link supplied firmware file.
-  If you are already using Alt-F, download Alt-F-<version>.bin and use the Alt-F
-  Firmware Upgrade web page to flash it.
+3. Look at the box bottom attached label to see its hardware revision level, then select the appropriate
+ Alt-F-0.1RC5 bin file for it and use the normal firmware upgrade method to flash it.
+ For example, the Alt-F-0.1RC5-DNS-320-rev-Ax.bin file is to be used on the DNS-320 rev-A1 or rev-A2,
+ but not on the DNS-320-rev-B1.
+ Don't try to flash firmware if your box is not supported
  
-  Alt-F firmware upgrade web page can flash the vendor's supplied firmware, so
-  you can always do a "downgrade".
+ Alt-F firmware upgrade web page can flash the vendor's supplied firmware,
+ so you can always do a "downgrade".
 
-  Several D-Link firmware versions have been tested 
-  *** ON A DNS-323-REV-B1 and on a DNS-325-rev-A1 BOARDs ***.
+  Alt-F and several D-Link firmware versions have been tested on a DNS-323-REV-A1/B1,
+  a DNS-320L-rev-A1, a DNS-325-rev-A1, and a DNS-327L-rev-A1 boxes.
 
   Reports say that it also work on other box model and boards: the
-  DNS-320-rev-A1/A2, DNS-320L-rev-A1, DNS-321-rev-A1/A2, DNS-323-rev-A1/B1/C1, DNS-325-rev-A1/A2,
-  Conceptronic CH3SNAS, and Fujitsu-Siemens DUO 35-LR
+  DNS-325-rev-A2, DNS-320L-rev-A3, DNS-320-rev-A1/A2/B1/B2, DNS-321-rev-A1/A2/A3,
+  DNS-323-rev-C1, and on the Conceptronic CH3SNAS and Fujitsu-Siemens DUO 35-LR
+  which are just rebranded DNS-323-rev-B1.
 
   OF COURSE THIS IS DANGEROUS, AND CAN TURN YOUR BOX INTO AN EXPENSIVE BLACK
   BRICK IN YOUR DESKTOP. YOU HAVE BEEN WARNED.
 
+4. After the reboot clear the cache of the browser, as this often causes problems.
+ Also, try using Chrome or Firefox, as IE might also cause problems (and was not tested at all).
 
 Diagnosing Installation Problems
 ================================
 
-0-The blue power led keeps blinking with a slow *earth beat* rate,
+0-The blue power led keeps blinking with a slow *heart beat* rate,
   the blue disk leds blinks randomly.
   This means that fsck is running and checking your disk filesystems.
   This happens when the box is not cleanly shutdown, what happens
@@ -81,3 +81,25 @@ Diagnosing Installation Problems
   device using a IP not assigned by it.
 
   You can also try to ping, telnet, ssh or ftp the box, post the results.
+
+How to upgrade:
+===============
+
+1. If you are still using the "on top"/"reloaded" method, which is now discontinued,
+ you will have to flash Alt-F and after rebooting you can delete the 'alt-f' folder
+ (NOT the 'Alt-F' folder, notice the case) and the fun_plug script.
+
+2. Reboot the box before start performing any upgrade.
+
+3. Save current settings to a desktop computer (System->Settings, in the "Computer Disk" section,
+ "Save current settings to file", hit the Download button)
+ 
+4. Look at the box bottom attached label to see its hardware revision level, then select the appropriate
+ Alt-F-0.1RC5 bin file for it and use the normal firmware upgrade method to flash it.
+ For example, the Alt-F-0.1RC5-DNS-320-rev-Ax.bin file is to be used on the DNS-320 rev-A1 or rev-A2,
+ but not the DNS-320-rev-B1.
+ Don't try to flash firmware if your box is not supported
+
+5. All Disk-installable packages must be updated (Packages->Alt-F, UpdatePackagList, then UpdateAll)
+ Stop all services before doing that (System->Utilities, Services section, hit the StopAll button)
+
