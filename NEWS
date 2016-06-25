@@ -1,3 +1,124 @@
+=== June 25, 2016: Alt-F-0.1RC5 is released
+
+Some user relevant news and fixes:
+-DNS-327L-rev-Ax support. Some CPU capabilities are not yet used.
+ Thanks to Fernando Gomes for donating it.
+-Linux upgraded to 3.18.28
+-Basic support to btrfs
+-Firmware Upgrader now optionally checks firmware file integrity using SHA1
+-Most packages in the base firmware have been updated to their latest version,
+ disk installable packages will follow, make your request.
+-The ntp package was removed from firmware, due to lack of flash memory space,
+ and is replaced by busybox ntpd.
+-The All-F folder for disk-installable packages can now be de-activated or moved to another filesystem
+-Most servers which were under inetd control can now be run standalone
+ There are some pending issues when making the transition from inetd to server mode and vice-versa.
+-minidlna removed from the DNS-321 base firmware due to lack of flash memory space
+-Some webUI security vulnerabilities fixed, thanks to Ondřej Surý for reporting.
+-Fixes for 8TB disks on the Disk Partitioner and Disk Wizard
+-The Disk Partitioner can now handle out-of order (D-Link inherited) partitions
+-Filesystems can now be forced to be checked on the next boot
+-Allow to recreate swap and specify partition-based swap priorities and swap aggressiveness
+-Support users cron jobs; if saved as ~/crontab.lst, they will automatically be started
+-The user script to execute at powerup can be edited using the webUI
+-The box-model-MAC-address is used as the default hostname on the first boot
+-The orange disk leds will be turned on when (some) detected system errors are detected.
+-Fix installed/pre-installed packages version conflict when firmware upgrade is detected
+
+Known issues:
+-On the Firmware Upgrade webUI of previous releases the TryIt button will not be able to try
+ this release, you have to flash it.
+-https, provided through stunnel, can fail the first time when in server mode; 
+ stopping and restaring the stunnel service is usually enough to recover.
+-The webUI does not supports disks reporting 4KB logical sector size;
+ disks with 4KB physical sector size and reporting 512 bytes logical sizes, the majority, works fine.
+-when upgrading some packages (rsync) its configuration files might be overwritten
+-When using https the webUI can't embed some external or running services http web pages
+ (and most https servers disable embedding for security reasons)
+-smartd now displays errors on the Status page, but migh fail on its first start,
+ use Submit in Services->System->smart->Configure to fix.
+-kexec is not working on the 320/320L/325 (it fails even on linux-4.3.0)
+-Debian in kexec mode only works on the DNS-321/323
+-the iscsitarget package is not working on the DNS-327 and generates BUG kernel errors on other boxes.
+-the cryptodev package is not working on the DNS-327
+-to upgrade the kernel-modules package, the kernel-modules-armv5 package must be installed first
+-the kernel-modules package don't automatically install/un-install the appropriate
+ kernel-modules-armv5 or kernel-modules-armv7 package, you have to install/un-install them.
+-If upgrading from previous releases, the ntp package will appear as installed, it can safely be removed.
+
+=== February 3, 2015: Alt-F-0.1RC4.1 is released
+
+This is mainly a maintenance release, with all fixes for the RC4 applied
+and with some other minor fixes and improvements.
+All users are encouraged to upgrade.
+
+The DNS-320L/LW-rev-Ax and the DNS-320-rev-Bx support is now complete.
+The circuit boards for the DNS-320L-rev-Ax and DNS-320-rev-Bx are
+identical apart from a smaller amount of memory in the DNS-320-rev-Bx,
+so any of them can use the other firmware.
+
+If you are running the vendor's firmware you don't have to follow the
+bellow described procedure.
+
+If however you have flashed 0.1RC4 or the experimental releases and
+applied any fix or patch, you have to manually removed them before upgrading.
+In the future this will happens automatically when upgrading, but for now
+you have to save and execute a file in the box. Rolling fixes back might
+not work as expected.
+You also have to disable the "boot user script" if you are using it to apply
+any fix or patch to the DNS-320-rev-Bx or to the 320L/LW-rev-Ax boxes.
+
+Create a file with the text between the two '-----------' lines below,
+being sure that #!/bin/sh is at the file first line and column. Then
+telnet or ssh the box and login as the 'root' user using the same
+password as in the webUI and execute it by typing in the command line:
+
+dos2unix /path/to/saved/file
+sh /path/to/saved/file
+
+e.g. if you named the file 'fix' and saved it in '/mnt/sda2':
+
+dos2unix /mnt/sda2/fix
+sh /mnt/sda2/fix
+
+
+-----------8<---------
+#!/bin/sh
+if aufs.sh -s; then
+ aufs.sh -n
+ for i in $(find /rootmnt/ro /rootmnt/sqimage -type f 2> /dev/null | sed "s|^/rootmnt/[^/]*/||"); do
+  if test -f /Alt-F/$i && ! grep -q $i /etc/settings /usr/lib/ipkg/info/*.list; then
+   rm -f /Alt-F/$i
+  fi
+ done
+ aufs.sh -r
+fi
+---------->8---------
+
+Some relevant user-related changes since RC4:
+
+-add temperature hysteresis parameter
+-make fanctl() implement several fan control modes (Auto/always off/always slow/always fast)
+-exchange left/right bay for DNS320L
+-parse drive family/model name with embeded quotes
+-turn the blue USB led off only when there are no USB attached devices
+-don't turn on usb led by default
+-handle xz compressed debian packages
+-activate disk leds on disk access;
+-support ppp and usb attached device names
+-support swap over RAID
+-create directories for fixe affected files so fixes will they survive a reboot/poweroff
+-download only new fixes
+-rollback fixes if they were removed from the repository
+-don't allow rollbacking a fix if it is required by an applied fix
+-add fixes RemoveAll button
+-sys utils: don't fail if the System Configuration log is not found
+-Mail webUI: sanitize "from/to" entries
+-inetd webUI: fix ticket 328: Inetd "Boot Enabled" disables itself.
+-Disk Wizard: fix ticket 358: Disk Wizard fails creating RAID with 6TB disks
+-Filesystem Maintenance: fix display of unmounted devices
+-backup: allow excluding files/directories by using .rsync-filter files, using '-F --delete-excluded' rsync options
+
 === June 24, 2014: Alt-F-0.1RC4 is released
 
 -The DNS-320/325 is now supported. Supported devices are the DNS-320-rev-A1/A2, DNS-321-rev-A1/A2,
