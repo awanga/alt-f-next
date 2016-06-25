@@ -1,6 +1,6 @@
 Package: mysql-server
 Description: The MySQL Database server
-Version: 5.1.73
+Version: 5.1.73-1
 Depends: readline, mysql-libs, ipkg
 Architecture: arm
 Priority: optional

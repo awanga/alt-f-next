@@ -1,6 +1,6 @@
 Package: mysql-libs
 Description: The MySQL Database libraries
-Version: 5.1.73
+Version: 5.1.73-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
