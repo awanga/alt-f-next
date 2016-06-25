@@ -2,6 +2,7 @@
 # so defined variables will be available at the current shell
 
 # tail compare: config files have a time stamp in the first four lines, compare remainder
+# there might be are a few other minor differences, ignore them also
 tailcmp() {
 	local st=0
 	if ! test -f $1 -a -f $2; then
@@ -10,8 +11,8 @@ tailcmp() {
 	fi
 
 	f1=$(mktemp); f2=$(mktemp)
-	tail -n +5 $1 | grep -v CONFIG_PREFIX > $f1
-	tail -n +5 $2 | grep -v CONFIG_PREFIX > $f2
+	tail -n +5 $1 | grep -vE 'CONFIG_PREFIX|KERNEL_HEADERS|CROSS_COMPILER_PREFIX|CONFIG_CC_OPTIMIZE_FOR_SIZE' > $f1
+	tail -n +5 $2 | grep -vE 'CONFIG_PREFIX|KERNEL_HEADERS|CROSS_COMPILER_PREFIX|CONFIG_CC_OPTIMIZE_FOR_SIZE' > $f2
 
 	#elif cmp -si $(head -n 4 $1 | wc -c):$(head -n 4 $2 | wc -c) $1 $2; then
 	if cmp -s $f1 $f2; then
