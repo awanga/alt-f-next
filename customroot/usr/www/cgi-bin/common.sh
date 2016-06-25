@@ -457,7 +457,9 @@ else
 
 	# remove fname2 from fname1 end (\r\n empty lines)
 	sed -i '/'$delim_line'/,$d' $fname1
-	sed -i '$d' $fname1
+	#sed -i '$d' $fname1 # buggy busybox sed when last chars are '00 00  ff ff'
+	flen=$(stat -t $fname1 | cut -d" " -f2)
+	dd if=$fname1 of=$fname1 bs=1 seek=$((flen - 2)) count=0 >& /dev/null
 	echo $fname1
 fi
 
