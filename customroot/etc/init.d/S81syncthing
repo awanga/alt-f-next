@@ -38,20 +38,13 @@ done
 check_user $SYNCTHING_DIRS
 
 if ! test -f $SYNCTHING_CONF; then
-	# this would be much faster, but see the FIXME in S11sslcert
-	# cp /etc/ssl/certs/server.crt $SYNCTHING_HOME/cert.pem
-	# cp /etc/ssl/certs/server.crt $SYNCTHING_HOME/https-cert.pem
-	# cp /etc/ssl/certs/server.key $SYNCTHING_HOME/key.pem
-	# cp /etc/ssl/certs/server.key $SYNCTHING_HOME/https-key.pem
-
 	echo -e "\n$NAME: Please wait..."
-	echo "Generating RSA key and certificate, it takes 1 to 2 minutes."
-	echo "The first Syncthing start will takes another 1 to 2 minutes."
+	echo "Generating RSA key and certificate..."
+	echo "The first Syncthing start might takes another 1 to 2 minutes."
 
 	$NAME -generate=$SYNCTHING_HOME > /dev/null
-	sed -i -e 's|<address>127.0.0.1:8080</address>|<address>0.0.0.0:8088</address>|' \
-		-e  '/<folder/,/<\/folder/d' \
-		-e  '/<device.*name=/,/<\/device/d' $SYNCTHING_CONF
+	sed -i -e 's|<address>127.0.0.1:.*</address>|<address>0.0.0.0:8088</address>|' \
+		-e  '/<folder/,/<\/folder/d' $SYNCTHING_CONF
 	chown -R $RC_USER:$RC_GROUP $SYNCTHING_HOME
 fi
 

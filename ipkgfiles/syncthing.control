@@ -1,6 +1,6 @@
 Package: syncthing
 Description: Open Source Continuous File Synchronization
-Version: 0.10.27
+Version: 0.13.9
 Depends: ipkg
 Architecture: arm
 Priority: optional

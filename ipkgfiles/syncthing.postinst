@@ -1,24 +1,24 @@
 #!/bin/sh
 
-VERSION=0.10.27
+VERSION=0.13.9
 SITE=https://github.com/syncthing/syncthing/releases/download/v${VERSION}
 TBALL=syncthing-linux-arm-v${VERSION}.tar.gz
 
 ST_DIR=/opt/syncthing
 
 if ! test -f /tmp/$TBALL; then
-echo "Downloading $SITE/${TBALL}..."
-if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
-	rm -f /tmp/$TBALL
-	cat<<-EOF
+	echo "Downloading $SITE/${TBALL}..."
+	if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+		rm -f /tmp/$TBALL
+		cat<<-EOF
 
-		******************************************************
-		* Downloading of Syncthing from its home site failed *
-		******************************************************
+			******************************************************
+			* Downloading of Syncthing from its home site failed *
+			******************************************************
 
-	EOF
-	exit 1
-fi
+		EOF
+		exit 1
+	fi
 fi
 
 mkdir -p /opt # created under /Alt-F
