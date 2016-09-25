@@ -40,7 +40,7 @@ EOF
 install_loc=$(find /mnt -type d -maxdepth 2 -name Alt-F)
 if test -z "$install_loc"; then
 	cat<<-EOF
-		<table><tr><td>No Alt-F package instalation found, install in:</td>
+		<table><tr><td>No Alt-F package installation found, install in:</td>
 		<td>$(select_part)</td>
 		<td><input type=submit name=install value=Install></td></table>
 	EOF
