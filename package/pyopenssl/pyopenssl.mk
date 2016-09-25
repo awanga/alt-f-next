@@ -4,9 +4,14 @@
 #
 #############################################################
 
-PYOPENSSL_VERSION = 0.11
+#https://pypi.python.org/packages/8b/20/8f4230b281a2a9d0ee9e24fd89aeded0b25d40c84b3d61100a96438e1626/pyOpenSSL-0.13.tar.gz#md5=767bca18a71178ca353dff9e10941929
+
+#http://http.debian.net/debian/pool/main/p/pyopenssl/pyopenssl_0.13.orig.tar.gz
+
+PYOPENSSL_VERSION = 0.13
 PYOPENSSL_SOURCE = pyOpenSSL-$(PYOPENSSL_VERSION).tar.gz
-PYOPENSSL_SITE = https://launchpad.net/pyopenssl/main/0.11/+download
+PYOPENSSL_SITE = https://pypi.python.org/packages/8b/20/8f4230b281a2a9d0ee9e24fd89aeded0b25d40c84b3d61100a96438e1626
+
 
 PYOPENSSL_AUTORECONF = NO
 PYOPENSSL_INSTALL_STAGING = NO
