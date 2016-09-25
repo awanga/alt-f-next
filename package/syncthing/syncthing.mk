@@ -1,3 +1,3 @@
 # this is a dummy (no code) package
 
-SYNCTHING_VERSION:=0.10.27
+SYNCTHING_VERSION:=0.13.9
