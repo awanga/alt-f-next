@@ -1,0 +1,551 @@
+Stolen Debian patches
+
+--- hddtemp-0.3-beta15.orig/src/sata.c
++++ hddtemp-0.3-beta15/src/sata.c
+@@ -118,11 +118,22 @@
+   int              i;
+   u16 *            p;
+ 
+-  if(dsk->db_entry && dsk->db_entry->attribute_id == 0) {
++  if(dsk->db_entry->attribute_id == 0) {
+     close(dsk->fd);
+     dsk->fd = -1;
+     return GETTEMP_NOSENSOR;
+   }
++
++  switch(ata_get_powermode(dsk->fd)) {
++  case PWM_STANDBY:
++  case PWM_SLEEPING:
++    if (!wakeup)
++      return GETTEMP_DRIVE_SLEEP;
++  case PWM_UNKNOWN:
++  case PWM_ACTIVE: /* active or idle */
++  default:
++    break;
++  }
+   
+   /* get SMART values */
+   if(sata_enable_smart(dsk->fd) != 0) {
+@@ -154,24 +165,15 @@
+   }
+ 
+   /* temperature */
+-  if(dsk->db_entry && dsk->db_entry->attribute_id > 0)
+-    field = sata_search_temperature(values, dsk->db_entry->attribute_id);
+-  else
+-    field = sata_search_temperature(values, DEFAULT_ATTRIBUTE_ID);
++  field = sata_search_temperature(values, dsk->db_entry->attribute_id);
+ 
+   if(field)
+     dsk->value = *(field+3);
+ 
+   if(dsk->db_entry && dsk->value != -1)
+     return GETTEMP_KNOWN;
+-  else {
+-    if(dsk->value != -1) {
+-      return GETTEMP_GUESS;
+-    }
+-    else {
+-      return GETTEMP_UNKNOWN;
+-    }
+-  }
++  else
++    return GETTEMP_UNKNOWN;
+ 
+   /* never reached */
+ }
+--- hddtemp-0.3-beta15.orig/src/satacmds.c
++++ hddtemp-0.3-beta15/src/satacmds.c
+@@ -39,7 +39,7 @@
+ #include <sys/ioctl.h>
+ #include <scsi/sg.h>
+ #include <linux/hdreg.h>
+-#include <netinet/in.h>
++#include <byteswap.h>
+ 
+ // Application specific includes
+ #include "satacmds.h"
+@@ -80,8 +80,8 @@
+ 
+   ret = scsi_SG_IO(device, cdb, sizeof(cdb), buffer, cmd[3] * 512, sense, sizeof(sense), dxfer_direction);
+  
+-  /* Verify SATA magics */
+-  if (sense[0] != 0x72 || sense[7] != 0x0e || sense[9] != 0x0e || sense[10] != 0x00)
++  /* Verify SATA magic */
++  if (sense[0] != 0x72)
+     return 1;		  
+   else 
+     return ret;
+@@ -95,10 +95,10 @@
+   p = s;
+   end = &s[bytecount & ~1]; /* bytecount must be even */
+ 
+-  /* convert from big-endian to host byte order */
++  /* convert from big-endian to string order */
+   for (p = end ; p != s;) {
+     unsigned short *pp = (unsigned short *) (p -= 2);
+-    *pp = ntohs(*pp);
++    *pp = bswap_16(*pp);
+   }
+ 
+   /* strip leading blanks */
+--- hddtemp-0.3-beta15.orig/src/backtrace.c
++++ hddtemp-0.3-beta15/src/backtrace.c
+@@ -16,9 +16,10 @@
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
+ 
++#define _GNU_SOURCE
+ #include <features.h>
+ 
+-#if defined(__i386__) && defined(__GLIBC__)
++#if (defined(__i386__) || defined(__x86_64__)) && defined(__GLIBC__)
+ 
+ #include <execinfo.h>
+ 
+@@ -31,8 +32,12 @@
+ #include <bits/sigcontext.h>
+ #include <sys/param.h>
+ 
+-#define __USE_GNU
+ #include <ucontext.h>
++#if defined(__i386__)
++#  define REG_IP REG_EIP
++#elif defined(__x86_64__)
++#  define REG_IP REG_RIP
++#endif
+ 
+ #define MAX_BTSIZE 64
+ 
+@@ -42,7 +47,6 @@
+   static char **messages = NULL;
+   static size_t btsize = 0;
+   static size_t i;
+-  static unsigned int old_eip, old_ebp;
+   static char *strerr = "???";
+   static FILE *fstrm;
+ 
+@@ -61,10 +65,10 @@
+       SIC_CASE(SEGV_MAPERR);
+       SIC_CASE(SEGV_ACCERR);
+     }
+-    fprintf(fstrm, "=== SEGFAULT (%s) : invalid access to %p, in 0x%08x\n",
++    fprintf(fstrm, "=== SEGFAULT (%s) : invalid access to %p, in %p\n",
+ 	    strerr,
+ 	    ist->si_addr,
+-	    puc->uc_mcontext.gregs[REG_EIP]);
++	    (void*)puc->uc_mcontext.gregs[REG_IP]);
+     break;
+   case SIGILL:
+     switch(ist->si_code) {
+@@ -77,10 +81,10 @@
+       SIC_CASE(ILL_COPROC);
+       SIC_CASE(ILL_BADSTK);
+     }
+-    fprintf(fstrm, "=== ILLEGAL INSTR (%s) : invalid access to %p, in 0x%08x\n",
++    fprintf(fstrm, "=== ILLEGAL INSTR (%s) : invalid access to %p, in %p\n",
+ 	    strerr,
+ 	    ist->si_addr,
+-	    puc->uc_mcontext.gregs[REG_EIP]);
++	    (void*)puc->uc_mcontext.gregs[REG_IP]);
+     break;
+   case SIGBUS:
+     switch(ist->si_code) {
+@@ -88,10 +92,10 @@
+       SIC_CASE(BUS_ADRERR);
+       SIC_CASE(BUS_OBJERR);
+     }
+-    fprintf(fstrm, "=== BUS ERROR (%p) : invalid access to %p, in 0x%08x\n",
++    fprintf(fstrm, "=== BUS ERROR (%p) : invalid access to %p, in %p\n",
+ 	    strerr,
+ 	    ist->si_addr,
+-	    puc->uc_mcontext.gregs[REG_EIP]);
++	    (void*)puc->uc_mcontext.gregs[REG_IP]);
+     break;
+   }
+   fflush(fstrm);
+@@ -101,7 +105,7 @@
+   /*
+     old_eip = *(unsigned int*)((void*)&n-4);
+     old_ebp = *(unsigned int*)((void*)&n-8);
+-    *(unsigned int*)((void*)&n-4) = puc->uc_mcontext.gregs[REG_EIP];
++    *(unsigned int*)((void*)&n-4) = puc->uc_mcontext.gregs[REG_IP];
+     *(unsigned int*)((void*)&n-8) = puc->uc_mcontext.gregs[REG_EBP];    
+     
+     btsize = backtrace(btinfo, MAX_BTSIZE);
+@@ -111,14 +115,14 @@
+   */
+   
+   btsize = backtrace(btinfo, MAX_BTSIZE);
+-  btinfo[1] = (void*) puc->uc_mcontext.gregs[REG_EIP];
++  btinfo[1] = (void*) puc->uc_mcontext.gregs[REG_IP];
+ 
+   messages = backtrace_symbols(btinfo, btsize);
+ 
+   for(i = 1;
+       i < btsize;
+       i++)
+-    fprintf(fstrm, "[%d] #%d: %s\n", getpid(), i, messages[i]);
++    fprintf(fstrm, "[%d] #%zu: %s\n", getpid(), i, messages[i]);
+   fflush(fstrm);
+   fclose(fstrm);
+ 
+--- hddtemp-0.3-beta15.orig/src/daemon.c
++++ hddtemp-0.3-beta15/src/daemon.c
+@@ -163,19 +163,16 @@
+ 
+     switch(dsk->ret) {
+     case GETTEMP_NOT_APPLICABLE:
+-      n = snprintf(msg, sizeof(msg), "%s%c%s%c%s%c%c",
++      n = snprintf(msg, sizeof(msg), "%s%c%s%cNA%c*",
+                    dsk->drive, separator,
+                    dsk->model, separator,
+-                   "NA",       separator,
+-                   '*');
++                   separator);
+       break;
+-    case GETTEMP_GUESS:
+     case GETTEMP_UNKNOWN:
+-      n = snprintf(msg, sizeof(msg), "%s%c%s%c%s%c%c",
++      n = snprintf(msg, sizeof(msg), "%s%c%s%cUNK%c*",
+                    dsk->drive, separator,
+-                   dsk->model, separator,
+-                   "UNK",     separator,
+-                   '*');
++                   dsk->model, separator, 
++		   separator);
+       break;
+     case GETTEMP_KNOWN:
+       n = snprintf(msg, sizeof(msg), "%s%c%s%c%d%c%c",
+@@ -185,26 +182,23 @@
+                    get_unit(dsk));
+       break;
+     case GETTEMP_NOSENSOR:
+-      n = snprintf(msg, sizeof(msg), "%s%c%s%c%s%c%c",
++      n = snprintf(msg, sizeof(msg), "%s%c%s%cNOS%c*",
+                    dsk->drive, separator,
+                    dsk->model, separator,
+-                   "NOS",      separator,
+-                   '*');
++                   separator);
+       break;
+     case GETTEMP_DRIVE_SLEEP:
+-      n = snprintf(msg, sizeof(msg), "%s%c%s%c%s%c%c",
++      n = snprintf(msg, sizeof(msg), "%s%c%s%cSLP%c*",
+                    dsk->drive, separator,
+                    dsk->model, separator,
+-                   "SLP",      separator,
+-                   '*');
++                   separator);
+       break;
+     case GETTEMP_ERROR:
+     default:
+-      n = snprintf(msg, sizeof(msg), "%s%c%s%c%s%c%c",
++      n = snprintf(msg, sizeof(msg), "%s%c%s%cERR%c*",
+                    dsk->drive,                        separator,
+                    (dsk->model) ? dsk->model : "???", separator,
+-                   "ERR",                             separator,
+-                   '*');
++                   separator);
+       break;
+     }
+     write(cfd,&separator, 1);
+@@ -222,14 +216,11 @@
+   for(dsk = ldisks; dsk; dsk = dsk->next) {
+     switch(dsk->ret) {
+     case GETTEMP_KNOWN:
+-    case GETTEMP_GUESS:
+-      value_to_unit(dsk);
+-
+       syslog(LOG_INFO, "%s: %s: %d %c", 
+              dsk->drive,
+ 	     dsk->model,
+-	     dsk->value,
+-	     dsk->db_entry->unit);
++	     value_to_unit(dsk),
++	     get_unit(dsk));
+       break;
+     case GETTEMP_DRIVE_SLEEP:
+       syslog(LOG_WARNING, _("%s: %s: drive is sleeping"), 
+@@ -270,28 +261,30 @@
+   fd_set             deffds;
+   time_t             next_time;
+ 
+-  switch(fork()) {
+-  case -1:
+-    perror("fork");
+-    exit(2);
+-    break;
+-  case 0:
+-    break;
+-  default:
+-    exit(0);
+-  }
+-  
+-  setsid();
+-  
+-  switch(fork()) {
+-  case -1:
+-    perror("fork");
+-    exit(2);
+-    break;
+-  case 0:
+-    break;
+-  default:
+-    exit(0);
++if (!foreground) {
++    switch(fork()) {
++    case -1:
++      perror("fork");
++      exit(2);
++      break;
++    case 0:
++      break;
++    default:
++      exit(0);
++    }
++
++    setsid();
++
++    switch(fork()) {
++    case -1:
++      perror("fork");
++      exit(2);
++      break;
++    case 0:
++      break;
++    default:
++      exit(0);
++    }
+   }
+   chdir("/");
+   umask(0);
+--- hddtemp-0.3-beta15.orig/src/hddtemp.c
++++ hddtemp-0.3-beta15/src/hddtemp.c
+@@ -75,7 +75,7 @@
+ char               separator = SEPARATOR;
+ 
+ struct bustype *   bus[BUS_TYPE_MAX];
+-int                tcp_daemon, debug, quiet, numeric, wakeup, af_hint;
++int                tcp_daemon, debug, quiet, numeric, wakeup, foreground, af_hint;
+ 
+ static enum { DEFAULT, CELSIUS, FAHRENHEIT } unit;
+ 
+@@ -194,23 +194,7 @@
+     if (numeric && quiet)
+       printf("0\n");      
+     else
+-      printf(_("%s: %s:  no sensor\n"), dsk->drive, dsk->model);
+-
+-    break;
+-  case GETTEMP_GUESS:
+-
+-    if(!quiet)
+-      fprintf(stderr,
+-	      _("WARNING: Drive %s doesn't appear in the database of supported drives\n"
+-		"WARNING: But using a common value, it reports something.\n"
+-		"WARNING: Note that the temperature shown could be wrong.\n"
+-		"WARNING: See --help, --debug and --drivebase options.\n"
+-		"WARNING: And don't forget you can add your drive to hddtemp.db\n"), dsk->drive);
+-
+-    if (! numeric)
+-      printf(_("%s: %s:  %d%sC or %sF\n"), dsk->drive, dsk->model, dsk->value, degree, degree);
+-    else
+-      printf("%d\n", value_to_unit(dsk));
++      fprintf(stderr, _("%s: %s:  no sensor\n"), dsk->drive, dsk->model);
+ 
+     break;
+   case GETTEMP_KNOWN:
+@@ -232,14 +216,14 @@
+     if (numeric && quiet)
+       printf("0\n");      
+     else
+-      printf(_("%s: %s: drive is sleeping\n"), dsk->drive, dsk->model);
++      fprintf(stderr, _("%s: %s: drive is sleeping\n"), dsk->drive, dsk->model);
+ 
+     break;
+   case GETTEMP_NOSENSOR:
+     if (numeric && quiet)
+       printf("0\n");      
+     else
+-      printf(_("%s: %s:  drive supported, but it doesn't have a temperature sensor.\n"), dsk->drive, dsk->model);
++      fprintf(stderr, _("%s: %s:  drive supported, but it doesn't have a temperature sensor.\n"), dsk->drive, dsk->model);
+       
+     break;
+   default:
+@@ -268,8 +252,9 @@
+ 
+ int main(int argc, char* argv[]) {
+   int           i, c, lindex = 0, db_loaded = 0;
++  int 		ret = 0;
+   int           show_db;
+-  struct disk * ldisks;
++  struct        disk * ldisks;
+ 
+   backtrace_sigsegv();
+   backtrace_sigill();
+@@ -279,7 +264,7 @@
+   bindtextdomain (PACKAGE, LOCALEDIR);
+   textdomain (PACKAGE);
+   
+-  show_db = debug = numeric = quiet = wakeup = af_hint = syslog_interval = 0;
++  show_db = debug = numeric = quiet = wakeup = af_hint = syslog_interval = foreground = 0;
+   unit = DEFAULT;
+   portnum = PORT_NUMBER;
+   listen_addr = NULL;
+@@ -294,6 +279,7 @@
+       {"drivebase",  0, NULL, 'b'},
+       {"debug",      0, NULL, 'D'},
+       {"file",       1, NULL, 'f'},
++      {"foreground", 0, NULL, 'F'},
+       {"listen",     1, NULL, 'l'},
+       {"version",    0, NULL, 'v'},
+       {"port",       1, NULL, 'p'},
+@@ -305,7 +291,7 @@
+       {0, 0, 0, 0}
+     };
+  
+-    c = getopt_long (argc, argv, "bDdf:l:hp:qs:u:vnw46S:", long_options, &lindex);
++    c = getopt_long (argc, argv, "bDdf:l:hp:qs:u:vnw46FS:", long_options, &lindex);
+     if (c == -1)
+       break;
+     
+@@ -382,12 +368,13 @@
+ 		 "                        (done for every drive supplied).\n"
+ 		 "  -d   --daemon      :  run hddtemp in TCP/IP daemon mode (port %d by default.)\n"
+ 		 "  -f   --file=FILE   :  specify database file to use.\n"
++		 "  -F   --foreground  :  don't daemonize, stay in foreground.\n"
+ 		 "  -l   --listen=addr :  listen on a specific interface (in TCP/IP daemon mode).\n"
+                  "  -n   --numeric     :  print only the temperature.\n"
+ 		 "  -p   --port=#      :  port to listen to (in TCP/IP daemon mode).\n"
+ 		 "  -s   --separator=C :  separator to use between fields (in TCP/IP daemon mode).\n"
+ 		 "  -S   --syslog=s    :  log temperature to syslog every s seconds.\n"
+-                 "  -u   --unit=[C|F]  :  force output temperature either in Celius or Fahrenheit.\n"
++                 "  -u   --unit=[C|F]  :  force output temperature either in Celsius or Fahrenheit.\n"
+ 		 "  -q   --quiet       :  do not check if the drive is supported.\n"
+ 		 "  -v   --version     :  display hddtemp version number.\n"
+ 		 "  -w   --wake-up     :  wake-up the drive if need.\n"
+@@ -418,6 +405,9 @@
+ 	  }
+         }
+ 	break;
++      case 'F':
++        foreground = 1;
++	break;
+       default:
+ 	exit(1);
+       }
+@@ -489,6 +479,7 @@
+     if( (dsk->fd = open(dsk->drive, O_RDONLY | O_NONBLOCK)) < 0) {
+       snprintf(dsk->errormsg, MAX_ERRORMSG_SIZE, "open: %s\n", strerror(errno));
+       dsk->type = ERROR;
++      ret = 1;
+       continue;
+     }
+ 
+@@ -501,6 +492,7 @@
+ 
+       ldisks = dsk->next;
+       free(dsk);
++      ret = 1;
+       continue;
+     }
+ 
+@@ -514,11 +506,17 @@
+ 	db_loaded = 1;
+       }      
+ 
++      dsk->db_entry = (struct harddrive_entry *)malloc(sizeof(struct harddrive_entry));
+       dbe = is_a_supported_drive(dsk->model);
+-      if(dbe) {
+-	dsk->db_entry = (struct harddrive_entry *)malloc(sizeof(struct harddrive_entry));
++      if(dbe)
+ 	memcpy(dsk->db_entry, dbe, sizeof(struct harddrive_entry));
+-      }	
++      else {
++        dsk->db_entry->regexp       = "";
++        dsk->db_entry->description  = "";
++        dsk->db_entry->attribute_id = DEFAULT_ATTRIBUTE_ID;
++        dsk->db_entry->unit         = 'C';
++        dsk->db_entry->next         = NULL;
++      }
+     }
+   }
+ 
+@@ -530,5 +528,5 @@
+     do_direct_mode(ldisks);
+   }
+ 
+-  return 0;
++  return ret;
+ }
+--- hddtemp-0.3-beta15.orig/src/ata.c
++++ hddtemp-0.3-beta15/src/ata.c
+@@ -75,7 +75,7 @@
+   int              i;
+   u16 *            p;
+ 
+-  if(dsk->db_entry && dsk->db_entry->attribute_id == 0) {
++  if(dsk->db_entry->attribute_id == 0) {
+     close(dsk->fd);
+     dsk->fd = -1;
+     return GETTEMP_NOSENSOR;
+@@ -140,24 +140,15 @@
+   */
+ 
+   /* temperature */
+-  if(dsk->db_entry && dsk->db_entry->attribute_id > 0)
+-    field = ata_search_temperature(values, dsk->db_entry->attribute_id);
+-  else
+-    field = ata_search_temperature(values, DEFAULT_ATTRIBUTE_ID);
++  field = ata_search_temperature(values, dsk->db_entry->attribute_id);
+ 
+   if(field)
+     dsk->value = *(field+3);
+ 
+-  if(dsk->db_entry && dsk->value != -1)
++  if(dsk->value != -1)
+     return GETTEMP_KNOWN;
+-  else {
+-    if(dsk->value != -1) {
+-      return GETTEMP_GUESS;
+-    }
+-    else {
+-      return GETTEMP_UNKNOWN;
+-    }
+-  }
++  else
++    return GETTEMP_UNKNOWN;
+ 
+   /* never reached */
+ }
+--- hddtemp-0.3-beta15.orig/src/hddtemp.h
++++ hddtemp-0.3-beta15/src/hddtemp.h
+@@ -39,8 +39,6 @@
+   GETTEMP_ERROR,            /* Error */
+   GETTEMP_NOT_APPLICABLE,   /* */
+   GETTEMP_UNKNOWN,          /* Drive is not in database */
+-  GETTEMP_GUESS,            /* Not in database, but something was guessed, user must
+-			       check that the temperature returned is correct */
+   GETTEMP_KNOWN,            /* Drive appear in database */
+   GETTEMP_NOSENSOR,         /* Drive appear in database but is known to have no sensor */
+   GETTEMP_DRIVE_SLEEP       /* Drive is sleeping */
+@@ -78,7 +76,7 @@
+ 
+ extern struct bustype *   bus[BUS_TYPE_MAX];
+ extern char               errormsg[MAX_ERRORMSG_SIZE];
+-extern int                tcp_daemon, debug, quiet, wakeup, af_hint;
++extern int                tcp_daemon, debug, quiet, wakeup, af_hint, foreground;
+ extern char               separator;
+ extern long               portnum, syslog_interval;
+ extern char *             listen_addr;
+--- hddtemp-0.3-beta15.orig/src/scsicmds.c
++++ hddtemp-0.3-beta15/src/scsicmds.c
+@@ -147,6 +147,7 @@
+     return 1;
+   else {
+     scsi_fixstring(buffer + 8, 24);
++    buffer[32] = 0;
+     return 0;
+   }
+ }

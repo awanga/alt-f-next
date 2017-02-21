@@ -1,0 +1,3 @@
+./etc/init.d/S20hddtemp
+./usr/sbin/hddtemp
+./usr/share/misc/hddtemp.db

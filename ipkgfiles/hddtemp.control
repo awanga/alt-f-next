@@ -1,0 +1,9 @@
+Package: hddtemp
+Description: Read disks temperature
+Version: 0.3-beta15
+Depends: ipkg, gettext
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.guzu.net/linux/hddtemp.php
+Maintainer: jcard

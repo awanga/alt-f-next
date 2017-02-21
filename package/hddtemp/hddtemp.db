@@ -1,0 +1,55 @@
+# Minimal database for drives not covered by defaults.  hddtemp will first try
+# S.M.A.R.T. attribute 194.  If it does not exist, it will try attribute 190.
+#
+# The four columns are:
+# 1) Regular expression matching the drive identification, which you see as
+#    the Model in the output of: hddtemp --debug /dev/drive
+# 2) S.M.A.R.T. attribute number to get drive temperature.  A value of zero
+#    means that we know that the drive doesn't have a temperature sensor.
+# 3) Temperature units reported (C or F).
+# 4) Human readable string representing the drive model.
+
+"FUJITSU MHM2100AT"		0	C	"Fujitsu MHM2100AT"
+"HITACHI_DK228A-65"		0	C	"Hitachi DK228A-65"
+"IBM-DARA-212000"		0	C	"IBM Travelstar 12GN"
+"IBM-DHEA-(34330|36480)"	0	C	"IBM Deskstar 5 serie"
+"IBM-DHEA-(34331|36481|38451)"	0	C	"IBM Deskstar 8 serie"
+"IBM-DJNA-35.*"			231	C	"IBM Deskstar 25 GP serie"
+"IBM-DJNA-37.*"			231	C	"IBM Deskstar 22 GXP serie"
+"IBM-DPTA-35.*"			231	C	"IBM Deskstar 37GP serie"
+"IBM-DPTA-37.*"			231	C	"IBM Deskstar 34GXP serie"
+"IBM-DTTA-35*"			0	C	"IBM Deskstar 16GP serie"
+"MK4313MAT"			220	C	"Toshiba MK4313MAT"
+"Maxtor 5(1024|1369|2049|2732|3073|4098)U(2|3|4|6|8)"	0	C	"Maxtor DiamondMax Plus 40"
+"Maxtor 5T0[24]0H[24]"		0	C	"Maxtor DiamondMax Plus 60"
+"Maxtor 94098U8"		11	C	"Maxtor DiamondMax 40 94098U8"
+"QUANTUM FIREBALL CX10.2A"	0	C	"Quantum Fireball CX10.2A"
+"QUANTUM FIREBALLP AS40.0"	0	C	"Quantum Fireball AS40"
+"SAMSUNG SSD PM8[01]0"		0	C	"Samsung SSD PM800/810"
+"SAMSUNG SV0432A"		0	C	"Samsung SV0432A"
+"SAMSUNG SV3002H"		0	C	"Samsung SpinPoint V30 serie"
+"SAMSUNG SW0434A"		0	C	"Samsung SW0434A"
+"ST310210A"			0	C	"Seagate ST310210A"
+"ST310220A"			0	C	"Seagate ST310220A"
+"ST310240A"			0	C	"Seagate Medalist 10240 Ultra ATA-3"
+"ST313021A"			0	C	"Seagate U8 ST313021A"
+"ST320423A"			0	C	"Seagate U10 20423, Ultra ATA/66"
+"ST3412A"			0	C	"Seagate ST3412A"
+"ST38641A"			0	C	"Seagate ST38641A"
+"Seagate Technology 1275MB - ST31276A"	0	C	"Seagate ST31276A"
+"TOSHIBA MK1517GAP"		0	C	"Toshiba MK1517GAP"
+"TOSHIBA MK2018GAS"		226	F	"Toshiba MK2018GAS"
+"TOSHIBA MK3017GAP"		0	C	"Toshiba MK3017GAP"
+"WDC AC22000L"			0	C	"Western Digital Caviar AC22000"
+"WDC AC418000D"			231	C	"Western Digital AC418000D"
+"WDC AC420400D"			231	C	"Western Digital Caviar AC420400D"
+"WDC WD100EB-00BHF0"		0	C	"Western Digital 100EB-00BHF0"
+"WDC WD135BA"			231	C	"Western Digital WD135BA"
+"WDC WD200BB-00AUA1"		0	C	"Western Digital Caviar WD200BB"
+"WDC WD300BB-00CAA0"		0	C	"Western Digital WD300BB"
+"WDC WD400BB-(18CA|00DE)A0"	0	C	"Western Digital Caviar WD400BB"
+"WDC WD400BB-00CAA0"		0	C	"Western Digital 400BB-00CAA0"
+"WDC WD400EB-00CPF0"		0	C	"Western Digital 400EB-00CPF0"
+"WDC WD600BB-32BSA0"		0	C	"Western Digital 600BB-32BSA0"
+"WDC WD800BB-00CAA1"		0	C	"Western Digital WD800BB-00CAA1"
+"WDC WD800JB-00CRA1"		0	C	"Western Digital Caviar WD800JB"

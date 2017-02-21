@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Enable if you want the fan speed to also take disk drives temperatures into account
+
+DESC="Monitor hard drives temperature"
+NAME=hddtemp
+TYPE=sys
+
+. /etc/init.d/common
+
+HDDTEMP_LISTEN=localhost
+HDDTEMP_PORT=7634 # default, sysctrl relies on it
+HDDTEMP_SYSLOG="" # "-S300" log to syslog every 5 minutes 
+
+HDDTEMP_OPTS="-d -l $HDDTEMP_LISTEN -p $HDDTEMP_PORT $HDDTEMP_SYSLOG /dev/sd[a-z]"
+
+case "$1" in
+	start) start $NAME -- $HDDTEMP_OPTS ;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart" ;;
+esac
