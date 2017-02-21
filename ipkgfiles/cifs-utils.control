@@ -1,0 +1,9 @@
+Package: cifs-utils
+Description: Tools for managing Linux CIFS client mounts	  
+Version: 6.6
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://download.samba.org/pub/linux-cifs/cifs-utils
+Maintainer: jcard

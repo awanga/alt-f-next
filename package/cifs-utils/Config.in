@@ -1,0 +1,6 @@
+config BR2_PACKAGE_CIFS_UTILS
+	bool "cifs-utils"
+	help
+	  Tools for managing Linux CIFS client mounts
+
+	  https://download.samba.org/pub/linux-cifs/cifs-utils/
