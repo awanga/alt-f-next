@@ -16,8 +16,6 @@ fi
 # default Alt-F Volume Group name
 VG=altf
 
-rclvm start >& /dev/null
-
 run() {
 	if ! res=$($* 2>&1); then msg "$res"; fi
 }
@@ -32,7 +30,14 @@ if test -n "$VGCreate"; then
 
 elif test -n "$Destroy"; then
 	vg=$Destroy
+	rmdev=$(pvscan 2>/dev/null | while read pvl dsk lvg vgl rst; do
+		if test "$vgl" = altf; then
+			echo $dsk
+		fi
+	done)
+
 	run vgremove -f $vg
+	run pvremove -f $rmdev
 
 elif test -n "$Add"; then
 	i=$Add

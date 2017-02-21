@@ -2,8 +2,8 @@
 
 DESC="Manages LVM (Logical Volume Management)"
 NAME=lvm
-#TYPE=sys
 REQUIRE="device_mapper"
+TYPE=sys
 
 umask 077
 

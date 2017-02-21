@@ -57,6 +57,7 @@ endif
 
 $(LVM2_DIR)/.unpacked: $(DL_DIR)/$(LVM2_SOURCE)
 	$(LVM2_CAT) $(DL_DIR)/$(LVM2_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	toolchain/patch-kernel.sh $(LVM2_DIR) package/lvm2 lvm2-$(LVM2_VERSION)-\*.patch\*
 	touch $(LVM2_DIR)/.unpacked
 
 $(LVM2_DIR)/.configured: $(LVM2_DIR)/.unpacked
