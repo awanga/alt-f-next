@@ -10,31 +10,13 @@ check_https
 
 CONFF=/etc/inadyn.conf
 
-mktt tt_host "Registered hostname.<br>For freedns.afraid.org, use \"host,hash\"<br>
-where "hash" is everything after the ? in the Direct URL."
-
-cat<<EOF
-	<script type="text/javascript">
-	function val() {
-		idx = document.formd.provider.selectedIndex
-		prov = document.formd.provider.options[idx].value
-		if (prov == "freedns.afraid.org") {
-			document.formd.user.disabled = true;
-			document.formd.passwd.disabled = true;
-			document.getElementById("host_id").innerHTML = 
-'hostname,<a href="http://freedns.afraid.org/dynamic/" target="_blank">Direct URL<\/a>'
-		} else {
-			document.formd.user.disabled = false;
-			document.formd.passwd.disabled = false;
-			document.getElementById("host_id").innerHTML = "hostname:"
-		}
-	}
-	</script>
-EOF
+mktt tt_host "Registered hostname.<br>freedns.afraid.org now don't accept hash and accepts username and password."
 
 sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org
 default@easydns.com dyndns@3322.org default@sitelutions.com default@dnsomatic.com ipv6tb@he.net
-default@tzo.com default@dynsip.org default@dhis.org default@majimoto.net default@zerigo.com"
+default@tzo.com default@dynsip.org default@dhis.org default@majimoto.net default@zerigo.com default@two-dns.de default@dnsdynamic.org default@dnspark.com ipv4@regfish.de ipv6@regfish.de default@ovh.com default@joker.com default@strato.com default@system-ns.com default@dtdns.com default@changeip.com default@dnsexit.com ipv4@nsupdate.info ipv6@nsupdate.info default@loopia.com default@duckdns.org default@dy.fi"
+
+verbose=0
 
 if test -f $CONFF; then
 	while read -r key value; do
@@ -46,6 +28,15 @@ if test -f $CONFF; then
 			fi
 		fi
 	done < $CONFF
+
+	#freedns.afraid.org now only accepts username and password, remove hash
+	if echo $alias | grep -q ','; then
+		alias=$(echo $alias | sed -n 's/,.*$//p')
+	fi
+
+	if test "$verbose" -gt "3"; then
+		verbose_chk=checked
+	fi
 fi
 
 options="<option>Select one</option>"
@@ -54,7 +45,6 @@ for i in $sites; do
 	site=$(echo $i | cut -d"@" -f2)
 	sel=""
 	if test "$dyndns_system" = $i; then sel=selected; fi
-	if test "$site" = "freedns.afraid.org"; then updis=disabled; fi
 	options="$options <option $sel>$site</option>"
 done
 
@@ -63,15 +53,17 @@ cat<<-EOF
 
 	<table><tr>
 		<td> provider:</td>
-		<td><select name="provider" onchange="val()">
+		<td><select name="provider">
 		$options
 		</select></td></tr>
 	<tr><td><div id=host_id>hostname:</div></td>
 		<td><input type="text" value="$alias" name="host" $(ttip tt_host)></td></tr>
 	<tr><td>username:</td>
-		<td><input type="text" $updis value="$username" name="user"></td></tr>
+		<td><input type="text" value="$username" name="user"></td></tr>
 	<tr><td>password:</td>
-		<td><input type="password" $updis value="$password" name="passwd"></td></tr>
+		<td><input type="password" value="$password" name="passwd"></td></tr>
+	<tr><td>verbose log:</td>
+		<td><input type="checkbox" $verbose_chk name="verbose" value="yes"></td></tr>
 	</table>
 	<p><input type="submit" value="Submit">$(back_button)
 	</form></body></html>

@@ -2,9 +2,9 @@
 #
 # inadyn-mt
 #
-#############################################################
+############################################################
 
-INADYN_MT_VERSION = 02.24.49
+INADYN_MT_VERSION = 02.28.10
 INADYN_MT_SOURCE = inadyn-mt.v.$(INADYN_MT_VERSION).tar.gz
 INADYN_MT_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/inadyn-mt/inadyn-mt/inadyn-mt.v.$(INADYN_MT_VERSION)
 
@@ -14,6 +14,8 @@ INADYN_MT_INSTALL_TARGET = YES
 
 INADYN_MT_DEPENDENCIES = uclibc
 INADYN_MT_CONF_OPT = --program-prefix="" --disable-sound -enable-threads
+# save 8KB
+#TARGET_CFLAGS += -Os
 
 $(eval $(call AUTOTARGETS,package,inadyn-mt))
 

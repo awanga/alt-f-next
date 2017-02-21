@@ -3,23 +3,23 @@
 DESC="Dynamic DNS update daemon"
 TYPE=net
 
-NAME=inadyn
-if test -x /usr/bin/inadyn-mt; then
-	NAME=inadyn-mt
-fi
-
-CONF=/etc/inadyn.conf
+NAME=inadyn-mt
 
 RC_PIDFILE=/var/run/$NAME.pid
 RC_MAKE_PID=yes
 RC_START_BG=yes
 
+DDNS_CONF=/etc/inadyn.conf
+DDNS_CACHE=/var/cache/ddns
+
 . /etc/init.d/common
+
+mkdir -p $DDNS_CACHE
 
 case "$1" in
 	start)
 		if ! test -f $CONF; then
-			echo "Starting $NAME: No $CONF configuration file, exiting."
+			echo "Starting $NAME: No $DDNS_CONF configuration file, exiting."
 			exit 1
 		fi
 		start $NAME
