@@ -11,4 +11,12 @@ config BR2_PACKAGE_KEXEC_ZLIB
 	depends on BR2_PACKAGE_KEXEC
 	select BR2_PACKAGE_ZLIB
 	help
-	  Support for compressed kernel images
+	  Support for zlib compressed kernel images
+
+config BR2_PACKAGE_KEXEC_LZMA
+	bool "Kexec with lzma support"
+	depends on BR2_PACKAGE_KEXEC
+	select BR2_PACKAGE_XZ
+	select BR2_PACKAGE_XZ_LIBS
+	help
+	  Support for lzma/xz compressed kernel images

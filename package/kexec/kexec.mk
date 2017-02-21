@@ -4,7 +4,7 @@
 #
 #############################################################
 
-KEXEC_VERSION = 2.0.11
+KEXEC_VERSION = 2.0.14
 KEXEC_SOURCE = kexec-tools-$(KEXEC_VERSION).tar.xz
 KEXEC_SITE = http://kernel.org/pub/linux/utils/kernel/kexec/
 
@@ -18,6 +18,13 @@ KEXEC_CONF_OPT += --with-zlib
 KEXEC_DEPENDENCIES += zlib
 else
 KEXEC_CONF_OPT += --without-zlib
+endif
+
+ifeq ($(BR2_PACKAGE_KEXEC_LZMA),y)
+KEXEC_CONF_OPT += --with-lzma
+KEXEC_DEPENDENCIES += xz
+else
+KEXEC_CONF_OPT += --without-lzma
 endif
 
 KEXEC_CONF_ENV = CC="$(TARGET_CC) $(KEXEC_CFLAGS)" CFLAGS="$(TARGET_CFLAGS) $(KEXEC_CFLAGS)" 
