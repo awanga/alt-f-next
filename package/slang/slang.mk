@@ -2,52 +2,60 @@
 #
 # slang
 #
-#############################################################
-SLANG_VERSION:=1.4.5
-SLANG_SOURCE=slang-$(SLANG_VERSION)-mini.tar.bz2
-SLANG_CAT:=$(BZCAT)
-SLANG_SITE:=http://www.uclibc.org/
-SLANG_DIR=$(BUILD_DIR)/slang-$(SLANG_VERSION)-mini
+############################################################
 
-$(DL_DIR)/$(SLANG_SOURCE):
-	$(call DOWNLOAD,$(SLANG_SITE),$(SLANG_SOURCE))
+SLANG_VERSION:=2.2.4
+SLANG_SOURCE=slang-$(SLANG_VERSION).tar.bz2
+SLANG_SITE:= http://www.jedsoft.org/releases/slang/old
 
-$(SLANG_DIR): $(DL_DIR)/$(SLANG_SOURCE)
-	$(SLANG_CAT) $(DL_DIR)/$(SLANG_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+SLANG_INSTALL_STAGING = YES
+SLANG_INSTALL_TARGET = YES
+SLANG_MAKE = $(MAKE1)
 
-$(SLANG_DIR)/libslang.so: $(SLANG_DIR)
-	$(MAKE1) CFLAGS="-Os -g -fPIC $(TARGET_CFLAGS)" CC=$(TARGET_CC) -C $(SLANG_DIR)
-
-$(STAGING_DIR)/usr/lib/libslang.so.1: $(SLANG_DIR)/libslang.so
-	cp -dpf $(SLANG_DIR)/libslang.a $(STAGING_DIR)/usr/lib
-	cp -dpf $(SLANG_DIR)/libslang.so $(STAGING_DIR)/usr/lib
-	cp -dpf $(SLANG_DIR)/slang.h $(STAGING_DIR)/usr/include
-	cp -dpf $(SLANG_DIR)/slcurses.h $(STAGING_DIR)/usr/include
-	(cd $(STAGING_DIR)/usr/lib; ln -fs libslang.so libslang.so.1)
-	touch -c $@
-
-$(TARGET_DIR)/usr/lib/libslang.so.1: $(STAGING_DIR)/usr/lib/libslang.so.1
-	cp -dpf $(STAGING_DIR)/usr/lib/libslang.so* $(TARGET_DIR)/usr/lib/
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libslang.so*
-
-slang: uclibc $(STAGING_DIR)/usr/lib/libslang.so.1 $(TARGET_DIR)/usr/lib/libslang.so.1
-
-slang-source: $(DL_DIR)/$(SLANG_SOURCE)
-
-slang-clean:
-	rm -f $(TARGET_DIR)/usr/lib/libslang.so* $(STAGING_DIR)/usr/lib/libslang.a \
-		$(STAGING_DIR)/usr/include/slang.h \
-		$(STAGING_DIR)/usr/include/slcurses.h
-	-$(MAKE) -C $(SLANG_DIR) clean
-
-slang-dirclean:
-	rm -rf $(SLANG_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_SLANG),y)
-TARGETS+=slang
+# Absolute path hell, sigh...
+ifeq ($(BR2_PACKAGE_LIBPNG),y)
+SLANG_CONF_OPT += --with-png=$(STAGING_DIR)/usr
+SLANG_DEPENDENCIES += libpng
+else
+SLANG_CONF_OPT += --with-png=no
 endif
+
+ifeq ($(BR2_PACKAGE_PCRE),y)
+SLANG_CONF_OPT += --with-pcre=$(STAGING_DIR)/usr
+SLANG_DEPENDENCIES += pcre
+else
+SLANG_CONF_OPT += --with-pcre=no
+endif
+
+ifeq ($(BR2_PACKAGE_ZLIB),y)
+SLANG_CONF_OPT += --with-z=$(STAGING_DIR)/usr
+SLANG_DEPENDENCIES += zlib
+else
+SLANG_CONF_OPT += --with-z=no
+endif
+
+ifeq ($(BR2_PACKAGE_NCURSES),y)
+SLANG_DEPENDENCIES += ncurses
+else
+SLANG_CONF_OPT += ac_cv_path_nc5config=no
+endif
+
+ifeq ($(BR2_PACKAGE_READLINE),y)
+SLANG_CONF_OPT += --with-readline=gnu
+SLANG_DEPENDENCIES += readline
+endif
+
+ifeq ($(BR2_STATIC_LIBS),y)
+SLANG_MAKE_OPT = static
+SLANG_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) install-static
+SLANG_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install-static
+else
+SLANG_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) install
+SLANG_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+endif
+
+$(eval $(call AUTOTARGETS,package,slang))
+
+$(SLANG_HOOK_POST_EXTRACT):
+	$(SED) '/^TERMCAP=/s:=.*:=:' $(@D)/configure
+	touch $@

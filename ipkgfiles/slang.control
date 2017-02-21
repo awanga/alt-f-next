@@ -1,0 +1,10 @@
+Package: slang
+Description: Multi-platform console display library
+Version: 2.2.4
+Depends: pcre, readline, libpng, libiconv, ipkg
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: http://www.jedsoft.org/releases/slang
+Maintainer: jcard
+
