@@ -1,11 +1,5 @@
 ./usr/bin/eventlogadm
 ./usr/bin/findsmb
-./usr/bin/ldbadd
-./usr/bin/ldbdel
-./usr/bin/ldbedit
-./usr/bin/ldbmodify
-./usr/bin/ldbrename
-./usr/bin/ldbsearch
 ./usr/bin/net
 ./usr/bin/nmblookup
 ./usr/bin/ntlm_auth
