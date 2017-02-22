@@ -1,6 +1,6 @@
 Package: kernel-modules-armv5
 Description: Aditional linux kernel modules for the DNS-320/320L/321/323/325
-Version: 3.18.28
+Version: 4.4.45
 Depends: ipkg
 Architecture: arm
 Priority: optional
