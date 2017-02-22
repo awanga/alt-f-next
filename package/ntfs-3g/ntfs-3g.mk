@@ -10,6 +10,8 @@ NTFS_3G_SOURCE:=ntfs-3g_ntfsprogs-$(NTFS_3G_VERSION).tgz
 NTFS_3G_SITE:=http://sources.openelec.tv/mirror/ntfs-3g_ntfsprogs
 
 NTFS_3G_CONF_OPT = --libdir=/usr/lib --disable-ldconfig --disable-mtab --program-prefix=""
+# save 25KB:
+#TARGET_CFLAGS += -Os
 
 NTFS_3G_EXTRA_BIN = ntfscat ntfscluster ntfscmp ntfsfix ntfsinfo ntfsls \
 	lowntfs-3g ntfs-3g.secaudit ntfs-3g.usermap ntfs-3g.probe
