@@ -1,0 +1,9 @@
+Package: samba36
+Description: MS-Windows SMB/CIFS file an print services
+Version: 3.6.25
+Depends: popt, acl, libiconv, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.samba.org/
+Maintainer: jcard
