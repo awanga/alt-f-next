@@ -1,9 +1,9 @@
 Package: wget
 Description: Network utility to retrieve files from http/ftp/etc...
-Version: 1.17
+Version: 1.18
 Depends: ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://wget.sunsite.dk/
+Source: https://www.gnu.org/software/wget
 Maintainer: jcard
