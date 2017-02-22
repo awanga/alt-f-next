@@ -4,7 +4,7 @@
 #
 #############################################################
 
-NFS_UTILS_VERSION:=1.3.3
+NFS_UTILS_VERSION:=1.3.4
 NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
 NFS_UTILS_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/nfs/nfs-utils/$(NFS_UTILS_VERSION)
 
