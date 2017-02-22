@@ -78,7 +78,7 @@ $(SAMBA_SMALL_DIR)/.configured: $(SAMBA_SMALL_DIR)/.unpacked
 		--without-included-popt \
 		--without-cluster-support \
 		--without-dmapi \
-		--without-pam \ \
+		--without-pam \
 		--disable-netapi \
 		--with-included-iniparser \
 		--enable-shared-libs \
