@@ -1,7 +1,7 @@
 Package: php
 Description: A widely-used general-purpose scripting language
-Version: 5.4.34-2
-Depends: ipkg, netsnmp, jpeg, libpng, libxml2, ncurses, libcurl, libmcrypt
+Version: 5.4.34-3
+Depends: ipkg, bzip2, netsnmp, jpeg, libpng, libxml2, ncurses, libcurl, libmcrypt
 Architecture: arm
 Priority: optional
 Section: interpreters
