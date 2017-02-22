@@ -4,7 +4,7 @@
 #
 #############################################################
 
-SMARTMONTOOLS_VERSION:=6.4
+SMARTMONTOOLS_VERSION:=6.5
 SMARTMONTOOLS_SOURCE:=smartmontools-$(SMARTMONTOOLS_VERSION).tar.gz
 SMARTMONTOOLS_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/smartmontools/smartmontools/$(SMARTMONTOOLS_VERSION)
 
@@ -71,6 +71,8 @@ $(TARGET_DIR)/$(SMARTMONTOOLS_TARGET_BINARY2): $(SMARTMONTOOLS_DIR)/$(SMARTMONTO
 	cp $(SMARTMONTOOLS_DIR)/smartd_warning.sh $(TARGET_DIR)/etc/
 
 smartmontools: uclibc $(TARGET_DIR)/$(SMARTMONTOOLS_TARGET_BINARY) $(TARGET_DIR)/$(SMARTMONTOOLS_TARGET_BINARY2)
+
+smartmontools-build: $(SMARTMONTOOLS_DIR)/$(SMARTMONTOOLS_BINARY)
 
 smartmontools-configure: $(SMARTMONTOOLS_DIR)/.configured
 
