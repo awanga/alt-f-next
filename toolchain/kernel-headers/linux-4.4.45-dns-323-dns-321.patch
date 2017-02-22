@@ -1,5 +1,5 @@
---- linux-3.10.11/arch/arm/mach-orion5x/dns323-setup.c-orig	2013-09-09 17:36:55.912294410 +0100
-+++ linux-3.10.11/arch/arm/mach-orion5x/dns323-setup.c	2013-09-09 17:40:50.418756467 +0100
+--- linux-4.4.22-orig/arch/arm/mach-orion5x/dns323-setup.c-orig	2016-09-26 17:42:00.264322308 +0100
++++ linux-4.4.22/arch/arm/mach-orion5x/dns323-setup.c	2016-09-26 17:58:34.699539778 +0100
 @@ -7,6 +7,9 @@
   *
   * Copyright (C) 2010 Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -100,9 +100,9 @@
   * Ethernet
   */
  
-@@ -210,10 +280,17 @@
- 	int i;
- 	char *mac_page;
+@@ -178,10 +248,17 @@
+ 	u_int8_t addr[6];
+ 	void __iomem *mac_page;
  
 -	/* MAC address is stored as a regular ol' string in /dev/mtdblock4
 -	 * (0x007d0000-0x00800000) starting at offset 196480 (0x2ff80).
@@ -121,16 +121,116 @@
  	if (!mac_page)
  		return -ENOMEM;
  
-@@ -236,7 +313,7 @@
- 	}
+@@ -189,7 +266,7 @@
+ 		goto error_fail;
  
  	iounmap(mac_page);
--	printk("DNS-323: Found ethernet MAC address: ");
-+	printk("DNS-321/323: Found ethernet MAC address: ");
- 	for (i = 0; i < 6; i++)
- 		printk("%.2x%s", addr[i], (i < 5) ? ":" : ".\n");
+-	printk("DNS-323: Found ethernet MAC address: %pM\n", addr);
++	printk("DNS-321/323: Found ethernet MAC address: %pM\n", addr);
  
-@@ -493,14 +570,14 @@
+ 	memcpy(dns323_eth_data.mac_addr, addr, 6);
+ 
+@@ -204,11 +281,12 @@
+  * GPIO LEDs (simple - doesn't use hardware blinking support)
+  */
+ 
+-static struct gpio_led dns323ab_leds[] = {
++static struct gpio_led dns323a_leds[] = {
+ 	{
+ 		.name = "power:blue",
+ 		.gpio = DNS323_GPIO_LED_POWER2,
+-		.default_trigger = "default-on",
++		.default_trigger = "timer",
++		.active_low = 1,
+ 	}, {
+ 		.name = "right:amber",
+ 		.gpio = DNS323_GPIO_LED_RIGHT_AMBER,
+@@ -220,13 +298,29 @@
+ 	},
+ };
+ 
++static struct gpio_led dns323b_leds[] = {
++	{
++		.name = "power:blue",
++		.gpio = DNS323_GPIO_LED_POWER2,
++		.default_trigger = "timer",
++		.active_low = 0,
++	}, {
++		.name = "right:amber",
++		.gpio = DNS323_GPIO_LED_RIGHT_AMBER,
++		.active_low = 1,
++	}, {
++		.name = "left:amber",
++		.gpio = DNS323_GPIO_LED_LEFT_AMBER,
++		.active_low = 1,
++	},
++};
+ 
+ static struct gpio_led dns323c_leds[] = {
+ 	{
+ 		.name = "power:blue",
+ 		.gpio = DNS323C_GPIO_LED_POWER,
+ 		.default_trigger = "timer",
+-		.active_low = 1,
++		.active_low = 0,
+ 	}, {
+ 		.name = "right:amber",
+ 		.gpio = DNS323C_GPIO_LED_RIGHT_AMBER,
+@@ -238,24 +332,26 @@
+ 	},
+ };
+ 
++static struct gpio_led_platform_data dns323a_led_data = {
++	.num_leds	= ARRAY_SIZE(dns323a_leds),
++	.leds		= dns323a_leds,
++};
+ 
+-static struct gpio_led_platform_data dns323ab_led_data = {
+-	.num_leds	= ARRAY_SIZE(dns323ab_leds),
+-	.leds		= dns323ab_leds,
+-	.gpio_blink_set = orion_gpio_led_blink_set,
++static struct gpio_led_platform_data dns323b_led_data = {
++	.num_leds	= ARRAY_SIZE(dns323b_leds),
++	.leds		= dns323b_leds,
+ };
+ 
+ static struct gpio_led_platform_data dns323c_led_data = {
+ 	.num_leds	= ARRAY_SIZE(dns323c_leds),
+ 	.leds		= dns323c_leds,
+-	.gpio_blink_set = orion_gpio_led_blink_set,
+ };
+ 
+ static struct platform_device dns323_gpio_leds = {
+ 	.name		= "leds-gpio",
+ 	.id		= -1,
+ 	.dev		= {
+-		.platform_data	= &dns323ab_led_data,
++		.platform_data	= &dns323a_led_data,
+ 	},
+ };
+ 
+@@ -284,6 +380,11 @@
+ 
+ static struct gpio_keys_button dns323c_buttons[] = {
+ 	{
++		.code		= KEY_RESTART,
++		.gpio		= DNS323_GPIO_KEY_RESET,
++		.desc		= "Reset Button",
++		.active_low	= 1,
++	}, {
+ 		.code		= KEY_POWER,
+ 		.gpio		= DNS323C_GPIO_KEY_POWER,
+ 		.desc		= "Power Button",
+@@ -374,7 +475,7 @@
+ 	MPP7_UNUSED,		/* ? output */
+ 	MPP8_GPIO,		/* i/o right amber LED */
+ 	MPP9_GPIO,		/* i/o left amber LED */
+-	MPP10_GPIO,		/* input */
++	MPP10_GPIO,		/* reset button switch */
+ 	MPP11_UNUSED,
+ 	MPP12_SATA_LED,
+ 	MPP13_SATA_LED,
+@@ -441,14 +542,14 @@
  /* DNS-323 rev. A specific power off method */
  static void dns323a_power_off(void)
  {
@@ -147,7 +247,7 @@
  	/* Pin has to be changed to 1 and back to 0 to do actual power off. */
  	gpio_set_value(DNS323_GPIO_POWER_OFF, 1);
  	mdelay(100);
-@@ -510,7 +587,7 @@
+@@ -458,7 +559,7 @@
  /* DNS-323 rev. C specific power off method */
  static void dns323c_power_off(void)
  {
@@ -156,7 +256,7 @@
  	gpio_set_value(DNS323C_GPIO_POWER_OFF, 1);
  }
  
-@@ -525,15 +602,15 @@
+@@ -473,15 +574,15 @@
  {
  	u32 dev, rev, i, reg;
  
@@ -175,21 +275,32 @@
  
  	/* Rev B1 and C1 both have 5182, let's poke at the eth PHY. This is
  	 * a bit gross but we want to do that without links into the eth
-@@ -553,7 +630,7 @@
+@@ -489,8 +590,8 @@
+ 	 * case the accesses fail
+ 	 */
+ 
+-#define ETH_SMI_REG		(ORION5X_ETH_VIRT_BASE + 0x2000 + 0x004)
+-#define  SMI_BUSY		0x10000000
++#define  ETH_SMI_REG		(ORION5X_ETH_VIRT_BASE + 0x2000 + 0x004)
++#define  SMI_BUSY			0x10000000
+ #define  SMI_READ_VALID		0x08000000
+ #define  SMI_OPCODE_READ	0x04000000
+ #define  SMI_OPCODE_WRITE	0x00000000
+@@ -501,7 +602,7 @@
  			break;
  	}
  	if (i >= 1000) {
--		pr_warning("DNS-323: Timeout accessing PHY, assuming rev B1\n");
-+		pr_warning("DNS-321/323: Timeout accessing PHY, assuming rev B1\n");
+-		pr_warn("DNS-323: Timeout accessing PHY, assuming rev B1\n");
++		pr_warn("DNS-321/323: Timeout accessing PHY, assuming rev B1\n");
  		return DNS323_REV_B1;
  	}
  	writel((3 << 21)	/* phy ID reg */ |
-@@ -565,10 +642,10 @@
+@@ -513,10 +614,10 @@
  			break;
  	}
  	if (i >= 1000) {
--		pr_warning("DNS-323: Timeout reading PHY, assuming rev B1\n");
-+		pr_warning("DNS-321/323: Timeout reading PHY, assuming rev B1\n");
+-		pr_warn("DNS-323: Timeout reading PHY, assuming rev B1\n");
++		pr_warn("DNS-321/323: Timeout reading PHY, assuming rev B1\n");
  		return DNS323_REV_B1;
  	}
 -	pr_debug("DNS-323: Ethernet PHY ID 0x%x\n", reg & 0xffff);
@@ -197,7 +308,7 @@
  
  	/* Note: the Marvell tools mask the ID with 0x3f0 before comparison
  	 * but I don't see that making a difference here, at least with
-@@ -576,11 +653,22 @@
+@@ -524,11 +625,22 @@
  	 */
  	switch(reg & 0xfff0) {
  	case 0x0cc0: /* MV88E1111 */
@@ -217,12 +328,12 @@
 +			return DNS323_REV_C1;
 +		}
  	default:
--		pr_warning("DNS-323: Unknown PHY ID 0x%04x, assuming rev B1\n",
-+		pr_warning("DNS-321/323: Unknown PHY ID 0x%04x, assuming rev B1\n",
- 			   reg & 0xffff);
+-		pr_warn("DNS-323: Unknown PHY ID 0x%04x, assuming rev B1\n",
++		pr_warn("DNS-321/323: Unknown PHY ID 0x%04x, assuming rev B1\n",
+ 			reg & 0xffff);
  	}
  	return DNS323_REV_B1;
-@@ -593,7 +681,7 @@
+@@ -541,7 +653,7 @@
  
  	/* Identify revision */
  	system_rev = dns323_identify_rev();
@@ -231,7 +342,7 @@
  
  	/* Just to be tricky, the 5182 has a completely different
  	 * set of MPP modes to the 5181.
-@@ -607,16 +695,24 @@
+@@ -555,6 +667,7 @@
  		orion5x_mpp_conf(dns323b_mpp_modes);
  		break;
  	case DNS323_REV_C1:
@@ -239,28 +350,52 @@
  		orion5x_mpp_conf(dns323c_mpp_modes);
  		break;
  	}
- 
+@@ -562,27 +675,41 @@
  	/* setup flash mapping
--	 * CS3 holds a 8 MB Spansion S29GL064M90TFIR4
-+	 * DNS323: CS3 holds a 8 MB Spansion S29GL064M90TFIR4
-+	 * DNS321: has a 16 MB Micron M29W128GH
+ 	 * CS3 holds a 8 MB Spansion S29GL064M90TFIR4
  	 */
--	mvebu_mbus_add_window("devbus-boot", DNS323_NOR_BOOT_BASE,
--			      DNS323_NOR_BOOT_SIZE);
+-	mvebu_mbus_add_window_by_id(ORION_MBUS_DEVBUS_BOOT_TARGET,
+-				    ORION_MBUS_DEVBUS_BOOT_ATTR,
+-				    DNS323_NOR_BOOT_BASE,
+-				    DNS323_NOR_BOOT_SIZE);
 -	platform_device_register(&dns323_nor_flash);
 +	switch(system_rev) {
 +	case DNS321_REV_A1:
-+		mvebu_mbus_add_window("devbus-boot", DNS321_NOR_BOOT_BASE, DNS321_NOR_BOOT_SIZE);
++		mvebu_mbus_add_window_by_id(ORION_MBUS_DEVBUS_BOOT_TARGET,
++				ORION_MBUS_DEVBUS_BOOT_ATTR,
++				DNS321_NOR_BOOT_BASE,
++				DNS321_NOR_BOOT_SIZE);
 +		platform_device_register(&dns321_nor_flash);
 +		break;
 +	default:
-+		mvebu_mbus_add_window("devbus-boot", DNS323_NOR_BOOT_BASE, DNS323_NOR_BOOT_SIZE);
++		mvebu_mbus_add_window_by_id(ORION_MBUS_DEVBUS_BOOT_TARGET,
++				ORION_MBUS_DEVBUS_BOOT_ATTR,
++				DNS323_NOR_BOOT_BASE,
++				DNS323_NOR_BOOT_SIZE);
 +		platform_device_register(&dns323_nor_flash);
 +	}
  
  	/* Sort out LEDs, Buttons and i2c devices */
  	switch(system_rev) {
-@@ -633,6 +729,7 @@
+ 	case DNS323_REV_A1:
+ 		/* The 5181 power LED is active low and requires
+-		 * DNS323_GPIO_LED_POWER1 to also be low.
+-		 */
+-		 dns323ab_leds[0].active_low = 1;
+-		 gpio_request(DNS323_GPIO_LED_POWER1, "Power Led Enable");
+-		 gpio_direction_output(DNS323_GPIO_LED_POWER1, 0);
+-		/* Fall through */
++			* DNS323_GPIO_LED_POWER1 to also be low.
++			*/
++		gpio_request(DNS323_GPIO_LED_POWER1, "Power Led Enable");
++		gpio_direction_output(DNS323_GPIO_LED_POWER1, 0);
++		dns323_gpio_leds.dev.platform_data = &dns323a_led_data;
++		i2c_register_board_info(0, dns323ab_i2c_devices,
++			ARRAY_SIZE(dns323ab_i2c_devices));
++		break;
+ 	case DNS323_REV_B1:
++		dns323_gpio_leds.dev.platform_data = &dns323b_led_data;
+ 		i2c_register_board_info(0, dns323ab_i2c_devices,
  				ARRAY_SIZE(dns323ab_i2c_devices));
  		break;
  	case DNS323_REV_C1:
@@ -268,7 +403,16 @@
  		/* Hookup LEDs & Buttons */
  		dns323_gpio_leds.dev.platform_data = &dns323c_led_data;
  		dns323_button_device.dev.platform_data = &dns323c_button_data;
-@@ -655,7 +752,7 @@
+@@ -593,8 +720,6 @@
+ 		platform_device_register_simple("dns323c-fan", 0, NULL, 0);
+ 
+ 		/* Register fixup for the PHY LEDs */
+-		if (!IS_BUILTIN(CONFIG_PHYLIB))
+-			break;
+ 		phy_register_fixup_for_uid(MARVELL_PHY_ID_88E1118,
+ 					   MARVELL_PHY_ID_MASK,
+ 					   dns323c_phy_fixup);
+@@ -607,7 +732,7 @@
  	 * Configure peripherals.
  	 */
  	if (dns323_read_mac_addr() < 0)
@@ -277,7 +421,7 @@
  	orion5x_ehci0_init();
  	orion5x_eth_init(&dns323_eth_data);
  	orion5x_i2c_init();
-@@ -667,7 +764,7 @@
+@@ -619,7 +744,7 @@
  		/* Poweroff GPIO */
  		if (gpio_request(DNS323_GPIO_POWER_OFF, "POWEROFF") != 0 ||
  		    gpio_direction_output(DNS323_GPIO_POWER_OFF, 0) != 0)
@@ -286,13 +430,14 @@
  		pm_power_off = dns323a_power_off;
  		break;
  	case DNS323_REV_B1:
-@@ -684,17 +781,18 @@
+@@ -636,17 +761,19 @@
  		/* Poweroff GPIO */
  		if (gpio_request(DNS323_GPIO_POWER_OFF, "POWEROFF") != 0 ||
  		    gpio_direction_output(DNS323_GPIO_POWER_OFF, 0) != 0)
 -			pr_err("DNS-323: failed to setup power-off GPIO\n");
 +			pr_err("DNS-321/323: failed to setup power-off GPIO\n");
  		pm_power_off = dns323b_power_off;
++		writel(0x5, ORION5X_SATA_VIRT_BASE + 0x2c); /* FIXME read bellow for rev-C1 */
  		break;
  	case DNS323_REV_C1:
 +	case DNS321_REV_A1:
@@ -307,7 +452,7 @@
  		pm_power_off = dns323c_power_off;
  
  		/* Now, -this- should theorically be done by the sata_mv driver
-@@ -711,7 +809,7 @@
+@@ -663,7 +790,7 @@
  }
  
  /* Warning: D-Link uses a wrong mach-type (=526) in their bootloader */

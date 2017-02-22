@@ -1,5 +1,5 @@
---- linux-3.18.21-orig/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2014-12-07 22:21:05.000000000 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2015-10-28 17:11:06.779240420 +0000
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2014-12-07 22:21:05.000000000 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2015-10-28 17:11:06.779240420 +0000
 @@ -2,7 +2,7 @@
  #include "kirkwood-6281.dtsi"
  
@@ -18,8 +18,8 @@
  			gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
  		};
  		button@3 {
---- linux-3.18.21-orig/arch/arm/boot/dts/kirkwood-dns320-a.dts	2015-10-28 17:09:49.065675679 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/kirkwood-dns320-a.dts	2015-10-28 15:20:28.003095948 +0000
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320-a.dts	2015-10-28 17:09:49.065675679 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320-a.dts	2015-10-28 15:20:28.003095948 +0000
 @@ -0,0 +1,58 @@
 +/dts-v1/;
 +
@@ -79,8 +79,8 @@
 +		};
 +	};
 +};
---- linux-3.18.21-orig/arch/arm/boot/dts/kirkwood-dns320-b.dts	2015-10-28 17:09:49.065675679 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/kirkwood-dns320-b.dts	2015-10-28 15:30:52.004068394 +0000
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320-b.dts	2015-10-28 17:09:49.065675679 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320-b.dts	2015-10-28 15:30:52.004068394 +0000
 @@ -0,0 +1,29 @@
 +/dts-v1/;
 +
@@ -111,8 +111,8 @@
 +		linux,stdout-path = &uart0;
 +	};
 +};
---- linux-3.18.21-orig/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-26 17:01:36.559569041 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-28 16:09:18.440338961 +0000
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-26 17:01:36.559569041 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-28 16:09:18.440338961 +0000
 @@ -0,0 +1,29 @@
 +/dts-v1/;
 +
@@ -143,8 +143,8 @@
 +		linux,stdout-path = &uart0;
 +	};
 +};
---- linux-3.18.21-orig/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 17:09:49.065675679 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 16:38:57.639149447 +0000
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 17:09:49.065675679 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 16:38:57.639149447 +0000
 @@ -0,0 +1,213 @@
 +/*
 + * Device Tree file for DLINK DNS-320L
@@ -359,8 +359,8 @@
 +		phy-handle = <&ethphy0>;
 +	};
 +};
---- linux-3.18.21-orig/arch/arm/boot/dts/kirkwood-dns325.dts	2014-12-07 22:21:05.000000000 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/kirkwood-dns325.dts	2015-10-28 15:20:09.820387713 +0000
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns325.dts	2014-12-07 22:21:05.000000000 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns325.dts	2015-10-28 15:20:09.820387713 +0000
 @@ -3,8 +3,8 @@
  #include "kirkwood-dnskw.dtsi"
  
@@ -401,12 +401,13 @@
  			status = "okay";
  		};
  	};
---- linux-3.18.21-orig/arch/arm/boot/dts/Makefile	2014-12-07 22:21:05.000000000 +0000
-+++ linux-3.18.21/arch/arm/boot/dts/Makefile	2015-10-28 16:51:26.150243368 +0000
-@@ -104,7 +104,9 @@
+--- linux-4.4.22-orig/arch/arm/boot/dts/Makefile	2014-12-07 22:21:05.000000000 +0000
++++ linux-4.4.22/arch/arm/boot/dts/Makefile	2015-10-28 16:51:26.150243368 +0000
+@@ -159,7 +159,9 @@
  	kirkwood-d2net.dtb \
  	kirkwood-db-88f6281.dtb \
  	kirkwood-db-88f6282.dtb \
+	kirkwood-dir665.dtb \
 -	kirkwood-dns320.dtb \
 +	kirkwood-dns320-a.dtb \
 +	kirkwood-dns320-b.dtb \
