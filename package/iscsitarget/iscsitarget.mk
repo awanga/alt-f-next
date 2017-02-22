@@ -2,27 +2,11 @@
 #
 # iscsitarget
 #
-#############################################################
+############################################################
 
-# comments, mkpkgs.sh don't process conditionals
-#
-#ISCSITARGET_SVN:=y
-#
-#ifeq ($(ISCSITARGET_SVN),)
-#
-#ISCSITARGET_VERSION:=1.4.20.2
-#ISCSITARGET_SOURCE:=iscsitarget-$(ISCSITARGET_VERSION).tar.gz
-#ISCSITARGET_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/iscsitarget/iscsitarget/$(ISCSITARGET_VERSION)
-#ISCSITARGET_DIR:=$(BUILD_DIR)/iscsitarget-$(ISCSITARGET_VERSION)
-#ISCSITARGET_CAT=$(ZCAT)
-#
-#$(DL_DIR)/$(ISCSITARGET_SOURCE):
-#	$(call DOWNLOAD,$(ISCSITARGET_SITE),$(ISCSITARGET_SOURCE))
-#
-#else
+# FIXME: not working! and armv7 module seems to not be built is a armv5 modules exists
 
 ISCSITARGET_REPO:=http://svn.code.sf.net/p/iscsitarget/code/trunk
-#ISCSITARGET_VERSION:=496
 ISCSITARGET_VERSION:=503
 ISCSITARGET_NAME:=iscsitarget-svn-$(ISCSITARGET_VERSION)
 ISCSITARGET_DIR:=$(BUILD_DIR)/$(ISCSITARGET_NAME)
@@ -37,8 +21,6 @@ $(DL_DIR)/$(ISCSITARGET_SOURCE):
 		touch $(ISCSITARGET_NAME)/.source \
 	)
 
-#endif
-
 ISCSITARGET_BIN:=usr/ietd
 ISCSITARGET_MOD:=kernel/iscsi_trgt.ko
 ISCSITARGET_TARGET_BIN:=usr/sbin/ietd
@@ -51,7 +33,7 @@ $(ISCSITARGET_DIR)/.source: $(DL_DIR)/$(ISCSITARGET_SOURCE)
 $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN): $(ISCSITARGET_DIR)/.source
 	$(TARGET_CONFIGURE_OPTS) $(MAKE) KSRC=$(LINUX_DIR) -C $(ISCSITARGET_DIR) usr
 
-$(ISCSITARGET_DIR)/$(ISCSITARGET_MOD): $(ISCSITARGET_DIR)/.source $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed
+$(ISCSITARGET_DIR)/$(ISCSITARGET_MOD): $(ISCSITARGET_DIR)/.source $(PROJECT_BUILD_DIR)/autotools-stamps/kernel-modules_target_installed 
 	$(MAKE) KSRC=$(LINUX_DIR) -C $(ISCSITARGET_DIR) clean
 	$(LINUX26_MAKE_FLAGS) $(MAKE) KSRC=$(LINUX_DIR) -C $(ISCSITARGET_DIR) kernel
 
@@ -73,7 +55,7 @@ $(TARGET_DIR)/lib/modules/$(LINVER)/$(ISCSITARGET_TARGET_MOD): $(ISCSITARGET_DIR
 
 iscsitarget: uclibc linux26-modules $(TARGET_DIR)/lib/modules/$(LINVER)/$(ISCSITARGET_TARGET_MOD) $(TARGET_DIR)/$(ISCSITARGET_TARGET_BIN)
 
-iscsitarget-build: $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN) $(ISCSITARGET_DIR)/$(ISCSITARGET_MOD)
+iscsitarget-build: linux26-modules $(ISCSITARGET_DIR)/$(ISCSITARGET_BIN) $(ISCSITARGET_DIR)/$(ISCSITARGET_MOD)
 
 iscsitarget-extract: $(ISCSITARGET_DIR)/.source
 
