@@ -4,8 +4,11 @@
 #
 #############################################################
 
-#E2FSPROGS_VERSION:=1.42 this new release is too big! (and uclibc needs ftw, +4KB) 
 E2FSPROGS_VERSION:=1.41.14
+#E2FSPROGS_VERSION:=1.42 release is too big! (and uclibc needs ftw, +4KB)
+#E2FSPROGS_VERSION:=1.42.13 rootfs too big by 73792 bytes, removing inadyn bigger by 24640
+#E2FSPROGS_VERSION:=1.43.3 rootfs too big by 131136 bytes
+
 E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
 E2FSPROGS_SITE=$(BR2_SOURCEFORGE_MIRROR)/project/e2fsprogs/e2fsprogs/$(E2FSPROGS_VERSION)
 
@@ -18,8 +21,9 @@ LIBUUID_TARGET_DIR:=usr/lib/
 LIBUUID_TARGET_BINARY:=libuuid.so
 
 E2FSPROGS_MISC_STRIP:= \
-	badblocks blkid chattr dumpe2fs filefrag fsck logsave \
-	lsattr mke2fs mklost+found tune2fs uuidgen
+	badblocks chattr dumpe2fs filefrag fsck logsave \
+	lsattr mke2fs mklost+found tune2fs 
+#	blkid uuidgen
 
 $(DL_DIR)/$(E2FSPROGS_SOURCE):
 	 $(call DOWNLOAD,$(E2FSPROGS_SITE),$(E2FSPROGS_SOURCE))
@@ -60,6 +64,7 @@ $(E2FSPROGS_DIR)/.configured: $(E2FSPROGS_DIR)/.unpacked
 		--disable-debugfs --disable-imager --disable-testio-debug \
 		--without-catgets $(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
+		--enable-libuuid --enable-libblkid \
 	)
 	# do away with hiding the commands
 	find $(E2FSPROGS_DIR) -name Makefile \
