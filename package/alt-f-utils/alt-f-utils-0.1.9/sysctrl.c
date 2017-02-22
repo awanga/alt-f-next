@@ -43,6 +43,11 @@
 #include <math.h>
 #include <time.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> 
+
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 void check_board();
 
@@ -69,6 +74,7 @@ void leds_proc();
 void leds_set(int mode, int priority);
 
 void syswrite(char *fname, char *value);
+void write_pwm(int u);
 
 void back_button();
 void reboot();
@@ -96,7 +102,7 @@ void print_disks();
 
 typedef struct {
 	float hist_temp;
-	int lo_fan, hi_fan, lo_temp, hi_temp, mail, recovery, fan_off_temp,
+	int lo_fan, hi_fan, lo_temp, hi_temp, disks_temp, mail, recovery, fan_off_temp,
 		max_fan_speed, warn_temp, crit_temp, fan_mode;
 	char *warn_temp_command, *crit_temp_command,
 		*front_button_command1, *front_button_command2, *back_button_command;
@@ -106,7 +112,7 @@ enum FanMode {FAN_AUTO = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST};
 
 // configuration default values, overriden by configuration files
 args_t args =
-    { 2.0, 2000, 5000, 40, 50, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL,
+    { 2.0, 2000, 5000, 40, 50, 0, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL,
   NULL };
 
 enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_Ax, DNS_325_Ax, DNS_320_Ax, DNS_320_Bx, DNS_320L_Ax, DNS_327L_Ax};
@@ -148,14 +154,15 @@ char fantemplog[] = "/var/log/fantemp.log";
 #define SCRIPT_TIMEOUT 5
 
 #define IDLE	0
-#define REBOOT	3
-#define HALT	6
+#define HALT	 3
+#define REBOOT	6
 #define ABORT	9
 
 #define BUFSZ 256
 
 void quit_handler() {
 	syslog(LOG_INFO, "signaled to quit, quiting");
+	write_pwm(127); /* leave fan at medium speed */
 	exit(0);
 }
 
@@ -216,6 +223,9 @@ int main(int argc, char *argv[]) {
 	
 	/* daemonize: fork, cd /, setsid, close io */
 	daemon(0, 0);
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
 	check_other_daemon();
 
 	struct sigaction new;
@@ -325,22 +335,9 @@ void mainloop() {
 		case IDLE:
 			if (bt == NO_BT) {
 				count = 0;
-			} else if (count == REBOOT) {
-				state = REBOOT;
-				led_blink(right_led, "250", "250");
-			}
-			break;
-
-		case REBOOT:
-			if (bt == NO_BT) {
-				state = IDLE;
-				count = 0;
-				leds_off();
-				reboot();
 			} else if (count == HALT) {
 				state = HALT;
-				led_set(right_led, "0");
-				led_blink(left_led, "250", "250");
+				led_blink(right_led, "250", "250");
 			}
 			break;
 
@@ -350,6 +347,19 @@ void mainloop() {
 				count = 0;
 				leds_off();
 				poweroff();
+			} else if (count == REBOOT) {
+				state = REBOOT;
+				led_set(right_led, "0");
+				led_blink(left_led, "250", "250");
+			}
+			break;
+	
+		case REBOOT:
+			if (bt == NO_BT) {
+				state = IDLE;
+				count = 0;
+				leds_off();
+				reboot();
 			} else if (count == ABORT) {
 				state = IDLE;
 				count = 0;
@@ -610,7 +620,7 @@ int syserrorlog(char *emsg) {
  * When the 32KB file maximum size is reached, logging continues at the file beginning.
  * an "OLD:" line marks the beginning of old log entries
  */
-void fanlog(float temp, int pwm, int fan) {
+void fanlog(int stemp, int dtemp, int pwm, int fan) {
 	static int fd = -1;
 	int nc;
 	char outstr[128], buf[128];
@@ -632,7 +642,8 @@ void fanlog(float temp, int pwm, int fan) {
 	t = time(NULL);
 	tmp = localtime(&t);
 	strftime(outstr, sizeof(outstr), "%b %d %T", tmp);
-	nc = sprintf(buf, "%s\ttemp=%.1f\tpwm=%d\tfan=%d\nOLD:\n", outstr, temp, pwm, fan);
+	nc = sprintf(buf, "%s\tsys_temp=%d\tdisk_temp=%d\tpwm=%d\tfan=%d\nOLD:\n",
+				 outstr, stemp, dtemp, pwm, fan);
 	write(fd, buf, nc);
 }
 
@@ -873,28 +884,96 @@ int read_temp(void) {
 	return u;
 }
 
+/* Read from a running hddtemp local server on default port
+ * all box inserted disks temperature and returns the maximum value found.
+ * Silently ignore any errors, returning 0 (a temperature of zero)
+ * FIXME: replace with hddtemp C code http://download.savannah.gnu.org/releases/hddtemp
+ */
+
+#define HDDTEMP_PORT 7634
+#define HDDTEMP_BUF 512
+int read_disks_temp(void) {
+	int i, n, temp, dtemp, sockfd, portno=HDDTEMP_PORT, maxtemp = 0;
+	char *dev, *tempc, *ptr, buffer[HDDTEMP_BUF];
+	
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+
+	if ((server = gethostbyname("127.0.0.1")) == NULL)
+		return 0; // ERROR, no such host
+		
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		return 0; // ERROR opening socket
+ 	
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(portno);	
+    bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
+    if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+		close(sockfd);
+		return 0; // ERROR connecting
+	}
+	
+    bzero(buffer, HDDTEMP_BUF);
+    if ((n = read(sockfd, buffer, HDDTEMP_BUF)) < 0) {
+		close(sockfd);
+		return 0; // ERROR reading from socket
+	}
+	
+    close(sockfd);
+
+	ptr = buffer;
+	while(1) {
+		if ((dev = strtok(ptr, "|")) == NULL) // device
+			return maxtemp;
+		ptr=NULL;
+		printf("dev=%s ", dev);
+
+		if (strtok(NULL, "|") == NULL) // disk name
+			return maxtemp;
+
+		if ((tempc= strtok(NULL, "|")) == NULL) // disk temp
+			return maxtemp;
+
+		if (strtok(NULL, "|") == NULL) // units
+			return maxtemp;
+
+		for (i = 0; i < nslots; i++) {
+			if ((disks[i].dev == NULL) || (strcmp(&dev[5], disks[i].dev) != 0))
+				continue;
+			if (strcmp(disks[i].slot, "left") == 0 || strcmp(disks[i].slot, "right") == 0) {
+				temp = strtof(tempc, NULL);
+				maxtemp = MAX(temp, maxtemp);
+				//syslog(LOG_INFO, "%s %d %d\n", dev, temp, maxtemp);
+			}
+		}		
+	}
+	return maxtemp;
+}
+	
 void fanctl(void) {
 	static float temp = 0., log_temp = 0.;
 	static int warn = 0, crit = 0, log_fan = 0;
-	int fan, pwm;
+	int stemp, fan, pwm, dtemp = 0;
 
-	if (temp == 0.) { // zero has an exact float representation
+	if (temp == 0.)  // zero has an exact float representation
 		temp = read_temp() / 1000.;
-		pwm = 0;
-	} else {
-		temp = 0.9 * read_temp() / 1000. + 0.1 * temp;
-		pwm = read_pwm();
-	}
-	
+
+	//temp = 0.9 * read_temp() / 1000. + 0.1 * temp;
+	/* use the maximum of the system board or disks temperatures to control the fan */
+	stemp = read_temp() / 1000;
+	if (args.disks_temp)
+		dtemp = read_disks_temp();
+	temp = 0.9 * MAX(stemp, dtemp) + 0.1 * temp;
+	pwm = read_pwm();
 	fan = read_fan();
-	
 
 	if ( (fabsf(temp - log_temp) > 1.0) || (abs(fan - log_fan) > 400)) {
 		log_temp = temp;
 		log_fan = fan;
 		//syslog(LOG_INFO, "temp=%.1f	pwm=%d fan=%d", temp, pwm, fan);
 		// temp/fan logs flood syslog for the 320L/327, use a file for logging
-		fanlog(temp, pwm, fan);
+		fanlog(stemp, dtemp, pwm, fan);
 	}
 
 	if (board == DNS_323_A1 || board == DNS_323_B1) {
@@ -1346,6 +1425,8 @@ void config(char *n, char *v) {
 		args.hi_temp = atoi(v);
 	} else if (strcmp(n, "hist_temp") == 0) {
 		args.hist_temp = atof(v);
+	} else if (strcmp(n, "disks_temp") == 0) {
+		args.disks_temp = atoi(v);
 	} else if (strcmp(n, "fan_mode") == 0) {
 		args.fan_mode = atoi(v);
 		switch (args.fan_mode) {
@@ -1526,6 +1607,7 @@ void print_config() {
 	syslog(LOG_INFO, "args.lo_temp=%d", args.lo_temp);
 	syslog(LOG_INFO, "args.hi_temp=%d", args.hi_temp);
 	syslog(LOG_INFO, "args.hist_temp=%.1f", args.hist_temp);
+	syslog(LOG_INFO, "args.disks_temp=%d", args.disks_temp);
 	switch(args.fan_mode) {
 		case FAN_ALWAYS_OFF: mode="ALWAYS_OFF"; break;
 		case FAN_ALWAYS_SLOW: mode="ALWAYS_SLOW"; break;
