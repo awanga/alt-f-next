@@ -1,0 +1,9 @@
+Package: libnl
+Description: A library for applications dealing with netlink socket.
+Version: 3.2.25
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.carisma.slowglass.com/~tgr/libnl
+Maintainer: jcard
