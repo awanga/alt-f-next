@@ -2,7 +2,7 @@
 
 check() {
 	if test "$1" != 0; then
-		echo -e "\nFirmware creation FAILED at $2, exiting."
+		echo -e "\nmkfw: Firmware creation FAILED at $2, exiting."
 		exit 1
 	fi
 }
@@ -13,12 +13,12 @@ usage() {
 }
 
 if test "$(dirname $0)" != "."; then
-	echo "This script must be run in the root of the tree, exiting."
+	echo "mkfw: This script must be run in the root of the tree, exiting."
 	exit 1
 fi
 
 if test -z "$BLDDIR"; then
-	echo "Run '. exports [board]' first."
+	echo "mkfw: Run '. exports [board]' first."
 	exit 1
 fi
 
@@ -71,23 +71,24 @@ KVER=$(cat $BLDDIR/project_build_arm/$board/.linux-version)
 VER=$(cut -f2 -d" " customroot/etc/Alt-F)
 
 if ! test -f ${DESTD}/zImage -a -f ${DESTD}/$rootfs; then
-	echo "${DESTD}/zImage or ${DESTD}/$rootfs not found, exiting"
+	echo "mkfw: ${DESTD}/zImage or ${DESTD}/$rootfs not found, exiting"
 	exit 1
 fi
 
 if test ${DESTD}/rootfs.arm.ext2 -nt ${DESTD}/$rootfs; then
-	echo "${DESTD}/rootfs.arm.ext2 is newer than ${DESTD}/$rootfs,  exiting"
+	echo "mkfw: ${DESTD}/rootfs.arm.ext2 is newer than ${DESTD}/$rootfs,  exiting"
 	exit 1
 fi
 
 if test -n "$sqimage"; then
 	if ! test -f "${DESTD}/$sqimage"; then
-		echo "${DESTD}/$sqimage not found, exiting"
+		echo "mkfw: ${DESTD}/$sqimage not found, exiting"
 		exit 1
 	fi
 
 	if test "${DESTD}/$rootfs" -nt "${DESTD}/$sqimage"; then
-		echo "${DESTD}/$rootfs is newer than ${DESTD}/$sqimage,  exiting"
+		echo "mkfw: ${DESTD}/$rootfs is newer than ${DESTD}/$sqimage,  exiting"
+		exit 1
 	fi
 	
 	# prepend to sqimage its size and md5sum so that one can know it at boot using nanddump in rcS
@@ -104,7 +105,7 @@ fi
 case $board in
 	dns323) ;;
 	dns325|dns327) sq_opts="-a ${DESTD}/$sqimage" ;;
-	*) echo "Unsupported \"$board\" board"; exit 1;;
+	*) echo "mkfw: Unsupported \"$board\" board"; exit 1;;
 esac
 
 # the several vendors firmware signatures:
@@ -238,7 +239,7 @@ for i in ${!name[*]}; do
 	if test -n "${postz[i]}" -a \( ! -f ${DESTD}/${postz[i]} -o \
 			$DTSDIR/$(basename ${postz[i]} .dtb).dts -nt $DESTD/${postz[i]} \); then
 		if test -z "$KERNEL"; then
-			echo "Error, execute '. exports' first."
+			echo "mkfw: Error, execute '. exports' first."
 			exit 1
 		fi
 
@@ -263,7 +264,23 @@ for i in ${!name[*]}; do
 		-n "Alt-F-${VER}, kernel ${KVER}" -d ${DESTD}/tImage ${DESTD}/uImage
 	check $? "kernel mkimage"
 
-	# merge kernel and initramfs (notice that dns323-fw only validates flash partitions sizes)
+	# check sizes, see comment bellow
+	len=$(expr $(stat -c %s "${DESTD}/uImage") - ${kernel_max[i]})
+	if test $len -gt 0; then
+		check 1 "kernel too big by $len bytes, max is ${kernel_max[i]}"
+	fi
+	len=$(expr $(stat -c %s "${DESTD}/urootfs") - ${initramfs_max[i]})
+	if test $len -gt 0; then
+		check 1 "rootfs too big by $len bytes, max is ${initramfs_max[i]}"
+	fi
+	if test -n "$sq_opts"; then
+		len=$(expr $(stat -c %s "${DESTD}/$sqimage") - ${sqimage_max[i]})
+		if test $len -gt 0; then
+			check 1 "sqimage too big by $len, max is ${sqimage_max[i]}"
+		fi
+	fi
+
+	# merge kernel and initramfs (notice that dns323-fw only validates flash partitions sizes, not u-boot load limits)
 	dns323-fw -m -p ${prod[i]} -c ${cust[i]} -l ${model[i]} \
 		-u ${sub[i]} -v ${nver[i]} -t ${type[i]} \
 		-k ${DESTD}/uImage -i ${DESTD}/urootfs $sq_opts ${DESTD}/Alt-F-${VER}-${name[i]}.bin
@@ -296,8 +313,8 @@ for i in ${!name[*]}; do
 
 	# report kernel and initramfs available flash space
 	echo
-	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat --format=%s kernel)) bytes
-	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat --format=%s initramfs)) bytes
+	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat -c %s kernel)) bytes
+	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat -c %s initramfs)) bytes
 
 	(cd ${DESTD}; cp uImage /srv/tftpboot/uImage-${name[i]})
 
