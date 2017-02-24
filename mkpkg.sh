@@ -4,7 +4,7 @@
 # 	./mkpkg.sh -set
 # that records the current files in the rootfs in file "rootfsfiles.lst"
 # than, do:
-# 	make O=... menu-config
+# 	make O=... menuconfig
 # and add the package to buildroot, then do:
 # 	make O=...
 # to build the package and populate the rootfs, then do:
@@ -109,8 +109,11 @@ case "$1" in
 		;;
 
 	-ls)
-		if test $# != 2 -o ! -f $IPKGDIR/$2.lst; then
+		if test $# != 2; then
 			usage
+		elif ! test -f $IPKGDIR/$2.lst; then
+			echo "No such package" >&2 
+			exit 1
 		fi
 		cd $ROOTFSDIR
 		xargs --arg-file=$IPKGDIR/$2.lst ls
