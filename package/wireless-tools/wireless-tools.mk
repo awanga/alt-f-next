@@ -2,7 +2,7 @@
 #
 # wireless-tools - Wireless Tools
 #
-#############################################################
+############################################################
 
 # This Makefile only work with the multicall version of Wireless Tools,
 # which is available in 28-pre3 and later...
@@ -41,6 +41,8 @@ $(TARGET_DIR)/sbin/iwconfig: $(WIRELESS_TOOLS_BUILD_DIR)/iwmulticall
 wireless-tools: $(TARGET_DIR)/sbin/iwconfig
 
 wireless-tools-source: $(DL_DIR)/$(WIRELESS_TOOLS_SOURCE)
+
+wireless-tools-build: $(WIRELESS_TOOLS_BUILD_DIR)/iwmulticall
 
 wireless-tools-clean:
 	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(WIRELESS_TOOLS_BUILD_DIR) uninstall
