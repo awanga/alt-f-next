@@ -4,6 +4,7 @@
 
 # recursively find packages that <package> depends on: 
 rdeps() {
+	if ! grep -q ^BR2_PACKAGE_$(echo $1 | tr '[:lower:]-' '[:upper:]_')=y $CWD/.config; then return; fi
 	echo $1 $(awk '/Version:/{print $2}' $CWD/ipkgfiles/$1.control)
 	deps=$(awk '/Depends:/{for (i=2; i<=NF; i++) print $i}' $CWD/ipkgfiles/$1.control)
 	for i in $deps; do
@@ -47,12 +48,12 @@ usage() {
 }
 
 if test "$(dirname $0)" != "."; then
-	echo "This script must be run in the root of the tree, exiting."
+	echo "mkinitramfs: This script must be run in the root of the tree, exiting."
 	exit 1;
 fi
 
 if test -z "$BLDDIR"; then
-	echo "Run '. exports [board]' first."
+	echo "mkinitramfs: Run '. exports [board]' first."
 	exit 1
 fi
 
@@ -99,7 +100,7 @@ elif test "$COMP" = "gz"; then
 	cmd="gzip -9"
 	COMP=gzip
 else
-	echo "mkinitramfs.sh: unknown compressor."
+	echo "mkinitramfs: unknown compressor."
 	exit 1
 fi
 
@@ -109,7 +110,7 @@ fi
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
 base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear portmap nfs-utils kexec openssl zlib popt"
-base_pkgs2="inadyn-mt smartmontools at dnsmasq ntp-common samba-small openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
+base_pkgs2="inadyn-mt smartmontools at ntp-common samba36 cifs-utils openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
 SQFSBLK=131072
@@ -126,10 +127,10 @@ case $board in
 			COMP=xz
 		fi
 		fw_pkgs="$base_pkgs mtd-utils"
-		sq_pkgs="$base_pkgs2 gptfdisk ntfs-3g-ntfsprogs quota-tools minidlna netatalk forked-daapd transmission sqlite"
+		sq_pkgs="$base_pkgs2  gptfdisk ntfs-3g-ntfsprogs btrfs-progs dnsmasq quota-tools minidlna netatalk forked-daapd transmission sqlite"
 		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
-	*) echo "Unsupported \"$board\" board"; exit 1;;
+	*) echo "mkinitramfs: Unsupported \"$board\" board"; exit 1;;
 esac
 
 CWD=$PWD
