@@ -1,0 +1,9 @@
+Package: wpa-supplicant
+Description: WPA supplicant for secure wireless networks
+Version: 2.5
+Depends: libnl, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://hostap.epitest.fi/wpa_supplicant
+Maintainer: jcard
