@@ -5,6 +5,7 @@
 DESC="Setup cryptographic volumes for dm-crypt/LUKS"
 NAME=cryptsetup
 REQUIRE="device_mapper"
+TYPE=sys
 
 CONFF=/etc/misc.conf
 
