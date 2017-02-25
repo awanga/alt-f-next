@@ -6,7 +6,7 @@ if test -n "$debug"; then
 	exec >> /var/log/hot_aux.log 2>&1
 #	set -x
 	echo -e "\nDATE=$(date)"
-	env	
+	env
 fi
 
 MISCC=/etc/misc.conf
@@ -21,6 +21,8 @@ if test -f $MISCC; then . $MISCC; fi
 check() {
 	while ls /tmp/check-* >& /dev/null; do
 		if kill -0 $(cat /tmp/check-*.pid) 2> /dev/null; then
+			# is it being checked? lvm generates extra events...
+			if test -f /tmp/check-$MDEV; then exit 0; fi
 			echo hot_aux "$MDEV waiting to be fscked"
 			sleep 10
 		else
@@ -75,11 +77,13 @@ start_altf_dir() {
 				fi
 
 				if ! aufs.sh -m; then
-					logger -st hot_aux "aufs.sh mount failed"
+					emsg="Alt-F directory found in $lbl but not used, aufs mount failed."
+					logger -st hot_aux $emsg
+					echo "<li>$emsg</li>" >> $SERRORL
 					return 1
 				fi
 
-				ipkg update # >& /dev/null # force ipkg_upgrade to update packages
+				ipkg -update # >& /dev/null # force ipkg_upgrade to update packages
 
 				for i in $tostart; do
 					if ! test -f /sbin/$i; then # ipkg_upgrade might have removed them
@@ -171,6 +175,9 @@ if test "$fsckcmd" != "echo"; then
 
 	if test "$fsopt" = "-"; then fsopt=""; fi
 
+# FIXME: /tmp/fsckboot has to be removed, or most ops from Disk->Filesystem
+# will be done twice, as hot.sh is called at its end.
+# Is that a good place to remove it, when the user checks a fs?
 	if test -f /tmp/fsckboot && echo $fstype | grep -q 'ext.' ; then
 		fsopt="-fp"
 		cmsg="force"
@@ -187,7 +194,19 @@ if test "$fsckcmd" != "echo"; then
 	rmdir /tmp/fsck_lock 2> /dev/null
 
 	echo heartbeat > $PLED
+if true; then
+	mkfifo /tmp/fsck_pipe-$MDEV >& /dev/null
+	# create pipe consumer background job
+	(while true; do
+		dd if=/tmp/fsck_pipe-$MDEV of=$logf- bs=64K count=1 2> /dev/null 
+		mv $logf- $logf
+		sleep 10
+	done)&
+	wj=$!
+	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> /tmp/fsck_pipe-$MDEV)"
+else
 	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> $logf)"
+fi
 	if test $? -ge 2; then
 		mopts="ro"
 		emsg="Unable to automatically fix $MDEV, mounting Read Only: $res"
@@ -196,7 +215,12 @@ if test "$fsckcmd" != "echo"; then
 		emsg="Finish fscking $MDEV: $res"
 	fi
 	logger -st hot_aux "$emsg"
-	rm -f $xf $logf $pidf 
+if true; then
+	kill $wj
+	#echo > /tmp/fsck_pipe-$MDEV # echo blocks here!
+	rm -f /tmp/fsck_pipe-$MDEV $logf- 
+fi
+	rm -f $xf $logf $pidf
 
 	if test -z "$(ls /tmp/check-* 2>/dev/null)"; then
 		echo none > $PLED
