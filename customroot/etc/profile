@@ -5,6 +5,8 @@ export PATH=\
 /sbin:\
 /usr/bin:\
 /usr/sbin:\
+/opt/bin:\
+/opt/sbin:\
 /ffp/bin:\
 /ffp/sbin
 
@@ -40,7 +42,8 @@ if [ "$PS1" ]; then
     #alias af='ps af'
     alias cls='clear'
     alias l='ls -l'
-	#alias df='df -h'
+    alias mt='top -bn1 | grep -v "\[.*\]$"'
+    #alias df='df -h'
     alias indent='indent -bad -bap -bbo -nbc -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0 -cp33 -cs -d0 -di1 -nfc1 -nfca -hnl -i4 -ip0 -l75 -lp -npcs -npsl -nsc -nsob -nss -ts4 '
     #alias bc='bc -l'
     #alias minicom='minicom -c on'
