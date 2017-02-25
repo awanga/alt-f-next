@@ -8,6 +8,7 @@ usage() {
 Usage:
 	ipkg -install [<mount_point>]
 	ipkg -clean
+	ipkg -update
 	ipkg -help
 	ipkg standard ipkg command"
 	if ! test -f //usr/bin/ipkg-cl; then
@@ -105,7 +106,7 @@ install() {
 			fi
 			if ! grep -q 'Package:[[:space:]]*ipkg' $TMPD/Packages; then
 				rm $TMPD/Packages
-				echo "fail, no ipkg package."
+				echo "fail, not a ipkg file."
 				continue
 			fi
 			version=$(sed -n '/Package:[[:space:]]*ipkg/,/Package:/s/Version:[[:space:]]*\(.*\)/\1/p}' $TMPD/Packages)
@@ -121,7 +122,8 @@ install() {
 
 	if ! test -e $TMPD/ipkg_*_arm.ipk; then
 		rm -rf $TMPD
-		msg "You don't seem to have a name server configured,
+		msg "You don't seem to have enabled feeds,
+a name server configured,
 or a working internet connection,
 and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 	fi
@@ -177,7 +179,7 @@ ipkg_upgrade() {
 	to_save=""
 
 	while read pkg pver; do
-		iver=$(awk '/Package:[[:space:]]*'$pkg'$/{getline; printf $2}' $IPKG_DIR/status)
+		iver=$(awk '/Package:[[:space:]]*'$pkg'$/{getline; printf $2; exit 0}' $IPKG_DIR/status)
 		echo $pkg:$pver:$iver:
 		if test -n "$iver" -a -n "$pver"; then
 			# return value from ipkg compare version is reversed,
@@ -249,17 +251,17 @@ elif test "$#" != 0 -a "$1" = "-install"; then
 		exit $?
 	fi
 
-elif test "$#" != 0 -a "$1" = "-help"; then
-	usage
-
-elif test -f /usr/bin/ipkg-cl; then
-
+elif test "$#" != 0 -a "$1" = "-update"; then
 	# this only needs to be done once for a new firmware upgrade
 	if test "$(cat $IPKG_DIR/.fixed 2> /dev/null)" != $(cat /etc/Alt-F) ; then
 		ipkg_upgrade
 		cat /etc/Alt-F > $IPKG_DIR/.fixed
 	fi
 
+elif test "$#" != 0 -a "$1" = "-help"; then
+	usage
+
+elif test -f /usr/bin/ipkg-cl; then
 	# removing a package if it is preinstalled requires ressurrecting/reinstalling it
 	if echo $* | grep -q '[[:space:]]*remove[[:space:]]*'; then
 		pkg=$(eval echo \$$#)   # assume pkg is last command argument
