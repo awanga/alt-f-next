@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# this file runs before any init script and contains fixes that couldn't otherwise be
+# applied to rcS. It is saved in flash memory as part of the "settings" that rcS loads.
