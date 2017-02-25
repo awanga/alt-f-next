@@ -14,6 +14,7 @@ too noisy.
 <p> In the <strong>System Temperature / Fan Speed relationship</strong> section, you
 establish how fast the fan turns, depending on the box current
 temperature.<br>
+You can also specify if disks temperature should be taken into account using the 'hddtemp' service.<br>
 
 <ul>
 <li><h4>DNS-323 rev-A1/B1 hardware boards:</h4>
@@ -27,12 +28,12 @@ a <strong>Low</strong> and a <strong>High</strong> reference point.<br>
 The <strong>Low Fan Speed</strong> entry specify the desired fan speed when the
 system is at the <strong>Low Temp</strong> temperature, while
 the <strong>High Fan Speed</strong> entry specify the the desired fan speed when the
-system is at the <strong>High Temp</strong> temperature.<br>
+system is at the <strong>High Temp</strong> temperature. For intermediate temperatures intermediate fan speeds will be used.<br>
 
 The low and high temperatures are not the maximum and minimum values
 that you which for you box, are only reference points.
 
-For example, with the default settings, the fan speed is 300RPM/º (5000 - 2000) / (50 - 40)
+For example, with the default settings, the fan speed is 300RPM/º (5000 - 2000) / (50 - 40).
 If the system temperature is 42 degrees, the fan will rotate at 2600 RPM (2000 + 2*300).
 
 <p>In the <strong>Maximum ratings</strong>, in the <strong>Fan Off
@@ -78,7 +79,7 @@ temperature reaches 41 (Low Temp + Temp hysteresis). The same happens around the
 </li>
 </ul>
 
-<p> In the <strong>System Safety</strong> section, you can specify a warning and
+<p> In the <strong>System Safety</strong> section, you can specify the warning and
 critical temperature limits of the box, as well as the full path name
 of a script that you wrote and that must be executed when the box
 temperature attains those limits.<br>
@@ -98,7 +99,7 @@ executed when your press the box buttons.
 
 <ul>
 	<li><strong>Front Power button</strong>:
-	The  <strong>DNS320L</strong> front power button can only be used to power
+	The  <strong>DNS320L/327L</strong> front power button can only be used to power
 	off the box. For the other boxes:
 	
 <ol>
@@ -118,7 +119,7 @@ executed when your press the box buttons.
 </li>
 
 	<li><strong>USB/Reset button</strong>:
-	The <strong>DNS320, DNS320L, DNS325</strong>, in addition to the back or
+	The <strong>DNS320, DNS320L, DNS325, DNS-327L</strong>, in addition to the back or
 	bottom recessed Reset button also have a front or back USB button,
 	but currently both perform the same functionality.
 
