@@ -58,6 +58,7 @@ else
 fi
 
 echo $board > /tmp/board
+chmod -w /tmp/board
 
 if echo $board | grep -qE "qemu"; then
 	config_mtd=/dev/mtdblock0; config_mn="31 0"
@@ -104,6 +105,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 		ifconfig eth0 down
 	else # get squashfs image from NAND
 		# can't be run from a NAND (dns-320/325/327), in contrast to a NOR (dns-323/321)
+		# FIXME: create a 100MB ubifs on mtd3 and run the rootfs from it
 		if ! test -e /dev/mtd3; then mknod /dev/mtd3 c 90 6; fi
 		eval $(nanddump -ql 2048 /dev/mtd3 | strings) # contains sqimage_size=bytes_of_sqimage;
 		if test -n "$sqimage_size"; then
@@ -115,6 +117,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 
 	# loop/aufs mount sqimage
 	if test -s /tmp/sqimage.xz; then
+		chmod -w /tmp/sqimage.xz
 		mkdir -p /rootmnt/sqimage
 		mount -o loop /tmp/sqimage.xz /rootmnt/sqimage
 		mount -t aufs -o remount,append:/rootmnt/sqimage=rr /
@@ -167,7 +170,6 @@ elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 		ln -sf "/sys/class/leds/dns327l:amber:sata-l" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns327l:amber:sata-r" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns327l:white:usb" /tmp/sys/usb2_led
-		# FIXME	no red usb led ?
 		
 		if ! test -f /sys/class/gpio/gpio65/value; then # power button don't generate interrup!
 			echo 65 > /sys/class/gpio/export
@@ -203,31 +205,14 @@ if test "$board" != "Unknown"; then
 	if ! test -e $kernel_mtd; then mknod $kernel_mtd c $kernel_mn; fi
 	if ! test -e $config_mtd; then mknod $config_mtd b $config_mn; fi
 
-	if test -f /sys/class/hwmon/hwmon0/pwm1; then
-		ln -sf /sys/class/hwmon/hwmon0/pwm1 /tmp/sys/pwm1
-	elif test -f /sys/class/hwmon/hwmon1/pwm1; then
-		ln -sf /sys/class/hwmon/hwmon1/pwm1 /tmp/sys/pwm1
-	else
-		touch /tmp/sys/pwm1
-	fi
-
-	if ! test -f /tmp/sys/temp1_input; then
-		if test -f /sys/class/hwmon/hwmon0/temp1_input; then
-			ln -sf /sys/class/hwmon/hwmon0/temp1_input /tmp/sys/temp1_input
-		elif test -f /sys/class/hwmon/hwmon1/temp1_input; then
-			ln -sf /sys/class/hwmon/hwmon1/temp1_input /tmp/sys/temp1_input
+	for i in fan1_input temp1_input pwm1; do
+		j=$(find /sys/class/ -follow -maxdepth 4 -name $i)
+		if test -n "$j" -a ! -f /tmp/sys/$i; then
+			ln -sf $j /tmp/sys/$i
 		else
-			echo 0 > /tmp/sys/temp1_input
+			echo 0 > /tmp/sys/$i
 		fi
-	fi
-
-	if test -f /sys/class/hwmon/hwmon0/fan1_input; then
-		ln -sf /sys/class/hwmon/hwmon0/fan1_input /tmp/sys/fan1_input
-	elif test -f /sys/class/hwmon/hwmon1/temp1_input; then
-		ln -sf /sys/class/hwmon/hwmon1/fan1_input /tmp/sys/fan1_input
-	else
-		echo 0 > /tmp/sys/fan1_input
-	fi
+	done
 
 	# start fan because the disks might have to be fsck and might warm up a lot in the process
 	echo 127 > /tmp/sys/pwm1
@@ -439,6 +424,12 @@ done
 
 # stop temporary syslog to /var/log/boot.log
 start-stop-daemon -K -q -n syslogd
+
+# execute rc.sys, which is saved on flash and might contain short system fixes
+if test -x /etc/init.d/rc.sys; then
+	logger -st rcS "Executing rc.sys"
+	/etc/init.d/rc.sys
+fi
 
 # Start all executable init scripts
 rcall start
