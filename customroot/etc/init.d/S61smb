@@ -13,14 +13,22 @@ RETVAL=0
 
 . /etc/init.d/common
 
-# Check that smb.conf exists.
-if ! test -f /etc/samba/smb.conf; then
+if ! test -f $SMB_CONF; then
 	echo "smb: no configuration file found."
 	exit 1
+elif ! grep -qE '[[:space:]]*client signing|[[:space:]]*client ipc signing|[[:space:]]*server signing' $SMB_CONF; then
+	sed -i -e '/print command/a\
+	\
+	server signing = auto\
+	client signing = auto\
+	client ipc signing = auto\
+	\#max protocol = SMB2'\
+	-e '/syslog only/a\
+	log level = 2' $SMB_CONF
 fi
 
 # Make directories.
-for i in /var/cache/samba /var/log/samba /var/lock/subsys; do
+for i in /var/cache/samba /var/log/samba /var/run/samba; do
 	if ! test -d $i; then mkdir -p $i; fi
 done
 
@@ -34,11 +42,11 @@ istart() {
 	avahi add smb
 
 	if test $RETVAL -eq 0 -a $RETVAL2 -eq 0; then
-		touch /var/lock/subsys/smb
-	else
-		RETVAL=1
+		return 0
 	fi
-	return $RETVAL
+
+	return 1
+
 }	
 
 istop() {
@@ -53,11 +61,10 @@ istop() {
 	avahi remove smb
 
 	if test $RETVAL -eq 0 -a $RETVAL2 -eq 0; then
-		rm -f /var/lock/subsys/smb
-	else
-		RETVAL=1
+		return 0
 	fi
-	return $RETVAL
+
+	return 1
 }	
 
 case "$1" in
