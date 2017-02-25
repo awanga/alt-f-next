@@ -45,5 +45,6 @@ case "$1" in
 
 	stop) echo "Stopping $NAME: OK." ;;
 	status) echo "$NAME stopped."; exit 1 ;;
-	*) echo Usage: $0 "start|stop|status" ;;
+	restart) restart $NAME ;;
+	*) echo Usage: $0 "start|stop|status|restart" ;;
 esac
