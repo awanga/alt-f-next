@@ -6,17 +6,22 @@ format() {
 	elif test "$fs_type" = "jffs2"; then
 		flash_erase -j $MTDR 0 0
 	elif test "$fs_type" = "ubifs"; then
-		# should a full
+		# FIXME: should a full (bellow) be done instead?
+		# Yes, it has. The 327L has already been ubiformated/ubimkvol.
+		# D-LINK just uses 'ubimkvol /dev/ubi0 -N config -s %siB'
 		# ubidetach -p /dev/mtd5
-		# ubiformat /dev/mtd5
-		# ubiattach -p /dev/mtd5
-		# ubimkvol /dev/ubi0 -N config -s 7MiB
-		# be done instead? D-LINK just uses 'ubimkvol /dev/ubi0 -N config -s %siB'
-		ubiupdatevol -t $MTD
-		mkfs.ubifs -m 2048 -e 126976 -c 80 -x lzo -R 293871 $MTD
+		# ubiformat -y -s 512 /dev/mtd5 # format with sub-page of 512bytes
+		# ubiattach -d 0 -p /dev/mtd5 # attach ubi device 0, /dev/ubi0
+		# ubimkvol /dev/ubi0 -m -n 0 -N config # create a maximum sized volume 0, /dev/ubi0_0
+		ubiupdatevol -t $MTD # wipeout created volume on /dev/ubi0_0
+		# create empty fs, 80 LEB sized,  126976 bytes per LEB, on /dev/ubi0_0
+		mkfs.ubifs -m 2048 -e 126976 -c 80 $MTD
 	else
 		exit 1
 	fi
+	st=$?
+	rm -f $stamp
+	return $st
 }
 
 check() {
@@ -390,9 +395,9 @@ from_AltF() {
 
 usage() {
 	echo -e "usage: loadsave_settings \n\
-	-lf [file] (load flash) | -sf (save flash) | -cs (create settings file) \n\
-	-cf (clear flash) | -rc (recover from mtd1) |\n\
-	-ls (list) | -ll (long list) | -lc (list changed) | \n\
+	-lf [file] (load flash) | -sf (save flash) | -cs (create settings file) | \n\
+	-cf (clear flash) | -rc (recover from backup) | \n\
+	-ls (list saved) | -ll (long list saved) | -lc (list changed) | \n\
 	-ta (to Alt-F) | -fa (from Alt-F) | \n\
 	-gb (get fsckboot) | -sb (set fsckboot) | \n\
 	-gr (get random-seed) | -sr (set random-seed) | \n\
@@ -406,7 +411,7 @@ initscripts_perms=/tmp/initd_perms
 initscripts_patch=/tmp/initd_patch
 sib=sib.conf
 
-# configuration files to save on flash
+# configuration files to save on flash. Can't save file itself in flash, as aufs saved will overwrite fw changed
 files=$(cat /etc/settings)
 
 board=$(cat /tmp/board)
