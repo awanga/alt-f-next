@@ -15,6 +15,7 @@
 /etc/httpd.conf
 /etc/inadyn.conf
 /etc/inetd.conf
+/etc/init.d/rc.sys
 /etc/ipkg.conf
 /etc/misc.conf
 /etc/modprobe.conf
@@ -31,7 +32,6 @@
 /etc/samba/smb.conf
 /etc/samba/smbpasswd
 /etc/samba/smbusers
-/etc/settings
 /etc/shadow
 /etc/shells
 /etc/smartd.conf
