@@ -2,7 +2,7 @@
 
 DESC="Mounts btrfs filesystems"
 NAME=btrfs
-#TYPE=sys
+TYPE=sys
 
 #set -x
 
@@ -12,9 +12,10 @@ umask 077
 
 case "$1" in
 	start)
-		if ! lsmod | grep -q btrfs; then
-			modprobe -q btrfs
-		fi
+		# hot.sh will load module if needed
+		#if ! lsmod | grep -q btrfs; then
+		#	modprobe -q btrfs
+		#fi
 
 		echo -n "Starting $NAME: "
 		for i in $(blkid -t TYPE=btrfs -o device); do
