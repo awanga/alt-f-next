@@ -139,7 +139,7 @@ if test -f /boot/zImage -o -f /boot/rootfs.arm.* -o -f /boot/.kexec; then
 	fi
 	dtb=$(ls *.dtb 2> /dev/null)
 	if test -n "$dtb"; then
-		atags="--dtb $dtb"
+		atags="--dtb=$dtb"
 	fi
 
 	if test -s zImage -a -n "$initrfs"; then
