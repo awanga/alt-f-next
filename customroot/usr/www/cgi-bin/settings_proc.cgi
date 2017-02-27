@@ -25,7 +25,10 @@ restart() {
 }
 
 if test "${CONTENT_TYPE%;*}" = "multipart/form-data"; then
-	upfile=$(upload_file)
+	if ! upfile=$(upload_file); then
+		msg "Error: Uploading failed: $upfile"
+		exit 0
+	fi
 	action="Upload"
 else
 	read_args

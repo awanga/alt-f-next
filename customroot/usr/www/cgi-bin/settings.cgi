@@ -27,7 +27,6 @@ cat<<-EOF
 
 	}
 	</script>
-
 	<fieldset><legend>Flash Memory</legend>
 	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	<input type=submit name=action value=SaveSettings><br><br>
@@ -40,6 +39,7 @@ cat<<-EOF
 	</fieldset>
 
 	<fieldset><legend>Computer Disk</legend>
+<h4 class="warn">The settings file contains sensitive information such as usernames and passwords, keep it safe.</h4>
 	<form action="/cgi-bin/settings_proc.cgi" method="post">
 	Backup current settings to file: <input type=submit name=action value="Download">
 	</form>
