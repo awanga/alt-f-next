@@ -38,9 +38,7 @@ health() {
 
 	res=$(smartctl -H -i -A -l error -l selftest $dsk)
 	html_header
-	echo "<pre><small>"
-	echo "$res"
-	echo  "</small></pre>$(back_button)</html></body>"
+	echo "<pre>$res</pre>$(back_button)</body></html>"
 }
 
 # $1=dsk $2=op
