@@ -67,10 +67,19 @@ check() {
 		trap "" 1
 		echo \$$ > \$0.pid
 		echo heartbeat > $PLED
-		res=\$(nice fsck $opts -C5 /dev/$1 2>&1 5<> $logf)
+		mkfifo /tmp/fsck_pipe-$1 >& /dev/null
+		(while true; do
+			dd if=/tmp/fsck_pipe-$1 of=$logf- bs=64K count=1 2> /dev/null 
+			mv $logf- $logf
+			sleep 10
+		done)&
+		wj=\$!
+		res=\$(nice fsck $opts -C5 /dev/$1 2>&1 5<> /tmp/fsck_pipe-$1)
 		st=\$?
-		if test -z "$(ls /tmp/check-* 2>/dev/null)"; then echo none > $PLED; fi
-		rm \$0*
+		if test -z "$(ls /tmp/check-* /tmp/convert-* 2>/dev/null)"; then echo none > $PLED; fi
+		kill \$wj
+		#echo > /tmp/fsck_pipe-$1
+		rm \$0* /tmp/fsck_pipe-$1
 		if test "\$st" = 0 -o "\$st" = 1; then
 			cd /dev
 			ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
@@ -78,7 +87,7 @@ check() {
 		else
 			emsg="Checking $1 finished with status code \$st: \$res"
 			logger "\$emsg"
-			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			echo "<li><pre>\$emsg</pre></li>" >> $SERRORL
 		fi
 	EOF
 
@@ -127,7 +136,7 @@ format() {
 		if test \$st != 0; then
 			emsg="Formatting $1 with $2 failed with code \$st: \$(cat $logf)"
 			logger "\$emsg"
-			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			echo "<li><pre>\$emsg</pre></li>" >> $SERRORL
 			rm \$0*
 			exit 1
 		fi
@@ -189,31 +198,46 @@ resize() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		nice fsck -fy -C /dev/$1 > $logf 2>&1
+		echo heartbeat > $PLED
+		mkfifo /tmp/fsck_pipe-$1 >& /dev/null
+		(while true; do
+			dd if=/tmp/fsck_pipe-$1 of=$logf- bs=64K count=1 2> /dev/null 
+			mv $logf- $logf
+			sleep 10
+		done)&
+		wj=\$!
+		res=\$(nice fsck -fp -C5 /dev/$1 2>&1 5<> /tmp/fsck_pipe-$1)
 		st=\$?
+		kill \$wj
+		#echo > /tmp/fsck_pipe-$1 # dd might be blocked
+		rm /tmp/fsck_pipe-$1
+		if test -z "$(ls /tmp/check-* /tmp/convert-* 2>/dev/null)"; then echo none > $PLED; fi
+
 		if ! test "\$st" = 0 -o "\$st" = 1; then
-			emsg="Checking $1 failed with error code \$st: \$(cat $logf)"
+			emsg="Checking $1 failed with error code \$st: \$res"
 			logger "\$emsg"
-			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			echo "<li><pre>\$emsg</pre></li>" >> $SERRORL
 			rm \$0*
 			exit 1
 		fi
 		logger "Checking /dev/$1 OK"
 		
 		if test $type = btrfs; then
-			nice btrfs filesystem resize $nsz $mp  > $logf 2>&1
+			nice btrfs filesystem resize $nsz $mp > $logf 2>&1
 		else
 			nice resize2fs -p /dev/$1 $nsz > $logf 2>&1
 		fi
 		if test $? != 0; then
 			emsg="${2}ing $1 failed: \$(cat $logf)"
 			logger "\$emsg"
-			echo "<li><pre>\$emsg</pre>" >> $SERRORL
+			echo "<li><pre>\$emsg</pre></li>" >> $SERRORL
 			rm \$0*
 			exit 1
 		fi
 		logger "${2}ing /dev/$1 succeeded"
 		rm \$0*
+		cd /dev
+		ACTION=add DEVTYPE=partition PWD=/dev MDEV=$1 /usr/sbin/hot.sh
 	EOF
 
 	chmod +x /tmp/$2-$1
@@ -223,21 +247,34 @@ resize() {
 # wipe $1=part
 wipe() {
 	lumount $1 "wiping"
-	nblk=$(expr $(cat /sys/block/${1:0:3}/$1/size) \* 512 / 1024 / 1024)
+
+	if test -f  /sys/block/$1/size; then
+ 		devf=/sys/block/$1/size
+	elif test -f /sys/block/${1:0:3}/$1/size; then
+		devf=/sys/block/${1:0:3}/$1/size
+	else
+		msg "Can't find device $1 size."
+	fi
+
+	nsize=$(expr $(cat $devf)  \* 512)
+	nblk=$(expr $nsize / 4194304)
+	
 	cat<<-EOF > /tmp/wip-$1
 		#!/bin/sh
 		trap "" 1
-		echo \$$ > \$0.pid
-		res="\$(nice dd if=/dev/zero of=/dev/$1 bs=1M count=$nblk 2>&1)"
+		echo $nsize > /tmp/wip-$1.log
+		nice dd if=/dev/zero of=/dev/$1 bs=4M count=$nblk 2>> /tmp/wip-$1.log &
+		echo \$! > \$0.pid
+		wait
 		st=\$?
 		if test "\$st" = 0; then
 			logger "Wiped /dev/$1 OK"
 			rm \$0*
 			exit 0
 		fi
-		emsg="Wiping $1 failed with error code \$st. \$res"
+		emsg="Wiping $1 failed with error code \$st: \$(tail /tmp/wip-$1.log)"
 		logger "\$emsg"
-		echo "<li><pre>\$emsg</pre>" >> $SERRORL
+		echo "<li><pre>\$emsg</pre></li>" >> $SERRORL
 		rm \$0*
 	EOF
 
@@ -245,12 +282,47 @@ wipe() {
 	/tmp/wip-$1 < /dev/console > /dev/null 2> /dev/null &
 }
 
+# $1-part $2-from $3-to
+convert() {
+	html_header "Converting filesystem on $1"
+	busy_cursor_start
+	if test "$2" = "ext2"; then # 2->3, perhaps intermediate step	
+		echo "<p>Converting from ext2 to ext3..."
+		res="$(tune2fs -j /dev/$1)"
+		if test $? != 0; then
+			echo "failed: <pre>$res</pre></p>$(back_button)"
+		else
+			echo "OK</p>"
+		fi
+	fi
+
+	if test "$2" = "ext2" -a "$3" = "ext3"; then # 2->3, final
+		echo "<p>Finish converting to ext3..."
+		res="$(tune2fs -m 0 -o journal_data_ordered /dev/$1)"
+		if test $? != 0; then
+			echo "failed: <pre>$res</pre></p>$(back_button)"
+		else
+			echo "OK</p>"
+		fi
+	elif test "$3" = "ext4"; then # 3->4, final
+		echo "<p>Converting from ext3 to ext4..."
+		res="$(tune2fs -m 0 -O extents,uninit_bg,dir_index /dev/$1)"
+		if test $? != 0; then
+			echo "failed: <pre>$res</pre></p>$(back_button)"
+		else
+			echo "OK</p>"
+		fi
+	fi
+	busy_cursor_end
+}
+
 . common.sh
 
 check_cookie
 read_args
-		    
+
 #debug
+#set -x
 
 CONFT=/etc/misc.conf
 SERRORL=/var/log/systemerror.log
@@ -346,31 +418,14 @@ elif test -n "$Convert"; then
 
 	if test "$type" != "ext3" -a "$type" != "ext4"; then
 		msg "Can only convert upward from 'ext' filesystems."
-	fi 
-
+	fi
+	
 	from=$(blkid -s TYPE -o value /dev/$part)
 	lumount "$part" "converting"
 
-	if test "$from" = "ext2"; then # 2->3, perhaps intermediate step	
-		res="$(tune2fs -j /dev/$part)"
-		if test $? != 0; then
-			msg "$res"
-		fi
-	fi
-
-	if test "$from" = "ext2" -a "$type" = "ext3"; then # 2->3, final
-		res="$(tune2fs -m 0 -o journal_data_ordered /dev/$part)"
-		if test $? != 0; then
-			msg "$res"
-		fi
-	elif test "$type" = "ext4"; then # 3->4, final
-		res="$(tune2fs -m 0 -O extents,uninit_bg,dir_index /dev/$part)"
-		if test $? != 0; then
-			msg "$res"
-		fi
-	fi
-
-	check "$part" "$from" "convert"
+	convert "$part" "$from" "$type"
+	check "$part" "$from" "check"
+	js_gotopage /cgi-bin/diskmaint.cgi
 
 elif test -n "$Shrink"; then
 	eval part=\$part_$Shrink
