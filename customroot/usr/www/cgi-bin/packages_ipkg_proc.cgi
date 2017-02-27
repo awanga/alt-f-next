@@ -35,6 +35,8 @@ ipkg_cmd() {
 	elif test $1 = "upgrade"; then
 		write_header "Upgrading all Alt-F packages"
 		opts="-force-defaults"
+	elif test $1 = "update"; then
+		write_header "Updating Alt-F packages list"
 	fi
 
 	cat<<-EOF
@@ -167,42 +169,19 @@ elif test -n "$CopyTo"; then
 	busy_cursor_end
 	js_gotopage /cgi-bin/packages_ipkg.cgi
 
-elif test -n "$Submit"; then
+elif test "$Submit" = "changeFeeds"; then
 	change_feeds
-fi
+	ipkg_cmd update
 
-res=$(ipkg update)
+elif test -n "$UpdatePackageList"; then
+	ipkg_cmd update
 
-if test $? != 0; then
-	msg "$res"
-fi
-
-if test -n "$Remove"; then
+elif test -n "$Remove"; then
 	res=$(ipkg remove $Remove 2>&1 | sed -n '/^Package/,/^$/p')
 
 	if test -n "$res"; then
 		msg "$res"
 	fi
-
-elif test -n "$InstallAll"; then
-	write_header "Installing all Alt-F packages"
-	echo "<pre>"
-	for i in $(ipkg -V0 list | cut -f1 -d" "); do
-		if ! ipkg -V0 list_installed | cut -f1 -d" " | grep -q $i; then
-			ipkg install $i
-		fi
-	done 
-	cat<<-EOF
-		</pre>
-		<script type="text/javascript">
-			function err() {
-				window.location.assign(document.referrer)
-			}
-			setTimeout("err()", 2000);
-		</script>
-		</body></html>
-	EOF
-	exit 0
 
 elif test -n "$Install"; then
 	ipkg_cmd install $Install

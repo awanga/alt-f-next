@@ -30,7 +30,7 @@ done < $CONFF
 cat<<-EOF
 	<tr><td align="center"><input type=checkbox name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
 	<tr><td></td><td><input type=submit name=changeFeeds value=Submit>
-	<input type=submit name=updatelist value=UpdatePackageList>
+	<input type=submit name=updatelist value=UpdatePackageList></td></tr>
 	</table>
 	<input type=hidden name=nfeeds value="$cnt">
 	</fieldset>
@@ -161,9 +161,7 @@ if ipkg status >/dev/null; then
 					printf "<td>%s</td></tr>\n\n", des[i];
 				}
 			}
-		printf ("<tr><td colspan=4><br></td></tr><tr><td colspan=2><strong>Install all available</strong></td> \
-			<td colspan=2><input type=submit name=installall value=InstallAll></td></tr>\
-		</table></fieldset>", pkgfeed)
+		printf "</table></fieldset>"
 		}
 	}'
 fi
