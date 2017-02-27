@@ -54,6 +54,10 @@ if test -e $CONF_SMB; then
 		sed -i '/socket options/a\	use sendfile = yes'  $CONF_SMB
 	fi
 
+	if grep -q '^[[:space:]]*max protocol = SMB2' $CONF_SMB; then
+		SMB2_check=checked;
+	fi
+
 	eval $(awk '/server string/{split($0, a, "= ");
 		print "hostdesc=\"" a["2"] "\""}
 		/workgroup/{split($0, a, "= ");
@@ -238,6 +242,8 @@ function parse(share_name, line) {
 }' $CONF_SMB
 
 cat<<-EOF
+	Use SMB2 <input type=checkbox $SMB2_check name=use_smb2 id=use_smb2 value=yes>
+(try if there are issues without it checked; the client might have to logout or do a restart)
 	</fieldset>
 
 	<fieldset><legend>Folders to import from other hosts</legend>

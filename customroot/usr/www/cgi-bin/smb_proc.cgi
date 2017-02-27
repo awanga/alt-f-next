@@ -142,6 +142,12 @@ elif test "$submit" = "Submit"; then
 
 	done  >> $CONF_SMB
 
+	if test "$use_smb2" = yes; then
+		sed -i '/max protocol.*SMB2/s/.*/\tmax protocol = SMB2/' $CONF_SMB
+	else
+		sed -i '/max protocol.*SMB2/s/.*/\t#max protocol = SMB2/' $CONF_SMB
+	fi
+
 	if rcsmb status >& /dev/null; then
 		rcsmb reload >& /dev/null
 	fi	
