@@ -6,7 +6,6 @@ check_cookie
 
 #debug
 
-html_header
 busy_cursor_start
 echo "<pre>"
 
