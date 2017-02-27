@@ -96,12 +96,17 @@ If you have plugged a usb pen, eject and remove it and retry again.</h4></center
 	exit 1
 fi
 
+arch=$(uname -m)
+if ! grep -q kernel-modules-${arch:0:5} /etc/preinst; then
+	btrfsdis=disabled
+fi
+
 if test -n "$huge_disk"; then
 	fmsg1="<p>At least one of your disks is greater than 2.2TB, to use its full capacity
 it will be partitioned using GPT partitioning."
 fi
 
-if blkid | grep -qE 'TYPE="ext(2|3|4)"'; then
+if blkid | grep -qE 'TYPE="ext(2|3|4)|btrfs"'; then
 	has_linuxfs=yes
 fi
 
@@ -156,6 +161,9 @@ cat<<-EOF
 	<tr><td align=center>
 		<input type=radio checked name=wish_fs value=ext4></td>
 		<td>recent, faster cleaning time, best reliability, low fragmentation, big files support (ext4)</td></tr>
+	<tr><td align=center>
+		<input type=radio $btrfsdis name=wish_fs value=btrfs></td>
+		<td>modern, implementing advanced features while also focusing on fault tolerance, repair and easy administration (btrfs)</td></tr>
 	</table></fieldset>
 
 	<input type=submit name=advise value=Abracadabra onclick="return validate('$ndisks')">

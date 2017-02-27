@@ -245,12 +245,21 @@ partition() {
 
 create_swap() {
 	local i
+	if test -s /etc/misc.conf; then . /etc/misc.conf; fi
 	for i in $disks; do
 		echo "<p>Creating and activating swap in disk $(basename $i)..."
 		res="$(mkswap ${i}1 2>&1)"
 		if test $? != 0; then
 			err "mkswap error, st=$?: $res"
 		else
+
+			if realpath /sys/block/$(basename $i)/device | grep -q /usb./; then
+				if test -z "$USB_SWAP" -o "$USB_SWAP" = "no"; then
+					echo " done.</p>"
+					continue
+				fi
+			fi
+
 			res="$(swapon -p 1 ${i}1 2>&1)"
 			if test $? != 0; then
 				err "swapon error, st=$?: $res"
@@ -292,7 +301,11 @@ create_fs() {
 		#!/bin/sh
 		trap "" 1
 		echo \$$ > \$0.pid
-		mke2fs -m 0 -T $wish_fs $raidopts -v $1 > /tmp/format-${dev}.log 2>&1
+		if test "$wish_fs" = "btrfs"; then
+			mkfs.btrfs -f $1 > /tmp/format-${dev}.log 2>&1
+		else
+			mke2fs -m 0 -T $wish_fs $raidopts -v $1 > /tmp/format-${dev}.log 2>&1
+		fi
 		if test \$? != 0; then
 			cp /tmp/format-${dev}.log /tmp/${dev}.err
 		else
@@ -312,15 +325,14 @@ create_fs() {
 		</script>
 	EOF
 
-	pgr="-\|/"; i=0;
 	while kill -0 $(cat /tmp/format-${dev}.pid) 2> /dev/null; do
+		ln=$(cat /tmp/format-${dev}.log | tr -s '\b\r\001\002' '\n' | tail -n1 | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}') 
 		cat<<-EOF
 			<script type="text/javascript">
-			obj.innerHTML = '\\${pgr:$i:1}'
+			obj.innerHTML = '$ln'
 			</script>
 		EOF
-		sleep 3
-		i=$(((i+1)%4))
+		sleep 5
 	done
 	rm /tmp/format-${dev}*
 
@@ -441,8 +453,7 @@ raid5() {
 	done
 }
 
-if test "$wish_fs" != "ext2" -a "$wish_fs" != "ext3" -a \
-		"$wish_fs" != "ext4";then
+if echo $wish_fs | grep -qE 'ext(2|3|4)|btrfs'; then
 	msg "Unknown filesystem type $wish_fs"
 fi
 
