@@ -43,19 +43,34 @@ read_args
 
 #debug
 
-RSITE=www.inreto.de
-FSITE="http://$RSITE"
-FDIR="dns323/fun-plug"
+if test -n "$ffpsite"; then
+	ffpsite=$(httpd -d $ffpsite)
+	FPROTO=$(echo $ffpsite | sed -n 's|\(.*\)://.*|\1|p')
+	RSITE=$(echo $ffpsite | sed -n 's|.*://\([^/]*\).*|\1|p')
+	FSITE="$FPROTO://$RSITE"
+	FDIR=$(echo $ffpsite | sed -n 's|.*://[^/]*/\(.*\)|\1|p')
+else
+	msg "You have to specify the ffp download site, such as http://www.inreto.de/dns323/fun-plug"
+fi
+
+if test -z "$FPROTO" -o -z "$RSITE" -o -z "$FDIR"; then
+	msg "Invalid download site"
+fi
 
 if test "$ffpver" = "0.5"; then
 	FFP_DIR="0.5"
 	arch_ext=tgz
-	xtra_pkgs="$FSITE/$FDIR/0.5/extra-packages/All/"
+	xtra_pkgs="$FSITE/$FDIR/$FFP_DIR/extra-packages/All/"
 elif test "$ffpver" = "0.7"; then
-	FFP_DIR="0.7/oabi"
+	if test -s /ffp/etc/ffp-version; then
+		. /ffp/etc/ffp-version
+	else
+		FFP_ARCH=arm
+	fi
+	arch=$FFP_ARCH
+	FFP_DIR="$ffpver/$arch" 
 	bbext="-netutils"
 	arch_ext=txz
-	xtra_pkgs="$FSITE/$FDIR/0.7/oabi/extras/"
 else
 	msg "Incorrect ffp version"
 fi
@@ -69,7 +84,7 @@ if test "$install" = "Install"; then
 	fi
 
 	if ! nslookup $RSITE >& /dev/null; then
-		msg "You don't seem to have a name server configured, or a working internet connection."
+		msg "Server $FSITE not found"
 	fi
 
 	part=$(httpd -d $part)
@@ -86,7 +101,7 @@ if test "$install" = "Install"; then
 		mv $effp $ffpdir >& /dev/null
 		ln -sf $ffpdir /ffp
 		. /ffp/etc/ffp-version
-		msg "A ffp-$FFP_VERSION installation was found in $part and reused."
+		msg "A previous ffp-$FFP_VERSION installation was found in $part and will be reused."
 	fi
 
 	TMPF=/tmp/fun_plug.tgz
@@ -122,7 +137,7 @@ if test "$install" = "Install"; then
 			st=1
 		fi
 	else
-		echo "<p><strong>Download failed.</strong></p>"
+		echo "<p><strong>Download failed, check that the ffp site is up and running.</strong></p>"
 		st=1
 	fi
 	rm -f $TMPF
@@ -166,6 +181,11 @@ elif test -n "$Downgrade"; then
 	else
 		rm /ffp
 	fi
+
+elif test -n "$Change"; then
+	sed -i '/^FFPSITE=/d' /etc/misc.conf
+	echo FFPSITE=$ffpsite >> /etc/misc.conf
+
 fi
 
 #enddebug
