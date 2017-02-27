@@ -26,11 +26,8 @@ if test -z "$create_log"; then
 	create_log="no"
 fi
 
-sed -i '/^USER_SCRIPT/d' $CONF_MISC >& /dev/null
-sed -i '/^USER_LOGFILE/d' $CONF_MISC >& /dev/null
-
-echo USER_SCRIPT=\"$uscript\" >> $CONF_MISC
-echo USER_LOGFILE=\"$create_log\" >> $CONF_MISC
+sed -i -e '/^USER_SCRIPT/d' -e '/^USER_LOGFILE/d' $CONF_MISC >& /dev/null
+echo -e "USER_SCRIPT=\"$uscript\"\nUSER_LOGFILE=\"$create_log\" >> $CONF_MISC
 
 #enddebug
 gotopage /cgi-bin/user_services.cgi
