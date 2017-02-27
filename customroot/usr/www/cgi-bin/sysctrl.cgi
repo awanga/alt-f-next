@@ -21,6 +21,7 @@ hi_fan=5000
 hi_temp=50
 fan_mode=0
 hist_temp=1
+disks_temp=0
 mail=1
 recovery=1
 fan_off_temp=38
@@ -43,6 +44,14 @@ fi
 
 if test "$mail" = "1"; then
 	mailchk=checked
+fi
+
+if test "$disks_temp" = "1"; then
+	diskschk=checked
+fi
+
+if ! test -x /usr/sbin/hddtemp; then
+	disksdis=disabled
 fi
 
 if test -e $CONFM; then
@@ -85,6 +94,9 @@ case "$board" in
 			<td>High Fan Speed </td>
 			<td><input type=text size=4 name=hi_fan value="$hi_fan">RPM</td>
 		</tr>
+		<tr><td>Use also Disks Temp. </td>
+				<td><input type=checkbox $disksdis $diskschk name=disks_temp value="1"></td>
+		</tr>
 		</table></fieldset>
 
 	<fieldset><legend>Maximum ratings</legend><table>
@@ -125,6 +137,9 @@ case "$board" in
 			<td><input $temp_dis type=text size=2 id=lotemp_id name=lo_temp value="$lo_temp" $(ttip lofan_tt)>&deg;C</td></tr>
 		<tr><td>Temp. hysteresis</td>
 			<td><input $temp_dis type=text size=2 name=hist_temp id=histtemp_id value="$hist_temp" $(ttip hist_temp_tt)>&deg;C</td></tr>
+		<tr><td>Use also Disks Temp. </td>
+				<td><input type=checkbox $disksdis $diskschk name=disks_temp value="1"></td>
+		</tr>
 		</table></fieldset>
 	EOF
 	;;
