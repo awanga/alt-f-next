@@ -23,7 +23,7 @@ logsel="<select name=\"logaction\" onchange=\"return submit()\">
 <option value=\"Processes\">Running Processes</option>"
 
 for i in $(find /var/log/ -name \*.log\* -o -name log.\* -o -name \*_log); do
-	logsel="$logsel<option value=$i>$(basename $i | sed -r 's/(\.log|log\.|_log)//g')</option>"
+	logsel="$logsel<option value=\"$i\">$(basename $i | sed -r 's/(\.log|log\.|_log)//g')</option>"
 done
 logsel="$logsel</select>"
 
@@ -98,13 +98,6 @@ cat<<-EOF
 	<input type="submit" name="action" value="ChangePassword" onclick="return csubmit()">
 	<input type="hidden" id=salt_id name=salt value="$salt">
 	</fieldset>
-
-	<fieldset><legend>Theme</legend>
-	<select name="set_thm" onchange="document.sysutilsf.theme.value='theme'; return submit()">$opt</select>
-	Disable top menu:<input $notop_chk type="checkbox" name="notop_menu" value="no" onchange="document.sysutilsf.theme.value='theme'; return submit()">
-	Disable side menu:<input $noside_chk type="checkbox" name="noside_menu" value="no" onchange="document.sysutilsf.theme.value='theme'; return submit()">
-	<input type="hidden" name="theme" value="">
-	</fieldset>
 EOF
 
 if test -s /etc/printcap; then
@@ -119,6 +112,20 @@ cat<<-EOF
 	<fieldset><legend>SSL Certificate</legend>
 	<input type=submit name="action" value="createNew" $(ttip ssl_tt)>
 	</fieldset>
-	</form></body></html>
+	</form>
+	<fieldset><legend>Theme</legend>
+	<form id="sysutilsf2" name="sysutilsf2" action="/cgi-bin/sys_utils_proc.cgi" method="post">
+	<select name="set_thm" onchange="document.sysutilsf2.theme.value='theme'; return submit()">$opt</select>
+	<input type=submit name=action value="DeleteTheme">
+	Disable top menu:<input $notop_chk type="checkbox" name="notop_menu" value="no" onchange="document.sysutilsf2.theme.value='theme'; return submit()">
+	Disable side menu:<input $noside_chk type="checkbox" name="noside_menu" value="no" onchange="document.sysutilsf2.theme.value='theme'; return submit()">
+	<input type="hidden" name="theme" value=""><br><br>
+	</form>
+	<form action="/cgi-bin/sys_utils_proc.cgi" method="post" enctype="multipart/form-data">
+	Load theme from file: <input type=file name=theme.zip>
+	<input type=submit name=action value="UploadTheme" onClick="return confirm('Uploading themes can make the webUI susceptible to exploitations and attacks.\n\nProceed?')"><br>
+	</form>
+	</fieldset>
+	</body></html>
 EOF
 

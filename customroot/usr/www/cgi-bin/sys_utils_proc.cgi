@@ -2,11 +2,20 @@
 
 . common.sh
 check_cookie
-read_args
+
+if test "${CONTENT_TYPE%;*}" = "multipart/form-data"; then
+	if ! upfile=$(upload_file); then
+		msg "Error: Uploading failed: $upfile"
+		exit 0
+	fi
+	action="UploadTheme"
+else
+	read_args
+fi
 
 CONFM=/etc/misc.conf
-SCRIPTS=/usr/www/scripts
-    
+THM_DIR=/usr/www/scripts
+
 #debug
 
 # $1 log file, $2 kind, $3 header
@@ -36,7 +45,7 @@ showlog() {
 	write_header "$3"
 	mktt filter_tt "Enter a search string (or a grep regular expression)"
 
-	echo "<small><pre>"
+	echo "<pre>"
 
 	if test -n "$filter_str"; then
 		pat=$(httpd -d $filter_str)
@@ -46,11 +55,11 @@ showlog() {
 	fi
 
 	cat<<-EOF
-		</small></pre>
+		</pre>
 		<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
-		<input type=submit name=$1 value="Download">
+		<input type=submit name="$1" value="Download">
 		Filter: <input type=text name=filter_str value="$pat" onkeypress="return event.keyCode != 13" $(ttip filter_tt)>
-		<input type=submit name=$2 value="Refresh">
+		<input type=submit name="$2" value="Refresh">
 		$clearbutton
 		$(back_button)
 		<input type=hidden name=logfile value="$2">
@@ -250,7 +259,64 @@ case "$action" in
 			echo "<script type="text/javascript">parent.location.reload(true)</script></body></html>"
 			exit 0
 		fi
-		(cd $SCRIPTS; ln -sf $(httpd -d "$set_thm") default.thm)
+		(cd $THM_DIR; ln -sf $(httpd -d "$set_thm") default.thm)
+		;;
+
+	UploadTheme)
+		tl=$(unzip -l $upfile | awk '/[0-9]{2}-..-../{print $4}')
+		if test -z "$tl"; then
+			rm -f $upfile
+			msg "Error: The uploaded file can't be unziped."
+			exit 0
+		fi
+
+		thm_name=$(basename $(echo "$tl" | grep \.thm) .thm)
+		if test -z $thm_name; then
+			rm -f $upfile
+			msg "Error: no .thm file found"
+			exit 0
+		fi
+
+		if test -f $THM_DIR/$thm_name.thm -o -d $THM_DIR/$thm_name; then
+			rm -f $upfile
+			msg "Error: theme \"$thm_name\" already exists."
+			exit 0
+		fi
+
+		if echo "$tl" | grep -qv "^$thm_name"; then
+			rm -f $upfile
+			msg "Error: all support files should be on a \"$thm_name\" folder."
+			exit 0
+		fi
+
+		if ! aufs.sh -s >& /dev/null; then
+			rm -f $upfile
+			msg "Error: you have to install one Alt-F package first."
+			exit 0
+		fi
+
+		aufs.sh -n
+		mkdir -p /Alt-F/$THM_DIR
+		aufs.sh -i
+
+		unzip -qn $upfile -d $THM_DIR >& /dev/null
+		rm -f $upfile
+		;;
+
+	DeleteTheme)
+		set_thm=$(httpd -d "$set_thm")
+		if test "$set_thm" = "dull.thm"; then
+			msg "Can't delete default theme."
+			exit 0
+		fi
+
+		thm_name=$(basename $set_thm .thm)
+
+		if test $(readlink $THM_DIR/default.thm) = "$set_thm"; then
+			(cd $THM_DIR; ln -sf dull.thm default.thm)
+		fi
+
+		rm -rf $THM_DIR/$set_thm $THM_DIR/$thm_name
 		;;
 
 	KernelLog)
@@ -291,9 +357,9 @@ case "$action" in
 		;;
 
 	*)
-		act=$(httpd -d "$action")
-		if test -f "$act"; then
-			showlog $act $act "Contents of $act"
+		action=$(httpd -d "$action")
+		if test -f "$action"; then
+			showlog $action $action "Contents of $action"
 			exit 0
 		fi
 esac
