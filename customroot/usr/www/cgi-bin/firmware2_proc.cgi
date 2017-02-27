@@ -115,8 +115,11 @@ elif test "$flash" = "TryIt"; then
 
 elif test "$flash" = "FlashIt"; then
 	check_fwfiles
-	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br><br>If you suspect that something went wrong,<br>you can try to upgrade again after stopping all running processes.</h3>"
+	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br>The upgrade takes at most five minutes to complete, and progress messages should be displayed.<br>If you suspect that something went wrong, you can try to repeat to upgrade using HTTP<br>
+	after stopping all running processes (System->Utilities->Services, StopAll).<br></h3>"
 
+	# FIXME if httpd or stunnel are setup as standalone servers, 
+	# they will be stopped here, and flashing might fails!!!
 	rcall stop >& /dev/null
 
 	echo timer > /tmp/sys/power_led/trigger

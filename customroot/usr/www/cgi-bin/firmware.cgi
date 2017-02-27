@@ -11,10 +11,20 @@ if test "$brd" = "Unknown"; then
 fi
 
 # FIXME: relies on NOR /dev/mtd2 (kernel for DNS-321|DNS-323, initramfs for DNS-320|DNS-320L|DNS-325)
-flashed_firmware=$(dd if=/dev/mtd2 ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
-if echo $flashed_firmware | grep -q Alt-F; then
-	fw="$flashed_firmware"
-else
+	if grep -qE 'DNS-321-Ax|DNS-323' /tmp/board; then
+		kernel=mtd2
+		initramfs=mtd3
+	elif grep -qE 'DNS-327L|DNS-320-[AB]x|DNS-320L-Ax|DNS-325-Ax' /tmp/board; then
+		kernel=mtd1
+		initramfs=mtd2
+	else
+		echo "<h3 class=\"error\">BUMMER, unknown board</h3></body></html>"
+		exit 1
+	fi
+
+flashed_kernel=$(dd if=/dev/$kernel ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
+flashed_initramfs=$(dd if=/dev/$initramfs ibs=32 skip=1 count=1 2> /dev/null | grep -o 'Alt-F.*')
+if ! echo $flashed_kernel $flashed_initramfs | grep -q Alt-F; then
 	fw="the vendor's firmware"
 fi
 
@@ -40,7 +50,7 @@ cat<<-EOF
 
 	An option is offered latter to cancel the procedure, so you can safely proceed for now.
 
-	<p>The box is currently running Alt-F $(cat /etc/Alt-F) with kernel $(uname -r), and flashed with $fw.</p>
+	<p>The box is currently running Alt-F $(cat /etc/Alt-F) with kernel $(uname -r), and flashed with "$flashed_initramfs" and kernel "$flashed_kernel".</p>
 EOF
 
 cat<<-EOF
