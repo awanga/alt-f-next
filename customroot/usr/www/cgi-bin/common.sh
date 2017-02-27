@@ -239,13 +239,22 @@ fs_progress() {
 				if test $k = "check" -o $k = "fix"; then
 					ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
 				elif test $k = "format"; then
-					#ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
-					ln=""
+					ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
 				elif test $k = "shrink" -o $k = "enlarg"; then
-					ln=$(echo $ln | grep -o X)
-					if test -n "$ln"; then
-						ln=" step 2: $(expr $(echo "$ln" | wc -l) \* 100 / 40)%"
+					if grep -q resize2fs  /tmp/${k}-${part}.log; then
+						ln=$(echo $ln | grep -o X)
+						if test -n "$ln"; then
+							step=$(tail -2 /tmp/${k}-${part}.log | head -1 | sed -n 's/Begin pass \([[:digit:]]\).*/\1/p')
+							ln=" step 2.$step: $(expr $(echo "$ln" | wc -l) \* 100 / 40)%"
+						fi
+					else
+						ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0) printf "step 1.%d: %d%%", $1, $2*100/$3}')
 					fi 
+				elif test $k = "wip" ; then
+					kill -SIGUSR1 $(cat /tmp/${k}-${part}.pid)
+					tsz=$(head -1 /tmp/${k}-${part}.log)
+					csz=$(tail -1  /tmp/${k}-${part}.log | cut -f1 -d" ")
+					ln=$(printf "%d%%" $(expr $csz \* 100 / $tsz))
 				fi
 				ln="${k}ing...$ln"
 			else
@@ -412,29 +421,18 @@ upload_file() {
 	read -r Content_Type
 	read -r empty_line
 
-	if ! echo "$CONTENT_TYPE" | grep -q multipart/form-data && 
-		echo "$Content_Disposition" | grep -q form-data &&
-		echo "$Content_Type" | grep -q 'application/octet-stream'; then
+	if ! ( echo "$CONTENT_TYPE" | grep -q multipart/form-data && 
+		echo "$Content_Disposition" | grep -q form-data ); then
 			cat > /dev/null # discard transfer
-			echo "Not a (simple) POST response, try another browser?"
+			echo "Not a (simple) POST response."
 			return 1
 	fi
 
-if false; then
-	# each var has 2 extra bytes (\r\n), and last boundary has two trailing '-'
-	fs=$((CONTENT_LENGTH - 2 \* ${#delim_line} - ${#Content_Disposition} - ${#Content_Type} - 10))
-
-	upfile=$(mktemp -t)
-	head -c $fs > $upfile
-
-	echo $upfile
-
-else
 	fname1=$(echo $Content_Disposition | sed -n 's/.*[[:space:]]name="\(.*\)";.*/\1/p')
 	hfname1=$(echo $Content_Disposition | sed -n 's/.*[[:space:]]filename="\(.*\)".*/\1/p')
 	if test -z "$hfname1"; then
 		cat > /dev/null # discard transfer
-		echo "Not a valid Content_Disposition POST response, try another browser?"
+		echo "Not a valid Content_Disposition POST response."
 		return 1
 	fi
 
@@ -461,8 +459,6 @@ else
 	flen=$(stat -t $fname1 | cut -d" " -f2)
 	dd if=$fname1 of=$fname1 bs=1 seek=$((flen - 2)) count=0 >& /dev/null
 	echo $fname1
-fi
-
 }
 
 download_file() {
