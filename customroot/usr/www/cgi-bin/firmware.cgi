@@ -28,16 +28,8 @@ if ! echo $flashed_kernel $flashed_initramfs | grep -q Alt-F; then
 	fw="the vendor's firmware"
 fi
 
-if losetup | grep -q /dev/mtdblock3; then
-	cat<<-EOF
-		<h4 class="warn">To flash Alt-F you have to reboot into a special mode by hitting
-		the "SpecialReboot" button,<br> and afterwards the "Reboot" button.
-		After rebooting run again the "Firmware Updater".<br><br>
-		If however you only want to try a new Alt-F fw you can proceed with the upload section bellow.</h4>
-		<form action="/cgi-bin/firmware2_proc.cgi" method="post">
-		<center><input type=submit name=flash value="SpecialReboot"></center>
-		</form>
-	EOF
+if grep -q kexecmode /proc/cmdline; then
+	kmsg="in TryIt mode"
 fi
 
 cat<<-EOF
@@ -50,14 +42,14 @@ cat<<-EOF
 
 	An option is offered latter to cancel the procedure, so you can safely proceed for now.
 
-	<p>The box is currently running Alt-F $(cat /etc/Alt-F) with kernel $(uname -r), and flashed with "$flashed_initramfs" and kernel "$flashed_kernel".</p>
+	<p>The box is currently $kmsg running Alt-F $(cat /etc/Alt-F) with kernel $(uname -r), and is flashed with "$flashed_initramfs" and kernel "$flashed_kernel".</p>
 EOF
 
 cat<<-EOF
 	<form action="/cgi-bin/firmware_proc.cgi" method="post" enctype="multipart/form-data">
 	<table>
 	<tr><td>Firmware binary .bin file to upload:</td><td><input type=file name=fw.bin></td></tr>
-	<tr><td>Firmware verification .sha1 file to upload:</td><td><input type=file name=fw.sha1> (optional)</td></tr>
+	<tr><td>Firmware verification .sha1 file to upload:</td><td><input type=file name=fw.sha1> (optional but recommended)</td></tr>
 	<tr><td></td><td><input type=submit value="Upload"></td></tr>
 	</table>
 	</form>

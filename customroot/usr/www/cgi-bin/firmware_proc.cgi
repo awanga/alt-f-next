@@ -141,10 +141,10 @@ fi
 
 if losetup | grep -q /dev/mtdblock3; then
 	runfromflash="disabled"
-	flmsg='<h4 class="blue">To flash Alt-F you have to reboot into a special mode by hitting
+	flmsg='<h4 class="blue">To flash Alt-F you have first to reboot into a special mode by hitting
 		the "SpecialReboot" button,<br> and afterwards the "Reboot" button.
-		After rebooting run again the "Firmware Updater".<br><br>
-		If however you only want to try a new Alt-F fw you can hit the "TryIt" button bellow.</h4>
+		After rebooting run again the "Firmware Updater" and you can then use the FlashIt button.<br><br>
+		If however you only want to try a new Alt-F fw without flashing it you can just hit the "TryIt" button bellow.</h4>
 		<input type=submit name=flash value="SpecialReboot">'
 fi
 
@@ -171,9 +171,10 @@ YOUR HAVE BEEN WARNED.\n\n\
 Continue?')">
 
 	<input type="submit" $try_dis name=flash value="TryIt" onclick="return confirm('\
-This action only executes the new firmware, it will not flash or change anything else.\n\n\
+This action only executes the new firmware after a reboot, without flashing it.\n\
+On the second reboot the flashed firmware will again become active.\n\n\
 While testing the new firmware YOU SHOULD NOT SAVE ANY SETTINGS,\n\
-because they might not be recognized by the current firmware when it runs again.\n\n\
+because they might not be recognized by the flashed firmware when it will run again.\n\n\
 Continue?')">
 
 	<input type="submit" name=flash value="Abort">
