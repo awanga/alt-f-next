@@ -24,7 +24,7 @@ elif ! grep -qE '[[:space:]]*client signing|[[:space:]]*client ipc signing|[[:sp
 	client ipc signing = auto\
 	\#max protocol = SMB2'\
 	-e '/syslog only/a\
-	log level = 2' $SMB_CONF
+	log level = 1' $SMB_CONF
 fi
 
 # Make directories.
