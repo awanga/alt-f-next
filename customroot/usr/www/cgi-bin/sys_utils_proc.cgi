@@ -109,6 +109,12 @@ lreboot() {
 	exit 0
 }
 
+err() {
+	rm -f $upfile
+	msg "Error: $1"
+	exit 0
+}
+
 if test -n "$theme"; then
 	action="Theme"
 elif test -n "$Refresh"; then
@@ -263,41 +269,23 @@ case "$action" in
 		;;
 
 	UploadTheme)
+		if ! unzip -p $upfile >& /dev/null; then err " The uploaded file can't be unziped."; fi
+
 		tl=$(unzip -l $upfile | awk '/[0-9]{2}-..-../{print $4}')
-		if test -z "$tl"; then
-			rm -f $upfile
-			msg "Error: The uploaded file can't be unziped."
-			exit 0
-		fi
+		if test -z "$tl"; then err "Can't get file list from the uploaded file."; fi
 
 		thm_name=$(basename $(echo "$tl" | grep \.thm) .thm)
-		if test -z $thm_name; then
-			rm -f $upfile
-			msg "Error: no .thm file found"
-			exit 0
-		fi
+		if test -z $thm_name; then err  "no .thm file found"; fi
 
-		if test -f $THM_DIR/$thm_name.thm -o -d $THM_DIR/$thm_name; then
-			rm -f $upfile
-			msg "Error: theme \"$thm_name\" already exists."
-			exit 0
-		fi
+		if test -f $THM_DIR/$thm_name.thm -o -d $THM_DIR/$thm_name; then err "theme \"$thm_name\" already exists."; fi
 
-		if echo "$tl" | grep -qv "^$thm_name"; then
-			rm -f $upfile
-			msg "Error: all support files should be on a \"$thm_name\" folder."
-			exit 0
-		fi
+		if echo "$tl" | grep -qv "^$thm_name"; then err "all support files should be on a \"$thm_name\" folder."; fi
 
-		if ! aufs.sh -s >& /dev/null; then
-			rm -f $upfile
-			msg "Error: you have to install one Alt-F package first."
-			exit 0
-		fi
+		if ! aufs.sh -s >& /dev/null; then err "you have to install one Alt-F package first."; fi
 
 		aufs.sh -n
 		mkdir -p /Alt-F/$THM_DIR
-		aufs.sh -i
+		aufs.sh -r
 
 		unzip -qn $upfile -d $THM_DIR >& /dev/null
 		rm -f $upfile
