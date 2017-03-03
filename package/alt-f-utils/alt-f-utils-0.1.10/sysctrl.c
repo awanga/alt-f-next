@@ -786,19 +786,23 @@ void check_board() {
 	else if (strcmp("DNS-320-Ax", res) == 0) {
 		board = DNS_320_Ax;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+		args.fan_mode = FAN_ALWAYS_SLOW; // in the default auto mode, the box design makes the disks temperature too high even when system temperature is low, and the fan keeps turning on/off every 10/15 minutes
 	}
 	else if (strcmp("DNS-320L-Ax", res) == 0) {
 		board = DNS_320L_Ax;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+		args.fan_mode = FAN_ALWAYS_SLOW; 
 	}
 	else if (strcmp("DNS-320-Bx", res) == 0) {
 		board = DNS_320_Bx;
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+		args.fan_mode = FAN_ALWAYS_SLOW; 
 	}
 	else if (strcmp("DNS-327L-Ax", res) == 0) {
 		board = DNS_327L_Ax;
 		leds[usb_led] = NULL; // box has no orange USB led
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+		args.fan_mode = FAN_ALWAYS_SLOW; 
 	}
 	else {
 		char buf[BUFSZ];
