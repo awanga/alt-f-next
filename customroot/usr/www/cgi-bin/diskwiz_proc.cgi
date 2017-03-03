@@ -317,7 +317,7 @@ create_fs() {
 	EOF
 	chmod +x /tmp/format-$dev
 	/tmp/format-$dev < /dev/console > /dev/null 2> /dev/null &
-	sleep 3
+	sleep 1
 	
 	cat<<-EOF
 		<script type="text/javascript">
@@ -325,14 +325,16 @@ create_fs() {
 		</script>
 	EOF
 
+	pgr="-\|/"; i=0;
 	while kill -0 $(cat /tmp/format-${dev}.pid) 2> /dev/null; do
 		ln=$(cat /tmp/format-${dev}.log | tr -s '\b\r\001\002' '\n' | tail -n1 | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}') 
 		cat<<-EOF
 			<script type="text/javascript">
-			obj.innerHTML = '$ln'
+			obj.innerHTML = '\\${pgr:$i:1} $ln'
 			</script>
 		EOF
-		sleep 5
+		sleep 3
+		i=$(((i+1)%4))
 	done
 	rm /tmp/format-${dev}*
 
@@ -413,7 +415,7 @@ standard() {
 	done
 }
 
-jbd() {
+jbod() {
 	partition raid
 	create_swap
 	create_raid linear
@@ -453,13 +455,11 @@ raid5() {
 	done
 }
 
-if echo $wish_fs | grep -qE 'ext(2|3|4)|btrfs'; then
+if ! echo "$wish_fs" | grep -qE 'ext(2|3|4)|btrfs'; then
 	msg "Unknown filesystem type $wish_fs"
 fi
 
-if test "$wish_part" != "notouch" -a "$wish_part" != "standard" -a \
-		"$wish_part" != "jbd" -a "$wish_part" != "raid0" -a \
-		"$wish_part" != "raid1" -a "$wish_part" != "raid5"; then
+if ! echo "$wish_part" | grep -qE '(notouch|standard|jbod|raid0|raid1|raid5)'; then
 	msg "Unknown disk layout type $wish_part"
 fi
 
@@ -497,7 +497,7 @@ echo " done.</p>"
 case $wish_part in
 	notouch) ;;
 	standard) standard ;;
-	jbd) jbd ;;
+	jbod) jbod ;;
 	raid0) raid0 ;;
 	raid1) raid1 ;;
 	raid5) raid5 ;;

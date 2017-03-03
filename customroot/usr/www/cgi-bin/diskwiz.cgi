@@ -26,7 +26,7 @@ cat<<-EOF
 		}
 		ndisks = t;
 
-		if (ndisks == 1 && (ptype == "raid0" || ptype == "jbd")) {
+		if (ndisks == 1 && (ptype == "raid0" || ptype == "jbod")) {
 			alert("You need at least two disks to create a " + ptype + " RAID array")
 			return false
 		}
@@ -139,7 +139,7 @@ cat<<-EOF
 		<input type=radio $std_chk name=wish_part value=standard></td>
 		<td>One big filesystem per disk, for easy management (standard)</td></tr>
 	<tr><td align=center>
-		<input type=radio name=wish_part value=jbd></td>
+		<input type=radio name=wish_part value=jbod></td>
 		<td>Merge all disks in one big filesystem, low data security (JBOD)</td></tr>
 	<tr><td align=center>
 		<input type=radio name=wish_part value=raid0></td>
