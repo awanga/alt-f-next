@@ -3,7 +3,7 @@
 # $1=HDSLEEP_* | HDPOWER_* $2=val
 prog() {
 	local dsk tmout
-	dsk=$(grep -i ${1#*_}_dev /etc/bay | cut -d"=" -f2)
+	dsk=$(grep -i ${1#*_}_dev $BAYF | cut -d"=" -f2)
 	act=${1%_*}
 	op="$2"
 
@@ -69,6 +69,7 @@ read_args
 #debug
 
 CONFT=/etc/misc.conf
+BAYF=/etc/bay
 FSTAB=/etc/fstab
 SYSCTL_CONF=/etc/sysctl.conf
 SWAPP=/proc/swaps
@@ -152,7 +153,6 @@ elif test "$action" = "usb_swap_act"; then
 	fi
 
 elif test "$action" = "recreate_swap_act"; then
-	# FIXME: USB_SWAP is not respected
 	sdevs=$(awk '/\/dev\//{print $1}' $SWAPP)
 	swapoff -a >& /dev/null
 	touch -r $FSTAB /tmp/fstab_date
@@ -169,6 +169,7 @@ elif test "$action" = "recreate_swap_act"; then
 		if test -n "$p"; then
 			mdadm --zero-superblock $i$p >& /dev/null
 			mkswap  $i$p >& /dev/null
+			if grep -q $(basename $i)=usb $BAYF && ! grep -q USB_SWAP=yes $CONFT ; then continue; fi
 			echo "$i$p none swap pri=1 0 0" >>  $FSTAB
 		fi
 	done
