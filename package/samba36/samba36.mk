@@ -258,7 +258,8 @@ endif
 	#	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/$$file; \
 	#done
 #ifeq ($(BR2_PACKAGE_SAMBA36_DOC),y)
-#	cp -dpfr $(SAMBA36_DIR)/../swat $(TARGET_DIR)/usr/
+	cp -dpfr $(SAMBA36_DIR)/../swat $(TARGET_DIR)/usr/
+	rm -rf $(TARGET_DIR)/usr/swat/lang
 #endif
 	#$(INSTALL) -m 0755 package/samba/S91smb $(TARGET_DIR)/etc/init.d
 	#@if [ ! -f $(TARGET_DIR)/etc/samba/smb.conf ]; then \
