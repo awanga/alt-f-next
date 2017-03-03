@@ -243,7 +243,7 @@ function parse(share_name, line) {
 
 cat<<-EOF
 	Use SMB2 <input type=checkbox $SMB2_check name=use_smb2 id=use_smb2 value=yes>
-(try if there are issues without it checked; the client might have to logout or do a restart)
+(the user client might have to logout or do a PC restart)
 	</fieldset>
 
 	<fieldset><legend>Folders to import from other hosts</legend>
