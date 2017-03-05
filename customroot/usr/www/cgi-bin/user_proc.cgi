@@ -27,7 +27,7 @@ if test -z "$create_log"; then
 fi
 
 sed -i -e '/^USER_SCRIPT/d' -e '/^USER_LOGFILE/d' $CONF_MISC >& /dev/null
-echo -e "USER_SCRIPT=\"$uscript\"\nUSER_LOGFILE=\"$create_log\" >> $CONF_MISC
+echo -e "USER_SCRIPT=\"$uscript\"\nUSER_LOGFILE=\"$create_log\"" >> $CONF_MISC
 
 #enddebug
 gotopage /cgi-bin/user_services.cgi
