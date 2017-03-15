@@ -278,12 +278,12 @@ clearflashdef() {
 	lumount
 }
 
-# copy from mtd1 to mtd0 (NOT for the DNS-320/325)
+# copy from mtd1 to mtd0 (NOT for the DNS-320/325/327)
 # The vendors settings are saved in mtd0 and mtd1, one being the backup of the other
 # As Alt-F only uses mtd0, the original settings are still in mtd1 
 recover() {
 	rmdir $save_dir
-	if grep -qE "DNS-320-Ax|DNS-325-Ax" $BRD; then return 1; fi
+	if grep -qE "DNS-320-[AB]x|DNS-320L-Ax|DNS-325-Ax|DNS-327L-Ax" $BRD; then return 1; fi
  
 	mtd0=$(mktemp -d)
 	mtd1=$(mktemp -d)
