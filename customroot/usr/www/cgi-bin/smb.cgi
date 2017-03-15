@@ -242,10 +242,8 @@ function parse(share_name, line) {
 }' $CONF_SMB
 
 cat<<-EOF
-	Use SMB2 <input type=checkbox $SMB2_check name=use_smb2 id=use_smb2 value=yes>
-(the user client might have to logout or do a PC restart)
+	Enable SMB2 <input type=checkbox $SMB2_check name=use_smb2 id=use_smb2 value=yes> (might be slower; require PC and NAS restart)
 	</fieldset>
-
 	<fieldset><legend>Folders to import from other hosts</legend>
 EOF
 
