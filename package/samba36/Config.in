@@ -2,6 +2,7 @@ config BR2_PACKAGE_SAMBA36
 	bool "samba36"
 	select BR2_PACKAGE_LIBICONV
 	select BR2_PACKAGE_POPT
+	select BR2_PACKAGE_ACL if !BR2_PACKAGE_SAMBA36_SMALL
 	help
 	  Provides file an print services to all manner of SMB/CIFS clients,
 	  including the numerous versions of MS-Windows operating systems.
