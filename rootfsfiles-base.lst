@@ -281,6 +281,7 @@
 ./usr/bin/seq
 ./usr/bin/setsid
 ./usr/bin/sha1sum
+./usr/bin/sha256sum
 ./usr/bin/sort
 ./usr/bin/strings
 ./usr/bin/tail
