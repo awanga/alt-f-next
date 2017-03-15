@@ -138,6 +138,10 @@ else
 coreutils: uclibc $(TARGET_DIR)/$(COREUTILS_TARGET_BINARY)
 endif
 
+coreutils-configure: $(COREUTILS_DIR)/.configured
+
+coreutils-build: $(COREUTILS_DIR)/$(COREUTILS_BINARY)
+
 # If both coreutils and busybox are selected, the corresponding applets
 # may need to be reinstated by the clean targets.
 coreutils-clean:
