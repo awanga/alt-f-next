@@ -16,15 +16,6 @@ RETVAL=0
 if ! test -f $SMB_CONF; then
 	echo "smb: no configuration file found."
 	exit 1
-elif ! grep -qE '[[:space:]]*client signing|[[:space:]]*client ipc signing|[[:space:]]*server signing' $SMB_CONF; then
-	sed -i -e '/print command/a\
-	\
-	server signing = auto\
-	client signing = auto\
-	client ipc signing = auto\
-	\#max protocol = SMB2'\
-	-e '/syslog only/a\
-	log level = 1' $SMB_CONF
 fi
 
 # Make directories.

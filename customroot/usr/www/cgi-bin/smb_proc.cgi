@@ -6,7 +6,6 @@ read_args
 
 #debug
 
-CONF_FSTAB=/etc/fstab
 CONF_SMB=/etc/samba/smb.conf
 
 if test "$submit" = "Advanced"; then
@@ -17,50 +16,7 @@ if test "$submit" = "Advanced"; then
 	fi
 	embed_page "$PROTO://${HTTP_HOST%%:*}:${PORT}" "SWAT Page"
 
-elif test -n "$unMount"; then
-	mp=$(httpd -d "$unMount")
-	res="$(umount "$mp" 2>&1)"
-	st=$?
-	if test $st != 0; then
-		msg "Error $st: $res"
-	fi
-
-elif test -n "$Mount"; then
-	mp=$(httpd -d "$Mount")
-	res="$(mount "$mp" 2>&1)"
-	st=$?
-	# /etc/mtab is a link to /proc/mounts, mount.cifs cant lock it
-	if test $st != 0 -a $st != 16; then 
-		msg "Error $st: $res"
-	fi
-
 elif test "$submit" = "Submit"; then
-
-	cp $CONF_FSTAB $CONF_FSTAB-
-	sed -i '/\(\t\| \)cifs\(\t\| \)/d' $CONF_FSTAB
-
-	for i in $(seq 1 $import_cnt); do
-		if test -z "$(eval echo \$rhost_$i)" -o -z "$(eval echo \$rdir_$i)" -o \
-			-z "$(eval echo \$mdir_$i)" -o -z "$(eval echo \$mopts_$i)"; then continue; fi
-
-		rdir=$(path_escape "$(httpd -d $(eval echo \$rdir_$i))")
-		mdir=$(httpd -d $(eval echo \$mdir_$i))
-		if test ! -d "$mdir" -o "$mdir" = "/mnt"; then
-			fstab_err=1
-			break
-		fi
-		mdir=$(path_escape "$mdir")
-
-		httpd -d "$(eval echo \$fstab_en_${i}//\$rhost_${i}/\"$rdir $mdir\" cifs \$mopts_$i 0 0)"
-		echo
-	done  >> $CONF_FSTAB
-
-	if test -n "$fstab_err"; then
-		mv $CONF_FSTAB- $CONF_FSTAB
-		msg "\"$mdir\" is not a folder or is inappropriate for a mount point."
-	else
-		rm $CONF_FSTAB-
-	fi
 
 	hostdesc=$(httpd -d "$hostdesc")
 	workgp=$(httpd -d "$workgp")
@@ -91,6 +47,7 @@ elif test "$submit" = "Submit"; then
 			pshare($0)
 		}
 	' $CONF_SMB- > $CONF_SMB
+	rm $CONF_SMB-
 
 	for i in $(seq 1 $smb_cnt); do
 		if test -z "$(eval echo \$ldir_$i)"; then continue; fi
@@ -142,14 +99,20 @@ elif test "$submit" = "Submit"; then
 
 	done  >> $CONF_SMB
 
-	if test "$use_smb2" = yes; then
+	if test "$enable_smb2" = yes; then
 		sed -i '/max protocol.*SMB2/s/.*/\tmax protocol = SMB2/' $CONF_SMB
 	else
 		sed -i '/max protocol.*SMB2/s/.*/\t#max protocol = SMB2/' $CONF_SMB
 	fi
 
+	if test "$enable_smb1" = yes; then
+		sed -i '/min protocol.*SMB2/s/.*/\t#min protocol = SMB2/' $CONF_SMB
+	else
+		sed -i '/min protocol.*SMB2/s/.*/\tmin protocol = SMB2/' $CONF_SMB
+	fi
+
 	if rcsmb status >& /dev/null; then
-		rcsmb reload >& /dev/null
+		rcsmb restart >& /dev/null
 	fi	
 
 fi
