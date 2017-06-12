@@ -8,7 +8,7 @@
 # "interface" option must be specified in the samba config.file
 # (or an "couln'd get interface address" (or similar) error happens at runtime 
 
-SAMBA36_VERSION:=3.6.25
+SAMBA36_VERSION:=3.6.25-
 SAMBA36_SUBDIR=source3
 
 SAMBA36_SOURCE:=samba-$(SAMBA36_VERSION).tar.gz
@@ -16,8 +16,8 @@ SAMBA36_SITE:=http://samba.org/samba/ftp/stable/
 SAMBA36_DIR:=$(BUILD_DIR)/samba-$(SAMBA36_VERSION)/$(SAMBA36_SUBDIR)
 SAMBA36_DEPS =  popt libiconv 
 SAMBA36_CAT:=$(ZCAT)
-SAMBA36_BINARY:=bin/samba_multicall
-SAMBA36_TARGET_BINARY:=usr/sbin/nmbd
+SAMBA36_BINARY:=bin/samba_multicall-
+SAMBA36_TARGET_BINARY:=usr/sbin/nmbd-
 
 ifeq ($(BR2_PACKAGE_SAMBA36_SMALL),y)
 	SAMBA36_MODE= $(SAMBA36_DIR)/.small
