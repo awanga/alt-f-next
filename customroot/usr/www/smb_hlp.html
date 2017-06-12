@@ -72,43 +72,11 @@ Each user's Home folder can only be accessed by themself when they are authentic
 base folder ownership and permissions.</li>
 
 </ul>
-<strong>Enable SMB2</strong> -- Enable the SMB2 protocol. SMB2 might solve some issues on certain MS-Windws versions, but it might as well have a slower throughtput.
+<strong>Enable SMB1</strong> -- Enable the SMB1 protocol. SMB1 might solve some issues on old MS-Windws versions. It might be faster than SMB1.
 Currently logged-in MS-Win users might have to logout and do a PC and NAS restart for changes to be recognized.
 
-<li><h4>Folders to import from other hosts</h4>
-You can make other computer shares available to the box.<br>
-
-After an entry is filled-in and the Submit button is hit, a
-<strong>Mount</strong> button will appear, which will make the remote
-share locally available; when <em>mounted</em>, an
-<strong>unMount</strong> button will appear instead, which if selected will unmount
-(unmap) the remote share. 
-
-<ul>
-
-<li><strong>Host</strong> - the computer name where the share is available.<br>
-If empty, the whole entry will be removed when the Submit button is hit.</li>
-
-<li><strong>Share</strong> - the remote share name.<br>
-If empty, the whole entry will be removed when the Submit button is hit.</li>
-
-<li><strong>Discover</strong> - opens a new window and performs a SMB/CIFS
-network scan, showing the existing computers and offered shares;
-clicking a share will fill-in the previous <strong>Host</strong> and
-<strong>Share</strong> entry fields.</li>
-
-<li><strong>Local Folder</strong> - the local folder where the remote
-share contents will be available.<br> If the folder is not empty, its contents
-will (temporarily) disappear while the remote share is mounted, and will
-reappear when the remote share is unmounted.</li>
-
-<li><strong>Search</strong> - opens the <em>Folders Browse</em> window, which will
-fill-in the Local Folder entry field with the selected folder.</li>
-
-<li><strong>Mount Options</strong> - specify the desired mount options;
-the default values will generally be OK.</li>
-
-</ul></li>
+<strong>Enable SMB2</strong> -- Enable the SMB2 protocol. SMB2 might solve some issues on certain MS-Windws versions. It might be slower than SMB1.
+Currently logged-in MS-Win users might have to logout and do a PC and NAS restart for changes to be recognized.
 
 <li><h4>Advanced Button</h4> allows using SWAT, the
 <em>Samba Web Administration Tool</em>, which opens a new window after
