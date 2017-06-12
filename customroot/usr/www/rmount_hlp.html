@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head profile="http://www.w3.org/2005/10/profile">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="icon" type="image/png" href="dns-323.png">
+<title>NFS Help</title>
+</head><body>
+
+<center><h2>Remote NFS and CIFS Imports Setup Help</h2></center>
+
+<p>In this page you can specify remote NFS and CIFS shares to become available to the box.<br>
+
+A share is a network offer of an existing folder.
+
+<ul>
+<li><h4>Shares to import from other NFS servers</h4>
+
+Specify remote folders to be locally mounted, e.g. to make them available under other protocol.
+<ul>
+<li><strong>Disable:</strong> Check to temporary stop mounting the share..</li>
+<li><strong>Host:</strong> The remote hostname (or IP address) that exports the share.</li>
+<li><strong>Folder:</strong> The remote folder to mount locally.</li>
+<li><strong>Discover:</strong> Hit to NFS browse the network; hitting a line will fill the Host and Folder fields.</li>
+<li><strong>Local Folder:</strong> Local folder where the remote share should be made available. 
+It is recommended to use an empty folder directly under "/mnt"; if necessary create the folder, e.g. "/mnt/remoteNFS".</li>
+<li><strong>Search:</strong> Hit to browse the local folder structure (and possibly create the mount folder).</li>
+<li><strong>Mount Options:</strong> NFS mount options, comma separated, no spaces.</li>
+<li><strong>Options:</strong> Opens a new window with a list of the most
+frequently used mount options and the currently selected ones; hit CTRL while
+clicking to select multiple options. Options of the form option=value
+does not preserve the current value.</li>
+
+<li><p><h4>Delay NFS start on boot:</h4> NFS stores some client information on disk, for recovery on reboot
+in case of server or client crash. That information is stored in a sub-directory where Alt-F 
+packages are stored. At boot time, when NFS starts, the Alt-F directory might not yet be available
+and such recovery information is missing.<br>Checking this checkbox delays the NFS start until the
+Alt-F directory becomes available. Notice that if the checkbox is checked and the Alt-F directory
+never appears, then NFS will not auto-start.</li>
+</ul>
+
+</li>
+<li><h4>Shares to import from other CIFS servers</h4>
+You can make other computer shares available to the box.<br>
+
+<ul>
+<li><strong>Host</strong> - the computer name where the share is available.<br>
+If empty, the whole entry will be removed when the Submit button is hit.</li>
+
+<li><strong>Share</strong> - the remote share name.<br>
+If empty, the whole entry will be removed when the Submit button is hit.</li>
+
+<li><strong>Discover</strong> - opens a new window and performs a SMB/CIFS
+network scan, showing the existing computers and offered shares;
+clicking a share will fill-in the previous <strong>Host</strong> and
+<strong>Share</strong> entry fields.</li>
+
+<li><strong>Local Folder</strong> - the local folder where the remote
+share contents will be available.<br> If the folder is not empty, its contents
+will (temporarily) disappear while the remote share is mounted, and will
+reappear when the remote share is unmounted.</li>
+
+<li><strong>Search</strong> - opens the <em>Folders Browse</em> window, which will
+fill-in the Local Folder entry field with the selected folder.</li>
+
+<li><strong>Mount Options</strong> - specify the desired mount options;
+the default values will generally be OK.</li>
+
+</ul>
+</li></ul>
+
+After an entry is filled-in and the Submit button is hit, a
+<strong>Mount</strong> button will appear, which will make the remote
+share locally available; when <em>mounted</em>, an
+<strong>unMount</strong> button will appear instead, which if selected will unmount
+(unmap) the remote share. 
+
+<br><button type=button onclick="history.back()">Back</button></body>
+</html>

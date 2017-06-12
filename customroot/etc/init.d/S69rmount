@@ -1,0 +1,81 @@
+#!/bin/sh
+
+DESC="Import Remote NFS or CIFS Shares"
+TYPE=net
+NAME=rmount
+
+MISCC=/etc/misc.conf
+FSTABF=/etc/fstab
+
+. /etc/init.d/common
+
+if test -f $MISCC; then
+	. $MISCC
+fi
+
+istart() {
+	if test -n "$DELAY_NFS"; then
+		if ! aufs.sh -s >& /dev/null ; then
+			echo "rmount: delayed NFS start"
+			return 1
+		fi
+	fi
+
+	echo -n "Starting $NAME: "
+
+	if grep '[^#]' $FSTABF | cut -d" " -f3 | grep -q nfs; then
+		require rmount nsm
+	fi
+
+	while read -r dev mp fs rest; do
+		if echo "$dev" | grep -q '^#'; then continue; fi
+
+		if test "$fs" = "nfs" -o "$fs" = "cifs"; then
+			mp=$(echo "$mp" | sed 's/\\040/ /g')
+			if ! test -d "$mp"; then
+				mkdir -p "$mp"
+			elif mountpoint -q "$mp"; then
+				continue		
+			fi
+			mount "$mp" 2>&1 | logger -st rmount #>& /dev/null
+		fi
+	done < $FSTABF
+
+	echo "OK."
+}
+
+istop() {
+	echo -n "Stopping $NAME: "
+	for ftype in nfs cifs; do
+		if test -n "$(mount -t $ftype)"; then
+			umount -f -t $ftype -a   2>&1 | logger -st rmount #>& /dev/null
+		fi
+	done
+
+	stoprequired rmount nsm
+	sleep 1
+	modprobe -r cifs >& /dev/null
+	echo "OK."
+}
+
+istatus() {
+	st=1
+	if test -n "$(mount -t nfs)"; then st=0; fi
+	if test -n "$(mount -t cifs)"; then st=0; fi
+	
+	if test $st = 0; then
+		echo "$NAME running"
+	else
+		echo "$NAME stopped";
+	fi
+
+	return $st
+}
+
+case "$1" in
+	start) istart ;;
+	stop) istop ;;
+	status) istatus ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
