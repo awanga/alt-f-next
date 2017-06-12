@@ -1,11 +1,12 @@
 #!/bin/sh
 
-DESC="Network File System Server (unix)"
+DESC="NFS (Network File System) Server (unix)"
 TYPE=net
 NAME=nfsd
-REQUIRE="portmap"
+REQUIRE="nsm"
 
 MISCC=/etc/misc.conf
+FSTABC=/etc/fstab
 
 . /etc/init.d/common
 
@@ -13,29 +14,28 @@ if test -f $MISCC; then
 	. $MISCC
 fi
 
-# The /var/lib/nfs directory is actually on a tmpfs filesystem.
-# except when Alt-F is aufs mounted (just install ipkg for this to take effect)
-
-if ! test -d /var/lib/nfs/sm -a -d /var/lib/nfs/sm.bak; then
-	mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
-	chown -R daemon /var/lib/nfs
-fi
-
 istart() {
 	if test -n "$DELAY_NFS"; then
 		if ! aufs.sh -s >& /dev/null ; then
-			echo "NFS: delaying NFS start"
+			echo "NFS server: delaying NFS start"
 			return 1
 		fi
 	fi
 
+	# The /var/lib/nfs directory is actually on a tmpfs filesystem.
+	# except when Alt-F is aufs mounted (just install ipkg for this to take effect)
+	if ! test -d /var/lib/nfs/sm -a -d /var/lib/nfs/sm.bak; then
+		mkdir -p /var/lib/nfs/sm /var/lib/nfs/sm.bak
+		chmod 0700 /var/lib/nfs/sm /var/lib/nfs/sm.bak
+		chown -R daemon /var/lib/nfs
+	fi
+
+	# rpc.mountd man page says that rmtab entries might be innaccurate
 	if test -n "$CLEAN_STALE_NFS" -a ! -f /var/lib/nfs/.rmtab.lock; then
 		rm -f /var/lib/nfs/rmtab
 	fi
 
-	# Don't fail if /etc/exports doesn't exist;
-	# create a bare-bones version and continue.
-
+	# Don't fail if /etc/exports doesn't exist, create a bare-bones version and continue.
 	if test ! -f /etc/exports; then
 		touch /etc/exports
 		chmod u+rw,g+r,o+r /etc/exports
@@ -54,31 +54,24 @@ istart() {
 	if ! test -f /proc/fs/nfsd/exports; then
 		mount -t nfsd nfsd /proc/fs/nfsd
 		sleep 1
-		if test -n "$NFS_BLKSIZE"; then
-			echo $NFS_BLKSIZE > /proc/fs/nfsd/max_block_size
+		if test -z "$NFS_BLKSIZE"; then
+			if test $(awk '/MemTotal/{print $2}' /proc/meminfo) -lt 262144; then
+				NFS_BLKSIZE=32768
+			fi
 		fi
+		echo $NFS_BLKSIZE > /proc/fs/nfsd/max_block_size
 	fi
 
 	exportfs -r
 	start rpc.mountd -- --no-nfs-version 4
-	start rpc.statd -- --no-notify
 	start rpc.nfsd -- --no-nfs-version 4 -s 4
-	start sm-notify
 	avahi add nfs
+
+	return 0
 }
 
 istop() {
 	stop nfsd 2
-
-# loaded modules: nfsd exportfs (lockd grace sunrpc are common)
-
-#	if ! rcnfs_client status >& /dev/null; then
-	if test -z "$(mount -t nfs)"; then
-		stop rpc.statd
-		rm -f /var/run/sm-notify.pid
-		modprobe -r lockd 2> /dev/null
-	fi
-
 	stop rpc.mountd
 	exportfs -au
 	

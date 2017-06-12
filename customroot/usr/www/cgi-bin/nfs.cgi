@@ -59,57 +59,15 @@ exports_row() {
 	done    
 }
 
-# fstab_rows ln cnt
-fstab_row() {
-	local ln cnt hostdir mdir rhost rdir opts nfs
-	ln=$1; cnt=$2
-
-	eval $(echo $ln | awk '$3 == "nfs" {printf "nfs=1; hostdir=\"%s\"; mdir=\"%s\"; opts=%s", $1, $2, $4}')
-	eval $(echo "$hostdir" | awk -F":" '{printf "rhost=\"%s\"; rdir=\"%s\"", $1, $2}')
-
-	rdir=$(path_unescape $rdir)
-	rdir=$(httpd -e "$rdir")
-	mdir=$(path_unescape $mdir)
-	smdir=$mdir
-	mdir=$(httpd -e "$mdir")
-
-	rrhost=${rhost#\#} # remove possible comment char FIXME more than one and space
-	cmtd=${rhost%%[!#]*} # get possible comment char FIXME more than one and space
-	if test -n "$cmtd"; then sel=checked; else sel=""; fi
-
-	mntfld="<td></td>"
-	if test -n "$mdir"; then
-		op="Mount"
-		if mount -t nfs | grep -q "$smdir"; then
-			op="unMount"
-		fi
-		mntfld="<td><input type=submit value=\"$op\" name=\"$mdir\" onclick=\"return check_dis('$sel','$op')\"></td>"
-	fi
-
-	cat<<EOF
-		<tr>
-		<td align=center><input type=checkbox $sel id=fcmtd_$cnt name=fcmtd_$cnt value="#" onclick="return check_mount('$op','fcmtd_$cnt')"></td>
-		$mntfld
-		<td><input type=text size=10 id=rhost_$cnt name=rhost_$cnt value="$rrhost"></td>
-		<td><input type=text size=12 id=rdir_$cnt name=rdir_$cnt value="$rdir"></td>
-		<td><input type=button value=Browse onclick="browse_nfs_popup('rhost_$cnt', 'rdir_$cnt')"></td>
-		<td><input type=text size=12 id=mdir_$cnt name=mdir_$cnt value="$mdir"></td>
-		<td><input type=button value=Browse onclick="browse_dir_popup('mdir_$cnt')"></td>
-		<td><input type=text size=20 id=mntopts_$cnt name=mopts_$cnt value="$opts" onclick="def_opts('mnt', 'mntopts_$cnt')"></td>
-		<td><input type=button value=Browse onclick="opts_popup('mntopts_$cnt', 'nfs_mnt_opt')"></td>
-		</tr>
-EOF
-}
-
 . common.sh
 check_cookie
 read_args
-write_header "NFS Setup"
+write_header "NFS exports Setup"
 
 #debug
 
 CONFX=/etc/exports
-CONFT=/etc/fstab
+#CONFT=/etc/fstab
 CONFM=/etc/misc.conf
 
 if test -f $CONFM; then
@@ -123,10 +81,6 @@ cat<<-EOF
 		    if (start_dir == "")
 		    	start_dir="/mnt";
 			window.open("browse_dir.cgi?id=" + input_id + "?browse=" + start_dir, "Browse", "scrollbars=yes, width=500, height=500");
-			return false;
-		}
-		function browse_nfs_popup(host_id, dir_id) {
-			window.open("browse_nfs.cgi?id1=" + host_id + "?id2=" + dir_id, "Browse", "scrollbars=yes, width=500, height=500");
 			return false;
 		}
 		function opts_popup(id, kind) {
@@ -149,21 +103,7 @@ cat<<-EOF
 			if (kind == "xpt")
 				opts.value = "rw,no_root_squash,no_subtree_check,anonuid=99,anongid=98"; // keep in sync with nfs_proc.cgi
 			else if (kind == "mnt")
-				opts.value = "rw,hard,intr,proto=tcp"; // keep in sync with nfs_proc.cgi
-		}
-		function check_mount(op, id) {
-			if (op == "unMount" && document.getElementById(id).checked == true) {
-				alert("To disable an entry you must first unmount it.")
-				return false
-			}
-			return true
-		}
-		function check_dis(sel, op) {
-			if (sel == "checked" && op == "Mount") {
-				alert("To mount an entry you must first enable it and Submit")
-				return false
-			}
-			return true
+				opts.value = "rw,hard,intr,proto=tcp,noauto"; // keep in sync with nfs_proc.cgi
 		}
 	</script>
 
@@ -200,41 +140,8 @@ for i in $(seq $((cnt+1)) $((cnt+3))); do
 done
 
 cat<<-EOF
-	</table><input type=hidden name="n_exports" value="$cnt">
-	</fieldset>
-	<fieldset>
-	<legend>Folders to import from other hosts</legend>
-	<table>
-	<tr align=center>
-	<th>Disable</th>
-	<th></th>
-	<th>Host</th>
-	<th>Folder</th>
-	<th>Discover</th>
-	<th>Local Folder</th>
-	<th>Search</th>
-	<th>Mount Options</th>
-	<th>Options</th>
-	</tr>
-EOF
-
-cnt=1
-while read -r ln; do
-	if $(echo "$ln" | grep -q nfs); then
-		fstab_row "$ln" $cnt
-		cnt=$((cnt+1))
-	fi	
-done < $CONFT
-
-i=$cnt
-for i in $(seq $cnt $((cnt+2))); do
-	fstab_row "" $i	# ln cnt
-done
-	
-cat<<-EOF
-	</table>
-	<input type=hidden name="n_fstab" value="$cnt">
-	</fieldset>	
+ 	</table><input type=hidden name="n_exports" value="$cnt">
+ 	</fieldset>
 EOF
 
 if ! aufs.sh -s >& /dev/null; then
@@ -251,7 +158,7 @@ fi
 
 mktt dnfs_tt "Delay NFS start on boot until the Alt-F packages folder becomes available"
 mktt rmtab_tt "Remove remote mount entries at service start."
-mktt blksz_tt "Applied only on next server start. Use 'auto' to use an automaticaly computed value.<br>Value will be rounded to the near 4KiB boundary. The displayed value is the one currenty used (not set) value"
+mktt blksz_tt "Applied only on next server start. Use 'auto' to use an automaticaly computed value.<br>Value will be rounded to the near 4KiB boundary. The displayed value is the one currenty in use (not set) value"
 
 curr_blksz=$(cat /proc/fs/nfsd/max_block_size 2>/dev/null)
 
@@ -273,6 +180,3 @@ cat<<-EOF
 	<p><input type="submit" name="submit" value="Submit">$(back_button)
 	</form></body></html>
 EOF
-
-exit 0
-
