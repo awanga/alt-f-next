@@ -1,0 +1,12 @@
+--- samba-small-3.5.22/source3/web/swat.c-orig	2015-05-02 18:46:23.765354025 +0100
++++ samba-small-3.5.22/source3/web/swat.c	2015-05-02 18:47:10.618140132 +0100
+@@ -262,8 +262,7 @@
+ 	if (!cgi_waspost()) {
+ 		printf("Expires: 0\r\n");
+ 	}
+-	printf("Content-type: text/html\r\n");
+-	printf("X-Frame-Options: DENY\r\n\r\n");
++	printf("Content-type: text/html\r\n\r\n");
+ 
+ 	if (!include_html("include/header.html")) {
+ 		printf("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n");

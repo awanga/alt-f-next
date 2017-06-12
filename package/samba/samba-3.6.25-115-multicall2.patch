@@ -1,0 +1,86 @@
+--- a/source3/Makefile.in-orig	2016-12-06 21:02:22.779704673 +0000
++++ b/source3/Makefile.in	2016-12-07 18:53:04.255419844 +0000
+@@ -1820,12 +1820,36 @@
+ 		echo "$(COMPILE_CC_PATH)" 1>&2;\
+ 		$(COMPILE_CC_PATH) >/dev/null 2>&1
+ 
++utils/smbtree_multicall.o: utils/smbtree.c utils/smbtree.o
++	@echo Compiling $<.c
++	@$(COMPILE_CC_PATH) -Dmain=smbtree_main && exit 0;\
++		echo "The following command failed:" 1>&2;\
++		echo "$(COMPILE_CC_PATH)" 1>&2;\
++		$(COMPILE_CC_PATH) >/dev/null 2>&1
++
++utils/status_multicall.o: utils/status.c utils/status.o
++	@echo Compiling $<.c
++	@$(COMPILE_CC_PATH) -Dmain=smbstatus_main && exit 0;\
++		echo "The following command failed:" 1>&2;\
++		echo "$(COMPILE_CC_PATH)" 1>&2;\
++		$(COMPILE_CC_PATH) >/dev/null 2>&1
++
++web/swat_multicall.o: web/swat.c web/swat.o
++	@echo Compiling $<.c
++	@$(COMPILE_CC_PATH) -Dmain=swat_main && exit 0;\
++		echo "The following command failed:" 1>&2;\
++		echo "$(COMPILE_CC_PATH)" 1>&2;\
++		$(COMPILE_CC_PATH) >/dev/null 2>&1
++
+ SMBD_MULTI_O = $(patsubst smbd/server.o,smbd/server_multicall.o,$(SMBD_OBJ))
+ NMBD_MULTI_O = $(patsubst nmbd/nmbd.o,nmbd/nmbd_multicall.o,$(filter-out $(LIB_DUMMY_OBJ),$(NMBD_OBJ)))
+ SMBPASSWD_MULTI_O = $(patsubst utils/owrt_smbpasswd.o,utils/smbpasswd_multicall.o,$(filter-out $(LIB_DUMMY_OBJ),$(SMBPASSWD_OBJ)))
++SMBTREE_MULTI_O =  $(patsubst utils/smbtree.o,utils/smbtree_multicall.o,$(filter-out $(LIB_DUMMY_OBJ),$(SMBTREE_OBJ)))
++SMBSTATUS_MULTI_O =  $(patsubst utils/status.o,utils/status_multicall.o,$(filter-out $(LIB_DUMMY_OBJ),$(STATUS_OBJ)))
++SWAT_MULTI_O =  $(patsubst web/swat.o,web/swat_multicall.o,$(filter-out $(LIB_DUMMY_OBJ),$(SWAT_OBJ)))
+ MULTI_O = multi.o
+ 
+-MULTICALL_O = $(sort $(SMBD_MULTI_O) $(NMBD_MULTI_O) $(SMBPASSWD_MULTI_O) $(MULTI_O))
++MULTICALL_O = $(sort $(SMBD_MULTI_O) $(NMBD_MULTI_O) $(SMBPASSWD_MULTI_O) $(SMBTREE_MULTI_O) $(SMBSTATUS_MULTI_O) $(SWAT_MULTI_O) $(MULTI_O))
+ 
+-bin/samba_multicall@EXEEXT@: $(BINARY_PREREQS) $(MULTICALL_O) $(LIBTALLOC) $(LIBTDB) $(LIBWBCLIENT) @BUILD_POPT@
++bin/samba_multicall@EXEEXT@: $(BINARY_PREREQS) $(MULTICALL_O) $(LIBTALLOC) $(LIBTEVENT) $(LIBTDB) $(LIBWBCLIENT) @BUILD_POPT@
+ 	@echo Linking $@
+ 	@$(CC) -o $@ $(MULTICALL_O) $(LDFLAGS) $(LDAP_LIBS) @SMBD_FAM_LIBS@ \
+ 		$(KRB5LIBS) $(DYNEXP) $(PRINT_LIBS) $(AUTH_LIBS) \
+--- a/source3/multi.c-orig	2016-12-06 21:02:45.762165839 +0000
++++ b/source3/multi.c	2016-12-07 18:18:35.962719157 +0000
+@@ -4,6 +4,9 @@
+ extern int smbd_main(int argc, char **argv);
+ extern int nmbd_main(int argc, char **argv);
+ extern int smbpasswd_main(int argc, char **argv);
++extern int smbtree_main(int argc, char **argv);
++extern int smbstatus_main(int argc, char **argv);
++extern int swat_main(int argc, char **argv);
+ 
+ static struct {
+ 	const char *name;
+@@ -12,6 +15,9 @@
+ 	{ "smbd", smbd_main },
+ 	{ "nmbd", nmbd_main },
+ 	{ "smbpasswd", smbpasswd_main },
++	{ "smbtree", smbtree_main },
++	{ "smbstatus", smbstatus_main },	
++	{ "swat", swat_main },	
+ };
+ 
+ #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+--- a/source3/utils/owrt_smbpasswd.c-orig	2016-12-07 18:01:28.756032924 +0000
++++ b/source3/utils/owrt_smbpasswd.c	2016-12-07 18:02:02.276403458 +0000
+@@ -204,15 +204,15 @@
+ 		}
+ 	}
+ 
+-	fp = fopen("/opt/etc/samba/smbpasswd", "r+");
++	fp = fopen("/etc/samba/smbpasswd", "r+");
+ 	if(!fp) {
+-		fprintf(stderr, "Failed to open /opt/etc/samba/smbpasswd");
++		fprintf(stderr, "Failed to open /etc/samba/smbpasswd");
+ 		return 3;
+ 	}
+ 
+ 	found = find_passwd_line(fp, user, NULL);
+ 	if (!add && !found) {
+-		fprintf(stderr, "Could not find user '%s' in /opt/etc/samba/smbpasswd\n", user);
++		fprintf(stderr, "Could not find user '%s' in /etc/samba/smbpasswd\n", user);
+ 		return 3;
+ 	}
+ 
