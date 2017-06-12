@@ -201,6 +201,6 @@ samba-small-dirclean: samba-small-uninstall
 # Toplevel Makefile options
 #
 #############################################################
-ifeq ($(BR2_PACKAGE_SAMBA_SMALL),y)
-TARGETS+=samba-small
-endif
+#ifeq ($(BR2_PACKAGE_SAMBA_SMALL),y)
+#TARGETS+=samba-small
+#endif
