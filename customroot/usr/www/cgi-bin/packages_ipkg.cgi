@@ -37,7 +37,7 @@ cat<<-EOF
 	<fieldset><legend>Packages Installed On</legend>
 EOF
 
-install_loc=$(find /mnt -type d -maxdepth 2 -name Alt-F)
+install_loc=$(find /mnt -type d -maxdepth 2 -name Alt-F 2>/dev/null)
 if test -z "$install_loc"; then
 	cat<<-EOF
 		<table><tr><td>No Alt-F package installation found, install in:</td>
