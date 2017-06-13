@@ -23,8 +23,8 @@ If you select a static IP address you also have to specify other network details
 <li>Host IP: the IP address must be compatible with your other hosts IP addresses</li>
 <li>Netmask: how "wide" your local network is, usually 255.255.255.0, meaning that your network can have up to 253 computers (x.x.x.0 and x.x.x.255 are reserved).</li>
 <li>Gateway: the IP address of the computer that connects you to the internet, generally your modem/router</li>
-<li>Name server 1: the IP address of a computer that translates host names to IP address, generally your modem/router or your ISP DNS</li>
-<li>Name server 2: the IP address of a fallback computer that translates host names to IP addresses, optional.</li>
+<li>Name server 1: the IP address of a computer that translates host names to IP address, generally your modem/router or your ISP DNS. In DHCP mode the DHCP server might overwrite the entry.</li>
+<li>Name server 2: the IP address of a fallback computer that translates host names to IP addresses, optional. In DHCP mode the DHCP server might overwrite the entry.</li>
 <li>Frame size: Usually 1500. A higher value means that "jumbo frames" are enabled, allowing higher network throughput.<br>
 Maximum value is 9000, but it is a waste of memory, either 3700 (maximum memory saving) or 7500 are good choices. Other computers, routers or switches in the network must also support jumbo frames</li>
 <li>Enable IPv6: protocol for the next generation internet.<br>
