@@ -207,6 +207,15 @@ ipkg_upgrade() {
 		fi
 	done < /etc/preinst
 
+	#remove previous preinstalled packages that are not present anymore
+	for i in $(ipkg -V0 status | awk '/Package/{print $2}'); do
+		if ! test -f $IPKG_DIR/info/$i.control; then
+			if ! grep -q $i /etc/preinst; then
+				to_rm="$to_rm  $i"
+			fi
+		fi
+	done
+
 	# when removing, rc<service> links are removed, hot_aux recreates some
 	if test -n "$to_rm"; then
 		# backup conf files
