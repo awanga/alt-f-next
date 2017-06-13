@@ -77,6 +77,14 @@ if grep -q "implicit_ssl=yes" $CONFF || grep -q '^ftps' $INETD_CONF ; then
 	ssl_imp_chk=checked
 fi
 
+if test -z "$pasv_enable"; then	pasv_enable="yes"; fi
+if test -z "$pasv_min_port"; then pasv_min_port="30000"; fi
+if test -z "$pasv_max_port"; then pasv_max_port="30010"; fi
+
+if test $pasv_enable = "yes"; then
+	passive_chk="checked"
+fi
+
 syslog_chk=""
 if test "$syslog_enable" = "yes"; then
 	syslog_chk=checked
@@ -137,6 +145,10 @@ cat<<-EOF
 	<tr><td>Force SSL logins:</td><td><input type=checkbox $ssl_en $ssl_fl_chk name=force_local_logins_ssl value="yes"></td></tr>
 	<tr><td>Force SSL data:</td><td><input type=checkbox $ssl_en $ssl_fd_chk name=force_local_data_ssl value="yes"></td></tr>
 	<tr><td>Implict SSL:</td><td><input type=checkbox $ssl_en $ssl_imp_chk name=implicit_ssl value="yes" $(ttip tt_impl)></td></tr>
+	<tr><td colspan=2><br></td></tr>
+
+	<tr><td>Passive mode:</td><td><input type=checkbox $passive_chk name= pasv_enable value="yes">
+	minimum port:<input type=text size=5 name=pasv_min_port value="$pasv_min_port"> maximum port:<input type=text size=5 name=pasv_max_port value="$pasv_max_port"></tr>
 	<tr><td colspan=2><br></td></tr>
 
 	<tr><td>Log accesses:</td><td><input type=checkbox $xferlog_chk name=xferlog_enable value="yes"></td></tr>

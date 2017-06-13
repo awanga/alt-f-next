@@ -7,7 +7,7 @@ CONFF=/etc/vsftpd.conf
 CONFU=/etc/vsftpd.user_list
 CONFS=/etc/init.d/S63vsftpd
 
-vars="chroot_local_user allow_writeable_chroot anonymous_enable anon_upload_enable ssl_enable force_local_logins_ssl force_local_data_ssl userlist_enable implicit_ssl syslog_enable xferlog_enable"
+vars="chroot_local_user allow_writeable_chroot anonymous_enable anon_upload_enable ssl_enable force_local_logins_ssl force_local_data_ssl userlist_enable implicit_ssl syslog_enable xferlog_enable pasv_enable pasv_min_port pasv_max_port"
 
 for i in $vars; do eval $i=no; done
 
@@ -28,6 +28,9 @@ else
 	denyusers=""
 fi
 echo $denyusers | tr ' ' '\n' > $CONFU
+
+if ! isnumber "$pasv_min_port"; then pasv_min_port="30000"; fi
+if ! isnumber "$pasv_max_port"; then pasv_max_port="30010"; fi
 
 for i in $vars; do
 	sed -i "/^$i=/d" $CONFF
