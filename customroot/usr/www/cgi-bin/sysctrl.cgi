@@ -21,7 +21,7 @@ hi_fan=5000
 hi_temp=50
 fan_mode=0
 if echo "$board" | grep -qE 'DNS-32(0-Ax|0-Bx|0L-Ax|7L-Ax)'; then
-	fan_mode=1
+	fan_mode=2
 fi
 hist_temp=1
 disks_temp=0
