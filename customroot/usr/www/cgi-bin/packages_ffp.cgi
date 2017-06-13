@@ -64,7 +64,7 @@ if test "$FFP_VERSION" = "0.5"; then
 else
 	ffpver="0.7"
 	arch=$FFP_ARCH
-	if test $arch = "oarm"; then
+	if test "$arch" = "oarm"; then
 		warnmsg='<h4 class="warn">Warning: you are using the obsolete "oabi/oarm" architecture.</h4>'
 	fi
 	FFP_DIR="$ffpver/$arch" 
