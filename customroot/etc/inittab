@@ -25,6 +25,9 @@ ttyS0::respawn:/sbin/getty -n -l /bin/sh -L ttyS0 115200 vt100
 # DNS-320L MCU daemon
 #null::respawn:/usr/sbin/dns320l-daemon
 
+# keep inetd checker alive
+null::respawn:/usr/sbin/watch-inetd.sh
+
 # Logging junk
 #null::sysinit:/bin/touch /var/log/messages
 
