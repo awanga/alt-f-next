@@ -58,16 +58,16 @@ start_altf_dir() {
 					fi
 				done
 
-				for i in $(grep -l "^NEED_ALTF_DIR=1" /etc/init.d/S??*); do
+				if test -n "$DELAY_NFS"; then
+					snfs="/etc/init.d/S61nfs /etc/init.d/S69rmount"
+				fi
+
+				for i in $snfs $(grep -l "^NEED_ALTF_DIR=1" /etc/init.d/S??*); do
 					if test -x $i; then
 						f=$(basename $i)
 						tostart="$tostart rc${f#S??}"
 					fi
 				done
-
-				if test -n "$DELAY_NFS" -a -x /etc/init.d/S60nfs; then
-					tostart="$tostart rcnfs"
-				fi
 
 				# the existence of spool on disk prevents it to spindown,
 				# so use /tmp/var/spool for all spooling, not preserving data across reboots.
@@ -123,11 +123,13 @@ stop_altf_dir() {
 			logger -st hot_aux "$($i stop)"
 		done
 
-		#for i in $(ls /Alt-F/etc/init.d/S??* 2> /dev/null); do
-		#	f=$(basename $i)
-		#	f=rc${f#S??}
-		#	rm -f /sbin/$f
-		#done
+		for i in $(ls /Alt-F/etc/init.d/S??* 2> /dev/null); do
+			f=$(basename $i)
+			if ! test -f /etc/init.d/$f; then
+				f=rc${f#S??}
+				rm -f /sbin/$f
+			fi
+		done
 
 		if ! aufs.sh -u; then
 			logger -st hot_aux "aufs.sh unmount failed"
