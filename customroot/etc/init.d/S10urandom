@@ -17,7 +17,7 @@ case "$1" in
 		echo -n "Starting $NAME: "
 		# Load and then save 512 bytes, which is the size of the entropy pool
 		loadsave_settings -gr
-		if test -f $RFILE; then
+		if test -s $RFILE; then
 			cat $RFILE > /dev/urandom
 		else
 			logger -st urandom "Missing random-seed"
@@ -38,7 +38,15 @@ case "$1" in
 		echo "OK."
 		;;
 
-	status) status $NAME ;;
+	status)
+		if test -f $RFILE; then
+			echo "$NAME started"
+		else
+			echo "$NAME stopped"
+			exit 1
+		fi
+		;;
+
 	restart) restart $NAME ;;
 	*)  usage $0 "start|stop|status|restart" ;;
 esac
