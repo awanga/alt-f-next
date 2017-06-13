@@ -29,6 +29,12 @@ if test $? != 0; then
 	msg "$passwd"
 fi
 
+if test -n "$ipsn"; then
+	ipsn=$(httpd -d "$ipsn")
+else
+	ipsn="checkip.dyndns.org /"
+fi
+
 if test -n "$ddns" -a -n "$host"; then
 	host=$(httpd -d "$host")
 	llevel=3
@@ -39,6 +45,7 @@ if test -n "$ddns" -a -n "$host"; then
 		alias $host
 		username $user
 		password $passwd
+		ip_server_name $ipsn
 		verbose $llevel
 		cache_dir $SCACHE
 		update_period_sec 600

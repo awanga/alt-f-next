@@ -10,7 +10,8 @@ check_https
 
 CONFF=/etc/inadyn.conf
 
-mktt tt_host "Registered hostname.<br>freedns.afraid.org now don't accept hash and accepts username and password."
+mktt tt_host "Registered hostname.<br>For freedns.afraid.org don't use hash, use username and password."
+mktt tt_ipsn "Server name to determine your current IP. If left blank the default is used, if it is an URL end it with a '/'."
 
 sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org
 default@easydns.com dyndns@3322.org default@sitelutions.com default@dnsomatic.com ipv6tb@he.net
@@ -21,10 +22,11 @@ verbose=0
 if test -f $CONFF; then
 	while read -r key value; do
 		if test -n "$key" -a -n "$value" -a "${key###}" = "$key"; then
+			key=${key#--} # remove posible --
 			if test "$key" = "password"; then
 				password=$(httpd -e "$value")
 			else
-				eval "$key=$value"
+				eval "$key=\"$value\""
 			fi
 		fi
 	done < $CONFF
@@ -56,6 +58,8 @@ cat<<-EOF
 		<td><select name="provider">
 		$options
 		</select></td></tr>
+	<tr><td>IP server:</td>
+		<td><input type="text" value="$ip_server_name" name="ipsn" $(ttip tt_ipsn)></td></tr>
 	<tr><td><div id=host_id>hostname:</div></td>
 		<td><input type="text" value="$alias" name="host" $(ttip tt_host)></td></tr>
 	<tr><td>username:</td>
