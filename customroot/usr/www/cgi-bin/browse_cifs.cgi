@@ -38,7 +38,7 @@ for i in $(seq 1 20); do sleep 1; echo; done &
 
 echo "<br><br><table><tr><th>Share</th><th>Comment</th></tr>"
 
-smbtree -N | tr '\t' ':' | awk -F : '{
+smbtree -N 2> /dev/null | tr '\t' ':' | awk -F : '{
 	if ($2 != "")
 		printf "<tr><td><br></td></tr><tr><td><strong>%s</strong></td><td>%s</td></tr>\n", $2, $4
 	if ($2 == "" && $3 != "") {
