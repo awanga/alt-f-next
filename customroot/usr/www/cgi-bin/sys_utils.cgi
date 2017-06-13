@@ -10,9 +10,9 @@ check_cookie
 write_header "System utilities"
 
 mktt ssl_tt "Erases current SSL certificates and creates a new one.<br>
-Needed when changing the host name.<br>
-WARNING: your browser will complain and you will have to delete<br>
-or revoke the old certificate and make the browser accept the new one.<br>
+Needed when changing the host name or domain.<br>
+WARNING: if using https your browser will complain<br>
+and you will have to make it accept the new certificate.<br>
 Does not affects the ssh host key."
 
 logsel="<select name=\"logaction\" onchange=\"return submit()\">
@@ -108,8 +108,11 @@ if test -s /etc/printcap; then
 	EOF
 fi
 
+eval $(openssl x509 -in /etc/ssl/certs/server.pem -noout -subject | awk  -F '/' '{print $2,$3,$4}')
+
 cat<<-EOF
-	<fieldset><legend>SSL Certificate</legend>
+	<fieldset><legend>Current SSL Certificate</legend>
+Issued by <strong>$O</strong> for a <strong>$OU</strong> with <strong>$CN</strong> as hostname 
 	<input type=submit name="action" value="createNew" $(ttip ssl_tt)>
 	</fieldset>
 	</form>
