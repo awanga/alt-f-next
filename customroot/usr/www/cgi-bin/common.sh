@@ -1,5 +1,6 @@
 
 CONF_MISC=/etc/misc.conf
+CONF_HOSTS=/etc/hosts
 
 # sed removes any ' or " that would upset quoted assignment
 # awk ensures that 
@@ -75,6 +76,19 @@ checkip() {
 		}
 		exit 0
 	}'
+}
+
+gethname() {
+	local th
+    if ! checkip "$1"; then
+        echo $1
+    elif ! th=$(awk '/^'$1'[[:space:]]+/{print $3; exit 1}' $CONF_HOSTS); then
+        echo $th
+    elif ! th=$(nslookup $1 | awk '/Address.*'$1'/{if (length($4) != 0) {print $4; exit 1}}'); then  
+        echo $th
+    else
+        echo $1
+    fi
 }
 
 checkmac() {
