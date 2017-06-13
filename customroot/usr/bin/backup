@@ -163,8 +163,8 @@ dir_backup() {
 }
 
 nfs_mount() {
-	if ! rcnfs_client status >& /dev/null; then
-		rcnfs_client start
+	if ! rcnsm status >& /dev/null; then
+		rcnsm start
 	fi
 	cnt=0
 	while ! showmount $host >& /dev/null; do
