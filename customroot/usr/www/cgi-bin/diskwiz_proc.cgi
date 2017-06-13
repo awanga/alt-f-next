@@ -514,4 +514,5 @@ echo " done.</p>"
 #enddebug
 
 busy_cursor_end
+firstboot  /cgi-bin/diskmaint.cgi
 echo "<h4>Success.</h4>$(goto_button Continue /cgi-bin/diskmaint.cgi)</body></html>"
