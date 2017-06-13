@@ -76,8 +76,8 @@ set_random() {
 # get random-seed
 get_random() {
 	lmount
-	if test -f $save_dir/random-seed; then
-		cp -f $save_dir/random-seed /var/lib/misc/random-seed
+	if test -s $save_dir/random-seed; then
+		cp $save_dir/random-seed /var/lib/misc/random-seed
 	fi
 	lumount
 }
