@@ -19,8 +19,8 @@ jscripts() {
 			<p class="error"><strong>
 				JavaScript is needed by Alt-F web pages, and you don't have it enabled.<br>
 				See <a href="http://www.enable-javascript.com" target="_blank">
-				how to enable JavaSCript<\/a> on your browser.
-			<\/strong><\/p>
+				how to enable JavaSCript</a> on your browser.
+			</strong></p>
 		</noscript>
 		<script type="text/javascript">
 			arefresh = false
@@ -431,6 +431,7 @@ mounted_remote_filesystems_st() {
 	while read -r rhost mnt fs rest; do
 		if test "$fs" = "nfs" -o $fs = "cifs"; then
 			mnt=$(path_unescape $mnt)
+			if ! test -d "$mnt"; then continue; fi
 			if test "$fs" = "cifs"; then
 				rrhost=$(echo $rhost | cut -d'/' -f3)
 				rrdir=$(echo $rhost | cut -d'/' -f4)
@@ -438,6 +439,8 @@ mounted_remote_filesystems_st() {
 				rrhost=${rhost%:*}
 				rrdir=${rhost#*:/}
 			fi
+			rrhost=$(gethname "$rrhost")
+
 			# "df" breaks lines when they are long, usernames can have spaces
 			eval $(df -h "$mnt" | grep -v Filesystem | tr -d '\n' | awk '{bs=NF-4; printf "sz=%sB; avai=%sB; perc=%d", $bs, $(bs+2), $(bs+3)}')
 			echo "<tr><td>$rrhost</td>
@@ -469,23 +472,20 @@ remotely_mounted_filesystems_st() {
 	EOF
 
 	if test -n "$smbm"; then
-		echo "$smbm" | awk '{ 
-				srv = NF - 7
-				pos = index($0, $(srv + 1))
-				share = substr($0, 1, pos-1)
-				host = $(srv+2)
-				printf "<tr><td>%s</td><td>%s</td><td>cifs</td></tr>\n", host, share
+		echo "$smbm" | awk '{
+			srv = NF - 7
+			pos = index($0, $(srv + 1))
+			share = substr($0, 1, pos-1)
+			host = $(srv+2)
+			#if (NF == 7) host="--"
+			printf("<tr><td>%s</td><td>%s</td><td>cifs</td></tr>\n", host, share)
 			}' | sort -u
 	fi
 
 	if test -n "$nfsm"; then
 		IOIFS="$IFS"; IFS=:
 		echo "$nfsm" | while read host dir; do
-			if checkip "$host"; then
-				if ! th=$(awk '/^'$host'[[:space:]]+/{print $3; exit 1}' /etc/hosts); then
-					host=$th
-				fi
-			fi
+			host=$(gethname "$host")
 			echo "<tr><td>$host</td><td>$dir</td><td>nfs</td></tr>"
 		done
 		IFS="$OIFS"
