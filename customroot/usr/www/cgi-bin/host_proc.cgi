@@ -7,6 +7,7 @@ read_args
 DNSMASQ_F=/etc/dnsmasq.conf
 DNSMASQ_O=/etc/dnsmasq-opts
 DNSMASQ_R=/etc/dnsmasq-resolv
+FLG_MSG="#!in use by dnsmasq, don't change"
 
 CONFH=/etc/hosts
 CONFR=/etc/resolv.conf
@@ -45,54 +46,71 @@ else
 fi
 
 if test "$iptype" = "static"; then
-	arping -Dw 2 $hostip >& /dev/null
-	if test $? = 1; then
-		msg "IP $hostip seems to be already in use"
+	if ! arping -Dw 2 $hostip >& /dev/null; then
+		msg "The IP $hostip is already in use by another computer."
 	fi
 fi
 
-html_header
+html_header "Reconfiguring network..."
+echo '<h4 class="warn" id="msgid"></h4>'
 busy_cursor_start
 
 domain=$(httpd -d "$domain")
 hostname=$(httpd -d "$hostname")
 
 if test -z "$mtu"; then mtu=1500; fi
-if test -z "$hostname"; then hostname="DNS-323"; fi
+if test -z "$hostname"; then hostname=$(cat /tmp/board); fi
 if test -z "$domain"; then domain="localnet"; fi
+if test -z "$ns1"; then ns1=$gateway; fi
 
 hostname $hostname
 echo $hostname > /etc/hostname
 
 # remove entries with oldip and oldname 
-sed -i "/^[^#].*$oldnm$/d" $CONFH
+sed -i "/^[^#].*$oldname$/d" $CONFH
 sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
 echo "$oldip $hostname.$domain $hostname" >> $CONFH
+
+if test -z "$dnsmasq_flg"; then
+	if test "$iptype" = "static"; then
+		echo -e "search $domain\nnameserver $ns1" > $CONFR
+		if test -n "$ns2"; then echo "nameserver $ns2" >> $CONFR; fi
+	else
+		echo "search $domain" > $CONFR-
+		for i in $ns1 $ns2; do
+			if grep -q "$i #!# DHCP" $CONFR; then
+				echo "nameserver $i #!# DHCP" >> $CONFR-
+			else
+				echo "nameserver $i" >> $CONFR-
+			fi
+		done
+		mv $CONFR- $CONFR
+	fi
+else
+	cat<<-EOF > $CONFR
+		$FLG_MSG
+		search $domain
+		nameserver 127.0.0.1
+		#!nameserver $ns1
+	EOF
+	if test -n "$ns2"; then echo "#!nameserver $ns2" >> $CONFR; fi
+	test -f $DNSMASQ_R && echo -e "search $domain\nnameserver $ns1" > $DNSMASQ_R
+	test -f $DNSMASQ_R && test -n "$ns2" && echo "nameserver $ns2" >> $DNSMASQ_R
+fi
 
 if test "$iptype" = "static"; then
 	eval $(ipcalc -n "$hostip" "$netmask") # evaluate NETWORK
 	eval $(ipcalc -b "$hostip" "$netmask") # evaluate  BROADCAST
 
-	sed -i '/^domain=/d' $DNSMASQ_F
-	echo "domain=$domain" >> $DNSMASQ_F
-	sed -i '/^option:router,/d' $DNSMASQ_O
-	echo "option:router,$gateway	# default route" >> $DNSMASQ_O
-
-	FLG_MSG="#!in use by dnsmasq, don't change"
-	if test -z "$cflg"; then
-		echo -e "search $domain\nnameserver $ns1" > $CONFR
-		if test -n "$ns2"; then echo "nameserver $ns2" >> $CONFR; fi
-	else
-		echo -e "$FLG_MSG\nnameserver 127.0.0.1\nsearch $domain\n#!nameserver $ns1\n#!nameserver $ns2" > $CONFR
-		if test -n "$ns2"; then echo "#!nameserver $ns2" >> $CONFR; fi
-		echo -e "search $domain\nnameserver $ns1\nnameserver $ns2" > $DNSMASQ_R
-		if test -n "$ns2"; then echo "nameserver $ns2" >> $DNSMASQ_R; fi
-	fi
+	test -f $DNSMASQ_F && sed -i '/^domain=/d' $DNSMASQ_F
+	test -f $DNSMASQ_F && echo "domain=$domain" >> $DNSMASQ_F
+	test -f $DNSMASQ_O && sed -i '/^option:router,/d' $DNSMASQ_O
+	test -f $DNSMASQ_O && echo "option:router,$gateway	# default route" >> $DNSMASQ_O
 	
 	# remove any hosts with same name or ip
-	sed -i "/ $hostname$/d" $CONFH
-	sed -i "/^$hostip/d" $CONFH
+	sed -i "/[[:space:]]$hostname$/d" $CONFH
+	sed -i "/^$hostip[[:space:]]/d" $CONFH
 	echo "$hostip $hostname.$domain $hostname" >> $CONFH
 
 	sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" $CONFHTTP
@@ -128,10 +146,68 @@ else
 	EOF
 fi
 
-if test -f /var/run/udhcpc.eth0.pid; then
-	kill $(cat /var/run/udhcpc.eth0.pid) >& /dev/null
+cross=0
+if test "$iptype" != "$oldiptype"; then
+	cross=1 # cross-origin, can't set url
+elif test "$iptype" = "dhcp" -a "$hostname" != "$oldname"; then
+	cross=1
+elif test "$iptype" = "static" -a "$hostip" != "$oldip"; then
+	cross=1
 fi
+
+if test "$iptype" = "static"; then
+		hname=$hostip
+else
+		hname=$hostname
+fi
+
+cat<<-EOF
+	<script type="text/javascript">
+	var count = 10;
+	var cross = $cross
+	var port = location.port
+	if (port != "")
+		port = ":" + port
+	var server = location.protocol + "//" + "$hname" + port
+	var page = server + "/cgi-bin/host.cgi"
+	var testimg = server + "/help.png?" + Math.random()
+
+	function testServer() {    
+		var img = new Image()
+
+		img.onload = function() {
+			document.body.style.cursor = '';
+			if (img.naturalHeight > 0) {
+				if (cross) {
+					parent.document.location.replace(server)
+				}
+				else
+					window.location.assign(page)
+			}
+		}
+
+		img.onerror = function() {
+			if (count) {
+				count--
+				setTimeout(testServer, 1000)
+			} else {
+				document.body.style.cursor = '';
+				document.getElementById('msgid').innerHTML = "Timeout, try pointing your browser to <em>" + server + "</em>"
+			}
+		}
+		img.src = testimg
+	}
+
+	if (cross) {
+		document.getElementById('msgid').innerHTML = 'The box IP, name or protocol have changed.<br>If the page does not load within a minute, point your browser to <em>' + server + '</em><br>or consult your DHCP server to know the box new IP.<br>If using https the browser might complain that the new connection is insecure.'
+	}
+
+	setTimeout(testServer, 10000)
+	</script></body></html>
+EOF
+
 ifdown -f eth0 >& /dev/null
+
 ifup -f eth0 >& /dev/null
 
 # FIXME: the following might not be enough.
@@ -147,8 +223,4 @@ if rcdnsmasq status >& /dev/null; then
 	rcdnsmasq reload  >& /dev/null
 fi
 
-busy_cursor_end
-
-#enddebug
-
-js_gotopage /cgi-bin/host.cgi
+firstboot /cgi-bin/host.cgi
