@@ -15,7 +15,7 @@ fi
 
 case $kind in
 	nfs_mnt_opt)
-		opts="proto=,sync,async,soft,hard,intr,nointr,lock,nolock,auto,defaults,users,user,rw,ro"
+		opts="proto=,sync,async,soft,hard,intr,nointr,lock,nolock,noauto,defaults,users,user,rw,ro"
 		title="NFS mount options"
 		;;
 	nfs_exp_opt)
