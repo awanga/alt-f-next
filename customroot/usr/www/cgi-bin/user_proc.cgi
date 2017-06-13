@@ -12,11 +12,11 @@ uscript=$(httpd -d "$user_script")
 
 if test -n "$uscript"; then
 
-	sdir=$(dirname $uscript)
+	sdir=$(dirname $uscript 2>/dev/null)
 	if ! find_mp "$sdir" >& /dev/null; then
-		msg "The script must be on a filesystem such as /mnt/sda2 or /mnt/md0."
+		msg "The full path name of an on disk file such as /mnt/sda2/mybootscript.sh or /mnt/md0/... must be supplied. The file will be overwritten if it exists or created if needed."
 	fi
-	
+
 	mkdir -p "$sdir"
 	httpd -d "$userscript" | dos2unix > $uscript
 	chmod +x,og-wx "$uscript" 
