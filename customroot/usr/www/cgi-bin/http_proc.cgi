@@ -69,7 +69,7 @@ html_header
 cat<<-EOF
 	<script type="text/javascript">
 
-	var count = 3;
+	var count = 6;
 	var server = "${proto}://${host}:${jsport}"
 	var testimg = server + "/help.png?" + Math.random()
 
@@ -84,10 +84,10 @@ cat<<-EOF
 		img.onerror = function() {
 			if (count) {
 				count--
-				setTimeout(testServer, 2000)
+				setTimeout(testServer, 1000)
 			} else {
 				document.body.style.cursor = '';
-				document.write("<h3>Something went wrong, can't talk to <a href=${proto}://${host}:${jsport}>server</a></h3>")
+				document.write("<html><body><br><h3><center>Timeout, try pointing your browser to " + server + "</center></h3></body></html>")
 			}
 		}
 		img.src = testimg
