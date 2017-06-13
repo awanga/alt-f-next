@@ -27,6 +27,7 @@ case "$1" in
 
 	renew|bound)
 		if test -n "$debug"; then
+			logger -st udhcpc "udhcpc args: $*"
 			logger -st udhcpc "udhcpc environment:"
 			for i in $(env); do logger -st udhcpc "   $i"; done
 		else
@@ -68,14 +69,37 @@ case "$1" in
 			logger -st udhcpc "Updating $interface default route: $msg"
 		fi
 
-		echo -n > $RESOLV_CONF
-		echo search $domain >> $RESOLV_CONF
+		DNSMASQ_R=/etc/dnsmasq-resolv
+		FLG_MSG="#!in use by dnsmasq, don't change"
+		if grep -q "$FLG_MSG" $RESOLV_CONF; then
+			cmt="#!"; ldns="nameserver 127.0.0.1"; dnsmasq_flg=1
+		else
+			cmt=""; ldns=""; FLG_MSG=""
+		fi
+
+		echo -n > $RESOLV_CONF-
+		echo $FLG_MSG >> $RESOLV_CONF-
+		echo search $domain >> $RESOLV_CONF-
+		echo $ldns >> $RESOLV_CONF-
+		sed -i '/#!# DHCP/d' $RESOLV_CONF
+		sed -n "/^${cmt}nameserver/p"  $RESOLV_CONF >> $RESOLV_CONF-
 		msg="adding nameserver"
 		for i in $dns ; do
 			msg="$msg $i"
-			echo nameserver $i >> $RESOLV_CONF
+			sed -i "/[[:space:]]$i[[:space:]]*/d" $RESOLV_CONF-
+			echo "${cmt}nameserver $i #!# DHCP" >> $RESOLV_CONF-
 		done
-		logger -st udhcpc "Updating /etc/resolv.conf: $msg"
+		mv $RESOLV_CONF- $RESOLV_CONF
+
+		if test -n "$dnsmasq_flg"; then
+			cp $RESOLV_CONF $DNSMASQ_R
+			sed -i -e "/$FLG_MSG/d" -e "/127.0.0.1/d" -e 's/^#!//' 	$DNSMASQ_R
+			if rcdnsmasq status >& /dev/null; then
+				rcdnsmasq reload  >& /dev/null
+			fi
+		fi
+
+		logger -st udhcpc "Updating $RESOLV_CONF: $msg"
 		;;
 esac
 
