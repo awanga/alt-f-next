@@ -15,7 +15,7 @@ CONF_M=/etc/misc.conf
 
 case "$1" in
 	start)
-		if ! $(grep -q "^$FLG_MSG" $CONF_R); then
+		if ! grep -q "^$FLG_MSG" $CONF_R; then
 			cp $CONF_R $CONF_DR
 			sed -i -e 's/^nameserver/#!&/' $CONF_R
 			echo -e "$FLG_MSG\nnameserver 127.0.0.1" >> $CONF_R
@@ -38,7 +38,7 @@ case "$1" in
 		start $NAME
 		;;
 	stop)
-		if $(grep -q "$FLG_MSG" $CONF_R); then
+		if grep -q "$FLG_MSG" $CONF_R; then
 			cp $CONF_DR $CONF_R
 		fi
 		#  FIXME: if started ntps, stop it if its rcscript is not executable
