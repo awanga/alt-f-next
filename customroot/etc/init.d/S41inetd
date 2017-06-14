@@ -3,10 +3,12 @@
 DESC="ssh, ftp, rsync, http, https, swat, lpd, telnet,..."
 TYPE=net
 NAME=inetd
-CONFF=/etc/inetd.conf
-AVAHI_SRV="rsync ssh telnet ftp ftps http https printer swat swats"
-
 REQUIRE="inetd" # don't allow inetd to be stopped
+
+CONFF=/etc/inetd.conf
+CONFS=/etc/inetd.conf.default
+SERRORL=/var/log/systemerror.log
+AVAHI_SRV="rsync ssh telnet ftp ftps http https printer swat swats"
 
 . /etc/init.d/common
 
@@ -78,7 +80,18 @@ ftps	stream	tcp	nowait	root	/usr/sbin/vsftpd	vsftpd -oimplicit_ssl=yes" $CONFF
 }
 
 case "$1" in
-	start) istart; avahi_add; start $NAME ;;
+	start)
+		istart
+		avahi_add
+		if ! start $NAME; then # corrupted conf file?
+			msg="$0: inetd not starting, starting with an alternative minimum safe configuration."
+			logger -st error $msg
+			echo "<li>$msg</li>" >> $SERRORL
+			mv $CONFF $CONFF.old
+			cp $CONFS $CONFF
+			start $NAME
+		fi
+		;;
 	stop) stop $NAME; avahi_remove ;;
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
