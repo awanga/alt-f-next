@@ -4,7 +4,7 @@ config BR2_PACKAGE_PORTMAP
 	help
 	  The standard portmapper for RPC services.
 
-	  http://ftp.debian.org/debian/pool/main/p/portmap
+	  http://archive.debian.org/debian/pool/main/p/portmap
 
 comment "portmap requires a toolchain with 'Enable RPC' selected"
 	depends on !BR2_INET_RPC
