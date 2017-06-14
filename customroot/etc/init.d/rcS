@@ -406,15 +406,6 @@ esac
 # configure kernel parameters
 sysctl -p
 
-# create mountpoints for remote filesystems, but don't mount them
-while read dev mp fs rest; do
-	if test "$fs" = "nfs" -o "$fs" = "cifs"; then 
-		if ! test -d $mp; then
-			mkdir -p $mp
-		fi
-	 fi
-done < /etc/fstab
-
 # create rc* shortcuts to /etc/init.d/S??*
 ln -f /etc/init.d/rcall /sbin/rcall
 for i in /etc/init.d/S??*; do
