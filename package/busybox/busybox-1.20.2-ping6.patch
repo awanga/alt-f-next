@@ -1,0 +1,10 @@
+--- busybox-1.20.2/networking/ping.c-orig	2017-05-01 18:29:19.578243705 +0100
++++ busybox-1.20.2/networking/ping.c	2017-05-01 18:31:44.303474605 +0100
+@@ -781,6 +781,7 @@
+ 			) {
+ 				/*hoplimit = *(int*)CMSG_DATA(mp); - unaligned access */
+ 				move_from_unaligned_int(hoplimit, CMSG_DATA(mp));
++				break;
+ 			}
+ 		}
+ 		unpack6(G.rcv_packet, c, &from, hoplimit);
