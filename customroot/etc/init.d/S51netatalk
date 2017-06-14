@@ -1,6 +1,6 @@
 #! /bin/sh
 
-DESC="AFP (Apple Filling Protocol) fileserver"
+DESC="AFP (Apple Filling Protocol) Server"
 TYPE=net
 NAME=netatalk
 NEED_ALTF_DIR=1
