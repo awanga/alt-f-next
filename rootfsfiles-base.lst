@@ -50,6 +50,7 @@
 ./bin/nice
 ./bin/pidof
 ./bin/ping
+./bin/ping6
 ./bin/printenv
 ./bin/ps
 ./bin/pwd
@@ -88,6 +89,7 @@
 ./etc/hosts
 ./etc/httpd.conf
 ./etc/inetd.conf
+./etc/inetd.conf.default
 ./etc/init.d
 ./etc/init.d/common
 ./etc/init.d/rcall
@@ -102,6 +104,7 @@
 ./etc/init.d/S31news
 ./etc/init.d/S41inetd
 ./etc/init.d/S41http
+./etc/init.d/S69rmount
 ./etc/init.d/S98ffp
 ./etc/init.d/S99user
 ./etc/inittab
@@ -273,6 +276,7 @@
 ./usr/bin/plabel
 ./usr/bin/print
 ./usr/bin/printf
+./usr/bin/pstree
 ./usr/bin/readlink
 ./usr/bin/realpath
 ./usr/bin/renice
@@ -359,6 +363,7 @@
 ./usr/sbin/recover
 ./usr/sbin/setlogcons
 ./usr/sbin/telnetd
+./usr/sbin/watch-inetd.sh
 ./usr/share
 ./usr/share/udhcpc
 ./usr/share/udhcpc/default.script
@@ -430,6 +435,8 @@
 ./usr/www/cgi-bin/packages_opkg_proc.cgi
 ./usr/www/cgi-bin/Packages.men
 ./usr/www/cgi-bin/perms.cgi
+./usr/www/cgi-bin/rmount.cgi
+./usr/www/cgi-bin/rmount_proc.cgi
 ./usr/www/cgi-bin/services.cgi
 ./usr/www/cgi-bin/Services.men
 ./usr/www/cgi-bin/services_proc.cgi
@@ -473,6 +480,7 @@
 ./usr/www/perms_hlp.html
 ./usr/www/proxy_hlp.html
 ./usr/www/raid_hlp.html
+./usr/www/rmount_hlp.html
 ./usr/www/scripts
 ./usr/www/scripts/default.thm
 ./usr/www/scripts/demo.css
