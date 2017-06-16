@@ -5,6 +5,7 @@
 ./usr/lib/libssl.so
 ./usr/lib/libssl.so.1.0.0
 ./etc/ssl/openssl.cnf
+./etc/ssl/server.cnf
 ./etc/ssl/ca-bundle.crt
 ./etc/ssl/cert.pem
 ./etc/ssl/misc/CA.pl
