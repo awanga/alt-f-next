@@ -14,7 +14,9 @@
 ./usr/bin/smbget
 ./usr/bin/smbspool
 ./usr/bin/smbtar
+./usr/bin/smbta-util
 ./usr/bin/tdbbackup
 ./usr/bin/tdbdump
+./usr/bin/tdbrestore
 ./usr/bin/tdbtool
 ./usr/bin/testparm

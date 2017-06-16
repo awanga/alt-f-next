@@ -2,11 +2,13 @@
 ./usr/bin/smbpasswd
 ./usr/bin/smbstatus
 ./usr/bin/smbtree
-./usr/sbin/mount.cifs
+./usr/lib/samba/lowcase.dat
+./usr/lib/samba/upcase.dat
+./usr/lib/samba/valid.dat
 ./usr/sbin/nmbd
+./usr/sbin/samba_multicall
 ./usr/sbin/smbd
 ./usr/sbin/swat
-./usr/sbin/umount.cifs
 ./usr/swat/help/welcome-no-samba-doc.html
 ./usr/swat/include/footer.html
 ./usr/swat/include/header.html
