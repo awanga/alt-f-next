@@ -7,14 +7,7 @@ read_args
 #debug
 
 CONFX=/etc/exports
-#CONFT=/etc/fstab
 CONFM=/etc/misc.conf
-
-start_client() {
-	if ! rcnsm status >& /dev/null; then
-		rcnsm start >& /dev/null
-	fi
-}
 
 if test -n "$Submit"; then
 	TF=$(mktemp)
@@ -51,10 +44,11 @@ if test -n "$Submit"; then
 	rm $TF
 	echo >> $CONFX
 
-	#if test $? != 0; then # exportfs always return 0!
-	res="$(exportfs -r 2>&1 )"
-	if test -n "$res"; then
-		msg "$res"
+	if rcnfs status >& /dev/null; then
+		res="$(exportfs -r 2>&1 )" # exportfs always return 0!
+		if test -n "$res"; then
+			msg "$res"
+		fi
 	fi
 
 	sed -i '/^DELAY_NFS=/d;/^CLEAN_STALE_NFS=/d;/^NFS_BLKSIZE=/d' $CONFM
