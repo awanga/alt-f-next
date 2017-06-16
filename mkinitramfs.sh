@@ -110,7 +110,7 @@ fi
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
 base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear portmap nfs-utils kexec openssl zlib popt"
-base_pkgs2="inadyn-mt smartmontools at ntp-common samba36 cifs-utils openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
+base_pkgs2="inadyn-mt smartmontools at ntp-common cifs-utils openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
 SQFSBLK=131072
@@ -118,7 +118,7 @@ SQFSBLK=131072
 case $board in
 	dns323|qemu)
 		SQFSBLK=262144
-		fw_pkgs="$base_pkgs $base_pkgs2"
+		fw_pkgs="$base_pkgs $base_pkgs2 samba-small"
 		all_pkgs=$fw_pkgs
 		;;
 	dns325|dns327)
@@ -127,7 +127,7 @@ case $board in
 			COMP=xz
 		fi
 		fw_pkgs="$base_pkgs mtd-utils"
-		sq_pkgs="$base_pkgs2  gptfdisk ntfs-3g-ntfsprogs btrfs-progs dnsmasq quota-tools minidlna netatalk forked-daapd transmission sqlite"
+		sq_pkgs="$base_pkgs2  samba gptfdisk ntfs-3g-ntfsprogs btrfs-progs dnsmasq quota-tools minidlna netatalk forked-daapd transmission sqlite"
 		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
 	*) echo "mkinitramfs: Unsupported \"$board\" board"; exit 1;;
