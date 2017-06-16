@@ -116,7 +116,7 @@ elif test "$flash" = "TryIt"; then
 
 elif test "$flash" = "FlashIt"; then
 	check_fwfiles
-	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br>The upgrade takes at most five minutes to complete, and progress messages should be displayed.</h3><h4>If you suspect that something went wrong, you can try to repeat the fw download and upgrade using HTTP<br>
+	echo "<h3 class=\"error\">Don't poweroff or reboot the box until instructed to do it!<br>The upgrade takes at most five minutes to complete, and progress messages should be displayed.</h3><h4 class=\"warn\">If you suspect that something went wrong, you can try to repeat the firmware file download and upgrade using HTTP<br>
 	after stopping all running processes (System->Utilities->Services, StopAll).<br></h4>"
 
 	rcall stop >& /dev/null
