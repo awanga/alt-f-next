@@ -131,7 +131,6 @@
 ./usr/lib/modules/4.4.45/kernel/drivers/usb/serial/visor.ko
 ./usr/lib/modules/4.4.45/kernel/drivers/usb/serial/wishbone-serial.ko
 ./usr/lib/modules/4.4.45/kernel/drivers/usb/serial/xsens_mt.ko
-./usr/lib/modules/4.4.45/kernel/drivers/usb/storage/uas.ko
 ./usr/lib/modules/4.4.45/kernel/drivers/usb/storage/ums-alauda.ko
 ./usr/lib/modules/4.4.45/kernel/drivers/usb/storage/ums-cypress.ko
 ./usr/lib/modules/4.4.45/kernel/drivers/usb/storage/ums-datafab.ko
