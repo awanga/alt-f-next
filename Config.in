@@ -98,6 +98,10 @@ source "arch/Config.in"
 
 menu "Build options"
 
+config BR2_PROJECT
+	string "Alt-F Board Name"
+	default ""
+
 menu "Commands"
 
 config BR2_WGET

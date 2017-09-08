@@ -1,0 +1,16 @@
+config BR2_PACKAGE_ALT_F_UTILS
+	bool "Alt-F-utils"
+	help
+	  Provides fan control, hdd sleep and buttons press detection for the DNS-323/321
+
+config BR2_PACKAGE_ALT_F_UTILS_TARGET
+	bool "Alt-F-utils-target"
+	depends on BR2_PACKAGE_ALT_F_UTILS
+	help
+	  tools for the target
+
+config BR2_PACKAGE_ALT_F_UTILS_HOST
+	bool "Alt-F-utils-host"
+	depends on BR2_PACKAGE_ALT_F_UTILS
+	help
+	  firmware builder for the host

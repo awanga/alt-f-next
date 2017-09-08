@@ -66,8 +66,8 @@ if test $TYPE = "sqsplit"; then
 	sqimage=rootfs.arm.sqimage.$COMP
 fi
 
-DESTD=$BLDDIR/binaries/$board
-KVER=$(cat $BLDDIR/project_build_arm/$board/.linux-version)
+DESTD=$BLDDIR/images/$board
+KVER=$BR2_LINUX_KERNEL_VERSION #$(cat $BLDDIR/build/.linux-version)
 VER=$(cut -f2 -d" " customroot/etc/Alt-F)
 
 if ! test -f ${DESTD}/zImage -a -f ${DESTD}/$rootfs; then

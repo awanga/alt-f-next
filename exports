@@ -31,33 +31,33 @@ check_current() {
 	local st=0
 	for i in BR2_UCLIBC_VERSION_STRING BR2_UCLIBC_CONFIG \
 		BR2_BUSYBOX_VERSION BR2_PACKAGE_BUSYBOX_CONFIG \
-		BR2_CUSTOM_LINUX26_VERSION BR2_PACKAGE_LINUX_KCONFIG; do
+		BR2_LINUX_KERNEL_VERSION BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE; do
 		eval $(grep ^$i .config)
 	done
 
-	cbusybox=$BLDDIR/build_arm/busybox-$BR2_BUSYBOX_VERSION/.config
-	cuclibc=$BLDDIR/toolchain_build_arm/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
-	ckernel=$BLDDIR/project_build_arm/$BR2_PROJECT/linux-$BR2_CUSTOM_LINUX26_VERSION/.config
+	cbusybox=$BLDDIR/build/busybox-$BR2_BUSYBOX_VERSION/.config
+	cuclibc=$BLDDIR/build/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
+	ckernel=$BLDDIR/$BR2_PROJECT/linux-$BR2_LINUX_KERNEL_VERSION/.config
 
 	tailcmp local/$BR2_PROJECT/$BR2_PROJECT.config .config board || ((st++))
 	tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc || ((st++))
 	tailcmp $BR2_PACKAGE_BUSYBOX_CONFIG $cbusybox Busybox || ((st++))
-	tailcmp $BR2_PACKAGE_LINUX_KCONFIG $ckernel Kernel || ((st++))
+	tailcmp $BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE $ckernel Kernel || ((st++))
 	return $st
 }
 
 do_exports() {
 	eval $(grep ^BR2_PROJECT .config)
-	eval $(grep ^BR2_CUSTOM_LINUX26_VERSION .config)
-	linux_version=$BR2_CUSTOM_LINUX26_VERSION
+	eval $(grep ^BR2_LINUX_KERNEL_VERSION .config)
+	linux_version=$BR2_LINUX_KERNEL_VERSION
 
 	export BLDDIR=$bdir
-	export PKGDIR=$BLDDIR/build_arm
-	export ROOTFS=$BLDDIR/project_build_arm/$board/root
-	export KERNEL=$BLDDIR/project_build_arm/$board/linux-$linux_version
-	export UCLIBC=$BLDDIR/toolchain_build_arm/uClibc-0.9.30.3
-	export STAGING=$BLDDIR//build_arm/staging_dir
-	export HOSTDIR=$BLDDIR/build_arm/host_dir
+	export PKGDIR=$BLDDIR/build
+	export ROOTFS=$BLDDIR/target
+	export KERNEL=$BLDDIR/build/linux-$linux_version
+	export UCLIBC=$BLDDIR/build/uClibc-0.9.30.3
+	export STAGING=$BLDDIR/staging
+	export HOSTDIR=$BLDDIR/host
 	export BINARIES=$BLDDIR/binaries/$board
 
 	if test -z "$OPATH"; then OPATH=$PATH; fi
@@ -65,7 +65,7 @@ do_exports() {
 
 	export EDITOR=uemacs
 
-	make oldconfig
+	make olddefconfig
 	if ! test -d "$BLDDIR"; then make dirs; fi
 
 	echo -e "\nBuild ready for \"$board\" at \"$BLDDIR\""
@@ -82,7 +82,7 @@ if test $# = 2; then
 elif test -n "$BLDDIR"; then
 	bdir=$BLDDIR
 else
-	bdir=$PWD/build
+	bdir=$PWD/output
 fi
 
 BLDDIR=$bdir
@@ -120,7 +120,7 @@ elif test $# -ge 1 -a -f .config; then
 	elif test -z "$force"; then
 		if ! check_current; then
 			board=$BR2_PROJECT
-			echo -e "\nConsider making \"make saveconfig\" or use \". exports -f $*\" to ignore changes."
+			echo -e "\nConsider making \"make savedefconfig\" or use \". exports -f $*\" to ignore changes."
 			echo "Continue using existing .config for $board"
 			do_exports >& /dev/null
 			return 1

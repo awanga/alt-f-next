@@ -28,9 +28,9 @@ board=$BR2_PROJECT
 
 if test -z "$BR2_KERNEL_none"; then
 	if test -n "$BR2_KERNEL_THIS_VERSION"; then
-		kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL	
+		kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL
 	else
-		kver=$BR2_CUSTOM_LINUX26_VERSION
+		kver=$BR2_LINUX_KERNEL_VERSION
 	fi
 
 echo kernel=$kver
@@ -48,12 +48,12 @@ echo kernel=$kver
 ./kernel/fs/nfs/nfsv3.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/fs/lockd/lockd.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/fs/nfs_common/grace.ko"
 
 	if test -z "$BR2_PACKAGE_KERNEL_MODULES"; then
-		if ! test -d $BLDDIR/project_build_arm/$board/root/lib/modules/$kver; then
+		if ! test -d $BLDDIR/target/lib/modules/$kver; then
 			echo "configfs: kernel modules dir does not exists!"
 		else
 			RMF="$RMF lib/libthread_db*"
 			OPWD=$PWD
-			cd $BLDDIR/project_build_arm/$board/root/lib/modules/$kver
+			cd $BLDDIR/target/lib/modules/$kver
 			echo "configfs: removing unwanted kernel modules (total: $(find . -name \*.ko | wc -l))"
 			echo "configfs: and keeping $(echo $KMOD | wc -w) wanted kernel modules"
 			# remove unwanted kernel modules

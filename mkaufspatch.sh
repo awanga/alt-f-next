@@ -17,7 +17,7 @@ else
 		exit 1
 	fi
 
-	kver=$BR2_CUSTOM_LINUX26_VERSION
+	kver=$BR2_LINUX_KERNEL_VERSION
 fi
 
 aufssite=git://aufs.git.sourceforge.net/gitroot/aufs

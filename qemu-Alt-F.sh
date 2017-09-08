@@ -72,10 +72,11 @@ QEMU_AUDIO_DRV=none qemu-system-arm \
 -serial mon:stdio -nographic \
 -kernel qemu-zImage \
 -initrd qemu-rootfs.arm.sqall.xz \
+-dtb versatile-pb.dtb \
 -hda qemu-disk-left.img \
 -hdb qemu-disk-right.img \
 -hdc qemu-disk-usb.img \
--pflash qemu-flash.img \
+-drive file=qemu-flash.img,format=raw,if=pflash \
 -netdev user,id=eth0 -device e1000,netdev=eth0 \
 -redir tcp:5555::80 \
 -redir tcp:5556::22

@@ -34,7 +34,7 @@ start-stop-daemon -S -q -x syslogd -- -m 0 -D -S -O $TSYSLOG
 # what box/board?
 mkdir -p /tmp/sys
 
-if grep -q 'ARM-Versatile PB' /proc/cpuinfo; then
+if grep -q 'ARM-Versatile' /proc/cpuinfo; then
 	board="qemu"
 elif grep -q 'DNS-321/323' /proc/cpuinfo; then
 	case $(sed -n 's/Revision.*:.\([[:digit:]]*\).*/\1/p' /proc/cpuinfo) in

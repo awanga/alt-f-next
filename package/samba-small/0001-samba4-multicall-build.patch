@@ -1,0 +1,283 @@
+diff -daur samba-small-4.6.7-orig/lib/replace/wscript samba-small-4.6.7/lib/replace/wscript
+--- samba-small-4.6.7-orig/lib/replace/wscript	2017-08-30 19:31:40.405015742 -0400
++++ samba-small-4.6.7/lib/replace/wscript	2017-08-25 18:08:11.401785234 -0400
+@@ -695,7 +695,7 @@
+                       source='''test/testsuite.c test/strptime.c
+                       test/os2_delete.c test/getifaddrs.c''',
+                       deps='replace',
+-                      cflags="-Wno-format-zero-length -Wno-format-truncation")
++                      cflags="-Wno-format-zero-length") #-Wno-format-truncation")
+ 
+     if bld.env.standalone_replace:
+         bld.SAMBA_BINARY('replace_testsuite',
+diff -daur samba-small-4.6.7-orig/Makefile samba-small-4.6.7/Makefile
+--- samba-small-4.6.7-orig/Makefile	2017-01-11 02:55:14.000000000 -0500
++++ samba-small-4.6.7/Makefile	2017-08-30 19:56:23.478370985 -0400
+@@ -1,7 +1,7 @@
+ # simple makefile wrapper to run waf
+ 
+ PYTHON?=python
+-WAF_BINARY=$(PYTHON) ./buildtools/bin/waf
++WAF_BINARY=$(PYTHON) ./buildtools/bin/waf --targets=samba_multicall
+ WAF=WAF_MAKE=1 $(WAF_BINARY)
+ 
+ all:
+diff -daur samba-small-4.6.7-orig/source3/lib/sysquotas_linux.c samba-small-4.6.7/source3/lib/sysquotas_linux.c
+--- samba-small-4.6.7-orig/source3/lib/sysquotas_linux.c	2017-01-11 02:55:15.000000000 -0500
++++ samba-small-4.6.7/source3/lib/sysquotas_linux.c	2017-08-25 18:08:11.405785184 -0400
+@@ -31,7 +31,9 @@
+ 
+ #ifdef HAVE_QUOTACTL_LINUX
+ 
+-#include <sys/quota.h>
++#include <linux/quota.h>
++#define dqblk if_dqblk
++
+ 
+ /****************************************************************************
+  Linux quota get calls.
+diff -daur samba-small-4.6.7-orig/source3/nmbd/wscript_build samba-small-4.6.7/source3/nmbd/wscript_build
+--- samba-small-4.6.7-orig/source3/nmbd/wscript_build	2017-01-11 02:55:15.000000000 -0500
++++ samba-small-4.6.7/source3/nmbd/wscript_build	2017-08-30 21:06:28.921501405 -0400
+@@ -38,3 +38,36 @@
+                  popt_samba3
+                  ''',
+                  install_path='${SBINDIR}')
++
++bld.SAMBA3_LIBRARY('nmbd_multicall',
++                 source='''
++                 asyncdns.c
++                 nmbd.c
++                 nmbd_become_dmb.c
++                 nmbd_become_lmb.c
++                 nmbd_browserdb.c
++                 nmbd_browsesync.c
++                 nmbd_elections.c
++                 nmbd_incomingdgrams.c
++                 nmbd_incomingrequests.c
++                 nmbd_lmhosts.c
++                 nmbd_logonnames.c
++                 nmbd_mynames.c
++                 nmbd_namelistdb.c
++                 nmbd_namequery.c
++                 nmbd_nameregister.c
++                 nmbd_namerelease.c
++                 nmbd_nodestatus.c
++                 nmbd_packets.c
++                 nmbd_processlogon.c
++                 nmbd_responserecordsdb.c
++                 nmbd_sendannounce.c
++                 nmbd_serverlistdb.c
++                 nmbd_subnetdb.c
++                 nmbd_winsproxy.c
++                 nmbd_winsserver.c
++                 nmbd_workgroupdb.c
++                 nmbd_synclists.c
++                 ''',
++                 cflags='-Dmain=nmbd_main',
++                 private_library=True)
+diff -daur samba-small-4.6.7-orig/source3/utils/wscript_build samba-small-4.6.7/source3/utils/wscript_build
+--- samba-small-4.6.7-orig/source3/utils/wscript_build	2017-02-28 15:04:57.000000000 -0500
++++ samba-small-4.6.7/source3/utils/wscript_build	2017-08-30 21:06:56.525154380 -0400
+@@ -20,6 +20,12 @@
+                  popt_samba3
+                  PRINTBASE''')
+ 
++bld.SAMBA3_LIBRARY('smbtree_multicall',
++                 source='smbtree.c',
++                 cflags='-Dmain=smbtree_main',
++                 install=False,
++                 private_library=True)
++
+ bld.SAMBA3_BINARY('smbtree',
+                  source='smbtree.c',
+                  deps='''
+@@ -39,6 +45,18 @@
+                  PASSWD_UTIL
+                  PASSCHANGE''')
+ 
++bld.SAMBA3_LIBRARY('smbpasswd_multicall',
++                 source='smbpasswd.c',
++#                 deps='''
++#                 talloc
++#                 smbconf
++#                 pdb
++#                 PASSWD_UTIL
++#                 PASSCHANGE
++#                 ''',
++                 cflags='-Dmain=smbpasswd_main',
++                 private_library=True)
++
+ bld.SAMBA3_BINARY('pdbedit',
+                  source='pdbedit.c',
+                  deps='''
+diff -daur samba-small-4.6.7-orig/source3/wscript samba-small-4.6.7/source3/wscript
+--- samba-small-4.6.7-orig/source3/wscript	2017-05-23 04:19:23.000000000 -0400
++++ samba-small-4.6.7/source3/wscript	2017-08-25 18:08:11.409785133 -0400
+@@ -1674,7 +1674,7 @@
+                                       vfs_recycle vfs_audit vfs_extd_audit vfs_full_audit vfs_netatalk
+                                       vfs_fake_perms vfs_default_quota vfs_readonly vfs_cap
+                                       vfs_expand_msdfs vfs_shadow_copy vfs_shadow_copy2
+-                                      vfs_readahead vfs_xattr_tdb vfs_posix_eadb
++                                      vfs_readahead vfs_xattr_tdb #vfs_posix_eadb
+                                       vfs_streams_xattr vfs_streams_depot vfs_acl_xattr vfs_acl_tdb
+                                       vfs_preopen vfs_catia
+                                       vfs_media_harmony vfs_unityed_media vfs_fruit vfs_shell_snap
+diff -daur samba-small-4.6.7-orig/source3/wscript_build samba-small-4.6.7/source3/wscript_build
+--- samba-small-4.6.7-orig/source3/wscript_build	2017-05-23 04:19:23.000000000 -0400
++++ samba-small-4.6.7/source3/wscript_build	2017-08-30 20:59:25.954818816 -0400
+@@ -1161,13 +1161,16 @@
+                       ''',
+                  install=False)
+ 
+-smbstatus_source = 'utils/status.c smbd/notify_msg.c'
++smbstatus_source = 'utils/status.c'
+ 
+ if bld.CONFIG_GET("WITH_PROFILE"):
+     smbstatus_source += ' utils/status_profile.c'
+ else:
+     smbstatus_source += ' utils/status_profile_dummy.c'
+ 
++#if not bld.SAMBA3_IS_STATIC_MODULE('samba_multicall'):
++#    smbstatus_source += ' smbd/notify_msg.c'
++
+ bld.SAMBA3_BINARY('smbstatus',
+                  source=smbstatus_source,
+                  deps='''
+@@ -1343,6 +1346,49 @@
+                  enabled=bld.env.with_spotlight,
+                  install=False)
+ 
++########################## MULTICALL ################################
++
++bld.SAMBA3_LIBRARY('smbstatus_multicall',
++                 source=smbstatus_source,
++                 cflags='-Dmain=smbstatus_main',
++                 install=False,
++                 private_library=True)
++
++bld.SAMBA3_LIBRARY('smbd_base_multicall',
++                 source='smbd/server.c smbd/smbd_cleanupd.c',
++                 cflags='-Dmain=smbd_main',
++                 install=False,
++                 private_library=True)
++
++bld.SAMBA3_BINARY('samba_multicall',
++                 source='multicall/multi.c',
++                 deps='''
++                      smbd_base_multicall
++                      nmbd_multicall
++                      smbpasswd_multicall
++                      smbstatus_multicall
++                      smbtree_multicall
++                      talloc
++                      tevent
++                      libsmb
++                      smbconf
++                      popt_samba3
++                      smbd_base
++                      msrpc3
++                      pdb
++                      PASSWD_UTIL
++                      PASSCHANGE
++                      EPMD
++                      LSASD
++                      FSSD
++                      MDSSD
++                      SPOOLSSD
++                      LOCKING
++                      PROFILE
++                      ''',
++#                      RPC_NDR_SRVSVC
++                 install_path='${SBINDIR}')
++
+ ########################## INCLUDES #################################
+ 
+ bld.RECURSE('auth')
+diff -daur samba-small-4.6.7-orig/source4/heimdal_build/wscript_build samba-small-4.6.7/source4/heimdal_build/wscript_build
+--- samba-small-4.6.7-orig/source4/heimdal_build/wscript_build	2017-01-11 02:55:15.000000000 -0500
++++ samba-small-4.6.7/source4/heimdal_build/wscript_build	2017-08-25 18:08:11.413785083 -0400
+@@ -917,9 +917,12 @@
+         includes='../heimdal/lib/asn1',
+         group='build_compilers',
+         deps='ROKEN_HOSTCC LIBREPLACE_HOSTCC HEIMDAL_VERS_HOSTCC',
+-        install=False
++        #install=False
+     )
+-    bld.env['ASN1_COMPILE'] = os.path.join(bld.env['BUILD_DIRECTORY'], 'asn1_compile')
++    #bld.env['ASN1_COMPILE'] = os.path.join(bld.env['BUILD_DIRECTORY'], 'asn1_compile')
++
++if bld.CONFIG_SET('USING_SYSTEM_ASN1_COMPILE'):
++    bld.env['ASN1_COMPILE'] = 'asn1_compile'
+ 
+ 
+ if not bld.CONFIG_SET('USING_SYSTEM_COMPILE_ET'):
+@@ -931,9 +934,12 @@
+         group='build_compilers',
+         cflags='-DSOCKET_WRAPPER_DISABLE=1 -D_SAMBA_HOSTCC_',
+         deps='ROKEN_HOSTCC LIBREPLACE_HOSTCC HEIMDAL_VERS_HOSTCC',
+-        install=False
++        #install=False
+         )
+-    bld.env['COMPILE_ET'] = os.path.join(bld.env['BUILD_DIRECTORY'], 'compile_et')
++    #bld.env['COMPILE_ET'] = os.path.join(bld.env['BUILD_DIRECTORY'], 'compile_et')
++
++if bld.CONFIG_SET('USING_SYSTEM_COMPILE_ET'):
++    bld.env['COMPILE_ET'] = 'compile_et'
+ 
+ HEIMDAL_BINARY('samba4kinit',
+     'kuser/kinit.c',
+diff -daur samba-small-4.6.7-orig/source4/heimdal_build/wscript_configure samba-small-4.6.7/source4/heimdal_build/wscript_configure
+--- samba-small-4.6.7-orig/source4/heimdal_build/wscript_configure	2017-01-11 02:55:15.000000000 -0500
++++ samba-small-4.6.7/source4/heimdal_build/wscript_configure	2017-08-25 18:08:11.413785083 -0400
+@@ -170,6 +170,8 @@
+ conf.define('HAVE_KRB5_PRINCIPAL_GET_TYPE', 1)
+ conf.define('HAVE_KRB5_WARNX', 1)
+ conf.define('HAVE_KRB5_PROMPT_TYPE', 1)
++conf.define('USING_SYSTEM_ASN1_COMPILE', 1)
++conf.define('USING_SYSTEM_COMPILE_ET', 1)
+ 
+ heimdal_includedirs = []
+ heimdal_libdirs = []
+--- /dev/null	2017-08-31 06:11:43.215827568 -0400
++++ samba-small-4.6.7/source3/multicall/multi.c	2017-08-25 18:08:11.413785083 -0400
+@@ -0,0 +1,39 @@
++#include <stdio.h>
++#include <string.h>
++
++extern int smbd_main(int argc, char **argv);
++extern int nmbd_main(int argc, char **argv);
++extern int smbpasswd_main(int argc, char **argv);
++extern int smbstatus_main(int argc, char **argv);
++extern int smbtree_main(int argc, char **argv);
++
++static struct {
++	const char *name;
++	int (*func)(int argc, char **argv);
++} multicall[] = {
++	{ "smbd", smbd_main },
++	{ "nmbd", nmbd_main },
++	{ "smbpasswd", smbpasswd_main },
++	{ "smbstatus", smbstatus_main },
++	{ "smbtree", smbtree_main },
++};
++
++#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
++
++int main(int argc, char **argv)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(multicall); i++) {
++		if (strstr(argv[0], multicall[i].name))
++			return multicall[i].func(argc, argv);
++	}
++
++	fprintf(stderr, "Invalid multicall command, available commands:");
++	for (i = 0; i < ARRAY_SIZE(multicall); i++)
++		fprintf(stderr, " %s", multicall[i].name);
++
++	fprintf(stderr, "\n");
++
++	return 1;
++}

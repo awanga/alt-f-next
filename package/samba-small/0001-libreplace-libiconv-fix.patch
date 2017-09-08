@@ -1,0 +1,16 @@
+--- a/lib/replace/system/iconv.h	2017-08-18 08:40:42.895014673 -0400
++++ b/lib/replace/system/iconv.h	2017-08-18 08:40:29.751179913 -0400
+@@ -48,6 +48,13 @@
+ #endif
+ #endif /* HAVE_NATIVE_ICONV */
+ 
++#undef iconv_t
++typedef void* iconv_t;
++
++#define iconv		libiconv
++#define iconv_open	libiconv_open
++#define iconv_close	libiconv_close
++
+ /* needed for some systems without iconv. Doesn't really matter
+    what error code we use */
+ #ifndef EILSEQ

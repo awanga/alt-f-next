@@ -19,13 +19,13 @@ deps_status() {
 	grep -E '(Package:|Version:|Depends:|Architecture:)' $CWD/ipkgfiles/$1.control
 	echo "Status: install user installed"
 	echo "Installed-Time: $(date +%s)"
-					
+
 	if test -f $CWD/ipkgfiles/$1.conffiles; then
 		echo Conffiles: 
 		for j in $(cat $CWD/ipkgfiles/$1.conffiles); do
-			echo "$j $(md5sum $BLDDIR/project_build_arm/$board/root/$j | cut -d" " -f1)"
+			echo "$j $(md5sum $BLDDIR/target/$j | cut -d" " -f1)"
 		done
-	fi  
+	fi
 	echo
 }
 
@@ -89,7 +89,7 @@ fi
 
 . .config 2> /dev/null
 board=$BR2_PROJECT
-kver=$BR2_CUSTOM_LINUX26_VERSION
+kver=$BR2_LINUX_KERNEL_VERSION
 
 EXT=$COMP
 if test "$COMP" = "xz"; then
@@ -133,6 +133,8 @@ case $board in
 	*) echo "mkinitramfs: Unsupported \"$board\" board"; exit 1;;
 esac
 
+mkdir -p ${BLDDIR}/images/$board
+
 CWD=$PWD
 
 # base packages /etc configuration files
@@ -146,7 +148,7 @@ all_conf=$(for i in $all; do grep './etc/' $CWD/ipkgfiles/$i.lst; done)
 if test "$TYPE" = "cpio"; then # standard initramfs
 	beroot
 
-	cd ${BLDDIR}/binaries/$board
+	cd ${BLDDIR}/images
 	mkdir -p tmp
 
 	mount -o ro,loop rootfs.arm.ext2 tmp
@@ -162,7 +164,7 @@ if test "$TYPE" = "cpio"; then # standard initramfs
 elif test "$TYPE" = "squsr"; then # standard initramfs with /usr squashed
 	beroot
 
-	cd ${BLDDIR}/binaries/$board
+	cd ${BLDDIR}/images
 	mkdir -p tmp
 
 	cp rootfs.arm.ext2 rootfs.arm.ext2.tmp
@@ -185,33 +187,36 @@ elif test "$TYPE" = "squsr"; then # standard initramfs with /usr squashed
 # DNS-321/323
 elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 
-	cd ${BLDDIR}/project_build_arm/$board/
+	cd ${BLDDIR}/target
 
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 
 	# create ipkg status file stating which packages are pre installed
-	echo "$fw_pkgs_deps" | sort -u > root/etc/preinst
-	rm -f root/etc/preinst.status
+	echo "$fw_pkgs_deps" | sort -u > etc/preinst
+	rm -f etc/preinst.status
 	for i in $(echo "$fw_pkgs_deps" | cut -d' ' -f1); do
 		deps_check $i
 		deps_status $i
-	done >> root/etc/preinst.status
+	done >> etc/preinst.status
 	
 	# update /etc/settings with pre installed package configuration files
-	echo -e "$base_conf\n$all_conf" | sort | uniq -u | grep -vE '/etc/init.d|/etc/avahi/services' | sed 's|^./|/|' >> root/etc/settings
+	echo -e "$base_conf\n$all_conf" | sort | uniq -u | grep -vE '/etc/init.d|/etc/avahi/services' | sed 's|^./|/|' >> etc/settings
 
 	# mksquashfs can create device nodes
-	rm -f root/dev/null root/dev/console
-	if ! test -f $CWD/mksquashfs.pf; then
-		cat<<-EOF > $CWD/mksquashfs.pf
+	rm -f dev/null dev/console
+	if ! test -f $CWD/output/build/mksquashfs.pf; then
+		cat<<-EOF > $CWD/output/build/mksquashfs.pf
 		/dev/null c 666 root root 1 3
 		/dev/console c 600 root root 5 1
 		EOF
 	fi
-	mksquashfs root rootfs.arm.$TYPE.$EXT -comp $COMP -noappend -b $SQFSBLK \
-		-always-use-fragments -all-root -pf $CWD/mksquashfs.pf
 
-	mv rootfs.arm.sqall.$EXT ${BLDDIR}/binaries/$board
+	cd ${BLDDIR}/images
+
+	mksquashfs ${BLDDIR}/target rootfs.arm.$TYPE.$EXT -comp $COMP -noappend -b $SQFSBLK \
+		-always-use-fragments -all-root -pf $CWD/output/build/mksquashfs.pf
+
+	mv rootfs.arm.sqall.$EXT ${BLDDIR}/images/$board/
 
 # DNS-320/325/327
 elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage with extra files
@@ -221,7 +226,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 		exit 1
 	fi
 
-	cd ${BLDDIR}/project_build_arm/$board/
+	cd ${BLDDIR}/target
 
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 	sq_pkgs_deps=$(for i in $sq_pkgs; do rdeps $i; done | sort -u)
@@ -248,17 +253,17 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	#echo -e "$fw_pkgs_deps" | sort -u > $CWD/fw
 	#echo -e "$sq_pkgs_deps" | sort -u > $CWD/sq
 
-	echo -e "$fw_pkgs_deps\n$sq_pkgs_deps" | sort -u > root/etc/preinst
+	echo -e "$fw_pkgs_deps\n$sq_pkgs_deps" | sort -u > etc/preinst
 
 	# create ipkg status file stating which packages are pre installed
-	rm -f root/etc/preinst.status
+	rm -f etc/preinst.status
 	for i in $(echo "$fw_pkgs_deps" | cut -d' ' -f1); do
 		deps_check $i
 		deps_status $i
-	done >> root/etc/preinst.status
+	done >> etc/preinst.status
 
 	# update /etc/settings with pre installed package configuration files
-	echo -e "$base_conf\n$all_conf" | sort | uniq -u | grep -vE '/etc/init.d|/etc/avahi/services' | sed 's|^./|/|' >> root/etc/settings
+	echo -e "$base_conf\n$all_conf" | sort | uniq -u | grep -vE '/etc/init.d|/etc/avahi/services' | sed 's|^./|/|' >> etc/settings
 	
 	# create sqimage pkgs file list and ipkg status file stating which packages are pre installed
 	TF=$(mktemp)
@@ -266,7 +271,9 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 		deps_check $i
 		deps_status $i
 		cat $CWD/ipkgfiles/$i.lst >> $TF
-	done >> root/etc/preinst.status 
+	done >> etc/preinst.status 
+
+	cd ${BLDDIR}/images
 
 	# sqimage files list, to be removed from base and present only on sqimage
 	sqimagefiles=$(cat $TF | sort -u)
@@ -286,19 +293,19 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	find sqimage -depth -type d -empty -exec rmdir {} \;
 	
 	rm -f image/dev/null image/dev/console # mksquashfs can create device nodes
-	if ! test -f $CWD/mksquashfs.pf; then
-		cat<<-EOF > $CWD/mksquashfs.pf
+	if ! test -f $CWD/output/build/mksquashfs.pf; then
+		cat<<-EOF > $CWD/output/build/mksquashfs.pf
 		/dev/null c 666 root root 1 3
 		/dev/console c 600 root root 5 1
 		EOF
 	fi
 	mksquashfs image rootfs.arm.sqall.$EXT -comp $COMP -noappend -b $SQFSBLK \
-		-always-use-fragments -all-root -pf $CWD/mksquashfs.pf
+		-always-use-fragments -all-root -pf $CWD/output/build/mksquashfs.pf
 
 	mksquashfs sqimage rootfs.arm.sqimage.$EXT -comp $COMP -noappend -b $SQFSBLK \
 		-always-use-fragments -all-root
 
-	mv rootfs.arm.sqall.$EXT rootfs.arm.sqimage.$EXT ${BLDDIR}/binaries/$board
+	mv rootfs.arm.sqall.$EXT rootfs.arm.sqimage.$EXT ${BLDDIR}/images/$board/
 
 else
 	usage
