@@ -1,13 +1,18 @@
 ################################################################################
 #
-# xfont_encodings -- No description available
+# xfont_encodings
 #
 ################################################################################
 
-XFONT_ENCODINGS_VERSION = 1.0.2
+XFONT_ENCODINGS_VERSION = 1.0.4
 XFONT_ENCODINGS_SOURCE = encodings-$(XFONT_ENCODINGS_VERSION).tar.bz2
 XFONT_ENCODINGS_SITE = http://xorg.freedesktop.org/releases/individual/font
-XFONT_ENCODINGS_AUTORECONF = NO
-XFONT_ENCODINGS_MAKE_OPT =
+XFONT_ENCODINGS_LICENSE = Public Domain
+XFONT_ENCODINGS_LICENSE_FILES = COPYING
 
-$(eval $(call AUTOTARGETS,package/x11r7,xfont_encodings))
+XFONT_ENCODINGS_DEPENDENCIES = host-xapp_mkfontscale host-pkgconf xutil_util-macros
+HOST_XFONT_ENCODINGS_DEPENDENCIES = \
+	host-xapp_mkfontscale host-pkgconf host-xutil_util-macros
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

@@ -16,4 +16,16 @@ config BR2_PACKAGE_QT_GFX_VNC
 config BR2_PACKAGE_QT_GFX_MULTISCREEN
 	bool "multiscreen"
 
+comment "directfb Qt driver not available (need directfb)"
+	depends on !BR2_PACKAGE_DIRECTFB
+
+config BR2_PACKAGE_QT_GFX_DIRECTFB
+	bool "directFB"
+	depends on BR2_PACKAGE_DIRECTFB
+
+config BR2_PACKAGE_QT_GFX_POWERVR
+	bool "powervr"
+	depends on BR2_PACKAGE_QT_OPENGL_ES
+	depends on BR2_PACKAGE_HAS_POWERVR
+
 endmenu

@@ -1,286 +1,348 @@
-#############################################################
+################################################################################
 #
 # php
 #
-#############################################################
+################################################################################
 
-PHP_SITE = http://php.net/distributions
-PHP_VERSION = 5.4.34
-
-PHP_SOURCE = php-$(PHP_VERSION).tar.bz2
+PHP_VERSION = 7.1.7
+PHP_SITE = http://www.php.net/distributions
+PHP_SOURCE = php-$(PHP_VERSION).tar.xz
 PHP_INSTALL_STAGING = YES
-PHP_INSTALL_STAGING_OPT = INSTALL_ROOT=$(STAGING_DIR) install
-PHP_INSTALL_TARGET_OPT = INSTALL_ROOT=$(TARGET_DIR) install
-PHP_LIBTOOL_PATCH = NO
-PHP_DEPENDENCIES = uclibc
+PHP_INSTALL_STAGING_OPTS = INSTALL_ROOT=$(STAGING_DIR) install
+PHP_INSTALL_TARGET_OPTS = INSTALL_ROOT=$(TARGET_DIR) install
+PHP_DEPENDENCIES = host-pkgconf
+PHP_LICENSE = PHP-3.01
+PHP_LICENSE_FILES = LICENSE
+PHP_CONF_OPTS = \
+	--mandir=/usr/share/man \
+	--infodir=/usr/share/info \
+	--disable-all \
+	--without-pear \
+	--with-config-file-path=/etc \
+	--disable-phpdbg \
+	--disable-rpath
+PHP_CONF_ENV = \
+	ac_cv_func_strcasestr=yes \
+	EXTRA_LIBS="$(PHP_EXTRA_LIBS)"
 
-PHP_CONF_ENV = ac_cv_func_dlopen=yes \
-	ac_cv_lib_dl_dlopen=yes \
-	ac_cv_func_libiconv=yes \
-	ac_cv_pthreads_lib=-lpthread \
-	EXTENSION_DIR=/usr/lib/php5/extensions \
-	EXTRA_LIBS=-lpthread
-
-PHP_CONF_OPT = $(DISABLE_IPV6) \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--program-transform-name='' \
-		--with-config-file-path=/etc \
-		--localstatedir=/var \
-		--disable-all \
-		--without-pear \
-		--with-zlib-dir=${STAGING_DIR}/usr \
-		--with-jpeg-dir=${STAGING_DIR}/usr \
-		--with-png-dir=${STAGING_DIR}/usr \
-		--with-openssl-dir=${STAGING_DIR}/usr \
-		--with-libxml-dir=${STAGING_DIR}/usr \
-
-ifneq ($(BR2_PACKAGE_PHP_CLI),y)
-	PHP_CONF_OPT += --disable-cli
-else
-	PHP_CONF_OPT += --enable-cli
+ifeq ($(BR2_STATIC_LIBS),y)
+PHP_CONF_ENV += LIBS="$(PHP_STATIC_LIBS)"
 endif
 
-ifneq ($(BR2_PACKAGE_PHP_CGI),y)
-	PHP_CONF_OPT += --disable-cgi
+ifeq ($(BR2_STATIC_LIBS)$(BR2_TOOLCHAIN_HAS_THREADS),yy)
+PHP_STATIC_LIBS += -lpthread
+endif
+
+ifeq ($(call qstrip,$(BR2_TARGET_LOCALTIME)),)
+PHP_LOCALTIME = UTC
 else
-	PHP_CONF_OPT += --enable-cgi
+# Not q-stripping this value, as we need quotes in the php.ini file
+PHP_LOCALTIME = $(BR2_TARGET_LOCALTIME)
+endif
+
+# PHP can't be AUTORECONFed the standard way unfortunately
+PHP_DEPENDENCIES += host-autoconf host-automake host-libtool
+define PHP_BUILDCONF
+	cd $(@D) ; $(TARGET_MAKE_ENV) ./buildconf --force
+endef
+PHP_PRE_CONFIGURE_HOOKS += PHP_BUILDCONF
+
+ifeq ($(BR2_ENDIAN),"BIG")
+PHP_CONF_ENV += ac_cv_c_bigendian_php=yes
+else
+PHP_CONF_ENV += ac_cv_c_bigendian_php=no
+endif
+PHP_CONFIG_SCRIPTS = php-config
+
+PHP_CFLAGS = $(TARGET_CFLAGS)
+
+# The OPcache extension isn't cross-compile friendly
+# Throw some defines here to avoid patching heavily
+ifeq ($(BR2_PACKAGE_PHP_EXT_OPCACHE),y)
+PHP_CONF_OPTS += --enable-opcache
+PHP_CONF_ENV += ac_cv_func_mprotect=yes
+PHP_CFLAGS += \
+	-DHAVE_SHM_IPC \
+	-DHAVE_SHM_MMAP_ANON \
+	-DHAVE_SHM_MMAP_ZERO \
+	-DHAVE_SHM_MMAP_POSIX \
+	-DHAVE_SHM_MMAP_FILE
+endif
+
+# We need to force dl "detection"
+ifeq ($(BR2_STATIC_LIBS),)
+PHP_CONF_ENV += ac_cv_func_dlopen=yes ac_cv_lib_dl_dlopen=yes
+PHP_EXTRA_LIBS += -ldl
+else
+PHP_CONF_ENV += ac_cv_func_dlopen=no ac_cv_lib_dl_dlopen=no
+endif
+
+PHP_CONF_OPTS += $(if $(BR2_PACKAGE_PHP_SAPI_CLI),--enable-cli,--disable-cli)
+PHP_CONF_OPTS += $(if $(BR2_PACKAGE_PHP_SAPI_CGI),--enable-cgi,--disable-cgi)
+PHP_CONF_OPTS += $(if $(BR2_PACKAGE_PHP_SAPI_FPM),--enable-fpm,--disable-fpm)
+
+ifeq ($(BR2_PACKAGE_PHP_SAPI_APACHE),y)
+PHP_DEPENDENCIES += apache
+PHP_CONF_OPTS += --with-apxs2=$(STAGING_DIR)/usr/bin/apxs
+
+# Enable thread safety option if Apache MPM is event or worker
+ifeq ($(BR2_PACKAGE_APACHE_MPM_EVENT)$(BR2_PACKAGE_APACHE_MPM_WORKER),y)
+PHP_CONF_OPTS += --enable-maintainer-zts
+endif
 endif
 
 ### Extensions
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_PHAR),y)
-	PHP_CONF_OPT += --enable-phar=shared,${STAGING_DIR}/usr
-	PHP_DEPENDENCIES += zlib bzip2
-	# FIXME:php-hosthost should be build with phar extension enabled, cross-compiling phar extension needs it
-	PHP_MAKE_OPT = PHP_EXECUTABLE=/usr/bin/php
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_LIBICONV),y)
-	PHP_CONF_OPT += --with-iconv=shared,${STAGING_DIR}/usr
-	PHP_DEPENDENCIES += libiconv
-endif
-
-# PHP has its own version of libgd! Better if they changed its name!
-ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
-	PHP_CONF_OPT += --with-gd=shared
-	PHP_DEPENDENCIES += libpng
-endif
+PHP_CONF_OPTS += \
+	$(if $(BR2_PACKAGE_PHP_EXT_SOCKETS),--enable-sockets) \
+	$(if $(BR2_PACKAGE_PHP_EXT_POSIX),--enable-posix) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SESSION),--enable-session) \
+	$(if $(BR2_PACKAGE_PHP_EXT_HASH),--enable-hash) \
+	$(if $(BR2_PACKAGE_PHP_EXT_DOM),--enable-dom) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SIMPLEXML),--enable-simplexml) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SOAP),--enable-soap) \
+	$(if $(BR2_PACKAGE_PHP_EXT_XML),--enable-xml) \
+	$(if $(BR2_PACKAGE_PHP_EXT_XMLREADER),--enable-xmlreader) \
+	$(if $(BR2_PACKAGE_PHP_EXT_XMLWRITER),--enable-xmlwriter) \
+	$(if $(BR2_PACKAGE_PHP_EXT_EXIF),--enable-exif) \
+	$(if $(BR2_PACKAGE_PHP_EXT_FTP),--enable-ftp) \
+	$(if $(BR2_PACKAGE_PHP_EXT_JSON),--enable-json) \
+	$(if $(BR2_PACKAGE_PHP_EXT_TOKENIZER),--enable-tokenizer) \
+	$(if $(BR2_PACKAGE_PHP_EXT_PCNTL),--enable-pcntl) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SHMOP),--enable-shmop) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SYSVMSG),--enable-sysvmsg) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SYSVSEM),--enable-sysvsem) \
+	$(if $(BR2_PACKAGE_PHP_EXT_SYSVSHM),--enable-sysvshm) \
+	$(if $(BR2_PACKAGE_PHP_EXT_ZIP),--enable-zip) \
+	$(if $(BR2_PACKAGE_PHP_EXT_CTYPE),--enable-ctype) \
+	$(if $(BR2_PACKAGE_PHP_EXT_FILTER),--enable-filter) \
+	$(if $(BR2_PACKAGE_PHP_EXT_CALENDAR),--enable-calendar) \
+	$(if $(BR2_PACKAGE_PHP_EXT_FILEINFO),--enable-fileinfo) \
+	$(if $(BR2_PACKAGE_PHP_EXT_BCMATH),--enable-bcmath) \
+	$(if $(BR2_PACKAGE_PHP_EXT_MBSTRING),--enable-mbstring) \
+	$(if $(BR2_PACKAGE_PHP_EXT_PHAR),--enable-phar)
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_MCRYPT),y)
-	PHP_CONF_OPT += --with-mcrypt=shared,${STAGING_DIR}/usr
-	PHP_DEPENDENCIES += libmcrypt
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_CURL),y)
-	PHP_CONF_OPT += --with-curl=shared,${STAGING_DIR}/usr
-	PHP_DEPENDENCIES += libcurl
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_CTYPE),y)
-	PHP_CONF_OPT += --enable-ctype=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_FILEINFO),y)
-	PHP_CONF_OPT += --enable-fileinfo=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SNMP),y)
-	# when using /usr/lib/libnetsnmp.so.20.0.1 lots of tests fail
-	PHP_CONF_OPT += --with-snmp=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += netsnmp
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_MBSTRING),y)
-	PHP_CONF_OPT += --enable-mbstring=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_DOM),y)
-	PHP_CONF_OPT += --enable-dom=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_HASH),y)
-	PHP_CONF_OPT += --enable-hash=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_TOKENIZER),y)
-	PHP_CONF_OPT += --enable-tokenizer=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SOAP),y)
-	PHP_CONF_OPT += --enable-soap=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SOCKETS),y)
-	PHP_CONF_OPT += --enable-sockets=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_POSIX),y)
-	PHP_CONF_OPT += --enable-posix=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SESSION),y)
-	PHP_CONF_OPT += --enable-session=shared
+PHP_CONF_OPTS += --with-mcrypt=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += libmcrypt
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_OPENSSL),y)
-	PHP_CONF_OPT += --with-openssl=shared,$(STAGING_DIR)/usr  
-	PHP_DEPENDENCIES += openssl
+PHP_CONF_OPTS += --with-openssl=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += openssl
+# openssl needs zlib, but the configure script forgets to link against
+# it causing detection failures with static linking
+PHP_STATIC_LIBS += `$(PKG_CONFIG_HOST_BINARY) --libs openssl`
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_LIBXML2),y)
-	PHP_CONF_OPT += --enable-libxml=shared \
-		--enable-xml=shared \
-		--enable-xmlreader=shared \
-		--enable-xmlwriter=shared
-	PHP_DEPENDENCIES += libxml2
+PHP_CONF_ENV += php_cv_libxml_build_works=yes
+PHP_CONF_OPTS += --enable-libxml --with-libxml-dir=${STAGING_DIR}/usr
+PHP_DEPENDENCIES += libxml2
 endif
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_SIMPLEXML),y)
-	PHP_CONF_OPT += --enable-simplexml=shared
+ifeq ($(BR2_PACKAGE_PHP_EXT_WDDX),y)
+PHP_CONF_OPTS += --enable-wddx --with-libexpat-dir=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += expat
 endif
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_ZLIB),y)
-	PHP_CONF_OPT += --with-zlib=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += zlib
+ifeq ($(BR2_PACKAGE_PHP_EXT_XMLRPC),y)
+PHP_CONF_OPTS += \
+	--with-xmlrpc \
+	$(if $(BR2_PACKAGE_LIBICONV),--with-iconv-dir=$(STAGING_DIR)/usr)
+PHP_DEPENDENCIES += $(if $(BR2_PACKAGE_LIBICONV),libiconv)
 endif
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_EXIF),y)
-	PHP_CONF_OPT += --enable-exif=shared
-	PHP_DEPENDENCIES += libexif
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_FTP),y)
-	PHP_CONF_OPT += --enable-ftp=shared
+ifneq ($(BR2_PACKAGE_PHP_EXT_ZLIB)$(BR2_PACKAGE_PHP_EXT_ZIP),)
+PHP_CONF_OPTS += --with-zlib=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += zlib
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_GETTEXT),y)
-	PHP_CONF_OPT += --with-gettext=$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += gettext
+PHP_CONF_OPTS += --with-gettext=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += $(if $(BR2_NEEDS_GETTEXT),gettext)
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_ICONV),y)
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+PHP_CONF_OPTS += --with-iconv=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += libiconv
+else
+PHP_CONF_OPTS += --with-iconv
+endif
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_INTL),y)
+PHP_CONF_OPTS += --enable-intl --with-icu-dir=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += icu
+# The intl module is implemented in C++, but PHP fails to use
+# g++ as the compiler for the final link. As a workaround,
+# tell it to link libstdc++.
+PHP_EXTRA_LIBS += -lstdc++
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_GMP),y)
-	PHP_CONF_OPT += --with-gmp=$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += libgmp
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_JSON),y)
-	PHP_CONF_OPT += --enable-json=shared
+PHP_CONF_OPTS += --with-gmp=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += gmp
 endif
 
 ifeq ($(BR2_PACKAGE_PHP_EXT_READLINE),y)
-	PHP_CONF_OPT += --with-readline=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += readline
+PHP_CONF_OPTS += --with-readline=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += readline
 endif
 
-ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVMSG),y)
-	PHP_CONF_OPT += --enable-sysvmsg=shared
+### Native SQL extensions
+ifeq ($(BR2_PACKAGE_PHP_EXT_MYSQLI),y)
+PHP_CONF_OPTS += --with-mysqli
 endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVSEM),y)
-	PHP_CONF_OPT += --enable-sysvsem=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_SYSVSHM),y)
-	PHP_CONF_OPT += --enable-sysvshm=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_ZIP),y)
-	PHP_CONF_OPT += --enable-zip=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_BZIP2),y)
-	PHP_CONF_OPT += --with-bz2=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += bzip2
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_FILTER),y)
-	PHP_CONF_OPT += --enable-filter=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_CALENDAR),y)
-	PHP_CONF_OPT += --enable-calendar=shared
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_PCRE),y)
-	PHP_CONF_OPT += --with-pcre-regex
-endif
-
-# PHP segfaults if linked agains a threadsafe compiled sqlite!
-# and it also segfaults when mysql is enabled!
-
 ifeq ($(BR2_PACKAGE_PHP_EXT_SQLITE),y)
-	#PHP_CONF_ENV += CFLAGS+=" -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_ENABLE_UNLOCK_NOTIFY"
-	PHP_CONF_OPT += --with-sqlite3=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += sqlite
-endif
-
-ifeq ($(BR2_PACKAGE_PHP_EXT_MYSQL),y)
-	PHP_CONF_OPT += --with-mysql=shared,$(STAGING_DIR)/usr
-	PHP_DEPENDENCIES += mysql
+PHP_CONF_OPTS += --with-sqlite3=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += sqlite
+PHP_STATIC_LIBS += `$(PKG_CONFIG_HOST_BINARY) --libs sqlite3`
 endif
 
 ### PDO
-# see above comment regarding sqlite
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO),y)
-	PHP_CONF_OPT += --enable-pdo=shared
-
-	ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
-		ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE_EXTERNAL),y)
-			PHP_CONF_OPT += --with-pdo-sqlite=shared,$(STAGING_DIR)/usr
-		else
-			PHP_CONF_OPT += --with-pdo-sqlite=shared
-		endif
-		PHP_DEPENDENCIES += sqlite
-	endif
-
-	ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
-		ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL_EXTERNAL),y)
-			PHP_CONF_OPT += --with-pdo-mysql=shared,$(STAGING_DIR)/usr
-		else
-			PHP_CONF_OPT += --with-pdo-mysql=shared
-		endif
-		PHP_DEPENDENCIES += mysql
-	endif
+PHP_CONF_OPTS += --enable-pdo
+ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_SQLITE),y)
+PHP_CONF_OPTS += --with-pdo-sqlite=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += sqlite
+PHP_CFLAGS += -DSQLITE_OMIT_LOAD_EXTENSION
 endif
-
-ifeq (y,n)
-PHP_CONF_OPT += --enable-pdo=shared \
-	--with-sqlite3=shared,$(STAGING_DIR)/usr --with-pdo-sqlite=shared,$(STAGING_DIR)/usr \
-	--with-mysql=shared,$(STAGING_DIR)/usr --with-pdo-mysql=shared,$(STAGING_DIR)/usr
-
-PHP_DEPENDENCIES += mysql sqlite
-endif
-
-$(eval $(call AUTOTARGETS,package,php))
-
-$(PHP_HOOK_POST_EXTRACT):
-	sed -i '/unset.*ac_cv_func_dlopen/d' $(PHP_DIR)/configure
-	touch $@
-	
-$(PHP_HOOK_POST_CONFIGURE):
 ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),y)
-	# configure can't check for some C types (cross-compiling)
-	touch $(PHP_DIR)/ext/mysqlnd/php_mysqlnd_config.h
+PHP_CONF_OPTS += --with-pdo-mysql
 endif
-	# install-programs target sometimes fails (build/shtool mkdir -p concurrency issue?)
-	mkdir -p $(TARGET_DIR)/usr/share/man/man1
-	touch $@
+ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_POSTGRESQL),y)
+PHP_CONF_OPTS += --with-pdo-pgsql=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += postgresql
+endif
+ifeq ($(BR2_PACKAGE_PHP_EXT_PDO_UNIXODBC),y)
+PHP_CONF_OPTS += --with-pdo-odbc=unixODBC,$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += unixodbc
+endif
+endif
 
-$(PHP_HOOK_POST_INSTALL):
+ifneq ($(BR2_PACKAGE_PHP_EXT_MYSQLI)$(BR2_PACKAGE_PHP_EXT_PDO_MYSQL),)
+# Set default MySQL unix socket to what the MySQL server is using by default
+PHP_CONF_OPTS += --with-mysql-sock=$(MYSQL_SOCKET)
+endif
+
+define PHP_DISABLE_PCRE_JIT
+	$(SED) '/^#define SUPPORT_JIT/d' $(@D)/ext/pcre/pcrelib/config.h
+endef
+
+### Use external PCRE if it's available
+ifeq ($(BR2_PACKAGE_PCRE),y)
+PHP_CONF_OPTS += --with-pcre-regex=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += pcre
+else
+# The bundled pcre library is not configurable through ./configure options,
+# and by default is configured to be thread-safe, so it wants pthreads. So
+# we must explicitly tell it when we don't have threads.
+ifeq ($(BR2_TOOLCHAIN_HAS_THREADS),)
+PHP_CFLAGS += -DSLJIT_SINGLE_THREADED=1
+endif
+# check ext/pcre/pcrelib/sljit/sljitConfigInternal.h for supported archs
+ifeq ($(BR2_i386)$(BR2_x86_64)$(BR2_arm)$(BR2_armeb)$(BR2_aarch64)$(BR2_mips)$(BR2_mipsel)$(BR2_mips64)$(BR2_mips64el)$(BR2_powerpc)$(BR2_sparc),)
+PHP_POST_CONFIGURE_HOOKS += PHP_DISABLE_PCRE_JIT
+endif
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_CURL),y)
+PHP_CONF_OPTS += --with-curl=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += libcurl
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_XSL),y)
+PHP_CONF_OPTS += --with-xsl=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += libxslt
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_BZIP2),y)
+PHP_CONF_OPTS += --with-bz2=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += bzip2
+endif
+
+### DBA
+ifeq ($(BR2_PACKAGE_PHP_EXT_DBA),y)
+PHP_CONF_OPTS += --enable-dba
+ifneq ($(BR2_PACKAGE_PHP_EXT_DBA_CDB),y)
+PHP_CONF_OPTS += --without-cdb
+endif
+ifneq ($(BR2_PACKAGE_PHP_EXT_DBA_FLAT),y)
+PHP_CONF_OPTS += --without-flatfile
+endif
+ifneq ($(BR2_PACKAGE_PHP_EXT_DBA_INI),y)
+PHP_CONF_OPTS += --without-inifile
+endif
+ifeq ($(BR2_PACKAGE_PHP_EXT_DBA_DB4),y)
+PHP_CONF_OPTS += --with-db4=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += berkeleydb
+endif
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_SNMP),y)
+PHP_CONF_OPTS += --with-snmp=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += netsnmp
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_EXT_GD),y)
+PHP_CONF_OPTS += \
+	--with-gd \
+	--with-jpeg-dir=$(STAGING_DIR)/usr \
+	--with-png-dir=$(STAGING_DIR)/usr \
+	--with-zlib-dir=$(STAGING_DIR)/usr \
+	--with-freetype-dir=$(STAGING_DIR)/usr
+PHP_DEPENDENCIES += jpeg libpng freetype
+endif
+
+ifeq ($(BR2_PACKAGE_PHP_SAPI_FPM),y)
+define PHP_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 $(@D)/sapi/fpm/init.d.php-fpm \
+		$(TARGET_DIR)/etc/init.d/S49php-fpm
+endef
+
+define PHP_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 0644 $(@D)/sapi/fpm/php-fpm.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/php-fpm.service
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
+	ln -fs ../../../../usr/lib/systemd/system/php-fpm.service \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/php-fpm.service
+endef
+
+define PHP_INSTALL_FPM_CONF
+	$(INSTALL) -D -m 0644 package/php/php-fpm.conf \
+		$(TARGET_DIR)/etc/php-fpm.conf
+	rm -f $(TARGET_DIR)/etc/php-fpm.conf.default
+	# remove unused sample status page /usr/php/php/fpm/status.html
+	rm -rf $(TARGET_DIR)/usr/php
+endef
+
+PHP_POST_INSTALL_TARGET_HOOKS += PHP_INSTALL_FPM_CONF
+endif
+
+define PHP_EXTENSIONS_FIXUP
+	$(SED) "/prefix/ s:/usr:$(STAGING_DIR)/usr:" \
+		$(STAGING_DIR)/usr/bin/phpize
+	$(SED) "/extension_dir/ s:/usr:$(TARGET_DIR)/usr:" \
+		$(STAGING_DIR)/usr/bin/php-config
+endef
+
+PHP_POST_INSTALL_TARGET_HOOKS += PHP_EXTENSIONS_FIXUP
+
+define PHP_INSTALL_FIXUP
+	rm -rf $(TARGET_DIR)/usr/lib/php/build
 	rm -f $(TARGET_DIR)/usr/bin/phpize
-	rm -f $(TARGET_DIR)/usr/bin/php-config
-	rm -rf $(TARGET_DIR)/usr/lib/build
-	if [ ! -f $(TARGET_DIR)/etc/php.ini ]; then \
-		$(INSTALL) -m 0755 $(BR2_PACKAGE_PHP_CONFIG) $(TARGET_DIR)/etc/php.ini; fi
-	touch $@
+	$(INSTALL) -D -m 0755 $(PHP_DIR)/php.ini-production \
+		$(TARGET_DIR)/etc/php.ini
+	$(SED) 's%;date.timezone =.*%date.timezone = $(PHP_LOCALTIME)%' \
+		$(TARGET_DIR)/etc/php.ini
+	$(if $(BR2_PACKAGE_PHP_EXT_OPCACHE),
+		$(SED) '/;extension=php_xsl.dll/azend_extension=opcache.so' \
+		$(TARGET_DIR)/etc/php.ini)
+endef
 
-$(PHP_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
-	rm -rf $(STAGING_DIR)/usr/include/php
-	rm -rf $(STAGING_DIR)/usr/lib/php5
-	rm -f $(STAGING_DIR)/usr/bin/php*
-	rm -f $(STAGING_DIR)/usr/share/man/man1/php*.1
-	rm -f $(TARGET_DIR)/etc/php.ini
-	rm -f $(TARGET_DIR)/usr/bin/php*
-	rm -f $(PHP_TARGET_INSTALL_TARGET) $(PHP_HOOK_POST_INSTALL)
+PHP_POST_INSTALL_TARGET_HOOKS += PHP_INSTALL_FIXUP
+
+PHP_CONF_ENV += CFLAGS="$(PHP_CFLAGS)"
+
+$(eval $(autotools-package))

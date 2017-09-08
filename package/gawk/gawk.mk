@@ -1,89 +1,56 @@
-#############################################################
+################################################################################
 #
 # gawk
 #
-#############################################################
+################################################################################
 
-GAWK_VERSION:=3.1.8
-GAWK_SOURCE:=gawk-$(GAWK_VERSION).tar.bz2
-GAWK_SITE:=$(BR2_GNU_MIRROR)/gawk
-GAWK_CAT:=$(BZCAT)
-GAWK_DIR:=$(BUILD_DIR)/gawk-$(GAWK_VERSION)
-GAWK_BINARY:=gawk
-GAWK_TARGET_BINARY:=usr/bin/gawk
+GAWK_VERSION = 4.1.4
+GAWK_SOURCE = gawk-$(GAWK_VERSION).tar.xz
+GAWK_SITE = $(BR2_GNU_MIRROR)/gawk
+GAWK_DEPENDENCIES = host-gawk
+GAWK_LICENSE = GPL-3.0+
+GAWK_LICENSE_FILES = COPYING
 
-$(DL_DIR)/$(GAWK_SOURCE):
-	 $(call DOWNLOAD,$(GAWK_SITE),$(GAWK_SOURCE))
-
-gawk-source: $(DL_DIR)/$(GAWK_SOURCE)
-
-$(GAWK_DIR)/.unpacked: $(DL_DIR)/$(GAWK_SOURCE)
-	$(GAWK_CAT) $(DL_DIR)/$(GAWK_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(GAWK_DIR) package/gawk gawk\*.patch
-	$(CONFIG_UPDATE) $(GAWK_DIR)
-	touch $@
-
-$(GAWK_DIR)/.configured: $(GAWK_DIR)/.unpacked
-	(cd $(GAWK_DIR); rm -rf config.cache; autoconf; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		ac_cv_func_getpgrp_void=yes \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-	)
-	touch $@
-
-$(GAWK_DIR)/$(GAWK_BINARY): $(GAWK_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(GAWK_DIR)
-
-$(TARGET_DIR)/$(GAWK_TARGET_BINARY): $(GAWK_DIR)/$(GAWK_BINARY)
-	rm -f $(TARGET_DIR)/usr/bin/awk
-	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(GAWK_DIR) install
-	rm -f $(TARGET_DIR)/usr/bin/gawk-*
-	(cd $(TARGET_DIR)/usr/bin; ln -snf gawk awk)
-	$(STRIPCMD) $(TARGET_DIR)/usr/lib/awk/* > /dev/null 2>&1
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/info
+# Prefer full-blown gawk over busybox awk
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+GAWK_DEPENDENCIES += busybox
 endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/man
+
+ifeq ($(BR2_PACKAGE_LIBSIGSEGV),y)
+GAWK_DEPENDENCIES += libsigsegv
 endif
-	rm -rf $(TARGET_DIR)/share/locale
-	rm -rf $(TARGET_DIR)/usr/share/doc
 
-gawk: uclibc gettext $(TARGET_DIR)/$(GAWK_TARGET_BINARY)
-
-gawk-build: $(GAWK_DIR)/$(GAWK_BINARY)
-
-gawk-configure: $(GAWK_DIR)/.configured
-
-gawk-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(GAWK_DIR) uninstall
-	-$(MAKE) -C $(GAWK_DIR) clean
-
-gawk-dirclean:
-	rm -rf $(GAWK_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_GAWK),y)
-TARGETS+=gawk
+# --with-mpfr requires an argument so just let
+# configure find it automatically
+ifeq ($(BR2_PACKAGE_MPFR),y)
+GAWK_DEPENDENCIES += mpfr
+else
+GAWK_CONF_OPTS += --without-mpfr
 endif
+
+# --with-readline requires an argument so just let
+# configure find it automatically
+ifeq ($(BR2_PACKAGE_READLINE),y)
+GAWK_DEPENDENCIES += readline
+else
+GAWK_CONF_OPTS += --without-readline
+endif
+
+HOST_GAWK_CONF_OPTS = --without-readline --without-mpfr
+
+define GAWK_CREATE_SYMLINK
+	ln -sf /usr/bin/gawk $(TARGET_DIR)/usr/bin/awk
+endef
+
+GAWK_POST_INSTALL_TARGET_HOOKS += GAWK_CREATE_SYMLINK
+
+# Assume we support shared libs
+# The check isn't cross-compile friendly and it's mandatory anyway
+define GAWK_DISABLE_SHARED_CHECK
+	$(SED) 's/ check-for-shared-lib-support//' $(@D)/extension/Makefile.in
+endef
+
+GAWK_POST_PATCH_HOOKS += GAWK_DISABLE_SHARED_CHECK
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

@@ -1,6 +1,0 @@
-menu "Text editors"
-source "package/editors/ed/Config.in"
-source "package/editors/nano/Config.in"
-source "package/editors/uemacs/Config.in"
-source "package/editors/vim/Config.in"
-endmenu

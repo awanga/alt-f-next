@@ -1,116 +1,169 @@
-#############################################################
+################################################################################
 #
 # openssl
 #
-############################################################
+################################################################################
 
-OPENSSL_VERSION:=1.0.2i
-OPENSSL_SITE:=http://www.openssl.org/source
+OPENSSL_VERSION = 1.0.2k
+OPENSSL_SITE = http://www.openssl.org/source
+OPENSSL_LICENSE = OpenSSL or SSLeay
+OPENSSL_LICENSE_FILES = LICENSE
+OPENSSL_INSTALL_STAGING = YES
+OPENSSL_DEPENDENCIES = zlib
+HOST_OPENSSL_DEPENDENCIES = host-zlib
+OPENSSL_TARGET_ARCH = generic32
+OPENSSL_CFLAGS = $(TARGET_CFLAGS)
+OPENSSL_PATCH = \
+	https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-libs/openssl/files/openssl-1.0.2d-parallel-build.patch?id=c8abcbe8de5d3b6cdd68c162f398c011ff6e2d9d \
+	https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-libs/openssl/files/openssl-1.0.2a-parallel-obj-headers.patch?id=c8abcbe8de5d3b6cdd68c162f398c011ff6e2d9d \
+	https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-libs/openssl/files/openssl-1.0.2a-parallel-install-dirs.patch?id=c8abcbe8de5d3b6cdd68c162f398c011ff6e2d9d \
+	https://gitweb.gentoo.org/repo/gentoo.git/plain/dev-libs/openssl/files/openssl-1.0.2a-parallel-symlinking.patch?id=c8abcbe8de5d3b6cdd68c162f398c011ff6e2d9d
 
-OPENSSL_MAKE = $(MAKE1)
+# relocation truncated to fit: R_68K_GOT16O
+ifeq ($(BR2_m68k_cf),y)
+OPENSSL_CFLAGS += -mxgot
+endif
+
+ifeq ($(BR2_USE_MMU),)
+OPENSSL_CFLAGS += -DHAVE_FORK=0
+endif
+
+ifeq ($(BR2_PACKAGE_HAS_CRYPTODEV),y)
+OPENSSL_CFLAGS += -DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS
+OPENSSL_DEPENDENCIES += cryptodev
+endif
 
 # Some architectures are optimized in OpenSSL
-OPENSSL_TARGET_ARCH=generic32
-ifeq ($(ARCH),avr32)
-OPENSSL_TARGET_ARCH=avr32
+# Doesn't work for thumb-only (Cortex-M?)
+ifeq ($(BR2_ARM_CPU_HAS_ARM),y)
+OPENSSL_TARGET_ARCH = armv4
 endif
-ifeq ($(ARCH),ia64)
-OPENSSL_TARGET_ARCH=ia64
+ifeq ($(ARCH),aarch64)
+OPENSSL_TARGET_ARCH = aarch64
 endif
 ifeq ($(ARCH),powerpc)
-OPENSSL_TARGET_ARCH=ppc
+# 4xx cores seem to have trouble with openssl's ASM optimizations
+ifeq ($(BR2_powerpc_401)$(BR2_powerpc_403)$(BR2_powerpc_405)$(BR2_powerpc_405fp)$(BR2_powerpc_440)$(BR2_powerpc_440fp),)
+OPENSSL_TARGET_ARCH = ppc
+endif
+endif
+ifeq ($(ARCH),powerpc64)
+OPENSSL_TARGET_ARCH = ppc64
+endif
+ifeq ($(ARCH),powerpc64le)
+OPENSSL_TARGET_ARCH = ppc64le
 endif
 ifeq ($(ARCH),x86_64)
-OPENSSL_TARGET_ARCH=x86_64
+OPENSSL_TARGET_ARCH = x86_64
 endif
 
-OPENSSL_INSTALL_STAGING = YES
-OPENSSL_INSTALL_STAGING_OPT = INSTALL_PREFIX=$(STAGING_DIR) install
-OPENSSL_INSTALL_TARGET_OPT = INSTALL_PREFIX=$(TARGET_DIR) install_sw
+define HOST_OPENSSL_CONFIGURE_CMDS
+	(cd $(@D); \
+		$(HOST_CONFIGURE_OPTS) \
+		./config \
+		--prefix=$(HOST_DIR)/usr \
+		--openssldir=$(HOST_DIR)/etc/ssl \
+		--libdir=/lib \
+		shared \
+		zlib-dynamic \
+	)
+	$(SED) "s#-O[0-9]#$(HOST_CFLAGS)#" $(@D)/Makefile
+endef
 
-OPENSSL_DEPENDENCIES = zlib
-
-# specific compiler optimization
-OPENSSL_CFLAGS = $(TARGET_OPTIMIZATION)
-ifneq ($(BR2_PACKAGE_OPENSSL_SIZEOPTIM),)
-	OPENSSL_CFLAGS += $(BR2_PACKAGE_OPENSSL_SIZEOPTIM)
-endif
-
-OPENSSL_CONF_OPT = -DOPENSSL_SMALL_FOOTPRINT 
-ifeq ($(BR2_PACKAGE_CRYPTODEV),y)
-	OPENSSL_DEPENDENCIES += cryptodev
-	OPENSSL_CONF_OPT += -DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS -DHASH_MAX_LEN=64
-endif
-
-OPENSSL_CFLAGS += $(OPENSSL_CONF_OPT)
-
-$(eval $(call AUTOTARGETS,package,openssl))
-
-# load cryptodev.ko mv_cesa.ko
-# MV-CESA:Could not register sha1 driver FIXME
-# MV-CESA:Could not register hmac-sha1 driver FIXME
-# 
-# / # openssl engine cryptodev
-# (cryptodev) cryptodev engine
-# 
-# /# openssl speed -evp aes-128-cbc
-# type                    16 bytes        64 bytes     256 bytes    1024 bytes        8192 bytes
-# aes-128-cbc       3462.90k      4104.75k      4306.43k       4356.28k       4205.59k (no mv_cesa)
-# aes-128-cbc       3675.66k    14573.71k    43141.69k   286182.40k   375778.74k (mv_cesa)
-# 
-# / # openssl speed -evp sha1
-# sha1               575.41k     1823.25k     4580.09k     7323.65k     8909.83k (no mv_cesa)
-# sha1               541.06k     1754.84k     4469.86k     7254.65k     8866.47k (mv_cesa)
-
-$(OPENSSL_TARGET_CONFIGURE):
-	(cd $(OPENSSL_DIR); \
+define OPENSSL_CONFIGURE_CMDS
+	(cd $(@D); \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_OPTS) \
 		./Configure \
+			linux-$(OPENSSL_TARGET_ARCH) \
 			--prefix=/usr \
 			--openssldir=/etc/ssl \
-			threads shared \
-			no-idea no-md2 no-mdc2 no-rc5 no-camellia no-seed \
-			no-krb5 no-jpake no-store no-err \
- 			no-zlib no-comp no-ssl2 no-ssl3 \
-			$(OPENSSL_CONF_OPT) \
-			linux-$(OPENSSL_TARGET_ARCH) \
+			--libdir=/lib \
+			$(if $(BR2_TOOLCHAIN_HAS_THREADS),threads,no-threads) \
+			$(if $(BR2_STATIC_LIBS),no-shared,shared) \
+			no-rc5 \
+			enable-camellia \
+			enable-mdc2 \
+			enable-tlsext \
+			$(if $(BR2_STATIC_LIBS),zlib,zlib-dynamic) \
+			$(if $(BR2_STATIC_LIBS),no-dso) \
 	)
-	$(SED) "s/build_tests //" $(OPENSSL_DIR)/Makefile
-	touch $@
+	$(SED) "s#-march=[-a-z0-9] ##" -e "s#-mcpu=[-a-z0-9] ##g" $(@D)/Makefile
+	$(SED) "s#-O[0-9]#$(OPENSSL_CFLAGS)#" $(@D)/Makefile
+	$(SED) "s# build_tests##" $(@D)/Makefile
+endef
 
-$(OPENSSL_TARGET_BUILD):
-	# libs compiled with chosen optimization
-	$(SED) "s:-O[s0-9]:$(OPENSSL_CFLAGS):" $(OPENSSL_DIR)/Makefile
-	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend build_libs
-	# openssl program compiled with -Os, saves 27KB
-	$(SED) "s:-O[0-9]:-Os:" $(OPENSSL_DIR)/Makefile
-	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
-	touch $@
-
-$(OPENSSL_HOOK_POST_INSTALL):
-	$(if $(BR2_HAVE_DEVFILES),,rm -rf $(TARGET_DIR)/usr/lib/ssl)
-ifeq ($(BR2_PACKAGE_OPENSSL_BIN),y)
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/usr/bin/openssl
-else
-	rm -f $(TARGET_DIR)/usr/bin/openssl
+# libdl is not available in a static build, and this is not implied by no-dso
+ifeq ($(BR2_STATIC_LIBS),y)
+define OPENSSL_FIXUP_STATIC_MAKEFILE
+	$(SED) 's#-ldl##g' $(@D)/Makefile
+endef
+OPENSSL_POST_CONFIGURE_HOOKS += OPENSSL_FIXUP_STATIC_MAKEFILE
 endif
+
+define HOST_OPENSSL_BUILD_CMDS
+	$(HOST_MAKE_ENV) $(MAKE) -C $(@D)
+endef
+
+define OPENSSL_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D)
+endef
+
+define OPENSSL_INSTALL_STAGING_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) INSTALL_PREFIX=$(STAGING_DIR) install
+endef
+
+define HOST_OPENSSL_INSTALL_CMDS
+	$(HOST_MAKE_ENV) $(MAKE) -C $(@D) install
+endef
+
+define OPENSSL_INSTALL_TARGET_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) INSTALL_PREFIX=$(TARGET_DIR) install
+	rm -rf $(TARGET_DIR)/usr/lib/ssl
 	rm -f $(TARGET_DIR)/usr/bin/c_rehash
-	# libraries gets installed read only, so strip fails
-	for i in $(addprefix $(TARGET_DIR)/usr/lib/,libcrypto.so.* libssl.so.*); \
-	do chmod +w $$i; $(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $$i; done
-ifneq ($(BR2_PACKAGE_OPENSSL_ENGINES),y)
-	rm -rf $(TARGET_DIR)/usr/lib/engines
-else
-	chmod +w $(TARGET_DIR)/usr/lib/engines/lib*.so
-	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/engines/lib*.so
-endif
-	touch $@
+endef
 
-$(OPENSSL_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
-	rm -rf $(addprefix $(TARGET_DIR)/,etc/ssl usr/bin/openssl usr/include/openssl)
-	rm -rf $(addprefix $(TARGET_DIR)/usr/lib/,ssl engines libcrypto* libssl* pkgconfig/libcrypto.pc)
-	rm -rf $(addprefix $(STAGING_DIR)/,etc/ssl usr/bin/openssl usr/include/openssl)
-	rm -rf $(addprefix $(STAGING_DIR)/usr/lib/,ssl engines libcrypto* libssl* pkgconfig/libcrypto.pc)
-	rm -f $(OPENSSL_TARGET_INSTALL_TARGET) $(OPENSSL_HOOK_POST_INSTALL)
+# libdl has no business in a static build
+ifeq ($(BR2_STATIC_LIBS),y)
+define OPENSSL_FIXUP_STATIC_PKGCONFIG
+	$(SED) 's#-ldl##' $(STAGING_DIR)/usr/lib/pkgconfig/libcrypto.pc
+	$(SED) 's#-ldl##' $(STAGING_DIR)/usr/lib/pkgconfig/libssl.pc
+	$(SED) 's#-ldl##' $(STAGING_DIR)/usr/lib/pkgconfig/openssl.pc
+endef
+OPENSSL_POST_INSTALL_STAGING_HOOKS += OPENSSL_FIXUP_STATIC_PKGCONFIG
+endif
+
+ifneq ($(BR2_STATIC_LIBS),y)
+# libraries gets installed read only, so strip fails
+define OPENSSL_INSTALL_FIXUPS_SHARED
+	chmod +w $(TARGET_DIR)/usr/lib/engines/lib*.so
+	for i in $(addprefix $(TARGET_DIR)/usr/lib/,libcrypto.so.* libssl.so.*); \
+	do chmod +w $$i; done
+endef
+OPENSSL_POST_INSTALL_TARGET_HOOKS += OPENSSL_INSTALL_FIXUPS_SHARED
+endif
+
+ifeq ($(BR2_PACKAGE_PERL),)
+define OPENSSL_REMOVE_PERL_SCRIPTS
+	$(RM) -f $(TARGET_DIR)/etc/ssl/misc/{CA.pl,tsget}
+endef
+OPENSSL_POST_INSTALL_TARGET_HOOKS += OPENSSL_REMOVE_PERL_SCRIPTS
+endif
+
+ifeq ($(BR2_PACKAGE_OPENSSL_BIN),)
+define OPENSSL_REMOVE_BIN
+	$(RM) -f $(TARGET_DIR)/usr/bin/openssl
+	$(RM) -f $(TARGET_DIR)/etc/ssl/misc/{CA.*,c_*}
+endef
+OPENSSL_POST_INSTALL_TARGET_HOOKS += OPENSSL_REMOVE_BIN
+endif
+
+ifneq ($(BR2_PACKAGE_OPENSSL_ENGINES),y)
+define OPENSSL_REMOVE_OPENSSL_ENGINES
+	rm -rf $(TARGET_DIR)/usr/lib/engines
+endef
+OPENSSL_POST_INSTALL_TARGET_HOOKS += OPENSSL_REMOVE_OPENSSL_ENGINES
+endif
+
+$(eval $(generic-package))
+$(eval $(host-generic-package))

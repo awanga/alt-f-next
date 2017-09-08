@@ -1,6 +1,0 @@
-config BR2_PACKAGE_HOTPLUG
-	bool "hotplug"
-	help
-	  Plug in new devices and use them immediately.
-
-	  http://linux-hotplug.sourceforge.net/

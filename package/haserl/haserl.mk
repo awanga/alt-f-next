@@ -1,30 +1,32 @@
-#############################################################
+################################################################################
 #
 # haserl
 #
-#############################################################
+################################################################################
 
-HASERL_VERSION:=$(strip $(subst ",,$(BR2_PACKAGE_HASERL_VERSION)))
-#"))
-HASERL_SOURCE:=haserl-$(HASERL_VERSION).tar.gz
-HASERL_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/haserl/
-HASERL_AUTORECONF:=no
-HASERL_INSTALL_STAGING:=NO
-HASERL_INSTALL_TARGET:=YES
-ifeq ($(BR2_ENABLE_DEBUG),)
-HASERL_INSTALL_TARGET_OPT:=DESTDIR=$(TARGET_DIR) STRIPPROG='$(STRIPCMD)' install-strip
+HASERL_VERSION = 0.9.35
+HASERL_SITE = http://downloads.sourceforge.net/project/haserl/haserl-devel
+HASERL_LICENSE = GPL-2.0
+HASERL_LICENSE_FILES = COPYING
+HASERL_DEPENDENCIES = host-pkgconf
+
+ifeq ($(BR2_PACKAGE_HASERL_WITH_LUA),y)
+HASERL_CONF_OPTS += --with-lua
+HASERL_DEPENDENCIES += lua
+
+# liblua uses dlopen when dynamically linked
+ifneq ($(BR2_STATIC_LIBS),y)
+HASERL_CONF_ENV += LIBS="-ldl"
 endif
 
-# force haserl 0.8.0 to use install-sh so stripping works
-HASERL_CONF_ENV = ac_cv_path_install=./install-sh
-# the above doesn't interact nicely with a shared cache, so disable for now
-HASERL_USE_CONFIG_CACHE = NO
+else
+HASERL_CONF_OPTS += --without-lua
+endif
 
-HASERL_DEPENDENCIES:=uclibc
-
-$(eval $(call AUTOTARGETS,package,haserl))
-
-# haserl 0.8.0 installs unneeded examples to /usr/share/haserl - remove them
-$(HASERL_HOOK_POST_INSTALL): $(HASERL_TARGET_INSTALL_TARGET)
+define HASERL_REMOVE_EXAMPLES
 	rm -rf $(TARGET_DIR)/usr/share/haserl
-	touch $@
+endef
+
+HASERL_POST_INSTALL_TARGET_HOOKS += HASERL_REMOVE_EXAMPLES
+
+$(eval $(autotools-package))

@@ -1,75 +1,57 @@
-#############################################################
+################################################################################
 #
 # lsof
 #
-#############################################################
+################################################################################
 
-#LSOF_VERSION:=4.84 # patches have LSOF_VERSION hardcoded
-LSOF_VERSION:=4.81
-LSOF_SOURCE:=lsof_$(LSOF_VERSION).tar.gz
-LSOF_SITE:=ftp://ftp.fu-berlin.de/pub/unix/tools/lsof/OLD/
-LSOF_CAT:=$(ZCAT)
-LSOF_DIR:=$(BUILD_DIR)/lsof_$(LSOF_VERSION)
-LSOF_BINARY:=lsof
-LSOF_TARGET_BINARY:=usr/bin/lsof
-LSOF_INCLUDE:=$(STAGING_DIR)/usr/include
+LSOF_VERSION = 4.89
+LSOF_SOURCE = lsof_$(LSOF_VERSION).tar.bz2
+# Use http mirror since master ftp site access is very draconian
+LSOF_SITE = http://www.mirrorservice.org/sites/lsof.itap.purdue.edu/pub/tools/unix/lsof
+LSOF_LICENSE = lsof license
+# License is repeated in each file, this is a relatively small one.
+# It is also defined in 00README, but that contains a lot of other cruft.
+LSOF_LICENSE_FILES = dialects/linux/dproto.h
 
-BR2_LSOF_CFLAGS:=
-ifeq ($(BR2_LARGEFILE),)
-BR2_LSOF_CFLAGS+=-U_FILE_OFFSET_BITS
-endif
-ifeq ($(BR2_INET_IPV6),)
-BR2_LSOF_CFLAGS+=-UHASIPv6
-endif
+# Make certain full-blown lsof gets built after the busybox version (1.20+)
+LSOF_DEPENDENCIES += $(if $(BR2_PACKAGE_BUSYBOX),busybox)
 
-$(DL_DIR)/$(LSOF_SOURCE):
-	 $(call DOWNLOAD,$(LSOF_SITE),$(LSOF_SOURCE))
-
-lsof-source: $(DL_DIR)/$(LSOF_SOURCE)
-
-lsof-unpacked: $(LSOF_DIR)/.unpacked
-
-$(LSOF_DIR)/.unpacked: $(DL_DIR)/$(LSOF_SOURCE)
-	$(LSOF_CAT) $(DL_DIR)/$(LSOF_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	(cd $(LSOF_DIR);tar xf lsof_$(LSOF_VERSION)_src.tar;rm -f lsof_$(LSOF_VERSION)_src.tar; chmod -R +w lsof_$(LSOF_VERSION)_src )
-	toolchain/patch-kernel.sh $(LSOF_DIR) package/lsof/ \*.patch
-	touch $(LSOF_DIR)/.unpacked
-
-$(LSOF_DIR)/.configured: $(LSOF_DIR)/.unpacked
-	(cd $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src; echo n | $(TARGET_CONFIGURE_OPTS) DEBUG="$(TARGET_CFLAGS) $(BR2_LSOF_CFLAGS)" LSOF_INCLUDE="$(LSOF_INCLUDE)" ./Configure linux)
-	touch $(LSOF_DIR)/.configured
-
-$(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF_BINARY): $(LSOF_DIR)/.configured
 ifeq ($(BR2_USE_WCHAR),)
-	$(SED) 's,^#define[[:space:]]*HASWIDECHAR.*,#undef HASWIDECHAR,' $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/machine.h
-	$(SED) 's,^#define[[:space:]]*WIDECHARINCL.*,,' $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/machine.h
+define LSOF_CONFIGURE_WCHAR_FIXUPS
+	$(SED) 's,^#define[[:space:]]*HASWIDECHAR.*,#undef HASWIDECHAR,' \
+		$(@D)/machine.h
+endef
 endif
+
 ifeq ($(BR2_ENABLE_LOCALE),)
-	$(SED) 's,^#define[[:space:]]*HASSETLOCALE.*,#undef HASSETLOCALE,' $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/machine.h
+define LSOF_CONFIGURE_LOCALE_FIXUPS
+	$(SED) 's,^#define[[:space:]]*HASSETLOCALE.*,#undef HASSETLOCALE,' \
+		$(@D)/machine.h
+endef
 endif
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) DEBUG="$(TARGET_CFLAGS) $(BR2_LSOF_CFLAGS)" -C $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src
 
-$(TARGET_DIR)/$(LSOF_TARGET_BINARY): $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF_BINARY)
-	if test -h $(TARGET_DIR)/$(LSOF_TARGET_BINARY); then rm $(TARGET_DIR)/$(LSOF_TARGET_BINARY); fi
-	cp $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF_BINARY) $@
-	$(STRIPCMD) $@
+# The .tar.bz2 contains another .tar, which contains the source code.
+define LSOF_EXTRACT_CMDS
+	$(call suitable-extractor,$(LSOF_SOURCE)) $(DL_DIR)/$(LSOF_SOURCE) | \
+		$(TAR) -O $(TAR_OPTIONS) - lsof_$(LSOF_VERSION)/lsof_$(LSOF_VERSION)_src.tar | \
+	$(TAR) --strip-components=1 -C $(LSOF_DIR) $(TAR_OPTIONS) -
+endef
 
-lsof-build: $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src/$(LSOF_BINARY)
+define LSOF_CONFIGURE_CMDS
+	(cd $(@D) ; \
+		echo n | $(TARGET_CONFIGURE_OPTS) DEBUG="$(TARGET_CFLAGS)" \
+		LSOF_INCLUDE="$(STAGING_DIR)/usr/include" LSOF_CFLAGS_OVERRIDE=1 \
+		LINUX_CLIB=-DGLIBCV=2 ./Configure linux)
+	$(LSOF_CONFIGURE_WCHAR_FIXUPS)
+	$(LSOF_CONFIGURE_LOCALE_FIXUPS)
+endef
 
-lsof: uclibc $(TARGET_DIR)/$(LSOF_TARGET_BINARY)
+define LSOF_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) $(TARGET_CONFIGURE_OPTS) DEBUG="$(TARGET_CFLAGS)" -C $(@D)
+endef
 
-lsof-clean:
-	-rm -f $(TARGET_DIR)/$(LSOF_TARGET_BINARY)
-	-$(MAKE) -C $(LSOF_DIR)/lsof_$(LSOF_VERSION)_src clean
+define LSOF_INSTALL_TARGET_CMDS
+	$(INSTALL) -D -m 755 $(@D)/lsof $(TARGET_DIR)/usr/bin/lsof
+endef
 
-lsof-dirclean:
-	rm -rf $(LSOF_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LSOF),y)
-TARGETS+=lsof
-endif
+$(eval $(generic-package))

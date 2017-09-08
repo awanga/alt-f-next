@@ -1,15 +1,15 @@
 ################################################################################
 #
-# xlib_libXaw -- X.Org Xaw library
+# xlib_libXaw
 #
 ################################################################################
 
-XLIB_LIBXAW_VERSION = 1.0.4
+XLIB_LIBXAW_VERSION = 1.0.13
 XLIB_LIBXAW_SOURCE = libXaw-$(XLIB_LIBXAW_VERSION).tar.bz2
 XLIB_LIBXAW_SITE = http://xorg.freedesktop.org/releases/individual/lib
-XLIB_LIBXAW_AUTORECONF = NO
+XLIB_LIBXAW_LICENSE = MIT
+XLIB_LIBXAW_LICENSE_FILES = COPYING
 XLIB_LIBXAW_INSTALL_STAGING = YES
-XLIB_LIBXAW_DEPENDENCIES = xlib_libX11 xlib_libXt xlib_libXmu xlib_libXpm xproto_xproto xlib_libXp
-XLIB_LIBXAW_CONF_OPT = --enable-shared --disable-static
+XLIB_LIBXAW_DEPENDENCIES = xlib_libX11 xlib_libXt xlib_libXmu xlib_libXpm xproto_xproto
 
-$(eval $(call AUTOTARGETS,package/x11r7,xlib_libXaw))
+$(eval $(autotools-package))

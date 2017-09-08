@@ -1,0 +1,4 @@
+# From https://sourceforge.net/projects/iperf2/files/
+sha1	59820895df9106ba189ccfdc5677077535ad50e7	iperf-2.0.9.tar.gz
+# Locally computed:
+sha256  db02911f35686e808ed247160dfa766e08ae3f59d1e7dcedef0ffb2a6643f0bf  iperf-2.0.9.tar.gz

@@ -1,102 +1,70 @@
-#############################################################
+################################################################################
 #
-# berkeley db, replaced by database/db/db.mk
+# berkeleydb
 #
-#############################################################
-BDB_VERSION:=4.3.29
-BDB_SO_VERSION:=4.3
-BDB_SITE:=ftp://ftp.sleepycat.com/releases
-BDB_SOURCE:=db-$(BDB_VERSION).NC.tar.gz
-BDB_DIR:=$(BUILD_DIR)/db-$(BDB_VERSION).NC
-BDB_SHARLIB:=libdb-$(BDB_SO_VERSION).so
+################################################################################
 
-$(DL_DIR)/$(BDB_SOURCE):
-	$(call DOWNLOAD,$(BDB_SITE),$(BDB_SOURCE))
+# Since BerkeleyDB version 6 and above are licensed under the Affero
+# GPL (AGPL), we want to keep this 'bdb' package at version 5.x to
+# avoid licensing issues.
+# BerkeleyDB version 6 or above should be provided by a dedicated
+# package instead.
+BERKELEYDB_VERSION = 5.3.28
+BERKELEYDB_SITE = http://download.oracle.com/berkeley-db
+BERKELEYDB_SOURCE = db-$(BERKELEYDB_VERSION).NC.tar.gz
+BERKELEYDB_SUBDIR = build_unix
+BERKELEYDB_LICENSE = BerkeleyDB License
+BERKELEYDB_LICENSE_FILES = LICENSE
+BERKELEYDB_INSTALL_STAGING = YES
+BERKELEYDB_BINARIES = db_archive db_checkpoint db_deadlock db_dump \
+	db_hotbackup db_load db_log_verify db_printlog db_recover db_replicate \
+	db_stat db_tuner db_upgrade db_verify
 
-berkeleydb-source: $(DL_DIR)/$(BDB_SOURCE)
+# Internal error, aborting at dw2gencfi.c:214 in emit_expr_encoded
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79509
+ifeq ($(BR2_m68k_cf),y)
+BERKELEYDB_CONF_ENV += CXXFLAGS="$(TARGET_CXXFLAGS) -fno-dwarf2-cfi-asm"
+endif
 
-$(BDB_DIR)/.dist: $(DL_DIR)/$(BDB_SOURCE)
-	$(ZCAT) $(DL_DIR)/$(BDB_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	touch $@
-
-$(BDB_DIR)/.configured: $(BDB_DIR)/.dist
-	$(CONFIG_UPDATE) $(BDB_DIR)/dist
-	(cd $(BDB_DIR)/build_unix; rm -rf config.cache; \
+# build directory can't be the directory where configure are there, so..
+define BERKELEYDB_CONFIGURE_CMDS
+	(cd $(@D)/build_unix; rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
-		../dist/configure \
+		$(BERKELEYDB_CONF_ENV) \
+		../dist/configure $(QUIET) \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
 		--build=$(GNU_HOST_NAME) \
 		--prefix=/usr \
 		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
 		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--includedir=/usr/include \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
 		--with-gnu-ld \
-		--enable-shared \
-		--disable-cxx \
+		$(if $(BR2_INSTALL_LIBSTDCPP),--enable-cxx,--disable-cxx) \
 		--disable-java \
-		--disable-rpc \
 		--disable-tcl \
-		--disable-compat185 \
+		$(if $(BR2_PACKAGE_BERKELEYDB_COMPAT185),--enable-compat185,--disable-compat185) \
+		$(SHARED_STATIC_LIBS_OPTS) \
 		--with-pic \
-		$(DISABLE_LARGEFILE) \
+		--enable-o_direct \
+		$(if $(BR2_TOOLCHAIN_HAS_THREADS),--enable-mutexsupport,--disable-mutexsupport) \
 	)
-	$(SED) 's/\.lo/.o/g' $(BDB_DIR)/build_unix/Makefile
-	touch $@
+endef
 
-$(BDB_DIR)/build_unix/.libs/$(BDB_SHARLIB): $(BDB_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(BDB_DIR)/build_unix
+ifneq ($(BR2_PACKAGE_BERKELEYDB_TOOLS),y)
 
-$(STAGING_DIR)/lib/$(BDB_SHARLIB): $(BDB_DIR)/build_unix/.libs/$(BDB_SHARLIB)
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(BDB_DIR)/build_unix install
-	chmod a-x $(STAGING_DIR)/lib/libdb*so*
-	rm -f $(STAGING_DIR)/bin/db_*
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(STAGING_DIR)/usr/share/info
+define BERKELEYDB_REMOVE_TOOLS
+	rm -f $(addprefix $(TARGET_DIR)/usr/bin/, $(BERKELEYDB_BINARIES))
+endef
+
+BERKELEYDB_POST_INSTALL_TARGET_HOOKS += BERKELEYDB_REMOVE_TOOLS
+
 endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(STAGING_DIR)/usr/share/man
-endif
-	rm -rf $(STAGING_DIR)/share/locale
-	rm -rf $(STAGING_DIR)/usr/share/doc
 
-$(TARGET_DIR)/lib/$(BDB_SHARLIB): $(STAGING_DIR)/lib/$(BDB_SHARLIB)
-	rm -rf $(TARGET_DIR)/lib/libdb*
-	cp -a $(STAGING_DIR)/lib/libdb*so* $(TARGET_DIR)/lib/
-	rm -f $(addprefix $(TARGET_DIR)/lib/,libdb.so libdb.la libdb.a)
-	(cd $(TARGET_DIR)/usr/lib; ln -fs /lib/$(BDB_SHARLIB) libdb.so)
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/lib/libdb*so*
+define BERKELEYDB_REMOVE_DOCS
+	rm -rf $(TARGET_DIR)/usr/docs
+endef
 
-$(TARGET_DIR)/usr/lib/libdb.a: $(STAGING_DIR)/lib/libdb-$(BDB_SO_VERSION).a
-	cp -dpf $(STAGING_DIR)/usr/include/db.h $(TARGET_DIR)/usr/include/
-	cp -dpf $(STAGING_DIR)/lib/libdb*.a $(TARGET_DIR)/usr/lib/
-	cp -dpf $(STAGING_DIR)/lib/libdb*.la $(TARGET_DIR)/usr/lib/
-	touch -c $@
+BERKELEYDB_POST_INSTALL_TARGET_HOOKS += BERKELEYDB_REMOVE_DOCS
 
-berkeleydb-headers: $(TARGET_DIR)/usr/lib/libdb.a
-
-berkeleydb-clean:
-	-$(MAKE) -C $(BDB_DIR)/build_unix clean
-
-berkeleydb-dirclean:
-	rm -rf $(BDB_DIR)
-
-berkeleydb: uclibc $(TARGET_DIR)/lib/$(BDB_SHARLIB)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_BERKELEYDB),y)
-TARGETS+=berkeleydb
-endif
+$(eval $(autotools-package))

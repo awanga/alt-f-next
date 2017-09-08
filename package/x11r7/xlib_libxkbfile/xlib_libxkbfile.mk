@@ -1,15 +1,17 @@
 ################################################################################
 #
-# xlib_libxkbfile -- X.Org xkbfile library
+# xlib_libxkbfile
 #
 ################################################################################
 
-XLIB_LIBXKBFILE_VERSION = 1.0.5
+XLIB_LIBXKBFILE_VERSION = 1.0.9
 XLIB_LIBXKBFILE_SOURCE = libxkbfile-$(XLIB_LIBXKBFILE_VERSION).tar.bz2
 XLIB_LIBXKBFILE_SITE = http://xorg.freedesktop.org/releases/individual/lib
-XLIB_LIBXKBFILE_AUTORECONF = NO
+XLIB_LIBXKBFILE_LICENSE = MIT
+XLIB_LIBXKBFILE_LICENSE_FILES = COPYING
 XLIB_LIBXKBFILE_INSTALL_STAGING = YES
 XLIB_LIBXKBFILE_DEPENDENCIES = xlib_libX11 xproto_kbproto
-XLIB_LIBXKBFILE_CONF_OPT = --enable-shared --disable-static
+HOST_XLIB_LIBXKBFILE_DEPENDENCIES = host-xlib_libX11 host-xproto_kbproto
 
-$(eval $(call AUTOTARGETS,package/x11r7,xlib_libxkbfile))
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

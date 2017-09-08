@@ -6,3 +6,4 @@ config BR2_PACKAGE_FBDUMP
 	  most packed-pixel framebuffer formats and the vga16 framebuffer
 	  are supported.
 
+	  http://www.rcdrummond.net/fbdump

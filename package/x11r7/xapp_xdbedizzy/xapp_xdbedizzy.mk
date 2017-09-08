@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xapp_xdbedizzy -- X.Org xdbedizzy application
+# xapp_xdbedizzy
 #
 ################################################################################
 
-XAPP_XDBEDIZZY_VERSION = 1.0.2
+XAPP_XDBEDIZZY_VERSION = 1.1.0
 XAPP_XDBEDIZZY_SOURCE = xdbedizzy-$(XAPP_XDBEDIZZY_VERSION).tar.bz2
 XAPP_XDBEDIZZY_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_XDBEDIZZY_AUTORECONF = NO
-XAPP_XDBEDIZZY_DEPENDENCIES = xlib_libXext xlib_libXp xlib_libXprintUtil
+XAPP_XDBEDIZZY_LICENSE = MIT
+XAPP_XDBEDIZZY_LICENSE_FILES = COPYING
+XAPP_XDBEDIZZY_DEPENDENCIES = xlib_libXext
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_xdbedizzy))
+$(eval $(autotools-package))

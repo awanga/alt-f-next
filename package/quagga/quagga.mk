@@ -1,184 +1,88 @@
-#############################################################
+################################################################################
 #
-# quagga suite
+# quagga
 #
-#############################################################
-QUAGGA_VERSION:=0.99.9
-QUAGGA_SOURCE:=quagga-$(QUAGGA_VERSION).tar.gz
-QUAGGA_SITE:=http://www.quagga.net/download/attic
-QUAGGA_DIR:=$(BUILD_DIR)/quagga-$(QUAGGA_VERSION)
-QUAGGA_CAT:=$(ZCAT)
+################################################################################
 
-QUAGGA_CONFIGURE:=
-ifeq ($(BR2_PACKAGE_QUAGGA_ZEBRA),y)
-QUAGGA_CONFIGURE+=--enable-zebra
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=zebra
-QUAGGA_BINARY=$(QUAGGA_DIR)/zebra/.libs/zebra
-endif
+QUAGGA_VERSION = 1.1.1
+QUAGGA_SITE = http://download.savannah.gnu.org/releases/quagga
+QUAGGA_DEPENDENCIES = host-gawk host-pkgconf
+QUAGGA_LICENSE = GPL-2.0+
+QUAGGA_LICENSE_FILES = COPYING
+
+# We need to override the sysconf and localstate directories so that
+# quagga can create files as the quagga user without extra
+# intervention
+QUAGGA_CONF_OPTS = \
+	--program-transform-name='' \
+	--sysconfdir=/etc/quagga \
+	--localstatedir=/var/run/quagga
+
+# 0002-configure-fix-static-linking-with-readline.patch
+QUAGGA_AUTORECONF = YES
+
+ifeq ($(BR2_PACKAGE_LIBCAP),y)
+QUAGGA_CONF_OPTS += --enable-capabilities
+QUAGGA_DEPENDENCIES += libcap
 else
-QUAGGA_CONFIGURE+=--disable-zebra
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_BGPD),y)
-QUAGGA_CONFIGURE+=--enable-bgpd
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=bgpd
-QUAGGA_BINARY=$(QUAGGA_DIR)/bgpd/.libs/bgpd
-endif
-else
-QUAGGA_CONFIGURE+=--disable-bgpd
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_RIPD),y)
-QUAGGA_CONFIGURE+=--enable-ripd
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=ripd
-QUAGGA_BINARY=$(QUAGGA_DIR)/ripd/.libs/ripd
-endif
-else
-QUAGGA_CONFIGURE+=--disable-ripd
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_RIPNGD),y)
-QUAGGA_CONFIGURE+=--enable-ripngd
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=ripngd
-QUAGGA_BINARY=$(QUAGGA_DIR)/ripngd/.libs/ripngd
-endif
-else
-QUAGGA_CONFIGURE+=--disable-ripngd
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_OSPFD),y)
-QUAGGA_CONFIGURE+=--enable-ospfd
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=ospfd
-QUAGGA_BINARY=$(QUAGGA_DIR)/ospfd/.libs/ospfd
-endif
-else
-QUAGGA_CONFIGURE+=--disable-ospfd
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_OSPF6D),y)
-QUAGGA_CONFIGURE+=--enable-ospf6d
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=ospf6d
-QUAGGA_BINARY=$(QUAGGA_DIR)/ospf6d/.libs/ospf6d
-endif
-else
-QUAGGA_CONFIGURE+=--disable-ospf6d
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_WATCHQUAGGA),y)
-QUAGGA_CONFIGURE+=--enable-watchquagga
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=watchquagga
-QUAGGA_BINARY=$(QUAGGA_DIR)/watchquagga/.libs/watchquagga
-endif
-else
-QUAGGA_CONFIGURE+=--disable-watchquagga
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_ISISD),y)
-QUAGGA_CONFIGURE+=--enable-isisd
-ifndef QUAGGA_TARGET_BINARY
-QUAGGA_TARGET_BINARY=isisd
-QUAGGA_BINARY=$(QUAGGA_DIR)/isisd/.libs/isisd
-endif
-else
-QUAGGA_CONFIGURE+=--disable-isisd
+QUAGGA_CONF_OPTS += --disable-capabilities
 endif
 
+ifeq ($(BR2_PACKAGE_PROTOBUF_C),y)
+QUAGGA_CONF_OPTS += --enable-protobuf
+QUAGGA_DEPENDENCIES += protobuf-c
+else
+QUAGGA_CONF_OPTS += --disable-protobuf
+endif
 
-ifeq ($(BR2_PACKAGE_QUAGGA_BGP_ANNOUNCE),y)
-QUAGGA_CONFIGURE+=--enable-bgp-announce
-else
-QUAGGA_CONFIGURE+=--disable-bgp-announce
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_NETLINK),y)
-QUAGGA_CONFIGURE+=--enable-netlink
-else
-QUAGGA_CONFIGURE+=--disable-netlink
-endif
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_ZEBRA),--enable-zebra,--disable-zebra)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_BGPD),--enable-bgpd,--disable-bgpd)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_RIPD),--enable-ripd,--disable-ripd)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_RIPNGD),--enable-ripngd,--disable-ripngd)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_OSPFD),--enable-ospfd,--disable-ospfd --disable-ospfapi)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_OSPF6D),--enable-ospf6d,--disable-ospf6d)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_PIMD),--enable-pimd,--disable-pimd)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_WATCHQUAGGA),--enable-watchquagga,--disable-watchquagga)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_ISISD),--enable-isisd,--disable-isisd)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_BGP_ANNOUNCE),--enable-bgp-announce,--disable-bgp-announce)
+QUAGGA_CONF_OPTS += $(if $(BR2_PACKAGE_QUAGGA_TCP_ZERBRA),--enable-tcp-zebra,--disable-tcp-zebra)
+
+define QUAGGA_USERS
+	quagga -1 quagga -1 * - - - Quagga priv drop user
+endef
+
+# Set the permissions of /etc/quagga such that quagga (through vtysh)
+# can save the configuration - set the folder recursively as the files
+# need to be 600, and then set the folder (non-recursively) to 755 so
+# it can used.  Quagga also needs to write to the folder as it moves
+# and creates, rather than overwriting.
+define QUAGGA_PERMISSIONS
+	/etc/quagga r 600 quagga quagga - - - - -
+	/etc/quagga d 755 quagga quagga - - - - -
+endef
+
 ifeq ($(BR2_PACKAGE_QUAGGA_SNMP),y)
-QUAGGA_CONFIGURE+=--enable-snmp
+QUAGGA_CONF_ENV += ac_cv_path_NETSNMP_CONFIG=$(STAGING_DIR)/usr/bin/net-snmp-config
+QUAGGA_CONF_OPTS += --enable-snmp=agentx
+QUAGGA_DEPENDENCIES += netsnmp
+endif
+
+ifeq ($(BR2_PACKAGE_QUAGGA_VTYSH),y)
+QUAGGA_CONF_OPTS += --enable-vtysh
+QUAGGA_DEPENDENCIES += readline
 else
-QUAGGA_CONFIGURE+=--disable-snmp
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_TCP_ZEBRA),y)
-QUAGGA_CONFIGURE+=--enable-tcp-zebra
-else
-QUAGGA_CONFIGURE+=--disable-tcp-zebra
-endif
-ifeq ($(BR2_PACKAGE_QUAGGA_OPAGUE_LSA),y)
-QUAGGA_CONFIGURE+=--enable-opaque-lsa
-else
-QUAGGA_CONFIGURE+=--disable-opaque-lsa
+QUAGGA_CONF_OPTS += --disable-vtysh
 endif
 
-QUAGGA_CONFIGURE+=$(subst ",,$(BR2_PACKAGE_QUAGGA_CONFIGURE))
-# ")
-
-$(DL_DIR)/$(QUAGGA_SOURCE):
-	$(call DOWNLOAD,$(QUAGGA_SITE),$(QUAGGA_SOURCE))
-
-ifneq ($(QUAGGA_PATCH),)
-QUAGGA_PATCH_FILE=$(DL_DIR)/$(QUAGGA_PATCH)
-$(DL_DIR)/$(QUAGGA_PATCH):
-	$(call DOWNLOAD,$(QUAGGA_SITE),$(QUAGGA_PATCH))
-endif
-quagga-source: $(DL_DIR)/$(QUAGGA_SOURCE) $(QUAGGA_PATCH_FILE)
-
-$(QUAGGA_DIR)/.unpacked: $(DL_DIR)/$(QUAGGA_SOURCE) $(DL_DIR)/$(QUAGGA_PATCH)
-	$(QUAGGA_CAT) $(DL_DIR)/$(QUAGGA_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(QUAGGA_DIR) package/quagga/ quagga\*.patch
-ifneq ($(QUAGGA_PATCH),)
-	(cd $(QUAGGA_DIR) && $(QUAGGA_CAT) $(DL_DIR)/$(QUAGGA_PATCH) | patch -p1)
-	if [ -d $(QUAGGA_DIR)/debian/patches ]; then \
-		toolchain/patch-kernel.sh $(QUAGGA_DIR) $(QUAGGA_DIR)/debian/patches \*.patch; \
-	fi
-endif
-	touch $@
-
-$(QUAGGA_DIR)/.configured: $(QUAGGA_DIR)/.unpacked
-	(cd $(QUAGGA_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--sysconfdir=/etc \
-		$(DISABLE_LARGEFILE) \
-		$(DISABLE_IPV6) \
-		$(QUAGGA_CONFIGURE) \
-		--program-transform-name='' \
-	)
-	touch $@
-
-$(QUAGGA_BINARY): $(QUAGGA_DIR)/.configured
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(QUAGGA_DIR)
-
-$(TARGET_DIR)/usr/sbin/$(QUAGGA_TARGET_BINARY): $(QUAGGA_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(QUAGGA_DIR) install
-ifneq ($(BR2_PACKAGE_QUAGGA_HEADERS),y)
-	rm -rf $(TARGET_DIR)/usr/include/quagga
-endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/man
-endif
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/info
+ifeq ($(BR2_TOOLCHAIN_SUPPORTS_PIE),)
+QUAGGA_CONF_OPTS += --disable-pie
 endif
 
-quagga: uclibc $(TARGET_DIR)/usr/sbin/$(QUAGGA_TARGET_BINARY)
+define QUAGGA_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 package/quagga/quagga_tmpfiles.conf \
+		$(TARGET_DIR)/usr/lib/tmpfiles.d/quagga.conf
+	$(INSTALL) -D -m 644 package/quagga/quagga@.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/quagga@.service
+endef
 
-quagga-clean:
-	-$(MAKE) DESTDIR=$(TARGET_DIR) -C $(QUAGGA_DIR) uninstall
-	-$(MAKE) -C $(QUAGGA_DIR) clean
-
-quagga-dirclean:
-	rm -rf $(QUAGGA_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_QUAGGA),y)
-TARGETS+=quagga
-endif
+$(eval $(autotools-package))

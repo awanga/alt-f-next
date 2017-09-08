@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xapp_xlsclients -- X.Org xlsclients application
+# xapp_xlsclients
 #
 ################################################################################
 
-XAPP_XLSCLIENTS_VERSION = 1.0.1
+XAPP_XLSCLIENTS_VERSION = 1.1.3
 XAPP_XLSCLIENTS_SOURCE = xlsclients-$(XAPP_XLSCLIENTS_VERSION).tar.bz2
 XAPP_XLSCLIENTS_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_XLSCLIENTS_AUTORECONF = NO
-XAPP_XLSCLIENTS_DEPENDENCIES = xlib_libX11 xlib_libXmu
+XAPP_XLSCLIENTS_LICENSE = MIT
+XAPP_XLSCLIENTS_LICENSE_FILES = COPYING
+XAPP_XLSCLIENTS_DEPENDENCIES = xlib_libX11 xlib_libXmu libxcb xcb-util
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_xlsclients))
+$(eval $(autotools-package))

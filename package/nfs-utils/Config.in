@@ -1,36 +1,33 @@
+comment "nfs-utils needs a toolchain w/ threads"
+	depends on BR2_USE_MMU
+	depends on !BR2_TOOLCHAIN_HAS_THREADS
+
 config BR2_PACKAGE_NFS_UTILS
 	bool "nfs-utils"
-	depends on BR2_INET_RPC
+	depends on BR2_TOOLCHAIN_HAS_THREADS # libtirpc, rpcbind
+	depends on BR2_USE_MMU # fork()
+	select BR2_PACKAGE_LIBTIRPC if !BR2_TOOLCHAIN_HAS_NATIVE_RPC
+	select BR2_PACKAGE_RPCBIND # runtime
 	help
 	  The NFS Linux kernel server.
-	  Warning: We do not force largefile support on here on purpose.
-	  Enable it yourself if you want to access big exports!
 
 	  http://sourceforge.net/projects/nfs
 
-comment "nfs-utils requires a toolchain with 'Enable RPC' selected"
-	depends on !BR2_INET_RPC
-
-menu "NFS utilities selection"
-	depends on BR2_PACKAGE_NFS_UTILS
+if BR2_PACKAGE_NFS_UTILS
 
 config BR2_PACKAGE_NFS_UTILS_RPCDEBUG
 	bool "rpcdebug"
-	depends on BR2_PACKAGE_NFS_UTILS
 	help
 	  The RPC debugging utility
 
 config BR2_PACKAGE_NFS_UTILS_RPC_LOCKD
 	bool "rpc.lockd"
-	depends on BR2_PACKAGE_NFS_UTILS
 	help
 	  NFS lock manager for Linux kernels older than 2.4
 
-# nfs-utils-1.2.7/NEWS: - rpc.rquotad is gone.  Use the one from the 'quota' package
-#config BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD
-#	bool "rpc.rquotad"
-#	depends on BR2_PACKAGE_NFS_UTILS
-#	help
-#	  NFS remote quota server
+config BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD
+	bool "rpc.rquotad"
+	help
+	  NFS remote quota server
 
-endmenu
+endif

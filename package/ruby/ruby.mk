@@ -1,74 +1,102 @@
-#############################################################
+################################################################################
 #
 # ruby
 #
-#############################################################
-RUBY_VERSION:=1.9.1-p129
-RUBY_SOURCE:=ruby-$(RUBY_VERSION).tar.gz
-RUBY_SITE:=ftp://ftp.ruby-lang.org/pub/ruby/1.9
-RUBY_DIR:=$(BUILD_DIR)/ruby-$(RUBY_VERSION)
-RUBY_CAT:=$(ZCAT)
-RUBY_BINARY:=ruby
-RUBY_TARGET_BINARY:=usr/bin/ruby
+################################################################################
 
-$(DL_DIR)/$(RUBY_SOURCE):
-	 $(call DOWNLOAD,$(RUBY_SITE),$(RUBY_SOURCE))
+RUBY_VERSION_MAJOR = 2.4
+RUBY_VERSION = $(RUBY_VERSION_MAJOR).1
+RUBY_VERSION_EXT = 2.4.0
+RUBY_SITE = http://cache.ruby-lang.org/pub/ruby/$(RUBY_VERSION_MAJOR)
+RUBY_SOURCE = ruby-$(RUBY_VERSION).tar.xz
+RUBY_DEPENDENCIES = host-pkgconf host-ruby
+HOST_RUBY_DEPENDENCIES = host-pkgconf
+RUBY_MAKE_ENV = $(TARGET_MAKE_ENV)
+RUBY_CONF_OPTS = --disable-install-doc --disable-rpath --disable-rubygems
+HOST_RUBY_CONF_OPTS = \
+	--disable-install-doc \
+	--with-out-ext=curses,openssl,readline \
+	--without-gmp
+RUBY_LICENSE = Ruby or BSD-2-Clause, BSD-3-Clause, others
+RUBY_LICENSE_FILES = LEGAL COPYING BSDL
 
-ruby-source: $(DL_DIR)/$(RUBY_SOURCE)
-
-$(RUBY_DIR)/.unpacked: $(DL_DIR)/$(RUBY_SOURCE)
-	$(RUBY_CAT) $(DL_DIR)/$(RUBY_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(RUBY_DIR) package/ruby/ ruby-\*.patch
-	(cd $(RUBY_DIR); autoreconf)
-	touch $(RUBY_DIR)/.unpacked
-
-$(RUBY_DIR)/.configured: $(RUBY_DIR)/.unpacked
-	(cd $(RUBY_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		--disable-install-doc \
-		$(DISABLE_IPV6) \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-	)
-	touch $(RUBY_DIR)/.configured
-
-$(RUBY_DIR)/$(RUBY_BINARY): $(RUBY_DIR)/.configured
-	$(MAKE) -C $(RUBY_DIR)
-
-$(TARGET_DIR)/$(RUBY_TARGET_BINARY): $(RUBY_DIR)/$(RUBY_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(RUBY_DIR) install
-	rm -rf $(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/doc
-
-ruby: uclibc $(TARGET_DIR)/$(RUBY_TARGET_BINARY)
-
-ruby-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(RUBY_DIR) uninstall
-	-$(MAKE) -C $(RUBY_DIR) clean
-
-ruby-dirclean:
-	rm -rf $(RUBY_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_RUBY),y)
-TARGETS+=ruby
+RUBY_CFLAGS = $(TARGET_CFLAGS)
+# With some SuperH toolchains (like Sourcery CodeBench 2012.09), ruby fails to
+# build with 'pcrel too far'. This seems to be caused by the -Os option we pass
+# by default. To fix the problem, use standard -O2 optimization instead.
+ifeq ($(BR2_sh),y)
+RUBY_CFLAGS += -O2
 endif
+RUBY_CONF_ENV = CFLAGS="$(RUBY_CFLAGS)"
+
+ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
+# On uClibc, finite, isinf and isnan are not directly implemented as
+# functions.  Instead math.h #define's these to __finite, __isinf and
+# __isnan, confusing the Ruby configure script. Tell it that they
+# really are available.
+RUBY_CONF_ENV += \
+	ac_cv_func_finite=yes \
+	ac_cv_func_isinf=yes \
+	ac_cv_func_isnan=yes
+endif
+
+ifeq ($(BR2_bfin),y)
+RUBY_CONF_ENV += ac_cv_func_dl_iterate_phdr=no
+# Blackfin doesn't have FFI closure support, needed by the fiddle
+# extension.
+RUBY_CONF_OPTS += --with-out-ext=fiddle
+endif
+
+ifeq ($(BR2_TOOLCHAIN_HAS_SSP),)
+RUBY_CONF_ENV += stack_protector=no
+endif
+
+# Force optionals to build before we do
+ifeq ($(BR2_PACKAGE_BERKELEYDB),y)
+RUBY_DEPENDENCIES += berkeleydb
+endif
+ifeq ($(BR2_PACKAGE_GDBM),y)
+RUBY_DEPENDENCIES += gdbm
+endif
+ifeq ($(BR2_PACKAGE_LIBYAML),y)
+RUBY_DEPENDENCIES += libyaml
+endif
+ifeq ($(BR2_PACKAGE_NCURSES),y)
+RUBY_DEPENDENCIES += ncurses
+endif
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+RUBY_DEPENDENCIES += openssl
+endif
+ifeq ($(BR2_PACKAGE_READLINE),y)
+RUBY_DEPENDENCIES += readline
+endif
+ifeq ($(BR2_PACKAGE_ZLIB),y)
+RUBY_DEPENDENCIES += zlib
+endif
+ifeq ($(BR2_PACKAGE_GMP),y)
+RUBY_DEPENDENCIES += gmp
+RUBY_CONF_OPTS += --with-gmp
+else
+RUBY_CONF_OPTS += --without-gmp
+endif
+
+# workaround for amazing build failure, see
+# http://lists.busybox.net/pipermail/buildroot/2014-December/114273.html
+define RUBY_REMOVE_VERCONF_H
+	rm -f $(@D)/verconf.h
+endef
+RUBY_POST_CONFIGURE_HOOKS += RUBY_REMOVE_VERCONF_H
+
+# Remove rubygems and friends, as they need extensions that aren't
+# built and a target compiler.
+RUBY_EXTENSIONS_REMOVE = rake* rdoc* rubygems*
+define RUBY_REMOVE_RUBYGEMS
+	rm -f $(addprefix $(TARGET_DIR)/usr/bin/, gem rdoc ri rake)
+	rm -rf $(TARGET_DIR)/usr/lib/ruby/gems
+	rm -rf $(addprefix $(TARGET_DIR)/usr/lib/ruby/$(RUBY_VERSION_EXT)/, \
+		$(RUBY_EXTENSIONS_REMOVE))
+endef
+RUBY_POST_INSTALL_TARGET_HOOKS += RUBY_REMOVE_RUBYGEMS
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

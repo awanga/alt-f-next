@@ -1,6 +1,0 @@
-config BR2_PACKAGE_GDBM
-	bool "gdbm"
-	help
-	 GNU dbm is a set of database routines that use extensible hashing.
-	 
-	 http://www.gnu.org/software/gdbm/

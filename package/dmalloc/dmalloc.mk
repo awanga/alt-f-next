@@ -1,105 +1,70 @@
-#############################################################
+################################################################################
 #
 # dmalloc
 #
-#############################################################
-DMALLOC_VERSION:=5.4.3
-DMALLOC_SOURCE:=dmalloc-$(DMALLOC_VERSION).tgz
-DMALLOC_SITE:=http://dmalloc.com/releases
-DMALLOC_DIR:=$(BUILD_DIR)/dmalloc-$(DMALLOC_VERSION)
-DMALLOC_CAT:=$(ZCAT)
-DMALLOC_BINARY:=dmalloc
-DMALLOC_TARGET_BINARY:=usr/bin/dmalloc
+################################################################################
 
-$(DL_DIR)/$(DMALLOC_SOURCE):
-	 $(call DOWNLOAD,$(DMALLOC_SITE),$(DMALLOC_SOURCE))
+DMALLOC_VERSION = 5.5.2
+DMALLOC_SOURCE = dmalloc-$(DMALLOC_VERSION).tgz
+DMALLOC_SITE = http://dmalloc.com/releases
 
-dmalloc-source: $(DL_DIR)/$(DMALLOC_SOURCE)
+DMALLOC_LICENSE = MIT-like
+# license is in each file, dmalloc.h.1 is the smallest one
+DMALLOC_LICENSE_FILES = dmalloc.h.1
 
-$(DMALLOC_DIR)/.unpacked: $(DL_DIR)/$(DMALLOC_SOURCE)
-	$(DMALLOC_CAT) $(DL_DIR)/$(DMALLOC_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(DMALLOC_DIR) package/dmalloc dmalloc\*.patch
-	$(SED) 's/^ac_cv_page_size=0$$/ac_cv_page_size=12/' $(DMALLOC_DIR)/configure
-	$(SED) 's/(ld -/($${LD-ld} -/' $(DMALLOC_DIR)/configure
-	$(SED) 's/'\''ld -/"$${LD-ld}"'\'' -/' $(DMALLOC_DIR)/configure
-	-$(SED) 's/ar cr/$$(AR) cr/' $(DMALLOC_DIR)/Makefile.in
-	touch $@
+DMALLOC_INSTALL_STAGING = YES
+DMALLOC_CONF_OPTS = --enable-shlib
+DMALLOC_CFLAGS = $(TARGET_CFLAGS)
 
 ifeq ($(BR2_INSTALL_LIBSTDCPP),y)
-DMALLOC_CONFIG_ARGS:=--enable-cxx
+DMALLOC_CONF_OPTS += --enable-cxx
 else
-DMALLOC_CONFIG_ARGS:=--disable-cxx
+DMALLOC_CONF_OPTS += --disable-cxx
 endif
 
-ifeq ($(BR2_PTHREADS_NONE),y)
-DMALLOC_CONFIG_ARGS+=--disable-threads
+ifeq ($(BR2_TOOLCHAIN_HAS_THREADS),y)
+DMALLOC_CONF_OPTS += --enable-threads
 else
-DMALLOC_CONFIG_ARGS+=--enable-threads
+DMALLOC_CONF_OPTS += --disable-threads
 endif
 
+# dmalloc has some assembly function that are not present in thumb1 mode:
+# Error: lo register required -- `str lr,[sp,#4]'
+# so, we desactivate thumb mode
+ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
+DMALLOC_CFLAGS += -marm
+endif
 
+DMALLOC_CONF_ENV = CFLAGS="$(DMALLOC_CFLAGS)"
 
-$(DMALLOC_DIR)/.configured: $(DMALLOC_DIR)/.unpacked
-	(cd $(DMALLOC_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		CFLAGS="-g" \
-		LDFLAGS="-g" \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--includedir=/usr/include \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		--enable-shlib \
-		$(DMALLOC_CONFIG_ARGS) \
-	)
-	touch $@
+define DMALLOC_POST_PATCH
+	$(SED) 's/^ac_cv_page_size=0$$/ac_cv_page_size=12/' $(@D)/configure
+	$(SED) 's/(ld -/($${LD-ld} -/' $(@D)/configure
+	$(SED) 's/'\''ld -/"$${LD-ld}"'\'' -/' $(@D)/configure
+	$(SED) 's/ar cr/$$(AR) cr/' $(@D)/Makefile.in
+endef
 
-$(DMALLOC_DIR)/$(DMALLOC_BINARY): $(DMALLOC_DIR)/.configured
-	$(MAKE) -C $(DMALLOC_DIR)
+DMALLOC_POST_PATCH_HOOKS += DMALLOC_POST_PATCH
 
-$(TARGET_DIR)/$(DMALLOC_TARGET_BINARY): $(DMALLOC_DIR)/$(DMALLOC_BINARY)
-	# both DESTDIR and PREFIX are ignored..
-	$(MAKE) includedir="$(STAGING_DIR)/usr/include" \
+# both DESTDIR and PREFIX are ignored..
+define DMALLOC_INSTALL_STAGING_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) includedir="$(STAGING_DIR)/usr/include" \
 		bindir="$(STAGING_DIR)/usr/bin" \
 		libdir="$(STAGING_DIR)/usr/lib" \
 		shlibdir="$(STAGING_DIR)/usr/lib" \
-		includedir="$(STAGING_DIR)/usr/share/info/" \
-		-C $(DMALLOC_DIR) install
-	(cd $(STAGING_DIR)/usr/lib; \
-		mv libdmalloc*.so $(TARGET_DIR)/usr/lib)
-	cp -dpf $(STAGING_DIR)/usr/bin/dmalloc $(TARGET_DIR)/$(DMALLOC_TARGET_BINARY)
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/$(DMALLOC_TARGET_BINARY)
+		infodir="$(STAGING_DIR)/usr/share/info/" \
+		-C $(@D) install
+endef
 
-dmalloc: uclibc $(TARGET_DIR)/$(DMALLOC_TARGET_BINARY)
-
-dmalloc-clean:
-	-rm -f $(TARGET_DIR)/usr/lib/libdmalloc*
-	-rm -f $(STAGING_DIR)/usr/lib/libdmalloc*
-	rm -f $(STAGING_DIR)/usr/include/dmalloc.h
-	rm -f $(TARGET_DIR)/$(DMALLOC_TARGET_BINARY)
-	-$(MAKE) -C $(DMALLOC_DIR) clean
-
-dmalloc-dirclean:
-	rm -rf $(DMALLOC_DIR)
-
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_DMALLOC),y)
-TARGETS+=dmalloc
+ifeq ($(BR2_STATIC_LIBS),)
+define DMALLOC_INSTALL_SHARED_LIB
+	cp -dpf $(STAGING_DIR)/usr/lib/libdmalloc*.so $(TARGET_DIR)/usr/lib
+endef
 endif
+
+define DMALLOC_INSTALL_TARGET_CMDS
+	$(DMALLOC_INSTALL_SHARED_LIB)
+	cp -dpf $(STAGING_DIR)/usr/bin/dmalloc $(TARGET_DIR)/usr/bin/dmalloc
+endef
+
+$(eval $(autotools-package))

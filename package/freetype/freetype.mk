@@ -1,71 +1,79 @@
-#############################################################
+################################################################################
 #
 # freetype
 #
-#############################################################
-FREETYPE_VERSION = 2.3.9
-FREETYPE_SITE = $(BR2_SOURCEFORGE_MIRROR)/sourceforge/freetype
+################################################################################
+
+FREETYPE_VERSION = 2.7.1
 FREETYPE_SOURCE = freetype-$(FREETYPE_VERSION).tar.bz2
-FREETYPE_LIBTOOL_PATCH = NO
+FREETYPE_SITE = http://download.savannah.gnu.org/releases/freetype
 FREETYPE_INSTALL_STAGING = YES
-FREETYPE_INSTALL_TARGET = YES
-FREETYPE_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-FREETYPE_MAKE_OPT = CCexe="$(HOSTCC)"
-FREETYPE_DEPENDENCIES = uclibc host-pkgconfig $(if $(BR2_PACKAGE_ZLIB),zlib)
+FREETYPE_MAKE_OPTS = CCexe="$(HOSTCC)"
+FREETYPE_LICENSE = Dual FTL/GPL-2.0+
+FREETYPE_LICENSE_FILES = docs/LICENSE.TXT docs/FTL.TXT docs/GPLv2.TXT
+FREETYPE_DEPENDENCIES = host-pkgconf
+FREETYPE_CONFIG_SCRIPTS = freetype-config
 
-$(eval $(call AUTOTARGETS,package,freetype))
+HOST_FREETYPE_DEPENDENCIES = host-pkgconf
+HOST_FREETYPE_CONF_OPTS = --without-zlib --without-bzip2 --without-png
 
-$(FREETYPE_HOOK_POST_INSTALL):
-	$(SED) "s,^prefix=.*,prefix=\'$(STAGING_DIR)/usr\',g" \
-		-e "s,^exec_prefix=.*,exec_prefix=\'$(STAGING_DIR)/usr\',g" \
-		-e "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include/freetype2\',g" \
-		-e "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" \
-		$(STAGING_DIR)/usr/bin/freetype-config
-	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libfreetype.so
-ifneq ($(BR2_HAVE_DEVFILES),y)
-	rm -f $(TARGET_DIR)/usr/bin/freetype-config
+# Regen required because the tarball ships with an experimental ltmain.sh
+# that can't be patched by our infra.
+# autogen.sh is because autotools stuff lives in other directories and
+# even AUTORECONF with _OPTS doesn't do it properly.
+# POST_PATCH is because we still need to patch libtool after the regen.
+define FREETYPE_RUN_AUTOGEN
+	cd $(@D) && PATH=$(BR_PATH) ./autogen.sh
+endef
+FREETYPE_POST_PATCH_HOOKS += FREETYPE_RUN_AUTOGEN
+HOST_FREETYPE_POST_PATCH_HOOKS += FREETYPE_RUN_AUTOGEN
+FREETYPE_DEPENDENCIES += host-automake host-autoconf host-libtool
+HOST_FREETYPE_DEPENDENCIES += host-automake host-autoconf host-libtool
+
+ifeq ($(BR2_PACKAGE_ZLIB),y)
+FREETYPE_DEPENDENCIES += zlib
+FREETYPE_CONF_OPTS += --with-zlib
+else
+FREETYPE_CONF_OPTS += --without-zlib
 endif
-	touch $@
 
-# freetype for the host
-FREETYPE_HOST_DIR:=$(BUILD_DIR)/freetype-$(FREETYPE_VERSION)-host
+ifeq ($(BR2_PACKAGE_BZIP2),y)
+FREETYPE_DEPENDENCIES += bzip2
+FREETYPE_CONF_OPTS += --with-bzip2
+else
+FREETYPE_CONF_OPTS += --without-bzip2
+endif
 
-$(DL_DIR)/$(FREETYPE_SOURCE):
-	$(call DOWNLOAD,$(FREETYPE_SITE),$(FREETYPE_SOURCE))
+ifeq ($(BR2_PACKAGE_LIBPNG),y)
+FREETYPE_DEPENDENCIES += libpng
+FREETYPE_CONF_OPTS += LIBPNG_CFLAGS="`$(STAGING_DIR)/usr/bin/libpng-config --cflags`" \
+	LIBPNG_LDFLAGS="`$(STAGING_DIR)/usr/bin/libpng-config --ldflags`"
+FREETYPE_LIBPNG_LIBS = "`$(STAGING_DIR)/usr/bin/libpng-config --libs`"
+else
+FREETYPE_CONF_OPTS += --without-png
+endif
 
-$(STAMP_DIR)/host_freetype_unpacked: $(DL_DIR)/$(FREETYPE_SOURCE)
-	mkdir -p $(FREETYPE_HOST_DIR)
-	$(INFLATE$(suffix $(FREETYPE_SOURCE))) $< | \
-		$(TAR) $(TAR_STRIP_COMPONENTS)=1 -C $(FREETYPE_HOST_DIR) $(TAR_OPTIONS) -
-	touch $@
+# Extra fixing since includedir and libdir are expanded from configure values
+define FREETYPE_FIX_CONFIG_FILE
+	$(SED) 's:^includedir=.*:includedir="$${prefix}/include":' \
+		-e 's:^libdir=.*:libdir="$${exec_prefix}/lib":' \
+		$(STAGING_DIR)/usr/bin/freetype-config
+endef
+FREETYPE_POST_INSTALL_STAGING_HOOKS += FREETYPE_FIX_CONFIG_FILE
 
-$(STAMP_DIR)/host_freetype_configured: $(STAMP_DIR)/host_freetype_unpacked $(STAMP_DIR)/host_pkgconfig_installed
-	(cd $(FREETYPE_HOST_DIR); rm -rf config.cache; \
-		$(HOST_CONFIGURE_OPTS) \
-		CFLAGS="$(HOST_CFLAGS)" \
-		LDFLAGS="$(HOST_LDFLAGS)" \
-		./configure \
-		--prefix="$(HOST_DIR)/usr" \
-		--sysconfdir="$(HOST_DIR)/etc" \
-	)
-	touch $@
+# libpng isn't included in freetype-config & freetype2.pc :-/
+define FREETYPE_FIX_CONFIG_FILE_LIBS
+	$(SED) "s,^Libs.private:,& $(FREETYPE_LIBPNG_LIBS)," \
+		$(STAGING_DIR)/usr/lib/pkgconfig/freetype2.pc
+	$(SED) "s,-lfreetype,& $(FREETYPE_LIBPNG_LIBS)," \
+		$(STAGING_DIR)/usr/bin/freetype-config
+endef
+FREETYPE_POST_INSTALL_STAGING_HOOKS += FREETYPE_FIX_CONFIG_FILE_LIBS
 
-$(STAMP_DIR)/host_freetype_compiled: $(STAMP_DIR)/host_freetype_configured
-	$(MAKE) -C $(FREETYPE_HOST_DIR)
-	touch $@
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))
 
-$(STAMP_DIR)/host_freetype_installed: $(STAMP_DIR)/host_freetype_compiled
-	$(HOST_MAKE_ENV) $(MAKE) -C $(FREETYPE_HOST_DIR) install
-	touch $@
-
-host-freetype: $(STAMP_DIR)/host_freetype_installed
-
-host-freetype-source: freetype-source
-
-host-freetype-clean:
-	rm -f $(addprefix $(STAMP_DIR)/host_freetype_,unpacked configured compiled installed)
-	-$(MAKE) -C $(FREETYPE_HOST_DIR) uninstall
-	-$(MAKE) -C $(FREETYPE_HOST_DIR) clean
-
-host-freetype-dirclean:
-	rm -rf $(FREETYPE_HOST_DIR)
+# freetype-patch and host-freetype-patch use autogen.sh so add
+# host-automake as a order-only-prerequisite because it is a phony
+# target.
+$(FREETYPE_TARGET_PATCH) $(HOST_FREETYPE_TARGET_PATCH): | host-automake

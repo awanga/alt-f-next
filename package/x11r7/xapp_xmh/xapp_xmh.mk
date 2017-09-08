@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xapp_xmh -- send and read mail with an X interface to MH
+# xapp_xmh
 #
 ################################################################################
 
-XAPP_XMH_VERSION = 1.0.1
+XAPP_XMH_VERSION = 1.0.3
 XAPP_XMH_SOURCE = xmh-$(XAPP_XMH_VERSION).tar.bz2
 XAPP_XMH_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_XMH_AUTORECONF = NO
-XAPP_XMH_DEPENDENCIES = xlib_libXaw
+XAPP_XMH_LICENSE = MIT
+XAPP_XMH_LICENSE_FILES = COPYING
+XAPP_XMH_DEPENDENCIES = xlib_libXaw xdata_xbitmaps
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_xmh))
+$(eval $(autotools-package))

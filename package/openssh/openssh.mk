@@ -1,45 +1,78 @@
-#############################################################
+################################################################################
 #
 # openssh
 #
-#############################################################
+################################################################################
 
-#OPENSSH_VERSION=6.9p1
-OPENSSH_VERSION=7.1p2
+OPENSSH_VERSION = 7.5p1
+OPENSSH_SITE = http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable
+OPENSSH_LICENSE = BSD-3-Clause, BSD-2-Clause, Public Domain
+OPENSSH_LICENSE_FILES = LICENCE
+# Autoreconf needed due to the following patches modifying configure.ac:
+# f4fcd8c788a4854d4ebae400cf55e3957f906835.patch
+# afc3e31b637db9dae106d4fad78f7b481c8c24e3.patch
+OPENSSH_AUTORECONF = YES
+OPENSSH_PATCH = https://github.com/openssh/openssh-portable/commit/f4fcd8c788a4854d4ebae400cf55e3957f906835.patch \
+	https://github.com/openssh/openssh-portable/commit/afc3e31b637db9dae106d4fad78f7b481c8c24e3.patch
+OPENSSH_CONF_ENV = LD="$(TARGET_CC)" LDFLAGS="$(TARGET_CFLAGS)"
+OPENSSH_CONF_OPTS = \
+	--sysconfdir=/etc/ssh \
+	--disable-lastlog \
+	--disable-utmp \
+	--disable-utmpx \
+	--disable-wtmp \
+	--disable-wtmpx \
+	--disable-strip
 
-OPENSSH_SITE=ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable
+define OPENSSH_USERS
+	sshd -1 sshd -1 * - - - SSH drop priv user
+endef
 
-OPENSSH_CONF_ENV = LD=$(TARGET_CC)
-OPENSSH_CONF_OPT = --sysconfdir=/etc/ssh --with-privsep-path=/var/run/vsftpd \
-	-disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx
-
-OPENSSH_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-
-OPENSSH_SFTP_STAMP = $(PROJECT_BUILD_DIR)/autotools-stamps/openssh-sftp_target_installed
-
-# The bellow dependency on dropbear is a fake. Dropbear installs ssh and scp as a link
-# to dropbear, so if it is installed after openssh it will override those binaries
-
-OPENSSH_DEPENDENCIES = zlib openssl dropbear
-
-$(eval $(call AUTOTARGETS,package,openssh))
-
-# this is a hack. Use AUTOTARGETS to do everything but install.
-# At the build end, the post build hook runs, which installs just sftp-server
-
-ifneq ($(BR2_PACKAGE_OPENSSH_SFTP),y)
-
-$(OPENSSH_HOOK_POST_INSTALL):
-	sed -i 's/#.*Ciphers /Ciphers aes128-cbc,/' $(TARGET_DIR)/etc/ssh/ssh_config
-	sed -i -e '/Subsystem/s/libexec/lib/' \
-		-e 's/#PermitRootLogin no/PermitRootLogin yes/' \
-		$(TARGET_DIR)/etc/ssh/sshd_config
-	touch $@
-
-else
-
-$(OPENSSH_TARGET_INSTALL_TARGET) $(OPENSSH_SFTP_STAMP):
-	$(INSTALL) -m 0755 $(OPENSSH_DIR)/sftp-server $(TARGET_DIR)/usr/lib
-	touch $@ $(OPENSSH_SFTP_STAMP)
-
+ifeq ($(BR2_TOOLCHAIN_SUPPORTS_PIE),)
+OPENSSH_CONF_OPTS += --without-pie
 endif
+
+OPENSSH_DEPENDENCIES = zlib openssl
+
+ifeq ($(BR2_PACKAGE_CRYPTODEV_LINUX),y)
+OPENSSH_DEPENDENCIES += cryptodev-linux
+OPENSSH_CONF_OPTS += --with-ssl-engine
+else
+OPENSSH_CONF_OPTS += --without-ssl-engine
+endif
+
+ifeq ($(BR2_PACKAGE_LINUX_PAM),y)
+define OPENSSH_INSTALL_PAM_CONF
+	$(INSTALL) -D -m 644 $(@D)/contrib/sshd.pam.generic $(TARGET_DIR)/etc/pam.d/sshd
+	$(SED) '\%password   required     /lib/security/pam_cracklib.so%d' $(TARGET_DIR)/etc/pam.d/sshd
+	$(SED) 's/\#UsePAM no/UsePAM yes/' $(TARGET_DIR)/etc/ssh/sshd_config
+endef
+
+OPENSSH_DEPENDENCIES += linux-pam
+OPENSSH_CONF_OPTS += --with-pam
+OPENSSH_POST_INSTALL_TARGET_HOOKS += OPENSSH_INSTALL_PAM_CONF
+else
+OPENSSH_CONF_OPTS += --without-pam
+endif
+
+ifeq ($(BR2_PACKAGE_LIBSELINUX),y)
+OPENSSH_DEPENDENCIES += libselinux
+OPENSSH_CONF_OPTS += --with-selinux
+else
+OPENSSH_CONF_OPTS += --without-selinux
+endif
+
+define OPENSSH_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 package/openssh/sshd.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/sshd.service
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
+	ln -fs ../../../../usr/lib/systemd/system/sshd.service \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/sshd.service
+endef
+
+define OPENSSH_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 755 package/openssh/S50sshd \
+		$(TARGET_DIR)/etc/init.d/S50sshd
+endef
+
+$(eval $(autotools-package))

@@ -1,44 +1,60 @@
-#############################################################
+################################################################################
 #
 # gptfdisk
 #
-#############################################################
+################################################################################
 
-GPTFDISK_VERSION:=1.0.1
-GPTFDISK_SOURCE:=gptfdisk-$(GPTFDISK_VERSION).tar.gz
-GPTFDISK_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/gptfdisk/gptfdisk/$(GPTFDISK_VERSION)
+GPTFDISK_VERSION = 1.0.0
+GPTFDISK_SITE = http://downloads.sourceforge.net/sourceforge/gptfdisk
+GPTFDISK_LICENSE = GPL-2.0+
+GPTFDISK_LICENSE_FILES = COPYING
 
-GPTFDISK_DIR:=$(BUILD_DIR)/gptfdisk-$(GPTFDISK_VERSION)
-GPTFDISK_INSTALL_STAGING = NO
-GPTFDISK_LIBTOOL_PATCH = NO
+GPTFDISK_TARGETS_$(BR2_PACKAGE_GPTFDISK_GDISK) += gdisk
+GPTFDISK_TARGETS_$(BR2_PACKAGE_GPTFDISK_SGDISK) += sgdisk
+GPTFDISK_TARGETS_$(BR2_PACKAGE_GPTFDISK_CGDISK) += cgdisk
 
-GPTFDISK_CFLAGS = -Os
-GPTFDISK_DEPENDENCIES = popt libuuid ncurses
-GPTFDISK_MAKE_OPT = sgdisk gdisk cgdisk fixparts
-
-$(eval $(call AUTOTARGETS,package,gptfdisk))
-
-$(GPTFDISK_HOOK_POST_EXTRACT):
-	echo -e "#!/bin/bash\necho \"\
-CC = \$$CC\\n\
-CXX = \$$CXX\\n\
-CFLAGS = \$$CFLAGS $(GPTFDISK_CFLAGS)\\n\
-CXXFLAGS = \$$CXXFLAGS $(GPTFDISK_CFLAGS)\\n\" >> Makefile" > $(GPTFDISK_DIR)/configure
-	sed -i 's/ncursesw/ncurses/' $(GPTFDISK_DIR)/Makefile
-	chmod +x $(GPTFDISK_DIR)/configure
-	touch $@
-
-$(GPTFDISK_TARGET_INSTALL_TARGET):
+GPTFDISK_DEPENDENCIES += util-linux
 ifeq ($(BR2_PACKAGE_GPTFDISK_SGDISK),y)
-	cp $(GPTFDISK_DIR)/sgdisk $(TARGET_DIR)/usr/sbin
-endif
-ifeq ($(BR2_PACKAGE_GPTFDISK_GDISK),y)
-	cp $(GPTFDISK_DIR)/gdisk $(TARGET_DIR)/usr/sbin
-endif
-ifeq ($(BR2_PACKAGE_GPTFDISK_FIXPARTS),y)
-	cp $(GPTFDISK_DIR)/fixparts $(TARGET_DIR)/usr/sbin
+GPTFDISK_DEPENDENCIES += popt
 endif
 ifeq ($(BR2_PACKAGE_GPTFDISK_CGDISK),y)
-	cp $(GPTFDISK_DIR)/cgdisk $(TARGET_DIR)/usr/sbin
+GPTFDISK_DEPENDENCIES += ncurses
 endif
-	touch $@
+
+ifeq ($(BR2_STATIC_LIBS),y)
+# gptfdisk dependencies may link against libintl/libiconv, so we need
+# to do so as well when linking statically
+ifeq ($(BR2_PACKAGE_GETTEXT),y)
+GPTFDISK_DEPENDENCIES += gettext
+GPTFDISK_LDLIBS += -lintl
+endif
+
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+GPTFDISK_DEPENDENCIES += libiconv
+GPTFDISK_LDLIBS += -liconv
+endif
+endif
+
+define GPTFDISK_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(@D) \
+		LDLIBS='$(GPTFDISK_LDLIBS)' $(GPTFDISK_TARGETS_y)
+endef
+
+define GPTFDISK_INSTALL_TARGET_CMDS
+	for i in $(GPTFDISK_TARGETS_y); do \
+		$(INSTALL) -D -m 0755 $(@D)/$$i $(TARGET_DIR)/usr/sbin/$$i || exit 1; \
+	done
+endef
+
+HOST_GPTFDISK_DEPENDENCIES = host-util-linux host-popt
+
+define HOST_GPTFDISK_BUILD_CMDS
+	$(HOST_MAKE_ENV) $(MAKE) $(HOST_CONFIGURE_OPTS) -C $(@D) sgdisk
+endef
+
+define HOST_GPTFDISK_INSTALL_CMDS
+	$(INSTALL) -D -m 0755 $(@D)/sgdisk $(HOST_DIR)/usr/sbin/sgdisk
+endef
+
+$(eval $(generic-package))
+$(eval $(host-generic-package))

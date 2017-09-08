@@ -1,69 +1,127 @@
-#############################################################
+################################################################################
 #
 # netsnmp
 #
-#############################################################
+################################################################################
 
-NETSNMP_VERSION:=5.5.2
-#NETSNMP_VERSION:=5.7.2
-NETSNMP_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/net-snmp/net-snmp/$(NETSNMP_VERSION)
-NETSNMP_DIR:=$(BUILD_DIR)/net-snmp-$(NETSNMP_VERSION)
-NETSNMP_SOURCE:=net-snmp-$(NETSNMP_VERSION).tar.gz
+NETSNMP_VERSION = 5.7.3
+NETSNMP_SITE = http://downloads.sourceforge.net/project/net-snmp/net-snmp/$(NETSNMP_VERSION)
+NETSNMP_SOURCE = net-snmp-$(NETSNMP_VERSION).tar.gz
+NETSNMP_LICENSE = Various BSD-like
+NETSNMP_LICENSE_FILES = COPYING
 NETSNMP_INSTALL_STAGING = YES
-NETSNMP_LIBTOOL_PATCH = NO
+NETSNMP_CONF_ENV = ac_cv_NETSNMP_CAN_USE_SYSCTL=no
+NETSNMP_CONF_OPTS = \
+	--with-persistent-directory=/var/lib/snmp \
+	--with-defaults \
+	--enable-mini-agent \
+	--without-rpm \
+	--with-logfile=none \
+	--without-kmem-usage \
+	--enable-as-needed \
+	--without-perl-modules \
+	--disable-embedded-perl \
+	--disable-perl-cc-checks \
+	--disable-scripts \
+	--with-default-snmp-version="1" \
+	--enable-silent-libtool \
+	--enable-mfd-rewrites \
+	--with-sys-contact="root@localhost" \
+	--with-sys-location="Unknown" \
+	--with-mib-modules="$(call qstrip,$(BR2_PACKAGE_NETSNMP_WITH_MIB_MODULES))" \
+	--with-out-mib-modules="$(call qstrip,$(BR2_PACKAGE_NETSNMP_WITHOUT_MIB_MODULES))" \
+	--with-out-transports="Unix" \
+	--disable-manuals
+NETSNMP_INSTALL_STAGING_OPTS = DESTDIR=$(STAGING_DIR) LIB_LDCONFIG_CMD=true install
+NETSNMP_INSTALL_TARGET_OPTS = DESTDIR=$(TARGET_DIR) LIB_LDCONFIG_CMD=true install
 NETSNMP_MAKE = $(MAKE1)
+NETSNMP_CONFIG_SCRIPTS = net-snmp-config
+NETSNMP_AUTORECONF = YES
 
-NETSNMP_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) installprogs installlibs installsubdirs
-NETSNMP_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) installprogs installlibs installsubdirs installheaders
-
-NETSNMP_WO_TRANSPORT:=
-ifneq ($(BR2_INET_IPX),y)
-NETSNMP_WO_TRANSPORT+= IPX
-endif
-ifneq ($(BR2_INET_IPV6),y)
-NETSNMP_WO_TRANSPORT+= UDPIPv6 TCPIPv6
-endif
+NETSNMP_BLOAT_MIBS = BRIDGE DISMAN-EVENT DISMAN-SCHEDULE DISMAN-SCRIPT EtherLike RFC-1215 RFC1155-SMI RFC1213 SCTP SMUX
 
 ifeq ($(BR2_ENDIAN),"BIG")
-NETSNMP_ENDIAN=big
+NETSNMP_CONF_OPTS += --with-endianness=big
 else
-NETSNMP_ENDIAN=little
+NETSNMP_CONF_OPTS += --with-endianness=little
 endif
 
+ifeq ($(BR2_PACKAGE_LIBNL),y)
+NETSNMP_DEPENDENCIES += host-pkgconf libnl
+NETSNMP_CONF_OPTS += --with-nl
+else
+NETSNMP_CONF_OPTS += --without-nl
+endif
+
+# OpenSSL
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
-NETSNMP_CONFIGURE_OPENSSL:=--with-openssl=$(STAGING_DIR)/usr
-NETSNMP_DEPENDENCIES = openssl
+NETSNMP_DEPENDENCIES += openssl
+NETSNMP_CONF_OPTS += \
+	--with-openssl=$(STAGING_DIR)/usr/include/openssl \
+	--with-security-modules="tsm,usm" \
+	--with-transports="DTLSUDP,TLSTCP"
+ifeq ($(BR2_STATIC_LIBS),y)
+# openssl uses zlib, so we need to explicitly link with it when static
+NETSNMP_CONF_ENV += LIBS=-lz
+endif
+else ifeq ($(BR2_PACKAGE_NETSNMP_OPENSSL_INTERNAL),y)
+NETSNMP_CONF_OPTS += --with-openssl=internal
 else
-NETSNMP_CONFIGURE_OPENSSL:=--without-openssl
+NETSNMP_CONF_OPTS += --without-openssl
 endif
 
-NETSNMP_CONF_OPT = $(NETSNMP_CONFIGURE_OPENSSL) \
-	--with-out-transports="$(NETSNMP_WO_TRANSPORT)" --enable-mini-agent \
-	--disable-embedded-perl --disable-perl-cc-checks --without-perl-modules \
-	--without-kmem-usage --without-rsaref --disable-debugging --with-defaults \
-	--with-sys-location="Unknown" --with-sys-contact="root" \
-	--with-endianness=$(NETSNMP_ENDIAN) \
-	--with-persistent-directory=/var/lib/snmp \
-	--enable-ucd-snmp-compatibility \
-	--enable-shared --disable-static \
-	--without-rpm --disable-manuals 
+# There's no option to forcibly enable or disable it
+ifeq ($(BR2_PACKAGE_PCIUTILS),y)
+NETSNMP_DEPENDENCIES += pciutils
+endif
 
-NETSNMP_CONF_ENV = ac_cv_NETSNMP_CAN_USE_SYSCTL=yes 
+# For ucd-snmp/lmsensorsMib
+ifeq ($(BR2_PACKAGE_LM_SENSORS),y)
+NETSNMP_DEPENDENCIES += lm-sensors
+endif
 
-$(eval $(call AUTOTARGETS,package,netsnmp))
+ifneq ($(BR2_PACKAGE_NETSNMP_ENABLE_MIBS),y)
+NETSNMP_CONF_OPTS += --disable-mib-loading
+NETSNMP_CONF_OPTS += --disable-mibs
+endif
 
-$(NETSNMP_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/share/man $(TARGET_DIR)/usr/share/doc $(TARGET_DIR)/usr/share/info
-	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
-		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
-		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
+ifneq ($(BR2_PACKAGE_NETSNMP_ENABLE_DEBUGGING),y)
+NETSNMP_CONF_OPTS += --disable-debugging
+endif
+
+ifeq ($(BR2_PACKAGE_NETSNMP_SERVER),y)
+NETSNMP_CONF_OPTS += --enable-agent
+else
+NETSNMP_CONF_OPTS += --disable-agent
+endif
+
+ifeq ($(BR2_PACKAGE_NETSNMP_CLIENTS),y)
+NETSNMP_CONF_OPTS += --enable-applications
+else
+NETSNMP_CONF_OPTS += --disable-applications
+endif
+
+define NETSNMP_REMOVE_BLOAT_MIBS
+	for mib in $(NETSNMP_BLOAT_MIBS); do \
+		rm -f $(TARGET_DIR)/usr/share/snmp/mibs/$$mib-MIB.txt; \
+	done
+endef
+
+NETSNMP_POST_INSTALL_TARGET_HOOKS += NETSNMP_REMOVE_BLOAT_MIBS
+
+ifeq ($(BR2_PACKAGE_NETSNMP_SERVER),y)
+define NETSNMP_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 package/netsnmp/S59snmpd \
+		$(TARGET_DIR)/etc/init.d/S59snmpd
+endef
+endif
+
+define NETSNMP_STAGING_NETSNMP_CONFIG_FIXUP
+	$(SED)	"s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include\',g" \
+		-e "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" \
 		$(STAGING_DIR)/usr/bin/net-snmp-config
-	# Copy the .conf files.
-	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/EXAMPLE.conf $(TARGET_DIR)/etc/snmp/snmpd.conf
-	-mv $(TARGET_DIR)/usr/share/snmp/mib2c*.conf $(TARGET_DIR)/etc/snmp
-	# Install the "broken" headers
-	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/struct.h $(STAGING_DIR)/usr/include/net-snmp/agent/struct.h
-	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/util_funcs.h $(STAGING_DIR)/usr/include/net-snmp/util_funcs.h
-	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/mibincl.h $(STAGING_DIR)/usr/include/net-snmp/library/mibincl.h
-	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/header_complex.h $(STAGING_DIR)/usr/include/net-snmp/agent/header_complex.h
-	touch $@
+endef
+
+NETSNMP_POST_INSTALL_STAGING_HOOKS += NETSNMP_STAGING_NETSNMP_CONFIG_FIXUP
+
+$(eval $(autotools-package))

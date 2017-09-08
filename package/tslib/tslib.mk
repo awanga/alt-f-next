@@ -1,22 +1,20 @@
-#############################################################
+################################################################################
 #
 # tslib
 #
-#############################################################
-TSLIB_VERSION:=1.0
-TSLIB_SOURCE:=tslib-$(TSLIB_VERSION).tar.bz2
-TSLIB_SITE:=http://download.berlios.de/tslib
-TSLIB_AUTORECONF = YES
-TSLIB_LIBTOOL_PATCH = NO
+################################################################################
+
+TSLIB_VERSION = 1.9
+TSLIB_SITE = https://github.com/kergoth/tslib/releases/download/$(TSLIB_VERSION)
+TSLIB_SOURCE = tslib-$(TSLIB_VERSION).tar.xz
+TSLIB_LICENSE = GPL-2.0+ (programs), LGPL-2.1+ (libraries)
+TSLIB_LICENSE_FILES = COPYING
+
 TSLIB_INSTALL_STAGING = YES
-TSLIB_INSTALL_TARGET = YES
-TSLIB_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) LDFLAGS=-L$(STAGING_DIR)/usr/lib install
+TSLIB_INSTALL_STAGING_OPTS = DESTDIR=$(STAGING_DIR) LDFLAGS=-L$(STAGING_DIR)/usr/lib install
 
-TSLIB_CONF_OPT = \
-	--enable-shared	\
-	--prefix=/usr	\
-	--sysconfdir=/etc
+ifeq ($(BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_6),)
+TSLIB_CONF_OPTS += --disable-tools
+endif
 
-TSLIB_DEPENDENCIES = uclibc
-
-$(eval $(call AUTOTARGETS,package,tslib))
+$(eval $(autotools-package))

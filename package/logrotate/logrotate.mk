@@ -1,42 +1,36 @@
-LOGROTATE_VERSION:=3.7.7
-LOGROTATE_SOURCE:=logrotate-$(LOGROTATE_VERSION).tar.gz
-LOGROTATE_SITE:=https://fedorahosted.org/releases/l/o/logrotate/
-LOGROTATE_DIR:=$(BUILD_DIR)/logrotate-$(LOGROTATE_VERSION)
-LOGROTATE_BINARY:=logrotate
-LOGROTATE_TARGET_BINARY:=usr/sbin/$(LOGROTATE_BINARY)
+################################################################################
+#
+# logrotate
+#
+################################################################################
 
-$(DL_DIR)/$(LOGROTATE_SOURCE):
-	$(call DOWNLOAD,$(LOGROTATE_SITE),$(LOGROTATE_SOURCE))
+LOGROTATE_VERSION = 3.11.0
+LOGROTATE_SITE = $(call github,logrotate,logrotate,$(LOGROTATE_VERSION))
+LOGROTATE_LICENSE = GPL-2.0+
+LOGROTATE_LICENSE_FILES = COPYING
+LOGROTATE_DEPENDENCIES = popt host-pkgconf
+# tarball does not have a generated configure script
+LOGROTATE_AUTORECONF = YES
+LOGROTATE_CONF_ENV = LIBS="`$(PKG_CONFIG_HOST_BINARY) --libs popt`"
 
-$(LOGROTATE_DIR)/.source: $(DL_DIR)/$(LOGROTATE_SOURCE)
-	$(ZCAT) $(DL_DIR)/$(LOGROTATE_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LOGROTATE_DIR) package/logrotate/ logrotate\*.patch
-	touch $@
-
-$(LOGROTATE_DIR)/$(LOGROTATE_BINARY): $(LOGROTATE_DIR)/.source
-	$(MAKE) CC="$(TARGET_CC) $(TARGET_CFLAGS)" -C $(LOGROTATE_DIR)
-
-$(TARGET_DIR)/$(LOGROTATE_TARGET_BINARY): $(LOGROTATE_DIR)/$(LOGROTATE_BINARY)
-	$(MAKE) PREFIX=$(TARGET_DIR) -C $(LOGROTATE_DIR) install
-	if [ ! -f $(TARGET_DIR)/etc/logrotate.conf ]; then \
-		$(INSTALL) -m 0644 package/logrotate/logrotate.conf $(TARGET_DIR)/etc/logrotate.conf; \
-	fi
-	$(INSTALL) -d -m 0755 $(TARGET_DIR)/etc/logrotate.d
-
-logrotate: popt $(TARGET_DIR)/$(LOGROTATE_TARGET_BINARY)
-
-logrotate-source: $(DL_DIR)/$(LOGROTATE_SOURCE)
-
-logrotate-clean:
-	rm -f $(TARGET_DIR)/$(LOGROTATE_TARGET_BINARY)
-	rm -f $(TARGET_DIR)/etc/logrotate.conf
-	-rmdir $(TARGET_DIR)/etc/logrotate.d
-	-$(MAKE) -C $(LOGROTATE_DIR) clean
-
-logrotate-dirclean:
-	rm -rf $(LOGROTATE_DIR)
-
-ifeq ($(BR2_PACKAGE_LOGROTATE),y)
-TARGETS+=logrotate
+ifeq ($(BR2_PACKAGE_LIBSELINUX),y)
+LOGROTATE_CONF_OPTS += --with-selinux
+LOGROTATE_DEPENDENCIES += libselinux
+else
+LOGROTATE_CONF_OPTS += --without-selinux
 endif
 
+ifeq ($(BR2_PACKAGE_ACL),y)
+LOGROTATE_DEPENDENCIES += acl
+LOGROTATE_CONF_OPTS += --with-acl
+else
+LOGROTATE_CONF_OPTS += --without-acl
+endif
+
+define LOGROTATE_INSTALL_TARGET_CONF
+	$(INSTALL) -m 0644 package/logrotate/logrotate.conf $(TARGET_DIR)/etc/logrotate.conf
+	$(INSTALL) -d -m 0755 $(TARGET_DIR)/etc/logrotate.d
+endef
+LOGROTATE_POST_INSTALL_TARGET_HOOKS += LOGROTATE_INSTALL_TARGET_CONF
+
+$(eval $(autotools-package))

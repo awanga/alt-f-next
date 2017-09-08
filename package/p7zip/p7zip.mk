@@ -1,30 +1,27 @@
-#############################################################
+################################################################################
 #
 # p7zip
 #
-#############################################################
+################################################################################
 
-P7ZIP_VERSION:=9.20.1
-P7ZIP_SOURCE:=p7zip_$(P7ZIP_VERSION)_src_all.tar.bz2
-P7ZIP_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/p7zip/p7zip/$(P7ZIP_VERSION)
+P7ZIP_VERSION = 15.14.1
+P7ZIP_SOURCE = p7zip_$(P7ZIP_VERSION)_src_all.tar.bz2
+P7ZIP_SITE = http://downloads.sourceforge.net/project/p7zip/p7zip/$(P7ZIP_VERSION)
+P7ZIP_LICENSE = LGPL-2.1+ with unRAR restriction
+P7ZIP_LICENSE_FILES = DOC/License.txt
 
-P7ZIP_DEPENDENCIES = uclibc
+# p7zip buildsystem is a mess: it plays dirty tricks with CFLAGS and
+# CXXFLAGS, so we can't pass them. Instead, it accepts ALLFLAGS_C
+# and ALLFLAGS_CPP as variables to pass the CFLAGS and CXXFLAGS.
+define P7ZIP_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) CC="$(TARGET_CC)" ALLFLAGS_C="$(TARGET_CFLAGS)" \
+		CXX="$(TARGET_CXX)" ALLFLAGS_CPP="$(TARGET_CXXFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS)" \
+		-C $(@D) 7zr
+endef
 
-P7ZIP_MAKE_ENV = P7ZIP_CC="$(TARGET_CC) $(TARGET_CFLAGS)" \
-	P7ZIP_CXX="$(TARGET_CXX) $(TARGET_CXXFLAGS)"
+define P7ZIP_INSTALL_TARGET_CMDS
+	$(INSTALL) -D -m 0755 $(@D)/bin/7zr $(TARGET_DIR)/usr/bin/7zr
+endef
 
-P7ZIP_MAKE_OPT = all3
-
-P7ZIP_INSTALL_TARGET_OPT = DEST_HOME=$(TARGET_DIR)/usr install
-
-$(eval $(call AUTOTARGETS,package,p7zip))
-
-$(P7ZIP_TARGET_CONFIGURE):
-	(	cd $(P7ZIP_DIR); \
-		cp makefile.linux_cross_arm makefile.machine; \
-		$(SED) 's|^CC=.*|CC=$$(P7ZIP_CC) $$(ALLFLAGS)|' \
-			-e 's|^CXX=.*|CXX=$$(P7ZIP_CXX) $$(ALLFLAGS)|' makefile.machine; \
-		$(SED) 's|444|644|' -e 's|555|755|' \
-			-e 's|echo.*DEST_SHARE.*prg}\\"|echo "/usr/lib/p7zip/$${prg}|' install.sh; \
-	)
-	touch $@
+$(eval $(generic-package))

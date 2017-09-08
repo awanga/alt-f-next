@@ -5,11 +5,10 @@
 ################################################################################
 
 LIBSEXY_VERSION = 0.1.11
-LIBSEXY_SOURCE = libsexy-$(LIBSEXY_VERSION).tar.gz
-LIBSEXY_SITE = http://releases.chipx86.com/libsexy/libsexy/
-LIBSEXY_AUTORECONF = NO
+LIBSEXY_SITE = http://releases.chipx86.com/libsexy/libsexy
 LIBSEXY_DEPENDENCIES = libgtk2 libxml2
-LIBSEXY_INSTALL_TARGET = YES
 LIBSEXY_INSTALL_STAGING = YES
+LIBSEXY_LICENSE = LGPL-2.1+
+LIBSEXY_LICENSE_FILES = COPYING
 
-$(eval $(call AUTOTARGETS,package/libsexy,libsexy))
+$(eval $(autotools-package))

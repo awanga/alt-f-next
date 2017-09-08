@@ -1,6 +1,12 @@
 config BR2_PACKAGE_LIBUNISTRING
 	bool "libunistring"
+	depends on BR2_USE_WCHAR
 	help
-	  This library implements Unicode strings, together with functions for Unicode charactets and functions for string processing.
+	  The libunistring library provides functions for manipulating
+	  Unicode strings and for manipulating C strings according to
+	  the Unicode standard.
 
-	  http://savannah.gnu.org/projects/libunistring
+	  http://www.gnu.org/software/libunistring/
+
+comment "libunistring needs a toolchain w/ wchar"
+	depends on !BR2_USE_WCHAR

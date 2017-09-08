@@ -1,162 +1,146 @@
-#############################################################
+################################################################################
 #
 # imagemagick
 #
-#############################################################
-IMAGEMAGICK_VERSION:=6.4.8-4
-IMAGEMAGICK_SOURCE:=ImageMagick-$(IMAGEMAGICK_VERSION).tar.bz2
-IMAGEMAGICK_SITE:=ftp://ftp.imagemagick.org/pub/ImageMagick
-IMAGEMAGICK_DIR:=$(BUILD_DIR)/ImageMagick-$(IMAGEMAGICK_VERSION)
-IMAGEMAGICK_CAT:=$(BZCAT)
-#IMAGEMAGICK_BINARY:=convert
-#IMAGEMAGICK_TARGET_BINARY:=usr/bin/$(IMAGEMAGICK_BINARY)
-IMAGEMAGICK_LIB:=$(TARGET_DIR)/usr/lib/libMagick.so
+################################################################################
 
-IMAGEMAGICK_TARGET_BINARIES:=$(TARGET_DIR)/usr/bin/animate
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/compare
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/composite
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/conjure
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/display
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/import
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/mogrify
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/montage
-IMAGEMAGICK_TARGET_BINARIES+=$(TARGET_DIR)/usr/bin/convert
+IMAGEMAGICK_VERSION = 7.0.5-10
+IMAGEMAGICK_SOURCE = ImageMagick-$(IMAGEMAGICK_VERSION).tar.xz
+IMAGEMAGICK_SITE = http://www.imagemagick.org/download/releases
+IMAGEMAGICK_LICENSE = Apache-2.0
+IMAGEMAGICK_LICENSE_FILES = LICENSE
 
-IMAGEMAGICK_COPY:=cp -df --preserve=mode,ownership
-$(DL_DIR)/$(IMAGEMAGICK_SOURCE):
-	$(call DOWNLOAD,$(IMAGEMAGICK_SITE),$(IMAGEMAGICK_SOURCE))
+IMAGEMAGICK_INSTALL_STAGING = YES
+IMAGEMAGICK_CONFIG_SCRIPTS = \
+	$(addsuffix -config,MagickCore MagickWand)
 
-$(IMAGEMAGICK_DIR)/.unpacked: $(DL_DIR)/$(IMAGEMAGICK_SOURCE)
-	$(IMAGEMAGICK_CAT) $(DL_DIR)/$(IMAGEMAGICK_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(IMAGEMAGICK_DIR) package/imagemagick/ imagemagick-$(IMAGEMAGICK_VERSION)\*.patch\*
-	$(CONFIG_UPDATE) $(IMAGEMAGICK_DIR)/config
-	touch $@
-
-$(IMAGEMAGICK_DIR)/.configured: $(IMAGEMAGICK_DIR)/.unpacked
-	(cd $(IMAGEMAGICK_DIR); rm -f config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--sysconfdir=/etc \
-		--without-perl \
-		--without-wmf \
-		--without-xml \
-		--without-rsvg \
-		--without-openexr \
-		--without-jp2 \
-		--without-jbig \
-		--without-gvc \
-		--without-djvu \
-		--without-dps \
-		--without-gslib \
-		--without-fpx \
-		--without-freetype \
-		--without-x \
-	)
-	touch $@
-
-$(IMAGEMAGICK_DIR)/.compiled: $(IMAGEMAGICK_DIR)/.configured
-	$(MAKE) -C $(IMAGEMAGICK_DIR)
-	touch $@
-
-$(STAGING_DIR)/usr/lib/libMagick.a: $(IMAGEMAGICK_DIR)/.compiled
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(IMAGEMAGICK_DIR) install
-	touch -c $@
-
-$(IMAGEMAGICK_LIB): $(STAGING_DIR)/usr/lib/libMagick.a
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/lib/libWand.so* $(TARGET_DIR)/usr/lib/
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libWand.so*
-	mkdir -p $(TARGET_DIR)/usr/lib/ImageMagick-$(IMAGEMAGICK_VERSION)
-	$(IMAGEMAGICK_COPY) -r $(STAGING_DIR)/usr/lib/ImageMagick-$(IMAGEMAGICK_VERSION) $(TARGET_DIR)/usr/lib
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/lib/libMagick.so* $(TARGET_DIR)/usr/lib/
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(IMAGEMAGICK_LIB)*
-	touch -c $@
-
-$(IMAGEMAGICK_DIR)/.libinstall: $(IMAGEMAGICK_LIB)
-	libtool --finish $(TARGET_DIR)/usr/lib/ImageMagick-6.3.5/modules-Q16/coders
-	libtool --finish $(TARGET_DIR)/usr/lib/ImageMagick-6.3.5/modules-Q16/filters
-	touch $@
-
-$(TARGET_DIR)/usr/bin/animate: $(IMAGEMAGICK_LIB)
-	ls -l $(IMAGEMAGICK_LIB) >> datefile
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-animate $(TARGET_DIR)/usr/bin/animate
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/animate
-	touch $@
-
-$(TARGET_DIR)/usr/bin/compare: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-compare $(TARGET_DIR)/usr/bin/compare
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/compare
-	touch $@
-
-$(TARGET_DIR)/usr/bin/composite: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-composite $(TARGET_DIR)/usr/bin/composite
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/composite
-	touch $@
-
-$(TARGET_DIR)/usr/bin/conjure: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-conjure $(TARGET_DIR)/usr/bin/conjure
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/conjure
-	touch $@
-
-$(TARGET_DIR)/usr/bin/display: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-display $(TARGET_DIR)/usr/bin/display
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/display
-	touch $@
-
-$(TARGET_DIR)/usr/bin/import: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-import $(TARGET_DIR)/usr/bin/import
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/import
-	touch $@
-
-$(TARGET_DIR)/usr/bin/mogrify: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-mogrify $(TARGET_DIR)/usr/bin/mogrify
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/mogrify
-	touch $@
-
-$(TARGET_DIR)/usr/bin/montage: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-montage $(TARGET_DIR)/usr/bin/montage
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/montage
-	touch $@
-
-$(TARGET_DIR)/usr/bin/convert: $(IMAGEMAGICK_LIB)
-	$(IMAGEMAGICK_COPY) $(STAGING_DIR)/usr/bin/$(GNU_TARGET_NAME)-convert $(TARGET_DIR)/usr/bin/convert
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/bin/convert
-	touch $@
-
-imagemagick: uclibc jpeg tiff $(IMAGEMAGICK_LIB) \
-		$(IMAGEMAGICK_DIR)/.libinstall \
-		$(IMAGEMAGICK_TARGET_BINARIES)
-
-imagemagick-source: $(DL_DIR)/$(IMAGEMAGICK_SOURCE)
-
-imagemagick-unpacked:$(IMAGEMAGICK_DIR)/.unpacked
-
-imagemagick-clean:
-	rm -f $(TARGET_DIR)/$(IMAGEMAGICK_TARGET_BINARY)
-	rm -f $(TARGET_DIR)/usr/bin/animate
-	rm -f $(TARGET_DIR)/usr/bin/compare
-	rm -f $(TARGET_DIR)/usr/bin/composite
-	rm -f $(TARGET_DIR)/usr/bin/conjure
-	rm -f $(TARGET_DIR)/usr/bin/convert
-	rm -f $(TARGET_DIR)/usr/bin/display
-	rm -f $(TARGET_DIR)/usr/bin/import
-	rm -f $(TARGET_DIR)/usr/bin/mogrify
-	rm -f $(TARGET_DIR)/usr/bin/montage
-	rm -rf $(TARGET_DIR)/usr/lib/ImageMagick-$(IMAGEMAGICK_VERSION)
-	rm -rf $(TARGET_DIR)/usr/lib/ImageMagick-$(IMAGEMAGICK_VERSION)
-	-$(MAKE) -C $(IMAGEMAGICK_DIR) clean
-
-imagemagick-dirclean:
-	rm -rf $(IMAGEMAGICK_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_IMAGEMAGICK),y)
-TARGETS+=imagemagick
+ifeq ($(BR2_INSTALL_LIBSTDCPP)$(BR2_USE_WCHAR),yy)
+IMAGEMAGICK_CONFIG_SCRIPTS += Magick++-config
 endif
+
+IMAGEMAGICK_CONF_ENV = ac_cv_sys_file_offset_bits=64
+
+IMAGEMAGICK_CONF_OPTS = \
+	--program-transform-name='s,,,' \
+	--disable-openmp \
+	--without-djvu \
+	--without-dps \
+	--without-flif \
+	--without-fpx \
+	--without-gslib \
+	--without-gvc \
+	--without-jbig \
+	--without-lqr \
+	--without-openexr \
+	--without-perl \
+	--without-raqm \
+	--without-wmf \
+	--without-x \
+	--with-gs-font-dir=/usr/share/fonts/gs
+
+IMAGEMAGICK_DEPENDENCIES = host-pkgconf
+
+ifeq ($(BR2_PACKAGE_FONTCONFIG),y)
+IMAGEMAGICK_CONF_OPTS += --with-fontconfig
+IMAGEMAGICK_DEPENDENCIES += fontconfig
+else
+IMAGEMAGICK_CONF_OPTS += --without-fontconfig
+endif
+
+ifeq ($(BR2_PACKAGE_FREETYPE),y)
+IMAGEMAGICK_CONF_OPTS += --with-freetype
+IMAGEMAGICK_CONF_ENV += \
+	ac_cv_path_freetype_config=$(STAGING_DIR)/usr/bin/freetype-config
+IMAGEMAGICK_DEPENDENCIES += freetype
+else
+IMAGEMAGICK_CONF_OPTS += --without-freetype
+endif
+
+ifeq ($(BR2_PACKAGE_JPEG),y)
+IMAGEMAGICK_CONF_OPTS += --with-jpeg
+IMAGEMAGICK_DEPENDENCIES += jpeg
+else
+IMAGEMAGICK_CONF_OPTS += --without-jpeg
+endif
+
+ifeq ($(BR2_PACKAGE_LCMS2),y)
+IMAGEMAGICK_CONF_OPTS += --with-lcms
+IMAGEMAGICK_DEPENDENCIES += lcms2
+else
+IMAGEMAGICK_CONF_OPTS += --without-lcms
+endif
+
+ifeq ($(BR2_PACKAGE_LIBPNG),y)
+IMAGEMAGICK_CONF_OPTS += --with-png
+IMAGEMAGICK_DEPENDENCIES += libpng
+else
+IMAGEMAGICK_CONF_OPTS += --without-png
+endif
+
+ifeq ($(BR2_PACKAGE_LIBRSVG),y)
+IMAGEMAGICK_CONF_OPTS += --with-rsvg
+IMAGEMAGICK_DEPENDENCIES += librsvg
+else
+IMAGEMAGICK_CONF_OPTS += --without-rsvg
+endif
+
+ifeq ($(BR2_PACKAGE_LIBXML2),y)
+IMAGEMAGICK_CONF_OPTS += --with-xml
+IMAGEMAGICK_CONF_ENV += ac_cv_path_xml2_config=$(STAGING_DIR)/usr/bin/xml2-config
+IMAGEMAGICK_DEPENDENCIES += libxml2
+else
+IMAGEMAGICK_CONF_OPTS += --without-xml
+endif
+
+ifeq ($(BR2_PACKAGE_PANGO),y)
+IMAGEMAGICK_CONF_OPTS += --with-pango
+IMAGEMAGICK_DEPENDENCIES += pango
+else
+IMAGEMAGICK_CONF_OPTS += --without-pango
+endif
+
+ifeq ($(BR2_PACKAGE_TIFF),y)
+IMAGEMAGICK_CONF_OPTS += --with-tiff
+IMAGEMAGICK_DEPENDENCIES += tiff
+else
+IMAGEMAGICK_CONF_OPTS += --without-tiff
+endif
+
+ifeq ($(BR2_PACKAGE_XZ),y)
+IMAGEMAGICK_CONF_OPTS += --with-lzma
+IMAGEMAGICK_DEPENDENCIES += xz
+else
+IMAGEMAGICK_CONF_OPTS += --without-lzma
+endif
+
+ifeq ($(BR2_PACKAGE_FFTW),y)
+# configure script misdetects these leading to build errors
+IMAGEMAGICK_CONF_ENV += ac_cv_func_creal=yes ac_cv_func_cimag=yes
+IMAGEMAGICK_CONF_OPTS += --with-fftw
+IMAGEMAGICK_DEPENDENCIES += fftw
+else
+IMAGEMAGICK_CONF_OPTS += --without-fftw
+endif
+
+ifeq ($(BR2_PACKAGE_WEBP),y)
+IMAGEMAGICK_CONF_OPTS += --with-webp
+IMAGEMAGICK_DEPENDENCIES += webp
+else
+IMAGEMAGICK_CONF_OPTS += --without-webp
+endif
+
+ifeq ($(BR2_PACKAGE_ZLIB),y)
+IMAGEMAGICK_CONF_OPTS += --with-zlib
+IMAGEMAGICK_DEPENDENCIES += zlib
+else
+IMAGEMAGICK_CONF_OPTS += --without-zlib
+endif
+
+ifeq ($(BR2_PACKAGE_BZIP2),y)
+IMAGEMAGICK_CONF_OPTS += --with-bzlib
+IMAGEMAGICK_DEPENDENCIES += bzip2
+else
+IMAGEMAGICK_CONF_OPTS += --without-bzlib
+endif
+
+$(eval $(autotools-package))

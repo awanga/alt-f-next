@@ -1,6 +1,0 @@
-config BR2_PACKAGE_ARIA2
-	bool "aria2"
-	help
-	  a lightweight multi-protocol download command-line utility supporting HTTP/HTTPS, FTP, BitTorrent and Metalink.
-
-	  https://github.com/tatsuhiro-t/aria2

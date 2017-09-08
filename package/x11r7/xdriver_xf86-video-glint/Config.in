@@ -1,6 +1,6 @@
 config BR2_PACKAGE_XDRIVER_XF86_VIDEO_GLINT
 	bool "xf86-video-glint"
-	select BR2_PACKAGE_XSERVER_XORG_SERVER
+	depends on BR2_PACKAGE_MESA3D
 	select BR2_PACKAGE_LIBDRM
 	select BR2_PACKAGE_XPROTO_FONTSPROTO
 	select BR2_PACKAGE_XPROTO_GLPROTO
@@ -12,5 +12,7 @@ config BR2_PACKAGE_XDRIVER_XF86_VIDEO_GLINT
 	select BR2_PACKAGE_XPROTO_XF86DRIPROTO
 	select BR2_PACKAGE_XPROTO_XPROTO
 	help
-	  xf86-video-glint 1.1.1
 	  GLINT/Permedia video driver
+
+comment "xf86-video-glint needs mesa3d"
+	depends on !BR2_PACKAGE_MESA3D

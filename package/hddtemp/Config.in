@@ -1,6 +1,0 @@
-config BR2_PACKAGE_HDDTEMP
-	bool "hddtemp"
-	help
-	  hddtemp - Read disk temperature
-
-	  http://www.guzu.net/linux/hddtemp.php

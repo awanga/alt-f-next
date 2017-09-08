@@ -1,63 +1,51 @@
-#############################################################
+################################################################################
 #
 # olsr
 #
-#############################################################
+################################################################################
 
-OLSR_VERSION_MAJOR=0.5
-OLSR_VERSION_MINOR=6
-OLSR_VERSION:=$(OLSR_VERSION_MAJOR).$(OLSR_VERSION_MINOR)
-OLSR_SOURCE:=olsrd-$(OLSR_VERSION).tar.bz2
-OLSR_SITE:=http://www.olsr.org/releases/$(OLSR_VERSION_MAJOR)
-OLSR_DIR:=$(BUILD_DIR)/olsrd-$(OLSR_VERSION)
-OLSR_CAT:=$(BZCAT)
-OLSR_BINARY:=olsrd
-OLSR_TARGET_BINARY:=usr/sbin/olsrd
-#OLSR_PLUGINS=httpinfo tas dot_draw nameservice dyn_gw dyn_gw_plain pgraph bmf quagga secure
-OLSR_PLUGINS=dot_draw dyn_gw secure
-OLSR_TARGET_PLUGIN=usr/lib/
+OLSR_VERSION_MAJOR = 0.9
+OLSR_VERSION = $(OLSR_VERSION_MAJOR).0.3
+OLSR_SOURCE = olsrd-$(OLSR_VERSION).tar.bz2
+OLSR_SITE = http://www.olsr.org/releases/$(OLSR_VERSION_MAJOR)
+OLSR_PLUGINS = arprefresh bmf dot_draw dyn_gw dyn_gw_plain httpinfo jsoninfo \
+	mdns nameservice p2pd pgraph secure txtinfo watchdog
+# Doesn't really need quagga but not very useful without it
+OLSR_PLUGINS += $(if $(BR2_PACKAGE_QUAGGA),quagga)
+OLSR_LICENSE = BSD-3-Clause, LGPL-2.1+
+OLSR_LICENSE_FILES = license.txt lib/pud/nmealib/LICENSE
+OLSR_DEPENDENCIES = host-flex host-bison
 
-$(DL_DIR)/$(OLSR_SOURCE):
-	$(call DOWNLOAD,$(OLSR_SITE),$(OLSR_SOURCE))
+define OLSR_BUILD_CMDS
+	$(TARGET_CONFIGURE_OPTS) $(MAKE) ARCH=$(KERNEL_ARCH) -C $(@D) olsrd
+	for p in $(OLSR_PLUGINS) ; do \
+		$(TARGET_CONFIGURE_OPTS) $(MAKE) ARCH=$(KERNEL_ARCH) -C $(@D)/lib/$$p ; \
+	done
+endef
 
-olsr-source: $(DL_DIR)/$(OLSR_SOURCE)
+define OLSR_INSTALL_TARGET_CMDS
+	$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) \
+		prefix="/usr" install_bin
+	for p in $(OLSR_PLUGINS) ; do \
+		$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D)/lib/$$p \
+			LDCONFIG=/bin/true DESTDIR=$(TARGET_DIR) \
+			prefix="/usr" install ; \
+	done
+	$(INSTALL) -D -m 0644 $(@D)/files/olsrd.conf.default.lq \
+		$(TARGET_DIR)/etc/olsrd/olsrd.conf
+endef
 
-olsr-unpacked: $(OLSR_DIR)/.unpacked
-$(OLSR_DIR)/.unpacked: $(DL_DIR)/$(OLSR_SOURCE)
-	$(OLSR_CAT) $(DL_DIR)/$(OLSR_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	touch $@
+define OLSR_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 package/olsr/S50olsr \
+		$(TARGET_DIR)/etc/init.d/S50olsr
+endef
 
-$(OLSR_DIR)/$(OLSR_BINARY): $(OLSR_DIR)/.unpacked
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(OLSR_DIR) olsrd $(OLSR_PLUGINS)
+define OLSR_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 package/olsr/olsr.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/olsr.service
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
+	ln -sf ../../../../usr/lib/systemd/system/olsr.service \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/olsr.service
+endef
 
-$(TARGET_DIR)/$(OLSR_TARGET_BINARY): $(OLSR_DIR)/$(OLSR_BINARY)
-	rm -f $(TARGET_DIR)/$(OLSR_TARGET_BINARY)
-	cp -dpf $(OLSR_DIR)/$(OLSR_BINARY) $(TARGET_DIR)/$(OLSR_TARGET_BINARY)
-	cp -R $(OLSR_DIR)/lib/*/olsrd_*.so* $(TARGET_DIR)/$(OLSR_TARGET_PLUGIN)
-	mkdir -p $(TARGET_DIR)/etc/init.d
-	cp -dpf package/olsr/S50olsr $(TARGET_DIR)/etc/init.d/
-	test -r $(TARGET_DIR)/etc/olsrd.conf || \
-		cp -dpf $(OLSR_DIR)/files/olsrd.conf.default.lq $(TARGET_DIR)/etc/olsrd.conf
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/$(OLSR_TARGET_PLUGIN)/olsrd_*.so*
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
-
-olsr: uclibc $(TARGET_DIR)/$(OLSR_TARGET_BINARY)
-
-olsr-clean:
-	rm -f $(TARGET_DIR)/$(OLSR_TARGET_BINARY) \
-		$(TARGET_DIR)/$(OLSR_TARGET_PLUGIN)/olsrd_*.so* \
-		$(TARGET_DIR)/etc/init.d/S50olsr \
-		$(TARGET_DIR)/etc/olsrd.conf
-	-$(MAKE) -C $(OLSR_DIR) clean
-
-olsr-dirclean:
-	rm -rf $(OLSR_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_OLSR),y)
-TARGETS+=olsr $(OLSR_PLUGINS)
-endif
+$(eval $(generic-package))

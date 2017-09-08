@@ -1,14 +1,14 @@
-#!/bin/sh 
+#!/bin/sh
 
 DAEMON=/usr/sbin/proftpd
-trap "" 1
-trap "" 15
+trap "" HUP
+trap "" TERM
 test -f $DAEMON || exit 0
 [ ! -d /var/run/proftpd ] && mkdir /var/run/proftpd
 [ ! -f /var/log/wtmp ] && touch /var/log/wtmp
 
 start() {
-	echo -n "Starting ProFTPD: "
+	printf "Starting ProFTPD: "
 	$DAEMON
 	if [ $? != 0 ]; then
 		echo "FAILED"
@@ -19,7 +19,7 @@ start() {
 }
 
 stop() {
-	echo -n "Stopping ProFTPD: "
+	printf "Stopping ProFTPD: "
 	killall proftpd
         echo "done"
 }

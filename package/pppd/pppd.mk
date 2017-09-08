@@ -1,102 +1,110 @@
-#############################################################
+################################################################################
 #
 # pppd
 #
-#############################################################
+################################################################################
 
-PPPD_VERSION:=2.4.5
-PPPD_SOURCE:=ppp-$(PPPD_VERSION).tar.gz
-PPPD_SITE:=https://download.samba.org/pub/ppp
-PPPD_DIR:=$(BUILD_DIR)/ppp-$(PPPD_VERSION)
-PPPD_CAT:=$(ZCAT)
-PPPD_BINARY:=pppd/pppd
-PPPD_TARGET_BINARY:=usr/sbin/pppd
+PPPD_VERSION = 2.4.7
+PPPD_SOURCE = ppp-$(PPPD_VERSION).tar.gz
+PPPD_SITE = https://download.samba.org/pub/ppp
+PPPD_LICENSE = LGPL-2.0+, LGPL, BSD-4-Clause, BSD-3-Clause, GPL-2.0+
+PPPD_LICENSE_FILES = \
+	pppd/tdb.c pppd/plugins/pppoatm/COPYING \
+	pppdump/bsd-comp.c pppd/ccp.c pppd/plugins/passprompt.c
 
-$(DL_DIR)/$(PPPD_SOURCE):
-	 $(call DOWNLOAD,$(PPPD_SITE),$(PPPD_SOURCE))
+PPPD_MAKE_OPTS = HAVE_INET6=y
+PPPD_INSTALL_STAGING = YES
+PPPD_TARGET_BINS = chat pppd pppdump pppstats
+PPPD_RADIUS_CONF = \
+	dictionary dictionary.ascend dictionary.compat \
+	dictionary.merit dictionary.microsoft \
+	issue port-id-map realms servers radiusclient.conf
 
-pppd-source: $(DL_DIR)/$(PPPD_SOURCE)
+ifeq ($(BR2_PACKAGE_PPPD_FILTER),y)
+PPPD_DEPENDENCIES += libpcap
+PPPD_MAKE_OPTS += FILTER=y
+endif
 
-PPPD_OPTIONS_$(BR2_PACKAGE_PPPD_FILTER) += FILTER=y
+# pppd bundles some but not all of the needed kernel headers. The embedded
+# if_pppol2tp.h is unfortunately not compatible with kernel headers > 2.6.34,
+# and has been part of the kernel headers since 2.6.23, so drop it
+define PPPD_DROP_INTERNAL_IF_PPOL2TP_H
+	$(RM) $(@D)/include/linux/if_pppol2tp.h
+endef
 
-$(PPPD_DIR)/.unpacked: $(DL_DIR)/$(PPPD_SOURCE)
-	$(PPPD_CAT) $(DL_DIR)/$(PPPD_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(PPPD_DIR) package/pppd/ pppd-$(PPPD_VERSION)\*.patch
-	$(SED) 's/ -DIPX_CHANGE -DHAVE_MMAP//' $(PPPD_DIR)/pppd/Makefile.linux
+PPPD_POST_EXTRACT_HOOKS += PPPD_DROP_INTERNAL_IF_PPOL2TP_H
+
+# pppd defaults to /etc/ppp/resolv.conf, which not be writable and is
+# definitely not useful since the C library only uses
+# /etc/resolv.conf. Therefore, we change pppd to use /etc/resolv.conf
+# instead.
+define PPPD_SET_RESOLV_CONF
+	$(SED) 's,ppp/resolv.conf,resolv.conf,' $(@D)/pppd/pathnames.h
+endef
+PPPD_POST_EXTRACT_HOOKS += PPPD_SET_RESOLV_CONF
+
+define PPPD_CONFIGURE_CMDS
 	$(SED) 's/FILTER=y/#FILTER=y/' $(PPPD_DIR)/pppd/Makefile.linux
-	$(SED) 's,(INSTALL) -s,(INSTALL),' $(PPPD_DIR)/*/Makefile.linux
-	$(SED) 's,(INSTALL) -s,(INSTALL),' $(PPPD_DIR)/pppd/plugins/*/Makefile.linux
-	$(SED) 's/ -o root//' $(PPPD_DIR)/*/Makefile.linux
-	$(SED) 's/ -g daemon//' $(PPPD_DIR)/*/Makefile.linux
 	$(SED) 's/ifneq ($$(wildcard \/usr\/include\/pcap-bpf.h),)/ifdef FILTER/' $(PPPD_DIR)/*/Makefile.linux
-	touch $@
+	( cd $(@D); $(TARGET_MAKE_ENV) ./configure --prefix=/usr )
+endef
 
-$(PPPD_DIR)/.configured: $(PPPD_DIR)/.unpacked
-	(cd $(PPPD_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		$(DISABLE_NLS) \
-	)
-	touch $@
+define PPPD_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) CC="$(TARGET_CC)" COPTS="$(TARGET_CFLAGS)" \
+		-C $(@D) $(PPPD_MAKE_OPTS)
+endef
 
-$(PPPD_DIR)/$(PPPD_BINARY): $(PPPD_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) COPTS="$(TARGET_CFLAGS)" -C $(PPPD_DIR) $(PPPD_OPTIONS_y)
-
-$(TARGET_DIR)/$(PPPD_TARGET_BINARY): $(PPPD_DIR)/$(PPPD_BINARY)
-	$(MAKE1) DESTDIR=$(TARGET_DIR)/usr INSTROOT=$(TARGET_DIR) CC=$(TARGET_CC) -C $(PPPD_DIR) install install-etcppp $(PPPD_OPTIONS_y)
-ifneq ($(BR2_ENABLE_LOCALE),y)
-	rm -rf $(TARGET_DIR)/usr/share/locale
+ifeq ($(BR2_PACKAGE_PPPD_RADIUS),y)
+define PPPD_INSTALL_RADIUS
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/radius/radattr.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/radattr.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/radius/radius.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/radius.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/radius/radrealms.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/radrealms.so
+	for m in $(PPPD_RADIUS_CONF); do \
+		$(INSTALL) -m 644 -D $(PPPD_DIR)/pppd/plugins/radius/etc/$$m \
+			$(TARGET_DIR)/etc/ppp/radius/$$m; \
+	done
+	$(SED) 's:/usr/local/etc:/etc:' \
+		$(TARGET_DIR)/etc/ppp/radius/radiusclient.conf
+	$(SED) 's:/usr/local/sbin:/usr/sbin:' \
+		$(TARGET_DIR)/etc/ppp/radius/radiusclient.conf
+	$(SED) 's:/etc/radiusclient:/etc/ppp/radius:g' \
+		$(TARGET_DIR)/etc/ppp/radius/*
+endef
 endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/man
-endif
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/info
-endif
-	rm -rf $(TARGET_DIR)/usr/share/doc
-	rm -rf $(TARGET_DIR)/usr/include/pppd
 
-pppd-extract: $(PPPD_DIR)/.unpacked
+define PPPD_INSTALL_TARGET_CMDS
+	for sbin in $(PPPD_TARGET_BINS); do \
+		$(INSTALL) -D $(PPPD_DIR)/$$sbin/$$sbin \
+			$(TARGET_DIR)/usr/sbin/$$sbin; \
+	done
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/minconn.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/minconn.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/passprompt.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/passprompt.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/passwordfd.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/passwordfd.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/pppoatm/pppoatm.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/pppoatm.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/rp-pppoe/rp-pppoe.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/rp-pppoe.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/rp-pppoe/pppoe-discovery \
+		$(TARGET_DIR)/usr/sbin/pppoe-discovery
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/winbind.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/winbind.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/pppol2tp/openl2tp.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/openl2tp.so
+	$(INSTALL) -D $(PPPD_DIR)/pppd/plugins/pppol2tp/pppol2tp.so \
+		$(TARGET_DIR)/usr/lib/pppd/$(PPPD_VERSION)/pppol2tp.so
+	$(INSTALL) -D -m 0755 $(PPPD_DIR)/scripts/pon $(TARGET_DIR)/usr/bin/pon
+	$(INSTALL) -D -m 0755 $(PPPD_DIR)/scripts/poff $(TARGET_DIR)/usr/bin/poff
+	$(PPPD_INSTALL_RADIUS)
+endef
 
-pppd-configure: $(PPPD_DIR)/.configured
+define PPPD_INSTALL_STAGING_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) INSTROOT=$(STAGING_DIR)/ -C $(@D) $(PPPD_MAKE_OPTS) install-devel
+endef
 
-pppd-build: $(PPPD_DIR)/$(PPPD_BINARY)
-
-pppd: uclibc $(TARGET_DIR)/$(PPPD_TARGET_BINARY)
-
-pppd-clean:
-	rm -f $(TARGET_DIR)/usr/sbin/pppd
-	rm -f $(TARGET_DIR)/usr/sbin/chat
-	rm -f $(TARGET_DIR)/usr/sbin/pppstatus
-	rm -f $(TARGET_DIR)/usr/sbin/pppdump
-	rm -rf $(TARGET_DIR)/etc/ppp
-	rm -rf $(TARGET_DIR)/usr/include/pppd
-	-$(MAKE) -C $(PPPD_DIR) clean
-
-pppd-dirclean:
-	rm -rf $(PPPD_DIR)
-
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_PPPD),y)
-TARGETS+=pppd
-endif
+$(eval $(generic-package))

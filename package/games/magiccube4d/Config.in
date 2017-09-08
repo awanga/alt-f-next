@@ -1,6 +1,0 @@
-config BR2_PACKAGE_MAGICCUBE4D
-	bool "magiccube4d"
-	help
-	  Another rubiks cube-like game in 4D
-
-	  http://avr32linux.org/twiki/bin/viewfile/Main

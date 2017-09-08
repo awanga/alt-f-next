@@ -1,55 +1,42 @@
-#############################################################
+################################################################################
 #
 # axel
 #
-#############################################################
-AXEL_VERSION:=1.1
-AXEL_SOURCE:=axel-$(AXEL_VERSION).tar.gz
-AXEL_SITE:=http://alioth.debian.org/frs/download.php/2287
-AXEL_CAT:=$(ZCAT)
-AXEL_DIR:=$(BUILD_DIR)/axel-$(AXEL_VERSION)
-AXEL_BINARY:=axel
-AXEL_TARGET_BINARY:=usr/bin/axel
+################################################################################
 
-$(DL_DIR)/$(AXEL_SOURCE):
-	 $(call DOWNLOAD,$(AXEL_SITE),$(AXEL_SOURCE))
+AXEL_VERSION = 2.4
+AXEL_SITE = http://sources.buildroot.net
+AXEL_LICENSE = GPL-2.0+
+AXEL_LICENSE_FILES = COPYING
 
-axel-source: $(DL_DIR)/$(AXEL_SOURCE)
+ifeq ($(BR2_NEEDS_GETTEXT_IF_LOCALE),y)
+AXEL_DEPENDENCIES += gettext
+AXEL_LDFLAGS += -lintl
+endif
 
-$(AXEL_DIR)/.unpacked: $(DL_DIR)/$(AXEL_SOURCE)
-	$(AXEL_CAT) $(DL_DIR)/$(AXEL_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	#toolchain/patch-kernel.sh $(AXEL_DIR) package/axel axel\*.patch
-	touch $@
+# -lintl may use symbols from -lpthread
+AXEL_LDFLAGS += -lpthread
 
-$(AXEL_DIR)/Makefile.settings: $(AXEL_DIR)/.unpacked
-	(cd $(AXEL_DIR); \
-		./configure --i18n=0 --prefix=/usr \
+ifneq ($(BR2_ENABLE_LOCALE),y)
+AXEL_DISABLE_I18N = --i18n=0
+endif
+
+define AXEL_CONFIGURE_CMDS
+	(cd $(@D); \
+		./configure \
+			--prefix=/usr \
+			--debug=1 \
+			$(AXEL_DISABLE_I18N) \
 	)
-	touch $@
+endef
 
-$(AXEL_DIR)/$(AXEL_BINARY): $(AXEL_DIR)/Makefile.settings
-	$(MAKE) CC="$(TARGET_CC)" STRIP="$(TARGET_STRIP)" -C $(AXEL_DIR)
+define AXEL_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) CC="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS)" \
+	LFLAGS="$(TARGET_LDFLAGS) $(AXEL_LDFLAGS)" -C $(@D)
+endef
 
-$(TARGET_DIR)/$(AXEL_TARGET_BINARY): $(AXEL_DIR)/$(AXEL_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(AXEL_DIR) install-bin
-ifeq ($(BR2_HAVE_MANPAGES),y)
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(AXEL_DIR) install-man
-endif
+define AXEL_INSTALL_TARGET_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D) install
+endef
 
-axel: uclibc $(TARGET_DIR)/$(AXEL_TARGET_BINARY)
-
-axel-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(AXEL_DIR) uninstall
-	-$(MAKE) -C $(AXEL_DIR) clean
-
-axel-dirclean:
-	rm -rf $(AXEL_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_AXEL),y)
-TARGETS+=axel
-endif
+$(eval $(generic-package))

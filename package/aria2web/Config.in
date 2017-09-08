@@ -1,8 +1,0 @@
-config BR2_PACKAGE_ARIA2WEB
-	bool "aria2web"
-	select BR2_PACKAGE_ARIA2
-	select BR2_PACKAGE_LIGHTTPD
-	help
-	  web interface to interact with aria2
-
-	  https://github.com/ziahamza/webui-aria2

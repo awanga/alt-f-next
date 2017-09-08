@@ -1,8 +1,13 @@
 config BR2_PACKAGE_GREP
 	bool "grep"
-	select BR2_PACKAGE_GETTEXT if BR2_ENABLE_LOCALE
-	select BR2_PACKAGE_LIBINTL if BR2_ENABLE_LOCALE
+	depends on BR2_USE_WCHAR
+	depends on BR2_PACKAGE_BUSYBOX_SHOW_OTHERS
+	select BR2_PACKAGE_GETTEXT if BR2_NEEDS_GETTEXT_IF_LOCALE
 	help
 	  The GNU regular expression matcher.
 
 	  http://www.gnu.org/software/grep/grep.html
+
+comment "grep needs a toolchain w/ wchar"
+	depends on !BR2_USE_WCHAR
+	depends on BR2_PACKAGE_BUSYBOX_SHOW_OTHERS

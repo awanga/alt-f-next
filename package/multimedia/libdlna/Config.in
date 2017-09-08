@@ -1,7 +1,0 @@
-config BR2_PACKAGE_LIBDLNA
-	bool "libdlna"
-	select BR2_PACKAGE_FFMPEG
-	help
-	  DLNA Library (mostly for uShare)
-
-	  http://libdlna.geexbox.org/

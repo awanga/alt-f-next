@@ -1,60 +1,54 @@
-#############################################################
+################################################################################
 #
 # lm-sensors
 #
-#############################################################
-LM_SENSORS_VERSION:=3.0.2
-LM_SENSORS_SOURCE:=lm_sensors-$(LM_SENSORS_VERSION).tar.bz2
-LM_SENSORS_SITE:=http://dl.lm-sensors.org/lm-sensors/releases
-LM_SENSORS_DIR:=$(BUILD_DIR)/lm_sensors-$(LM_SENSORS_VERSION)
-LM_SENSORS_CAT:=$(BZCAT)
-LM_SENSORS_BINARY:=prog/sensors/sensors
-LM_SENSORS_TARGET_BINARY:=usr/bin/sensors
+################################################################################
 
-$(DL_DIR)/$(LM_SENSORS_SOURCE):
-	$(call DOWNLOAD,$(LM_SENSORS_SITE),$(LM_SENSORS_SOURCE))
+LM_SENSORS_VERSION = 3.4.0
+LM_SENSORS_SOURCE = lm-sensors_$(LM_SENSORS_VERSION).orig.tar.bz2
+LM_SENSORS_SITE = http://snapshot.debian.org/archive/debian/20170208T211941Z/pool/main/l/lm-sensors
+LM_SENSORS_INSTALL_STAGING = YES
+LM_SENSORS_DEPENDENCIES = host-bison host-flex
+LM_SENSORS_LICENSE = LGPL-2.1+ (libsensors), GPL-2.0+ (programs)
+LM_SENSORS_LICENSE_FILES = COPYING.LGPL COPYING
 
-$(LM_SENSORS_DIR)/.unpacked: $(DL_DIR)/$(LM_SENSORS_SOURCE)
-	$(LM_SENSORS_CAT) $(DL_DIR)/$(LM_SENSORS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LM_SENSORS_DIR) package/lm-sensors/ lm-sensors\*.patch
-	touch $@
+LM_SENSORS_BINS_ = bin/sensors-conf-convert
+LM_SENSORS_BINS_$(BR2_PACKAGE_LM_SENSORS_SENSORS) += bin/sensors
+LM_SENSORS_BINS_$(BR2_PACKAGE_LM_SENSORS_FANCONTROL) += sbin/fancontrol
+LM_SENSORS_BINS_$(BR2_PACKAGE_LM_SENSORS_ISADUMP) += sbin/isadump
+LM_SENSORS_BINS_$(BR2_PACKAGE_LM_SENSORS_ISASET) += sbin/isaset
+LM_SENSORS_BINS_$(BR2_PACKAGE_LM_SENSORS_PWMCONFIG) += sbin/pwmconfig
+LM_SENSORS_BINS_$(BR2_PACKAGE_LM_SENSORS_SENSORS_DETECT) += sbin/sensors-detect
 
-$(LM_SENSORS_DIR)/$(LM_SENSORS_BINARY): $(LM_SENSORS_DIR)/.unpacked
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) MACHINE=$(KERNEL_ARCH)\
-		-C $(LM_SENSORS_DIR)
+LM_SENSORS_MAKE_OPTS = \
+	BUILD_STATIC_LIB=1 \
+	MACHINE=$(KERNEL_ARCH) \
+	PREFIX=/usr
 
-$(TARGET_DIR)/$(LM_SENSORS_TARGET_BINARY): $(LM_SENSORS_DIR)/$(LM_SENSORS_BINARY)
-	if [ ! -f $(TARGET_DIR)/etc/sensors.conf ]; then \
-		cp -dpf $(LM_SENSORS_DIR)/etc/sensors.conf.eg \
-			$(TARGET_DIR)/etc/sensors.conf; \
-		$(SED) '/^#/d' -e '/^[[:space:]]*$$/d' \
-			$(TARGET_DIR)/etc/sensors.conf; \
-	fi
-	cp -dpf $(LM_SENSORS_DIR)/$(LM_SENSORS_BINARY) $@
-	cp -dpf $(LM_SENSORS_DIR)/lib/libsensors.so* \
-		$(LM_SENSORS_DIR)/lib/libsensors.a $(TARGET_DIR)/usr/lib/
-	-$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/usr/lib/libsensors.so*
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
-
-lm-sensors-source: $(DL_DIR)/$(LM_SENSORS_SOURCE) $(LM_SENSORS_PATCH_FILE)
-
-lm-sensors-unpacked: $(LM_SENSORS_DIR)/.unpacked
-
-lm-sensors: uclibc $(TARGET_DIR)/$(LM_SENSORS_TARGET_BINARY)
-
-lm-sensors-clean:
-	-$(MAKE) -C $(LM_SENSORS_DIR) clean
-	rm -f $(TARGET_DIR)/$(LM_SENSORS_TARGET_BINARY) \
-		$(TARGET_DIR)/usr/lib/libsensors* \
-		$(TARGET_DIR)/etc/sensors.conf
-
-lm-sensors-dirclean:
-	rm -rf $(LM_SENSORS_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LM_SENSORS),y)
-TARGETS+=lm-sensors
+ifeq ($(BR2_STATIC_LIBS),y)
+LM_SENSORS_MAKE_OPTS += BUILD_SHARED_LIB=0
+else
+LM_SENSORS_MAKE_OPTS += BUILD_SHARED_LIB=1
 endif
+
+ifeq ($(BR2_SHARED_LIBS),y)
+LM_SENSORS_MAKE_OPTS += BUILD_STATIC_LIB=0
+else
+LM_SENSORS_MAKE_OPTS += BUILD_STATIC_LIB=1
+endif
+
+define LM_SENSORS_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) $(TARGET_CONFIGURE_OPTS) $(LM_SENSORS_MAKE_OPTS) -C $(@D)
+endef
+
+define LM_SENSORS_INSTALL_STAGING_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) $(LM_SENSORS_MAKE_OPTS) DESTDIR=$(STAGING_DIR) install
+	rm -f $(addprefix $(STAGING_DIR)/usr/,$(LM_SENSORS_BINS_) $(LM_SENSORS_BINS_y))
+endef
+
+define LM_SENSORS_INSTALL_TARGET_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) $(LM_SENSORS_MAKE_OPTS) DESTDIR=$(TARGET_DIR) install
+	rm -f $(addprefix $(TARGET_DIR)/usr/,$(LM_SENSORS_BINS_))
+endef
+
+$(eval $(generic-package))

@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xapp_xev -- print contents of X events
+# xapp_xev
 #
 ################################################################################
 
-XAPP_XEV_VERSION = 1.0.3
+XAPP_XEV_VERSION = 1.2.2
 XAPP_XEV_SOURCE = xev-$(XAPP_XEV_VERSION).tar.bz2
 XAPP_XEV_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_XEV_AUTORECONF = NO
-XAPP_XEV_DEPENDENCIES = xlib_libX11
+XAPP_XEV_LICENSE = MIT
+XAPP_XEV_LICENSE_FILES = COPYING
+XAPP_XEV_DEPENDENCIES = xlib_libX11 xlib_libXrandr
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_xev))
+$(eval $(autotools-package))

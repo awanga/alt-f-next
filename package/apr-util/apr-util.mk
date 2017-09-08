@@ -1,44 +1,65 @@
-#############################################################
+################################################################################
 #
 # apr-util
 #
-#############################################################
+################################################################################
 
-APR_UTIL_VERSION = 1.5.1
+APR_UTIL_VERSION = 1.5.4
 APR_UTIL_SITE = http://archive.apache.org/dist/apr
-APR_UTIL_SOURCE = apr-util-$(APR_UTIL_VERSION).tar.gz
-
+APR_UTIL_LICENSE = Apache-2.0
+APR_UTIL_LICENSE_FILES = LICENSE
 APR_UTIL_INSTALL_STAGING = YES
-APR_UTIL_LIBTOOL_PATCH = NO
-APR_UTIL_DEPENDENCIES = openssl libiconv sqlite zlib expat db apr
+APR_UTIL_DEPENDENCIES = apr expat
+APR_UTIL_CONF_OPTS = \
+	--with-apr=$(STAGING_DIR)/usr/bin/apr-1-config
+APR_UTIL_CONFIG_SCRIPTS = apu-1-config
 
-APR_UTIL_CONF_OPT = \
-	--with-apr=$(STAGING_DIR)/usr/bin/apr-1-config \
-	--with-berkeley-db=$(STAGING_DIR)/usr --with-dbm=db48 \
-	--with-iconv=$(STAGING_DIR)/usr \
-	--with-expat=$(STAGING_DIR)/usr \
-	--with-openssl=$(STAGING_DIR)/usr \
-	--with-crypto --disable-static
+# When iconv is available, then use it to provide charset conversion
+# features.
+APR_UTIL_DEPENDENCIES += $(if $(BR2_PACKAGE_LIBICONV),libiconv)
 
-APR_UTIL_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-APR_UTIL_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) install
+ifeq ($(BR2_PACKAGE_BERKELEYDB),y)
+APR_UTIL_CONF_OPTS += --with-dbm=db53 --with-berkeley-db="$(STAGING_DIR)/usr"
+APR_UTIL_DEPENDENCIES += berkeleydb
+else
+APR_UTIL_CONF_OPTS += --without-berkeley-db
+endif
 
-APR_UTIL_MAKE_OPT = -j1
+ifeq ($(BR2_PACKAGE_GDBM),y)
+APR_UTIL_CONF_OPTS += --with-gdbm="$(STAGING_DIR)/usr"
+APR_UTIL_DEPENDENCIES += gdbm
+else
+APR_UTIL_CONF_OPTS += --without-gdbm
+endif
 
-$(eval $(call AUTOTARGETS,package,apr-util))
+ifeq ($(BR2_PACKAGE_MYSQL),y)
+APR_UTIL_CONF_OPTS += --with-mysql="$(STAGING_DIR)/usr"
+APR_UTIL_DEPENDENCIES += mysql
+else
+APR_UTIL_CONF_OPTS += --without-mysql
+endif
 
-$(APR_UTIL_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/bin/apu-1-config \
-		$(TARGET_DIR)/usr/lib/aprutil.exp
-	touch $@
+ifeq ($(BR2_PACKAGE_SQLITE),y)
+APR_UTIL_CONF_OPTS += --with-sqlite3="$(STAGING_DIR)/usr"
+APR_UTIL_DEPENDENCIES += sqlite
+else
+APR_UTIL_CONF_OPTS += --without-sqlite3
+endif
 
-$(APR_UTIL_TARGET_INSTALL_STAGING):
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(APR_UTIL_DIR) install
-	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
-		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
-		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
-		$(STAGING_DIR)/usr/bin/apu-1-config
-	$(SED) "s|^libdir=.*|libdir='$(STAGING_DIR)/usr/lib'|" \
-		$(STAGING_DIR)/usr/lib/libaprutil-1.la
-	touch $@
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+APR_UTIL_CONF_OPTS += --with-crypto --with-openssl="$(STAGING_DIR)/usr"
+APR_UTIL_DEPENDENCIES += openssl
+else
+APR_UTIL_CONF_OPTS += --without-crypto
+endif
 
+ifeq ($(BR2_PACKAGE_UNIXODBC),y)
+APR_UTIL_CONF_OPTS += --with-odbc="$(STAGING_DIR)/usr"
+# avoid using target binary $(STAGING_DIR)/usr/bin/odbc_config
+APR_UTIL_CONF_ENV += ac_cv_path_ODBC_CONFIG=""
+APR_UTIL_DEPENDENCIES += unixodbc
+else
+APR_UTIL_CONF_OPTS += --without-odbc
+endif
+
+$(eval $(autotools-package))

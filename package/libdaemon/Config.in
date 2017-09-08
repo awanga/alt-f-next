@@ -1,6 +1,7 @@
 config BR2_PACKAGE_LIBDAEMON
 	bool "libdaemon"
-	select BR2_PACKAGE_PKG_CONFIG
+	# needs fork()
+	depends on BR2_USE_MMU
 	help
 	  libdaemon is a lightweight C library that eases the
 	  writing of UNIX daemons.

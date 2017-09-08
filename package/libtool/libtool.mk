@@ -1,72 +1,45 @@
-#############################################################
+################################################################################
 #
 # libtool
 #
-#############################################################
+################################################################################
 
-LIBTOOL_VERSION = 1.5.24
-LIBTOOL_SOURCE = libtool-$(LIBTOOL_VERSION).tar.gz
+LIBTOOL_VERSION = 2.4.6
+LIBTOOL_SOURCE = libtool-$(LIBTOOL_VERSION).tar.xz
 LIBTOOL_SITE = $(BR2_GNU_MIRROR)/libtool
+LIBTOOL_INSTALL_STAGING = YES
+LIBTOOL_CONF_ENV = HELP2MAN=true
+LIBTOOL_DEPENDENCIES = host-m4
+HOST_LIBTOOL_DEPENDENCIES = host-m4
+LIBTOOL_LICENSE = GPL-2.0+
+LIBTOOL_LICENSE_FILES = COPYING
 
-ifeq ($(BR2_ENABLE_DEBUG),y) # install-exec doesn't install aclocal stuff
-LIBTOOL_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-endif
+HOST_LIBTOOL_CONF_ENV = MAKEINFO=true
+HOST_LIBTOOL_LIBTOOL_PATCH = NO
 
-LIBTOOL_DEPENDENCIES = uclibc
+# We have a patch that affects libtool.m4, which triggers an autoreconf
+# in the build step. Normally we would set AUTORECONF = YES, but this
+# doesn't work for host-libtool because that creates a circular
+# dependency. Instead, touch the generated files so autoreconf is not
+# triggered in the build step. Note that aclocal.m4 has to be touched
+# first since the rest depends on it. Note that we don't need the changes
+# in libtool.m4 in our configure script, because we're not actually
+# running it on the target.
+# For the target, we would normally be able to use AUTORECONF, but it
+# fails on libltdl/Makefile.inc. Rather than trying to fix that failure,
+# just use the same hack as on the host.
+define LIBTOOL_AVOID_AUTORECONF_HOOK
+	find $(@D) -name aclocal.m4 -exec touch '{}' \;
+	find $(@D) -name config-h.in -exec touch '{}' \;
+	find $(@D) -name configure -exec touch '{}' \;
+	find $(@D) -name Makefile.in -exec touch '{}' \;
+endef
+LIBTOOL_PRE_CONFIGURE_HOOKS += LIBTOOL_AVOID_AUTORECONF_HOOK
+HOST_LIBTOOL_PRE_CONFIGURE_HOOKS += LIBTOOL_AVOID_AUTORECONF_HOOK
 
-$(eval $(call AUTOTARGETS,package,libtool))
-
-# libtool for the host
-LIBTOOL_HOST_DIR:=$(BUILD_DIR)/libtool-$(LIBTOOL_VERSION)-host
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))
 
 # variables used by other packages
-LIBTOOL:=$(HOST_DIR)/usr/bin/libtool
-
-$(DL_DIR)/$(LIBTOOL_SOURCE):
-	$(call DOWNLOAD,$(LIBTOOL_SITE),$(LIBTOOL_SOURCE))
-
-$(STAMP_DIR)/host_libtool_unpacked: $(DL_DIR)/$(LIBTOOL_SOURCE)
-	mkdir -p $(LIBTOOL_HOST_DIR)
-	$(INFLATE$(suffix $(LIBTOOL_SOURCE))) $< | \
-		$(TAR) $(TAR_STRIP_COMPONENTS)=1 -C $(LIBTOOL_HOST_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LIBTOOL_HOST_DIR) package/libtool/ \*.patch
-	touch $@
-
-$(STAMP_DIR)/host_libtool_configured: $(STAMP_DIR)/host_libtool_unpacked
-	(cd $(LIBTOOL_HOST_DIR); rm -rf config.cache; \
-		$(HOST_CONFIGURE_OPTS) \
-		CFLAGS="$(HOST_CFLAGS)" \
-		LDFLAGS="$(HOST_LDFLAGS)" \
-		./configure \
-		--prefix="$(HOST_DIR)/usr" \
-		--libdir="$(HOST_DIR)/usr/lib" \
-		--sysconfdir="$(HOST_DIR)/etc" \
-		--disable-static \
-	)
-	touch $@
-
-$(STAMP_DIR)/host_libtool_compiled: $(STAMP_DIR)/host_libtool_configured
-	$(MAKE) -C $(LIBTOOL_HOST_DIR)
-	touch $@
-
-$(STAMP_DIR)/host_libtool_installed: $(STAMP_DIR)/host_libtool_compiled
-	$(MAKE) -C $(LIBTOOL_HOST_DIR) install
-	install -D -m 0644 $(HOST_DIR)/usr/share/aclocal/libtool.m4 \
-		$(STAGING_DIR)/usr/share/aclocal/libtool.m4
-	install -D -m 0644 $(HOST_DIR)/usr/share/aclocal/ltdl.m4 \
-		$(STAGING_DIR)/usr/share/aclocal/ltdl.m4
-	touch $@
-
-host-libtool-configure: $(STAMP_DIR)/host_libtool_configured
-
-host-libtool-build: $(STAMP_DIR)/host_libtool_compiled
-
-host-libtool: $(STAMP_DIR)/host_libtool_installed
-
-host-libtool-clean:
-	rm -f $(addprefix $(STAMP_DIR)/host_libtool_,unpacked configured compiled installed)
-	-$(MAKE) -C $(LIBTOOL_HOST_DIR) uninstall
-	-$(MAKE) -C $(LIBTOOL_HOST_DIR) clean
-
-host-libtool-dirclean:
-	rm -rf $(LIBTOOL_HOST_DIR)
+LIBTOOL = $(HOST_DIR)/usr/bin/libtool
+LIBTOOLIZE = $(HOST_DIR)/usr/bin/libtoolize

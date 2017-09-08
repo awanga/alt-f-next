@@ -1,24 +1,15 @@
-#############################################################
+################################################################################
 #
 # libexif
 #
-#############################################################
+################################################################################
 
 LIBEXIF_VERSION = 0.6.21
 LIBEXIF_SOURCE = libexif-$(LIBEXIF_VERSION).tar.bz2
-LIBEXIF_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/libexif/libexif/$(LIBEXIF_VERSION)
-
-LIBEXIF_AUTORECONF = NO
-LIBEXIF_LIBTOOL_PATCH = NO
-
+LIBEXIF_SITE = http://downloads.sourceforge.net/project/libexif/libexif/$(LIBEXIF_VERSION)
 LIBEXIF_INSTALL_STAGING = YES
-LIBEXIF_INSTALL_TARGET = YES
+LIBEXIF_DEPENDENCIES = host-pkgconf
+LIBEXIF_LICENSE = LGPL-2.1+
+LIBEXIF_LICENSE_FILES = COPYING
 
-LIBEXIF_CONF_OPT = --disable-docs \
-	--disable-nls \
-	--disable-static \
-	--without-libintl-prefix
-	
-LIBEXIF_DEPENDENCIES = uclibc
-
-$(eval $(call AUTOTARGETS,package,libexif))
+$(eval $(autotools-package))

@@ -1,6 +1,0 @@
-config BR2_PACKAGE_QUOTA_TOOLS
-	bool "quota-tools"
-	help
-	  Tools and patches for the Linux Diskquota system
-
-	  https://sourceforge.net/projects/linuxquota

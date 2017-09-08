@@ -1,7 +1,0 @@
-config BR2_PACKAGE_PYCRYPTO
-	bool "pycrypto"
-	select BR2_PACKAGE_PYTHON
-	help
-	  The Python Cryptography Toolkit
-
-	  https://www.dlitz.net/software/pycrypto

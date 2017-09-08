@@ -1,35 +1,41 @@
-#############################################################
+################################################################################
 #
 # libxslt
 #
-#############################################################
-LIBXSLT_VERSION = 1.1.24
-LIBXSLT_SOURCE = libxslt-$(LIBXSLT_VERSION).tar.gz
+################################################################################
+
+LIBXSLT_VERSION = 1.1.29
 LIBXSLT_SITE = ftp://xmlsoft.org/libxslt
 LIBXSLT_INSTALL_STAGING = YES
-LIBXSLT_INSTALL_TARGET = YES
+LIBXSLT_LICENSE = MIT
+LIBXSLT_LICENSE_FILES = COPYING
+
+LIBXSLT_CONF_OPTS = \
+	--with-gnu-ld \
+	--without-debug \
+	--without-python \
+	--with-libxml-prefix=$(STAGING_DIR)/usr/ \
+	--with-libxml-libs-prefix=$(STAGING_DIR)/usr/lib
+LIBXSLT_CONFIG_SCRIPTS = xslt-config
+LIBXSLT_DEPENDENCIES = libxml2
+
+# GCC bug with Os/O2/O3, PR77311
+# error: unable to find a register to spill in class 'CCREGS'
+ifeq ($(BR2_bfin),y)
+LIBXSLT_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -O1"
+endif
 
 # If we have enabled libgcrypt then use it, else disable crypto support.
 ifeq ($(BR2_PACKAGE_LIBGCRYPT),y)
-LIBXSLT_DEPENDENCIES_EXTRA=libgcrypt
+LIBXSLT_DEPENDENCIES += libgcrypt
+LIBXSLT_CONF_ENV += LIBGCRYPT_CONFIG=$(STAGING_DIR)/usr/bin/libgcrypt-config
 else
-LIBXSLT_XTRA_CONF_OPT = --without-crypto
+LIBXSLT_CONF_OPTS += --without-crypto
 endif
 
-LIBXSLT_CONF_OPT = --with-gnu-ld --enable-shared \
-		--enable-static $(LIBXSLT_XTRA_CONF_OPT) \
-		$(DISABLE_NLS) $(DISABLE_IPV6) \
-		--without-debugging --without-python \
-		--without-threads \
-		--with-libxml-prefix=$(STAGING_DIR)/usr/
+HOST_LIBXSLT_CONF_OPTS = --without-debug --without-python --without-crypto
 
-LIBXSLT_DEPENDENCIES = uclibc $(LIBXSLT_DEPENDENCIES_EXTRA)
+HOST_LIBXSLT_DEPENDENCIES = host-libxml2
 
-$(eval $(call AUTOTARGETS,package,libxslt))
-
-$(LIBXSLT_HOOK_POST_INSTALL):
-	$(SED) "s,^prefix=.*,prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/xslt-config
-	$(SED) "s,^exec_prefix=.*,exec_prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/xslt-config
-	$(SED) "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include\',g" $(STAGING_DIR)/usr/bin/xslt-config
-	touch $@
-
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

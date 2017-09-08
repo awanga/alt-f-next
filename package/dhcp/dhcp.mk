@@ -1,135 +1,119 @@
-#############################################################
+################################################################################
 #
 # dhcp
 #
-#############################################################
-DHCP_VERSION:=3.0.5
-DHCP_SOURCE:=dhcp-$(DHCP_VERSION).tar.gz
-DHCP_SITE:=ftp://ftp.isc.org/isc/dhcp/dhcp-3.0-history
-DHCP_CAT:=$(ZCAT)
-DHCP_DIR:=$(BUILD_DIR)/dhcp-$(DHCP_VERSION)
-DHCP_SERVER_BINARY:=work.linux-2.2/server/dhcpd
-DHCP_RELAY_BINARY:=work.linux-2.2/relay/dhcrelay
-DHCP_CLIENT_BINARY:=work.linux-2.2/client/dhclient
-DHCP_SERVER_TARGET_BINARY:=usr/sbin/dhcpd
-DHCP_RELAY_TARGET_BINARY:=usr/sbin/dhcrelay
-DHCP_CLIENT_TARGET_BINARY:=usr/sbin/dhclient
-BVARS=PREDEFINES='-D_PATH_DHCPD_DB=\"/var/lib/dhcp/dhcpd.leases\" \
-	-D_PATH_DHCLIENT_DB=\"/var/lib/dhcp/dhclient.leases\"' \
-	VARDB=/var/lib/dhcp
+################################################################################
 
-$(DL_DIR)/$(DHCP_SOURCE):
-	 $(call DOWNLOAD,$(DHCP_SITE),$(DHCP_SOURCE))
+DHCP_VERSION = 4.3.5
+DHCP_SITE = http://ftp.isc.org/isc/dhcp/$(DHCP_VERSION)
+DHCP_INSTALL_STAGING = YES
+DHCP_LICENSE = ISC
+DHCP_LICENSE_FILES = LICENSE
+DHCP_CONF_ENV = \
+	CPPFLAGS='-D_PATH_DHCPD_CONF=\"/etc/dhcp/dhcpd.conf\" \
+		-D_PATH_DHCLIENT_CONF=\"/etc/dhcp/dhclient.conf\"'
+DHCP_CONF_OPTS = \
+	--with-randomdev=/dev/random \
+	--with-srv-lease-file=/var/lib/dhcp/dhcpd.leases \
+	--with-srv6-lease-file=/var/lib/dhcp/dhcpd6.leases \
+	--with-cli-lease-file=/var/lib/dhcp/dhclient.leases \
+	--with-cli6-lease-file=/var/lib/dhcp/dhclient6.leases \
+	--with-srv-pid-file=/var/run/dhcpd.pid \
+	--with-srv6-pid-file=/var/run/dhcpd6.pid \
+	--with-cli-pid-file=/var/run/dhclient.pid \
+	--with-cli6-pid-file=/var/run/dhclient6.pid \
+	--with-relay-pid-file=/var/run/dhcrelay.pid \
+	--with-relay6-pid-file=/var/run/dhcrelay6.pid
 
-dhcp-source: $(DL_DIR)/$(DHCP_SOURCE)
+# The source for the bind libraries used by dhcp are embedded in the dhcp source
+# as a tar-ball. Extract the bind source to allow any patches to be applied
+# during the patch phase.
+define DHCP_EXTRACT_BIND
+	cd $(@D)/bind; tar -xvf bind.tar.gz
+endef
+DHCP_POST_EXTRACT_HOOKS += DHCP_EXTRACT_BIND
 
-dhcp_server-source: dhcp-source
-dhcp_relay-source: dhcp-source
-dhcp_client-source: dhcp-source
+# The patchset requires configure et.al. to be regenerated.
+DHCP_AUTORECONF = YES
 
-$(DHCP_DIR)/.unpacked: $(DL_DIR)/$(DHCP_SOURCE)
-	$(DHCP_CAT) $(DL_DIR)/$(DHCP_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(DHCP_DIR) package/dhcp/ dhcp\*.patch
-	touch $@
+# bind does not support parallel builds.
+DHCP_MAKE = $(MAKE1)
 
-$(DHCP_DIR)/.configured: $(DHCP_DIR)/.unpacked
-	(cd $(DHCP_DIR); \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure; \
-	)
-	touch $@
+# bind configure is called via dhcp make instead of dhcp configure. The make env
+# needs extra values for bind configure.
+DHCP_MAKE_ENV = \
+	$(TARGET_CONFIGURE_OPTS) \
+	BUILD_CC="$(HOSTCC)" \
+	BUILD_CFLAGS="$(HOST_CFLAGS)" \
+	BUILD_CPPFLAGS="$(HOST_CPPFLAGS)" \
+	BUILD_LDFLAGS="$(HOST_LDFLAGS)"
 
-$(DHCP_DIR)/$(DHCP_RELAY_BINARY): $(DHCP_DIR)/.configured
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) $(BVARS) -C $(DHCP_DIR)
-	$(STRIPCMD) $(DHCP_DIR)/$(DHCP_RELAY_BINARY)
+ifeq ($(BR2_PACKAGE_DHCP_SERVER_DELAYED_ACK),y)
+DHCP_CONF_OPTS += --enable-delayed-ack
+endif
 
-$(TARGET_DIR)/$(DHCP_SERVER_TARGET_BINARY): $(DHCP_DIR)/$(DHCP_RELAY_BINARY)
+ifeq ($(BR2_PACKAGE_DHCP_SERVER),y)
+define DHCP_INSTALL_SERVER
 	mkdir -p $(TARGET_DIR)/var/lib
-	(cd $(TARGET_DIR)/var/lib; \
-		ln -snf /tmp dhcp; \
-	)
-	$(INSTALL) -m 0755 -D $(DHCP_DIR)/$(DHCP_SERVER_BINARY) \
-		$(TARGET_DIR)/$(DHCP_SERVER_TARGET_BINARY)
-	mkdir -p $(TARGET_DIR)/etc/init.d
-	$(INSTALL) -m 0755 -D package/dhcp/S80dhcp-server \
-		$(TARGET_DIR)/etc/init.d
-	mkdir -p $(TARGET_DIR)/etc/dhcp
+	(cd $(TARGET_DIR)/var/lib; ln -snf /tmp dhcp)
+	$(INSTALL) -m 0755 -D $(@D)/server/dhcpd $(TARGET_DIR)/usr/sbin/dhcpd
 	$(INSTALL) -m 0644 -D package/dhcp/dhcpd.conf \
 		$(TARGET_DIR)/etc/dhcp/dhcpd.conf
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/info
+endef
 endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/man
-endif
-	rm -rf $(TARGET_DIR)/share/locale
-	rm -rf $(TARGET_DIR)/usr/share/doc
 
-$(TARGET_DIR)/$(DHCP_RELAY_TARGET_BINARY): $(DHCP_DIR)/$(DHCP_RELAY_BINARY)
+ifeq ($(BR2_PACKAGE_DHCP_RELAY),y)
+define DHCP_INSTALL_RELAY
 	mkdir -p $(TARGET_DIR)/var/lib
 	(cd $(TARGET_DIR)/var/lib; ln -snf /tmp dhcp)
-	$(INSTALL) -m 0755 -D $(DHCP_DIR)/$(DHCP_RELAY_BINARY) \
-		$(TARGET_DIR)/$(DHCP_RELAY_TARGET_BINARY)
-	mkdir -p $(TARGET_DIR)/etc/init.d
-	$(INSTALL) -m 0755 -D package/dhcp/S80dhcp-relay \
-		$(TARGET_DIR)/etc/init.d
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/info
+	$(INSTALL) -m 0755 -D $(DHCP_DIR)/relay/dhcrelay \
+		$(TARGET_DIR)/usr/sbin/dhcrelay
+endef
 endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/man
-endif
-	# Why on earth do we wipe out whole directories here?
-	#rm -rf $(TARGET_DIR)/usr/share/locale
-	#rm -rf $(TARGET_DIR)/usr/share/doc
 
-$(TARGET_DIR)/$(DHCP_CLIENT_TARGET_BINARY): $(DHCP_DIR)/$(DHCP_RELAY_BINARY)
+ifeq ($(BR2_PACKAGE_DHCP_CLIENT),y)
+define DHCP_INSTALL_CLIENT
 	mkdir -p $(TARGET_DIR)/var/lib
 	(cd $(TARGET_DIR)/var/lib; ln -snf /tmp dhcp)
-	$(INSTALL) -m 0755 -D $(DHCP_DIR)/$(DHCP_CLIENT_BINARY) \
-		$(TARGET_DIR)/$(DHCP_CLIENT_TARGET_BINARY)
-	mkdir -p $(TARGET_DIR)/etc/dhcp
+	$(INSTALL) -m 0755 -D $(DHCP_DIR)/client/dhclient \
+		$(TARGET_DIR)/sbin/dhclient
 	$(INSTALL) -m 0644 -D package/dhcp/dhclient.conf \
 		$(TARGET_DIR)/etc/dhcp/dhclient.conf
 	$(INSTALL) -m 0755 -D package/dhcp/dhclient-script \
 		$(TARGET_DIR)/sbin/dhclient-script
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/info
+endef
 endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/man
-endif
-	# Why on earth do we wipe out whole directories here?
-	#rm -rf $(TARGET_DIR)/usr/share/locale
-	#rm -rf $(TARGET_DIR)/usr/share/doc
 
-dhcp_server: uclibc $(TARGET_DIR)/$(DHCP_SERVER_TARGET_BINARY)
+# Options don't matter, scripts won't start if binaries aren't there
+define DHCP_INSTALL_INIT_SYSV
+	$(INSTALL) -m 0755 -D package/dhcp/S80dhcp-server \
+		$(TARGET_DIR)/etc/init.d/S80dhcp-server
+	$(INSTALL) -m 0755 -D package/dhcp/S80dhcp-relay \
+		$(TARGET_DIR)/etc/init.d/S80dhcp-relay
+endef
 
-dhcp_relay: uclibc $(TARGET_DIR)/$(DHCP_RELAY_TARGET_BINARY)
-
-dhcp_client: uclibc $(TARGET_DIR)/$(DHCP_CLIENT_TARGET_BINARY)
-
-dhcp-clean:
-	-$(MAKE) -C $(DHCP_DIR) clean
-
-dhcp-dirclean:
-	rm -rf $(DHCP_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-#ifeq ($(BR2_PACKAGE_ISC_DHCP),y)
-#TARGETS+=dhcp
-#endif
 ifeq ($(BR2_PACKAGE_DHCP_SERVER),y)
-TARGETS+=dhcp_server
+define DHCP_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 package/dhcp/dhcpd.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/dhcpd.service
+
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
+
+	ln -sf ../../../../usr/lib/systemd/system/dhcpd.service \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/dhcpd.service
+
+	mkdir -p $(TARGET_DIR)/usr/lib/tmpfiles.d
+	echo "d /var/lib/dhcp 0755 - - - -" > \
+		$(TARGET_DIR)/usr/lib/tmpfiles.d/dhcpd.conf
+	echo "f /var/lib/dhcp/dhcpd.leases - - - - -" >> \
+		$(TARGET_DIR)/usr/lib/tmpfiles.d/dhcpd.conf
+endef
 endif
-ifeq ($(BR2_PACKAGE_DHCP_RELAY),y)
-TARGETS+=dhcp_relay
-endif
-ifeq ($(BR2_PACKAGE_DHCP_CLIENT),y)
-TARGETS+=dhcp_client
-endif
+
+define DHCP_INSTALL_TARGET_CMDS
+	$(DHCP_INSTALL_RELAY)
+	$(DHCP_INSTALL_SERVER)
+	$(DHCP_INSTALL_CLIENT)
+endef
+
+$(eval $(autotools-package))

@@ -1,157 +1,264 @@
-#############################################################
+################################################################################
 #
 # busybox
 #
-#############################################################
+################################################################################
 
+BUSYBOX_VERSION = 1.26.2
+BUSYBOX_SITE = http://www.busybox.net/downloads
+BUSYBOX_SOURCE = busybox-$(BUSYBOX_VERSION).tar.bz2
+BUSYBOX_LICENSE = GPL-2.0
+BUSYBOX_LICENSE_FILES = LICENSE
 
-ifeq ($(BR2_PACKAGE_BUSYBOX_SNAPSHOT),y)
-# Be aware that this changes daily....
-BUSYBOX_DIR:=$(BUILD_DIR)/busybox
-BUSYBOX_SOURCE:=busybox-snapshot.tar.bz2
-BUSYBOX_SITE:=http://www.busybox.net/downloads/snapshots
-else
-BUSYBOX_VERSION=$(strip $(subst ",, $(BR2_BUSYBOX_VERSION)))
-#"))
-BUSYBOX_DIR:=$(BUILD_DIR)/busybox-$(BUSYBOX_VERSION)
-BUSYBOX_SOURCE:=busybox-$(BUSYBOX_VERSION).tar.bz2
-BUSYBOX_SITE:=http://www.busybox.net/downloads
+define BUSYBOX_HELP_CMDS
+	@echo '  busybox-menuconfig     - Run BusyBox menuconfig'
+endef
+
+BUSYBOX_CFLAGS = \
+	$(TARGET_CFLAGS)
+
+BUSYBOX_LDFLAGS = \
+	$(TARGET_LDFLAGS)
+
+# Link against libtirpc if available so that we can leverage its RPC
+# support for NFS mounting with BusyBox
+ifeq ($(BR2_PACKAGE_LIBTIRPC),y)
+BUSYBOX_DEPENDENCIES += libtirpc host-pkgconf
+BUSYBOX_CFLAGS += "`$(PKG_CONFIG_HOST_BINARY) --cflags libtirpc`"
+# Don't use LDFLAGS for -ltirpc, because LDFLAGS is used for
+# the non-final link of modules as well.
+BUSYBOX_CFLAGS_busybox += "`$(PKG_CONFIG_HOST_BINARY) --libs libtirpc`"
 endif
 
-BUSYBOX_UNZIP=$(BZCAT)
-BUSYBOX_CFLAGS=-Os
+BUSYBOX_BUILD_CONFIG = $(BUSYBOX_DIR)/.config
+# Allows the build system to tweak CFLAGS
+BUSYBOX_MAKE_ENV = \
+	$(TARGET_MAKE_ENV) \
+	CFLAGS="$(BUSYBOX_CFLAGS)" \
+	CFLAGS_busybox="$(BUSYBOX_CFLAGS_busybox)"
+
+ifeq ($(BR2_REPRODUCIBLE),y)
+BUSYBOX_MAKE_ENV += \
+	KCONFIG_NOTIMESTAMP=1
+endif
+
+BUSYBOX_MAKE_OPTS = \
+	CC="$(TARGET_CC)" \
+	ARCH=$(KERNEL_ARCH) \
+	PREFIX="$(TARGET_DIR)" \
+	EXTRA_LDFLAGS="$(BUSYBOX_LDFLAGS)" \
+	CROSS_COMPILE="$(TARGET_CROSS)" \
+	CONFIG_PREFIX="$(TARGET_DIR)" \
+	SKIP_STRIP=y
 
 ifndef BUSYBOX_CONFIG_FILE
-BUSYBOX_CONFIG_FILE=$(subst ",, $(strip $(BR2_PACKAGE_BUSYBOX_CONFIG)))
-#")
+BUSYBOX_CONFIG_FILE = $(call qstrip,$(BR2_PACKAGE_BUSYBOX_CONFIG))
 endif
 
-$(DL_DIR)/$(BUSYBOX_SOURCE):
-	$(call DOWNLOAD,$(BUSYBOX_SITE),$(BUSYBOX_SOURCE))
+BUSYBOX_KCONFIG_FILE = $(BUSYBOX_CONFIG_FILE)
+BUSYBOX_KCONFIG_FRAGMENT_FILES = $(call qstrip,$(BR2_PACKAGE_BUSYBOX_CONFIG_FRAGMENT_FILES))
+BUSYBOX_KCONFIG_EDITORS = menuconfig xconfig gconfig
+BUSYBOX_KCONFIG_OPTS = $(BUSYBOX_MAKE_OPTS)
 
-$(BUSYBOX_DIR)/.unpacked: $(DL_DIR)/$(BUSYBOX_SOURCE)
-	$(BUSYBOX_UNZIP) $(DL_DIR)/$(BUSYBOX_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-ifeq ($(BR2_PACKAGE_SYSKLOGD),y)
-	# if we have external syslogd, force busybox to use it
-	$(SED) "/#include.*busybox\.h/a#define CONFIG_SYSLOGD" $(BUSYBOX_DIR)/init/init.c
+define BUSYBOX_PERMISSIONS
+	/bin/busybox                     f 4755 0  0 - - - - -
+endef
+
+# If mdev will be used for device creation enable it and copy S10mdev to /etc/init.d
+ifeq ($(BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_MDEV),y)
+define BUSYBOX_INSTALL_MDEV_SCRIPT
+	$(INSTALL) -D -m 0755 package/busybox/S10mdev \
+		$(TARGET_DIR)/etc/init.d/S10mdev
+endef
+define BUSYBOX_INSTALL_MDEV_CONF
+	$(INSTALL) -D -m 0644 package/busybox/mdev.conf \
+		$(TARGET_DIR)/etc/mdev.conf
+endef
+define BUSYBOX_SET_MDEV
+	$(call KCONFIG_ENABLE_OPT,CONFIG_MDEV,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_FEATURE_MDEV_CONF,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_FEATURE_MDEV_EXEC,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_FEATURE_MDEV_LOAD_FIRMWARE,$(BUSYBOX_BUILD_CONFIG))
+endef
 endif
-	# Allow busybox patches.
-ifeq ($(BR2_PACKAGE_BUSYBOX_SNAPSHOT),y)
-	toolchain/patch-kernel.sh $(BUSYBOX_DIR) package/busybox busybox.\*.patch
+
+# sha passwords need USE_BB_CRYPT_SHA
+ifeq ($(BR2_TARGET_GENERIC_PASSWD_SHA256)$(BR2_TARGET_GENERIC_PASSWD_SHA512),y)
+define BUSYBOX_SET_CRYPT_SHA
+	$(call KCONFIG_ENABLE_OPT,CONFIG_USE_BB_CRYPT_SHA,$(BUSYBOX_BUILD_CONFIG))
+endef
+endif
+
+ifeq ($(BR2_USE_MMU),y)
+define BUSYBOX_SET_MMU
+	$(call KCONFIG_DISABLE_OPT,CONFIG_NOMMU,$(BUSYBOX_BUILD_CONFIG))
+endef
 else
-	toolchain/patch-kernel.sh $(BUSYBOX_DIR) package/busybox busybox-$(BUSYBOX_VERSION)-\*.patch
+define BUSYBOX_SET_MMU
+	$(call KCONFIG_ENABLE_OPT,CONFIG_NOMMU,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_DISABLE_OPT,CONFIG_SWAPON,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_DISABLE_OPT,CONFIG_SWAPOFF,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_DISABLE_OPT,CONFIG_ASH,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_BASH_COMPAT,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_BRACE_EXPANSION,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_HELP,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_INTERACTIVE,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_SAVEHISTORY,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_JOB,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_TICK,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_IF,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_LOOPS,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_CASE,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_FUNCTIONS,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_LOCAL,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_RANDOM_SUPPORT,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_EXPORT_N,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_HUSH_MODE_X,$(BUSYBOX_BUILD_CONFIG))
+endef
 endif
-	touch $@
 
-$(BUSYBOX_DIR)/.config: $(BUSYBOX_DIR)/.unpacked $(BUSYBOX_CONFIG_FILE)
-	cp -f $(BUSYBOX_CONFIG_FILE) $(BUSYBOX_DIR)/.config
-	$(SED) s,^CONFIG_PREFIX=.*,CONFIG_PREFIX=\"$(TARGET_DIR)\", \
-		$(BUSYBOX_DIR)/.config
-# id applet breaks on >=1.13.0 with old uclibc unless the bb pwd routines are used
-ifeq ($(BR2_BUSYBOX_VERSION_1_13_X)$(BR2_BUSYBOX_VERSION_1_14_X)$(BR2_UCLIBC_VERSION_0_9_28_3)$(BR2_UCLIBC_VERSION_0_9_29),yy)
-	if grep -q 'CONFIG_ID=y' $(BUSYBOX_DIR)/.config; \
-	then \
-		echo 'warning: CONFIG_ID needs BB_PWD_GRP with old uclibc, enabling' >&2;\
-		$(SED) "s/^.*CONFIG_USE_BB_PWD_GRP.*/CONFIG_USE_BB_PWD_GRP=y/;" $(BUSYBOX_DIR)/.config; \
+# If we're using static libs do the same for busybox
+ifeq ($(BR2_STATIC_LIBS),y)
+define BUSYBOX_PREFER_STATIC
+	$(call KCONFIG_ENABLE_OPT,CONFIG_STATIC,$(BUSYBOX_BUILD_CONFIG))
+endef
+endif
+
+# Disable shadow passwords support if unsupported by the C library
+ifeq ($(BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS),)
+define BUSYBOX_INTERNAL_SHADOW_PASSWORDS
+	$(call KCONFIG_ENABLE_OPT,CONFIG_USE_BB_PWD_GRP,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_USE_BB_SHADOW,$(BUSYBOX_BUILD_CONFIG))
+endef
+endif
+
+# We also need to use internal shadow password functions when using
+# the musl C library, since some of them are not yet implemented by
+# musl.
+#
+# Do not use utmp/wmtp support. wmtp support is not available in musl,
+# and utmp support is not sufficient for Busybox.
+ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
+define BUSYBOX_MUSL_TWEAKS
+	$(call KCONFIG_ENABLE_OPT,CONFIG_USE_BB_PWD_GRP,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_USE_BB_SHADOW,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_DISABLE_OPT,CONFIG_FEATURE_UTMP,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_DISABLE_OPT,CONFIG_FEATURE_WTMP,$(BUSYBOX_BUILD_CONFIG))
+endef
+endif
+
+define BUSYBOX_INSTALL_UDHCPC_SCRIPT
+	if grep -q CONFIG_UDHCPC=y $(@D)/.config; then \
+		$(INSTALL) -m 0755 -D package/busybox/udhcpc.script \
+			$(TARGET_DIR)/usr/share/udhcpc/default.script; \
+		$(INSTALL) -m 0755 -d \
+			$(TARGET_DIR)/usr/share/udhcpc/default.script.d; \
 	fi
-endif
-ifeq ($(BR2_PACKAGE_BUSYBOX_SNAPSHOT),y)
-	$(SED) s,^CROSS_COMPILER_PREFIX=.*,CROSS_COMPILER_PREFIX=\"$(TARGET_CROSS)\", \
-		$(BUSYBOX_DIR)/.config
-	$(SED) s,^PREFIX=.*,CROSS_COMPILER_PREFIX=\"$(TARGET_CROSS)\", \
-		$(BUSYBOX_DIR)/.config
-endif
-ifeq ($(BR2_LARGEFILE),y)
-	$(SED) "s/^.*CONFIG_LFS.*/CONFIG_LFS=y/;" $(BUSYBOX_DIR)/.config
-	$(SED) "s/^.*CONFIG_FDISK_SUPPORT_LARGE_DISKS.*/CONFIG_FDISK_SUPPORT_LARGE_DISKS=y/;" $(BUSYBOX_DIR)/.config
-else
-	$(SED) "s/^.*CONFIG_LFS.*/CONFIG_LFS=n/;" $(BUSYBOX_DIR)/.config
-	$(SED) "s/^.*FDISK_SUPPORT_LARGE_DISKS.*/CONFIG_FDISK_SUPPORT_LARGE_DISKS=n/;" $(BUSYBOX_DIR)/.config
-endif
-ifeq ($(BR2_INET_IPV6),y)
-	$(SED) "s/^.*CONFIG_FEATURE_IPV6.*/CONFIG_FEATURE_IPV6=y/;" $(BUSYBOX_DIR)/.config
-	$(SED) "s/^.*CONFIG_FEATURE_IFUPDOWN_IPV6.*/CONFIG_FEATURE_IFUPDOWN_IPV6=y/;" $(BUSYBOX_DIR)/.config
-else
-	$(SED) "s/^.*CONFIG_FEATURE_IPV6.*/CONFIG_FEATURE_IPV6=n/;" $(BUSYBOX_DIR)/.config
-	$(SED) "s/^.*CONFIG_FEATURE_IFUPDOWN_IPV6.*/CONFIG_FEATURE_IFUPDOWN_IPV6=n/;" $(BUSYBOX_DIR)/.config
-endif
-ifeq ($(BR2_INET_RPC),y)
-	$(SED) "s/^.*CONFIG_FEATURE_MOUNT_NFS.*/CONFIG_FEATURE_MOUNT_NFS=y/;" $(BUSYBOX_DIR)/.config
-else
-	$(SED) "s/^.*CONFIG_FEATURE_MOUNT_NFS.*/CONFIG_FEATURE_MOUNT_NFS=n/;" $(BUSYBOX_DIR)/.config
-endif
-ifeq ($(BR2_PACKAGE_BUSYBOX_SKELETON),y)
-	# force mdev on
-	$(SED) "s/^.*CONFIG_MDEV.*/CONFIG_MDEV=y/" $(BUSYBOX_DIR)/.config
-endif
-ifeq ($(BR2_PACKAGE_NETKITBASE),y)
-	# disable usage of inetd if netkit-base package is selected
-	$(SED) "s/^.*CONFIG_INETD.*/CONFIG_INETD=n/;" $(BUSYBOX_DIR)/.config
-	@echo "WARNING!! CONFIG_INETD option disabled!"
-endif
-ifeq ($(BR2_PACKAGE_NETKITTELNET),y)
-	# disable usage of telnetd if netkit-telnetd package is selected
-	$(SED) "s/^.*CONFIG_TELNETD.*/CONFIG_TELNETD=n/;" $(BUSYBOX_DIR)/.config
-	@echo "WARNING!! CONFIG_TELNETD option disabled!"
-endif
-	yes "" | $(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
-		CROSS="$(TARGET_CROSS)" -C $(BUSYBOX_DIR) oldconfig
-	touch $@
+endef
 
-
-$(BUSYBOX_DIR)/busybox: $(BUSYBOX_DIR)/.config
-	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
-		CROSS="$(TARGET_CROSS)" PREFIX="$(TARGET_DIR)" \
-		ARCH=$(KERNEL_ARCH) \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS) $(BUSYBOX_CFLAGS)" -C $(BUSYBOX_DIR)
-ifeq ($(BR2_PREFER_IMA)$(BR2_PACKAGE_BUSYBOX_SNAPSHOT),yy)
-	rm -f $@
-	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
-		CROSS="$(TARGET_CROSS)" PREFIX="$(TARGET_DIR)" \
-		ARCH=$(KERNEL_ARCH) STRIP="$(STRIPCMD)" \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS) $(BUSYBOX_CFLAGS)" -C $(BUSYBOX_DIR) \
-		-f scripts/Makefile.IMA
+ifeq ($(BR2_INIT_BUSYBOX),y)
+define BUSYBOX_SET_INIT
+	$(call KCONFIG_ENABLE_OPT,CONFIG_INIT,$(BUSYBOX_BUILD_CONFIG))
+endef
 endif
 
-$(TARGET_DIR)/bin/busybox: $(BUSYBOX_DIR)/busybox
-ifeq ($(BR2_PACKAGE_BUSYBOX_FULLINSTALL),y)
-	$(MAKE) CC=$(TARGET_CC) CROSS_COMPILE="$(TARGET_CROSS)" \
-		CROSS="$(TARGET_CROSS)" CONFIG_PREFIX="$(TARGET_DIR)" \
-		ARCH=$(KERNEL_ARCH) \
-		EXTRA_CFLAGS="$(TARGET_CFLAGS) $(BUSYBOX_CFLAGS)" -C $(BUSYBOX_DIR) install
-else
-	install -D -m 0755 $(BUSYBOX_DIR)/busybox $(TARGET_DIR)/bin/busybox
+ifeq ($(BR2_PACKAGE_BUSYBOX_SELINUX),y)
+BUSYBOX_DEPENDENCIES += host-pkgconf libselinux libsepol
+define BUSYBOX_SET_SELINUX
+	$(call KCONFIG_ENABLE_OPT,CONFIG_SELINUX,$(BUSYBOX_BUILD_CONFIG))
+	$(call KCONFIG_ENABLE_OPT,CONFIG_SELINUXENABLED,$(BUSYBOX_BUILD_CONFIG))
+endef
 endif
-	# Just in case
-	-chmod a+x $(TARGET_DIR)/usr/share/udhcpc/default.script
 
-busybox: uclibc $(TARGET_DIR)/bin/busybox
+define BUSYBOX_INSTALL_LOGGING_SCRIPT
+	if grep -q CONFIG_SYSLOGD=y $(@D)/.config; then \
+		$(INSTALL) -m 0755 -D package/busybox/S01logging \
+			$(TARGET_DIR)/etc/init.d/S01logging; \
+	else rm -f $(TARGET_DIR)/etc/init.d/S01logging; fi
+endef
 
-busybox-source: $(DL_DIR)/$(BUSYBOX_SOURCE)
-
-busybox-unpacked: host-sed $(BUILD_DIR) $(BUSYBOX_DIR)/.unpacked
-
-busybox-config: host-sed $(BUILD_DIR) $(BUSYBOX_DIR)/.config
-
-busybox-build: $(BUSYBOX_DIR)/busybox
-
-busybox-menuconfig: host-sed $(BUILD_DIR) busybox-source $(BUSYBOX_DIR)/.config
-	$(MAKE) __TARGET_ARCH=$(ARCH) -C $(BUSYBOX_DIR) menuconfig
-
-busybox-update:
-	cp -f $(BUSYBOX_DIR)/.config $(BUSYBOX_CONFIG_FILE)
-
-busybox-clean:
-	rm -f $(TARGET_DIR)/bin/busybox
-	-$(MAKE) -C $(BUSYBOX_DIR) clean
-
-busybox-dirclean:
-	rm -rf $(BUSYBOX_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_BUSYBOX),y)
-TARGETS+=busybox
+ifeq ($(BR2_INIT_BUSYBOX),y)
+define BUSYBOX_INSTALL_INITTAB
+	$(INSTALL) -D -m 0644 package/busybox/inittab $(TARGET_DIR)/etc/inittab
+endef
 endif
+
+ifeq ($(BR2_PACKAGE_BUSYBOX_WATCHDOG),y)
+define BUSYBOX_SET_WATCHDOG
+	$(call KCONFIG_ENABLE_OPT,CONFIG_WATCHDOG,$(BUSYBOX_BUILD_CONFIG))
+endef
+define BUSYBOX_INSTALL_WATCHDOG_SCRIPT
+	$(INSTALL) -D -m 0755 package/busybox/S15watchdog \
+		$(TARGET_DIR)/etc/init.d/S15watchdog
+	$(SED) s/PERIOD/$(call qstrip,$(BR2_PACKAGE_BUSYBOX_WATCHDOG_PERIOD))/ \
+		$(TARGET_DIR)/etc/init.d/S15watchdog
+endef
+endif
+
+# PAM support requires thread support in the toolchain
+ifeq ($(BR2_PACKAGE_LINUX_PAM)$(BR2_TOOLCHAIN_HAS_THREADS),yy)
+define BUSYBOX_LINUX_PAM
+	$(call KCONFIG_ENABLE_OPT,CONFIG_PAM,$(BUSYBOX_BUILD_CONFIG))
+endef
+BUSYBOX_DEPENDENCIES += linux-pam
+endif
+
+# Telnet support
+define BUSYBOX_INSTALL_TELNET_SCRIPT
+	if grep -q CONFIG_FEATURE_TELNETD_STANDALONE=y $(@D)/.config; then \
+		$(INSTALL) -m 0755 -D package/busybox/S50telnet \
+			$(TARGET_DIR)/etc/init.d/S50telnet ; \
+	fi
+endef
+
+# Enable "noclobber" in install.sh, to prevent BusyBox from overwriting any
+# full-blown versions of apps installed by other packages with sym/hard links.
+define BUSYBOX_NOCLOBBER_INSTALL
+	$(SED) 's/^noclobber="0"$$/noclobber="1"/' $(@D)/applets/install.sh
+endef
+
+define BUSYBOX_KCONFIG_FIXUP_CMDS
+	$(BUSYBOX_SET_MMU)
+	$(BUSYBOX_PREFER_STATIC)
+	$(BUSYBOX_SET_MDEV)
+	$(BUSYBOX_SET_CRYPT_SHA)
+	$(BUSYBOX_LINUX_PAM)
+	$(BUSYBOX_INTERNAL_SHADOW_PASSWORDS)
+	$(BUSYBOX_SET_INIT)
+	$(BUSYBOX_SET_WATCHDOG)
+	$(BUSYBOX_SET_SELINUX)
+	$(BUSYBOX_MUSL_TWEAKS)
+endef
+
+define BUSYBOX_CONFIGURE_CMDS
+	$(BUSYBOX_NOCLOBBER_INSTALL)
+endef
+
+define BUSYBOX_BUILD_CMDS
+	$(BUSYBOX_MAKE_ENV) $(MAKE) $(BUSYBOX_MAKE_OPTS) -C $(@D)
+endef
+
+define BUSYBOX_INSTALL_TARGET_CMDS
+	$(BUSYBOX_MAKE_ENV) $(MAKE) $(BUSYBOX_MAKE_OPTS) -C $(@D) install
+	$(BUSYBOX_INSTALL_INITTAB)
+	$(BUSYBOX_INSTALL_UDHCPC_SCRIPT)
+	$(BUSYBOX_INSTALL_MDEV_CONF)
+endef
+
+define BUSYBOX_INSTALL_INIT_SYSV
+	$(BUSYBOX_INSTALL_MDEV_SCRIPT)
+	$(BUSYBOX_INSTALL_LOGGING_SCRIPT)
+	$(BUSYBOX_INSTALL_WATCHDOG_SCRIPT)
+	$(BUSYBOX_INSTALL_TELNET_SCRIPT)
+endef
+
+# Checks to give errors that the user can understand
+# Must be before we call to kconfig-package
+ifeq ($(BR2_PACKAGE_BUSYBOX)$(BR_BUILDING),yy)
+ifeq ($(call qstrip,$(BR2_PACKAGE_BUSYBOX_CONFIG)),)
+$(error No BusyBox configuration file specified, check your BR2_PACKAGE_BUSYBOX_CONFIG setting)
+endif
+endif
+
+$(eval $(kconfig-package))

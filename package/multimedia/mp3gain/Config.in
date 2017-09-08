@@ -1,6 +1,0 @@
-config BR2_PACKAGE_MP3GAIN
-	bool "mp3gain"
-	help
-	  MP3Gain analyzes and adjusts mp3 files so that they have the same volume
-
-	  http://mp3gain.sourceforge.net

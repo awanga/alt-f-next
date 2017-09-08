@@ -1,25 +1,39 @@
-#############################################################
+################################################################################
 #
 # msmtp
 #
-#############################################################
+################################################################################
 
-#MSMTP_VERSION = 1.4.31
-MSMTP_VERSION = 1.6.4
-
-#MSMTP_SOURCE = msmtp-$(MSMTP_VERSION).tar.bz2
+MSMTP_VERSION = 1.6.5
+MSMTP_SITE = http://downloads.sourceforge.net/project/msmtp/msmtp/$(MSMTP_VERSION)
 MSMTP_SOURCE = msmtp-$(MSMTP_VERSION).tar.xz
+MSMTP_DEPENDENCIES = host-pkgconf
+MSMTP_CONF_OPTS = \
+	--without-libidn \
+	--disable-gai-idn \
+	--without-libgsasl
+MSMTP_LICENSE = GPL-3.0+
+MSMTP_LICENSE_FILES = COPYING
 
-MSMTP_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/msmtp/msmtp/$(MSMTP_VERSION)
+ifeq ($(BR2_PACKAGE_LIBSECRET),y)
+MSMTP_CONF_OPTS += --with-libsecret
+MSMTP_DEPENDENCIES += libsecret
+else
+MSMTP_CONF_OPTS += --without-libsecret
+endif
 
-MSMTP_INSTALL_STAGING = NO
-MSMTP_INSTALL_TARGET = YES
-MSMTP_BINARY:=src/msmtp
-MSMTP_TARGET_BINARY:=usr/bin/msmtp
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+MSMTP_CONF_OPTS += --with-ssl=openssl
+MSMTP_DEPENDENCIES += openssl
+ifeq ($(BR2_STATIC_LIBS),y)
+# openssl uses zlib, so we need to explicitly link with it when static
+MSMTP_CONF_ENV += LIBS=-lz
+endif
+else ifeq ($(BR2_PACKAGE_GNUTLS),y)
+MSMTP_CONF_OPTS += --with-ssl=gnutls
+MSMTP_DEPENDENCIES += gnutls
+else
+MSMTP_CONF_OPTS += --with-ssl=no
+endif
 
-MSMTP_CONF_OPT = --program-prefix="" --with-ssl=openssl \
-		--without-gnome-keyring --without-libidn --disable-gai-idn
-
-MSMTP_DEPENDENCIES = uclibc openssl host-pkgconfig
-
-$(eval $(call AUTOTARGETS,package,msmtp))
+$(eval $(autotools-package))

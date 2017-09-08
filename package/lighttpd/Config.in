@@ -1,5 +1,11 @@
+comment "lighttpd needs a toolchain w/ dynamic library"
+	depends on BR2_USE_MMU
+	depends on BR2_STATIC_LIBS
+
 config BR2_PACKAGE_LIGHTTPD
 	bool "lighttpd"
+	depends on BR2_USE_MMU # fork()
+	depends on !BR2_STATIC_LIBS
 	help
 	  lighttpd a secure, fast, compliant and very flexible web-server
 	  which has been optimized for high-performance environments. It
@@ -12,44 +18,42 @@ config BR2_PACKAGE_LIGHTTPD
 	  http://www.lighttpd.net/
 
 if BR2_PACKAGE_LIGHTTPD
-menu "lighttpd packages"
 
 config BR2_PACKAGE_LIGHTTPD_OPENSSL
-	bool "lighttpd openssl support"
-	depends on BR2_PACKAGE_LIGHTTPD
+	bool "openssl support"
 	select BR2_PACKAGE_OPENSSL
 	help
 	  Enable OpenSSL support for lighttpd.
 
 config BR2_PACKAGE_LIGHTTPD_ZLIB
-	bool "lighttpd zlib support"
-	depends on BR2_PACKAGE_LIGHTTPD
+	bool "zlib support"
 	select BR2_PACKAGE_ZLIB
 	help
 	  Enable zlib support for lighttpd mod_compress.
 
 config BR2_PACKAGE_LIGHTTPD_BZIP2
-	bool "lighttpd bzip2 support"
-	depends on BR2_PACKAGE_LIGHTTPD
+	bool "bzip2 support"
 	select BR2_PACKAGE_BZIP2
 	help
 	  Enable bzip2 support for lighttpd mod_compress.
 
 config BR2_PACKAGE_LIGHTTPD_PCRE
-	bool "pcre"
-	depends on BR2_PACKAGE_LIGHTTPD
+	bool "pcre support"
 	select BR2_PACKAGE_PCRE
 	help
 	  Enable PCRE support. Needed to support mod_rewrite
 
 config BR2_PACKAGE_LIGHTTPD_WEBDAV
-	bool "webdav"
-	depends on BR2_PACKAGE_LIGHTTPD
-	select BR2_PACKAGE_SQLITE
-	select BR2_PACKAGE_LIBUUID
+	bool "webdav support"
 	select BR2_PACKAGE_LIBXML2
+	select BR2_PACKAGE_SQLITE
 	help
-	  Enable webDAV support
+	  Enable webdav support. Needed to support mod_webdav
 
-endmenu
+config BR2_PACKAGE_LIGHTTPD_LUA
+	bool "lua support"
+	depends on BR2_PACKAGE_LUA
+	help
+	  Enable Lua support. Needed to support mod_magnet
+
 endif

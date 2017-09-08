@@ -1,113 +1,104 @@
-#############################################################
+################################################################################
 #
 # ntp
 #
-#############################################################
+################################################################################
 
-NTP_VERSION:=4.2.6p5
-NTP_SOURCE:=ntp-$(NTP_VERSION).tar.gz
-NTP_SITE:=http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2
-NTP_DIR:=$(BUILD_DIR)/ntp-$(NTP_VERSION)
-NTP_CAT:=$(ZCAT)
-NTP_BINARY:=ntpd/ntpd
-NTP_TARGET_BINARY:=usr/sbin/ntpd
+NTP_VERSION_MAJOR = 4.2
+NTP_VERSION = $(NTP_VERSION_MAJOR).8p10
+NTP_SITE = https://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-$(NTP_VERSION_MAJOR)
+NTP_DEPENDENCIES = host-pkgconf libevent openssl $(if $(BR2_PACKAGE_BUSYBOX),busybox)
+NTP_LICENSE = NTP
+NTP_LICENSE_FILES = COPYRIGHT
+NTP_CONF_ENV = ac_cv_lib_md5_MD5Init=no
+NTP_CONF_OPTS = \
+	--with-shared \
+	--program-transform-name=s,,, \
+	--disable-tickadj \
+	--disable-debugging \
+	--with-yielding-select=yes \
+	--disable-local-libevent \
+	--with-crypto
 
-NTP_CFLAGS=-Os
+# 0002-ntp-syscalls-fallback.patch
+# 0003-ntpq-fpic.patch
+NTP_AUTORECONF = YES
 
-ifeq ($(BR2_INET_IPV6),y)
-NTP_CONF_OPT += --enable-ipv6
+ifeq ($(BR2_TOOLCHAIN_HAS_SSP),y)
+NTP_CONF_OPTS += --with-locfile=linux
 else
-NTP_CONF_OPT += $(DISABLE_IPV6)
+NTP_CONF_OPTS += --with-locfile=default
 endif
 
-$(DL_DIR)/$(NTP_SOURCE):
-	$(call DOWNLOAD,$(NTP_SITE),$(NTP_SOURCE))
+ifeq ($(BR2_PACKAGE_LIBCAP),y)
+NTP_CONF_OPTS += --enable-linuxcaps
+NTP_DEPENDENCIES += libcap
+else
+NTP_CONF_OPTS += --disable-linuxcaps
+endif
 
-ntp-source: $(DL_DIR)/$(NTP_SOURCE)
+ifeq ($(BR2_PACKAGE_LIBEDIT),y)
+NTP_CONF_OPTS += --with-lineeditlibs=edit
+NTP_DEPENDENCIES += libedit
+else
+NTP_CONF_OPTS += --without-lineeditlibs
+endif
 
-$(NTP_DIR)/.patched: $(DL_DIR)/$(NTP_SOURCE)
-	$(NTP_CAT) $(DL_DIR)/$(NTP_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(NTP_DIR) package/ntp/ ntp\*.patch
-	#$(SED) "s,^#if.*__GLIBC__.*_BSD_SOURCE.*$$,#if 0," \
-	#	$(NTP_DIR)/ntpd/refclock_pcf.c
-	#$(SED) '/[[:space:](]index[[:space:]]*(/s/[[:space:]]*index[[:space:]]*(/ strchr(/g' \
-	#	$(NTP_DIR)/libisc/*.c $(NTP_DIR)/arlib/sample.c
-	#$(SED) '/[[:space:](]rindex[[:space:]]*(/s/[[:space:]]*rindex[[:space:]]*(/ strrchr(/g' \
-	#	$(NTP_DIR)/ntpd/*.c
-	#$(SED) 's/\(^#[[:space:]]*include[[:space:]]*<sys\/var.h>\)/\/\/ \1/' \
-	#	$(NTP_DIR)/util/tickadj.c
-	$(CONFIG_UPDATE) $(NTP_DIR)
-	$(CONFIG_UPDATE) $(NTP_DIR)/sntp
-	touch $@
+ifeq ($(BR2_PACKAGE_NTP_NTPSNMPD),y)
+NTP_CONF_OPTS += \
+	--with-net-snmp-config=$(STAGING_DIR)/usr/bin/net-snmp-config
+NTP_DEPENDENCIES += netsnmp
+else
+NTP_CONF_OPTS += --without-ntpsnmpd
+endif
 
-$(NTP_DIR)/.configured: $(NTP_DIR)/.patched
-	(cd $(NTP_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ENV) \
-		$(TARGET_CONFIGURE_ARGS) \
-		CFLAGS="$(TARGET_CFLAGS) $(NTP_CFLAGS)" \
-		ac_cv_lib_md5_MD5Init=no \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		$(DISABLE_NLS) \
-		$(NTP_CONF_OPT) \
-		--with-shared \
-		--program-transform-name=s,,, \
-		--disable-tickadj \
-		--with-openssl-incdir=$(STAGING_DIR)/usr/include \
-		--with-openssl-libdir=$(STAGING_DIR)/usr/lib \
-	)
-	touch $@
+ifeq ($(BR2_PACKAGE_NTP_NTPD_ATOM_PPS),y)
+NTP_CONF_OPTS += --enable-ATOM
+NTP_DEPENDENCIES += pps-tools
+else
+NTP_CONF_OPTS += --disable-ATOM
+endif
 
-#		--with-crypto=openssl \
+ifeq ($(BR2_PACKAGE_NTP_NTP_SHM_CLK),y)
+NTP_CONF_OPTS += --enable-SHM
+else
+NTP_CONF_OPTS += --disable-SHM
+endif
 
-$(NTP_DIR)/$(NTP_BINARY): $(NTP_DIR)/.configured
-	$(MAKE) -C $(NTP_DIR)
-
-$(TARGET_DIR)/$(NTP_TARGET_BINARY): $(NTP_DIR)/$(NTP_BINARY)
-	install -m 755 $(NTP_DIR)/$(NTP_BINARY) $(TARGET_DIR)/$(NTP_TARGET_BINARY)
 ifeq ($(BR2_PACKAGE_NTP_SNTP),y)
-	install -m 755 $(NTP_DIR)/sntp/sntp $(TARGET_DIR)/usr/bin/sntp
+NTP_CONF_OPTS += --with-sntp
+else
+NTP_CONF_OPTS += --without-sntp
 endif
-	install -m 755 package/ntp/ntp.sysvinit $(TARGET_DIR)/etc/init.d/S49ntp
-	@if [ ! -f $(TARGET_DIR)/etc/default/ntpd ]; then \
-		install -m 755 -d $(TARGET_DIR)/etc/default ; \
-		install -m 644 package/ntp/ntpd.etc.default $(TARGET_DIR)/etc/default/ntpd ; \
-	fi
 
-ntp-configure: $(NTP_DIR)/.configured
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTP_KEYGEN) += util/ntp-keygen
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTP_WAIT) += scripts/ntp-wait/ntp-wait
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTPDATE) += ntpdate/ntpdate
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTPDC) += ntpdc/ntpdc
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTPQ) += ntpq/ntpq
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTPSNMPD) += ntpsnmpd/ntpsnmpd
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTPTIME) += util/ntptime
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTPTRACE) += scripts/ntptrace/ntptrace
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_SNTP) += sntp/sntp
+NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_TICKADJ) += util/tickadj
 
-ntp-build: $(NTP_DIR)/$(NTP_BINARY)
+define NTP_INSTALL_TARGET_CMDS
+	$(if $(BR2_PACKAGE_NTP_NTPD), install -m 755 $(@D)/ntpd/ntpd $(TARGET_DIR)/usr/sbin/ntpd)
+	test -z "$(NTP_INSTALL_FILES_y)" || install -m 755 $(addprefix $(@D)/,$(NTP_INSTALL_FILES_y)) $(TARGET_DIR)/usr/bin/
+	$(INSTALL) -m 644 package/ntp/ntpd.etc.conf $(TARGET_DIR)/etc/ntp.conf
+endef
 
-ntp: uclibc openssl $(TARGET_DIR)/$(NTP_TARGET_BINARY)
+ifeq ($(BR2_PACKAGE_NTP_NTPD),y)
+define NTP_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 755 package/ntp/S49ntp $(TARGET_DIR)/etc/init.d/S49ntp
+endef
 
-ntp-clean:
-	rm -f $(TARGET_DIR)/usr/sbin/ntpd $(TARGET_DIR)/usr/bin/sntp \
-		$(TARGET_DIR)/etc/init.d/S49ntp \
-		$(TARGET_DIR)/$(NTP_TARGET_BINARY)
-	-$(MAKE) -C $(NTP_DIR) clean
-
-ntp-dirclean:
-	rm -rf $(NTP_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_NTP),y)
-TARGETS+=ntp
+define NTP_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 package/ntp/ntpd.service $(TARGET_DIR)/usr/lib/systemd/system/ntpd.service
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
+	ln -fs ../../../../usr/lib/systemd/system/ntpd.service \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/ntpd.service
+endef
 endif
+
+$(eval $(autotools-package))

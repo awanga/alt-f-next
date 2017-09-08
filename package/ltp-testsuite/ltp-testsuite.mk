@@ -1,70 +1,79 @@
-#############################################################
+################################################################################
 #
 # ltp-testsuite
 #
-#############################################################
-LTP_TESTSUITE_VERSION:=20090630
-LTP_TESTSUITE_SOURCE:=ltp-full-$(LTP_TESTSUITE_VERSION).tgz
-LTP_TESTSUITE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/ltp
-LTP_TESTSUITE_CAT:=$(ZCAT)
-LTP_TESTSUITE_ROOT:=$(TARGET_DIR)/root
-LTP_TESTSUITE_DIR:=$(LTP_TESTSUITE_ROOT)/ltp-full-$(LTP_TESTSUITE_VERSION)
+################################################################################
 
-#
-# Enable patches based upon different toolchain configuration options.
-#
-LTP_PATCHES:=ltp-testsuite-generate-needs-bash.patch \
-	     ltp-testsuite-sh-is-not-C-code.patch \
-	     ltp-testsuite-sched-getaffinity.patch \
-	     ltp-testsuite-uclibc-syscalls.patch
+LTP_TESTSUITE_VERSION = 20170116
+LTP_TESTSUITE_SOURCE = ltp-full-$(LTP_TESTSUITE_VERSION).tar.xz
+LTP_TESTSUITE_SITE = https://github.com/linux-test-project/ltp/releases/download/$(LTP_TESTSUITE_VERSION)
+LTP_TESTSUITE_LICENSE = GPL-2.0, GPL-2.0+
+LTP_TESTSUITE_LICENSE_FILES = COPYING
 
-ifeq ($(BR2_PTHREADS_NATIVE),y)
-LTP_PATCHES+=ltp-testsuite-enable-openposix-for-nptl.patch
+# Do not enable Open POSIX testsuite as it doesn't cross-compile
+# properly: t0 program is built for the host machine. Notice that due
+# to a bug, --without-open-posix-testsuite actually enables the test
+# suite.
+# See https://github.com/linux-test-project/ltp/issues/143 (invalid
+# autoconf test) and
+# https://github.com/linux-test-project/ltp/issues/144 (Open POSIX
+# testsuite not cross-compiling).
+LTP_TESTSUITE_CONF_OPTS += \
+	--with-realtime-testsuite
+
+ifeq ($(BR2_LINUX_KERNEL),y)
+LTP_TESTSUITE_DEPENDENCIES += linux
+LTP_TESTSUITE_MAKE_ENV += $(LINUX_MAKE_FLAGS)
+LTP_TESTSUITE_CONF_OPTS += --with-linux-dir=$(LINUX_DIR)
+else
+LTP_TESTSUITE_CONF_OPTS += --without-modules
 endif
-ifeq ($(BR2_EXT_PTHREADS_NATIVE),y)
-LTP_PATCHES+=ltp-testsuite-enable-openposix-for-nptl.patch
+
+# We change the prefix to a custom one, otherwise we get scripts and
+# directories directly in /usr, such as /usr/runalltests.sh
+LTP_TESTSUITE_CONF_OPTS += --prefix=/usr/lib/ltp-testsuite
+
+# Needs libcap with file attrs which needs attr, so both required
+ifeq ($(BR2_PACKAGE_LIBCAP)$(BR2_PACKAGE_ATTR),yy)
+LTP_TESTSUITE_DEPENDENCIES += libcap
+else
+LTP_TESTSUITE_CONF_ENV += ac_cv_lib_cap_cap_compare=no
 endif
-ifneq ($(BR2_INET_IPV6),y)
-LTP_PATCHES+=ltp-testsuite-disable-ipv6-tests.patch
+
+# ltp-testsuite uses <fts.h>, which isn't compatible with largefile
+# support.
+LTP_TESTSUITE_CFLAGS = $(filter-out -D_FILE_OFFSET_BITS=64,$(TARGET_CFLAGS))
+LTP_TESTSUITE_CPPFLAGS = $(filter-out -D_FILE_OFFSET_BITS=64,$(TARGET_CPPFLAGS))
+LTP_TESTSUITE_LIBS =
+
+ifeq ($(BR2_PACKAGE_LIBTIRPC),y)
+LTP_TESTSUITE_DEPENDENCIES += libtirpc host-pkgconf
+LTP_TESTSUITE_CFLAGS += "`$(PKG_CONFIG_HOST_BINARY) --cflags libtirpc`"
+LTP_TESTSUITE_LIBS += "`$(PKG_CONFIG_HOST_BINARY) --libs libtirpc`"
 endif
 
-$(DL_DIR)/$(LTP_TESTSUITE_SOURCE):
-	 $(call DOWNLOAD,$(LTP_TESTSUITE_SITE),$(LTP_TESTSUITE_SOURCE))
+LTP_TESTSUITE_CONF_ENV += \
+	CFLAGS="$(LTP_TESTSUITE_CFLAGS)" \
+	CPPFLAGS="$(LTP_TESTSUITE_CPPFLAGS)" \
+	LIBS="$(LTP_TESTSUITE_LIBS)" \
+	SYSROOT="$(STAGING_DIR)"
 
-ltp-testsuite-source: $(DL_DIR)/$(LTP_TESTSUITE_SOURCE)
-
-$(LTP_TESTSUITE_DIR)/Makefile: $(DL_DIR)/$(LTP_TESTSUITE_SOURCE)
-	mkdir -p $(LTP_TESTSUITE_ROOT)
-	$(LTP_TESTSUITE_CAT) $(DL_DIR)/$(LTP_TESTSUITE_SOURCE) | tar -C $(LTP_TESTSUITE_ROOT) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LTP_TESTSUITE_DIR) package/ltp-testsuite/ $(LTP_PATCHES)
-	touch -c $@
-
-$(LTP_TESTSUITE_DIR)/.compiled: $(LTP_TESTSUITE_DIR)/Makefile
-	$(MAKE1) $(TARGET_CONFIGURE_OPTS) CROSS_COMPILER=$(TARGET_CROSS) \
-		-C $(LTP_TESTSUITE_DIR) all
-	touch $@
-
-$(LTP_TESTSUITE_DIR)/.installed: $(LTP_TESTSUITE_DIR)/.compiled
-	# Use fakeroot to pretend to do 'make install' as root
-	echo '$(MAKE1) $(TARGET_CONFIGURE_OPTS) CROSS_COMPILER=$(TARGET_CROSS) ' \
-			'-C $(LTP_TESTSUITE_DIR) install' \
-			> $(PROJECT_BUILD_DIR)/.fakeroot.ltp
-	touch $@
-
-ltp-testsuite: uclibc host-fakeroot $(LTP_TESTSUITE_DIR)/.installed
-
-ltp-testsuite-clean:
-	-$(MAKE) -C $(LTP_TESTSUITE_DIR) clean
-
-ltp-testsuite-dirclean:
-	rm -rf $(LTP_TESTSUITE_DIR)
-
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LTP-TESTSUITE),y)
-TARGETS+=ltp-testsuite
+# Requires uClibc fts and bessel support, normally not enabled
+ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
+define LTP_TESTSUITE_REMOVE_UNSUPPORTED
+	rm -rf $(@D)/testcases/kernel/controllers/cpuset/
+	rm -rf $(@D)/testcases/misc/math/float/bessel/
+	rm -f $(@D)/testcases/misc/math/float/float_bessel.c
+endef
+LTP_TESTSUITE_POST_PATCH_HOOKS += LTP_TESTSUITE_REMOVE_UNSUPPORTED
 endif
+
+# ldd command build system tries to build a shared library unconditionally.
+ifeq ($(BR2_STATIC_LIBS),y)
+define LTP_TESTSUITE_REMOVE_LDD
+	rm -rf $(@D)/testcases/commands/ldd
+endef
+LTP_TESTSUITE_POST_PATCH_HOOKS += LTP_TESTSUITE_REMOVE_LDD
+endif
+
+$(eval $(autotools-package))

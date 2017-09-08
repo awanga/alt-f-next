@@ -1,21 +1,34 @@
-#############################################################
+################################################################################
 #
 # xvkbd
 #
-#############################################################
-XVKBD_VERSION = 2.8
-XVKBD_SOURCE = xvkbd-$(XVKBD_VERSION).tar.gz
-XVKBD_SITE = http://homepage3.nifty.com/tsato/xvkbd
-XVKBD_AUTORECONF = NO
-XVKBD_INSTALL_STAGING = NO
-XVKBD_INSTALL_TARGET = YES
+################################################################################
 
-XVKBD_MAKE_OPT = CC=$(TARGET_CC) CXX=$(TARGET_CXX) LD=$(TARGET_CC) \
-				CFLAGS="-O2 -I$(STAGING_DIR)/usr/include" USRLIBDIR="$(STAGING_DIR)/usr/lib"
+XVKBD_VERSION = 3.7
+XVKBD_SITE = http://t-sato.in.coocan.jp/xvkbd
+XVKBD_LICENSE = GPL-2.0+
+XVKBD_LICENSE_FILES = README
 
-XVKBD_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+# Passing USRLIBDIR ensures that the stupid Makefile doesn't add
+# /usr/lib to the library search path.
+define XVKBD_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) $(TARGET_CONFIGURE_OPTS) \
+		USRLIBDIR="$(STAGING_DIR)/usr/lib"
+endef
 
-XVKBD_DEPENDENCIES = uclibc xserver_xorg-server
+define XVKBD_INSTALL_TARGET_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) install
+endef
 
-$(eval $(call AUTOTARGETS,package,xvkbd))
+XVKBD_DEPENDENCIES = \
+	xlib_libICE \
+	xlib_libSM \
+	xlib_libX11 \
+	xlib_libXaw \
+	xlib_libXext \
+	xlib_libXmu \
+	xlib_libXpm \
+	xlib_libXt \
+	xlib_libXtst
 
+$(eval $(generic-package))

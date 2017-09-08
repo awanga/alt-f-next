@@ -1,76 +1,34 @@
-#############################################################
+################################################################################
 #
 # libevent
 #
-#############################################################
+################################################################################
 
-LIBEVENT_VERSION:=1.4.13
-LIBEVENT_SOURCE:=libevent-$(LIBEVENT_VERSION)-stable.tar.gz
-LIBEVENT_SITE:=http://monkey.org/~provos/
-LIBEVENT_DIR:=$(BUILD_DIR)/libevent-$(LIBEVENT_VERSION)-stable
-LIBEVENT_CAT:=$(ZCAT)
-LIBEVENT_BINARY:=libevent.la
-LIBEVENT_TARGET_BINARY:=usr/lib/libevent.so
+LIBEVENT_VERSION = 2.1.8-stable
+LIBEVENT_SITE = https://github.com/libevent/libevent/releases/download/release-$(LIBEVENT_VERSION)
+LIBEVENT_INSTALL_STAGING = YES
+LIBEVENT_LICENSE = BSD-3-Clause, OpenBSD
+LIBEVENT_LICENSE_FILES = LICENSE
+# For 0001-Disable-building-test-programs.patch
+LIBEVENT_AUTORECONF = YES
+LIBEVENT_CONF_OPTS = --disable-samples
 
-$(DL_DIR)/$(LIBEVENT_SOURCE):
-	$(call DOWNLOAD,$(LIBEVENT_SITE),$(LIBEVENT_SOURCE))
+define LIBEVENT_REMOVE_PYSCRIPT
+	rm $(TARGET_DIR)/usr/bin/event_rpcgen.py
+endef
 
-libevent-source: $(DL_DIR)/$(LIBEVENT_SOURCE)
-
-libevent-unpacked: $(LIBEVENT_DIR)/.unpacked
-$(LIBEVENT_DIR)/.unpacked: $(DL_DIR)/$(LIBEVENT_SOURCE)
-	$(LIBEVENT_CAT) $(DL_DIR)/$(LIBEVENT_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LIBEVENT_DIR) package/libevent/ \*.patch
-	touch $@
-
-$(LIBEVENT_DIR)/.configured: $(LIBEVENT_DIR)/.unpacked
-	(cd $(LIBEVENT_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--libdir=/usr/lib \
-		--mandir=/usr/share/man \
-		--disable-static \
-		--with-gnu-ld \
-	)
-	touch $@
-
-$(LIBEVENT_DIR)/$(LIBEVENT_BINARY): $(LIBEVENT_DIR)/.configured
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(LIBEVENT_DIR)
-
-$(STAGING_DIR)/$(LIBEVENT_TARGET_BINARY): $(LIBEVENT_DIR)/$(LIBEVENT_BINARY)
-	$(MAKE) -C $(LIBEVENT_DIR) DESTDIR=$(STAGING_DIR) install
-
-$(TARGET_DIR)/$(LIBEVENT_TARGET_BINARY): $(STAGING_DIR)/$(LIBEVENT_TARGET_BINARY)
-	$(MAKE) -C $(LIBEVENT_DIR) DESTDIR=$(TARGET_DIR) install
-	rm -f $(addprefix $(TARGET_DIR)/usr/,lib/libevent*.la \
-					     include/ev*)
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -fr $(TARGET_DIR)/usr/share/man
+# libevent installs a python script to target - get rid of it if we
+# don't have python support enabled
+ifneq ($(BR2_PACKAGE_PYTHON),y)
+LIBEVENT_POST_INSTALL_TARGET_HOOKS += LIBEVENT_REMOVE_PYSCRIPT
 endif
 
-libevent-configure: $(LIBEVENT_DIR)/.configured
-
-libevent-build: $(LIBEVENT_DIR)/$(LIBEVENT_BINARY)
-
-libevent: uclibc $(TARGET_DIR)/$(LIBEVENT_TARGET_BINARY)
-
-libevent-clean:
-	rm -f $(TARGET_DIR)/$(LIBEVENT_TARGET_BINARY)*
-	-$(MAKE) -C $(LIBEVENT_DIR) clean
-
-libevent-dirclean:
-	rm -rf $(LIBEVENT_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LIBEVENT),y)
-TARGETS+=libevent
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+LIBEVENT_DEPENDENCIES += host-pkgconf openssl
+LIBEVENT_CONF_OPTS += --enable-openssl
+else
+LIBEVENT_CONF_OPTS += --disable-openssl
 endif
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

@@ -1,21 +1,23 @@
-#############################################################
+################################################################################
 #
 # screen
 #
-#############################################################
-SCREEN_VERSION = 4.0.3
+################################################################################
+
+SCREEN_VERSION = 4.5.1
 SCREEN_SITE = $(BR2_GNU_MIRROR)/screen
-
+SCREEN_LICENSE = GPL-3.0+
+SCREEN_LICENSE_FILES = COPYING
 SCREEN_DEPENDENCIES = ncurses
+SCREEN_AUTORECONF = YES
+SCREEN_CONF_ENV = CFLAGS="$(TARGET_CFLAGS)"
+SCREEN_CONF_OPTS = --enable-colors256
+SCREEN_INSTALL_TARGET_OPTS = DESTDIR=$(TARGET_DIR) SCREEN=screen install_bin
 
-SCREEN_CONF_ENV = CFLAGS=-DSYSV=1
-SCREEN_CONF_OPT = --with-sys-screenrc=/etc/screenrc
-SCREEN_MAKE_OPT = -j1
+define SCREEN_INSTALL_SCREENRC
+	$(INSTALL) -m 0755 -D $(@D)/etc/screenrc $(TARGET_DIR)/etc/screenrc
+endef
 
-SCREEN_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) SCREEN=screen install_bin
+SCREEN_POST_INSTALL_TARGET_HOOKS += SCREEN_INSTALL_SCREENRC
 
-$(eval $(call AUTOTARGETS,package,screen))
-
-$(SCREEN_HOOK_POST_INSTALL):
-	cp $(SCREEN_DIR)/etc/etcscreenrc $(TARGET_DIR)/etc/screenrc
-	touch $@
+$(eval $(autotools-package))

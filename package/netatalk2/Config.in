@@ -1,9 +1,0 @@
-config BR2_PACKAGE_NETATALK2
-	bool "netatalk2"
-	select BR2_PACKAGE_DB
-	select BR2_PACKAGE_LIBGCRYPT
-	select BR2_PACKAGE_AVAHI
-	help
-	 Apple Filling Protocol, netatalk version 2.2
-
-	  http://netatalk.sourceforge.net/

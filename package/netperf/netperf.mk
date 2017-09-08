@@ -1,20 +1,25 @@
-#############################################################
+################################################################################
 #
 # netperf
 #
-#############################################################
+################################################################################
 
-NETPERF_VERSION:=2.6.0
-NETPERF_SOURCE:=netperf-$(NETPERF_VERSION).tar.gz
-NETPERF_SITE:=ftp://ftp.netperf.org/netperf/archive
+NETPERF_VERSION = 2.7.0
+NETPERF_SITE = ftp://ftp.netperf.org/netperf
+NETPERF_SOURCE = netperf-$(NETPERF_VERSION).tar.bz2
+# gcc 5+ defaults to gnu99 which breaks netperf
+NETPERF_CONF_ENV = \
+	ac_cv_func_setpgrp_void=set \
+	CFLAGS="$(TARGET_CFLAGS) -std=gnu89"
+NETPERF_CONF_OPTS = --enable-demo=yes
+NETPERF_LICENSE = netperf license
+NETPERF_LICENSE_FILES = COPYING
 
-NETPERF_AUTORECONF:=NO
-NETPERF_INSTALL_STAGING:=NO
-NETPERF_INSTALL_TARGET:=YES
+define NETPERF_INSTALL_TARGET_CMDS
+	$(INSTALL) -m 0755 $(@D)/src/netperf \
+		$(TARGET_DIR)/usr/bin/netperf
+	$(INSTALL) -m 0755 $(@D)/src/netserver \
+		$(TARGET_DIR)/usr/bin/netserver
+endef
 
-NETPERF_CONF_ENV:=ac_cv_func_setpgrp_void=yes
-NETPERF_CONF_OPT:=--program-prefix=""
-
-NETPERF_DEPENDENCIES:=uclibc
-
-$(eval $(call AUTOTARGETS,package,netperf))
+$(eval $(autotools-package))

@@ -1,75 +1,29 @@
-#############################################################
+################################################################################
 #
 # liblockfile
 #
-#############################################################
-LIBLOCKFILE_VERSION=1.08
-LIBLOCKFILE_SOURCE:=liblockfile_$(LIBLOCKFILE_VERSION).orig.tar.gz
-LIBLOCKFILE_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/libl/liblockfile/
-LIBLOCKFILE_CAT:=$(ZCAT)
-LIBLOCKFILE_DIR:=$(BUILD_DIR)/liblockfile-$(LIBLOCKFILE_VERSION)
-LIBLOCKFILE_BINARY:=liblockfile.so.1.0
+################################################################################
 
-$(DL_DIR)/$(LIBLOCKFILE_SOURCE):
-	 $(call DOWNLOAD,$(LIBLOCKFILE_SITE),$(LIBLOCKFILE_SOURCE))
+LIBLOCKFILE_VERSION = 1.09
+LIBLOCKFILE_SOURCE = liblockfile_$(LIBLOCKFILE_VERSION).orig.tar.gz
+LIBLOCKFILE_SITE = http://snapshot.debian.org/archive/debian/20151026T153523Z/pool/main/libl/liblockfile
+LIBLOCKFILE_PATCH = liblockfile_$(LIBLOCKFILE_VERSION)-6.debian.tar.bz2
 
-liblockfile-source: $(DL_DIR)/$(LIBLOCKFILE_SOURCE)
+LIBLOCKFILE_LICENSE = LGPL-2.0+, GPL-2.0+ (dotlockfile)
+LIBLOCKFILE_LICENSE_FILES = COPYRIGHT
 
-$(LIBLOCKFILE_DIR)/.unpacked: $(DL_DIR)/$(LIBLOCKFILE_SOURCE)
-	$(LIBLOCKFILE_CAT) $(DL_DIR)/$(LIBLOCKFILE_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LIBLOCKFILE_DIR) package/liblockfile/ \*.patch
-	touch $@
+LIBLOCKFILE_INSTALL_STAGING = YES
+LIBLOCKFILE_CONF_OPTS = --mandir=/usr/share/man
 
-$(LIBLOCKFILE_DIR)/.configured: $(LIBLOCKFILE_DIR)/.unpacked
-	(cd $(LIBLOCKFILE_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--bindir=/usr/bin \
-		--libdir=/usr/lib \
-		--includedir=/usr/include \
-		--mandir=/usr/share/man \
-		--enable-shared \
-	)
-	touch $@
-
-$(STAGING_DIR)/lib/$(LIBLOCKFILE_BINARY): $(LIBLOCKFILE_DIR)/.configured
+define LIBLOCKFILE_INSTALL_STAGING_CMDS
 	mkdir -p $(addprefix $(STAGING_DIR)/usr/share/man/man,1 3)
-	mkdir -p $(STAGING_DIR)/usr/share/man/man3
 	rm -f $(STAGING_DIR)/usr/lib/liblockfile.so
-	$(MAKE) -C $(LIBLOCKFILE_DIR) ROOT=$(STAGING_DIR) install
-	ln -sf $(LIBLOCKFILE_BINARY) $(STAGING_DIR)/usr/lib/liblockfile.so.1
-	cp -dpf $(LIBLOCKFILE_DIR)/liblockfile.a $(STAGING_DIR)/usr/lib
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(LIBLOCKFILE_DIR) ROOT=$(STAGING_DIR) install
+	ln -sf liblockfile.so $(STAGING_DIR)/usr/lib/liblockfile.so.1
+endef
 
-$(TARGET_DIR)/usr/lib/$(LIBLOCKFILE_BINARY): $(STAGING_DIR)/lib/$(LIBLOCKFILE_BINARY)
-	mkdir -p $(TARGET_DIR)/usr/lib
+define LIBLOCKFILE_INSTALL_TARGET_CMDS
 	cp -a $(STAGING_DIR)/usr/lib/liblockfile.so* $(TARGET_DIR)/usr/lib
-	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) \
-		$(TARGET_DIR)/usr/lib/$(LIBLOCKFILE_BINARY)
+endef
 
-liblockfile: uclibc $(TARGET_DIR)/usr/lib/$(LIBLOCKFILE_BINARY)
-
-liblockfile-clean:
-	rm -f $(TARGET_DIR)/usr/lib/liblockfile.so*
-	rm -f $(STAGING_DIR)/usr/lib/liblockfile*
-	rm -f $(addprefix $(STAGING_DIR)/usr/include/,lockfile.h mailfile.h)
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(STAGING_DIR)/usr/share/man
-endif
-	-$(MAKE) -C $(LIBLOCKFILE_DIR) clean
-
-liblockfile-dirclean:
-	rm -rf $(LIBLOCKFILE_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LIBLOCKFILE),y)
-TARGETS+=liblockfile
-endif
+$(eval $(autotools-package))

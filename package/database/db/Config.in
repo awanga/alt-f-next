@@ -1,6 +1,0 @@
-config BR2_PACKAGE_DB
-	bool "db"
-	help
-	  Berkeley DB
-
-	  http://www.oracle.com/us/products/database/berkeley-db

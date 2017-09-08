@@ -1,47 +1,28 @@
-#############################################################
+################################################################################
 #
 # libiconv
 #
-#############################################################
+################################################################################
 
 LIBICONV_VERSION = 1.14
-LIBICONV_SOURCE = libiconv-$(LIBICONV_VERSION).tar.gz
 LIBICONV_SITE = $(BR2_GNU_MIRROR)/libiconv
-
-LIBICONV_AUTORECONF = NO
-LIBICONV_LIBTOOL_PATCH = NO
 LIBICONV_INSTALL_STAGING = YES
-LIBICONV_INSTALL_TARGET = YES
+LIBICONV_LICENSE = GPL-3.0+ (iconv program), LGPL-2.0+ (library)
+LIBICONV_LICENSE_FILES = COPYING COPYING.LIB
 
-LIBICONV_DEPENDENCIES = uclibc
+# Don't build the preloadable library, as we don't need it (it's only
+# for LD_PRELOAD to replace glibc's iconv, but we never build libiconv
+# when glibc is used). And it causes problems for static only builds.
+define LIBICONV_DISABLE_PRELOAD
+	$(SED) '/preload/d' $(@D)/Makefile.in
+endef
+LIBICONV_PRE_CONFIGURE_HOOKS += LIBICONV_DISABLE_PRELOAD
 
-LIBICONV_CONF_OPT = --libdir=/usr/lib
-# save 13K
-#TARGET_CFLAGS += -Os
+$(eval $(autotools-package))
 
-ifeq ($(BR2_ENABLE_DEBUG),y)
-LIBICONV_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-else
-LIBICONV_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install-strip STRIPPROG="$(STRIPCMD)"
+# Configurations where the toolchain supports locales and the libiconv
+# package is enabled are incorrect, because the toolchain already
+# provides libiconv functionality, and having both confuses packages.
+ifeq ($(BR2_PACKAGE_LIBICONV)$(BR2_ENABLE_LOCALE),yy)
+$(error Libiconv should never be enabled when the toolchain supports locales. Report this failure to Buildroot developers)
 endif
-
-$(eval $(call AUTOTARGETS,package,libiconv))
-
-# a patch in uClibc removes iconv.h:
-ifeq ($(BR2_PACKAGE_LIBICONV),y)
-TARGETS := $(STAGING_DIR)/usr/include/iconv.h $(TARGETS)
-endif
-
-$(STAGING_DIR)/usr/include/iconv.h: libiconv-install-staging
-	cp $(LIBICONV_DIR)/include/iconv.h.inst $(STAGING_DIR)/usr/include/iconv.h
-	touch $@
-
-$(LIBICONV_HOOK_POST_INSTALL):
-	# Remove not used preloadable libiconv.so
-	rm -f $(STAGING_DIR)/usr/lib/preloadable_libiconv.so
-	rm -f $(TARGET_DIR)/usr/lib/preloadable_libiconv.so
-ifneq ($(BR2_ENABLE_DEBUG),y)
-	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libiconv.so.*
-	$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libcharset.so.*
-endif
-	touch $@

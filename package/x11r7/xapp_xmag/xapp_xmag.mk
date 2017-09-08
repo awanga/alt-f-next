@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xapp_xmag -- X.Org xmag application
+# xapp_xmag
 #
 ################################################################################
 
-XAPP_XMAG_VERSION = 1.0.2
+XAPP_XMAG_VERSION = 1.0.6
 XAPP_XMAG_SOURCE = xmag-$(XAPP_XMAG_VERSION).tar.bz2
 XAPP_XMAG_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_XMAG_AUTORECONF = NO
+XAPP_XMAG_LICENSE = MIT
+XAPP_XMAG_LICENSE_FILES = COPYING
 XAPP_XMAG_DEPENDENCIES = xlib_libXaw
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_xmag))
+$(eval $(autotools-package))

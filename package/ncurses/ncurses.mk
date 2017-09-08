@@ -1,193 +1,158 @@
-#############################################################
+################################################################################
 #
 # ncurses
-# this installs only a few vital termcap entries
 #
-#############################################################
-# Copyright (C) 2002 by Ken Restivo <ken@246gt.com>
-# $Id: ncurses.mk,v 1.7 2005/01/03 04:38:13 andersen Exp $
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Library General Public License as
-# published by the Free Software Foundation; either version 2 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Library General Public License for more details.
-#
-# You should have received a copy of the GNU Library General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-# USA
+################################################################################
 
-NCURSES_VERSION:=5.9
+NCURSES_VERSION = 6.0
+NCURSES_SITE = $(BR2_GNU_MIRROR)/ncurses
+NCURSES_INSTALL_STAGING = YES
+NCURSES_DEPENDENCIES = host-ncurses
+NCURSES_LICENSE = MIT with advertising clause
+NCURSES_LICENSE_FILES = README
+NCURSES_CONFIG_SCRIPTS = ncurses$(NCURSES_LIB_SUFFIX)6-config
 
-NCURSES_SITE:=$(BR2_GNU_MIRROR)/ncurses
-NCURSES_DIR:=$(BUILD_DIR)/ncurses-$(NCURSES_VERSION)
-NCURSES_SOURCE:=ncurses-$(NCURSES_VERSION).tar.gz
-NCURSES_CAT:=$(ZCAT)
+NCURSES_CONF_OPTS = \
+	--without-cxx \
+	--without-cxx-binding \
+	--without-ada \
+	--without-tests \
+	--disable-big-core \
+	--without-profile \
+	--disable-rpath \
+	--disable-rpath-hack \
+	--enable-echo \
+	--enable-const \
+	--enable-overwrite \
+	--enable-pc-files \
+	--with-pkg-config-libdir="/usr/lib/pkgconfig" \
+	$(if $(BR2_PACKAGE_NCURSES_TARGET_PROGS),,--without-progs) \
+	--without-manpages
 
-ifneq ($(BR2_PACKAGE_NCURSES_TARGET_HEADERS),y)
-NCURSES_WANT_STATIC=--disable-static
+ifeq ($(BR2_STATIC_LIBS),y)
+NCURSES_CONF_OPTS += --without-shared --with-normal
+else ifeq ($(BR2_SHARED_LIBS),y)
+NCURSES_CONF_OPTS += --with-shared --without-normal
+else ifeq ($(BR2_SHARED_STATIC_LIBS),y)
+NCURSES_CONF_OPTS += --with-shared --with-normal
 endif
 
-$(DL_DIR)/$(NCURSES_SOURCE):
-	$(call DOWNLOAD,$(NCURSES_SITE),$(NCURSES_SOURCE))
+# configure can't find the soname for libgpm when cross compiling
+ifeq ($(BR2_PACKAGE_GPM),y)
+NCURSES_CONF_OPTS += --with-gpm=libgpm.so.2
+NCURSES_DEPENDENCIES += gpm
+else
+NCURSES_CONF_OPTS += --without-gpm
+endif
 
-$(NCURSES_DIR)/.patched: $(DL_DIR)/$(NCURSES_SOURCE)
-	$(NCURSES_CAT) $(DL_DIR)/$(NCURSES_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(NCURSES_DIR) package/ncurses/ ncurses\*.patch
-	$(CONFIG_UPDATE) $(NCURSES_DIR)
-	touch $@
+NCURSES_TERMINFO_FILES = \
+	a/ansi \
+	d/dumb \
+	l/linux \
+	p/putty \
+	p/putty-vt100 \
+	s/screen \
+	s/screen-256color \
+	v/vt100 \
+	v/vt100-putty \
+	v/vt102 \
+	v/vt200 \
+	v/vt220 \
+	x/xterm \
+	x/xterm-color \
+	x/xterm-xfree86
 
-$(NCURSES_DIR)/.configured: $(NCURSES_DIR)/.patched
-	(cd $(NCURSES_DIR); rm -rf config.cache; \
-		BUILD_CC="$(HOSTCC)" \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(REAL_GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/usr/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--includedir=/usr/include \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		--with-terminfo-dirs=/usr/share/terminfo \
-		--with-default-terminfo-dir=/usr/share/terminfo \
-		--with-shared --without-cxx --without-cxx-binding \
-		--without-ada --without-progs --disable-big-core \
-		$(DISABLE_NLS) $(DISABLE_LARGEFILE) \
-		--without-profile --without-debug --disable-rpath \
-		--enable-echo --enable-const --enable-overwrite \
-		$(NCURSES_WANT_STATIC) \
+ifeq ($(BR2_PACKAGE_NCURSES_WCHAR),y)
+NCURSES_CONF_OPTS += --enable-widec
+NCURSES_LIB_SUFFIX = w
+NCURSES_LIBS = ncurses menu panel form
+
+define NCURSES_LINK_LIBS_STATIC
+	$(foreach lib,$(NCURSES_LIBS:%=lib%), \
+		ln -sf $(lib)$(NCURSES_LIB_SUFFIX).a $(STAGING_DIR)/usr/lib/$(lib).a
 	)
-	touch $@
+	ln -sf libncurses$(NCURSES_LIB_SUFFIX).a \
+		$(STAGING_DIR)/usr/lib/libcurses.a
+endef
 
-#		--enable-broken_linker \
-
-$(NCURSES_DIR)/lib/libncurses.so.$(NCURSES_VERSION): $(NCURSES_DIR)/.configured
-	$(MAKE1) DESTDIR=$(STAGING_DIR) -C $(NCURSES_DIR) \
-		libs panel menu form headers
-
-$(STAGING_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION): $(NCURSES_DIR)/lib/libncurses.so.$(NCURSES_VERSION)
-	$(MAKE1) \
-	    prefix=$(STAGING_DIR)/usr/ \
-	    exec_prefix=$(STAGING_DIR) \
-	    bindir=$(STAGING_DIR)/bin \
-	    sbindir=$(STAGING_DIR)/sbin \
-	    libexecdir=$(STAGING_DIR)/usr/lib \
-	    datadir=$(STAGING_DIR)/usr/share \
-	    sysconfdir=$(STAGING_DIR)/etc \
-	    localstatedir=$(STAGING_DIR)/var \
-	    libdir=$(STAGING_DIR)/usr/lib \
-	    infodir=$(STAGING_DIR)/usr/info \
-	    mandir=$(STAGING_DIR)/usr/man \
-	    includedir=$(STAGING_DIR)/usr/include \
-	    gxx_include_dir=$(STAGING_DIR)/usr/include/c++ \
-	    ticdir=$(STAGING_DIR)/usr/share/terminfo \
-	    -C $(NCURSES_DIR) install
-	chmod a-x $(NCURSES_DIR)/lib/libncurses.so*
-	#$(SED) -e 's^prefix="^prefix="$(STAGING_DIR)^' \
-	#	-e 's|^includedir="|includedir="'$(STAGING_DIR)'|' \
-	#	-e 's|libdir="|libdir="'$(STAGING_DIR)'|' \
-	#	$(STAGING_DIR)/bin/ncurses5-config
-	touch -c $@
-
-$(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION): $(STAGING_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
-ifeq ($(BR2_PACKAGE_NCURSES),y)
-	cp -dpf $(NCURSES_DIR)/lib/libncurses.so* $(TARGET_DIR)/usr/lib/
-ifeq ($(BR2_PACKAGE_NCURSES_PANEL),y)
-	cp -dpf $(NCURSES_DIR)/lib/libpanel.so* $(TARGET_DIR)/usr/lib/
-endif
-ifeq ($(BR2_PACKAGE_NCURSES_FORM),y)
-	cp -dpf $(NCURSES_DIR)/lib/libform.so* $(TARGET_DIR)/usr/lib/
-endif
-ifeq ($(BR2_PACKAGE_NCURSES_MENU),y)
-	cp -dpf $(NCURSES_DIR)/lib/libmenu.so* $(TARGET_DIR)/usr/lib/
-endif
-	ln -snf /usr/share/terminfo $(TARGET_DIR)/usr/lib/terminfo
-	mkdir -p $(TARGET_DIR)/usr/share/terminfo/x
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/x/xterm $(TARGET_DIR)/usr/share/terminfo/x
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/x/xterm-color $(TARGET_DIR)/usr/share/terminfo/x
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/x/xterm-xfree86 $(TARGET_DIR)/usr/share/terminfo/x
-	mkdir -p $(TARGET_DIR)/usr/share/terminfo/v
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/v/vt100 $(TARGET_DIR)/usr/share/terminfo/v
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/v/vt102 $(TARGET_DIR)/usr/share/terminfo/v
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/v/vt200 $(TARGET_DIR)/usr/share/terminfo/v
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/v/vt220 $(TARGET_DIR)/usr/share/terminfo/v
-	mkdir -p $(TARGET_DIR)/usr/share/terminfo/a
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/a/ansi $(TARGET_DIR)/usr/share/terminfo/a
-	mkdir -p $(TARGET_DIR)/usr/share/terminfo/l
-	cp -dpf $(STAGING_DIR)/usr/share/terminfo/l/linux $(TARGET_DIR)/usr/share/terminfo/l
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $@
-endif
-	touch -c $@
-
-$(NCURSES_DIR)/lib/libncurses.a: $(NCURSES_DIR)/lib/libncurses.so.$(NCURSES_VERSION)
-
-$(TARGET_DIR)/usr/lib/libncurses.a: $(NCURSES_DIR)/lib/libncurses.a
-	mkdir -p $(TARGET_DIR)/usr/include
-	cp -dpf $(NCURSES_DIR)/include/curses.h $(TARGET_DIR)/usr/include/curses.h
-	cp -dpf $(NCURSES_DIR)/include/ncurses_dll.h $(TARGET_DIR)/usr/include/ncurses_dll.h
-	cp -dpf $(NCURSES_DIR)/include/term.h $(TARGET_DIR)/usr/include/
-	cp -dpf $(NCURSES_DIR)/include/unctrl.h $(TARGET_DIR)/usr/include/
-	cp -dpf $(NCURSES_DIR)/include/termcap.h $(TARGET_DIR)/usr/include/
-	cp -dpf $(NCURSES_DIR)/lib/libncurses.a $(TARGET_DIR)/usr/lib/
-	(cd $(TARGET_DIR)/usr/lib; \
-	 ln -fs libncurses.a libcurses.a; \
-	 ln -fs libncurses.a libtermcap.a; \
+define NCURSES_LINK_LIBS_SHARED
+	$(foreach lib,$(NCURSES_LIBS:%=lib%), \
+		ln -sf $(lib)$(NCURSES_LIB_SUFFIX).so $(STAGING_DIR)/usr/lib/$(lib).so
 	)
-	(cd $(TARGET_DIR)/usr/include; ln -fs curses.h ncurses.h)
-	rm -f $(TARGET_DIR)/usr/lib/libncurses.so
-	(cd $(TARGET_DIR)/usr/lib; ln -fs libncurses.so.$(NCURSES_VERSION) libncurses.so)
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
-	touch -c $@
+	ln -sf libncurses$(NCURSES_LIB_SUFFIX).so \
+		$(STAGING_DIR)/usr/lib/libcurses.so
+endef
 
-NCURSES_HOST_CONF_OPT = --with-shared
+define NCURSES_LINK_PC
+	$(foreach pc,$(NCURSES_LIBS), \
+		ln -sf $(pc)$(NCURSES_LIB_SUFFIX).pc \
+			$(STAGING_DIR)/usr/lib/pkgconfig/$(pc).pc
+	)
+endef
 
-$(eval $(call AUTOTARGETS_HOST,package,ncurses))
+NCURSES_LINK_STAGING_LIBS = \
+	$(if $(BR2_STATIC_LIBS)$(BR2_SHARED_STATIC_LIBS),$(call NCURSES_LINK_LIBS_STATIC);) \
+	$(if $(BR2_SHARED_LIBS)$(BR2_SHARED_STATIC_LIBS),$(call NCURSES_LINK_LIBS_SHARED))
 
-$(NCURSES_HOST_HOOK_POST_INSTALL):
-	$(SED) 's^prefix="^prefix="$(HOST_DIR)^' $(HOST_DIR)/usr/bin/ncurses5-config
-	touch $@
-		
-ncurses: ncurses-host $(TARGET_DIR)/usr/lib/libncurses.so.$(NCURSES_VERSION)
+NCURSES_LINK_STAGING_PC = $(call NCURSES_LINK_PC)
 
-ncurses-unpacked: $(NCURSES_DIR)/.patched
+NCURSES_CONF_OPTS += --enable-ext-colors
+NCURSES_TERMINFO_FILES += \
+	p/putty-256color \
+	x/xterm+256color \
+	x/xterm-256color
 
-ncurses-headers: $(TARGET_DIR)/usr/lib/libncurses.a
+NCURSES_POST_INSTALL_STAGING_HOOKS += NCURSES_LINK_STAGING_LIBS
+NCURSES_POST_INSTALL_STAGING_HOOKS += NCURSES_LINK_STAGING_PC
 
-ncurses-source: $(DL_DIR)/$(NCURSES_SOURCE)
+endif # BR2_PACKAGE_NCURSES_WCHAR
 
-ncurses-clean:
-	rm -f $(STAGING_DIR)/usr/lib/libncurses.so* $(TARGET_DIR)/usr/lib/libncurses.so*
-	rm -rf $(STAGING_DIR)/usr/share/tabset $(TARGET_DIR)/usr/share/tabset
-	rm -rf $(STAGING_DIR)/usr/share/terminfo $(TARGET_DIR)/usr/share/terminfo
-	rm -rf $(TARGET_DIR)/usr/lib/terminfo
-	-$(MAKE) -C $(NCURSES_DIR) clean
-
-ncurses-dirclean:
-	rm -rf $(NCURSES_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_NCURSES),y)
-TARGETS+=ncurses
+ifneq ($(BR2_ENABLE_DEBUG),y)
+NCURSES_CONF_OPTS += --without-debug
 endif
-ifeq ($(BR2_PACKAGE_NCURSES_TARGET_HEADERS),y)
-TARGETS+=ncurses-headers
+
+# ncurses breaks with parallel build, but takes quite a while to
+# build single threaded. Work around it similar to how Gentoo does
+define NCURSES_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE1) -C $(@D) DESTDIR=$(STAGING_DIR) sources
+	rm -rf $(@D)/misc/pc-files
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(STAGING_DIR)
+endef
+
+ifeq ($(BR2_PACKAGE_NCURSES_TARGET_PROGS),y)
+define NCURSES_TARGET_SYMLINK_RESET
+	ln -sf tset $(TARGET_DIR)/usr/bin/reset
+endef
+NCURSES_POST_INSTALL_TARGET_HOOKS += NCURSES_TARGET_SYMLINK_RESET
 endif
+
+define NCURSES_TARGET_CLEANUP_TERMINFO
+	$(RM) -rf $(TARGET_DIR)/usr/share/terminfo $(TARGET_DIR)/usr/share/tabset
+	$(foreach t,$(NCURSES_TERMINFO_FILES), \
+		$(INSTALL) -D -m 0644 $(STAGING_DIR)/usr/share/terminfo/$(t) \
+			$(TARGET_DIR)/usr/share/terminfo/$(t)
+	)
+endef
+NCURSES_POST_INSTALL_TARGET_HOOKS += NCURSES_TARGET_CLEANUP_TERMINFO
+
+#
+# On systems with an older version of tic, the installation of ncurses hangs
+# forever. To resolve the problem, build a static version of tic on host
+# ourselves, and use that during installation.
+#
+define HOST_NCURSES_BUILD_CMDS
+	$(HOST_MAKE_ENV) $(MAKE1) -C $(@D) sources
+	$(HOST_MAKE_ENV) $(MAKE) -C $(@D)/progs tic
+endef
+
+HOST_NCURSES_CONF_OPTS = \
+	--with-shared \
+	--without-gpm \
+	--without-manpages \
+	--without-cxx \
+	--without-cxx-binding \
+	--without-ada \
+	--without-normal
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

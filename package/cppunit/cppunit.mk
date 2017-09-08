@@ -1,15 +1,14 @@
-#############################################################
+################################################################################
 #
 # cppunit
 #
-#############################################################
+################################################################################
 
 CPPUNIT_VERSION = 1.13.2
-CPPUNIT_SOURCE = cppunit-$(CPPUNIT_VERSION).tar.gz
-CPPUNIT_SITE = http://dev-www.libreoffice.org/src/
-
-CPPUNIT_LIBTOOL_PATCH = NO
+CPPUNIT_SITE = http://dev-www.libreoffice.org/src
 CPPUNIT_INSTALL_STAGING = YES
-CPPUNIT_INSTALL_TARGET = NO
+CPPUNIT_LICENSE = LGPL-2.1
+CPPUNIT_LICENSE_FILES = COPYING
+CPPUNIT_CONF_OPTS = --disable-doxygen
 
-$(eval $(call AUTOTARGETS,package,cppunit))
+$(eval $(autotools-package))

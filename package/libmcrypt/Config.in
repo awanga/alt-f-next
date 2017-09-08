@@ -1,6 +1,7 @@
 config BR2_PACKAGE_LIBMCRYPT
 	bool "libmcrypt"
 	help
-	  Replacements for the old Unix crypt, under the GPL and support an ever-wider range of algorithms and modes.
+	  libmcrypt is a library that provides uniform interface to access
+	  several encryption algorithms.
 
-	  http://sourceforge.net/projects/mcrypt
+	  http://mcrypt.sourceforge.net/

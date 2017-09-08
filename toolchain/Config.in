@@ -1,8 +1,37 @@
 menu "Toolchain"
+
+# Invisible option that makes sure the toolchain package always gets
+# built
+config BR2_TOOLCHAIN
+	bool
+	default y
+
+# Should be selected for glibc or eglibc
+config BR2_TOOLCHAIN_USES_GLIBC
+	bool
+	select BR2_USE_WCHAR
+	select BR2_ENABLE_LOCALE
+	select BR2_TOOLCHAIN_HAS_THREADS
+	select BR2_TOOLCHAIN_HAS_THREADS_DEBUG
+	select BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	select BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS
+	select BR2_TOOLCHAIN_SUPPORTS_PIE
+
+config BR2_TOOLCHAIN_USES_UCLIBC
+	bool
+	select BR2_TOOLCHAIN_SUPPORTS_PIE if !BR2_m68k && !BR2_microblaze && !BR2_STATIC_LIBS
+
+config BR2_TOOLCHAIN_USES_MUSL
+	bool
+	select BR2_USE_WCHAR
+	select BR2_ENABLE_LOCALE
+	select BR2_TOOLCHAIN_HAS_THREADS
+	select BR2_TOOLCHAIN_HAS_THREADS_DEBUG
+	select BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	select BR2_TOOLCHAIN_SUPPORTS_PIE if !BR2_STATIC_LIBS
+
 choice
 	prompt "Toolchain type"
-	default BR2_TOOLCHAIN_BUILDROOT if !BR2_avr32
-	default BR2_TOOLCHAIN_EXTERNAL_SOURCE if BR2_avr32
 	help
 	  Select whether to use the toolchain provided by buildroot
 	  or an external toolchain.
@@ -12,32 +41,24 @@ choice
 
 config BR2_TOOLCHAIN_BUILDROOT
 	bool "Buildroot toolchain"
-	depends on !BR2_avr32
+	select BR2_TOOLCHAIN_HAS_SHADOW_PASSWORDS
+	depends on !BR2_bf606
+	depends on !BR2_bf607
+	depends on !BR2_bf608
+	depends on !BR2_bf609
+	depends on !BR2_csky
 
 config BR2_TOOLCHAIN_EXTERNAL
-	bool "External binary toolchain"
+	bool "External toolchain"
+	help
+	  Select if you want to use an existing cross-compiling
+	  toolchain. Buildroot can either download automatically a
+	  toolchain, or use an already installed toolchain.
 
-config BR2_TOOLCHAIN_EXTERNAL_SOURCE
-	bool "External source toolchain"
 endchoice
 
-config BR2_TOOLCHAIN_SOURCE
-	bool
-	default y if BR2_TOOLCHAIN_BUILDROOT || BR2_TOOLCHAIN_EXTERNAL_SOURCE
-	default n if BR2_TOOLCHAIN_EXTERNAL
-
-source "target/device/Config.in.toolchain"
-
-source "toolchain/Config.in.1"
-source "toolchain/external-toolchain/Config.in"
-
-# we want gdb config in the middle of both source and external
-# toolchains, but mconf won't let us source the same file twice,
-# so put it here instead
-source "toolchain/gdb/Config.in"
-comment "Common Toolchain Options"
-
-source "toolchain/Config.in.2"
-source "toolchain/external-toolchain/Config.in.2"
+source "toolchain/toolchain-buildroot/Config.in"
+source "toolchain/toolchain-external/Config.in"
+source "toolchain/toolchain-common.in"
 
 endmenu

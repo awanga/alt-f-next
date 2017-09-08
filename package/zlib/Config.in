@@ -1,13 +1,7 @@
 config BR2_PACKAGE_ZLIB
 	bool "zlib"
 	help
-	  Standard (de)compression library.  Used by things like
+	  Standard (de)compression library. Used by things like
 	  gzip and libpng.
 
-	  http://www.gzip.org/zlib/
-
-config BR2_PACKAGE_ZLIB_TARGET_HEADERS
-	bool "zlib headers in target"
-	depends on BR2_PACKAGE_ZLIB
-	help
-	  Put headers files in the target.
+	  http://www.zlib.net

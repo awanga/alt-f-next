@@ -1,6 +1,0 @@
-config BR2_PACKAGE_M4
-	bool "m4"
-	help
-	  An implementation of the traditional Unix macro processor.
-
-	  http://www.gnu.org/software/m4/m4.html

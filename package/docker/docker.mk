@@ -1,28 +1,25 @@
-#############################################################
+################################################################################
 #
 # docker
 #
-#############################################################
+################################################################################
+
 DOCKER_VERSION = 1.5
-DOCKER_SOURCE = docker-$(DOCKER_VERSION).tar.gz
 DOCKER_SITE = http://icculus.org/openbox/2/docker
-DOCKER_AUTORECONF = NO
-DOCKER_INSTALL_STAGING = NO
-DOCKER_INSTALL_TARGET = YES
+DOCKER_DEPENDENCIES = host-pkgconf libglib2 xlib_libX11
 
-DOCKER_MAKE_OPT = CC=$(TARGET_CC) CXX=$(TARGET_CXX) LD=$(TARGET_LD) \
-					CFLAGS="-I$(STAGING_DIR)/usr/include \
-						-I$(STAGING_DIR)/usr/include/glib-2.0 \
-						-I$(STAGING_DIR)/usr/lib/glib-2.0/include" \
-					PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
-					LDFLAGS="-L$(STAGING_DIR)/usr/lib -L$(STAGING_DIR)/lib"
+DOCKER_LICENSE = GPL-2.0+
+# The 'or later' is specified at the end of the README, so include that one too.
+DOCKER_LICENSE_FILES = COPYING README
 
-DOCKER_INSTALL_TARGET_OPT = PREFIX=$(TARGET_DIR)/usr install
+define DOCKER_BUILD_CMDS
+	$(TARGET_CONFIGURE_OPTS) $(TARGET_MAKE_ENV) $(MAKE) -C $(@D) \
+		XLIBPATH=$(STAGING_DIR)/usr/lib
+endef
 
-DOCKER_DEPENDENCIES = uclibc host-pkgconfig libglib2 xserver_xorg-server
+define DOCKER_INSTALL_TARGET_CMDS
+	$(TARGET_CONFIGURE_OPTS) $(TARGET_MAKE_ENV) $(MAKE) -C $(@D) \
+		XLIBPATH=$(STAGING_DIR)/usr/lib PREFIX=$(TARGET_DIR)/usr install
+endef
 
-$(eval $(call AUTOTARGETS,package,docker))
-
-$(DOCKER_HOOK_POST_INSTALL): $(DOCKER_TARGET_INSTALL_TARGET)
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/usr/bin/docker
-	touch $@
+$(eval $(generic-package))

@@ -1,41 +1,48 @@
-#############################################################
+################################################################################
 #
 # bash
 #
-#############################################################
+################################################################################
 
-BASH_VERSION:=4.2
-BASH_SOURCE:=bash-$(BASH_VERSION).tar.gz
-BASH_SITE:=$(BR2_GNU_MIRROR)/bash
-BASH_CAT:=$(ZCAT)
-BASH_DIR:=$(BUILD_DIR)/bash-$(BASH_VERSION)
-BASH_BINARY:=bash
-BASH_TARGET_BINARY:=bin/bash
-BASH_DEPENDENCIES:=ncurses
+BASH_VERSION = 4.4
+BASH_SITE = $(BR2_GNU_MIRROR)/bash
+# Build after since bash is better than busybox shells
+BASH_DEPENDENCIES = ncurses readline host-bison \
+	$(if $(BR2_PACKAGE_BUSYBOX),busybox)
+BASH_CONF_OPTS = --with-installed-readline --without-bash-malloc
+BASH_LICENSE = GPL-3.0+
+BASH_LICENSE_FILES = COPYING
 
-ifeq ($(BR2_ENABLE_DEBUG),y)
-BASH_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+BASH_CONF_ENV += \
+	ac_cv_rl_prefix="$(STAGING_DIR)" \
+	ac_cv_rl_version="$(READLINE_VERSION)" \
+	bash_cv_getcwd_malloc=yes \
+	bash_cv_job_control_missing=present \
+	bash_cv_sys_named_pipes=present \
+	bash_cv_func_sigsetjmp=present \
+	bash_cv_printf_a_format=yes
+
+# The static build needs some trickery
+ifeq ($(BR2_STATIC_LIBS),y)
+BASH_CONF_OPTS += --enable-static-link
+# bash wants to redefine the getenv() function. To check whether this is
+# possible, AC_TRY_RUN is used which is not possible in
+# cross-compilation.
+# On uClibc, redefining getenv is not possible; on glibc and musl it is.
+# Related:
+# http://lists.gnu.org/archive/html/bug-bash/2012-03/msg00052.html
+ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
+BASH_CONF_ENV += bash_cv_getenv_redef=no
 else
-BASH_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install-strip STRIPPROG="$(STRIPCMD)"
+BASH_CONF_ENV += bash_cv_getenv_redef=yes
+endif
 endif
 
-BASH_CONF_ENV = ac_cv_func_setvbuf_reversed=no \
-		ac_cv_have_decl_sys_siglist=yes \
-		bash_cv_job_control_missing=present \
-		bash_cv_sys_named_pipes=present \
-		bash_cv_unusable_rtsigs=no \
-		bash_cv_func_ctype_nonascii=yes \
-		bash_cv_decl_under_sys_siglist=yes \
-		bash_cv_ulimit_maxfds=yes \
-		bash_cv_getcwd_malloc=yes \
-		bash_cv_func_sigsetjmp=present \
-		bash_cv_printf_a_format=yes \
-		ac_cv_path_install=./support/install.sh
+# Make /bin/sh -> bash (no other shell, better than busybox shells)
+define BASH_INSTALL_TARGET_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) \
+		DESTDIR=$(TARGET_DIR) exec_prefix=/ install
+	rm -f $(TARGET_DIR)/bin/bashbug
+endef
 
-BASH_CONF_OPT = $(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-		--with-curses \
-		--enable-alias \
-		--without-bash-malloc
-
-$(eval $(call AUTOTARGETS,package,bash))
+$(eval $(autotools-package))

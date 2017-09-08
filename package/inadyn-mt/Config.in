@@ -1,6 +1,0 @@
-config BR2_PACKAGE_INADYN_MT
-	bool "inadyn-mt"
-	help
-	  inadyn-mt contains some substantive bug fixes over inadyn, a Dynamic DNS client.
-
-	  https://sourceforge.net/projects/inadyn-mt

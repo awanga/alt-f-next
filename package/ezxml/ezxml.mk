@@ -1,47 +1,35 @@
-#############################################################
+################################################################################
 #
 # ezxml
 #
-#############################################################
+################################################################################
 
-EZXML_VERSION:=0.8.6
-EZXML_SOURCE:=ezxml-$(EZXML_VERSION).tar.gz
-EZXML_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/ezxml/
-EZXML_DIR:=$(BUILD_DIR)/ezxml
+EZXML_VERSION = 0.8.6
+EZXML_SITE = http://downloads.sourceforge.net/project/ezxml/ezXML/ezXML%20$(EZXML_VERSION)
+EZXML_INSTALL_STAGING = YES
+EZXML_LICENSE = MIT
+EZXML_LICENSE_FILES = license.txt
 
-$(DL_DIR)/$(EZXML_SOURCE):
-	$(call DOWNLOAD,$(EZXML_SITE),$(EZXML_SOURCE))
+EZXML_CFLAGS = $(TARGET_CFLAGS)
 
-$(EZXML_DIR)/.unpacked: $(DL_DIR)/$(EZXML_SOURCE)
-	$(ZCAT) $(DL_DIR)/$(EZXML_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(EZXML_DIR) package/ezxml/ ezxml-$(EZXML_VERSION)\*.patch
-	touch $@
-
-$(EZXML_DIR)/.configured: $(EZXML_DIR)/.unpacked
-	touch $@
-
-$(EZXML_DIR)/libezxml.a: $(EZXML_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" AR=$(TARGET_AR) \
-	-f GNUmakefile -C $(EZXML_DIR)
-
-$(STAGING_DIR)/usr/lib/libezxml.a: $(EZXML_DIR)/libezxml.a
-	cp $(EZXML_DIR)/ezxml.h $(STAGING_DIR)/usr/include
-	cp $(EZXML_DIR)/libezxml.a $(STAGING_DIR)/usr/lib
-
-ezxml: uclibc $(STAGING_DIR)/usr/lib/libezxml.a
-
-ezxml-source: $(DL_DIR)/$(EZXML_SOURCE)
-
-ezxml-clean:
-	-$(MAKE) -C $(EZXML_DIR) -f GNUmakefile clean
-
-ezxml-dirclean:
-	rm -rf $(EZXML_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_EZXML),y)
-TARGETS+=ezxml
+# mmap code uses madvise which isn't available on nommu uClibc
+ifeq ($(BR2_USE_MMU),)
+EZXML_CFLAGS += -D EZXML_NOMMAP
 endif
+
+define EZXML_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) -f GNUmakefile \
+		CC="$(TARGET_CC)" CFLAGS="$(EZXML_CFLAGS)" AR=$(TARGET_AR)
+endef
+
+define EZXML_INSTALL_STAGING_CMDS
+	$(INSTALL) -D -m 0644 $(@D)/ezxml.h $(STAGING_DIR)/usr/include/ezxml.h
+	$(INSTALL) -D -m 0644 $(@D)/libezxml.a $(STAGING_DIR)/usr/lib/libezxml.a
+endef
+
+define EZXML_INSTALL_TARGET_CMDS
+	$(INSTALL) -D -m 0644 $(@D)/ezxml.h $(TARGET_DIR)/usr/include/ezxml.h
+	$(INSTALL) -D -m 0644 $(@D)/libezxml.a $(TARGET_DIR)/usr/lib/libezxml.a
+endef
+
+$(eval $(generic-package))

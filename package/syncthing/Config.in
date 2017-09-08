@@ -1,6 +1,0 @@
-config BR2_PACKAGE_SYNCTHING
-	bool "syncthing"
-	help
-	  Open Source Continuous File Synchronization
-
-	  https://github.com/syncthing

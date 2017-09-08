@@ -1,5 +1,5 @@
 config BR2_PACKAGE_XFONT_FONT_DEC_MISC
 	bool "font-dec-misc"
+	select BR2_PACKAGE_XFONT_FONT_UTIL
 	help
-	  font-dec-misc 1.0.0
 	  No description available

@@ -1,6 +1,0 @@
-config BR2_PACKAGE_LIBSIGCPP
-	bool "libsigcpp"
-	help
-	  libsigc++ implements a typesafe callback system for standard C++
-
-	  http://libsigc.sourceforge.net/

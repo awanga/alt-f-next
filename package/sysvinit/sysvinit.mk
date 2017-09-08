@@ -1,50 +1,50 @@
-#############################################################
+################################################################################
 #
 # sysvinit
 #
-#############################################################
-SYSVINIT_VERSION:=2.86
-SYSVINIT_SOURCE:=sysvinit-$(SYSVINIT_VERSION).tar.gz
-SYSVINIT_SITE:=ftp://ftp.cistron.nl/pub/people/miquels/software
-SYSVINIT_DIR:=$(BUILD_DIR)/sysvinit-$(SYSVINIT_VERSION)
-SYSVINIT_CAT:=$(ZCAT)
-SYSVINIT_BINARY:=src/init
-SYSVINIT_TARGET_BINARY:=sbin/init
+################################################################################
 
-$(DL_DIR)/$(SYSVINIT_SOURCE):
-	$(call DOWNLOAD,$(SYSVINIT_SITE),$(SYSVINIT_SOURCE))
+SYSVINIT_VERSION = 2.88
+SYSVINIT_SOURCE = sysvinit_$(SYSVINIT_VERSION)dsf.orig.tar.gz
+SYSVINIT_PATCH = sysvinit_$(SYSVINIT_VERSION)dsf-13.1+squeeze1.diff.gz
+SYSVINIT_SITE = http://snapshot.debian.org/archive/debian/20141023T043132Z/pool/main/s/sysvinit
+SYSVINIT_LICENSE = GPL-2.0+
+SYSVINIT_LICENSE_FILES = COPYING
 
-sysvinit-unpacked: $(SYSVINIT_DIR)/.unpacked
-$(SYSVINIT_DIR)/.unpacked: $(DL_DIR)/$(SYSVINIT_SOURCE)
-	$(SYSVINIT_CAT) $(DL_DIR)/$(SYSVINIT_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(SYSVINIT_DIR) package/sysvinit/ sysvinit-\*.patch
-	touch $@
+SYSVINIT_MAKE_OPTS = SYSROOT=$(STAGING_DIR)
 
-$(SYSVINIT_DIR)/$(SYSVINIT_BINARY): $(SYSVINIT_DIR)/.unpacked
-	CFLAGS="$(TARGET_CFLAGS)" $(MAKE) CC=$(TARGET_CC) -C $(SYSVINIT_DIR)/src
-
-$(TARGET_DIR)/$(SYSVINIT_TARGET_BINARY): $(SYSVINIT_DIR)/$(SYSVINIT_BINARY)
-	for x in halt init shutdown; do \
-		install -D $(SYSVINIT_DIR)/src/$$x $(TARGET_DIR)/sbin/$$x || exit 1; \
-	done
-
-sysvinit: uclibc ncurses $(TARGET_DIR)/$(SYSVINIT_TARGET_BINARY)
-
-sysvinit-source: $(DL_DIR)/$(SYSVINIT_SOURCE)
-
-sysvinit-clean:
-	for x in halt init shutdown; do \
-		rm -f $(TARGET_DIR)/sbin/$$x || exit 1; \
-	done
-	-$(MAKE) -C $(SYSVINIT_DIR) clean
-
-sysvinit-dirclean:
-	rm -rf $(SYSVINIT_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_SYSVINIT),y)
-TARGETS+=sysvinit
+# Override BusyBox implementations if BusyBox is enabled.
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+SYSVINIT_DEPENDENCIES = busybox
 endif
+
+ifeq ($(BR2_PACKAGE_LIBSELINUX),y)
+SYSVINIT_DEPENDENCIES += libselinux
+SYSVINIT_MAKE_OPTS += WITH_SELINUX="yes"
+endif
+
+define SYSVINIT_DEBIAN_PATCHES
+	if [ -d $(@D)/debian/patches ]; then \
+		$(APPLY_PATCHES) $(@D) $(@D)/debian/patches \*.patch; \
+	fi
+endef
+
+SYSVINIT_POST_PATCH_HOOKS = SYSVINIT_DEBIAN_PATCHES
+
+define SYSVINIT_BUILD_CMDS
+	# Force sysvinit to link against libcrypt as it otherwise
+	# use an incorrect test to see if it's available
+	$(TARGET_CONFIGURE_OPTS) $(MAKE) $(SYSVINIT_MAKE_OPTS) -C $(@D)/src
+endef
+
+define SYSVINIT_INSTALL_TARGET_CMDS
+	for x in halt init shutdown killall5; do \
+		$(INSTALL) -D -m 0755 $(@D)/src/$$x $(TARGET_DIR)/sbin/$$x || exit 1; \
+	done
+	$(INSTALL) -D -m 0644 package/sysvinit/inittab $(TARGET_DIR)/etc/inittab
+	ln -sf /sbin/halt $(TARGET_DIR)/sbin/reboot
+	ln -sf /sbin/halt $(TARGET_DIR)/sbin/poweroff
+	ln -sf killall5 $(TARGET_DIR)/sbin/pidof
+endef
+
+$(eval $(generic-package))

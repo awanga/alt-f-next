@@ -1,5 +1,5 @@
 config BR2_PACKAGE_XFONT_FONT_ARABIC_MISC
 	bool "font-arabic-misc"
+	select BR2_PACKAGE_XFONT_FONT_UTIL
 	help
-	  font-arabic-misc 1.0.0
 	  No description available

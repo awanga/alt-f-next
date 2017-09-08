@@ -1,8 +1,0 @@
-config BR2_PACKAGE_COUCHPOTATO
-	bool "couchpotato"
-	select BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_CHEETAH
-	help
-	  CouchPotato searches and manages your movies
-
-	  http://couchpota.to/

@@ -1,12 +1,9 @@
-comment "stunnel has no inherent support for AVR32" 
-	depends on BR2_avr32 && BR2_PACKAGE_STUNNEL
-
 config BR2_PACKAGE_STUNNEL
 	bool "stunnel"
+	depends on BR2_USE_MMU # fork()
+	select BR2_PACKAGE_OPENSSL
 	help
-	  Stunnel is a utility that utilised OpenSSL to wrap plaintext
-	  TCP communications with SSL. Can be used to secure a
-	  programmes insecure network communications.
+	  Stunnel is a program that wraps any TCP connection with an SSL
+	  connection.
 
 	  http://www.stunnel.org/
-

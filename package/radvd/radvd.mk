@@ -1,20 +1,25 @@
-#############################################################
+################################################################################
 #
 # radvd
 #
-#############################################################
-RADVD_VERSION:=1.2
-RADVD_SOURCE:=radvd-$(RADVD_VERSION).tar.gz
-RADVD_SITE:=http://www.litech.org/radvd/dist/
-RADVD_AUTORECONF:=no
-RADVD_INSTALL_STAGING:=no
-RADVD_INSTALL_TARGET:=YES
-RADVD_DEPENDENCIES:=uclibc flex
-RADVD_MAKE:=$(MAKE1)
-RADVD_CONF_OPT:= --program-prefix=''
+################################################################################
 
-$(eval $(call AUTOTARGETS,package,radvd))
+RADVD_VERSION = 2.12
+RADVD_SOURCE = radvd-$(RADVD_VERSION).tar.xz
+RADVD_SITE = http://www.litech.org/radvd/dist
+RADVD_DEPENDENCIES = host-bison flex host-flex host-pkgconf
+# We need to ignore <linux/if_arp.h>, because radvd already includes
+# <net/if_arp.h>, which conflicts with <linux/if_arp.h>.
+RADVD_CONF_ENV = \
+	ac_cv_prog_cc_c99='-std=gnu99' \
+	ac_cv_header_linux_if_arp_h=no
+# For 0002-Don-t-force-fstack-protector-the-toolchain-might-lac.patch
+RADVD_AUTORECONF = YES
+RADVD_LICENSE = BSD-4-Clause-like
+RADVD_LICENSE_FILES = COPYRIGHT
 
-$(RADVD_HOOK_POST_INSTALL): $(RADVD_TARGET_INSTALL_TARGET)
-	$(INSTALL) -m 0755 package/radvd/S50radvd $(TARGET_DIR)/etc/init.d
-	touch $@
+define RADVD_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 package/radvd/S50radvd $(TARGET_DIR)/etc/init.d/S50radvd
+endef
+
+$(eval $(autotools-package))

@@ -1,6 +1,0 @@
-config BR2_PACKAGE_UNIONFS_UTILS
-	bool "unionfs_utils"
-	help
-	  Unionfs utilities
-
-	  http://www.fsl.cs.sunysb.edu/project-unionfs.html

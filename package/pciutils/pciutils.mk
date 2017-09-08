@@ -1,80 +1,79 @@
-#############################################################
+################################################################################
 #
 # pciutils
 #
-#############################################################
-PCIUTILS_VERSION:=3.0.1
-PCIUTILS_SOURCE:=pciutils-$(PCIUTILS_VERSION).tar.gz
-PCIUTILS_CAT:=$(ZCAT)
-PCIUTILS_SITE:=ftp://atrey.karlin.mff.cuni.cz/pub/linux/pci
-PCIUTILS_DIR:=$(BUILD_DIR)/pciutils-$(PCIUTILS_VERSION)
+################################################################################
 
-# Yet more targets...
-PCIIDS_SITE:=http://pciids.sourceforge.net/
-PCIIDS_SOURCE:=pci.ids.bz2
-PCIIDS_CAT:=$(BZCAT)
+PCIUTILS_VERSION = 3.5.2
+PCIUTILS_SITE = $(BR2_KERNEL_MIRROR)/software/utils/pciutils
+PCIUTILS_SOURCE = pciutils-$(PCIUTILS_VERSION).tar.xz
+PCIUTILS_INSTALL_STAGING = YES
+PCIUTILS_LICENSE = GPL-2.0+
+PCIUTILS_LICENSE_FILES = COPYING
+PCIUTILS_MAKE_OPTS = \
+	CC="$(TARGET_CC)" \
+	HOST="$(KERNEL_ARCH)-linux" \
+	OPT="$(TARGET_CFLAGS)" \
+	LDFLAGS="$(TARGET_LDFLAGS)" \
+	RANLIB=$(TARGET_RANLIB) \
+	AR=$(TARGET_AR) \
+	DNS=no
 
-ifeq ($(BR2_PACKAGE_ZLIB),y)
-PCIUTILS_HAVE_ZLIB=yes
-PCIIDS_FILE=pci.ids.gz
-PCIIDS_COMPRESSOR=gzip -9 -c
+ifeq ($(BR2_PACKAGE_HAS_UDEV),y)
+PCIUTILS_DEPENDENCIES += udev
+PCIUTILS_MAKE_OPTS += HWDB=yes
 else
-PCIUTILS_HAVE_ZLIB=no
-PCIIDS_FILE=pci.ids
-PCIIDS_COMPRESSOR=cat
+PCIUTILS_MAKE_OPTS += HWDB=no
 endif
 
-$(DL_DIR)/$(PCIUTILS_SOURCE):
-	 $(call DOWNLOAD,$(PCIUTILS_SITE),$(PCIUTILS_SOURCE))
+ifeq ($(BR2_PACKAGE_ZLIB),y)
+PCIUTILS_MAKE_OPTS += ZLIB=yes
+PCIUTILS_DEPENDENCIES += zlib
+else
+PCIUTILS_MAKE_OPTS += ZLIB=no
+endif
 
-$(DL_DIR)/$(PCIIDS_SOURCE):
-	$(call DOWNLOAD,$(PCIIDS_SITE),$(PCIIDS_SOURCE))
+ifeq ($(BR2_PACKAGE_KMOD),y)
+PCIUTILS_DEPENDENCIES += kmod
+PCIUTILS_MAKE_OPTS += LIBKMOD=yes
+else
+PCIUTILS_MAKE_OPTS += LIBKMOD=no
+endif
 
-$(PCIUTILS_DIR)/.unpacked: $(DL_DIR)/$(PCIUTILS_SOURCE) $(DL_DIR)/$(PCIIDS_SOURCE)
-	$(PCIUTILS_CAT) $(DL_DIR)/$(PCIUTILS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	$(PCIIDS_CAT) $(DL_DIR)/$(PCIIDS_SOURCE) | $(PCIIDS_COMPRESSOR) > $(PCIUTILS_DIR)/$(PCIIDS_FILE)
-	toolchain/patch-kernel.sh $(PCIUTILS_DIR) package/pciutils pciutils-$(PCIUTILS_VERSION)\*.patch
-	#$(CONFIG_UPDATE) $(@D)
+ifeq ($(BR2_STATIC_LIBS),y)
+PCIUTILS_MAKE_OPTS += SHARED=no
+else
+PCIUTILS_MAKE_OPTS += SHARED=yes
+endif
+
+# Build after busybox since it's got a lightweight lspci
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+PCIUTILS_DEPENDENCIES += busybox
+endif
+
+define PCIUTILS_CONFIGURE_CMDS
+	$(SED) 's/wget --no-timestamping/wget/' $(PCIUTILS_DIR)/update-pciids.sh
 	$(SED) 's/uname -s/echo Linux/' \
 		-e 's/uname -r/echo $(LINUX_HEADERS_VERSION)/' \
 		$(PCIUTILS_DIR)/lib/configure
-	touch $@
+	$(SED) 's/^STRIP/#STRIP/' $(PCIUTILS_DIR)/Makefile
+endef
 
-$(PCIUTILS_DIR)/.compiled: $(PCIUTILS_DIR)/.unpacked
-	$(MAKE1) CC="$(TARGET_CC)" OPT="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" RANLIB=$(TARGET_RANLIB) AR=$(TARGET_AR) -C $(PCIUTILS_DIR) \
-		SHAREDIR="/usr/share/misc" \
-		ZLIB=$(PCIUTILS_HAVE_ZLIB) \
-		HOST=$(KERNEL_ARCH)-linux \
+define PCIUTILS_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) $(PCIUTILS_MAKE_OPTS) \
 		PREFIX=/usr
-	touch $@
+endef
 
-$(TARGET_DIR)/sbin/lspci: $(PCIUTILS_DIR)/.compiled
-	$(INSTALL) $(PCIUTILS_DIR)/lspci $(TARGET_DIR)/sbin/lspci
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
+define PCIUTILS_INSTALL_TARGET_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE1) -C $(@D) $(PCIUTILS_MAKE_OPTS) \
+		PREFIX=$(TARGET_DIR)/usr SBINDIR=$(TARGET_DIR)/usr/bin \
+		install install-lib install-pcilib
+endef
 
-$(TARGET_DIR)/sbin/setpci: $(PCIUTILS_DIR)/.compiled
-	$(INSTALL) $(PCIUTILS_DIR)/setpci $(TARGET_DIR)/sbin/setpci
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
+define PCIUTILS_INSTALL_STAGING_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE1) -C $(@D) $(PCIUTILS_MAKE_OPTS) \
+		PREFIX=$(STAGING_DIR)/usr SBINDIR=$(STAGING_DIR)/usr/bin \
+		install install-lib install-pcilib
+endef
 
-$(TARGET_DIR)/usr/share/misc/$(PCIIDS_FILE): $(PCIUTILS_DIR)/.unpacked
-	$(INSTALL) -D $(PCIUTILS_DIR)/$(PCIIDS_FILE) $@
-
-pciutils: uclibc $(if $(BR2_PACKAGE_ZLIB),zlib) $(TARGET_DIR)/sbin/setpci $(TARGET_DIR)/sbin/lspci $(TARGET_DIR)/usr/share/misc/$(PCIIDS_FILE)
-
-pciutils-source: $(DL_DIR)/$(PCIUTILS_SOURCE) $(DL_DIR)/$(PCIIDS_SOURCE)
-
-pciutils-clean:
-	-$(MAKE) -C $(PCIUTILS_DIR) clean
-	rm -f $(TARGET_DIR)/sbin/lspci $(TARGET_DIR)/sbin/setpci $(TARGET_DIR)/usr/share/misc/pci.ids*
-
-pciutils-dirclean:
-	rm -rf $(PCIUTILS_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_PCIUTILS),y)
-TARGETS+=pciutils
-endif
+$(eval $(generic-package))

@@ -1,48 +1,56 @@
-#############################################################
+################################################################################
 #
 # procps-ng
 #
-#############################################################
+################################################################################
 
-# package has a broken --prefix/DESTDIR handling
-#
-# install in /usr/local, to not conflict with busybox binaries
-# pkg install script should edit /etc/profile to adjust PATH
+PROCPS_NG_VERSION = 3.3.12
+PROCPS_NG_SOURCE = procps-ng-$(PROCPS_NG_VERSION).tar.xz
+PROCPS_NG_SITE = http://downloads.sourceforge.net/project/procps-ng/Production
+PROCPS_NG_LICENSE = GPL-2.0+, LGPL-2.0+ (libproc and libps)
+PROCPS_NG_LICENSE_FILES = COPYING COPYING.LIB
+PROCPS_NG_INSTALL_STAGING = YES
+PROCPS_NG_DEPENDENCIES = ncurses host-pkgconf
+# For 0002-use-pkgconfig-for-ncursesw-cflags.patch
+PROCPS_NG_AUTORECONF = YES
+PROCPS_NG_GETTEXTIZE = YES
 
-PROCPS_NG_VERSION:=3.3.10
-PROCPS_NG_SOURCE:=procps-ng-$(PROCPS_NG_VERSION).tar.xz
-PROCPS_NG_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/procps-ng/Production
+# If both procps-ng and busybox are selected, make certain procps-ng
+# wins the fight over who gets to have their utils actually installed.
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+PROCPS_NG_DEPENDENCIES += busybox
+endif
 
-PROCPS_NG_AUTORECONF = NO
-PROCPS_NG_LIBTOOL_PATCH = NO
+ifeq ($(BR2_NEEDS_GETTEXT_IF_LOCALE),y)
+PROCPS_NG_DEPENDENCIES += gettext
+PROCPS_NG_CONF_OPTS += LIBS=-lintl
+endif
 
-PROCPS_NG_CONF_OPT = \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/ \
-		--exec-prefix=/ \
-		--libdir=/lib \
-		--libexecdir=/lib \
-		--sysconfdir=/etc \
-		$(DISABLE_DOCUMENTATION) \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-		$(DISABLE_IPV6) \
-		$(QUIET)
+ifeq ($(BR2_PACKAGE_SYSTEMD),y)
+PROCPS_NG_DEPENDENCIES += systemd
+PROCPS_NG_CONF_OPTS += --with-systemd
+else
+PROCPS_NG_CONF_OPTS += --without-systemd
+endif
 
-$(eval $(call AUTOTARGETS,package,procps-ng))
+# Make sure binaries get installed in /bin, so that they overwrite
+# their busybox counterparts.
+# Make sure libprocps.pc is installed in STAGING_DIR/usr/lib/pkgconfig/
+# otherwise it's installed in STAGING_DIR/lib/pkgconfig/ breaking
+# pkg-config --libs libprocps.
+PROCPS_NG_CONF_OPTS += --exec-prefix=/ \
+	--libdir=/usr/lib
 
-PROCPS_NG_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR)/usr/local install-strip
+# Allows unicode characters to show in 'watch'
+ifeq ($(BR2_PACKAGE_NCURSES_WCHAR),y)
+PROCPS_NG_CONF_OPTS += \
+	--enable-watch8bit
+endif
 
-$(PROCPS_NG_HOOK_POST_INSTALL):
-	( cd $(TARGET_DIR) ; \
-		mv ./usr/local/lib/lib*.so* ./usr/lib/; \
-		rm -rf ./usr/local/share \
-			./usr/local/include \
-			./usr/local/lib; \
-		for i in top uptime free kill ps pidof watch; do \
-			ln -sf /usr/local/bin/$$i ./usr/bin/p$$i; \
-		done \
-	)
-	touch $@
+# numa support requires libdl, so explicitly disable it when
+# BR2_STATIC_LIBS=y
+ifeq ($(BR2_STATIC_LIBS),y)
+PROCPS_NG_CONF_OPTS += --disable-numa
+endif
+
+$(eval $(autotools-package))

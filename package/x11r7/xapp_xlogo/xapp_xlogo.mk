@@ -1,13 +1,16 @@
 ################################################################################
 #
-# xapp_xlogo -- X Window System logo
+# xapp_xlogo
 #
 ################################################################################
 
-XAPP_XLOGO_VERSION = 1.0.1
+XAPP_XLOGO_VERSION = 1.0.4
 XAPP_XLOGO_SOURCE = xlogo-$(XAPP_XLOGO_VERSION).tar.bz2
 XAPP_XLOGO_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_XLOGO_AUTORECONF = NO
-XAPP_XLOGO_DEPENDENCIES = xlib_libXaw xlib_libXprintUtil xlib_libXrender
+XAPP_XLOGO_LICENSE = MIT
+XAPP_XLOGO_LICENSE_FILES = COPYING
+XAPP_XLOGO_DEPENDENCIES = \
+	xlib_libXaw xlib_libXrender \
+	xlib_libXft host-pkgconf
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_xlogo))
+$(eval $(autotools-package))

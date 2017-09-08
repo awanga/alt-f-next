@@ -1,38 +1,49 @@
-#############################################################
+################################################################################
 #
 # dosfstools
 #
-#############################################################
+################################################################################
 
-# uses htole16 htole32 le16toh le32toh, that uclibc does not has
+DOSFSTOOLS_VERSION = 4.0
+DOSFSTOOLS_SOURCE = dosfstools-$(DOSFSTOOLS_VERSION).tar.xz
+DOSFSTOOLS_SITE = https://github.com/dosfstools/dosfstools/releases/download/v$(DOSFSTOOLS_VERSION)
+DOSFSTOOLS_LICENSE = GPL-3.0+
+DOSFSTOOLS_LICENSE_FILES = COPYING
+DOSFSTOOLS_CONF_OPTS = --enable-compat-symlinks --exec-prefix=/
+HOST_DOSFSTOOLS_CONF_OPTS = --enable-compat-symlinks
 
-DOSFSTOOLS_VERSION:=3.0.28
-DOSFSTOOLS_SOURCE:=dosfstools-$(DOSFSTOOLS_VERSION).tar.xz
-DOSFSTOOLS_SITE:=https://github.com/dosfstools/dosfstools/releases/download/v$(DOSFSTOOLS_VERSION)
+ifeq ($(BR2_PACKAGE_HAS_UDEV),y)
+DOSFSTOOLS_CONF_OPTS += --with-udev
+DOSFSTOOLS_DEPENDENCIES += udev
+else
+DOSFSTOOLS_CONF_OPTS += --without-udev
+endif
 
-DOSFSTOOLS_DEPENDENCIES:=uclibc libiconv
+ifneq ($(BR2_ENABLE_LOCALE),y)
+DOSFSTOOLS_CONF_OPTS += LIBS="-liconv"
+DOSFSTOOLS_DEPENDENCIES += libiconv
+endif
 
-# FIXME: in 3.0.24 and latter those are the new names: mkfs.fat fsck.fat fatlabel
-MKDOSFS_BINARY:=mkfs.fat
-MKDOSFS_TARGET_BINARY:=usr/sbin/mkdosfs
-DOSFSCK_BINARY:=fsck.fat
-DOSFSCK_TARGET_BINARY:=usr/sbin/dosfsck
-DOSFSLABEL_BINARY:=fatlabel
-DOSFSLABEL_TARGET_BINARY:=usr/sbin/dosfslabel
-DOSFSLIB_BINARY:=libfat.so
-DOSFSLIB_TARGET_BINARY:=usr/lib/libfat.so
+ifeq ($(BR2_PACKAGE_DOSFSTOOLS_FATLABEL),)
+define DOSFSTOOLS_REMOVE_FATLABEL
+	rm -f $(addprefix $(TARGET_DIR)/sbin/,dosfslabel fatlabel)
+endef
+DOSFSTOOLS_POST_INSTALL_TARGET_HOOKS += DOSFSTOOLS_REMOVE_FATLABEL
+endif
 
-DOSFSTOOLS_MAKE_OPT:=CC="$(TARGET_CC)" CFLAGS="$(TARGET_CFLAGS)" LD="$(TARGET_LD)" LDLIBS="-liconv"
+ifeq ($(BR2_PACKAGE_DOSFSTOOLS_FSCK_FAT),)
+define DOSFSTOOLS_REMOVE_FSCK_FAT
+	rm -f $(addprefix $(TARGET_DIR)/sbin/,fsck.fat dosfsck fsck.msdos fsck.vfat)
+endef
+DOSFSTOOLS_POST_INSTALL_TARGET_HOOKS += DOSFSTOOLS_REMOVE_FSCK_FAT
+endif
 
-$(eval $(call AUTOTARGETS,package,dosfstools))
+ifeq ($(BR2_PACKAGE_DOSFSTOOLS_MKFS_FAT),)
+define DOSFSTOOLS_REMOVE_MKFS_FAT
+	rm -f $(addprefix $(TARGET_DIR)/sbin/,mkfs.fat mkdosfs mkfs.msdos mkfs.vfat)
+endef
+DOSFSTOOLS_POST_INSTALL_TARGET_HOOKS += DOSFSTOOLS_REMOVE_MKFS_FAT
+endif
 
-$(DOSFSTOOLS_TARGET_CONFIGURE):
-	touch $@
-
-$(DOSFSTOOLS_TARGET_INSTALL_TARGET):
-	cp -a $(DOSFSTOOLS_DIR)/$(DOSFSLIB_BINARY) $(TARGET_DIR)/$(DOSFSLIB_TARGET_BINARY)
-	cp -a $(DOSFSTOOLS_DIR)/$(DOSFSCK_BINARY) $(TARGET_DIR)/$(DOSFSCK_TARGET_BINARY)
-	cp -a $(DOSFSTOOLS_DIR)/$(DOSFSLABEL_BINARY) $(TARGET_DIR)/$(DOSFSLABEL_TARGET_BINARY)
-	# use busybox mkfs.vfat 
-	# cp -a $(DOSFSTOOLS_DIR)/$(MKDOSFS_BINARY) $(TARGET_DIR)/$(MKDOSFS_TARGET_BINARY)
-	touch -c $@
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

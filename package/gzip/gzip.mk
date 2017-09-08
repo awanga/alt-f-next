@@ -1,67 +1,25 @@
-#############################################################
+################################################################################
 #
 # gzip
 #
-#############################################################
-GZIP_VERSION:=1.3.12
-GZIP_SOURCE:=gzip-$(GZIP_VERSION).tar.gz
-GZIP_SITE:=$(BR2_GNU_MIRROR)/gzip
-GZIP_DIR:=$(BUILD_DIR)/gzip-$(GZIP_VERSION)
-GZIP_CAT:=$(ZCAT)
-GZIP_BINARY:=$(GZIP_DIR)/gzip
-GZIP_TARGET_BINARY:=$(TARGET_DIR)/bin/zmore
+################################################################################
 
-$(DL_DIR)/$(GZIP_SOURCE):
-	 $(call DOWNLOAD,$(GZIP_SITE),$(GZIP_SOURCE))
+GZIP_VERSION = 1.8
+GZIP_SOURCE = gzip-$(GZIP_VERSION).tar.xz
+GZIP_SITE = $(BR2_GNU_MIRROR)/gzip
+# Some other tools expect it to be in /bin
+GZIP_CONF_OPTS = --exec-prefix=/
+# Prefer full gzip over potentially lightweight/slower from busybox
+GZIP_DEPENDENCIES = $(if $(BR2_PACKAGE_BUSYBOX),busybox)
+GZIP_LICENSE = GPL-3.0+
+GZIP_LICENSE_FILES = COPYING
+GZIP_CONF_ENV += gl_cv_func_fflush_stdin=yes
+# configure substitutes $(SHELL) for the shell shebang in scripts like
+# gzexe. Unfortunately, the same $(SHELL) variable will also be used by
+# make to run its commands. Fortunately, /bin/sh is always a POSIX shell
+# on both the target and host systems that we support. Even with this,
+# the configure check is slightly broken and prints a bogus warning:
+#  "using /bin/sh, even though it may have file descriptor bugs"
+GZIP_CONF_ENV += ac_cv_path_shell=/bin/sh
 
-gzip-source: $(DL_DIR)/$(GZIP_SOURCE)
-
-$(GZIP_DIR)/.unpacked: $(DL_DIR)/$(GZIP_SOURCE)
-	$(GZIP_CAT) $(DL_DIR)/$(GZIP_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(GZIP_DIR) package/gzip gzip\*.patch
-	touch $(GZIP_DIR)/.unpacked
-
-$(GZIP_DIR)/.configured: $(GZIP_DIR)/.unpacked
-	(cd $(GZIP_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/ \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-	)
-	touch $(GZIP_DIR)/.configured
-
-$(GZIP_BINARY): $(GZIP_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(GZIP_DIR)
-
-$(GZIP_TARGET_BINARY): $(GZIP_BINARY)
-	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(GZIP_DIR) install-strip
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/info
-endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/man
-endif
-
-gzip: uclibc $(GZIP_TARGET_BINARY)
-
-gzip-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(GZIP_DIR) uninstall
-	-$(MAKE) -C $(GZIP_DIR) clean
-
-gzip-dirclean:
-	rm -rf $(GZIP_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_GZIP),y)
-TARGETS+=gzip
-endif
+$(eval $(autotools-package))

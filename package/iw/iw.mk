@@ -1,27 +1,27 @@
-#############################################################
+################################################################################
 #
 # iw
 #
-#############################################################
+################################################################################
 
-IW_VERSION = 0.9.15
-IW_SOURCE = iw-$(IW_VERSION).tar.bz2
-IW_SITE = http://wireless.kernel.org/download/iw
-IW_DEPENDENCIES = libnl
-IW_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-IW_CONFIG = $(IW_DIR)/.config
-IW_MAKE_ENV = PKG_CONFIG_PATH="$(STAGING_DIR)/usr/lib/pkgconfig" \
+IW_VERSION = 4.9
+IW_SOURCE = iw-$(IW_VERSION).tar.xz
+IW_SITE = $(BR2_KERNEL_MIRROR)/software/network/iw
+IW_LICENSE = ISC
+IW_LICENSE_FILES = COPYING
+IW_DEPENDENCIES = host-pkgconf libnl
+IW_MAKE_OPTS = CC="$(TARGET_CC)" LD="$(TARGET_LD)" LDFLAGS="$(TARGET_LDFLAGS)"
+IW_MAKE_ENV = \
+	$(TARGET_MAKE_ENV) \
+	PKG_CONFIG="$(HOST_DIR)/usr/bin/pkg-config" \
 	GIT_DIR=$(IW_DIR)
 
-$(eval $(call AUTOTARGETS,package,iw))
+define IW_BUILD_CMDS
+	$(IW_MAKE_ENV) $(MAKE) $(IW_MAKE_OPTS) -C $(@D)
+endef
 
-$(IW_TARGET_CONFIGURE):
-	echo "CC = $(TARGET_CC)" >$(IW_CONFIG)
-	echo "CFLAGS = $(TARGET_CFLAGS)" >>$(IW_CONFIG)
-	echo "LDFLAGS = $(TARGET_LDFLAGS)" >>$(IW_CONFIG)
-	touch $@
+define IW_INSTALL_TARGET_CMDS
+	$(IW_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) install
+endef
 
-$(IW_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
-	rm -f $(TARGET_DIR)/usr/bin/iw
-	rm -f $(IW_TARGET_INSTALL_TARGET) $(IW_HOOK_POST_INSTALL)
+$(eval $(generic-package))

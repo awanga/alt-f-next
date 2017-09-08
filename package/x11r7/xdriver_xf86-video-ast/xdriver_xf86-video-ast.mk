@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xdriver_xf86-video-ast -- No description available
+# xdriver_xf86-video-ast
 #
 ################################################################################
 
-XDRIVER_XF86_VIDEO_AST_VERSION = 0.85.0
+XDRIVER_XF86_VIDEO_AST_VERSION = 1.1.5
 XDRIVER_XF86_VIDEO_AST_SOURCE = xf86-video-ast-$(XDRIVER_XF86_VIDEO_AST_VERSION).tar.bz2
 XDRIVER_XF86_VIDEO_AST_SITE = http://xorg.freedesktop.org/releases/individual/driver
-XDRIVER_XF86_VIDEO_AST_AUTORECONF = NO
-XDRIVER_XF86_VIDEO_AST_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+XDRIVER_XF86_VIDEO_AST_LICENSE = MIT
+XDRIVER_XF86_VIDEO_AST_LICENSE_FILES = COPYING
+XDRIVER_XF86_VIDEO_AST_DEPENDENCIES = xproto_fontsproto xproto_xproto xserver_xorg-server
 
-$(eval $(call AUTOTARGETS,package/x11r7,xdriver_xf86-video-ast))
+$(eval $(autotools-package))

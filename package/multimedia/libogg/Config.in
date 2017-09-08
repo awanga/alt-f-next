@@ -1,7 +1,0 @@
-config BR2_PACKAGE_LIBOGG
-	bool "libogg"
-	help
-	  Ogg is the name of Xiph.org's container format for audio,
-	  video, and metadata
-
-	  http://xiph.org/ogg/

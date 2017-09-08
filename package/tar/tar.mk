@@ -1,84 +1,47 @@
-#############################################################
+################################################################################
 #
 # tar
 #
-#############################################################
-GNUTAR_VERSION:=1.21
-GNUTAR_SOURCE:=tar-$(GNUTAR_VERSION).tar.bz2
-GNUTAR_SITE:=$(BR2_GNU_MIRROR)/tar/
-GNUTAR_DIR:=$(BUILD_DIR)/tar-$(GNUTAR_VERSION)
-GNUTAR_CAT:=$(BZCAT)
-GNUTAR_BINARY:=src/tar
-GNUTAR_TARGET_BINARY:=bin/tar
+################################################################################
 
-$(DL_DIR)/$(GNUTAR_SOURCE):
-	 $(call DOWNLOAD,$(GNUTAR_SITE),$(GNUTAR_SOURCE))
+TAR_VERSION = 1.29
+TAR_SOURCE = tar-$(TAR_VERSION).tar.xz
+TAR_SITE = $(BR2_GNU_MIRROR)/tar
+# busybox installs in /bin, so we need tar to install as well in /bin
+# so that it overrides the Busybox symlinks.
+TAR_CONF_OPTS = --exec-prefix=/
+TAR_LICENSE = GPL-3.0+
+TAR_LICENSE_FILES = COPYING
 
-tar-source: $(DL_DIR)/$(GNUTAR_SOURCE)
-
-$(GNUTAR_DIR)/.unpacked: $(DL_DIR)/$(GNUTAR_SOURCE)
-	$(GNUTAR_CAT) $(DL_DIR)/$(GNUTAR_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(GNUTAR_DIR) package/tar/ tar\*.patch
-	$(CONFIG_UPDATE) $(GNUTAR_DIR)
-	$(CONFIG_UPDATE) $(GNUTAR_DIR)/build-aux
-	touch $@
-
-$(GNUTAR_DIR)/.configured: $(GNUTAR_DIR)/.unpacked
-	(cd $(GNUTAR_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		ac_cv_func_chown_works=yes \
-		gl_cv_func_chown_follows_symlink=yes \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-	)
-	touch $@
-
-$(GNUTAR_DIR)/$(GNUTAR_BINARY): $(GNUTAR_DIR)/.configured
-	$(MAKE) -C $(GNUTAR_DIR)
-
-# This stuff is needed to work around GNU make deficiencies
-tar-target_binary: $(GNUTAR_DIR)/$(GNUTAR_BINARY)
-	@if [ -L $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY) ]; then \
-		rm -f $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY); \
-	fi
-	@if [ ! -f $(GNUTAR_DIR)/$(GNUTAR_BINARY) -o $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY) \
-	-ot $(GNUTAR_DIR)/$(GNUTAR_BINARY) ]; then \
-		set -x; \
-		rm -f $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY); \
-		cp -a $(GNUTAR_DIR)/$(GNUTAR_BINARY) \
-			$(TARGET_DIR)/$(GNUTAR_TARGET_BINARY); \
-	fi
-
-tar: uclibc tar-target_binary
-
-tar-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GNUTAR_DIR) uninstall
-	-$(MAKE) -C $(GNUTAR_DIR) clean
-
-tar-dirclean:
-	rm -rf $(GNUTAR_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_TAR),y)
-TARGETS+=tar
+# Prefer full-blown tar over buybox's version
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+TAR_DEPENDENCIES += busybox
 endif
+
+ifeq ($(BR2_PACKAGE_ACL),y)
+TAR_DEPENDENCIES += acl
+TAR_CONF_OPTS += --with-posix-acls
+else
+TAR_CONF_OPTS += --without-posix-acls
+endif
+
+ifeq ($(BR2_PACKAGE_ATTR),y)
+TAR_DEPENDENCIES += attr
+TAR_CONF_OPTS += --with-xattrs
+else
+TAR_CONF_OPTS += --without-xattrs
+endif
+
+$(eval $(autotools-package))
+
+# host-tar: use cpio.gz instead of tar.gz to prevent chicken-egg problem
+# of needing tar to build tar.
+HOST_TAR_SOURCE = tar-$(TAR_VERSION).cpio.gz
+define HOST_TAR_EXTRACT_CMDS
+	mkdir -p $(@D)
+	cd $(@D) && \
+		$(call suitable-extractor,$(HOST_TAR_SOURCE)) $(DL_DIR)/$(HOST_TAR_SOURCE) | cpio -i --preserve-modification-time
+	mv $(@D)/tar-$(TAR_VERSION)/* $(@D)
+	rmdir $(@D)/tar-$(TAR_VERSION)
+endef
+$(eval $(host-autotools-package))

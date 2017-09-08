@@ -1,25 +1,14 @@
 config BR2_PACKAGE_XZ
-	bool "xz"
+	bool "xz-utils"
 	help
-	  XZ Utils provide a general-purpose data-compression library plus command-line tools.
+	  XZ is the successor to the Lempel-Ziv/Markov-chain Algorithm
+	  compression format, which provides memory-hungry but powerful
+	  compression (often better than bzip2) and fast, easy decompression.
+
+	  This package provides the command line tools for working with XZ
+	  compression, including xz, unxz, xzcat, xzgrep, and so on. They can
+	  also handle the older LZMA format, and if invoked via appropriate
+	  symlinks will emulate the behavior of the commands in the lzma
+	  package.
 
 	  http://tukaani.org/xz/
-
-config BR2_PACKAGE_XZ_HOST
-	bool "xz-host"
-	depends on BR2_PACKAGE_XZ
-	help
-	  Install xz/lzma utils on the host/build system
-
-config BR2_PACKAGE_XZ_LIBS
-	bool "xz-libs"
-	depends on BR2_PACKAGE_XZ
-	help
-	  install xz/lzma libraries on the target
-
-config BR2_PACKAGE_XZ_PROGS
-	bool "xz-progs"
-	depends on BR2_PACKAGE_XZ_LIBS
-	help
-	  install xz/lzma utils on the target
-

@@ -5,7 +5,5 @@ config BR2_PACKAGE_XLIB_LIBXAW
 	select BR2_PACKAGE_XLIB_LIBXMU
 	select BR2_PACKAGE_XLIB_LIBXPM
 	select BR2_PACKAGE_XPROTO_XPROTO
-	select BR2_PACKAGE_XLIB_LIBXP
 	help
-	  libXaw 1.0.2
 	  X.Org Xaw library

@@ -1,31 +1,39 @@
-#############################################################
+################################################################################
 #
 # mc
 #
-#############################################################
+################################################################################
 
-MC_VERSION = 4.8.1.6
+MC_VERSION = 4.8.19
+MC_SOURCE = mc-$(MC_VERSION).tar.xz
+MC_SITE = http://ftp.midnight-commander.org
+MC_LICENSE = GPL-3.0+
+MC_LICENSE_FILES = COPYING
+MC_DEPENDENCIES = libglib2 host-pkgconf
 
-MC_SOURCE = mc-$(MC_VERSION).tar.bz2
-MC_SITE = http://www.midnight-commander.org/downloads
-MC_AUTORECONF = NO
-MC_INSTALL_STAGING = NO
-MC_INSTALL_TARGET = YES
-MC_LIBTOOL_PATCH = NO
+ifeq ($(BR2_PACKAGE_LIBSSH2),y)
+MC_CONF_OPTS += --enable-vfs-sftp
+MC_DEPENDENCIES += libssh2
+else
+MC_CONF_OPTS += --disable-vfs-sftp
+endif
 
-MC_DEPENDENCIES = libglib2 slang
+# mc prefers slang, so use that if enabled, otherwise
+# fallback to using ncurses.
+# Either or both will be enabled, but we prefer slang.
+ifeq ($(BR2_PACKAGE_SLANG),y)
+MC_DEPENDENCIES += slang
+MC_CONF_OPTS += --with-screen=slang
+else
+MC_DEPENDENCIES += ncurses
+MC_CONF_OPTS += --with-screen=ncurses
+endif
 
-MC_CONF_ENV = fu_cv_sys_stat_statfs2_bsize=yes
-MC_CONF_OPT = --disable-doxygen-doc --without-x --with-screen=slang
+ifeq ($(BR2_PACKAGE_XLIB_LIBX11),y)
+MC_CONF_OPTS += --with-x
+MC_DEPENDENCIES += xlib_libX11
+else
+MC_CONF_OPTS += --without-x
+endif
 
-$(eval $(call AUTOTARGETS,package,mc))
-
-# mc requires ncurses.h under ncurses include directory, so fool it! 
-# $(MC_HOOK_POST_EXTRACT):
-# 	( \
-# 	cd $(STAGING_DIR)/usr/include; \
-# 	mkdir ncurses; cd ncurses; \
-# 	ln -sf ../ncurses.h ncurses.h; \
-# 	ln -sf ../term.h term.h; \
-# 	)
-# 	touch $@
+$(eval $(autotools-package))

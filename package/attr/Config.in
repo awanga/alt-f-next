@@ -1,6 +1,7 @@
 config BR2_PACKAGE_ATTR
 	bool "attr"
 	help
-	  The attr package contains utilities to administer the extended attributes on filesystem objects
+	  Commands for Manipulating Filesystem Extended Attributes.
+	  This package also provides libattr.
 
-	  http://download.savannah.gnu.org/releases/attr
+	  http://savannah.nongnu.org/projects/attr

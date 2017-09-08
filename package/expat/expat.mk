@@ -1,24 +1,28 @@
-#############################################################
+################################################################################
 #
 # expat
 #
-#############################################################
+################################################################################
 
-EXPAT_VERSION = 2.0.1
-EXPAT_SOURCE = expat-$(EXPAT_VERSION).tar.gz
-EXPAT_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/expat/expat/$(EXPAT_VERSION)
-
-EXPAT_LIBTOOL_PATCH = NO
+EXPAT_VERSION = 2.2.2
+EXPAT_SITE = http://downloads.sourceforge.net/project/expat/expat/$(EXPAT_VERSION)
+EXPAT_SOURCE = expat-$(EXPAT_VERSION).tar.bz2
 EXPAT_INSTALL_STAGING = YES
-EXPAT_INSTALL_TARGET = YES
+EXPAT_INSTALL_STAGING_OPTS = DESTDIR=$(STAGING_DIR) installlib
+EXPAT_INSTALL_TARGET_OPTS = DESTDIR=$(TARGET_DIR) installlib
+EXPAT_DEPENDENCIES = host-pkgconf
+HOST_EXPAT_DEPENDENCIES = host-pkgconf
+EXPAT_LICENSE = MIT
+EXPAT_LICENSE_FILES = COPYING
 
-EXPAT_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) installlib
-EXPAT_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) installlib
-EXPAT_HOST_INSTALL_OPT = DESTDIR=$(HOST_DIR) installlib
+# Kernel versions older than 3.17 do not support getrandom()
+ifeq ($(BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_17),)
+EXPAT_CONF_ENV += CPPFLAGS="$(TARGET_CPPFLAGS) -DXML_POOR_ENTROPY"
+endif
 
-EXPAT_CONF_OPT = --enable-shared
-EXPAT_DEPENDENCIES = uclibc host-pkgconfig
+# Make build succeed on host kernel older than 3.17. getrandom() will still
+# be used on newer kernels.
+HOST_EXPAT_CONF_ENV += CPPFLAGS="$(HOST_CPPFLAGS) -DXML_POOR_ENTROPY"
 
-$(eval $(call AUTOTARGETS,package,expat))
-
-$(eval $(call AUTOTARGETS_HOST,package,expat))
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

@@ -1,15 +1,15 @@
 ################################################################################
 #
-# xlib_libICE -- X.Org ICE library
+# xlib_libICE
 #
 ################################################################################
 
-XLIB_LIBICE_VERSION = 1.0.4
+XLIB_LIBICE_VERSION = 1.0.9
 XLIB_LIBICE_SOURCE = libICE-$(XLIB_LIBICE_VERSION).tar.bz2
 XLIB_LIBICE_SITE = http://xorg.freedesktop.org/releases/individual/lib
-XLIB_LIBICE_AUTORECONF = NO
+XLIB_LIBICE_LICENSE = MIT
+XLIB_LIBICE_LICENSE_FILES = COPYING
 XLIB_LIBICE_INSTALL_STAGING = YES
-XLIB_LIBICE_DEPENDENCIES = xlib_xtrans xproto_xproto
-XLIB_LIBICE_CONF_OPT = --enable-shared --disable-static
+XLIB_LIBICE_DEPENDENCIES = xlib_xtrans xproto_xproto host-pkgconf
 
-$(eval $(call AUTOTARGETS,package/x11r7,xlib_libICE))
+$(eval $(autotools-package))

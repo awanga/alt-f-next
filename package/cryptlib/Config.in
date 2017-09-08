@@ -1,6 +1,0 @@
-config BR2_PACKAGE_CRYPTLIB
-	bool "cryptlib"
-	help
-	  a set of layered security services and associated programming interface
-
-	  https://www.cs.auckland.ac.nz/~pgut001/cryptlib

@@ -1,13 +1,14 @@
 ################################################################################
 #
-# xapp_luit -- Locale and ISO 2022 support for Unicode terminals
+# xapp_luit
 #
 ################################################################################
 
-XAPP_LUIT_VERSION = 1.0.3
+XAPP_LUIT_VERSION = 1.1.1
 XAPP_LUIT_SOURCE = luit-$(XAPP_LUIT_VERSION).tar.bz2
 XAPP_LUIT_SITE = http://xorg.freedesktop.org/releases/individual/app
-XAPP_LUIT_AUTORECONF = NO
+XAPP_LUIT_LICENSE = MIT
+XAPP_LUIT_LICENSE_FILES = COPYING
 XAPP_LUIT_DEPENDENCIES = xlib_libX11 xlib_libfontenc
 
-$(eval $(call AUTOTARGETS,package/x11r7,xapp_luit))
+$(eval $(autotools-package))

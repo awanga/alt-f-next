@@ -1,115 +1,92 @@
-#############################################################
+################################################################################
 #
 # nfs-utils
 #
-#############################################################
+################################################################################
 
-NFS_UTILS_VERSION:=1.3.4
-NFS_UTILS_SOURCE:=nfs-utils-$(NFS_UTILS_VERSION).tar.bz2
-NFS_UTILS_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/nfs/nfs-utils/$(NFS_UTILS_VERSION)
+NFS_UTILS_VERSION = 1.3.3
+NFS_UTILS_SOURCE = nfs-utils-$(NFS_UTILS_VERSION).tar.xz
+NFS_UTILS_SITE = https://www.kernel.org/pub/linux/utils/nfs-utils/$(NFS_UTILS_VERSION)
+NFS_UTILS_LICENSE = GPL-2.0+
+NFS_UTILS_LICENSE_FILES = COPYING
+NFS_UTILS_AUTORECONF = YES
+NFS_UTILS_DEPENDENCIES = host-pkgconf
 
-NFS_UTILS_CAT:=$(BZCAT)
-NFS_UTILS_DIR:=$(BUILD_DIR)/nfs-utils-$(NFS_UTILS_VERSION)
-NFS_UTILS_BINARY:=utils/nfsd/nfsd
-NFS_UTILS_TARGET_BINARY:=usr/sbin/rpc.nfsd
+NFS_UTILS_CONF_ENV = knfsd_cv_bsd_signals=no
 
-BR2_NFS_UTILS_CFLAGS=
-
-ifeq ($(BR2_LARGEFILE),)
-BR2_NFS_UTILS_CFLAGS+=-U_LARGEFILE64_SOURCE -U_FILE_OFFSET_BITS
-endif
-
-BR2_NFS_UTILS_CFLAGS+=-DUTS_RELEASE='\"$(LINUX_HEADERS_VERSION)\"'
-
-$(DL_DIR)/$(NFS_UTILS_SOURCE):
-	 $(call DOWNLOAD,$(NFS_UTILS_SITE),$(NFS_UTILS_SOURCE))
-
-$(NFS_UTILS_DIR)/.unpacked: $(DL_DIR)/$(NFS_UTILS_SOURCE)
-	$(NFS_UTILS_CAT) $(DL_DIR)/$(NFS_UTILS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(NFS_UTILS_DIR) package/nfs-utils/ nfs-utils-$(NFS_UTILS_VERSION)\*.patch
-	(cd $(NFS_UTILS_DIR); autoconf)
-	$(CONFIG_UPDATE) $(NFS_UTILS_DIR)
-	touch $@
-
-$(NFS_UTILS_DIR)/.configured: $(NFS_UTILS_DIR)/.unpacked
-	(cd $(NFS_UTILS_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		CFLAGS="$(TARGET_CFLAGS) $(BR2_NFS_UTILS_CFLAGS)" \
-		CONFIG_SQLITE3_FALSE='#' CONFIG_NFSDCLD_FALSE='#' \
-		knfsd_cv_bsd_signals=no \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--without-tcp-wrappers \
-		--without-krb5 \
-		--disable-uuid \
-		--disable-nfsv4 \
-		--disable-nfsv41 \
-		--disable-gss \
-		--disable-tirpc \
-		--disable-static \
-		--disable-ipv6 \
-	)
-	touch $@
-
-$(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY): $(NFS_UTILS_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) CC_FOR_BUILD="$(HOSTCC)" \
-		RPCGEN=/usr/bin/rpcgen -C $(NFS_UTILS_DIR)
-	touch -c $@
-
-NFS_UTILS_TARGETS_ := usr/sbin/mount.nfs4 usr/sbin/umount.nfs4 	\
-	usr/sbin/nfsiostat usr/sbin/mountstats usr/sbin/nfsstat
-NFS_UTILS_TARGETS_y := usr/sbin/exportfs usr/sbin/rpc.mountd \
-	usr/sbin/rpc.nfsd usr/sbin/rpc.statd usr/sbin/sm-notify
+NFS_UTILS_CONF_OPTS = \
+	--disable-nfsv4 \
+	--disable-nfsv41 \
+	--disable-gss \
+	--disable-uuid \
+	--disable-ipv6 \
+	--without-tcp-wrappers \
+	--with-statedir=/run/nfs \
+	--with-rpcgen=internal
 
 NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPCDEBUG) += usr/sbin/rpcdebug
 NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPC_LOCKD) += usr/sbin/rpc.lockd
-# nfs-utils-1.2.7/NEWS: - rpc.rquotad is gone.  Use the one from the 'quota' package
-#NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD) += usr/sbin/rpc.rquotad
+NFS_UTILS_TARGETS_$(BR2_PACKAGE_NFS_UTILS_RPC_RQUOTAD) += usr/sbin/rpc.rquotad
 
-$(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
-	# Use fakeroot to pretend to do 'make install' as root
-	echo '$(MAKE) $(TARGET_CONFIGURE_OPTS) RPCGEN=/usr/bin/rpcgen prefix=$(TARGET_DIR)/usr statedir=$(TARGET_DIR)/var/lib/nfs statdpath=$(TARGET_DIR)/var/lib/nfs sbindir=$(TARGET_DIR)/usr/sbin -C $(NFS_UTILS_DIR) install-strip' > $@
-	echo 'rm -f $(TARGET_DIR)/usr/bin/event_rpcgen.py $(TARGET_DIR)/usr/sbin/nhfs*' >> $@
-	echo 'rm -rf $(TARGET_DIR)/usr/share/man' >> $@
-	echo -n 'for file in $(NFS_UTILS_TARGETS_); do rm -f $(TARGET_DIR)/' >> $@
-	echo -n "\$$" >> $@
-	echo "file; done" >> $@
-	echo 'rm -rf $(TARGET_DIR)/var/lib' >> $@
-
-$(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY): $(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils
-	touch  $@
-
-nfs-utils-source: $(DL_DIR)/$(NFS_UTILS_SOURCE)
-
-nfs-utils-configure: $(NFS_UTILS_DIR)/.configured
-
-nfs-utils-build: $(NFS_UTILS_DIR)/$(NFS_UTILS_BINARY)
-
-nfs-utils: uclibc host-autoconf host-fakeroot $(TARGET_DIR)/$(NFS_UTILS_TARGET_BINARY)
-
-nfs-utils-uninstall:
-	$(MAKE) -i DESTDIR=$(TARGET_DIR) -C $(NFS_UTILS_DIR) uninstall
-
-nfs-utils-clean:
-	rm -f $(TARGET_DIR)/etc/init.d/S60nfs
-	for file in $(NFS_UTILS_TARGETS_y); do \
-		rm -f $(TARGET_DIR)/$$file; \
-	done
-	-$(MAKE) -C $(NFS_UTILS_DIR) clean
-	rm -f $(PROJECT_BUILD_DIR)/.fakeroot.nfs-utils
-
-nfs-utils-dirclean:
-	rm -rf $(NFS_UTILS_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_NFS_UTILS),y)
-TARGETS+=nfs-utils
+ifeq ($(BR2_PACKAGE_LIBCAP),y)
+NFS_UTILS_CONF_OPTS += --enable-caps
+NFS_UTILS_DEPENDENCIES += libcap
+else
+NFS_UTILS_CONF_OPTS += --disable-caps
 endif
+
+ifeq ($(BR2_PACKAGE_LIBTIRPC),y)
+NFS_UTILS_CONF_OPTS += --enable-tirpc
+NFS_UTILS_DEPENDENCIES += libtirpc
+else
+NFS_UTILS_CONF_OPTS += --disable-tirpc
+endif
+
+define NFS_UTILS_INSTALL_FIXUP
+	rm -f $(NFS_UTILS_TARGETS_)
+	touch $(TARGET_DIR)/etc/exports
+	$(INSTALL) -D -m 644 \
+		$(@D)/utils/mount/nfsmount.conf $(TARGET_DIR)/etc/nfsmount.conf
+endef
+NFS_UTILS_POST_INSTALL_TARGET_HOOKS += NFS_UTILS_INSTALL_FIXUP
+
+ifeq ($(BR2_INIT_SYSTEMD),y)
+NFS_UTILS_CONF_OPTS += --with-systemd=/usr/lib/systemd/system
+NFS_UTILS_DEPENDENCIES += systemd
+else
+NFS_UTILS_CONF_OPTS += --without-systemd
+endif
+
+define NFS_UTILS_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 package/nfs-utils/S60nfs \
+		$(TARGET_DIR)/etc/init.d/S60nfs
+endef
+
+define NFS_UTILS_INSTALL_INIT_SYSTEMD
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
+
+	ln -fs ../../../../usr/lib/systemd/system/nfs-server.service \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/nfs-server.service
+	ln -fs ../../../../usr/lib/systemd/system/nfs-client.target \
+		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/nfs-client.target
+
+	mkdir -p $(TARGET_DIR)/etc/systemd/system/remote-fs.target.wants
+
+	ln -fs ../../../../usr/lib/systemd/system/nfs-client.target \
+		$(TARGET_DIR)/etc/systemd/system/remote-fs.target.wants/nfs-client.target
+
+	$(INSTALL) -D -m 0755 package/nfs-utils/nfs-utils_env.sh \
+		$(TARGET_DIR)/usr/lib/systemd/scripts/nfs-utils_env.sh
+
+	$(INSTALL) -D -m 0644 package/nfs-utils/nfs-utils_tmpfiles.conf \
+		$(TARGET_DIR)/usr/lib/tmpfiles.d/nfs-utils.conf
+endef
+
+define NFS_UTILS_REMOVE_NFSIOSTAT
+	rm -f $(TARGET_DIR)/usr/sbin/nfsiostat
+endef
+
+# nfsiostat is interpreted python, so remove it unless it's in the target
+NFS_UTILS_POST_INSTALL_TARGET_HOOKS += $(if $(BR2_PACKAGE_PYTHON),,NFS_UTILS_REMOVE_NFSIOSTAT)
+
+$(eval $(autotools-package))

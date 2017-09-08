@@ -1,99 +1,40 @@
-#############################################################
+################################################################################
 #
 # xfsprogs
 #
-#############################################################
-XFSPROGS_VERSION:=2.10.2
-XFSPROGS_SOURCE=xfsprogs_$(XFSPROGS_VERSION)-1.tar.gz
-XFSPROGS_SITE=ftp://oss.sgi.com/projects/xfs/cmd_tars
-#XFSPROGS_SITE=ftp://oss.sgi.com/projects/xfs/previous/cmd_tars/
-XFSPROGS_DIR=$(BUILD_DIR)/xfsprogs-$(XFSPROGS_VERSION)
-XFSPROGS_CAT:=$(ZCAT)
-XFSPROGS_BINARY:=mkfs/mkfs.xfs
-XFSPROGS_TARGET_BINARY:=sbin/mkfs.xfs
+################################################################################
 
-XFSPROGS_STRIP:= fsck/fsck.xfs mkfile/xfs_mkfile rtcp/xfs_rtcp
-XFSPROGS_STRIP_LIBDEP:= \
-	copy/xfs_copy db/xfs_db growfs/xfs_growfs io/xfs_io \
-	logprint/xfs_logprint mkfs/fstyp mkfs/mkfs.xfs \
-	repair/xfs_repair quota/xfs_quota
+XFSPROGS_VERSION = 4.8.0
+XFSPROGS_SITE = $(BR2_KERNEL_MIRROR)/linux/utils/fs/xfs/xfsprogs
+XFSPROGS_SOURCE = xfsprogs-$(XFSPROGS_VERSION).tar.xz
 
-$(DL_DIR)/$(XFSPROGS_SOURCE):
-	 $(call DOWNLOAD,$(XFSPROGS_SITE),$(XFSPROGS_SOURCE))
+XFSPROGS_DEPENDENCIES = util-linux
 
-xfsprogs-source: $(DL_DIR)/$(XFSPROGS_SOURCE)
+XFSPROGS_CONF_ENV = ac_cv_header_aio_h=yes ac_cv_lib_rt_lio_listio=yes
+XFSPROGS_CONF_OPTS = \
+	--enable-lib64=no \
+	--enable-gettext=no \
+	INSTALL_USER=root \
+	INSTALL_GROUP=root \
+	--enable-static
 
-$(XFSPROGS_DIR)/.unpacked: $(DL_DIR)/$(XFSPROGS_SOURCE)
-	$(XFSPROGS_CAT) $(DL_DIR)/$(XFSPROGS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(XFSPROGS_DIR) package/xfsprogs/ xfsprogs\*.patch
-	touch $(XFSPROGS_DIR)/.unpacked
-
-#XFSPROGS_CONFIG_SHARED:=--disable-shared
-XFSPROGS_CONFIG_SHARED:=--enable-shared
-
-$(XFSPROGS_DIR)/.configured: $(XFSPROGS_DIR)/.unpacked
-	(cd $(XFSPROGS_DIR); rm -rf config.cache; \
-		ac_cv_header_aio_h=yes ac_cv_lib_rt_lio_listio=yes \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		CPPFLAGS="-I$(E2FSPROGS_DIR)/lib" \
-		LDFLAGS="-L$(E2FSPROGS_DIR)/lib" \
-		LIBTOOL=$(LIBTOOL_DIR)/libtool \
-		INSTALL_USER=$(shell whoami) \
-		INSTALL_GROUP=$(shell groups | cut -d" " -f1) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--exec-prefix=/ \
-		$(XFSPROGS_CONFIG_SHARED) \
-	)
-	touch $(XFSPROGS_DIR)/.configured
-
-$(XFSPROGS_DIR)/$(XFSPROGS_BINARY): $(XFSPROGS_DIR)/.configured
-	$(MAKE1) PATH=$(TARGET_PATH) CPPFLAGS="-I$(E2FSPROGS_DIR)/lib" \
-		LDFLAGS="-L$(E2FSPROGS_DIR)/lib" -C $(XFSPROGS_DIR)
-ifeq ($(XFSPROGS_CONFIG_SHARED),--enable-shared)
-	( \
-		cd $(XFSPROGS_DIR); \
-		$(STRIPCMD) $(XFSPROGS_STRIP); \
-		$(STRIPCMD) $(join $(dir $(XFSPROGS_STRIP_LIBDEP)), \
-				$(addprefix .libs/,$(notdir $(XFSPROGS_STRIP_LIBDEP)))) \
-	)
-	$(STRIPCMD) $(XFSPROGS_DIR)/lib*/.libs/lib*.so.*.*
-else
-	( \
-		cd $(XFSPROGS_DIR); \
-		$(STRIPCMD) $(XFSPROGS_STRIP) $(XFSPROGS_STRIP_LIBDEP) \
-	)
-	$(STRIPCMD) $(XFSPROGS_DIR)/lib*/lib*.so.*.*
-endif
-	touch -c $(XFSPROGS_DIR)/$(XFSPROGS_BINARY)
-
-$(TARGET_DIR)/$(XFSPROGS_TARGET_BINARY): $(XFSPROGS_DIR)/$(XFSPROGS_BINARY)
-	$(MAKE1) PATH=$(TARGET_PATH) \
-	    DIST_ROOT=$(TARGET_DIR) \
-	    exec-prefix=/ \
-	    -C $(XFSPROGS_DIR) install
-	rm -rf $(TARGET_DIR)/usr/man $(TARGET_DIR)/usr/share/doc
-	touch -c $(TARGET_DIR)/$(XFSPROGS_TARGET_BINARY)
-
-xfsprogs: uclibc e2fsprogs libtool-cross $(TARGET_DIR)/$(XFSPROGS_TARGET_BINARY)
-
-xfsprogs-clean:
-	rm -f $(TARGET_DIR)/bin/xfs_* $(TARGET_DIR)/sbin/xfs_* $(TARGET_DIR)/sbin/*.xfs
-	rm -f $(TARGET_DIR)/usr/lib/libhandle.so*
-	rm -f $(TARGET_DIR)/usr/lib/libdisk.so* $(TARGET_DIR)/usr/lib/libxfs.so*
-	-$(MAKE1) -C $(XFSPROGS_DIR) clean
-
-xfsprogs-dirclean:
-	rm -rf $(XFSPROGS_DIR)
-
-#############################################################
+# xfsprogs links some of its programs to libs from util-linux, which use
+# i18n functions. For shared-only builds, that's automatically pulled in.
+# Static builds need some help, though...
 #
-# Toplevel Makefile options
+# No need to depend on gettext in this case: xfsprogs does not use it for
+# itself; util-linux does need it and has it in its own dependencies.
 #
-#############################################################
-ifeq ($(BR2_PACKAGE_XFSPROGS),y)
-TARGETS+=xfsprogs
+# xfsprogs' buildsystem uses hand-made Makefiles, not automake, and they
+# do not use the LIBS variable set by configure. So we use EXTRALIBS that
+# is added by our patch.
+#
+# It is not needed to propagate the EXTRALIBS to the install step.
+ifeq ($(BR2_STATIC_LIBS)$(BR2_SHARED_STATIC_LIBS)$(BR2_NEEDS_GETTEXT_IF_LOCALE),yy)
+XFSPROGS_CONF_OPTS += LIBS=-lintl
+XFSPROGS_MAKE_OPTS = EXTRALIBS=-lintl
 endif
+
+XFSPROGS_INSTALL_TARGET_OPTS = DIST_ROOT=$(TARGET_DIR) install
+
+$(eval $(autotools-package))

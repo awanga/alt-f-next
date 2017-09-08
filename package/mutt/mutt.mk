@@ -1,76 +1,73 @@
-#############################################################
+################################################################################
 #
 # mutt
 #
-#############################################################
-MUTT_VERSION:=1.5.17+20080114
-MUTT_SOURCE:=mutt_$(MUTT_VERSION).orig.tar.gz
-MUTT_PATCH:=mutt_$(MUTT_VERSION)-1.diff.gz
-MUTT_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/m/mutt/
-MUTT_DIR:=$(BUILD_DIR)/mutt-$(MUTT_VERSION)
-MUTT_CAT:=$(ZCAT)
-MUTT_BINARY:=mutt
-MUTT_TARGET_BINARY:=usr/bin/mutt
+################################################################################
 
-$(DL_DIR)/$(MUTT_SOURCE):
-	$(call DOWNLOAD,$(MUTT_SITE),$(MUTT_SOURCE))
+MUTT_VERSION = 1.8.2
+MUTT_SITE = https://bitbucket.org/mutt/mutt/downloads
+MUTT_LICENSE = GPL-2.0+
+MUTT_LICENSE_FILES = GPL
+MUTT_DEPENDENCIES = ncurses
+MUTT_CONF_OPTS = --disable-doc --disable-smtp
 
-$(DL_DIR)/$(MUTT_PATCH):
-	$(call DOWNLOAD,$(MUTT_SITE),$(MUTT_PATCH))
-
-$(MUTT_DIR)/.unpacked: $(DL_DIR)/$(MUTT_SOURCE) $(DL_DIR)/$(MUTT_PATCH)
-	$(MUTT_CAT) $(DL_DIR)/$(MUTT_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(MUTT_DIR) package/mutt/ mutt-$(MUTT_VERSION)\*.patch
-ifneq ($(MUTT_PATCH),)
-	(cd $(MUTT_DIR) && $(MUTT_CAT) $(DL_DIR)/$(MUTT_PATCH) | patch -p1)
-	if [ -d $(MUTT_DIR)/debian/patches ]; then \
-		toolchain/patch-kernel.sh $(MUTT_DIR) $(MUTT_DIR)/debian/patches \*.patch; \
-	fi
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+MUTT_DEPENDENCIES += libiconv
+MUTT_CONF_OPTS += --enable-iconv
 endif
-	touch $@
 
-$(MUTT_DIR)/.configured: $(MUTT_DIR)/.unpacked
-	(cd $(MUTT_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		$(DISABLE_LARGEFILE) \
-		$(DISABLE_IPV6) \
-		$(DISABLE_NLS) \
-		--disable-smtp \
-		--disable-iconv \
-		--without-wc-funcs \
-	)
-	touch $@
-
-$(MUTT_DIR)/$(MUTT_BINARY): $(MUTT_DIR)/.configured
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(MUTT_DIR)
-
-$(TARGET_DIR)/$(MUTT_TARGET_BINARY): $(MUTT_DIR)/$(MUTT_BINARY)
-	cp -dpf $(MUTT_DIR)/$(MUTT_BINARY) $@
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
-
-mutt-source: $(DL_DIR)/$(MUTT_SOURCE) $(DL_DIR)/$(MUTT_PATCH)
-
-mutt-unpacked: $(MUTT_DIR)/.unpacked
-
-mutt: uclibc ncurses $(TARGET_DIR)/$(MUTT_TARGET_BINARY)
-
-mutt-clean:
-	-$(MAKE) -C $(MUTT_DIR) clean
-	rm -f $(TARGET_DIR)/$(MUTT_TARGET_BINARY)
-
-mutt-dirclean:
-	rm -rf $(MUTT_DIR)
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_MUTT),y)
-TARGETS+=mutt
+ifeq ($(BR2_PACKAGE_LIBIDN),y)
+MUTT_DEPENDENCIES += libidn
+MUTT_CONF_OPTS += --with-idn
+else
+MUTT_CONF_OPTS += --without-idn
 endif
+
+ifeq ($(BR2_PACKAGE_MUTT_IMAP),y)
+MUTT_CONF_OPTS += --enable-imap
+else
+MUTT_CONF_OPTS += --disable-imap
+endif
+
+ifeq ($(BR2_PACKAGE_MUTT_POP3),y)
+MUTT_CONF_OPTS += --enable-pop
+else
+MUTT_CONF_OPTS += --disable-pop
+endif
+
+# SSL support is only used by imap or pop3 module
+ifneq ($(BR2_PACKAGET_MUTT_IMAP)$(BR2_PACKAGE_MUTT_POP3),)
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+MUTT_DEPENDENCIES += openssl
+MUTT_CONF_OPTS += --with-ssl=$(STAGING_DIR)/usr
+else
+MUTT_CONF_OPTS += --without-ssl
+endif
+else
+MUTT_CONF_OPTS += --without-ssl
+endif
+
+# Avoid running tests to check for:
+#  - target system is *BSD
+#  - C99 conformance (snprintf, vsnprintf)
+#  - behaviour of the regex library
+#  - if mail spool directory is world/group writable
+#  - we have a working libiconv
+MUTT_CONF_ENV += \
+	mutt_cv_bsdish=no \
+	mutt_cv_c99_snprintf=yes \
+	mutt_cv_c99_vsnprintf=yes \
+	mutt_cv_regex_broken=no \
+	mutt_cv_worldwrite=yes \
+	mutt_cv_groupwrite=yes \
+	mutt_cv_iconv_good=yes \
+	mutt_cv_iconv_nontrans=no
+
+MUTT_CONF_OPTS += --with-mailpath=/var/mail
+
+define MUTT_VAR_MAIL
+	ln -sf /tmp $(TARGET_DIR)/var/mail
+endef
+MUTT_POST_INSTALL_TARGET_HOOKS += MUTT_VAR_MAIL
+
+$(eval $(autotools-package))

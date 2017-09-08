@@ -1,11 +1,10 @@
 config BR2_PACKAGE_GIT
 	bool "git"
-	select BR2_PACKAGE_EXPAT
-	select BR2_PACKAGE_LIBCURL
-	select BR2_PACKAGE_PCRE
-	select BR2_PACKAGE_PERL
+	depends on BR2_USE_MMU # uses fork()
+	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_LIBICONV if !BR2_ENABLE_LOCALE
 	help
-	  Git is a free & open source, distributed version control system designed to handle
-	  everything from small to very large projects with speed and efficiency.
-	
-	  http://git-scm.com/
+	  Git is a free and open source distributed version control system
+	  designed to handle everything from small to very large projects.
+
+	  http://git-scm.com

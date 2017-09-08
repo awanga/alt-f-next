@@ -1,15 +1,22 @@
 config BR2_PACKAGE_HPLIP
 	bool "hplip"
-	select BR2_PACKAGE_SANE
-	select BR2_PACKAGE_GS
+	depends on BR2_INSTALL_LIBSTDCPP
+	depends on BR2_PACKAGE_CUPS
+	depends on BR2_TOOLCHAIN_HAS_THREADS # libusb
+	depends on !BR2_STATIC_LIBS # libdl
 	select BR2_PACKAGE_LIBUSB
-	select BR2_PACKAGE_NETSNMP
-	select BR2_PACKAGE_CUPS
 	select BR2_PACKAGE_JPEG
-	select BR2_PACKAGE_TIFF
-	select BR2_PACKAGE_LIBPNG
 	help
-	  HP Linux imaging and printing
+	  HP Linux Imaging and Printing (HPLIP)
+	  HPLIP is an HP-developed solution for printing, scanning, and faxing
+	  with HP inkjet and laser based printers in Linux. The HPLIP project
+	  provides printing support for 2,211 printer models, including
+	  Deskjet, Officejet, Photosmart, PSC (Print Scan Copy), Business
+	  Inkjet, LaserJet, Edgeline MFP, and LaserJet MFP.
 
-	  http://hplipopensource.com/hplip-web/about.html
+	  http://hplipopensource.com/
 
+comment "hplip needs a toolchain w/ C++, threads, dynamic library"
+	depends on BR2_PACKAGE_CUPS
+	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_TOOLCHAIN_HAS_THREADS || \
+		BR2_STATIC_LIBS

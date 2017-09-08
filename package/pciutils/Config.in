@@ -1,8 +1,7 @@
-comment "pciutils has no inherent support for AVR32" 
-	depends on BR2_avr32 && BR2_PACKAGE_PCIUTILS
-
 config BR2_PACKAGE_PCIUTILS
 	bool "pciutils"
+	# PCI not supported on Blackfin
+	depends on !BR2_bfin
 	help
 	  Various utilities dealing with the PCI bus.
 	  Provides things like setpci and lspci.

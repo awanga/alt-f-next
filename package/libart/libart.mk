@@ -1,20 +1,17 @@
-#############################################################
+################################################################################
 #
 # libart
 #
-#############################################################
+################################################################################
 
-LIBART_VERSION = 2.3.20
+LIBART_VERSION_MAJOR = 2.3
+LIBART_VERSION = $(LIBART_VERSION_MAJOR).21
 LIBART_SOURCE = libart_lgpl-$(LIBART_VERSION).tar.gz
-LIBART_SITE = http://ftp.gnome.org/pub/gnome/sources/libart_lgpl/2.3/
+LIBART_SITE = http://ftp.gnome.org/pub/gnome/sources/libart_lgpl/$(LIBART_VERSION_MAJOR)
 LIBART_AUTORECONF = YES
-LIBART_STAGING = YES
-LIBART_TARGET = YES
+LIBART_INSTALL_STAGING = YES
+LIBART_CONFIG_SCRIPTS = libart2-config
+LIBART_LICENSE = LGPL-2.0+
+LIBART_LICENSE_FILES = COPYING
 
-LIBART_CONF_OPT = --target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) --build=$(GNU_HOST_NAME) \
-		--prefix=/usr --sysconfdir=/etc
-
-LIBART_DEPENDENCIES = uclibc
-
-$(eval $(call AUTOTARGETS,package,libart))
+$(eval $(autotools-package))

@@ -1,20 +1,29 @@
-#############################################################
+################################################################################
 #
 # libnl
 #
-############################################################
+################################################################################
 
-LIBNL_VERSION = 3.2.25
-LIBNL_SOURCE = libnl-$(LIBNL_VERSION).tar.gz
-LIBNL_SITE = http://www.carisma.slowglass.com/~tgr/libnl/files
-
+LIBNL_VERSION = 3.3.0
+LIBNL_SITE = https://github.com/thom311/libnl/releases/download/libnl$(subst .,_,$(LIBNL_VERSION))
+LIBNL_LICENSE = LGPL-2.1+
+LIBNL_LICENSE_FILES = COPYING
 LIBNL_INSTALL_STAGING = YES
-LIBNL_LIBTOOL_PATCH=NO
-LIBNL_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+LIBNL_DEPENDENCIES = host-bison host-flex host-pkgconf
+# Patching Makefile.am
+LIBNL_AUTORECONF = YES
 
-$(eval $(call AUTOTARGETS,package,libnl))
+ifeq ($(BR2_PACKAGE_LIBNL_TOOLS),y)
+LIBNL_CONF_OPTS += --enable-cli
+else
+LIBNL_CONF_OPTS += --disable-cli
+endif
 
-$(LIBNL_TARGET_UNINSTALL):
-	$(call MESSAGE,"Uninstalling")
-	rm -f $(TARGET_DIR)/usr/lib/libnl.so*
-	rm -f $(LIBNL_TARGET_INSTALL_TARGET) $(LIBNL_HOOK_POST_INSTALL)
+ifeq ($(BR2_PACKAGE_CHECK),y)
+LIBNL_DEPENDENCIES += check
+LIBNL_CONF_OPTS += --enable-unit-tests
+else
+LIBNL_CONF_OPTS += --disable-unit-tests
+endif
+
+$(eval $(autotools-package))

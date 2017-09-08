@@ -1,23 +1,57 @@
-#############################################################
+################################################################################
 #
 # fltk
 #
-#############################################################
+################################################################################
 
-FLTK_VERSION = 1.1.7
-FLTK_SOURCE = fltk-$(FLTK_VERSION)-source.tar.bz2
-FLTK_SITE = http://ftp.easysw.com/pub/fltk/1.1.7/
-FLTK_AUTORECONF = NO
+FLTK_VERSION = 1.3.3
+FLTK_SOURCE = fltk-$(FLTK_VERSION)-source.tar.gz
+FLTK_SITE = http://fltk.org/pub/fltk/$(FLTK_VERSION)
 FLTK_INSTALL_STAGING = YES
-FLTK_INSTALL_TARGET = YES
+# We force --libdir=/usr/lib, because by default, it is set to
+# ${exec_prefix}/lib, which doesn't match the condition used by the
+# fltk build system to decide whether it should pass a -rpath,/usr/lib
+# or not. Since this rpath breaks the build, we want the fltk build
+# system to not pass it, which requires having --libdir set to
+# /usr/lib.
+FLTK_CONF_OPTS = --enable-threads --with-x --disable-gl \
+	--disable-localjpeg --disable-localpng --disable-localzlib \
+	--libdir=/usr/lib
+FLTK_DEPENDENCIES = jpeg libpng xlib_libX11 xlib_libXext xlib_libXt
+FLTK_CONFIG_SCRIPTS = fltk-config
+FLTK_LICENSE = LGPL-2.0 with exceptions
+FLTK_LICENSE_FILES = COPYING
 
-FLTK_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) STRIP=$(TARGET_STRIP) install
-FLTK_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) STRIP=$(TARGET_STRIP) install
+ifeq ($(BR2_PACKAGE_CAIRO),y)
+FLTK_CONF_OPTS += --enable-cairo
+FLTK_DEPENDENCIES += cairo
+endif
 
-FLTK_CONF_OPT = --target=$(GNU_TARGET_NAME) --host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) --prefix=/usr \
-		--sysconfdir=/etc --enable-shared --enable-threads --with-x
+ifeq ($(BR2_PACKAGE_XLIB_LIBXCURSOR),y)
+FLTK_DEPENDENCIES += xlib_libXcursor
+FLTK_CONF_OPTS += --enable-xcursor
+else
+FLTK_CONF_OPTS += --disable-xcursor
+endif
 
-FLTK_DEPENDENCIES = uclibc xserver_xorg-server
+ifeq ($(BR2_PACKAGE_XLIB_LIBXFIXES),y)
+FLTK_DEPENDENCIES += xlib_libXfixes
+FLTK_CONF_OPTS += --enable-xfixes
+else
+FLTK_CONF_OPTS += --disable-xfixes
+endif
 
-$(eval $(call AUTOTARGETS,package,fltk))
+ifeq ($(BR2_PACKAGE_XLIB_LIBXFT),y)
+FLTK_CONF_ENV += ac_cv_path_FTCONFIG=$(STAGING_DIR)/usr/bin/freetype-config
+FLTK_DEPENDENCIES += xlib_libXft
+else
+FLTK_CONF_OPTS += --disable-xft
+endif
+
+ifeq ($(BR2_PACKAGE_XLIB_LIBXINERAMA),y)
+FLTK_DEPENDENCIES += xlib_libXinerama
+else
+FLTK_CONF_OPTS += --disable-xinerama
+endif
+
+$(eval $(autotools-package))

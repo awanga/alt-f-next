@@ -1,68 +1,80 @@
-#############################################################
+################################################################################
 #
-# TCL8.4
+# tcl
 #
-#############################################################
-TCL_VERSION:=8.4.9
-TCL_SOURCE:=tcl$(TCL_VERSION)-src.tar.gz
-TCL_SITE:=$(BR2_SOURCEFORGE_MIRROR)/sourceforge/tcl
-TCL_DIR:=$(BUILD_DIR)/tcl$(TCL_VERSION)
+################################################################################
 
-$(DL_DIR)/$(TCL_SOURCE):
-	$(call DOWNLOAD,$(TCL_SITE),$(TCL_SOURCE))
+TCL_VERSION_MAJOR = 8.6
+TCL_VERSION = $(TCL_VERSION_MAJOR).6
+TCL_SOURCE = tcl$(TCL_VERSION)-src.tar.gz
+TCL_SITE = http://downloads.sourceforge.net/project/tcl/Tcl/$(TCL_VERSION)
+TCL_LICENSE = tcl license
+TCL_LICENSE_FILES = license.terms
+TCL_SUBDIR = unix
+TCL_INSTALL_STAGING = YES
+TCL_AUTORECONF = YES
 
-$(TCL_DIR)/.source: $(DL_DIR)/$(TCL_SOURCE)
-	$(ZCAT) $(DL_DIR)/$(TCL_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(TCL_DIR) package/tcl/ tcl\*.patch
-	touch $(TCL_DIR)/.source
+TCL_CONF_OPTS = \
+	--disable-symbols \
+	--disable-langinfo \
+	--disable-framework
 
-$(TCL_DIR)/.configured: $(TCL_DIR)/.source
-	(cd $(TCL_DIR)/unix; rm -f config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--sysconfdir=/etc \
-		--enable-shared \
-		--disable-symbols \
-		--disable-langinfo \
-		--disable-framework \
-	)
-	touch $(TCL_DIR)/.configured
+HOST_TCL_CONF_OPTS = \
+	--disable-symbols \
+	--disable-langinfo \
+	--disable-framework
 
-$(TCL_DIR)/unix/libtcl8.4.so: $(TCL_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) -C $(TCL_DIR)/unix
+# I haven't found a good way to force pkgs to not build
+# or configure without just removing the entire pkg directory.
+define HOST_TCL_REMOVE_PACKAGES
+	rm -fr $(@D)/pkgs/sqlite3* $(@D)/pkgs/tdbc*
+endef
+HOST_TCL_PRE_CONFIGURE_HOOKS += HOST_TCL_REMOVE_PACKAGES
 
-$(TARGET_DIR)/usr/lib/libtcl8.4.so: $(TCL_DIR)/unix/libtcl8.4.so
-	$(MAKE) INSTALL_ROOT=$(TARGET_DIR) -C $(TCL_DIR)/unix install
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libtcl8.4.so
-	rm -Rf $(TARGET_DIR)/usr/man
-	-if [ "$(BR2_PACKAGE_TCL_DEL_ENCODINGS)" == "y" ]; then \
-	rm -Rf $(TARGET_DIR)/usr/lib/tcl8.4/encoding/*; \
-	fi
-	-if [ "$(BR2_PACKAGE_TCL_SHLIB_ONLY)" == "y" ]; then \
-	rm -f $(TARGET_DIR)/usr/bin/tclsh8.4; \
-	fi
+# We remove the bundled sqlite as we prefer to not use bundled stuff at all.
+define TCL_REMOVE_PACKAGES
+	rm -fr $(@D)/pkgs/sqlite3* \
+		$(if $(BR2_PACKAGE_MYSQL),,$(@D)/pkgs/tdbcmysql*) \
+		$(@D)/pkgs/tdbcodbc* \
+		$(if $(BR2_PACKAGE_POSTGRESQL),,$(@D)/pkgs/tdbcpostgres*) \
+		$(if $(BR2_PACKAGE_SQLITE),,$(@D)/pkgs/tdbcsqlite3*)
+endef
+TCL_PRE_CONFIGURE_HOOKS += TCL_REMOVE_PACKAGES
 
-tcl: uclibc $(TARGET_DIR)/usr/lib/libtcl8.4.so
-
-tcl-source: $(DL_DIR)/$(TCL_SOURCE)
-
-tcl-clean:
-	$(MAKE) prefix=$(TARGET_DIR)/usr -C $(TCL_DIR)/unix uninstall
-	-$(MAKE) -C $(TCL_DIR)/unix clean
-
-tcl-dirclean:
-	rm -rf $(TCL_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_TCL),y)
-TARGETS+=tcl
+ifeq ($(BR2_PACKAGE_TCL_DEL_ENCODINGS),y)
+define TCL_REMOVE_ENCODINGS
+	rm -rf $(TARGET_DIR)/usr/lib/tcl$(TCL_VERSION_MAJOR)/encoding/*
+endef
+TCL_POST_INSTALL_TARGET_HOOKS += TCL_REMOVE_ENCODINGS
 endif
+
+ifeq ($(BR2_PACKAGE_TCL_SHLIB_ONLY),y)
+define TCL_REMOVE_TCLSH
+	rm -f $(TARGET_DIR)/usr/bin/tclsh$(TCL_VERSION_MAJOR)
+endef
+TCL_POST_INSTALL_TARGET_HOOKS += TCL_REMOVE_TCLSH
+else
+define TCL_SYMLINK_TCLSH
+	ln -sf tclsh$(TCL_VERSION_MAJOR) $(TARGET_DIR)/usr/bin/tclsh
+endef
+TCL_POST_INSTALL_TARGET_HOOKS += TCL_SYMLINK_TCLSH
+endif
+
+# Until someone needs it, we don't handle locale installation.  tcl has
+# a complicated method of translating LANG-style locale names into its internal
+# .msg name which makes it difficult to save the correct locales per the
+# configured whitelist.
+define TCL_REMOVE_EXTRA
+	rm -fr $(TARGET_DIR)/usr/lib/tclConfig.sh \
+		$(TARGET_DIR)/usr/lib/tclooConfig.sh \
+		$(TARGET_DIR)/usr/lib/tcl$(TCL_VERSION_MAJOR)/tclAppInit.c \
+		$(TARGET_DIR)/usr/lib/tcl$(TCL_VERSION_MAJOR)/msgs
+endef
+TCL_POST_INSTALL_TARGET_HOOKS += TCL_REMOVE_EXTRA
+
+TCL_DEPENDENCIES = $(if $(BR2_PACKAGE_SQLITE),sqlite) \
+	$(if $(BR2_PACKAGE_MYSQL),mysql) \
+	$(if $(BR2_PACKAGE_POSTGRESQL),postgresql)
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

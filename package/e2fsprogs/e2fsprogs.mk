@@ -1,189 +1,103 @@
-#############################################################
+################################################################################
 #
 # e2fsprogs
 #
-#############################################################
+################################################################################
 
-E2FSPROGS_VERSION:=1.41.14
-#E2FSPROGS_VERSION:=1.42 release is too big! (and uclibc needs ftw, +4KB)
-#E2FSPROGS_VERSION:=1.42.13 rootfs too big by 73792 bytes, removing inadyn bigger by 24640
-#E2FSPROGS_VERSION:=1.43.3 rootfs too big by 131136 bytes
+E2FSPROGS_VERSION = 1.43.4
+E2FSPROGS_SOURCE = e2fsprogs-$(E2FSPROGS_VERSION).tar.xz
+E2FSPROGS_SITE = $(BR2_KERNEL_MIRROR)/linux/kernel/people/tytso/e2fsprogs/v$(E2FSPROGS_VERSION)
+E2FSPROGS_LICENSE = GPL-2.0, MIT-like with advertising clause (libss and libet)
+E2FSPROGS_LICENSE_FILES = NOTICE lib/ss/mit-sipb-copyright.h lib/et/internal.h
+E2FSPROGS_INSTALL_STAGING = YES
 
-E2FSPROGS_SOURCE=e2fsprogs-$(E2FSPROGS_VERSION).tar.gz
-E2FSPROGS_SITE=$(BR2_SOURCEFORGE_MIRROR)/project/e2fsprogs/e2fsprogs/$(E2FSPROGS_VERSION)
+# Use libblkid and libuuid from util-linux for host and target packages.
+# This prevents overriding them with e2fsprogs' ones, which may cause
+# problems for other packages.
+E2FSPROGS_DEPENDENCIES = host-pkgconf util-linux
+HOST_E2FSPROGS_DEPENDENCIES = host-pkgconf host-util-linux
 
-E2FSPROGS_DIR=$(BUILD_DIR)/e2fsprogs-$(E2FSPROGS_VERSION)
-E2FSPROGS_CAT:=$(ZCAT)
-E2FSPROGS_BINARY:=misc/mke2fs
-E2FSPROGS_TARGET_BINARY:=usr/sbin/mke2fs
-LIBUUID_DIR=$(E2FSPROGS_DIR)/lib/uuid/
-LIBUUID_TARGET_DIR:=usr/lib/
-LIBUUID_TARGET_BINARY:=libuuid.so
-
-E2FSPROGS_MISC_STRIP:= \
-	badblocks chattr dumpe2fs filefrag fsck logsave \
-	lsattr mke2fs mklost+found tune2fs 
-#	blkid uuidgen
-
-$(DL_DIR)/$(E2FSPROGS_SOURCE):
-	 $(call DOWNLOAD,$(E2FSPROGS_SITE),$(E2FSPROGS_SOURCE))
-
-e2fsprogs-source: $(DL_DIR)/$(E2FSPROGS_SOURCE)
-
-$(E2FSPROGS_DIR)/.unpacked: $(DL_DIR)/$(E2FSPROGS_SOURCE)
-	$(E2FSPROGS_CAT) $(DL_DIR)/$(E2FSPROGS_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(E2FSPROGS_DIR) package/e2fsprogs/ e2fsprogs-$(E2FSPROGS_VERSION)\*.patch
-	$(CONFIG_UPDATE) $(E2FSPROGS_DIR)/config
-	touch $@
-
-$(E2FSPROGS_DIR)/.configured: $(E2FSPROGS_DIR)/.unpacked
-	(cd $(E2FSPROGS_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		CFLAGS="$(TARGET_CFLAGS)" \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--with-linker=$(TARGET_CROSS)ld \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/usr/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/share/man \
-		--infodir=/usr/share/info \
-		--enable-resizer --enable-fsck \
-		--enable-elf-shlibs --enable-dynamic-e2fsck \
-		--disable-defrag \
-		--disable-swapfs --disable-tls --disable-e2initrd-helper \
-		--disable-debugfs --disable-imager --disable-testio-debug \
-		--without-catgets $(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-		--enable-libuuid --enable-libblkid \
-	)
-	# do away with hiding the commands
-	find $(E2FSPROGS_DIR) -name Makefile \
-		| xargs $(SED) '/^[[:space:]]*@/s/@/$$\(Q\)/'
-	touch $@
-
-$(E2FSPROGS_DIR)/$(E2FSPROGS_BINARY): $(E2FSPROGS_DIR)/.configured
-	$(MAKE1) -C $(E2FSPROGS_DIR)
-	(cd $(E2FSPROGS_DIR)/misc; \
-		$(STRIPCMD) $(E2FSPROGS_MISC_STRIP); \
-	)
-	#$(STRIPCMD) $(E2FSPROGS_DIR)/lib/lib*.so.*.*
-	touch -c $@
-
-$(E2FSPROGS_DIR)/lib/$(LIBUUID_TARGET_BINARY): $(E2FSPROGS_DIR)/.configured
-	$(MAKE1) -C $(E2FSPROGS_DIR)/lib/uuid
-	touch -c $@
-
-$(STAGING_DIR)/$(E2FSPROGS_TARGET_BINARY): $(E2FSPROGS_DIR)/$(E2FSPROGS_BINARY)
-	$(MAKE1) PATH=$(TARGET_PATH) DESTDIR=$(STAGING_DIR) LDCONFIG=true \
-		-C $(E2FSPROGS_DIR) install install-libs
-
-$(STAGING_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY): $(E2FSPROGS_DIR)/lib/$(LIBUUID_TARGET_BINARY)
-	$(MAKE1) PATH=$(TARGET_PATH) DESTDIR=$(STAGING_DIR) LDCONFIG=true \
-		-C $(LIBUUID_DIR) install
-
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_BADBLOCKS) += ${TARGET_DIR}/usr/sbin/badblocks
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_BLKID) += ${TARGET_DIR}/usr/sbin/blkid
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_CHATTR) += ${TARGET_DIR}/usr/bin/chattr
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_DUMPE2FS) += ${TARGET_DIR}/usr/sbin/dumpe2fs
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_E2LABEL) += ${TARGET_DIR}/usr/sbin/e2label
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_E2FSCK) += ${TARGET_DIR}/usr/sbin/e2fsck
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_FILEFRAG) += ${TARGET_DIR}/usr/sbin/filefrag
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_FSCK) += ${TARGET_DIR}/usr/sbin/fsck
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_LOGSAVE) += ${TARGET_DIR}/usr/sbin/logsave
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_LSATTR) += ${TARGET_DIR}/usr/bin/lsattr
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_MKE2FS) += ${TARGET_DIR}/usr/sbin/mke2fs
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_MKLOSTFOUND) += ${TARGET_DIR}/usr/sbin/mklost+found
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_UUIDGEN) += ${TARGET_DIR}/usr/bin/uuidgen
-E2FSPROGS_RM$(BR2_PACKAGE_E2FSPROGS_RESIZE) += ${TARGET_DIR}/usr/bin/resize2fs
-
-$(TARGET_DIR)/$(E2FSPROGS_TARGET_BINARY): $(STAGING_DIR)/$(E2FSPROGS_TARGET_BINARY)
-	$(MAKE1) PATH=$(TARGET_PATH) DESTDIR=$(TARGET_DIR) LDCONFIG=true \
-		-C $(E2FSPROGS_DIR) install
-	rm -rf ${TARGET_DIR}/sbin/mkfs.ext[234] \
-		${TARGET_DIR}/sbin/fsck.ext[234] \
-		${TARGET_DIR}/sbin/findfs \
-		${TARGET_DIR}/sbin/tune2fs
-ifneq ($(E2FSPROGS_RM),)
-	rm -rf $(E2FSPROGS_RM)
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_MKE2FS),y)
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext2
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext3
-	ln -sf mke2fs ${TARGET_DIR}/usr/sbin/mkfs.ext4
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_E2FSCK),y)
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext2
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext3
-	ln -sf e2fsck ${TARGET_DIR}/usr/sbin/fsck.ext4
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_TUNE2FS),y)
-	ln -sf e2label ${TARGET_DIR}/usr/sbin/tune2fs
-endif
-ifeq ($(BR2_PACKAGE_E2FSPROGS_FINDFS),y)
-	ln -sf e2label ${TARGET_DIR}/usr/sbin/findfs
-endif
-ifneq ($(BR2_HAVE_INFOPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/info
-endif
-ifneq ($(BR2_HAVE_MANPAGES),y)
-	rm -rf $(TARGET_DIR)/usr/share/man
-endif
-	rm -rf $(TARGET_DIR)/share/locale
-	rm -rf $(TARGET_DIR)/usr/share/doc
-	touch -c $@
-
-$(TARGET_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY): $(STAGING_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY)
-	$(MAKE1) PATH=$(TARGET_PATH) DESTDIR=$(STAGING_DIR) LDCONFIG=true \
-		-C $(LIBUUID_DIR) install
-	cp -a $(STAGING_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY)* \
-		$(TARGET_DIR)/$(LIBUUID_TARGET_DIR)/
-	touch $@
-
-libuuid: uclibc $(TARGET_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY)
-
-e2fsprogs: uclibc libuuid $(TARGET_DIR)/$(E2FSPROGS_TARGET_BINARY)
-
-e2fsprogs-build: $(E2FSPROGS_DIR)/$(E2FSPROGS_BINARY)
-
-e2fsprogs-configure: $(E2FSPROGS_DIR)/.configured
-
-e2fsprogs-clean:
-	$(MAKE1) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(E2FSPROGS_DIR) uninstall
-	-$(MAKE1) -C $(E2FSPROGS_DIR) clean
-
-e2fsprogs-dirclean:
-	rm -rf $(E2FSPROGS_DIR)
-
-libuuid-clean:
-	-$(MAKE1) PATH=$(TARGET_PATH) DESTDIR=$(STAGING_DIR) LDCONFIG=true \
-		-C $(LIBUUID_DIR) uninstall
-	# make uninstall misses the includes
-	rm -rf $(STAGING_DIR)/usr/include/uuid
-	rm -f $(TARGET_DIR)/$(LIBUUID_TARGET_DIR)/$(LIBUUID_TARGET_BINARY)*
-	-$(MAKE1) -C $(LIBUUID_DIR) clean
-
-libuuid-source: e2fsprogs-source
-libuuid-dirclean: e2fsprogs-dirclean
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_E2FSPROGS),y)
-TARGETS+=e2fsprogs
+# If both e2fsprogs and busybox are selected, make certain e2fsprogs
+# wins the fight over who gets to have their utils actually installed
+ifeq ($(BR2_PACKAGE_BUSYBOX),y)
+E2FSPROGS_DEPENDENCIES += busybox
 endif
 
-ifeq ($(BR2_PACKAGE_LIBUUID),y)
-TARGETS+=libuuid
+# e4defrag doesn't build on older systems like RHEL5.x, and we don't
+# need it on the host anyway.
+# Disable fuse2fs as well to avoid carrying over deps, and it's unused
+HOST_E2FSPROGS_CONF_OPTS = \
+	--disable-defrag \
+	--disable-e2initrd-helper \
+	--disable-fuse2fs \
+	--disable-libblkid \
+	--disable-libuuid \
+	--enable-symlink-install \
+	--disable-testio-debug
+
+# Set the binary directories to "/bin" and "/sbin" to override programs
+# installed by busybox.
+E2FSPROGS_CONF_OPTS = \
+	--bindir=/bin \
+	--sbindir=/sbin \
+	$(if $(BR2_STATIC_LIBS),--disable-elf-shlibs,--enable-elf-shlibs) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_DEBUGFS),--enable-debugfs,--disable-debugfs) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_E2IMAGE),--enable-imager,--disable-imager) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_E4DEFRAG),--enable-defrag,--disable-defrag) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_FSCK),--enable-fsck,--disable-fsck) \
+	$(if $(BR2_PACKAGE_E2FSPROGS_RESIZE2FS),--enable-resizer,--disable-resizer) \
+	--disable-uuidd \
+	--disable-libblkid \
+	--disable-libuuid \
+	--disable-e2initrd-helper \
+	--disable-testio-debug \
+	--disable-rpath \
+	--enable-symlink-install
+
+ifeq ($(BR2_PACKAGE_E2FSPROGS_FUSE2FS),y)
+E2FSPROGS_CONF_OPTS += --enable-fuse2fs
+E2FSPROGS_DEPENDENCIES += libfuse
+else
+E2FSPROGS_CONF_OPTS += --disable-fuse2fs
 endif
+
+ifeq ($(BR2_nios2),y)
+E2FSPROGS_CONF_ENV += ac_cv_func_fallocate=no
+endif
+
+# Some programs are built for the host, but use definitions guessed by
+# the configure script (i.e with the cross-compiler). Help them by
+# saying that <sys/stat.h> is available on the host, which is needed
+# for util/subst.c to build properly.
+E2FSPROGS_CONF_ENV += BUILD_CFLAGS="-DHAVE_SYS_STAT_H"
+
+# Disable use of the host magic.h, as on older hosts (e.g. RHEL 5)
+# it doesn't provide definitions expected by e2fsprogs support lib.
+HOST_E2FSPROGS_CONF_ENV += \
+	ac_cv_header_magic_h=no \
+	ac_cv_lib_magic_magic_file=no
+
+ifeq ($(BR2_NEEDS_GETTEXT_IF_LOCALE)$(BR2_STATIC_LIBS),yy)
+# util-linux libuuid pulls in libintl if needed, so ensure we also
+# link against it, otherwise static linking fails
+E2FSPROGS_CONF_ENV += LIBS=-lintl
+endif
+
+E2FSPROGS_MAKE_OPTS = LDCONFIG=true
+
+E2FSPROGS_INSTALL_STAGING_OPTS = \
+	DESTDIR=$(STAGING_DIR) \
+	LDCONFIG=true \
+	install-libs
+
+E2FSPROGS_INSTALL_TARGET_OPTS = \
+	DESTDIR=$(TARGET_DIR) \
+	LDCONFIG=true \
+	install
+
+define HOST_E2FSPROGS_INSTALL_CMDS
+	$(HOST_MAKE_ENV) $(MAKE) -C $(@D) install install-libs
+endef
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

@@ -1,30 +1,27 @@
-#############################################################
+################################################################################
 #
 # strace
 #
-#############################################################
-STRACE_VERSION:=4.5.18
-STRACE_SOURCE:=strace-$(STRACE_VERSION).tar.bz2
-STRACE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/strace/strace/$(STRACE_VERSION)
+################################################################################
 
-STRACE_AUTORECONF:=NO
-STRACE_INSTALL_STAGING:=NO
-STRACE_INSTALL_TARGET:=YES
+STRACE_VERSION = 4.16
+STRACE_SOURCE = strace-$(STRACE_VERSION).tar.xz
+STRACE_SITE = http://downloads.sourceforge.net/project/strace/strace/$(STRACE_VERSION)
+STRACE_LICENSE = BSD-3-Clause
+STRACE_LICENSE_FILES = COPYING
 
-STRACE_DEPENDENCIES:=uclibc
-
-STRACE_CONF_ENV:= ac_cv_header_linux_if_packet_h=yes \
-		  ac_cv_header_linux_netlink_h=yes \
-	          $(if $(BR2_LARGEFILE),ac_cv_type_stat64=yes,ac_cv_type_stat64=no)
-
-$(eval $(call AUTOTARGETS,package,strace))
-
-$(STRACE_HOOK_POST_INSTALL): $(STRACE_TARGET_INSTALL_TARGET)
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $(TARGET_DIR)/usr/bin/strace
-	rm -f $(TARGET_DIR)/usr/bin/strace-graph
-ifeq ($(BR2_CROSS_TOOLCHAIN_TARGET_UTILS),y)
-	mkdir -p $(STAGING_DIR)/usr/$(REAL_GNU_TARGET_NAME)/target_utils
-	install -c $(TARGET_DIR)/usr/bin/strace \
-		$(STAGING_DIR)/usr/$(REAL_GNU_TARGET_NAME)/target_utils/strace
+# strace bundle some kernel headers to build libmpers, this mixes userspace
+# headers and kernel headers which break the build with musl.
+# The stddef.h from gcc is used instead of the one from musl.
+ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
+STRACE_CONF_OPTS += st_cv_m32_mpers=no \
+	st_cv_mx32_mpers=no
 endif
-	touch $@
+
+define STRACE_REMOVE_STRACE_GRAPH
+	rm -f $(TARGET_DIR)/usr/bin/strace-graph
+endef
+
+STRACE_POST_INSTALL_TARGET_HOOKS += STRACE_REMOVE_STRACE_GRAPH
+
+$(eval $(autotools-package))

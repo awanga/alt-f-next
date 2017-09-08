@@ -1,57 +1,23 @@
-#############################################################
+################################################################################
 #
 # hdparm
 #
-#############################################################
+################################################################################
 
-HDPARM_VERSION:=9.35
-HDPARM_SOURCE:=hdparm-$(HDPARM_VERSION).tar.gz
-HDPARM_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/hdparm/hdparm
+HDPARM_VERSION = 9.51
+HDPARM_SITE = http://downloads.sourceforge.net/project/hdparm/hdparm
+HDPARM_LICENSE = BSD-Style
+HDPARM_LICENSE_FILES = LICENSE.TXT
 
-HDPARM_CAT:=$(ZCAT)
-HDPARM_DIR:=$(BUILD_DIR)/hdparm-$(HDPARM_VERSION)
-HDPARM_BINARY:=hdparm
-HDPARM_TARGET_BINARY:=sbin/hdparm
-
-$(DL_DIR)/$(HDPARM_SOURCE):
-	 $(call DOWNLOAD,$(HDPARM_SITE),$(HDPARM_SOURCE))
-
-hdparm-source: $(DL_DIR)/$(HDPARM_SOURCE)
-
-$(HDPARM_DIR)/.unpacked: $(DL_DIR)/$(HDPARM_SOURCE)
-	$(HDPARM_CAT) $(DL_DIR)/$(HDPARM_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(HDPARM_DIR) package/hdparm \*.patch
-	touch $@
-
-$(HDPARM_DIR)/$(HDPARM_BINARY): $(HDPARM_DIR)/.unpacked
-	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(HDPARM_DIR) \
+define HDPARM_BUILD_CMDS
+	$(MAKE) $(TARGET_CONFIGURE_OPTS) -C $(@D) \
 		CFLAGS="$(TARGET_CFLAGS)" \
-		LDFLAGS="$(TARGET_LDFLAGS)"
+		LDFLAGS="$(TARGET_LDFLAGS)" \
+		STRIP=/bin/true
+endef
 
-$(TARGET_DIR)/$(HDPARM_TARGET_BINARY): $(HDPARM_DIR)/$(HDPARM_BINARY)
-	rm -f $(TARGET_DIR)/$(HDPARM_TARGET_BINARY)
-	$(INSTALL) -D -m 0755 $(HDPARM_DIR)/$(HDPARM_BINARY) $(TARGET_DIR)/$(HDPARM_TARGET_BINARY)
-ifeq ($(BR2_HAVE_MANPAGES),y)
-	$(INSTALL) -D $(HDPARM_DIR)/hdparm.8 $(TARGET_DIR)/usr/share/man/man8/hdparm.8
-endif
-	$(STRIPCMD) $(STRIP_STRIP_ALL) $@
+define HDPARM_INSTALL_TARGET_CMDS
+	$(INSTALL) -D -m 0755 $(@D)/hdparm $(TARGET_DIR)/sbin/hdparm
+endef
 
-hdparm: uclibc $(TARGET_DIR)/$(HDPARM_TARGET_BINARY)
-
-hdparm-build: $(HDPARM_DIR)/$(HDPARM_BINARY)
-
-hdparm-clean:
-	-$(MAKE) -C $(HDPARM_DIR) clean
-	rm -f $(TARGET_DIR)/$(HDPARM_TARGET_BINARY)
-
-hdparm-dirclean:
-	rm -rf $(HDPARM_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_HDPARM),y)
-TARGETS+=hdparm
-endif
+$(eval $(generic-package))

@@ -1,6 +1,0 @@
-config BR2_PACKAGE_POLIPO
-	bool "polipo"
-	help
-	  Polipo is a small and fast caching web proxy 
-
-	  http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/

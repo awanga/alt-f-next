@@ -9,21 +9,20 @@ config BR2_PACKAGE_OPENSSL
 
 	  http://www.openssl.org/
 
+	  Note: Some helper scripts need perl.
+
+if BR2_PACKAGE_OPENSSL
+
 config BR2_PACKAGE_OPENSSL_BIN
 	bool "openssl binary"
-	depends on BR2_PACKAGE_OPENSSL
 	help
-	  Install the openssl binary to the target file system. This is a
-	  command line tool for doing various crypthographic stuff.
+	  Install the openssl binary and the associated helper scripts to the
+	  target file system. This is a command line tool for doing various
+	  cryptographic stuff.
 
 config BR2_PACKAGE_OPENSSL_ENGINES
 	bool "openssl additional engines"
-	depends on BR2_PACKAGE_OPENSSL
 	help
 	  Install additional encryption engine libraries.
 
-config BR2_PACKAGE_OPENSSL_SIZEOPTIM
-	bool "openssl sizeoptim"
-	depends on BR2_PACKAGE_OPENSSL
-	help
-	  Compile for space saving (-Os)
+endif

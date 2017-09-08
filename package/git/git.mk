@@ -1,32 +1,70 @@
-#############################################################
+################################################################################
 #
 # git
 #
-#############################################################
+################################################################################
 
-GIT_VERSION = 2.4.2
-#GIT_VERSION = 2.1.2
+GIT_VERSION = 2.12.3
 GIT_SOURCE = git-$(GIT_VERSION).tar.xz
 GIT_SITE = https://www.kernel.org/pub/software/scm/git
+GIT_LICENSE = GPL-2.0, LGPL-2.1+
+GIT_LICENSE_FILES = COPYING LGPL-2.1
+GIT_DEPENDENCIES = zlib host-gettext
 
-GIT_DEPENDENCIES = uclibc openssl libcurl expat pcre perl-host
+ifeq ($(BR2_PACKAGE_GETTEXT),y)
+GIT_DEPENDENCIES += gettext
+endif
 
-GIT_CONF_ENV = ac_cv_fread_reads_directories=yes \
-	ac_cv_snprintf_returns_bogus=yes 
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+GIT_DEPENDENCIES += openssl
+GIT_CONF_OPTS += --with-openssl
+GIT_CONF_ENV_LIBS += $(if $(BR2_STATIC_LIBS),-lz)
+else
+GIT_CONF_OPTS += --without-openssl
+endif
 
-GIT_CONF_OPT = --without-python --without-tcltk \
-	-with-libpcre -with-expat --with-curl --with-openssl --with-perl=$(HOST_DIR)/usr/bin/perl
+ifeq ($(BR2_PACKAGE_PCRE),y)
+GIT_DEPENDENCIES += pcre
+GIT_CONF_OPTS += --with-libpcre
+else
+GIT_CONF_OPTS += --without-libpcre
+endif
 
-GIT_MAKE_OPT = CHARSET_LIB=-lcharset
+ifeq ($(BR2_PACKAGE_LIBCURL),y)
+GIT_DEPENDENCIES += libcurl
+GIT_CONF_OPTS += --with-curl
+GIT_CONF_ENV += \
+	ac_cv_prog_curl_config=$(STAGING_DIR)/usr/bin/$(LIBCURL_CONFIG_SCRIPTS)
+else
+GIT_CONF_OPTS += --without-curl
+endif
 
-GIT_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+ifeq ($(BR2_PACKAGE_EXPAT),y)
+GIT_DEPENDENCIES += expat
+GIT_CONF_OPTS += --with-expat
+else
+GIT_CONF_OPTS += --without-expat
+endif
 
-$(eval $(call AUTOTARGETS,package,git))
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+GIT_DEPENDENCIES += libiconv
+GIT_CONF_ENV_LIBS += -liconv
+GIT_CONF_OPTS += --with-iconv=/usr/lib
+else
+GIT_CONF_OPTS += --without-iconv
+endif
 
-$(GIT_HOOK_POST_INSTALL):
-	cp $(GIT_DIR)/git-http-push $(TARGET_DIR)/usr/lib/git-core/
-	for i in $$(grep -lr "$(HOST_DIR)/usr/bin/perl" \
-		$(TARGET_DIR)/usr/lib/git-core) $(TARGET_DIR)/usr/share/gitweb/gitweb.cgi; do \
-		sed -i 's|$(HOST_DIR)/usr/bin/perl|/usr/bin/perl|' $$i; \
-	done
-	touch $@
+ifeq ($(BR2_PACKAGE_TCL),y)
+GIT_DEPENDENCIES += tcl
+GIT_CONF_OPTS += --with-tcltk
+else
+GIT_CONF_OPTS += --without-tcltk
+endif
+
+# assume yes for these tests, configure will bail out otherwise
+# saying error: cannot run test program while cross compiling
+GIT_CONF_ENV += \
+	ac_cv_fread_reads_directories=yes \
+	ac_cv_snprintf_returns_bogus=yes LIBS='$(GIT_CONF_ENV_LIBS)'
+
+$(eval $(autotools-package))

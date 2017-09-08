@@ -1,6 +1,0 @@
-config BR2_PACKAGE_TWOLAME
-	bool "twolame"
-	help
-	  An optimized MPEG Audio Layer 2 encoder
-
-	  http://www.twolame.org

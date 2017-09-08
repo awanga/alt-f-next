@@ -1,8 +1,0 @@
-config BR2_PACKAGE_A2PS
-	bool "a2ps"
-	select BR2_PACKAGE_FILE
-	help
-	  GNU a2ps is an Any to PostScript filter. Of course it processes plain
-	  text files, but also pretty prints quite a few popular languages.
-	
-	  http://www-inf.enst.fr/~demaille/a2ps

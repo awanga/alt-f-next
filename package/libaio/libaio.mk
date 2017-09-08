@@ -1,50 +1,38 @@
-#############################################################
+################################################################################
 #
 # libaio
 #
-#############################################################
-LIBAIO_VERSION=0.3.106-avr32
-LIBAIO_SOURCE=libaio-$(LIBAIO_VERSION).tar.bz2
-LIBAIO_SITE=http://avr32linux.org/twiki/pub/Main/LibAio/
-LIBAIO_DIR=$(BUILD_DIR)/libaio-$(LIBAIO_VERSION)
-LIBAIO_SOVER=1.0.1
+################################################################################
 
-LIBAIO_ARCH:=$(ARCH)
-LIBAIO_MAKEOPTS:= $(TARGET_CONFIGURE_OPTS) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS) -nostdlib -nostartfiles -I. -fPIC" LDFLAGS="$(TARGET_LDFLAGS)"
+LIBAIO_VERSION = 0.3.110
+LIBAIO_SOURCE = libaio_$(LIBAIO_VERSION).orig.tar.gz
+LIBAIO_SITE = http://snapshot.debian.org/archive/debian/20141023T043132Z/pool/main/liba/libaio
+LIBAIO_INSTALL_STAGING = YES
+LIBAIO_LICENSE = LGPL-2.1+
+LIBAIO_LICENSE_FILES = COPYING
 
-$(DL_DIR)/$(LIBAIO_SOURCE):
-	$(call DOWNLOAD,$(LIBAIO_SITE),$(LIBAIO_SOURCE))
+LIBAIO_CONFIGURE_OPTS = $(TARGET_CONFIGURE_OPTS)
 
-$(LIBAIO_DIR)/.unpacked: $(DL_DIR)/$(LIBAIO_SOURCE)
-	$(BZCAT) $(DL_DIR)/$(LIBAIO_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(LIBAIO_DIR) package/libaio libaio\*.patch
-	touch $@
-
-$(LIBAIO_DIR)/src/libaio.so.$(LIBAIO_SOVER): $(LIBAIO_DIR)/.unpacked
-	$(MAKE) -C $(LIBAIO_DIR) $(LIBAIO_MAKEOPTS)
-
-$(STAGING_DIR)/usr/lib/libaio.so: $(LIBAIO_DIR)/src/libaio.so.$(LIBAIO_SOVER)
-	$(MAKE) -C $(LIBAIO_DIR) $(LIBAIO_MAKEOPTS) prefix=$(STAGING_DIR)/usr install
-
-$(TARGET_DIR)/usr/lib/libaio.so: $(STAGING_DIR)/usr/lib/libaio.so
-	cp -dpf $(STAGING_DIR)/usr/lib/libaio.so* $(TARGET_DIR)/usr/lib/
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libaio.so
-
-libaio: uclibc $(TARGET_DIR)/usr/lib/libaio.so
-
-libaio-source: $(DL_DIR)/$(LIBAIO_SOURCE)
-
-libaio-clean:
-	-$(MAKE) -C $(LIBAIO_DIR) $(LIBAIO_MAKEOPTS) clean
-
-libaio-dirclean:
-	rm -rf $(LIBAIO_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LIBAIO),y)
-TARGETS+=libaio
+ifeq ($(BR2_STATIC_LIBS),y)
+LIBAIO_CONFIGURE_OPTS += ENABLE_SHARED=0
 endif
+
+# On PowerPC, a weird toolchain issue causes -Os builds to produce
+# references to hidden symbols, so we're forcing -O2
+ifeq ($(BR2_powerpc),y)
+LIBAIO_CONFIGURE_OPTS += CFLAGS="$(subst -Os,-O2,$(TARGET_CFLAGS))"
+endif
+
+define LIBAIO_BUILD_CMDS
+	$(LIBAIO_CONFIGURE_OPTS) $(TARGET_MAKE_ENV) $(MAKE) -C $(@D)
+endef
+
+define LIBAIO_INSTALL_STAGING_CMDS
+	$(LIBAIO_CONFIGURE_OPTS) $(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(STAGING_DIR) install
+endef
+
+define LIBAIO_INSTALL_TARGET_CMDS
+	$(LIBAIO_CONFIGURE_OPTS) $(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) install
+endef
+
+$(eval $(generic-package))

@@ -1,51 +1,75 @@
-#############################################################
+################################################################################
 #
 # apr
 #
-#############################################################
+################################################################################
 
-APR_VERSION = 1.4.6
+APR_VERSION = 1.5.1
 APR_SITE = http://archive.apache.org/dist/apr
-APR_SOURCE = apr-$(APR_VERSION).tar.gz
-
+APR_LICENSE = Apache-2.0
+APR_LICENSE_FILES = LICENSE
 APR_INSTALL_STAGING = YES
-APR_LIBTOOL_PATCH = NO
-
-APR_DEPENDENCIES = libuuid
+# We have a patch touching configure.in and Makefile.in,
+# so we need to autoreconf:
+APR_AUTORECONF = YES
 
 APR_CONF_ENV = \
+	CC_FOR_BUILD="$(HOSTCC)" \
+	CFLAGS_FOR_BUILD="$(HOST_CFLAGS)" \
 	ac_cv_file__dev_zero=yes \
 	ac_cv_func_setpgrp_void=yes \
 	apr_cv_process_shared_works=yes \
 	apr_cv_mutex_robust_shared=no \
 	apr_cv_tcp_nodelay_with_cork=yes \
 	ac_cv_sizeof_struct_iovec=8 \
+	ac_cv_sizeof_pid_t=4 \
+	ac_cv_struct_rlimit=yes \
+	ac_cv_o_nonblock_inherited=no \
 	apr_cv_mutex_recursive=yes
+APR_CONFIG_SCRIPTS = apr-1-config
 
-APR_INSTALL_BUILD=/usr/share/apr-1/build
-APR_CONF_OPT = --disable-static -with-installbuilddir=$(APR_INSTALL_BUILD)
+# Doesn't even try to guess when cross compiling
+ifeq ($(BR2_TOOLCHAIN_HAS_THREADS),y)
+APR_CONF_ENV += apr_cv_pthreads_lib="-lpthread"
+endif
 
-APR_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
-APR_INSTALL_STAGING_OPT = DESTDIR=$(STAGING_DIR) install
+# Fix lfs detection when cross compiling
+APR_CONF_ENV += apr_cv_use_lfs64=yes
 
-$(eval $(call AUTOTARGETS,package,apr))
+# Use non-portable atomics when available: 8 bytes atomics are used on
+# 64-bits architectures, 4 bytes atomics on 32-bits architectures. We
+# have to override ap_cv_atomic_builtins because the test used to
+# check for atomic builtins uses AC_TRY_RUN, which doesn't work when
+# cross-compiling.
+ifeq ($(BR2_ARCH_IS_64):$(BR2_TOOLCHAIN_HAS_SYNC_8),y:y)
+APR_CONF_OPTS += --enable-nonportable-atomics
+APR_CONF_ENV += ap_cv_atomic_builtins=yes
+else ifeq ($(BR2_ARCH_IS_64):$(BR2_TOOLCHAIN_HAS_SYNC_4),:y)
+APR_CONF_OPTS += --enable-nonportable-atomics
+APR_CONF_ENV += ap_cv_atomic_builtins=yes
+else
+APR_CONF_OPTS += --disable-nonportable-atomics
+endif
 
-$(APR_HOOK_POST_INSTALL):
-	rm -rf $(TARGET_DIR)/usr/bin/apr-1-config \
-		$(TARGET_DIR)/usr/lib/apr.exp \
-		$(TARGET_DIR)/usr/share/apr-1
-	touch $@
+ifeq ($(BR2_PACKAGE_UTIL_LINUX_LIBUUID),y)
+APR_DEPENDENCIES += util-linux
+endif
 
-$(APR_TARGET_INSTALL_STAGING):
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(APR_DIR) install
-	$(SED) "s|^prefix=.*|prefix=\'$(STAGING_DIR)/usr\'|g" \
-		-e "s|^exec_prefix=.*|exec_prefix=\'$(STAGING_DIR)/usr\'|g" \
-		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
-		-e "s|^installbuilddir=\"\(.*\)\"|installbuilddir=\'$(STAGING_DIR)\1\'|g" \
-		$(STAGING_DIR)/usr/bin/apr-1-config
-	$(SED) 's|apr_builddir=/|apr_builddir=$(STAGING_DIR)/|' \
-		-e 's|top_builddir=/|top_builddir=$(STAGING_DIR)/|' \
-		-e 's|apr_builders=/|apr_builders=$(STAGING_DIR)/|' \
-		$(STAGING_DIR)/$(APR_INSTALL_BUILD)/apr_rules.mk
-	$(SED) "s|^libdir=.*|libdir='$(STAGING_DIR)/usr/lib'|" $(STAGING_DIR)/usr/lib/libapr-1.la
-	touch $@
+define APR_CLEANUP_UNNEEDED_FILES
+	$(RM) -rf $(TARGET_DIR)/usr/build-1/
+endef
+
+APR_POST_INSTALL_TARGET_HOOKS += APR_CLEANUP_UNNEEDED_FILES
+
+define APR_FIXUP_RULES_MK
+	$(SED) 's%apr_builddir=%apr_builddir=$(STAGING_DIR)%' \
+		$(STAGING_DIR)/usr/build-1/apr_rules.mk
+	$(SED) 's%apr_builders=%apr_builders=$(STAGING_DIR)%' \
+		$(STAGING_DIR)/usr/build-1/apr_rules.mk
+	$(SED) 's%top_builddir=%top_builddir=$(STAGING_DIR)%' \
+		$(STAGING_DIR)/usr/build-1/apr_rules.mk
+endef
+
+APR_POST_INSTALL_STAGING_HOOKS += APR_FIXUP_RULES_MK
+
+$(eval $(autotools-package))

@@ -1,80 +1,114 @@
-#############################################################
+################################################################################
 #
 # libdrm
 #
-#############################################################
-LIBDRM_VERSION:=2.3.0
-LIBDRM_SOURCE:=libdrm-$(LIBDRM_VERSION).tar.bz2
-LIBDRM_SITE:=http://dri.freedesktop.org/libdrm/
-LIBDRM_CAT:=$(BZCAT)
-LIBDRM_DIR:=$(BUILD_DIR)/libdrm-$(LIBDRM_VERSION)
+################################################################################
 
-$(DL_DIR)/$(LIBDRM_SOURCE):
-	$(call DOWNLOAD,$(LIBDRM_SITE),$(LIBDRM_SOURCE))
+LIBDRM_VERSION = 2.4.80
+LIBDRM_SOURCE = libdrm-$(LIBDRM_VERSION).tar.bz2
+LIBDRM_SITE = http://dri.freedesktop.org/libdrm
+LIBDRM_LICENSE = MIT
+LIBDRM_INSTALL_STAGING = YES
+LIBDRM_DEPENDENCIES = \
+	libpthread-stubs \
+	host-pkgconf
 
-libdrm-source: $(DL_DIR)/$(LIBDRM_SOURCE)
+LIBDRM_CONF_OPTS = \
+	--disable-cairo-tests \
+	--disable-manpages
 
-$(LIBDRM_DIR)/.unpacked: $(DL_DIR)/$(LIBDRM_SOURCE)
-	$(LIBDRM_CAT) $(DL_DIR)/$(LIBDRM_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	$(CONFIG_UPDATE) $(LIBDRM_DIR)
-	touch $@
+LIBDRM_CONF_ENV = ac_cv_prog_cc_c99='-std=gnu99'
 
-$(LIBDRM_DIR)/.configured: $(LIBDRM_DIR)/.unpacked
-	(cd $(LIBDRM_DIR); rm -f config.cache; \
-	$(TARGET_CONFIGURE_OPTS) \
-	CFLAGS="$(TARGET_CFLAGS) " \
-	LDFLAGS="$(TARGET_LDFLAGS)" \
-	./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/usr/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--includedir=/usr/include \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-	)
-	touch $@
-
-$(LIBDRM_DIR)/.compiled: $(LIBDRM_DIR)/.configured
-	$(MAKE) CCexe="$(HOSTCC)" -C $(LIBDRM_DIR)
-	touch $(LIBDRM_DIR)/.compiled
-
-$(STAGING_DIR)/usr/lib/libdrm.so: $(LIBDRM_DIR)/.compiled
-	$(MAKE) DESTDIR=$(STAGING_DIR) -C $(LIBDRM_DIR) install
-	$(SED) "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" $(STAGING_DIR)/usr/lib/libdrm.la
-	#$(SED) "s,^prefix=.*,prefix=\'$(STAGING_DIR)\',g" \
-	# -e "s,^exec_prefix=.*,exec_prefix=\'$(STAGING_DIR)/usr\',g" \
-	# -e "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include\',g" \
-	# -e "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" \
-	# $(STAGING_DIR)/usr/bin/libdrm-config
-	touch -c $(STAGING_DIR)/usr/lib/libdrm.so
-
-$(TARGET_DIR)/usr/lib/libdrm.so: $(STAGING_DIR)/usr/lib/libdrm.so
-	cp -dpf $(STAGING_DIR)/usr/lib/libdrm.so* $(TARGET_DIR)/usr/lib/
-	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libdrm.so
-
-libdrm: uclibc host-pkgconfig $(TARGET_DIR)/usr/lib/libdrm.so
-
-libdrm-clean:
-	-$(MAKE) DESTDIR=$(TARGET_DIR) CC=$(TARGET_CC) -C $(LIBDRM_DIR) uninstall
-	-$(MAKE) -C $(LIBDRM_DIR) clean
-
-libdrm-dirclean:
-	rm -rf $(LIBDRM_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_LIBDRM),y)
-TARGETS+=libdrm
+ifeq ($(BR2_PACKAGE_LIBATOMIC_OPS),y)
+LIBDRM_DEPENDENCIES += libatomic_ops
+ifeq ($(BR2_sparc_v8)$(BR2_sparc_leon3),y)
+LIBDRM_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -DAO_NO_SPARC_V9"
 endif
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_INTEL),y)
+LIBDRM_CONF_OPTS += --enable-intel
+LIBDRM_DEPENDENCIES += libpciaccess
+else
+LIBDRM_CONF_OPTS += --disable-intel
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_RADEON),y)
+LIBDRM_CONF_OPTS += --enable-radeon
+else
+LIBDRM_CONF_OPTS += --disable-radeon
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_AMDGPU),y)
+LIBDRM_CONF_OPTS += --enable-amdgpu
+else
+LIBDRM_CONF_OPTS += --disable-amdgpu
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_NOUVEAU),y)
+LIBDRM_CONF_OPTS += --enable-nouveau
+else
+LIBDRM_CONF_OPTS += --disable-nouveau
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_VMWGFX),y)
+LIBDRM_CONF_OPTS += --enable-vmwgfx
+else
+LIBDRM_CONF_OPTS += --disable-vmwgfx
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_OMAP),y)
+LIBDRM_CONF_OPTS += --enable-omap-experimental-api
+else
+LIBDRM_CONF_OPTS += --disable-omap-experimental-api
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_ETNAVIV),y)
+LIBDRM_CONF_OPTS += --enable-etnaviv-experimental-api
+else
+LIBDRM_CONF_OPTS += --disable-etnaviv-experimental-api
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_EXYNOS),y)
+LIBDRM_CONF_OPTS += --enable-exynos-experimental-api
+else
+LIBDRM_CONF_OPTS += --disable-exynos-experimental-api
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_FREEDRENO),y)
+LIBDRM_CONF_OPTS += --enable-freedreno
+else
+LIBDRM_CONF_OPTS += --disable-freedreno
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_TEGRA),y)
+LIBDRM_CONF_OPTS += --enable-tegra-experimental-api
+else
+LIBDRM_CONF_OPTS += --disable-tegra-experimental-api
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_VC4),y)
+LIBDRM_CONF_OPTS += --enable-vc4
+else
+LIBDRM_CONF_OPTS += --disable-vc4
+endif
+
+ifeq ($(BR2_PACKAGE_HAS_UDEV),y)
+LIBDRM_CONF_OPTS += --enable-udev
+LIBDRM_DEPENDENCIES += udev
+else
+LIBDRM_CONF_OPTS += --disable-udev
+endif
+
+ifeq ($(BR2_PACKAGE_VALGRIND),y)
+LIBDRM_CONF_OPTS += --enable-valgrind
+LIBDRM_DEPENDENCIES += valgrind
+else
+LIBDRM_CONF_OPTS += --disable-valgrind
+endif
+
+ifeq ($(BR2_PACKAGE_LIBDRM_INSTALL_TESTS),y)
+LIBDRM_CONF_OPTS += --enable-install-test-programs
+endif
+
+$(eval $(autotools-package))

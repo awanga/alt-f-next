@@ -1,17 +1,22 @@
-#############################################################
+################################################################################
 #
 # libconfuse
 #
-#############################################################
-LIBCONFUSE_VERSION:=2.6
-LIBCONFUSE_SOURCE:=confuse-$(LIBCONFUSE_VERSION).tar.gz
-LIBCONFUSE_SITE:=http://bzero.se/confuse/
-LIBCONFUSE_AUTORECONF:=NO
-LIBCONFUSE_INSTALL_STAGING:=YES
-LIBCONFUSE_INSTALL_TARGET:=YES
+################################################################################
 
-LIBCONFUSE_CONF_OPT:=--enable-shared --disable-rpath
+LIBCONFUSE_VERSION = 3.0
+LIBCONFUSE_SOURCE = confuse-$(LIBCONFUSE_VERSION).tar.xz
+LIBCONFUSE_SITE = https://github.com/martinh/libconfuse/releases/download/v$(LIBCONFUSE_VERSION)
+LIBCONFUSE_INSTALL_STAGING = YES
+LIBCONFUSE_CONF_OPTS = --disable-rpath
+LIBCONFUSE_DEPENDENCIES = host-flex
+HOST_LIBCONFUSE_DEPENDENCIES = host-flex
+LIBCONFUSE_LICENSE = ISC
+LIBCONFUSE_LICENSE_FILES = LICENSE
 
-LIBCONFUSE_DEPENDENCIES = uclibc
+ifeq ($(BR2_PACKAGE_GETTEXT),y)
+LIBCONFUSE_DEPENDENCIES += gettext
+endif
 
-$(eval $(call AUTOTARGETS,package,libconfuse))
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

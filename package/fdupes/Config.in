@@ -1,6 +1,0 @@
-config BR2_PACKAGE_FDUPES
-	bool "fdupes"
-	help
-	  a program for identifying or deleting duplicate files residing within specified directories
-
-	  https://github.com/adrianlopezroche/fdupes

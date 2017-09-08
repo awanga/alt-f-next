@@ -1,0 +1,4 @@
+# From https://lists.gnupg.org/pipermail/gnupg-announce/2017q2/000404.html
+sha1 500ddae8e4225ae2e300934090f9b9a427b8def1  gnupg-2.1.20.tar.bz2
+# Calculated based on the hash above
+sha256 24cf9a69369be64a9f6f8cc11a1be33ab7780ad77a6a1b93719438f49f69960d  gnupg-2.1.20.tar.bz2

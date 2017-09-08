@@ -1,18 +1,15 @@
-#############################################################
+################################################################################
 #
 # libmcrypt
 #
-#############################################################
+################################################################################
 
 LIBMCRYPT_VERSION = 2.5.8
-LIBMCRYPT_SITE = $(BR2_SOURCEFORGE_MIRROR)/mcrypt/Libmcrypt/$(LIBMCRYPT_VERSION)
-LIBMCRYPT_SOURCE = libmcrypt-$(LIBMCRYPT_VERSION).tar.bz2
+LIBMCRYPT_SITE = http://downloads.sourceforge.net/project/mcrypt/Libmcrypt/$(LIBMCRYPT_VERSION)
+LIBMCRYPT_AUTORECONF = YES
 LIBMCRYPT_INSTALL_STAGING = YES
-LIBMCRYPT_DEPENDENCIES = uclibc 
+LIBMCRYPT_LICENSE = LGPL-2.1
+LIBMCRYPT_LICENSE_FILES = COPYING.LIB
+LIBMCRYPT_CONFIG_SCRIPTS = libmcrypt-config
 
-$(eval $(call AUTOTARGETS,package,libmcrypt))
-
-$(LIBMCRYPT_HOOK_POST_INSTALL):
-	rm -f $(TARGET_DIR)/usr/bin/arm-linux-libmcrypt-config \
-		$(TARGET_DIR)/usr/share/aclocal/libmcrypt.m4
-	touch $@
+$(eval $(autotools-package))

@@ -1,19 +1,33 @@
-#############################################################
+################################################################################
 #
 # sylpheed
 #
-#############################################################
-SYLPHEED_VERSION = 2.4.8
+################################################################################
+
+SYLPHEED_VERSION_MAJOR = 3.2
+SYLPHEED_VERSION = $(SYLPHEED_VERSION_MAJOR).0
 SYLPHEED_SOURCE = sylpheed-$(SYLPHEED_VERSION).tar.bz2
-SYLPHEED_SITE = http://sylpheed.sraoss.jp/sylpheed/v2.4
-SYLPHEED_AUTORECONF = NO
-SYLPHEED_INSTALL_STAGING = NO
-SYLPHEED_INSTALL_TARGET = YES
-SYLPHEED_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+SYLPHEED_SITE = http://sylpheed.sraoss.jp/sylpheed/v$(SYLPHEED_VERSION_MAJOR)
+SYLPHEED_LICENSE = GPL-2.0+ (executables), LGPL-2.1+ (library, attachment plugin)
+SYLPHEED_LICENSE_FILES = COPYING COPYING.LIB
+SYLPHEED_CONF_OPTS = --disable-gtkspell --disable-gpgme
+SYLPHEED_DEPENDENCIES = host-pkgconf libgtk2
 
-SYLPHEED_CONF_OPT = --disable-gtkspell --program-prefix=""
+# Remove the -I$(includedir) from the Makefiles
+# because it refers to the host /usr/include.
+define SYLPHEED_PRECONFIGURE
+	for i in $$(find $(@D) -name "Makefile*"); do \
+		sed -i 's:-I$$(includedir)::g' $$i; \
+	done
+endef
 
-SYLPHEED_DEPENDENCIES = uclibc host-pkgconfig
+SYLPHEED_PRE_CONFIGURE_HOOKS += SYLPHEED_PRECONFIGURE
 
-$(eval $(call AUTOTARGETS,package,sylpheed))
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+SYLPHEED_DEPENDENCIES += openssl
+SYLPHEED_CONF_OPTS += --enable-ssl
+else
+SYLPHEED_CONF_OPTS += --disable-ssl
+endif
 
+$(eval $(autotools-package))

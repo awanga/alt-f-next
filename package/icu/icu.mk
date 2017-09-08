@@ -1,88 +1,60 @@
-#############################################################
+################################################################################
 #
-# ICU International Components for Unicode
+# icu
 #
-#############################################################
+################################################################################
 
-ICU_VERSION:=4c-4_8
-ICU_MAJOR=4.8
-ICU_SOURCE:=icu$(ICU_VERSION)-src.tgz
-ICU_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/icu/ICU4C/$(ICU_MAJOR)
+ICU_VERSION = 58.2
+ICU_SOURCE = icu4c-$(subst .,_,$(ICU_VERSION))-src.tgz
+ICU_SITE = http://download.icu-project.org/files/icu4c/$(ICU_VERSION)
+ICU_LICENSE = ICU License
+ICU_LICENSE_FILES = LICENSE
 
-ICU_CAT:=$(ZCAT)
-ICU_DIR:=$(BUILD_DIR)/icu/source
-ICU_HOST_DIR:=$(BUILD_DIR)/icu-host/source
+ICU_DEPENDENCIES = host-icu
+ICU_INSTALL_STAGING = YES
+ICU_CONFIG_SCRIPTS = icu-config
+ICU_CONF_OPTS = \
+	--with-cross-build=$(HOST_ICU_DIR)/source \
+	--disable-samples \
+	--disable-tests
 
-$(DL_DIR)/$(ICU_SOURCE):
-	 $(call DOWNLOAD,$(ICU_SITE),$(ICU_SOURCE))
-
-icu-source: $(DL_DIR)/$(ICU_SOURCE)
-
-$(ICU_DIR)/.unpacked: $(DL_DIR)/$(ICU_SOURCE)
-	$(ICU_CAT) $(DL_DIR)/$(ICU_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	$(CONFIG_UPDATE) $(ICU_DIR)
-	cp -a $(BUILD_DIR)/icu $(BUILD_DIR)/icu-host
-	toolchain/patch-kernel.sh $(ICU_DIR) package/icu/ \*.patch
-	touch $@
-
-$(ICU_HOST_DIR)/.configured: $(ICU_DIR)/.unpacked
-	(cd $(ICU_HOST_DIR); ./configure \
-		--prefix=/usr;);
-	touch $@
-
-$(ICU_HOST_DIR)/.host_done: $(ICU_HOST_DIR)/.configured
-	$(MAKE) -C $(ICU_HOST_DIR)
-	ln -s -f $(ICU_HOST_DIR)/bin $(ICU_DIR)/bin-host
-	ln -s -f $(ICU_HOST_DIR)/lib $(ICU_DIR)/lib-host
-	touch $@
-
-$(ICU_DIR)/.configured: $(ICU_HOST_DIR)/.host_done
-	(cd $(ICU_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
-		CXX=$(TARGET_CXX) \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--libdir=/usr/lib \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		--disable-layout \
-		--disable-samples \
-		--disable-extras \
-		--disable-tests \
-		--with-cross-build=$(ICU_HOST_DIR) \
-	);
-	touch $@
-
-# FIXME: libicudata.so.48.0 is not stripped
-
-$(ICU_DIR)/.build: $(ICU_DIR)/.configured
-	$(MAKE) -C $(ICU_DIR)
-	touch $@
-
-$(ICU_DIR)/.installed: $(ICU_DIR)/.build
-	$(MAKE) -C $(ICU_DIR) install DESTDIR=$(STAGING_DIR)
-	$(MAKE) -C $(ICU_DIR) install DESTDIR=$(TARGET_DIR)
-	$(SED) "s,^default_prefix=.*,default_prefix=\'$(STAGING_DIR)/usr\',g" $(STAGING_DIR)/usr/bin/icu-config
-	touch $@
-
-icu: uclibc $(ICU_DIR)/.installed
-
-icu-clean:
-	rm -f $(TARGET_DIR)/bin/icu
-	-$(MAKE) -C $(ICU_DIR) clean
-
-icu-dirclean:
-	rm -rf $(ICU_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_ICU),y)
-TARGETS+=icu
+# When available, icu prefers to use C++11 atomics, which rely on the
+# __atomic builtins. On certain architectures, this requires linking
+# with libatomic starting from gcc 4.8.
+ifeq ($(BR2_TOOLCHAIN_HAS_LIBATOMIC),y)
+ICU_CONF_ENV += LIBS="-latomic"
 endif
+
+# strtod_l() is not supported by musl; also xlocale.h is missing
+ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
+ICU_CONF_ENV += ac_cv_func_strtod_l=no
+endif
+
+HOST_ICU_CONF_OPTS = \
+	--disable-samples \
+	--disable-tests \
+	--disable-extras \
+	--disable-icuio \
+	--disable-layout \
+	--disable-renaming
+ICU_SUBDIR = source
+HOST_ICU_SUBDIR = source
+
+ICU_CUSTOM_DATA_PATH = $(call qstrip,$(BR2_PACKAGE_ICU_CUSTOM_DATA_PATH))
+
+ifneq ($(ICU_CUSTOM_DATA_PATH),)
+define ICU_COPY_CUSTOM_DATA
+	cp $(ICU_CUSTOM_DATA_PATH) $(@D)/source/data/in/
+endef
+ICU_POST_PATCH_HOOKS += ICU_COPY_CUSTOM_DATA
+endif
+
+define ICU_REMOVE_DEV_FILES
+	rm -f $(addprefix $(TARGET_DIR)/usr/bin/,derb genbrk gencfu gencnval gendict genrb icuinfo makeconv uconv)
+	rm -f $(addprefix $(TARGET_DIR)/usr/sbin/,genccode gencmn gennorm2 gensprep icupkg)
+	rm -rf $(TARGET_DIR)/usr/share/icu
+endef
+ICU_POST_INSTALL_TARGET_HOOKS += ICU_REMOVE_DEV_FILES
+
+$(eval $(autotools-package))
+$(eval $(host-autotools-package))

@@ -1,21 +1,25 @@
+comment "python needs a toolchain w/ wchar, threads, dynamic library"
+	depends on BR2_USE_MMU
+	depends on !BR2_USE_WCHAR || !BR2_TOOLCHAIN_HAS_THREADS || BR2_STATIC_LIBS
+
 config BR2_PACKAGE_PYTHON
 	bool "python"
+	depends on BR2_USE_WCHAR
+	# uses fork()
+	depends on BR2_USE_MMU
+	depends on BR2_TOOLCHAIN_HAS_THREADS # libffi
+	depends on !BR2_STATIC_LIBS
+	select BR2_PACKAGE_LIBFFI
 	help
 	  The python language interpreter.
 
 	  http://www.python.org/
 
-config BR2_PACKAGE_PYTHON_DEV
-	depends on BR2_PACKAGE_PYTHON
-	bool "development files on target"
-	help
-	  If enabled, development files (headers and static libpython) will be
-	  installed on the target.
+if BR2_PACKAGE_PYTHON
 
 choice
-	prompt "Module format to install"
-	depends on BR2_PACKAGE_PYTHON
-	default BR2_PACKAGE_PYTHON_PY_ONLY
+	prompt "python module format to install"
+	default BR2_PACKAGE_PYTHON_PYC_ONLY
 	help
 	  Select Python module format to install on target (py, pyc or both)
 
@@ -30,101 +34,99 @@ config BR2_PACKAGE_PYTHON_PY_PYC
 
 endchoice
 
+menu "core python modules"
+
 comment "The following modules are unusual or require extra libraries"
-	depends on BR2_PACKAGE_PYTHON
+
+config BR2_PACKAGE_PYTHON_BZIP2
+	bool "bzip2 module"
+	select BR2_PACKAGE_BZIP2
+	help
+	  bzip2 module for Python
 
 config BR2_PACKAGE_PYTHON_BSDDB
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_DB
 	bool "bsddb module"
+	select BR2_PACKAGE_BERKELEYDB
 	help
-	  bsddb module for Python. Deprecated since 2.6
-
-config BR2_PACKAGE_PYTHON_GDBM
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_GDBM
-	bool "gdbm module"
-	help
-	  gdbm module for Python.
-
-config BR2_PACKAGE_PYTHON_SQLITE3
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_SQLITE
-	bool "sqlite3 module"
-	help
-	  sqlite3 module for Python.
-
-config BR2_PACKAGE_PYTHON_UNICODEDATA
-	depends on BR2_PACKAGE_PYTHON
-	bool "unicodedata module"
-	help
-	  Unicode character database (used by stringprep module) (large).
-
-config BR2_PACKAGE_PYTHON_LOCALE
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_GETTEXT
-	bool "locale module"
-	help
-	  Support for POSIX locales
+	  bsddb module for Python.
 
 config BR2_PACKAGE_PYTHON_CODECSCJK
-	depends on BR2_PACKAGE_PYTHON
 	bool "codecscjk module"
 	help
 	  Chinese/Japanese/Korean codecs module for Python (large).
 
 config BR2_PACKAGE_PYTHON_CURSES
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_NCURSES
 	bool "curses module"
+	select BR2_PACKAGE_NCURSES
 	help
 	  curses module for Python.
 
+config BR2_PACKAGE_PYTHON_OSSAUDIODEV
+	bool "ossaudiodev module"
+	help
+	  ossaudiodev module for Python.
+
 config BR2_PACKAGE_PYTHON_READLINE
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_READLINE
 	bool "readline"
+	select BR2_PACKAGE_READLINE
 	help
 	  readline module for Python (required for command-line
 	  editing in the Python shell).
 
-config BR2_PACKAGE_PYTHON_NIS
-	depends on BR2_PACKAGE_PYTHON
-	bool "nis module"
-	help
-	  nis module for Python.
-
-config BR2_PACKAGE_PYTHON_PYEXPAT
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_EXPAT
-	bool "pyexpat"
-	help
-	  pyexpat module for Python.
-
 config BR2_PACKAGE_PYTHON_SSL
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_OPENSSL
 	bool "ssl"
+	select BR2_PACKAGE_OPENSSL
 	help
 	  _ssl module for Python (required for https in urllib etc).
 
-config BR2_PACKAGE_PYTHON_BZIP2
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_BZIP2
-	bool "bzip2"
+config BR2_PACKAGE_PYTHON_UNICODEDATA
+	bool "unicodedata module"
+	default y
 	help
-	  bzip2 module for Python
+	  Unicode character database (used by stringprep module) (large).
+
+if BR2_PACKAGE_PYTHON_UNICODEDATA
+
+choice
+	prompt "Python unicode database format"
+	default BR2_PACKAGE_PYTHON_UCS2
+	help
+	  Select Python unicode database format for target
+
+config BR2_PACKAGE_PYTHON_UCS2
+	bool "Universal Character Set 2-byte (UCS2)"
+
+config BR2_PACKAGE_PYTHON_UCS4
+	bool "Universal Character Set 4-byte (UCS4)"
+
+endchoice
+
+endif
+
+config BR2_PACKAGE_PYTHON_SQLITE
+	bool "sqlite module"
+	select BR2_PACKAGE_SQLITE
+	help
+	  SQLite database support
+
+config BR2_PACKAGE_PYTHON_PYEXPAT
+	bool "xml module"
+	select BR2_PACKAGE_EXPAT
+	help
+	  pyexpat and xml libraries for Python
 
 config BR2_PACKAGE_PYTHON_ZLIB
-	depends on BR2_PACKAGE_PYTHON
+	bool "zlib module"
 	select BR2_PACKAGE_ZLIB
-	bool "zlib"
 	help
-	  zlib module for Python
+	  zlib support in Python
 
-config BR2_PACKAGE_PYTHON_TKINTER
-	depends on BR2_PACKAGE_PYTHON
-	select BR2_PACKAGE_TCL
-	bool "tkinter module"
+config BR2_PACKAGE_PYTHON_HASHLIB
+	bool "hashlib module"
+	select BR2_PACKAGE_OPENSSL
 	help
-	  tkinter module for Python.
+	  hashlib support in Python
+
+endmenu
+
+endif
