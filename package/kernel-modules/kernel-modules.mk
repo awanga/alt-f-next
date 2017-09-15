@@ -4,7 +4,7 @@
 #
 #############################################################
 
-KERNEL_MODULES_VERSION:=4.4.45
+KERNEL_MODULES_VERSION:=4.4.86
 
 # this is a dummy target, it is here just to have BR2_PACKAGE_KERNEL_MODULES defined
 kernel-modules: uclibc
