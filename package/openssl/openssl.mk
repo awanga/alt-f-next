@@ -4,7 +4,7 @@
 #
 ############################################################
 
-OPENSSL_VERSION:=1.0.2i
+OPENSSL_VERSION:=1.0.2l
 OPENSSL_SITE:=http://www.openssl.org/source
 
 OPENSSL_MAKE = $(MAKE1)
