@@ -2,9 +2,9 @@
 #
 # stunnel
 #
-#############################################################
+############################################################
 
-STUNNEL_VERSION:=5.30
+STUNNEL_VERSION:=5.42
 STUNNEL_SITE:=http://www.usenix.org.uk/mirrors/stunnel/archive/5.x
 
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
