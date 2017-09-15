@@ -2,9 +2,9 @@
 #
 # netatalk
 #
-#############################################################
+############################################################
 
-NETATALK_VERSION = 3.1.8
+NETATALK_VERSION = 3.1.11
 NETATALK_SOURCE = netatalk-$(NETATALK_VERSION).tar.bz2
 NETATALK_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/netatalk/netatalk/$(NETATALK_VERSION)
 
@@ -26,6 +26,7 @@ NETATALK_CONF_OPT = \
 	--disable-static \
 	--program-prefix="" \
 	--with-lockfile=/var/run/netatalk.pid \
+	--with-mysql-config=no
 
 NETATALK_DEPENDENCIES = uclibc libgcrypt db avahi libevent2 acl openssl libiconv
 
