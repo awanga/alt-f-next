@@ -4,9 +4,11 @@
 #
 #############################################################
 
-CRYPTODEV_VERSION:=1.8
+#CRYPTODEV_VERSION:=1.8
+CRYPTODEV_VERSION:=1.9
 CRYPTODEV_SOURCE:=cryptodev-linux-$(CRYPTODEV_VERSION).tar.gz
-CRYPTODEV_SITE:=http://download.gna.org/cryptodev-linux
+#CRYPTODEV_SITE:=http://nwl.cc/pub/cryptodev-linux
+CRYPTODEV_SITE:=https://github.com/cryptodev-linux/cryptodev-linux/archive
 CRYPTODEV_DIR:=$(BUILD_DIR)/cryptodev-$(CRYPTODEV_VERSION)
 CRYPTODEV_MOD:=cryptodev.ko
 CRYPTODEV_TARGET_MOD:=cryptodev/cryptodev.ko
@@ -44,6 +46,9 @@ $(TARGET_DIR)/lib/modules/$(LINVER)/$(CRYPTODEV_TARGET_MOD): $(CRYPTODEV_DIR)/$(
 	$(STAGING_DIR)/bin/$(GNU_TARGET_NAME)-depmod26 -b $(TARGET_DIR) $(LINVER)
 
 cryptodev: $(CRYPTODEV_DEPENDENCIES)
+
+cryptodev-tests: cryptodev-build
+	$(MAKE) KERNEL_DIR=$(LINUX_DIR) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" -C $(CRYPTODEV_DIR) check
 
 cryptodev-build: $(CRYPTODEV_DIR)/$(CRYPTODEV_MOD)
 

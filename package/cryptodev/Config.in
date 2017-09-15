@@ -3,7 +3,7 @@ config BR2_PACKAGE_CRYPTODEV
 	help
 	  Cryptodev-linux is a device that allows access to Linux kernel cryptographic drivers; thus allowing of userspace applications to take advantage of hardware accelerators
 
-	  http://home.gna.org/cryptodev-linux
+	  http://cryptodev-linux.org
 
 config BR2_PACKAGE_CRYPTODEV_HEADER_ONLY
 	bool "criptodev-header"
