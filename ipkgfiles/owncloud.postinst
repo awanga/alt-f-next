@@ -87,7 +87,7 @@ chown -R lighttpd:network $sroot/owncloud-config $sroot/owncloud-data $OC_DIR
 
 # enable needed PHP extentions
 for i in json session sqlite3 xml mbstring zip zlib gd curl ctype simplexml \
-	hash dom pdo pdo_sqlite fileinfo iconv; do
+	hash dom pdo pdo_sqlite fileinfo iconv xmlwriter; do
 	sed -i "s|^;extension="$i".so|extension="$i".so|" $PHP_CONF
 done
 
