@@ -6,43 +6,49 @@ write_header "Samba Setup"
 
 CONF_SMB=/etc/samba/smb.conf
 
+mktt proto_tt "SMB1 is the the old MS-Windows protocol and is needed for most embedded devices and linux clients.<br>SMB2 is a newer protocol introduced in MS-Windows Vista but might have compatibility issues.<br>After changing it might be needed to reboot the NAS box and accessing PCs."
+
 if test -e $CONF_SMB; then
-	if ! grep -q '[[:space:]]*use sendfile' $CONF_SMB; then
-		sed -i '/socket options/a\
+	if ! grep -q '^[[:space:]#]*use sendfile' $CONF_SMB; then
+		chgfl=1; sed -i '/socket options/a\
 	use sendfile = yes' $CONF_SMB
 	fi
 
-	if ! grep -q '[[:space:]]*log level' $CONF_SMB; then
-		sed -i '/max log size/a\
+	if ! grep -q '^[[:space:]#]*log level' $CONF_SMB; then
+		chgfl=1; sed -i '/max log size/a\
 	log level = 1' $CONF_SMB
 	fi
 
-	if ! grep -q '[[:space:]]*max protocol' $CONF_SMB; then
-		sed -i '/print command/a\
+	if ! grep -q '^[[:space:]#]*max protocol' $CONF_SMB; then
+		chgfl=1; sed -i '/print command/a\
 	max protocol = SMB2' $CONF_SMB
 	fi
 
-	if ! grep -q '[[:space:]]*min protocol' $CONF_SMB; then
-		sed -i '/print command/a\
+	if ! grep -q '^[[:space:]#]*min protocol' $CONF_SMB; then
+		chgfl=1; sed -i '/print command/a\
 	#min protocol = SMB2' $CONF_SMB
 	fi
 	
-	if ! grep -q '[[:space:]]*client ipc signing' $CONF_SMB; then
-		sed -i '/print command/a\
+	if ! grep -q '^[[:space:]#]*client ipc signing' $CONF_SMB; then
+		chgfl=1; sed -i '/print command/a\
 	client ipc signing = auto' $CONF_SMB
 	fi
 	
-	if ! grep -q '[[:space:]]*client signing' $CONF_SMB; then
-		sed -i '/print command/a\
+	if ! grep -q '^[[:space:]#]*client signing' $CONF_SMB; then
+		chgfl=1; sed -i '/print command/a\
 	client signing = auto' $CONF_SMB
 	fi
 
-	if ! grep -q '[[:space:]]*server signing' $CONF_SMB; then
-		sed -i '/print command/a\
+	if ! grep -q '^[[:space:]#]*server signing' $CONF_SMB; then
+		chgfl=1; sed -i '/print command/a\
 	\
 	server signing = disabled' $CONF_SMB
 	fi
 
+	if test -n "$chgflg" && rcsmb status >& /dev/null; then
+		rcsmb reload >& /dev/null
+	fi
+	
 	SMB1_EN_check="checked"
 	if grep -q '^[[:space:]]*max protocol = SMB2' $CONF_SMB; then
 		SMB2_EN_check="checked"
@@ -213,8 +219,8 @@ function parse(share_name, line) {
 
 cat<<-EOF
 	<table>
-	<tr><td>Enable SMB1</td><td><input type=checkbox $SMB1_EN_check name=enable_smb1 id=enable_smb1 value=yes> (changing might require PC and NAS restart)</td></tr>
-	<tr><td>Enable SMB2</td><td><input type=checkbox $SMB2_EN_check name=enable_smb2 id=enable_smb2 value=yes> (changing might require PC and NAS restart)</td></tr>
+	<tr><td>Enable SMB1</td><td><input type=checkbox $SMB1_EN_check name=enable_smb1 id=enable_smb1 value=yes $(ttip proto_tt)></td></tr>
+	<tr><td>Enable SMB2</td><td><input type=checkbox $SMB2_EN_check name=enable_smb2 id=enable_smb2 value=yes $(ttip proto_tt)></td></tr>
 	</table>
 	</fieldset>
 EOF
@@ -231,7 +237,7 @@ cat<<EOF
 	<input type=submit name=submit value="Submit">
 	<input type=submit name=submit value="Advanced" onClick="return confirm('\
 On the next SWAT Authentication dialogue you have to enter' + '\n' +
-'\'root\' for the \'User Name\' and the web password for \'Password\'.' + '\n\n' +
+'\'root\' for the \'User Name\' and the webUI password for \'Password\'.' + '\n\n' +
 'Changes made might not be recognized latter in this web page.' + '\n\n' + 'Continue?')">
 	$(back_button)
 	</form></body></html>
