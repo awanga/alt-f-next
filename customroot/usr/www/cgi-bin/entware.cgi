@@ -5,7 +5,12 @@ check_cookie
 write_header "Entware-ng Services Setup"
 
 if ! test -f /opt/etc/init.d/rc.unslung; then
-	echo "No Entware-ng installation found<br>$(back_button)</body></html>"
+	echo "No Entware-ng installation found.<br>$(back_button)</body></html>"
+	exit 0
+fi
+
+if ! lst=$(ls /opt/etc/init.d/S* 2> /dev/null); then
+	echo "No installed services found.<br>$(back_button)</body></html>"
 	exit 0
 fi
 
@@ -22,7 +27,7 @@ EOF
 PATH=$PATH:/opt/bin:/opt/sbin
 
 cnt=1
-for srv in $(ls /opt/etc/init.d/S*); do
+for srv in $lst; do
 	nm=$(basename $srv); nm=${nm:3}
 	#desc=$(opkg info $(opkg search $srv | cut -d' ' -f1) | awk '/Description:/{print substr($0,index($0,":")+2)}')
 
