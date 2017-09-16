@@ -66,6 +66,7 @@ if test $TYPE = "sqsplit"; then
 	sqimage=rootfs.arm.sqimage.$COMP
 fi
 
+TFTPD=/srv/tftpboot # for development using tftp on u-boot using serial adapter
 DESTD=$BLDDIR/binaries/$board
 KVER=$(cat $BLDDIR/project_build_arm/$board/.linux-version)
 VER=$(cut -f2 -d" " customroot/etc/Alt-F)
@@ -316,17 +317,19 @@ for i in ${!name[*]}; do
 	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat -c %s kernel)) bytes
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat -c %s initramfs)) bytes
 
-	(cd ${DESTD}; cp uImage /srv/tftpboot/uImage-${name[i]})
+	(cd ${DESTD}; cp uImage $TFTPD/uImage-${name[i]})
 
 done
 
 (
 	cd ${DESTD};
-	cp urootfs /srv/tftpboot/urootfs-$board
+	cp urootfs $TFTPD/urootfs-$board
 	if test "$board" = dns325 -o "$board" = dns327; then
-		cp rootfs.arm.sqimage.xz /srv/tftpboot/rootfs.arm.sqimage.xz-$board
+		cp rootfs.arm.sqimage.xz $TFTPD/rootfs.arm.sqimage.xz-$board
 	fi
 )
+
+if ! test -d $TFTPD -a -w $TFTPD; then echo "WARNING: tftp folder non existing or writable. Only useful for users with serial adapter on the box and using u-boot."; fi
 
 rm -f kernel initramfs defaults \
 	${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage ${DESTD}/tsqimage
