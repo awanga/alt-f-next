@@ -43,7 +43,7 @@ echo kernel=$kver
 	KMOD="
 ./kernel/fs/ext2/ext2.ko
 ./kernel/drivers/usb/class/usblp.ko
-./kernel/fs/cifs/cifs.ko
+./kernel/fs/cifs/cifs.ko ./kernel/crypto/md4.ko ./kernel/crypto/md5.ko ./kernel/crypto/arc4.ko
 ./kernel/fs/fuse/fuse.ko
 ./kernel/fs/nfs/nfsv3.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/fs/lockd/lockd.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/fs/nfs_common/grace.ko"
 
