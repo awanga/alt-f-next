@@ -107,7 +107,7 @@ elif test -n "$Delete"; then
 	if test "$curr_altf" = "$altf_dir"; then
 		if ! hot_aux.sh -stop-altf-dir "$curr_altf"; then
 			busy_cursor_end
-			msg "Current \"$curr_altf\" folder couldn't be deactivated to be deleted"
+			msg "Current \"$curr_altf\" folder couldn't be deactivated to be deleted, stop all services first."
 		fi
 	fi
 	if mountpoint -q "$(dirname $altf_dir)" && test "$(basename $altf_dir)" = "Alt-F"; then
@@ -121,7 +121,7 @@ elif test -n "$ActivateNow"; then
 	if curr_altf=$(realpath /Alt-F 2> /dev/null); then
 		if ! hot_aux.sh -stop-altf-dir "$curr_altf"; then
 			busy_cursor_end
-			msg "Current \"$curr_altf\" folder couldn't be deactivated"
+			msg "Current \"$curr_altf\" folder couldn't be deactivated, stop all services first."
 		fi
 	fi
 	altf_dir=$(httpd -d "$ActivateNow")
@@ -135,7 +135,7 @@ elif test -n "$DeactivateNow"; then
 	busy_cursor_start
 	if ! hot_aux.sh -stop-altf-dir "$altf_dir"; then
 		busy_cursor_end
-		msg "Current \"$altf_dir\" folder couldn't be deactivated"
+		msg "Current \"$altf_dir\" folder couldn't be deactivated, stop all services first."
 	fi
 	busy_cursor_end
 	js_gotopage /cgi-bin/packages_ipkg.cgi
@@ -145,23 +145,23 @@ elif test -n "$CopyTo"; then
 	part=$(eval echo \$part$idx)
 	part=$(httpd -d "$part")
 	if test "$part" = "none"; then
-		msg "You must select a filesystem"
+		msg "You must select a filesystem."
 	fi
 
 	if ! blkid $(cat /proc/mounts | grep $part | cut -d" " -f1) | grep -qE 'ext(2|3|4)'; then
-		msg "The destination has to be a linux ext2/3/4 filesystem"
+		msg "The destination has to be a linux ext2/3/4 filesystem."
 	fi
 
 	dest=$(cat /proc/mounts | grep $part | cut -d" " -f2)
 	if test -d "$dest/Alt-F"; then
-		msg "The destination  already has an Alt-F folder"
+		msg "The destination  already has an Alt-F folder."
 	fi
 
 	altf_dir=$(eval echo \$altf_dir_$idx)
 	altf_dir=$(httpd -d "$altf_dir")
 
 	if test "$(dirname $altf_dir)" = "$dest"; then
-		msg "The source and destinations are the same"
+		msg "The source and destinations are the same."
 	fi
 
 	busy_cursor_start
