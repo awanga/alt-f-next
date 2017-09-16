@@ -2,12 +2,10 @@
 #
 # cryptodev
 #
-#############################################################
+############################################################
 
-#CRYPTODEV_VERSION:=1.8
 CRYPTODEV_VERSION:=1.9
 CRYPTODEV_SOURCE:=cryptodev-linux-$(CRYPTODEV_VERSION).tar.gz
-#CRYPTODEV_SITE:=http://nwl.cc/pub/cryptodev-linux
 CRYPTODEV_SITE:=https://github.com/cryptodev-linux/cryptodev-linux/archive
 CRYPTODEV_DIR:=$(BUILD_DIR)/cryptodev-$(CRYPTODEV_VERSION)
 CRYPTODEV_MOD:=cryptodev.ko
