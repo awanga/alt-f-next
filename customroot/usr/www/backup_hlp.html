@@ -10,7 +10,7 @@
 This service makes unattended backups of various types, all following the same pattern:<p>
 The last made backup is compared with the folder to backup and the rsync program creates a new
 backup folder based on the differences; optionaly older backup folders will be deleted.
-The folder to backup can be a local folder or a remote folder locally mounted using any of the
+The folder to be backup can be a local folder or a remote folder locally mounted using any of the
 Backup types depicted bellow.
 
 <p>In the page top section, <strong>Backup Destination Folder</strong> you
@@ -77,7 +77,7 @@ will be disabled while the backup is being done.
 
 <p><strong>Backup types:</strong>
 
-<ul> <p><li><strong>Dir</strong> - this mode of operation only backups
+<ul><p><li><strong>Dir</strong> - this mode of operation only backups
 local folders.  For example, you can use it to backup folders from one
 disk to the other.  The <strong>Run As</strong> entry should be user "root",
 so the backup files original date, permissions and owners are preserved. 
@@ -110,8 +110,7 @@ this way is out of scope. </li>
 <p><li><strong>CIFS</strong> - this mode of operation is similar to the
 NFS mode, but mounts a folder from the remote <strong>Host</strong>
 using CIFS/SMB (samba).  It's purpose is mainly to create backups from
-remote MS-Windows machines. The kernel-modules package must be
-installed.<ul>
+remote MS-Windows machines.<ul>
 <li>For this mode of operation to work there must exist a user with the
 same name and password on both machines, and the <strong>Run As
 </strong> entry should be the user who owns the files to backup on the
@@ -172,7 +171,7 @@ the backup will be located in <code>/Backup/silver_jcard_win</code></li>
 </ul>
 
 <p><li><strong>rsync</strong> - this mode of operation uses the
-<em>rsync</em> program to make the backup.  It can work in two modes:
+<em>rsync</em> program directly to make the backup.  It can work in two modes:
 using the rsync daemon or a rsync/ssh on the remote host.
 The backup script first tries to use the daemon mode, and if
 unsuccessful tries the rsync/ssh mode.<ul>
