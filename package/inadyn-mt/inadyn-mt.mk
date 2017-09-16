@@ -13,9 +13,10 @@ INADYN_MT_INSTALL_STAGING = NO
 INADYN_MT_INSTALL_TARGET = YES
 
 INADYN_MT_DEPENDENCIES = uclibc
-INADYN_MT_CONF_OPT = --program-prefix="" --disable-sound -enable-threads
-# save 8KB
-#TARGET_CFLAGS += -Os
+INADYN_MT_CONF_OPT = --program-prefix="" --disable-threads --disable-sound
+
+INADYN_MT_CFLAGS = -Os
+INADYN_MT_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) $(INADYN_MT_CFLAGS)" 
 
 $(eval $(call AUTOTARGETS,package,inadyn-mt))
 
