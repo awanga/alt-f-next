@@ -1,5 +1,5 @@
 Package: samba
-Description: On-disk version of the Samba server shipped in the firmware, supporting ACL and samba modules.
+Description: Samba server supporting ACL and samba modules.
 Depends: ipkg, acl
 Version: 3.6.25
 Architecture: arm
