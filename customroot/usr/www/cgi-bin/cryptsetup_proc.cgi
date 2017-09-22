@@ -13,9 +13,9 @@ CONFF=/etc/misc.conf
 
 sed -i '/^MODLOAD_CESA=/d' $CONFF >& /dev/null
 if test -z "$use_cesa"; then
-	rmmod mv_cesa >& /dev/null
+	rmmod marvell_cesa >& /dev/null
 else
-	modprobe -q mv_cesa  >& /dev/null
+	modprobe -q marvell_cesa  >& /dev/null
 	echo MODLOAD_CESA=y >> $CONFF
 fi
 

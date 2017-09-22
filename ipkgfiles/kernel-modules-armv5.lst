@@ -28,7 +28,7 @@
 ./usr/lib/modules/4.4.86/kernel/crypto/xts.ko
 ./usr/lib/modules/4.4.86/kernel/drivers/base/firmware_class.ko
 ./usr/lib/modules/4.4.86/kernel/drivers/char/hw_random/rng-core.ko
-./usr/lib/modules/4.4.86/kernel/drivers/crypto/mv_cesa.ko
+./usr/lib/modules/4.4.86/kernel/drivers/crypto/marvell/marvell-cesa.ko
 ./usr/lib/modules/4.4.86/kernel/drivers/md/dm-bufio.ko
 ./usr/lib/modules/4.4.86/kernel/drivers/md/dm-crypt.ko
 ./usr/lib/modules/4.4.86/kernel/drivers/md/dm-log.ko
