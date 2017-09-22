@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DESC="Manges LVM device mapper modules"
+DESC="Manages LVM device mapper modules"
 NAME=device-mapper
 
 umask 077
