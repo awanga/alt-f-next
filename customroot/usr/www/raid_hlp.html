@@ -19,6 +19,21 @@ RAID, redundancy and zero downtime; RAID is not a substitute, nor
 replaces, a backup system, although a backup system can be build using
 RAID.<br>
 
+<p>A RAID device, as all other devices, can't be used directly, you have
+to create a filesystem on it, see <a
+href="diskmaint_hlp.html">Filesystem Maintenance</a>.
+
+However, RAID 1 and JBOD can be built from devices that already have a
+filesystem (and data) on them. In this case, if you which to maintain the
+data you should not create a filesystem on the new RAID device.<br>
+Instead, before creating a RAID using such devices, its filesystem has to be
+Shrink before the RAID creation and Enlarged after the RAID creation
+(on the RAID device, not the RAID device component). See <a
+href="diskmaint_hlp.html">Filesystem Maintenance</a>. 
+
+<p>In Alt-F, for a physical partition to be allowed to be a RAID
+component its partition type must be RAID. 
+
 <p>There are several kinds (<em>levels</em>) of RAID, and some of them
 don't deserve to be called RAID, as they provide no redundancy at all. 
 
@@ -70,17 +85,6 @@ a <em>reconstruction</em> step automatically begins, copying (for RAID
 1) or rebuilding (for RAID 5) all data in the still good component(s) to
 the newly added component. This can be done in a live system, without
 downtime. 
-
-<p>In Alt-F, for a physical partition to be allowed to be a RAID
-component its partition type must be RAID. 
-
-<p>A RAID device, as all other devices, can't be used directly, you have
-to create a filesystem on it, see <a
-href="diskmaint_hlp.html">Filesystem Maintenance</a>.
-
-However, RAID 1 and JBOD can be built from partitions that already have a
-filesystem (and data) on them. In this case, if you which to maintain the
-data you should not create a filesystem on the new RAID device.
 
 <p>In the upper <strong>RAID Creation</strong> section, you
 have to select the RAID level you wish, select its components, and hit
