@@ -86,7 +86,7 @@ if test "$install" = "Install"; then
 	ipkg_cmd -install $mp
 
 elif test -n "$BootEnable"; then
-	aufs.sh -n
+	aufs.sh -n >& /dev/null
 	for i in $(seq 1 $ninstall); do
 		af=$(eval echo \$altf_dir_$i)
 		af=$(httpd -d "$af")
@@ -95,8 +95,7 @@ elif test -n "$BootEnable"; then
 			rm -f $af/NOAUFS
 		fi
 	done
-	aufs.sh -r
-	gotopage /cgi-bin/packages_ipkg.cgi
+	aufs.sh -r >& /dev/null
 
 elif test -n "$Delete"; then
 	# FIXME: this does not remove package files installed elsewhere, e.g. /opt,
@@ -171,10 +170,14 @@ elif test -n "$CopyTo"; then
 
 elif test "$Submit" = "changeFeeds"; then
 	change_feeds
-	ipkg_cmd update
+	if aufs.sh -s >& /dev/null; then
+		ipkg_cmd update
+	fi
 
 elif test -n "$UpdatePackageList"; then
-	ipkg_cmd update
+	if aufs.sh -s >& /dev/null; then
+		ipkg_cmd update
+	fi
 
 elif test -n "$Remove"; then
 	res=$(ipkg remove $Remove 2>&1 | sed -n '/^Package/,/^$/p')
