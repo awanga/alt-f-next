@@ -39,7 +39,7 @@ cat<<EOF
 	<table>
 EOF
 
-vg=$(vgs --noheadings --units g 2>&1)
+vg=$(vgs --noheadings --units g 2> /dev/null)
 
 if ! echo $vg | grep -qi 'No volume groups'; then
 	echo "<tr><th>Group</th><th>Capacity</th><th>Free</th><th></th>
