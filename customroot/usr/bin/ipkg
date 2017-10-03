@@ -222,6 +222,7 @@ ipkg_upgrade() {
 		for i in $to_save; do cp /$i /$i.bck; done
 		aufs.sh -n
 		ipkg-cl -force-depends remove $to_rm
+		ipkg-cl -force-depends remove $to_rm # dooh!
 		aufs.sh -r
 		# restore conf-files 
 		for i in $to_save; do mv /$i.bck /$i; done
