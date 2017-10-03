@@ -45,7 +45,6 @@ case "$1" in
 		fi
 
 		if test "$MODLOAD_CESA" = "y"; then
-			mload crypto_hash
 			mload marvell_cesa
 		fi
 
