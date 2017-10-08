@@ -4,7 +4,7 @@
 # ls sourceforge/pkgs/unstable/ | cut -d_ -f1 | uniq -c | grep ^[[:space:]]*3
 
 usage() {
-	echo -e "\nusage: pkgs-check.sh -n(ew) | -s(same) | -u(pgraded) | -c(opy) | -h(elp)"
+	echo -e "\nusage: pkgs-check.sh -n(ew) | -s(same) | -u(pgraded) | -c(opy) | -d(not build) | -h(elp)"
 	echo -e "\tchecks packages in pkgs against sourceforge released package,
 	showing identical, news and upgraded packages.
 	with -c, copy new/upgraded packags to sourceforge"
@@ -18,15 +18,29 @@ copyf() {
 
 if test $# = 0; then usage; fi
 
-while getopts nsuch opt; do
+while getopts nsucdh opt; do
 	case $opt in
 	n) new=y ;;  # new packages
 	s) same=y ;; # identical 
 	u) upg=y ;;  # upgraded
-	c) copy=y;;  # copy
+	c) copy=y ;;  # copy
+	d) notbuilt=y ;;
 	*h) usage ;;
 	esac
 done
+
+# not build packages present in ipkgfiles/*.control)
+# usefull to see discontinued pkgs that still have control files
+if test -n "$notbuilt"; then
+	for i in ipkgfiles/*.control; do
+		v=$(awk '/^Version/{print $2}' $i)
+		f=$(basename $i .control)
+		if ! test -f pkgs/${f}_${v}_arm.ipk; then
+			echo "${f}_${v}"
+		fi
+	done
+	exit 0
+fi
 
 for i in pkgs/*.ipk; do
 	f=$(basename $i _arm.ipk)
