@@ -1,3 +1,120 @@
+=== October 13, 2017: Alt-F-1.0 is released
+
+Hi,
+
+I'm pleased to announce Alt-F-1.0.
+
+Alt-F has now more than seven years old, is stable since several releases ago,
+and is even showing some grey hairs, so it would be unfair to not make a 1.0 release.
+Here it is!
+
+In this release most, if not all, issues reported by users that tested the RC6 and 1.0
+Snapshots are fixed, and most pre-installed packages have been updated to their last released version.
+
+It was thoroughly tested on a DNS-323 rev-A1/B1, a DNS-325 rev-A1, a DNS-320L rev-A1
+ and a DNS-327L rev-A1 boxes.
+
+Please read until the end, particularly the Firmware upgrading instructions,
+enjoy and report any issue,
+João
+
+News:
+===
+
+-updated to linux kernel 4.4.86
+ -Hardware accelerated crypto device: mv-cesa driver replaced by newer marvell-cesa.
+  Not working on the DNS-321/323.
+ -iscsitarget not supported for new kernel.
+ -The USB UAS support has been removed from the kernel, as it causes issues with certain
+  (mostly Seagate) USB disk enclosures.
+ -wireless USB network drivers are available in the kernel-modules-armvx package.
+
+-update to samba-3.6.25, which supports SMB2
+ The "Samba Setup" webUI now allows enabling or disabling SMB1 and/or SMB2.
+ After changing it in the webUI, if needed, the client user might have to logout or reboot the PC.
+ Most SMB2 enabled clients will use SMB2 if available, and might have lower thougput than SMB1.
+ Notice that most embeded devices and linux clients need SMB1.
+
+-A new service and webUI, 'rmount' (Remote Mount), is now available.
+ It is intended to mount remote NFS and CIFS filesystems at start.
+ It basicaly consists of the "Import Remote Filesystem" in the NFS and SMB webUIs.
+
+-A new service, 'nsm' (Network Status Monitor) is available.
+ It is automaticaly used by the nfs and rmount services.
+
+-The "Setup Host" webUI handle host name and IP changes more friendly.
+ There are still issues when using https, as for security the browser refuses to accept
+ the new name or IP.
+ User supplied name servers are now honored.
+
+-The SSL self-signed certificates for https usage now uses subjectAltName in addition to CN.
+
+-dnsmasq removed from the base firmware on the DNS-321/323
+
+-Entware-ng install, package management and services start and stop webUIs
+
+-The fan speed can use disk temperatures into account if the hddtemp service is running.
+ catch: Disks will not spin down because the drive is constantly being pooled for its temperature.
+
+-DNS-320/321/323/325: the power button now powers off the box if released during the first
+ 3 seconds and reboots the box if released during the next 3 seconds.
+
+Know issues:
+=======
+
+-DNS-323/321: You have to flash 1.0 if still in RC4.1 or previous, TryIt mode does not works.
+ If however you want to Tryit first, you have to use the following command to try 1.0 before
+ hitting the TryIt button:
+ echo "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk kexecmode" > /boot/cmdline
+
+- when partitioning new disks with GPT using the web interface, only the first position in the partitions
+ table is editable (no problem when disk is set to MBR).
+ Actually, the cursor is not shown but if number are typed they will appear.
+
+-The webUI red warning "When done you must save settings" is diaplayed warning for a changed
+ /etc/samba/smbpasswd, even if it is not changed.
+
+-if using DDNS  under Services->Network->ddns, re-configure because of configuration changes
+
+-The Alt-F Package Manager might display erroneous information, as the fw contains packages
+ that have not yet been released.
+
+-Packages that was preinstalled on previous releases and that now are not preinstalled,
+ will appear as installed under the Package Manager webUI; they can be safely removed.
+
+Firmware upgrading instructions:
+==================
+
+-Reboot the box before performing any upgrade.
+
+-Look at the box bottom attached label to see its hardware revision
+ level, then select the appropriate Alt-F-1.0 bin file and
+ use the normal firmware upgrade method to flash it.
+ For example, the Alt-F-1.0-DNS-320-rev-Ax.bin file is to be used
+ on the DNS-320 on any rev-A1, A2 or A3 box.
+ Don't try to flash firmware if your box is not supported.
+
+-When alternating between D-Link and Alt-F firmware clear the browser cache.
+ The box name and IP might also change, consult your router DHCP client/lease page,
+ or a network scanner program (Fing on Android, e.g.) to determine the new box IP.
+
+-If you are already using Alt-F:
+ -make sure that both the HTTP and HTTPS admnistrative servers
+  are in "inetd mode", not in "server mode". Use Services->Network, http, Configure.
+ -Use http to access the box webUI for the upgrade.
+ -Save current settings to a desktop computer (System->Settings, in the
+   "Computer Disk" section, "Save current settings to file" hit the Download button)
+ -if using Alt-F-0.1RC5 or latter
+  -download also the firmware associated sha1 file and in the
+   Firmware Upgrader webUI supply it along with the firmware bin file in order to
+   verify the firmware download integrity.
+  -Unapply the "network corruption fix" after flashing 1.0 using
+   Services->User, user, Configure, clear the "Script to execute on powerup" entry and Submit.
+ -If running the 1.0 Snapshot, execute the following commands after flashing the 1.0 Release,
+  in order to update the pre-installed packages list:
+  rm /usr/lib/ipkg/.fixed
+  ipkg -update
+ 
 === June 25, 2016: Alt-F-0.1RC5 is released
 
 Some user relevant news and fixes:
