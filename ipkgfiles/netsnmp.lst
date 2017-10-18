@@ -1,3 +1,4 @@
+./etc/init.d/S70snmpd
 ./etc/snmp/mib2c.access_functions.conf
 ./etc/snmp/mib2c.array-user.conf
 ./etc/snmp/mib2c.check_values.conf
@@ -164,6 +165,7 @@
 ./usr/share/snmp/mibs/NET-SNMP-MIB.txt
 ./usr/share/snmp/mibs/NET-SNMP-PASS-MIB.txt
 ./usr/share/snmp/mibs/NET-SNMP-TC.txt
+./usr/share/snmp/mibs/NET-SNMP-VACM-MIB.txt
 ./usr/share/snmp/mibs/NOTIFICATION-LOG-MIB.txt
 ./usr/share/snmp/mibs/RFC1155-SMI.txt
 ./usr/share/snmp/mibs/RFC1213-MIB.txt

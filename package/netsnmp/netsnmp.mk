@@ -2,7 +2,7 @@
 #
 # netsnmp
 #
-#############################################################
+############################################################
 
 NETSNMP_VERSION:=5.5.2
 #NETSNMP_VERSION:=5.7.2
@@ -38,9 +38,10 @@ NETSNMP_CONFIGURE_OPENSSL:=--without-openssl
 endif
 
 NETSNMP_CONF_OPT = $(NETSNMP_CONFIGURE_OPENSSL) \
-	--with-out-transports="$(NETSNMP_WO_TRANSPORT)" --enable-mini-agent \
+	--with-out-transports="$(NETSNMP_WO_TRANSPORT)"  \
+	--with-out-mib-modules=" " \
 	--disable-embedded-perl --disable-perl-cc-checks --without-perl-modules \
-	--without-kmem-usage --without-rsaref --disable-debugging --with-defaults \
+	--without-kmem-usage --without-rsaref  --with-defaults \
 	--with-sys-location="Unknown" --with-sys-contact="root" \
 	--with-endianness=$(NETSNMP_ENDIAN) \
 	--with-persistent-directory=/var/lib/snmp \
@@ -48,7 +49,7 @@ NETSNMP_CONF_OPT = $(NETSNMP_CONFIGURE_OPENSSL) \
 	--enable-shared --disable-static \
 	--without-rpm --disable-manuals 
 
-NETSNMP_CONF_ENV = ac_cv_NETSNMP_CAN_USE_SYSCTL=yes 
+NETSNMP_CONF_ENV = ac_cv_NETSNMP_CAN_USE_SYSCTL=no
 
 $(eval $(call AUTOTARGETS,package,netsnmp))
 
@@ -59,7 +60,7 @@ $(NETSNMP_HOOK_POST_INSTALL):
 		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
 		$(STAGING_DIR)/usr/bin/net-snmp-config
 	# Copy the .conf files.
-	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/EXAMPLE.conf $(TARGET_DIR)/etc/snmp/snmpd.conf
+	#$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/EXAMPLE.conf $(TARGET_DIR)/etc/snmp/snmpd.conf
 	-mv $(TARGET_DIR)/usr/share/snmp/mib2c*.conf $(TARGET_DIR)/etc/snmp
 	# Install the "broken" headers
 	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/struct.h $(STAGING_DIR)/usr/include/net-snmp/agent/struct.h
