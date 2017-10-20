@@ -9,8 +9,8 @@ CONFINT=/etc/network/interfaces
 CONF_MODPROBE=/etc/modprobe.conf
 
 mktt tt_ipv6 "IPv6 is for the next generation internet, most users don't need it.<br>
-When enabling, after submiting it takes effect immediately<br>
-When disabling, submiting will schedule it for disable at next reboot."
+When checked, after submiting it takes effect immediately<br>
+When unchecking, submiting will schedule it for disable at next reboot."
 
 mktt mtu_tt "Also called jumbo frames"
 
