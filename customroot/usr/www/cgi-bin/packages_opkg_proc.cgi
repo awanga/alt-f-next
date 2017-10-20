@@ -88,6 +88,11 @@ if test "$install" = "Install"; then
 	busy_cursor_end
 
 	if test -z "$err"; then
+		if ! test -d /Alt-F/etc/init.d; then
+			aufs.sh -n
+			mkdir -p /Alt-F/etc/init.d
+			aufs.sh -r
+		fi
 		cat<<-EOF  >/etc/init.d/S81entware
 			#!/bin/sh
 
