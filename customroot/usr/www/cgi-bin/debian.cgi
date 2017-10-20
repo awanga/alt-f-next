@@ -19,6 +19,11 @@ It is recommended, although not necessary, to dedicate the selected filesystem t
 A minimum installation will need at least 300MB. Additional packages will need more space.<br>
 After installation succeeds, you can use the 'debian' command line to chroot or kexec Debian.<br>You are on your own."
 
+if ! aufs.sh -s >& /dev/null; then
+	echo "<h3 class="warn">You have to install one Alt-F package first.</h3></body></html>"
+	exit 0
+fi
+
 board=$(cat /tmp/board)
 board=${board%-*}
 case "$board" in
