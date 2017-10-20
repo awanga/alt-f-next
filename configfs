@@ -134,6 +134,7 @@ BR2_PACKAGE_POLIPO="etc/init.d/S45polipo"
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
 BR2_PACKAGE_NETATALK="etc/init.d/S51netatalk etc/afp.conf usr/www/cgi-bin/netatalk.cgi usr/www/cgi-bin/netatalk_proc.cgi"
 BR2_PACKAGE_OPENSSH_EXTRA="etc/init.d/S62opensshd usr/www/cgi-bin/sshd.cgi usr/www/cgi-bin/sshd_proc.cgi usr/www/cgi-bin/opensshd.cgi"
+BR2_PACKAGE_NETSNMP="etc/init.d/S70snmpd etc/snmp/snmpd.conf"
 
 BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"
