@@ -1,0 +1,19 @@
+--- busybox-1.20.2/loginutils/chpasswd.c-orig	2017-10-28 17:49:49.921451165 +0100
++++ busybox-1.20.2/loginutils/chpasswd.c	2017-10-28 19:55:04.309247610 +0100
+@@ -62,12 +62,10 @@
+ 			char salt[sizeof("$N$XXXXXXXX")];
+ 
+ 			crypt_make_salt(salt, 1);
+-			if (opt & OPT_MD5) {
+-				salt[0] = '$';
+-				salt[1] = '1';
+-				salt[2] = '$';
+-				crypt_make_salt(salt + 3, 4);
+-			}
++			salt[0] = '$';
++			salt[1] = '1';
++			salt[2] = '$';
++			crypt_make_salt(salt + 3, 4);
+ 			free_me = pass = pw_encrypt(pass, salt, 0);
+ 		}
+ 

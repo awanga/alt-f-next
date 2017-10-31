@@ -2,7 +2,7 @@
 #
 # busybox
 #
-#############################################################
+############################################################
 
 
 ifeq ($(BR2_PACKAGE_BUSYBOX_SNAPSHOT),y)
@@ -11,7 +11,8 @@ BUSYBOX_DIR:=$(BUILD_DIR)/busybox
 BUSYBOX_SOURCE:=busybox-snapshot.tar.bz2
 BUSYBOX_SITE:=http://www.busybox.net/downloads/snapshots
 else
-BUSYBOX_VERSION=$(strip $(subst ",, $(BR2_BUSYBOX_VERSION)))
+#BUSYBOX_VERSION=$(strip $(subst ",, $(BR2_BUSYBOX_VERSION)))
+BUSYBOX_VERSION=1.20.2
 #"))
 BUSYBOX_DIR:=$(BUILD_DIR)/busybox-$(BUSYBOX_VERSION)
 BUSYBOX_SOURCE:=busybox-$(BUSYBOX_VERSION).tar.bz2
