@@ -180,6 +180,13 @@ if ! echo "$browse" | grep -q '^/mnt'; then
 	perce_browse=$(url_encode "$browse")
 fi
 
+if test "$(realpath /Alt-F 2> /dev/null)" = "$browse"; then
+	echo "<h3 class="warn">Warning: The Alt-F folder should not be manipulated.</h3>"
+	browse=$(dirname "$browse")
+	dece_browse=$(http_encode "$browse")
+	perce_browse=$(url_encode "$browse")
+fi
+
 fop_dis=""
 fop=$(ls /tmp/folders_op.* 2> /dev/null)
 if test -f "$fop"; then
