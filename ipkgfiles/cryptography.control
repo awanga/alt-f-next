@@ -1,0 +1,9 @@
+Package: cryptography
+Depends: cffi, ipkg
+Version: 2.1.2
+Description: Python cryptographic recipes and primitives
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/pyca/cryptography
+Maintainer: jcard
