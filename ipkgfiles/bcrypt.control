@@ -1,0 +1,9 @@
+Package: bcrypt
+Depends: cffi, ipkg
+Version: 3.1.4
+Description: Python modern password hashing
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/pyca/bcrypt
+Maintainer: jcard
