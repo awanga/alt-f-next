@@ -1,0 +1,3 @@
+#!/bin/sh
+
+find /usr/lib/python2.7/site-packages/nacl -name \*.py[co] | xargs rm -f
