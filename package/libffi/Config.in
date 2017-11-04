@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBFFI
+	bool "libffi"
+	help
+	  A Portable Foreign Function Interface Library
+
+	  https://sourceware.org/libffi
