@@ -1,6 +1,6 @@
 Package: busybox
 Description: The Swiss Army Knife of embedded Linux.  It slices, it dices, it makes Julian Fries.
-Version: 1.20.2
+Version: 1.20.2-1
 Depends: ipkg
 Architecture: arm
 Priority: optional
