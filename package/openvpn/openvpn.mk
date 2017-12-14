@@ -2,13 +2,14 @@
 #
 # openvpn
 #
-#############################################################
+############################################################
 
 OPENVPN_VERSION = 2.2.1
 OPENVPN_SOURCE = openvpn-$(OPENVPN_VERSION).tar.gz
 OPENVPN_SITE = http://swupdate.openvpn.org/community/releases
 OPENVPN_DEPENDENCIES = lzo openssl uclibc
-#OPENVPN_CONF_OPT = --enable-small
+
+OPENVPN_CONF_OPT = --enable-password-save
 
 ifeq ($(BR2_PTHREADS_NATIVE),y)
 	OPENVPN_CONF_OPT += --enable-threads=posix
