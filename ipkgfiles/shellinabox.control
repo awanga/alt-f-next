@@ -1,0 +1,9 @@
+Package: shellinabox
+Description: a web based terminal emulator server
+Version: 2.20
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/shellinabox/shellinabox
+Maintainer: jcard

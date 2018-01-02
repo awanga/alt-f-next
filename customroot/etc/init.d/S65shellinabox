@@ -1,0 +1,36 @@
+#!/bin/sh
+
+DESC="A web based terminal emulator server"
+NAME=shellinaboxd
+TYPE=net
+
+RC_USER=shellinabox
+RC_USERN=70
+RC_GROUP=shellinabox
+RC_GROUPN=204
+RC_DESC="shellinabox user"
+
+PID_DIR=/var/run/$NAME
+RC_PIDFILE=$PID_DIR/$NAME.pid
+
+RC_START_BG=y
+
+CONFF=/etc/shellinabox.conf
+
+if test -s $CONFF; then . $CONFF; fi
+
+OPTS="--port=${PORT:-4200} --pidfile=$RC_PIDFILE --cert=/var/lib/$RC_USER --user=$RC_USER --group=$RC_GROUP"
+
+if ! test -d "$PID_DIR"; then mkdir -p "$PID_DIR"; fi
+
+. /etc/init.d/common
+
+check_user $PID_DIR
+
+case "$1" in
+	start) start $NAME -- $OPTS ;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*)  usage $0 "start|stop|status|restart" ;;
+esac

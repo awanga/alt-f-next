@@ -1,0 +1,16 @@
+#!/bin/sh
+
+CERTS=/etc/ssl/certs
+SIAB_HOME=/var/lib/shellinabox
+
+ln -sf /usr/sbin/rcscript /sbin/rcshellinabox
+
+# create user and its home dir
+rcshellinabox status
+
+# copy box self-signed certificates
+cp $CERTS/server.pem $SIAB_HOME/certificate-$(hostname | tr '[:upper:]' '[:lower:]').pem
+cp $CERTS/server.pem $SIAB_HOME/certificate.pem
+chown shellinabox:shellinabox $SIAB_HOME/*.pem
+
+return 0

@@ -1,0 +1,8 @@
+config BR2_PACKAGE_SHELLINABOX
+	bool "shellinabox"
+	select BR2_PACKAGE_OPENSSL
+
+	help
+	  a web based terminal emulator
+
+	  https://github.com/shellinabox/shellinabox
