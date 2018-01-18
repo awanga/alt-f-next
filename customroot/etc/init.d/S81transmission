@@ -37,6 +37,7 @@ check_net() {
 	network=$(hostname -i | awk -F. '{printf "%d.%d.%d.*", $1,$2,$3}')
 	if ! grep -q $(echo $network | sed 's/[.*]/\\&/g') "$TRANSMISSION_CONF"; then
 		sed -i -e 's|.*"rpc-whitelist":.*|    "rpc-whitelist": "127.0.0.1,'$network'",|' \
+			-e 's|.*"rpc-host-whitelist":.*|    "rpc-host-whitelist": "127.0.0.1,'$network'",|' \
 			"$TRANSMISSION_CONF"
 	fi
 }
@@ -61,7 +62,8 @@ for i in $TRANSMISSION_DIRS; do
 done
 
 if ! test -s $TRANSMISSION_CONF -a -s $TRANSMISSION_CONF2; then
-	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" >& $TRANSMISSION_CONF
+	transmission-daemon -d --watch-dir "/Public" --download-dir "" --incomplete-dir "" \
+	-u transmission -v transmission -t >& $TRANSMISSION_CONF
 
 	sed -i	-e 's|.*"umask":.*|    "umask": 2, |' \
 		-e 's|.*"message-level":.*|    "message-level": 1, |' $TRANSMISSION_CONF

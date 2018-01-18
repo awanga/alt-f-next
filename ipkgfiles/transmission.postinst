@@ -1,5 +1,13 @@
 #!/bin/sh
 
+CONF=/etc/transmission/transmission.conf
+if test -f $CONF; then
+	sed -i -e 's|.*"rpc-authentication-required":.*|    "rpc-authentication-required": true,|' \
+		-e 's|.*"rpc-username":.*|    "rpc-username": "transmission",|' \
+		-e 's|.*"rpc-password":.*|    "rpc-password": "transmission",|' \
+	$CONF
+fi
+
 ln -sf /usr/sbin/rcscript /sbin/rctransmission
 rctransmission status
 return 0

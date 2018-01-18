@@ -26,6 +26,21 @@ elif test -n "$Submit"; then
 		WATCH_DIR=$(httpd -d "$WATCH_DIR")
 	fi
 
+	if test -n "$USERNAME"; then
+		USERNAME=$(httpd -d "$USERNAME")
+	else
+		USERNAME="transmission"
+	fi
+
+	if test -n "$PASSWORD"; then
+		PASSWORD=$(httpd -d "$PASSWORD")
+		if test "${PASSWORD:0:1}" = "{" -a "${#PASSWORD}" = "49"; then
+			PASSWORD="" # hashed pass, not changed
+		fi
+	else
+		PASSWORD="transmission"
+	fi
+
 	if test "$(basename $WATCH_DIR)" = "Public"; then
 		msg "You must create a folder for Transmission." 
 	elif ! res=$(check_folder "$WATCH_DIR"); then
@@ -50,7 +65,12 @@ elif test -n "$Submit"; then
 	sed -i -e 's|.*"download-dir":.*|    "download-dir": "'"$EDOWNLOAD_DIR"'",|' \
 	-e 's|.*"incomplete-dir":.*|    "incomplete-dir": "'"$EINCOMPLETE_DIR"'",|' \
 	-e 's|.*"watch-dir":.*|    "watch-dir": "'"$EWATCH_DIR"'",|' \
+	-e 's|.*"rpc-username":.*|    "rpc-username": "'"$USERNAME"'",|' \
 	"$TCONF"
+
+	if test -n "$PASSWORD"; then
+		sed -i 's|.*"rpc-password":.*|    "rpc-password": "'"$PASSWORD"'",|' "$TCONF" 
+	fi
 
 	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$TCONF"
 

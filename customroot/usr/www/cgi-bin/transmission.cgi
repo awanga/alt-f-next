@@ -9,13 +9,13 @@ mktt trdir_tt "Folder where downloads will occur.<br>
 Sub-folders InProgress and Finished will be created<br>
 If you drop a torrent file in this folder, downloading will start."
 
-mktt block_tt "Example site from where a file with a list of IPs to block will be downloaded.<br>
-You must be confident on the site, the default value is not endorsed."
-
 CONFF=/etc/transmission/transmission.conf
 
-WATCH_DIR=$(sed -n '/watch-dir/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF)
-WATCH_DIR=$(httpd -e "$WATCH_DIR")
+USERNAME=$(sed -n '/rpc-username/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF)
+ # first char is '{' if hashed + 48 chars
+PASSWORD=$(httpd -e $(sed -n '/rpc-password/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF))
+WATCH_DIR=$(httpd -e $(sed -n '/watch-dir/s|.*".*":.*"\(.*\)".*|\1|p' $CONFF))
+#WATCH_DIR=$(httpd -e "$WATCH_DIR")
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -29,11 +29,13 @@ cat<<-EOF
 	</script>
 
 	<form name="transmissionf" action="transmission_proc.cgi" method="post">
-	<table><tr>
-	<td>Transmission folder</td>
+	<table>
+	<tr><td>Transmission folder</td>
 		<td><input type=text size=32 id="watch_dir" name="WATCH_DIR" value="$WATCH_DIR" $(ttip trdir_tt)>
 		<td><input type=button onclick="browse_dir_popup('watch_dir')" value="Browse"></td>
-		</tr>
+	</tr>
+	<tr><td>Username</td><td><input type=text name="USERNAME" value="$USERNAME"> </td><td></td></tr>
+	<tr><td>Password</td><td><input type=password name="PASSWORD" value="$PASSWORD"></td><td>(default: transmission)</td></tr>
 	</table>
 	<p><input type=submit name="submit" value="Submit">
 		$(back_button)
