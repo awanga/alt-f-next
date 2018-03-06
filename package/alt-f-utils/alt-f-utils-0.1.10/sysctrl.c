@@ -634,15 +634,22 @@ void fanlog(int stemp, int dtemp, int pwm, int fan) {
 		}
 		lseek(fd, 0, SEEK_END);
 	}
-	if (lseek(fd, 0, SEEK_CUR) > 32768)
-		lseek(fd, 0, SEEK_SET);
-	else
-		lseek(fd, -5, SEEK_CUR);
+	if (lseek(fd, 0, SEEK_CUR) > 32768) {
+		char tname[30];
+		close(fd);
+		strcpy(tname, fantemplog);
+		strcat(tname, ".old");
+		rename(fantemplog, tname);
+		if ((fd = open(fantemplog, O_WRONLY | O_CREAT, 0644)) == -1) {
+			syslog(LOG_ERR, "Can't open %s: %m", fantemplog);
+			return;
+		}
+	}
 
 	t = time(NULL);
 	tmp = localtime(&t);
 	strftime(outstr, sizeof(outstr), "%b %d %T", tmp);
-	nc = sprintf(buf, "%s\tsys_temp=%d\tdisk_temp=%d\tpwm=%d\tfan=%d\nOLD:\n",
+	nc = sprintf(buf, "%s\tsys_temp=%d\tdisk_temp=%d\tpwm=%d\tfan=%d\n",
 				 outstr, stemp, dtemp, pwm, fan);
 	write(fd, buf, nc);
 }
@@ -819,11 +826,7 @@ int read_fan(void) {
 }
 
 void write_pwm(int u) {
-	static int old = -1;
-	if (u != old) {
-		old = u;
 		write_int_to_file(sys_pwm, u);
-	}
 }
 
 int read_pwm(void) {
@@ -896,13 +899,13 @@ int read_temp(void) {
 
 #define HDDTEMP_PORT 7634
 #define HDDTEMP_BUF 512
-int read_disks_temp(void) {
-	int i, n, temp, dtemp, sockfd, portno=HDDTEMP_PORT, maxtemp = 0;
-	char *dev, *tempc, *ptr, buffer[HDDTEMP_BUF];
-	
+
+int read_hddtemp(char *buffer) {
+	int sockfd, portno=HDDTEMP_PORT, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-
+	
+	//syslog(LOG_INFO, "hddtemp");
 	if ((server = gethostbyname("127.0.0.1")) == NULL)
 		return 0; // ERROR, no such host
 		
@@ -923,38 +926,51 @@ int read_disks_temp(void) {
 		close(sockfd);
 		return 0; // ERROR reading from socket
 	}
-	
     close(sockfd);
+	//syslog(LOG_INFO, "hddtemp %d -%s-", n, buffer);
+	return n;
+}
 
-	ptr = buffer;
-	while(1) {
-		if ((dev = strtok(ptr, "|")) == NULL) // device
-			return maxtemp;
-		ptr=NULL;
-		printf("dev=%s ", dev);
+int read_disks_temp(void) {
+	int i, temp,  ntries=3, maxtemp = 0;
+	char *dev, *tempc, *ptr, buffer[HDDTEMP_BUF];
+	
+	while (ntries--) {
+		usleep(100000);
+		if (read_hddtemp(buffer) == 0)
+			continue;
 
-		if (strtok(NULL, "|") == NULL) // disk name
-			return maxtemp;
+		ptr = buffer;
+		while(1) {
+			if ((dev = strtok(ptr, "|")) == NULL) // device
+				break;
+			ptr=NULL;
 
-		if ((tempc= strtok(NULL, "|")) == NULL) // disk temp
-			return maxtemp;
+			if (strtok(NULL, "|") == NULL) // disk name
+				break;
 
-		if (strtok(NULL, "|") == NULL) // units
-			return maxtemp;
+			if ((tempc= strtok(NULL, "|")) == NULL) // disk temp
+				break;
 
-		for (i = 0; i < nslots; i++) {
-			if ((disks[i].dev == NULL) || (strcmp(&dev[5], disks[i].dev) != 0))
-				continue;
-			if (strcmp(disks[i].slot, "left") == 0 || strcmp(disks[i].slot, "right") == 0) {
-				temp = strtof(tempc, NULL);
-				maxtemp = MAX(temp, maxtemp);
-				//syslog(LOG_INFO, "%s %d %d\n", dev, temp, maxtemp);
+			if (strtok(NULL, "|") == NULL) // units
+				break;
+
+			for (i = 0; i < nslots; i++) {
+				if ((disks[i].dev == NULL) || (strcmp(&dev[5], disks[i].dev) != 0))
+					continue;
+				if (strcmp(disks[i].slot, "left") == 0 || strcmp(disks[i].slot, "right") == 0) {
+					temp = strtof(tempc, NULL);
+					maxtemp = MAX(temp, maxtemp);
+					//syslog(LOG_INFO, "%s %d %d\n", dev, temp, maxtemp);
+				}
 			}
-		}		
+		}
+		if (maxtemp)
+			return maxtemp;
 	}
 	return maxtemp;
 }
-	
+
 void fanctl(void) {
 	static float temp = 0., log_temp = 0.;
 	static int warn = 0, crit = 0, log_fan = 0;
@@ -963,20 +979,17 @@ void fanctl(void) {
 	if (temp == 0.)  // zero has an exact float representation
 		temp = read_temp() / 1000.;
 
-	//temp = 0.9 * read_temp() / 1000. + 0.1 * temp;
-	/* use the maximum of the system board or disks temperatures to control the fan */
 	stemp = read_temp() / 1000;
+	/* use the maximum of the system board or disks temperatures to control the fan */
 	if (args.disks_temp)
 		dtemp = read_disks_temp();
 	temp = 0.9 * MAX(stemp, dtemp) + 0.1 * temp;
 	pwm = read_pwm();
 	fan = read_fan();
-
+	
 	if ( (fabsf(temp - log_temp) > 1.0) || (abs(fan - log_fan) > 400)) {
 		log_temp = temp;
 		log_fan = fan;
-		//syslog(LOG_INFO, "temp=%.1f	pwm=%d fan=%d", temp, pwm, fan);
-		// temp/fan logs flood syslog for the 320L/327, use a file for logging
 		fanlog(stemp, dtemp, pwm, fan);
 	}
 
