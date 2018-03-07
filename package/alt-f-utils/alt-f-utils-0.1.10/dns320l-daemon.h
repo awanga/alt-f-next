@@ -16,12 +16,15 @@ int simple_cmd2(char *mcmd, char *retMessage, int bufSize);
 int setpowerled_cmd(char *mcmd, char *retMessage, int bufSize);
 int setfan_cmd(char *mcmd, char *retMessage, int bufSize);
 int readrtc_cmd(char *mcmd, char *retMessage, int bufSize);
+int readAlarm_cmd(char *mcmd, char *retMessage, int bufSize);
+int writeAlarm_cmd(char *mcmd, char *retMessage, int bufSize);
 int systohc_cmd(char *mcmd, char *retMessage, int bufSize);
 int hctosys_cmd(char *mcmd, char *retMessage, int bufSize);
 int gettemperature_cmd(char *mcmd, char *retMessage, int bufSize);
 int help_cmd(char *mcmd, char *retMessage, int bufSize);
 int quit_cmd(char *mcmd, char *retMessage, int bufSize);
 int shutdowndaemon_cmd(char *mcmd, char *retMessage, int bufSize);
+int deviceshutdown_cmd(char *mcmd, char *retMessage, int bufSize);
 
 typedef struct {
 	char *ucmd;
@@ -31,7 +34,7 @@ typedef struct {
 
 cmd_t cmds[] = {
 	{"DeviceReady", DeviceReadyCmd, simple_cmd},
-	{"DeviceShutdown", DeviceShutdownCmd, simple_cmd},
+	{"DeviceShutdown", DeviceShutdownCmd, deviceshutdown_cmd},
 	{"ShutdownDaemon", NULL, shutdowndaemon_cmd},
 	{"EnablePowerRecovery", APREnableCmd, simple_cmd},
 	{"DisablePowerRecovery", APRDisableCmd, simple_cmd},
@@ -46,6 +49,10 @@ cmd_t cmds[] = {
 	{"PowerLedOff", PwrLedOffCmd, setpowerled_cmd},
 	{"PowerLedBlink", PwrLedBlinkCmd, setpowerled_cmd},
 	{"ReadRtc", RDateAndTimeCmd, readrtc_cmd},
+	{"ReadAlarm", NULL, readAlarm_cmd},
+	{"WriteAlarm", NULL, writeAlarm_cmd},
+	{"EnableAlarm", WAlarmEnableCmd, simple_cmd},
+	{"DisableAlarm", WAlarmDisableCmd, simple_cmd},
 	{"systohc", WDateAndTimeCmd, systohc_cmd},
 	{"hctosys", RDateAndTimeCmd, hctosys_cmd},
 	{"GetTemperature", ThermalStatusGetCmd, gettemperature_cmd},
@@ -77,11 +84,9 @@ static void quithandler(int sig);
 /** <i>Function</i> that sets interface attributes on a given
   serial port.
  @param fd The file descriptor (serial port) to work with
- @param speed The speed the interface to configure
- @param parity Use parity or not
  @return 0 on success, otherwise 1
 */
-int set_interface_attribs (int fd, int speed, int parity);
+int set_interface_attribs (int fd);
 
 /** <i>Function</i> that sets an interface to either blocking
   or non-blocking mode
@@ -94,10 +99,9 @@ void set_blocking (int fd, int should_block);
   whether it corresponds to the sent command
   @param buf The buffer to compare
   @param cmd The command that was sent
-  @param len The lenght of the command
   @return SUCCESS on success, otherwise ERR_WRONG_ANSWER
 */
-int CheckResponse(char *buf, char *cmd, int len);
+int CheckResponse(char *buf, char *cmd);
 
 /** <i>Function</i> that clears the current Serial Port buffer
  by reading some bytes
