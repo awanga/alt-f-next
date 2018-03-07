@@ -142,6 +142,71 @@ case "$action" in
 		exit 0
 		;;
 
+	Submit)
+		sed -i /POWERUP_AFTER_POWER_FAIL/d $CONFM
+		if test -n "$set_apr"; then
+			echo POWERUP_AFTER_POWER_FAIL=1 >> $CONFM
+		fi
+
+		sed -i /POWERUP_ON_WOL/d $CONFM
+		if test -n "$set_wol"; then
+			echo POWERUP_ON_WOL=1 >> $CONFM
+		fi
+
+		TF=$(mktemp -t)
+		crontab -l > $TF
+		if test -z "$set_spd"; then
+			sed -i '\|/usr/sbin/poweroff|d' $TF
+		else
+			at=$(httpd -d "$spd_at")
+			if echo $at | grep -q ':'; then
+				hour=${at%%:*}
+				if test -z "$hour"; then hour='*'; fi
+				min=${at##*:}
+				if test -z "$min"; then min='0'; fi
+			else
+				hour=$at
+				min=0
+			fi
+
+			wday=$(httpd -d "$spd_wday")
+			if test "${wday:0:1}" = "d"; then
+				mday=${wday:1}
+				wday='*'
+			else
+				mday='*'
+			fi
+			if test -z "$wday" -o -z "$hour"; then
+				echo "invalid At or When format"
+			fi
+
+			sed -i '\|/usr/sbin/poweroff|d' $TF
+			echo "$min $hour $mday * $wday /usr/sbin/poweroff #!# Alt-F cron" >> $TF
+		fi
+		crontab $TF
+		rm -f $TF
+
+		sed -i -e /POWERUP_ALARM_SET/d -e /POWERUP_ALARM_REPEAT/d $CONFM
+		if test -n "$set_spu"; then
+			when=$(httpd -d "$spu_when" | awk -F- '{printf("%d %d", $2, $3)}')
+			at=$(httpd -d "$spu_at" | awk -F: '{printf("%d %d", $1, $2)}')
+			echo POWERUP_ALARM_SET=\"$when $at\" >> $CONFM
+
+			rep=$(httpd -d "$spu_rep")
+			rl=$( expr ${#rep} - 1)
+			if test ${rep:0:1} != '+' -o \( ${rep:$rl} != 'd' -a ${rep:$rl} != 'm' \); then
+				msg "Invalid repetition format"
+			fi
+			rl=$((--rl))
+			if ! isnumber ${rep:1:$rl}; then
+				msg "Invalid repetition format"
+			fi
+			echo POWERUP_ALARM_REPEAT=$rep >> $CONFM
+
+			rcpower start >& /dev/null
+		fi
+		;;
+
 	ClearPrintQueues)
 		#lpq -d doesnt work
 		for i in $(cut -f1 -d"|" /etc/printcap 2>/dev/null); do

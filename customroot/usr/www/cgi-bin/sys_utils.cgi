@@ -15,6 +15,14 @@ WARNING: if using https your browser will complain<br>
 and you will have to make it accept the new certificate.<br>
 Does not affects the ssh host key."
 
+mktt wday_tt "Week or Month day(s) to execute the command.<br><br><strong>Week day</strong>: 0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br><br><strong>Month day:</strong> first character must be a 'd',<br> 1 to 31 allowed, same rules as above applies,<br> e.g., 'd1,15' or 'd1-5' or 'd28' are valid.<br><br>No spaces allowed, no checks done"
+
+mktt hour_tt "'Hour' or 'Hour:Minute' or ':Minute' of the day to execute the command, 0..23:0..59.<br><br>Use the same format for hour and minute as in the \"When\" field."
+
+mktt next_tt "Next scheduled power up date and time,<br>YYYY-MM-DD and HH:MM, the year is ignored."
+
+mktt rep_tt "Amount to add to reschedule the power up since the last one occurred.<br>\"+Nd\" for days or \"+Nm\" for months."
+
 logsel="<select name=\"logaction\" onchange=\"return submit()\">
 <option>Select one</option>
 <option value=\"SystemConf\">System Configuration</option>
@@ -41,6 +49,60 @@ if test -f $CONFM; then
 	. $CONFM
 fi
 
+if test -n "$POWERUP_AFTER_POWER_FAIL"; then
+	apr_chk="checked"
+fi
+
+if test -n "$POWERUP_ON_WOL"; then
+	wol_chk="checked"
+fi
+#wol_chk="disabled"  #not working
+
+# scheduled power up
+res=$(dns320l-daemon -x readalarm)
+if ! echo "$res" | grep -q disabled; then
+	spu_when=$(echo "$res" | awk '{printf("%s", $(NF-1))}')
+	spu_at=$(echo "$res" | awk '{printf("%s", $NF)}')
+elif test -n "$POWERUP_ALARM_SET"; then
+	spu_chk="checked"
+	year=$(date +%Y)
+	spu_when=$(echo $POWERUP_ALARM_SET | awk '{printf("'$year'-%d-%d", $1,$2)}')
+	spu_at=$(echo $POWERUP_ALARM_SET | awk '{printf("%d:%d", $3,$4)}')
+else
+	spu_when=$(date +%F)
+	spu_at=$(date +%R)
+fi
+
+if test -n "$POWERUP_ALARM_REPEAT"; then
+	spu_chk="checked"
+	spu_rep=$POWERUP_ALARM_REPEAT
+else
+	spu_rep="+1d"
+fi
+
+# scheduled power down
+TF=$(mktemp -t)
+crontab -l > $TF
+while read min hour monthday month weekday cmd; do
+	if ! echo "$cmd" | grep -q "/usr/sbin/poweroff"; then continue; fi
+
+	if test "${min:0:1}" = "#"; then
+		min=${min:1}
+	fi
+	if test "$monthday" != '*'; then
+		weekday="d$monthday"
+	fi
+	spd_chk="checked"
+	spd_wday=$weekday
+	spd_at="$hour:$min"
+	break
+done < $TF
+rm -f $TF
+
+if test -z "$min" -o -z "$hour" -o -z "$monthday" -o -z "$month" -o -z "$weekday"; then
+	 spd_at="0:0"; spd_wday="*"
+fi
+
 if test "$TOP_MENU" = "no"; then notop_chk="checked"; fi
 if test "$SIDE_MENU" = "no"; then noside_chk="checked"; fi
 
@@ -58,6 +120,7 @@ echo -n $salt > /tmp/salt
 
 md5 # expand js md5()
 
+
 cat<<-EOF
 	<script type="text/javascript">
 	function csubmit() {
@@ -68,10 +131,60 @@ cat<<-EOF
 	</script>
 	<form id="sysutilsf" name="sysutilsf" action="/cgi-bin/sys_utils_proc.cgi" method="post">
 
-	<fieldset><legend>Reboot or Poweroff</legend>
+	<fieldset><legend>Power up, Power off, Reboot</legend>
+	<table><tr><td colspan=3>
 	<input type="submit" name="action" value="Reboot" onClick="return confirm('The box will reboot now.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
 	<input type="submit" name="action" value="RebootAndCheck" onClick="return confirm('The box will reboot now and perform a complete filesystem check, during which its data will not be available.\nWithin 60 seconds you will be connected again.\n\nProceed?')">
 	<input type="submit" name="action" value="Poweroff" onClick="return confirm('The box will poweroff now.\n\nProceed?')">
+	</td></tr>
+EOF
+
+#FIXME: the 325 also has APR
+if grep -qE 'DNS-320-Bx|DNS-320L-Ax|DNS327L-Ax' /tmp/board; then
+cat<<-EOF
+	<tr><td><br></td></tr>
+	<tr>
+	<td><input type=checkbox $apr_chk name=set_apr value=yes></td>
+	<td colspan=3>Enable Automatic Power On after power failure</td>
+	<td></td><td></td>
+	</tr>
+	<tr>
+	<td><input type=checkbox $wol_chk name=set_wol value=yes></td>
+	<td colspan=3>Enable Wake On Lan <em>(not properly working)</em></td>
+	<td></td><td></td>
+	</tr>
+	<tr>
+	<td><input type=checkbox $spd_chk name=set_spd value=yes></td>
+	<td colspan=3>Enable Scheduled Power Down</td>
+	<td></td><td></td>
+	</tr>
+	<tr>
+	<td></td>
+	<td>When:</td>
+	<td><input type=text size=10 name=spd_wday value="$spd_wday" $(ttip wday_tt)> At: <input type=text size=10 name=spd_at value="$spd_at" $(ttip hour_tt)></td>
+	<td></td>
+	</tr>
+	<tr>
+	<td><input type=checkbox $spu_chk name=set_spu value=yes></td>
+	<td colspan=3>Enable Scheduled Power Up</td>
+	<td></td><td></td>
+	</tr>
+	<tr>
+	<td></td>
+	<td>Next:</td>
+	<td><input type=text size=10 name=spu_when value="$spu_when" $(ttip next_tt)> At: <input type=text size=10 name=spu_at value="$spu_at" $(ttip next_tt)></td>
+	</tr><tr>
+	<td></td>
+	<td>Repeat every:</td>
+	<td><input type=text size=10 name=spu_rep value="$spu_rep" $(ttip rep_tt)></td>
+	</tr><tr>
+	<td colspan=2><input type="submit" name="action" value="Submit"></td>
+	</tr>
+EOF
+fi
+
+cat<<-EOF
+	</table>
 	</fieldset>
 
 	<fieldset><legend>View Logs</legend>
@@ -94,7 +207,7 @@ cat<<-EOF
 	</fieldset>
 
 	<fieldset><legend>Administering password</legend>
-	Current Password:<input type="password" autocomplete="off" id="passwd_id" name="passwd" value="" onkeypress="return event.keyCode != 13">
+	Current Password:<input type="password" id="passwd_id" name="passwd" value="" onkeypress="return event.keyCode != 13">
 	<input type="submit" name="action" value="ChangePassword" onclick="return csubmit()">
 	<input type="hidden" id=salt_id name=salt value="$salt">
 	</fieldset>

@@ -1,0 +1,73 @@
+#!/bin/sh
+
+NAME=power
+
+#set -x
+
+. /etc/init.d/common
+
+. /etc/misc.conf
+
+#POWERUP_ALARM_REPEAT=+1d # set to current alarm (or POWERUP_ALARM_SET) value plus N days| month
+#POWERUP_ALARM_SET="1 3 18 30" # if disabled, set to month day hour minute
+#POWERUP_AFTER_POWER_FAIL=1 # auto powerup after power fail. Default, recommended
+#POWERUP_ON_WOL=1 # powerup on WOL (wake on lan). Not working
+
+# The DNS-325 and DNS-320-Ax have the equivalent of POWERUP_AFTER_POWER_FAIL,
+# which is set unconditionaly at rcS
+if ! grep -qE "DNS-320-Bx|DNS-320L|DNS-327L" /tmp/board; then return 0; fi
+
+rearm() {
+	if test -n "$POWERUP_AFTER_POWER_FAIL"; then
+		dns320l-daemon -x EnablePowerRecovery > /dev/null
+	else
+		dns320l-daemon -x DisablePowerRecovery > /dev/null
+	fi
+
+	if test -n "$POWERUP_ON_WOL"; then
+		dns320l-daemon -x EnableWOL > /dev/null
+	else
+		dns320l-daemon -x  DisableWOL > /dev/null
+	fi
+
+	# alarm might be disabled, set it
+	if test -n "$POWERUP_ALARM_SET"; then
+		if dns320l-daemon -x readalarm | grep -q disabled; then
+			dns320l-daemon -x writealarm "$POWERUP_ALARM_SET" > /dev/null
+		fi
+	fi
+
+	# alarm migh have elapsed, advance it to next event
+	if test -n "$POWERUP_ALARM_REPEAT"; then
+		res=$(dns320l-daemon -x readalarm)
+		while echo "$res"| grep -q 'elapsed'; do
+			res=$(dns320l-daemon -x writealarm "$POWERUP_ALARM_REPEAT")
+		done
+		echo $res
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		rearm
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		rearm
+		;;
+	status)
+		echo -n "$NAME: "
+		res=$(dns320l-daemon -x readalarm)
+		echo $res
+		echo $res | grep -qvE 'disabled|ERR'
+		;;
+	restart)
+		echo -n "Restarting $NAME: "
+		# just stop it, init will relaunch it
+		stop dns320l-daemon
+		sleep 3
+		rearm
+		;;
+	*) usage $0 "start|stop|status|restart|enable alarm|disable alarm" ;;
+esac
