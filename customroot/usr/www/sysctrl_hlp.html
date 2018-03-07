@@ -12,11 +12,11 @@ configure several items that enables you to keep your box cool and not
 too noisy.
 
 <p> In the <strong>System Temperature / Fan Speed relationship</strong> section, you
-establish how fast the fan turns, depending on the box current
-temperature.<br>
-You can also specify if disks temperature should be taken into account using the 'hddtemp' service.<br>
+establish how fast the fan turns, depending on the current system temperature.<br>
 
 <ul>
+By checking the <strong>Use also Disks Temp.</strong> checkbox and activating the user <strong>hddtemp</strong> service, disks temperatures will also be taken into account for the fan speed. Notice that while the hddtemp service is running the disks will not be able to spin down.<br>
+
 <li><h4>DNS-323 rev-A1/B1 hardware boards:</h4>
 
 <p>For the A1 and B1 hardware boards, the fan speed can
@@ -33,8 +33,8 @@ system is at the <strong>High Temp</strong> temperature. For intermediate temper
 The low and high temperatures are not the maximum and minimum values
 that you which for you box, are only reference points.
 
-For example, with the default settings, the fan speed is 300RPM/º (5000 - 2000) / (50 - 40).
-If the system temperature is 42 degrees, the fan will rotate at 2600 RPM (2000 + 2*300).
+For example, with the default settings, the fan speed is 300RPM for each Celsius degree  (5000 - 2000) / (50 - 40).
+If the system temperature is 42 degrees, the fan will rotate at 2600 RPM (2000 + 2x300).
 
 <p>In the <strong>Maximum ratings</strong>, in the <strong>Fan Off
 Temp</strong> entry, you can specify at what temperature  should the fan
