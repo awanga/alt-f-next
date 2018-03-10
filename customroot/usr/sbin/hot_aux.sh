@@ -202,7 +202,7 @@ if true; then
 	(while true; do
 		dd if=/tmp/fsck_pipe-$MDEV of=$logf- bs=64K count=1 2> /dev/null 
 		mv $logf- $logf
-		sleep 10
+		sleep 5
 	done)&
 	wj=$!
 	res="$($fsckcmd $fsopt -C5 $PWD/$MDEV 2>&1 5<> /tmp/fsck_pipe-$MDEV)"
