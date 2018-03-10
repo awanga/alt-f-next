@@ -154,9 +154,10 @@ case "$action" in
 		fi
 
 		TF=$(mktemp -t)
-		crontab -l > $TF
+		crontab -l > $TF 2> /dev/null
 		if test -z "$set_spd"; then
 			sed -i '\|/usr/sbin/poweroff|d' $TF
+			sed -i '/POWERDOW_SET/d' $CONFM
 		else
 			at=$(httpd -d "$spd_at")
 			if echo $at | grep -q ':'; then
@@ -182,8 +183,10 @@ case "$action" in
 
 			sed -i '\|/usr/sbin/poweroff|d' $TF
 			echo "$min $hour $mday * $wday /usr/sbin/poweroff #!# Alt-F cron" >> $TF
+			sed -i '/POWERDOW_SET/d' $CONFM
+			echo "POWERDOW_SET=\"$min $hour $mday * $wday\"" >> $CONFM
 		fi
-		crontab $TF
+		crontab $TF 2> /dev/null
 		rm -f $TF
 
 		sed -i -e /POWERUP_ALARM_SET/d -e /POWERUP_ALARM_REPEAT/d $CONFM
@@ -202,9 +205,8 @@ case "$action" in
 				msg "Invalid repetition format"
 			fi
 			echo POWERUP_ALARM_REPEAT=$rep >> $CONFM
-
-			rcpower start >& /dev/null
 		fi
+		rcpower start >& /dev/null
 		;;
 
 	ClearPrintQueues)

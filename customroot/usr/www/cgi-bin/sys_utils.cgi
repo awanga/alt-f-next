@@ -49,60 +49,6 @@ if test -f $CONFM; then
 	. $CONFM
 fi
 
-if test -n "$POWERUP_AFTER_POWER_FAIL"; then
-	apr_chk="checked"
-fi
-
-if test -n "$POWERUP_ON_WOL"; then
-	wol_chk="checked"
-fi
-#wol_chk="disabled"  #not working
-
-# scheduled power up
-res=$(dns320l-daemon -x readalarm)
-if ! echo "$res" | grep -q disabled; then
-	spu_when=$(echo "$res" | awk '{printf("%s", $(NF-1))}')
-	spu_at=$(echo "$res" | awk '{printf("%s", $NF)}')
-elif test -n "$POWERUP_ALARM_SET"; then
-	spu_chk="checked"
-	year=$(date +%Y)
-	spu_when=$(echo $POWERUP_ALARM_SET | awk '{printf("'$year'-%d-%d", $1,$2)}')
-	spu_at=$(echo $POWERUP_ALARM_SET | awk '{printf("%d:%d", $3,$4)}')
-else
-	spu_when=$(date +%F)
-	spu_at=$(date +%R)
-fi
-
-if test -n "$POWERUP_ALARM_REPEAT"; then
-	spu_chk="checked"
-	spu_rep=$POWERUP_ALARM_REPEAT
-else
-	spu_rep="+1d"
-fi
-
-# scheduled power down
-TF=$(mktemp -t)
-crontab -l > $TF
-while read min hour monthday month weekday cmd; do
-	if ! echo "$cmd" | grep -q "/usr/sbin/poweroff"; then continue; fi
-
-	if test "${min:0:1}" = "#"; then
-		min=${min:1}
-	fi
-	if test "$monthday" != '*'; then
-		weekday="d$monthday"
-	fi
-	spd_chk="checked"
-	spd_wday=$weekday
-	spd_at="$hour:$min"
-	break
-done < $TF
-rm -f $TF
-
-if test -z "$min" -o -z "$hour" -o -z "$monthday" -o -z "$month" -o -z "$weekday"; then
-	 spd_at="0:0"; spd_wday="*"
-fi
-
 if test "$TOP_MENU" = "no"; then notop_chk="checked"; fi
 if test "$SIDE_MENU" = "no"; then noside_chk="checked"; fi
 
@@ -139,8 +85,70 @@ cat<<-EOF
 	</td></tr>
 EOF
 
-#FIXME: the 325 also has APR
 if grep -qE 'DNS-320-Bx|DNS-320L-Ax|DNS327L-Ax' /tmp/board; then
+
+	if test -n "$POWERUP_AFTER_POWER_FAIL"; then
+		apr_chk="checked"
+	fi
+
+	if test -n "$POWERUP_ON_WOL"; then
+		wol_chk="checked"
+	fi
+	#wol_chk="disabled"  #not working
+
+	# scheduled power up
+	res=$(dns320l-daemon -x readalarm)
+	if ! echo "$res" | grep -q disabled; then
+		spu_when=$(echo "$res" | awk '{printf("%s", $(NF-1))}')
+		spu_at=$(echo "$res" | awk '{printf("%s", $NF)}')
+	elif test -n "$POWERUP_ALARM_SET"; then
+		spu_chk="checked"
+		year=$(date +%Y)
+		spu_when=$(echo $POWERUP_ALARM_SET | awk '{printf("'$year'-%d-%d", $1,$2)}')
+		spu_at=$(echo $POWERUP_ALARM_SET | awk '{printf("%d:%d", $3,$4)}')
+	else
+		spu_when=$(date +%F)
+		spu_at=$(date +%R)
+	fi
+
+	if test -n "$POWERUP_ALARM_REPEAT"; then
+		spu_chk="checked"
+		spu_rep=$POWERUP_ALARM_REPEAT
+	else
+		spu_rep="+1d"
+	fi
+
+	# scheduled power down
+	TF=$(mktemp -t)
+	if test -n "$POWERDOW_SET"; then
+		echo "$POWERDOW_SET" > $TF
+		read min hour monthday month weekday cmd < $TF
+		if test "$monthday" != '*'; then
+			weekday="d$monthday"
+		fi
+		spd_chk="checked"
+		spd_wday=$weekday
+		spd_at="$hour:$min"	
+	else
+		crontab -l > $TF 2> /dev/null
+		while read min hour monthday month weekday cmd; do
+			if ! echo "$cmd" | grep -q "/usr/sbin/poweroff"; then continue; fi
+
+			if test "$monthday" != '*'; then
+				weekday="d$monthday"
+			fi
+			spd_chk="checked"
+			spd_wday=$weekday
+			spd_at="$hour:$min"
+			break
+		done < $TF
+	fi
+	rm -f $TF
+
+	if test -z "$min" -o -z "$hour" -o -z "$monthday" -o -z "$month" -o -z "$weekday"; then
+		spd_at="0:0"; spd_wday="*"
+	fi
+
 cat<<-EOF
 	<tr><td><br></td></tr>
 	<tr>
