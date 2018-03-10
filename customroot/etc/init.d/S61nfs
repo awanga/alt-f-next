@@ -39,7 +39,7 @@ istart() {
 	fi
 
 	# Don't fail if /etc/exports doesn't exist, create a bare-bones version and continue.
-	if test ! -f /etc/exports; then
+	if ! test -f /etc/exports; then
 		touch /etc/exports
 		chmod u+rw,g+r,o+r /etc/exports
 		echo "Creating default NFS exports file."
