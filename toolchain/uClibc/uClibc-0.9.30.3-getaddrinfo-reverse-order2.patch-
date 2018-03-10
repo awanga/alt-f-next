@@ -1,0 +1,124 @@
+jcard: changed to prefer IPV4 first, no gai.conf support
+https://mailman.uclibc-ng.org/pipermail/devel/2015-December/000613.html
+
+Implement simplest variant of /etc/gai.conf to control getaddrinfo
+IPv6/IPv4 addresses sorting. Keep the default sort order - IPv6 first,
+IPv4 second. To invert it, create /etc/gai.conf containing single line:
+
+ precedence ::ffff:0:0/96  100
+
+Example before:
+
+$ nslookup security.debian.org 8.8.8.8
+Server:    8.8.8.8
+Address 1: 8.8.8.8 google-public-dns-a.google.com
+
+Name:      security.debian.org
+Address 1: 2001:a78:5:0:216:35ff:fe7f:be4f villa.debian.org
+Address 2: 2001:a78:5:1:216:35ff:fe7f:6ceb lobos.debian.org
+Address 3: 195.20.242.89 wieck.debian.org
+Address 4: 212.211.132.250 lobos.debian.org
+Address 5: 212.211.132.32 villa.debian.org
+
+After patch & precedence set in /etc/gai.conf:
+
+$ nslookup security.debian.org 8.8.8.8
+Server:    8.8.8.8
+Address 1: 8.8.8.8 google-public-dns-a.google.com
+
+Name:      security.debian.org
+Address 1: 195.20.242.89 wieck.debian.org
+Address 2: 212.211.132.250 lobos.debian.org
+Address 3: 212.211.132.32 villa.debian.org
+Address 4: 2001:a78:5:0:216:35ff:fe7f:be4f villa.debian.org
+Address 5: 2001:a78:5:1:216:35ff:fe7f:6ceb lobos.debian.org
+
+ bloat-o-meter report:
+function                                             old     new   delta
+getaddrinfo                                          726    1138    +412
+gaih_inet                                           2660    2692     +32
+.rodata                                            16618   16643     +25
+__gai_precedence                                       -       1      +1
+------------------------------------------------------------------------------
+(add/remove: 1/0 grow/shrink: 4/0 up/down: 882/0)             Total: 470 bytes
+
+Signed-off-by: Leonid Lisovskiy <lly.dev at gmail.com>
+---
+ libc/inet/getaddrinfo.c | 97 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 94 insertions(+), 3 deletions(-)
+
+diff --git a/libc/inet/getaddrinfo.c b/libc/inet/getaddrinfo.c
+index 168adb1..090d7e9 100644
+--- a/libc/inet/getaddrinfo.c
++++ b/libc/inet/getaddrinfo.c
+@@ -62,6 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <stdbool.h>
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+@@ -348,6 +350,11 @@ gaih_inet_serv(const char *servicename, const struct gaih_typeproto *tp,
+ 	return 0;
+ }
+ 
++#if defined __UCLIBC_HAS_IPV6__
++static uint8_t __gai_precedence = 2;	/* =1 - IPv6, IPv4
++					   =2 - IPv4, IPv6 */
++#endif
++
+ /* NB: also uses h,pat,rc,no_data variables */
+ #define gethosts(_family, _type)						\
+ {										\
+@@ -552,21 +559,32 @@ gaih_inet(const char *name, const struct gaih_service *service,
+ 		if (at->family == AF_UNSPEC && !(req->ai_flags & AI_NUMERICHOST)) {
+ 			struct hostent *h;
+ 			struct gaih_addrtuple **pat = &at;
+-			int no_data = 0;
+-			int no_inet6_data;
++			int no_data, no_inet6_data;
++#if defined __UCLIBC_HAS_IPV6__
++			bool first_try = true;
++#endif
+ 
+ 			/*
+ 			 * If we are looking for both IPv4 and IPv6 address we don't want
+ 			 * the lookup functions to automatically promote IPv4 addresses to
+ 			 * IPv6 addresses.
+ 			 */
++			no_inet6_data = no_data = 0;
+ #if defined __UCLIBC_HAS_IPV6__
++			if (__gai_precedence == 2)
++				goto try_v4;
++
++ try_v6:
+ 			if (req->ai_family == AF_UNSPEC || req->ai_family == AF_INET6)
+ 				if (!(req->ai_flags & AI_ADDRCONFIG) || (seen & SEEN_IPV6))
+ 					gethosts(AF_INET6, struct in6_addr);
+-#endif
+ 			no_inet6_data = no_data;
++			if (!first_try)
++				goto tried_all;
++			first_try = false;
+ 
++ try_v4:
++#endif
+ 			if (req->ai_family == AF_INET
+ 			 || (!v4mapped && req->ai_family == AF_UNSPEC)
+ 			 || (v4mapped && (no_inet6_data != 0 || (req->ai_flags & AI_ALL)))
+@@ -574,7 +592,14 @@ gaih_inet(const char *name, const struct gaih_service *service,
+ 				if (!(req->ai_flags & AI_ADDRCONFIG) || (seen & SEEN_IPV4))
+ 					gethosts(AF_INET, struct in_addr);
+ 			}
++#if defined __UCLIBC_HAS_IPV6__
++			if (first_try) {
++				first_try = false;
++				goto try_v6;
++			}
+ 
++ tried_all:
++#endif
+ 			if (no_data != 0 && no_inet6_data != 0) {
+ 				/* If both requests timed out report this. */
+ 				if (no_data == EAI_AGAIN && no_inet6_data == EAI_AGAIN)
