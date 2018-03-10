@@ -127,7 +127,7 @@ eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
 def_ip="$NETWORK/$netmask"
 
 cnt=0
-if test -e $CONFX; then
+if test -s $CONFX; then
   while read -r ln; do
 	if test -z "$ln"; then continue; fi
     exports_row $cnt "$ln"
