@@ -7,7 +7,7 @@
 #LIBGPG_ERROR_VERSION:=1.6
 LIBGPG_ERROR_VERSION:=1.10
 LIBGPG_ERROR_SOURCE:=libgpg-error-$(LIBGPG_ERROR_VERSION).tar.bz2
-LIBGPG_ERROR_SITE:=ftp://gd.tuwien.ac.at/privacy/gnupg/libgpg-error
+LIBGPG_ERROR_SITE:=http://www.gnupg.org/ftp/gcrypt/libgpg-error
 LIBGPG_ERROR_DIR:=$(BUILD_DIR)/libgpg-error-$(LIBGPG_ERROR_VERSION)
 LIBGPG_ERROR_LIBRARY:=src/libgpg-error.la
 LIBGPG_ERROR_DESTDIR:=usr/lib

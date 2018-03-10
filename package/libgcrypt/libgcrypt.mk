@@ -6,7 +6,7 @@
 #LIBGCRYPT_VERSION:=1.2.4
 LIBGCRYPT_VERSION:=1.5.0
 LIBGCRYPT_SOURCE:=libgcrypt-$(LIBGCRYPT_VERSION).tar.bz2
-LIBGCRYPT_SITE:=ftp://gd.tuwien.ac.at/privacy/gnupg/libgcrypt/
+LIBGCRYPT_SITE:=https://www.gnupg.org/ftp/gcrypt/libgcrypt
 LIBGCRYPT_DIR:=$(BUILD_DIR)/libgcrypt-$(LIBGCRYPT_VERSION)
 LIBGCRYPT_LIBRARY:=src/libgcrypt.la
 LIBGCRYPT_DESTDIR:=usr/lib
