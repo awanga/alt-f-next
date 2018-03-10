@@ -144,7 +144,7 @@ and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 	
 	aufs.sh -n
 	tar -C /Alt-F -xzf data.tar.gz
-	mkdir -p /Alt-F/etc
+	mkdir -p /Alt-F/etc/init.d
 	aufs.sh -r
 
 	cd /

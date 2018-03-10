@@ -95,6 +95,7 @@ elif test -n "$BootEnable"; then
 			rm -f $af/NOAUFS
 		fi
 	done
+	mkdir -p $af/etc/init.d # fix, a defective install might exists
 	aufs.sh -r >& /dev/null
 
 elif test -n "$Delete"; then

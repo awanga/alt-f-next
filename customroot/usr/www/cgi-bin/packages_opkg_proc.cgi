@@ -90,7 +90,7 @@ if test "$install" = "Install"; then
 	if test -z "$err"; then
 		if ! test -d /Alt-F/etc/init.d; then
 			aufs.sh -n
-			mkdir -p /Alt-F/etc/init.d
+			mkdir -p /Alt-F/etc/init.d # fix, a defective install might exists
 			aufs.sh -r
 		fi
 		cat<<-EOF  >/etc/init.d/S81entware
