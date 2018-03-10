@@ -9,7 +9,6 @@
 /etc/dropbear/dropbear_rsa_host_key
 /etc/dropbear/dropbear_ecdsa_host_key
 /etc/exports
-/etc/gai.conf
 /etc/group
 /etc/hostname
 /etc/hosts
