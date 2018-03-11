@@ -26,6 +26,7 @@ echo configfs:
 . .config 2> /dev/null
 board=$BR2_PROJECT
 
+# 1.1-keep only minimum set of kernel modules if the kernel-modules package is not configured
 if test -z "$BR2_KERNEL_none"; then
 	if test -n "$BR2_KERNEL_THIS_VERSION"; then
 		kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL	
@@ -33,7 +34,7 @@ if test -z "$BR2_KERNEL_none"; then
 		kver=$BR2_CUSTOM_LINUX26_VERSION
 	fi
 
-echo kernel=$kver
+	echo kernel=$kver
 
 	# FIXME THE FIRST make will reinstall modules (linux26 is a late target),
 	# so TWO makes have to be done the first time!!! Isn't this already solved?
@@ -88,6 +89,13 @@ echo kernel=$kver
 			cd $OPWD
 		fi
 	fi
+fi
+
+# 1.2-update CA certificates bundle every month, if a newer one is available
+ca_bundle=customroot/etc/ssl/ca-bundle.crt
+if test $(expr $(stat -c %Y $ca_bundle 2> /dev/null) + 2592000) -lt $(date +%s); then
+	curl -o $ca_bundle --time-cond $ca_bundle https://curl.haxx.se/ca/cacert.pem
+	cp $ca_bundle $ROOTFS/etc/ssl/ca-bundle.crt
 fi
 
 # 2-customroot has additional needed files, copy them to root
@@ -208,5 +216,4 @@ echo FILES_CHK=$(date +%s) >> $1/etc/misc.conf
 for i in $(grep -rl '#![[:space:]]*'$HOSTDIR $ROOTFS); do
 	sed -i "s|#![[:space:]]*$HOSTDIR|#!|" $i;
 done
-	
 
