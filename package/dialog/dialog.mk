@@ -1,11 +1,12 @@
-#############################################################
+###########################################################
 #
 # dialog
 #
-#############################################################
+###########################################################
+
 DIALOG_VERSION:=1.1-20070704
 DIALOG_SOURCE:=dialog-$(DIALOG_VERSION).tgz
-DIALOG_SITE:=ftp://invisible-island.net/dialog
+DIALOG_SITE:=https://invisible-mirror.net/archives/dialog
 DIALOG_DIR:=$(BUILD_DIR)/dialog-$(DIALOG_VERSION)
 DIALOG_BINARY:=dialog
 DIALOG_TARGET_BINARY:=usr/bin/dialog
