@@ -8,4 +8,4 @@ config BR2_PACKAGE_CRYPTSETUP
 	help
 	 Setup cryptographic volumes for dm-crypt (including LUKS extension)
 	 
-	 http://code.google.com/p/cryptsetup
+	 https://gitlab.com/cryptsetup/cryptsetup

@@ -1,13 +1,13 @@
-#############################################################
+###########################################################
 #
-# automatic
+# cryptsetup
 #
-#############################################################
+###########################################################
 
-#CRYPTSETUP_VERSION = 1.3.1
 CRYPTSETUP_VERSION = 1.4.1
-CRYPTSETUP_SOURCE = cryptsetup-$(CRYPTSETUP_VERSION).tar.bz2
-CRYPTSETUP_SITE = http://cryptsetup.googlecode.com/files
+CRYPTSETUP_MAJOR = 1.4
+CRYPTSETUP_SOURCE = cryptsetup-$(CRYPTSETUP_VERSION).tar.xz
+CRYPTSETUP_SITE = https://www.kernel.org/pub/linux/utils/cryptsetup/v$(CRYPTSETUP_MAJOR)/
 CRYPTSETUP_AUTORECONF = NO
 CRYPTSETUP_INSTALL_STAGING = NO
 CRYPTSETUP_INSTALL_TARGET = YES
