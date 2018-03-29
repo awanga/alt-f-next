@@ -1,0 +1,26 @@
+ntpd: fix incorrect m_status field in outgoing packets. Closes 5120
+When using busybox ntpd with an NTPv3 client and NTPv4 server (or vice
+versa), the version numbers can be incorrectly ORed together, yielding
+the bogus value of "NTPv7".  This makes ntpd unusable with clients
+such as Chrony and Windows "Internet Time".
+
+This patch avoids the version mangling, by copying only the Leap
+Indicator bits from the server's status field.
+
+Signed-off-by: Paul Marks <paul@pmarks.net>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+Diffstat
+-rw-r--r--	networking/ntpd.c	2	
+1 files changed, 1 insertions, 1 deletions
+diff --git a/networking/ntpd.c b/networking/ntpd.c
+index 45485c0..79b7c37 100644
+--- a/networking/ntpd.c
++++ b/networking/ntpd.c
+@@ -1851,7 +1851,7 @@ recv_and_process_client_pkt(void /*int fd*/)
+ 
+ 	/* Build a reply packet */
+ 	memset(&msg, 0, sizeof(msg));
+-	msg.m_status = G.stratum < MAXSTRAT ? G.ntp_status : LI_ALARM;
++	msg.m_status = G.stratum < MAXSTRAT ? (G.ntp_status & LI_MASK) : LI_ALARM;
+ 	msg.m_status |= (query_status & VERSION_MASK);
+ 	msg.m_status |= ((query_status & MODE_MASK) == MODE_CLIENT) ?
