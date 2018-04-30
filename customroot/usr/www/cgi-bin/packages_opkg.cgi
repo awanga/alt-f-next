@@ -2,14 +2,14 @@
 . common.sh
 
 check_cookie
-write_header "Entware-ng Package Manager"
+write_header "Entware Package Manager"
 parse_qstring
 
 #debug
 
 has_disks
 
-echo "<h4 class="warn">Warning: Entware-ng is alien to Alt-F, conflicts might arise.<br>Packages configuration files have to be manually edited.</h4>"
+echo "<h4 class="warn">Warning: Entware is alien to Alt-F, conflicts might arise.<br>Packages configuration files have to be manually edited.</h4>"
 
 # FIXME: /opt should be really /mnt/<dev>/opt, and linked to /opt at discover time.
 # It should not be a subdir of /Alt-F. Affected Alt-F packages: grep -l '/opt' ipkgfiles/*.p*
@@ -23,14 +23,14 @@ CONFF=/opt/etc/opkg.conf
 OPTB=/opt/bin/opkg
 
 if ! test -f $CONFF -a -x $OPTB; then
-	arch=armv5
-	if  grep -q DNS-327L /tmp/board; then arch=armv7; fi
-	feed_1="http://pkg.entware.net/binaries/$arch"
+	arch=armv5sf-k3.2
+	if  grep -q DNS-327L /tmp/board; then arch=armv7sf-k3.2; fi
+	feed_1="http://bin.entware.net/$arch"
 	cnt=1
 	cat<<-EOF
 		<form name="form" action="/cgi-bin/packages_opkg_proc.cgi" method=post>
 		<input type=hidden name=nfeeds value="$cnt">
-		<fieldset><legend>No Entware-ng installation found</legend><table>
+		<fieldset><legend>No Entware installation found</legend><table>
 		<tr><td>Install from:</td><td><input type=text size=40 name=feed_1 value="$feed_1"></td></tr>
 		<tr><td>install into:</td>
 		<!--td>$(select_part)</td--><td>$(realpath /Alt-F)/opt</td></tr>
@@ -43,7 +43,7 @@ fi
 cat<<-EOF
 	<script type="text/javascript">
 	function ask() {
-		return confirm("All packages and its configurations files will be deleted.\\nYou will have to reinstall all Entware-ng packages.");
+		return confirm("All packages and its configurations files will be deleted.\\nYou will have to reinstall all Entware packages.");
 	}
 	</script>
 	<form name="form" action="/cgi-bin/packages_opkg_proc.cgi" method=post>

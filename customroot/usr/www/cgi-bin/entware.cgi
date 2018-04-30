@@ -2,10 +2,10 @@
 
 . common.sh
 check_cookie
-write_header "Entware-ng Services Setup"
+write_header "Entware Services Setup"
 
 if ! test -f /opt/etc/init.d/rc.unslung; then
-	echo "No Entware-ng installation found.<br>$(back_button)</body></html>"
+	echo "No Entware installation found.<br>$(back_button)</body></html>"
 	exit 0
 fi
 
