@@ -1,0 +1,36 @@
+#!/bin/sh
+
+DESC="Monitor MD devices (Linux Software RAID)"
+NAME=mdadm
+TYPE=sys
+PIDFILE=/var/run/mdadm.pid
+CONFF=/etc/misc.conf
+
+. /etc/init.d/common
+
+case "$1" in
+	start)
+		if test -e $CONFF; then
+			. $CONFF
+		fi
+		if test -z "$MDADM_INTERVAL"; then
+			MDADM_INTERVAL=1800
+		else
+			MDADM_INTERVAL=$(expr $MDADM_INTERVAL \* 60)
+		fi
+
+		SENDTO=$(grep '^MAILTO' $CONFF | cut -d= -f2)
+		if test -z "$SENDTO"; then
+			echo "Mail not configured, exiting."
+			exit 1
+		fi
+
+		start $NAME -- --monitor --scan \
+			--daemonise --mail $SENDTO --delay $MDADM_INTERVAL \
+			$MDADM_EMAIL_TEST --syslog --pid-file $PIDFILE
+		;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

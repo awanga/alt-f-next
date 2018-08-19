@@ -1,0 +1,60 @@
+#!/bin/sh
+
+DESC="Cleanup log files every hour."
+TYPE=sys
+NAME=cleanup
+#REQUIRE="cron" doesn't not work here
+
+. /etc/init.d/common
+
+CRONF=/var/spool/cron/crontabs/root
+
+istatus() {
+	if ! rccron status >& /dev/null; then
+		echo "$1 stopped"
+		return 1
+	fi
+	
+	if crontab -l 2>/dev/null | grep -q /usr/sbin/cleanup; then
+		echo "$1 running"
+		return 0
+	else
+		echo "$1 stopped"
+		return 1
+	fi
+}
+
+# clean cron backup entries, even if cron is currently stopped
+istop() {
+	echo -n "Stopping $1: "
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/sbin/cleanup|d' $TF
+	touch -r $CRONF $TF
+	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
+	rm $TF
+	echo "OK."
+}
+
+istart() {
+	require $NAME cron
+	echo -n "Starting $1: "
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/sbin/cleanup|d' $TF
+	echo "0 * * * * /usr/sbin/cleanup #!# Alt-F cron" >> $TF
+	touch -r $CRONF $TF
+	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
+	rm $TF
+	echo "OK."
+}
+
+case "$1" in
+	start) istart $NAME ;;
+	stop) istop $NAME;;
+	restart) restart $NAME ;;
+	status) istatus $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

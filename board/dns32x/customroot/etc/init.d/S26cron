@@ -1,0 +1,25 @@
+#!/bin/sh
+
+DESC="Daemon to execute scheduled commands"
+NAME=crond
+TYPE=sys
+
+. /etc/init.d/common 
+
+CROND=/var/spool/cron/crontabs
+CRONF=$CROND/root
+SETF=/tmp/settings_saved
+
+sinit() {
+	if ! test -e $CROND; then mkdir -p $CROND; fi
+	if ! test -e $CRONF; then touch -r $SETF $CRONF; fi
+}
+
+case "$1" in
+	start) sinit; start $NAME ;;
+	stop) stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	init) sinit ;;
+	*) usage $0 "start|stop|status|restart|init" ;;
+esac

@@ -1,0 +1,105 @@
+#!/bin/sh
+
+DESC="Network Time Protocol Daemon"
+TYPE=net
+NAME=ntpd
+#REQUIRE="cron" does not works here.
+
+. /etc/init.d/common
+
+CONF=/etc/ntp.conf
+CONFM=/etc/misc.conf
+CRONF=/var/spool/cron/crontabs/root
+
+if test -e $CONFM; then
+	. $CONFM
+fi
+
+istatus() {
+	if status $1 >& /dev/null; then
+		echo "$1 running"
+		return 0
+	else
+		crontab -l 2>/dev/null | grep -q /usr/sbin/adjtime 
+		if test $? = 0; then
+			echo "$1 running"
+			return 0
+		else
+			echo "$1 stopped"
+			return 1
+		fi
+	fi
+}
+
+update_cron() {
+	NTPD_CRON=$(mktemp)
+	crontab -l > $NTPD_CRON 2> /dev/null
+	if test $? = 1 -a $# = 0 ; then
+		rm -f $NTPD_CRON
+		return
+	fi
+
+	sed -i '\|/usr/sbin/adjtime|d' $NTPD_CRON
+
+	if test $# = 1; then
+		echo "$1" >> $NTPD_CRON
+	fi
+	touch -r $CRONF $NTPD_CRON
+	crontab $NTPD_CRON
+	touch -r $NTPD_CRON $CRONF
+	rm -f $NTPD_CRON
+}
+
+get_server() {
+	servers=""
+	while read arg server; do
+		if test "$arg" = "server" -a "$server" != "127.127.1.0"; then
+			servers="$servers -p $server"
+		fi
+	done < $CONF
+	if test -z "$servers"; then
+		echo "$NAME: No NTP server configured, exiting."
+		exit 1
+	fi
+	echo $servers
+}
+
+case "$1" in
+	start)
+		if test "$NTPD_DAEMON" = "yes" ; then
+			ntpserver=$(get_server)
+			OPTS=""
+			if ! test -e /usr/bin/sntp; then
+				OPTS="-l $ntpserver"
+			fi
+			if test "$NTPD_BOOT" = "yes" ; then
+				echo -n "$NAME: Getting initial time through NTP: "
+				fsntp -s ${ntpserver##*-p} >& /dev/null
+				omsg $?
+			fi
+
+			echo -n "Starting $NAME: "
+			update_cron
+			avahi add ntp
+			adjtimex -qf 0  # if != 0 affects ntpd drift calculation 
+			start $NAME -- $OPTS
+		else
+			if test "$NTPD_DAEMON" = "no"; then NTPD_DAEMON=24; fi
+			require $NAME cron
+			echo -n "$NAME: Setting up crontab... "
+			adjtime -restart >& /dev/null
+			min=$(expr $(date +%s) % 60)
+			hour=$(seq -s, 0 ${NTPD_DAEMON:-24} 23)
+			update_cron "$min $hour * * * /usr/sbin/adjtime -adjust #!# Alt-F cron"
+		fi
+		omsg $?
+		;;
+
+	stop) stop $NAME
+		avahi remove ntp
+		update_cron
+		;;
+	restart) restart $NAME ;;
+	status) istatus $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

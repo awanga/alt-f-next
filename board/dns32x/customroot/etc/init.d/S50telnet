@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Start telnet....
+#
+
+DESC="Telnet Daemon"
+NAME=telnetd
+TELNETD_ARGS=-F
+
+. /etc/init.d/common
+
+[ -r /etc/default/telnet ] && . /etc/default/telnet
+
+istart() {
+      start $NAME -- $TELNETD_ARGS
+}
+
+istop() {
+	printf "Stopping telnetd: "
+	stop $NAME
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+
+case "$1" in
+    start)
+	istart
+	;;
+    stop)
+	istop
+	;;
+    restart|reload)
+	restart $NAME
+	;;
+    *) usage $0 "start|stop|status|restart|reload" ;;
+esac

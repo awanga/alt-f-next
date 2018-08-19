@@ -1,0 +1,25 @@
+#!/bin/sh
+
+DESC="Daemon to run jobs queued for later execution"
+NAME=atd
+#TYPE=sys
+
+ATDIR=/var/spool/cron
+
+. /etc/init.d/common
+
+inits() {
+	if ! test -d $ATDIR/atjobs -a $ATDIR/atspool; then
+		mkdir -p $ATDIR/atjobs $ATDIR/atspool
+		touch $ATDIR/atjobs/.SEQ
+		chown -R at:at $ATDIR/atjobs $ATDIR/atspool
+	fi
+}
+
+case "$1" in
+	start) inits; start $NAME ;;
+	stop)	stop $NAME ;;
+	status)	status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

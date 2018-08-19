@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Starts rpcbind.
+#
+
+DESC="Daemon to provide RPC bind support"
+NAME=rpcbind
+TYPE=sys
+
+. /etc/init.d/common
+
+istart() {
+	umask 077
+	start rpcbind
+}
+
+istop() {
+	echo -n "Stopping rpcbind daemon: "
+	stop rpcbind
+	echo "OK."
+}
+
+case "$1" in
+ start) istart ;;
+ stop) istop ;;
+ status) status $NAME ;;
+ restart|reload) restart $NAME ;;
+ *) usage $0 "start|stop|status|restart" ;;
+esac
+
