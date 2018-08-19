@@ -1,6 +1,6 @@
 
 BINS = sysctrl dns323-fw dns320l-daemon
-# rpcinfo unbuffer.so
+# unbuffer.so
 
 all: $(BINS)
 
