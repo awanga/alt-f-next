@@ -2,7 +2,7 @@
 
 [ -f /etc/samba/smb.conf ] || exit 0
 
-mkdir -p /var/log/samba
+mkdir -p /var/log/samba /var/lib/samba
 
 start() {
 	printf "Starting SMB services: "

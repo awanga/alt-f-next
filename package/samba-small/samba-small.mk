@@ -11,24 +11,24 @@ SAMBA_SMALL_INSTALL_STAGING = YES
 SAMBA_SMALL_LICENSE = GPL-3.0+
 SAMBA_SMALL_LICENSE_FILES = COPYING
 SAMBA_SMALL_DEPENDENCIES = \
-	host-e2fsprogs host-heimdal host-python \
-	micropython zlib
+	host-e2fsprogs host-heimdal host-python zlib
 
-SAMBA_SMALL_CONF_OPTS +=	--with-static-modules=ALL --nonshared-binary=ALL \
-				--without-acl-support \
-				--disable-cups \
-				--disable-avahi \
-				--without-fam \
-				--disable-gnutls \
-				--without-regedit \
-				--without-ad-dc \
-				--disable-cephfs \
-				--without-systemd \
-				--without-lttng \
-				--without-ads --without-ldap \
-				--without-gpgme \
-				--without-ntvfs-fileserver \
-				--nopyc --nopyo
+SAMBA_SMALL_CONF_OPTS += \
+	--with-static-modules=ALL --nonshared-binary=ALL \
+	--without-acl-support \
+	--disable-cups \
+	--disable-avahi \
+	--without-fam \
+	--disable-gnutls \
+	--without-regedit \
+	--without-ad-dc \
+	--disable-cephfs \
+	--without-systemd \
+	--without-lttng \
+	--without-ads --without-ldap \
+	--without-gpgme \
+	--without-ntvfs-fileserver \
+	--nopyc --nopyo
 
 ifeq ($(BR2_PACKAGE_POPT),y)
 SAMBA_SMALL_DEPENDENCIES += popt
@@ -49,22 +49,27 @@ define SAMBA_SMALL_REMOVE_CTDB_TESTS
 endef
 SAMBA_SMALL_POST_INSTALL_TARGET_HOOKS += SAMBA_SMALL_REMOVE_CTDB_TESTS
 
-SAMBA_SMALL_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -Os -fdata-sections -ffunction-sections"
+SAMBA_SMALL_CFLAGS += -Os -fdata-sections -ffunction-sections
+ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
+SAMBA_SMALL_CFLAGS += -marm
+endif
+
+SAMBA_SMALL_LDFLAGS += -Wl,--gc-sections
 ifeq ($(BR2_BINUTILS_ENABLE_LTO),y)
-SAMBA_SMALL_CONF_ENV += LDFLAGS="$(TARGET_LDFLAGS) -flto -Wl,--gc-sections"
-else
-SAMBA_SMALL_CONF_ENV += LDFLAGS="$(TARGET_LDFLAGS) -Wl,--gc-sections"
+SAMBA_SMALL_LDFLAGS += -flto
 endif
 
 define SAMBA_SMALL_CONFIGURE_CMDS
 	cp package/samba-small/samba4-cache.txt $(@D)/cache.txt;
+	$(SAMBA_SMALL_CONFIGURE_CMDS_MICROPYTHON)
 	echo 'Checking uname machine type: $(BR2_ARCH)' >>$(@D)/cache.txt;
 	(cd $(@D); \
 		PYTHON_CONFIG="$(STAGING_DIR)/usr/bin/python-config" \
 		python_LDFLAGS="" \
 		python_LIBDIR="" \
 		$(TARGET_CONFIGURE_OPTS) \
-		$(SAMBA_SMALL_CONF_ENV) \
+		CFLAGS="$(TARGET_CFLAGS) $(SAMBA_SMALL_CFLAGS)" \
+		LDFLAGS="$(TARGET_LDFLAGS) $(SAMBA_SMALL_LDFLAGS)" \
 		./buildtools/bin/waf configure \
 			--prefix=/usr \
 			--sysconfdir=/etc \
