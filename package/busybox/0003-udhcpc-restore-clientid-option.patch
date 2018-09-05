@@ -1,0 +1,115 @@
+--- a/networking/udhcp/dhcpc.c	2018-01-05 13:43:22.790833000 -0500
++++ b/networking/udhcp/dhcpc.c	2018-01-05 14:23:51.463720600 -0500
+@@ -55,6 +55,7 @@
+ 
+ #if ENABLE_LONG_OPTS
+ static const char udhcpc_longopts[] ALIGN1 =
++	"clientid\0"       Required_argument "c"
+ 	"clientid-none\0"  No_argument       "C"
+ 	"vendorclass\0"    Required_argument "V"
+ 	"hostname\0"       Required_argument "H"
+@@ -81,29 +82,30 @@
+ #endif
+ /* Must match getopt32 option string order */
+ enum {
+-	OPT_C = 1 << 0,
+-	OPT_V = 1 << 1,
+-	OPT_H = 1 << 2,
+-	OPT_h = 1 << 3,
+-	OPT_F = 1 << 4,
+-	OPT_i = 1 << 5,
+-	OPT_n = 1 << 6,
+-	OPT_p = 1 << 7,
+-	OPT_q = 1 << 8,
+-	OPT_R = 1 << 9,
+-	OPT_r = 1 << 10,
+-	OPT_s = 1 << 11,
+-	OPT_T = 1 << 12,
+-	OPT_t = 1 << 13,
+-	OPT_S = 1 << 14,
+-	OPT_A = 1 << 15,
+-	OPT_O = 1 << 16,
+-	OPT_o = 1 << 17,
+-	OPT_x = 1 << 18,
+-	OPT_f = 1 << 19,
+-	OPT_B = 1 << 20,
++	OPT_c = 1 << 0,
++	OPT_C = 1 << 1,
++	OPT_V = 1 << 2,
++	OPT_H = 1 << 3,
++	OPT_h = 1 << 4,
++	OPT_F = 1 << 5,
++	OPT_i = 1 << 6,
++	OPT_n = 1 << 7,
++	OPT_p = 1 << 8,
++	OPT_q = 1 << 9,
++	OPT_R = 1 << 10,
++	OPT_r = 1 << 11,
++	OPT_s = 1 << 12,
++	OPT_T = 1 << 13,
++	OPT_t = 1 << 14,
++	OPT_S = 1 << 15,
++	OPT_A = 1 << 16,
++	OPT_O = 1 << 17,
++	OPT_o = 1 << 18,
++	OPT_x = 1 << 19,
++	OPT_f = 1 << 20,
++	OPT_B = 1 << 21,
+ /* The rest has variable bit positions, need to be clever */
+-	OPTBIT_B = 20,
++	OPTBIT_B = 21,
+ 	USE_FOR_MMU(             OPTBIT_b,)
+ 	IF_FEATURE_UDHCPC_ARPING(OPTBIT_a,)
+ 	IF_FEATURE_UDHCP_PORT(   OPTBIT_P,)
+@@ -1179,7 +1181,7 @@
+ //usage:#define udhcpc_trivial_usage
+ //usage:       "[-fbq"IF_UDHCP_VERBOSE("v")"RB]"IF_FEATURE_UDHCPC_ARPING(" [-a[MSEC]]")" [-t N] [-T SEC] [-A SEC/-n]\n"
+ //usage:       "	[-i IFACE]"IF_FEATURE_UDHCP_PORT(" [-P PORT]")" [-s PROG] [-p PIDFILE]\n"
+-//usage:       "	[-oC] [-r IP] [-V VENDOR] [-F NAME] [-x OPT:VAL]... [-O OPT]..."
++//usage:       "	[-oC] [-r IP] [-c CID] [-V VENDOR] [-F NAME] [-x OPT:VAL]... [-O OPT]..."
+ //usage:#define udhcpc_full_usage "\n"
+ //usage:	IF_LONG_OPTS(
+ //usage:     "\n	-i,--interface IFACE	Interface to use (default eth0)"
+@@ -1213,6 +1215,7 @@
+ //usage:     "\n				-x 0x3d:0100BEEFC0FFEE - option 61 (client id)"
+ //usage:     "\n	-F,--fqdn NAME		Ask server to update DNS mapping for NAME"
+ //usage:     "\n	-V,--vendorclass VENDOR	Vendor identifier (default 'udhcp VERSION')"
++//usage:     "\n	-c,--clientid=CLIENTID	Set client identifier - type is first char"
+ //usage:     "\n	-C,--clientid-none	Don't send MAC as client identifier"
+ //usage:	IF_UDHCP_VERBOSE(
+ //usage:     "\n	-v			Verbose"
+@@ -1264,7 +1267,7 @@
+ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
+ {
+ 	uint8_t *message;
+-	const char *str_V, *str_h, *str_F, *str_r;
++	const char *str_c, *str_V, *str_h, *str_F, *str_r;
+ 	IF_FEATURE_UDHCPC_ARPING(const char *str_a = "2000";)
+ 	IF_FEATURE_UDHCP_PORT(char *str_P;)
+ 	void *clientid_mac_ptr;
+@@ -1298,12 +1301,12 @@
+ 	/* O,x: list; -T,-t,-A take numeric param */
+ 	IF_UDHCP_VERBOSE(opt_complementary = "vv";)
+ 	IF_LONG_OPTS(applet_long_options = udhcpc_longopts;)
+-	opt = getopt32(argv, "CV:H:h:F:i:np:qRr:s:T:+t:+SA:+O:*ox:*fB"
++	opt = getopt32(argv, "c:CV:H:h:F:i:np:qRr:s:T:+t:+SA:+O:*ox:*fB"
+ 		USE_FOR_MMU("b")
+ 		IF_FEATURE_UDHCPC_ARPING("a::")
+ 		IF_FEATURE_UDHCP_PORT("P:")
+ 		"v"
+-		, &str_V, &str_h, &str_h, &str_F
++		, &str_c, &str_V, &str_h, &str_h, &str_F
+ 		, &client_config.interface, &client_config.pidfile, &str_r /* i,p */
+ 		, &client_config.script /* s */
+ 		, &discover_timeout, &discover_retries, &tryagain_timeout /* T,t,A */
+@@ -1378,7 +1381,9 @@
+ 	}
+ 
+ 	clientid_mac_ptr = NULL;
+-	if (!(opt & OPT_C) && !udhcp_find_option(client_config.options, DHCP_CLIENT_ID)) {
++	if (opt & OPT_c) {
++		client_config.clientid = alloc_dhcp_option(DHCP_CLIENT_ID, str_c, 0);
++	} else if (!(opt & OPT_C) && !udhcp_find_option(client_config.options, DHCP_CLIENT_ID)) {
+ 		/* not suppressed and not set, set the default client ID */
+ 		client_config.clientid = alloc_dhcp_option(DHCP_CLIENT_ID, "", 7);
+ 		client_config.clientid[OPT_DATA] = 1; /* type: ethernet */
