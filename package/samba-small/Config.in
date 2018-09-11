@@ -14,7 +14,7 @@ config BR2_PACKAGE_SAMBA_SMALL
 	depends on !BR2_STATIC_LIBS # python, gnutls
 	depends on !BR2_nios2 # binary too large, relocations don't fit
 	depends on BR2_TOOLCHAIN_HAS_SYNC_4
-	depends on BR2_PACKAGE_PYTHON
+#	depends on BR2_PACKAGE_PYTHON
 	select BR2_PACKAGE_E2FSPROGS
 	select BR2_PACKAGE_POPT
 	select BR2_PACKAGE_ZLIB

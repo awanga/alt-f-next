@@ -14,7 +14,9 @@ SAMBA_SMALL_DEPENDENCIES = \
 	host-e2fsprogs host-heimdal host-python zlib
 
 SAMBA_SMALL_CONF_OPTS += \
-	--with-static-modules=ALL --nonshared-binary=ALL \
+	--with-static-modules=!FORCED \
+	--with-shared-modules=LEASES_DB,LEASES_UTIL,LIBCLI_AUTH,LIBTSOCKET,LOCKING,NDR_IOCTL,NDR_QUOTA,NDR_SECURITY,NDR_SRVSVC,NDR_SVCCTL,PROFILE,RPC_NDR_SRVSVC,!FORCED \
+	--without-winbind \
 	--without-acl-support \
 	--disable-cups \
 	--disable-avahi \
@@ -28,6 +30,7 @@ SAMBA_SMALL_CONF_OPTS += \
 	--without-ads --without-ldap \
 	--without-gpgme \
 	--without-ntvfs-fileserver \
+	--disable-python \
 	--nopyc --nopyo
 
 ifeq ($(BR2_PACKAGE_POPT),y)
@@ -50,18 +53,18 @@ endef
 SAMBA_SMALL_POST_INSTALL_TARGET_HOOKS += SAMBA_SMALL_REMOVE_CTDB_TESTS
 
 SAMBA_SMALL_CFLAGS += -Os -fdata-sections -ffunction-sections
-ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
-SAMBA_SMALL_CFLAGS += -marm
-endif
 
 SAMBA_SMALL_LDFLAGS += -Wl,--gc-sections
 ifeq ($(BR2_BINUTILS_ENABLE_LTO),y)
 SAMBA_SMALL_LDFLAGS += -flto
 endif
 
+ifeq ($(BR2_TOOLCHAIN_BUILDROOT_MUSL),y)
+SAMBA_SMALL_CFLAGS += -DNETDB_INTERNAL=(-1) -DNETDB_SUCCESS=(0)
+endif
+
 define SAMBA_SMALL_CONFIGURE_CMDS
 	cp package/samba-small/samba4-cache.txt $(@D)/cache.txt;
-	$(SAMBA_SMALL_CONFIGURE_CMDS_MICROPYTHON)
 	echo 'Checking uname machine type: $(BR2_ARCH)' >>$(@D)/cache.txt;
 	(cd $(@D); \
 		PYTHON_CONFIG="$(STAGING_DIR)/usr/bin/python-config" \
@@ -81,6 +84,7 @@ define SAMBA_SMALL_CONFIGURE_CMDS
 			--hostcc=gcc \
 			--disable-rpath \
 			--disable-rpath-install \
+			--disable-rpath-private-install \
 			--disable-iprint \
 			--without-pam \
 			--without-dmapi \
@@ -92,30 +96,25 @@ define SAMBA_SMALL_CONFIGURE_CMDS
 endef
 
 define SAMBA_SMALL_BUILD_CMDS
-	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D)
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) small_samba
 endef
 
-define SAMBA_SMALL_INSTALL_STAGING_CMDS
-	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(STAGING_DIR) install
-endef
+#define SAMBA_SMALL_INSTALL_STAGING_CMDS
+#	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(STAGING_DIR) install-small_samba
+#endef
 
 define SAMBA_SMALL_INSTALL_TARGET_CMDS
-	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) install
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) DESTDIR=$(TARGET_DIR) install-small_samba
 endef
 
-define SAMBA_SMALL_REMOVE_SMBTORTURE
+define SAMBA_SMALL_REMOVE_EXTRAS
+	rm -f $(TARGET_DIR)/usr/bin/pidl
 	rm -f $(TARGET_DIR)/usr/bin/smbtorture
+	rm -fR $(TARGET_DIR)/usr/include/samba
+	rm -fR $(TARGET_DIR)/usr/lib/python2.7/site-packages/samba
+	rm -fR $(TARGET_DIR)/usr/share/perl5/Parse
 endef
 
-define SAMBA_SMALL_MULTICALL_LINKS
-	ln -sf samba_multicall $(TARGET_DIR)/usr/sbin/smbd
-	ln -sf samba_multicall $(TARGET_DIR)/usr/sbin/nmbd
-	ln -sf ../sbin/samba_multicall $(TARGET_DIR)/usr/bin/smbpasswd
-	ln -sf ../sbin/samba_multicall $(TARGET_DIR)/usr/bin/smbstatus
-	ln -sf ../sbin/samba_multicall $(TARGET_DIR)/usr/bin/smbtree
-endef
-
-SAMBA_SMALL_POST_INSTALL_TARGET_HOOKS += SAMBA_SMALL_REMOVE_SMBTORTURE
-SAMBA_SMALL_POST_INSTALL_TARGET_HOOKS += SAMBA_SMALL_MULTICALL_LINKS
+SAMBA_SMALL_POST_INSTALL_TARGET_HOOKS += SAMBA_SMALL_REMOVE_EXTRAS
 
 $(eval $(generic-package))

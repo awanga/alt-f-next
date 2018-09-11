@@ -1,0 +1,15 @@
+--- a/Makefile	2018-09-10 00:23:44.011478770 +0000
++++ b/Makefile	2018-09-10 00:28:07.954937125 +0000
+@@ -4,6 +4,12 @@
+ WAF_BINARY=$(PYTHON) ./buildtools/bin/waf
+ WAF=WAF_MAKE=1 $(WAF_BINARY)
+ 
++small_samba: FORCE
++	$(WAF) build --targets=nmbd,smbd/smbd,smbstatus,smbpasswd,smbtree
++
++install-small_samba:
++	$(WAF) install --targets=nmbd,smbd/smbd,smbstatus,smbpasswd,smbtree
++
+ all:
+ 	$(WAF) build
+ 
