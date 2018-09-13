@@ -1,6 +1,6 @@
 config BR2_PACKAGE_LIBICONV
 	bool "libiconv"
-	depends on !BR2_ENABLE_LOCALE
+	depends on !BR2_ENABLE_LOCALE || BR2_TOOLCHAIN_BUILDROOT_MUSL
 	help
 	  unicode conversion library
 

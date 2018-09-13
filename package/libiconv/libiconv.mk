@@ -23,6 +23,6 @@ $(eval $(autotools-package))
 # Configurations where the toolchain supports locales and the libiconv
 # package is enabled are incorrect, because the toolchain already
 # provides libiconv functionality, and having both confuses packages.
-ifeq ($(BR2_PACKAGE_LIBICONV)$(BR2_ENABLE_LOCALE),yy)
+ifeq ($(BR2_PACKAGE_LIBICONV)$(BR2_ENABLE_LOCALE)$(BR2_TOOLCHAIN_BUILDROOT_UCLIBC),yyy)
 $(error Libiconv should never be enabled when the toolchain supports locales. Report this failure to Buildroot developers)
 endif
