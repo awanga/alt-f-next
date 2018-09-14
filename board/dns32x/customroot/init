@@ -14,6 +14,8 @@ mount_usr_squashfs() {
 
 echo "pre-init started, pid=$$"
 
+export LD_LIBRARY_PATH=/lib:/usr/lib
+
 mount -t proc proc /proc
 
 # enter iterative shell if cmdline contains "initdbg"
