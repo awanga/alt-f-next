@@ -1,9 +1,4 @@
 ./usr/bin/aserver
-./usr/lib/alsa-lib
-./usr/lib/alsa-lib/smixer
-./usr/lib/alsa-lib/smixer/smixer-ac97.so
-./usr/lib/alsa-lib/smixer/smixer-hda.so
-./usr/lib/alsa-lib/smixer/smixer-sbase.so
 ./usr/lib/libasound.so
 ./usr/lib/libasound.so.2
 ./usr/lib/libasound.so.2.0.0
@@ -83,4 +78,3 @@
 ./usr/share/alsa/pcm/surround50.conf
 ./usr/share/alsa/pcm/surround51.conf
 ./usr/share/alsa/pcm/surround71.conf
-./usr/share/alsa/smixer.conf

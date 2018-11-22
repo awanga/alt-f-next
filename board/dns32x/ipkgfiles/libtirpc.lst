@@ -1,4 +1,4 @@
 ./etc/netconfig
 ./usr/lib/libtirpc.so
-./usr/lib/libtirpc.so.1
-./usr/lib/libtirpc.so.1.0.10
+./usr/lib/libtirpc.so.3
+./usr/lib/libtirpc.so.3.0.0

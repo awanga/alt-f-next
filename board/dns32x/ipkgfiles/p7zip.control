@@ -1,6 +1,6 @@
 Package: p7zip
 Description: a quick port of 7-zip for Unix.
-Version: 9.20.1
+Version: 15.14.1
 Depends: ipkg
 Architecture: arm
 Priority: optional

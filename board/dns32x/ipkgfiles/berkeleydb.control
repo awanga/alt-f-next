@@ -1,0 +1,11 @@
+Package: berkeleydb
+Description: 	  The Berkeley database. A very common library for database
+	  applications.
+	  http://www.sleepycat.com/products/db.shtml
+Version: 5.3.28
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

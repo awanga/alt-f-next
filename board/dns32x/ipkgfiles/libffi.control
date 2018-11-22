@@ -1,0 +1,13 @@
+Package: libffi
+Description: 	  The libffi library provides a portable, high level
+	  programming interface to various calling conventions. This
+	  allows a programmer to call any function specified by a call
+	  interface description at run-time.
+	  http://sourceware.org/libffi/
+Version: 3.2.1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

@@ -1,6 +1,6 @@
 Package: vim
 Description: Vi IMproved Text editor
-Version: 7.1-1
+Version: v8.0.0329
 Depends: ncurses, gettext, ipkg
 Architecture: arm
 Priority: optional
