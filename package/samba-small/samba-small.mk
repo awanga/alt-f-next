@@ -67,9 +67,6 @@ define SAMBA_SMALL_CONFIGURE_CMDS
 	cp package/samba-small/samba4-cache.txt $(@D)/cache.txt;
 	echo 'Checking uname machine type: $(BR2_ARCH)' >>$(@D)/cache.txt;
 	(cd $(@D); \
-		PYTHON_CONFIG="$(STAGING_DIR)/usr/bin/python-config" \
-		python_LDFLAGS="" \
-		python_LIBDIR="" \
 		$(TARGET_CONFIGURE_OPTS) \
 		CFLAGS="$(TARGET_CFLAGS) $(SAMBA_SMALL_CFLAGS)" \
 		LDFLAGS="$(TARGET_LDFLAGS) $(SAMBA_SMALL_LDFLAGS)" \

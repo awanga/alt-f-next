@@ -40,7 +40,11 @@ HOST_GETTEXT_CONF_OPTS = \
 
 # For the target version, we only need the runtime, and for the host
 # version, we only need the tools.
+ifneq ($(BR2_PROJECT),)
+GETTEXT_SUBDIR = gettext-tools
+else
 GETTEXT_SUBDIR = gettext-runtime
+endif
 HOST_GETTEXT_SUBDIR = gettext-tools
 
 # Disable the build of documentation and examples of gettext-tools,

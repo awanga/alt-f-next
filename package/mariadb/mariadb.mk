@@ -22,6 +22,9 @@ MARIADB_DEPENDENCIES = \
 	libxml2 \
 	readline
 
+HOST_MARIADB_DEPENDENCIES = \
+	host-openssl
+
 # We won't need unit tests
 MARIADB_CONF_OPTS += -DWITH_UNIT_TESTS=0
 

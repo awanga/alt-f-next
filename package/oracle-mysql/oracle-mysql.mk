@@ -27,6 +27,11 @@ ORACLE_MYSQL_CONF_ENV = \
 	ac_cv_have_decl_HAVE_IB_GCC_ATOMIC_BUILTINS=yes \
 	mysql_cv_new_rl_interface=yes
 
+ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
+ORACLE_MYSQL_CONF_ENV += \
+	ac_cv_func_isnan=yes
+endif
+
 ORACLE_MYSQL_CONF_OPTS = \
 	--without-ndb-binlog \
 	--without-docs \
