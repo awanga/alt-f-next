@@ -35,7 +35,6 @@
 # 5 /usr/www/cgi-bin/<pkgname>_proc.cgi
 
 #set -x
-set -u
 
 usage() {
 	echo -e "usage: mkpkg.sh <package> |
@@ -70,11 +69,11 @@ fi
 
 CONFIGFILE=.config
 
-mkdir -p pkgs
+mkdir -p output/pkgs
 
 CDIR=$(pwd)
 PATH=$CDIR/bin:$PATH
-IPKGDIR=$CDIR/ipkgfiles
+IPKGDIR=$CDIR/board/dns32x/ipkgfiles
 
 source $CONFIGFILE 2> /dev/null
 
@@ -88,9 +87,11 @@ fi
 
 ROOTFSDIR=output/images/$BOARD/root
 
-ROOTFSFILES=$CDIR/rootfsfiles-base.lst
-TFILES=$CDIR/rootfsfiles.lst
-PFILES=$CDIR/pkgfiles.lst
+mkdir -p $ROOTFSDIR
+
+ROOTFSFILES=$CDIR/output/rootfsfiles-base.lst
+TFILES=$CDIR/output/rootfsfiles.lst
+PFILES=$CDIR/output/pkgfiles.lst
 
 force=n
 
@@ -127,7 +128,7 @@ case "$1" in
 	-set)
 		cd $ROOTFSDIR
 		if test -f $TFILES; then
-			mv $TFILES $TFILES-
+			mv -f $TFILES $TFILES-
 		fi
 		#find . ! -type d | sort > $TFILES
 		find . | sort > $TFILES
@@ -167,7 +168,7 @@ case "$1" in
 		if test -f $ROOTFSFILES; then
 			mv $ROOTFSFILES $ROOTFSFILES-
 		fi
-	
+
 		cd $ROOTFSDIR
 		#find . ! -type d | sort > $ROOTFSFILES
 		find . | sort > $ROOTFSFILES
@@ -230,7 +231,7 @@ case "$1" in
 		else
 			echo "All packages build OK."
 		fi
-		ipkg-make-index pkgs/ > pkgs/Packages
+		ipkg-make-index output/pkgs/ > output/pkgs/Packages
 		exit $gst
 		;;
 
@@ -377,20 +378,26 @@ if test "$force" != "y"; then
 
 			echo $pkg is a sub-package of $mpkg
 			PKGDIR=$(dirname $MPKGMK)
-			if true; then
-				# faster, but does not expand makefile variables nor takes conditionals into account
-				eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
-				version=$(eval echo \$${MPKG}_VERSION)
-			else
+
+			# default to faster method, but does not expand makefile variables
+			# nor takes conditionals into account
+			eval $(sed -n '/^'$MPKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$mpkg.mk)
+			version=$(eval echo \$${MPKG}_VERSION)
+
+			# use make to evaluate varaibles (slower) if conditionals detected
+			if [[ \$${MPKG}_VERSION =~ ^.*VERSION.*+$ ]]; then
 				version=$(make O=$BLDDIR -p -n $mpkg 2>/dev/null | sed -n '/^'$MPKG'_VERSION[ :=]/s/.*=[ ]\(.*\)/\1/p')
 			fi
 		elif grep -q "^BR2_PACKAGE_$PKG=y" $CONFIGFILE; then
 			PKGDIR=$(dirname $PKGMK)
-			if true; then
-				# faster, but doesn't expand makefile variables nor takes conditionals into account
-				eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
-				version=$(eval echo \$${PKG}_VERSION)
-			else
+
+			# default to faster method, but does not expand makefile variables
+			# nor takes conditionals into account
+			eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
+			version=$(eval echo \$${PKG}_VERSION)
+
+			# use make to evaluate varaibles (slower) if conditionals detected
+			if [[ \$${PKG}_VERSION =~ ^.*VERSION.*+$ ]]; then
 				version=$(make O=$BLDDIR -p -n $pkg 2>/dev/null | sed -n '/^'$PKG'_VERSION[ :=]/s/.*=[ ]\(.*\)/\1/p')
 			fi
 		else
@@ -486,14 +493,16 @@ cd ${BLDDIR}/images/$BOARD
 # so check files first
 grep -v '^#' $IPKGDIR/$pkg.lst > $IPKGDIR/$pkg.lst-noc
 for i in $(cat $IPKGDIR/$pkg.lst-noc); do
-	if test ! -e root/$i -a ! -h root/$i; then
+	if test ! -e $CDIR/output/target/$i -a ! -h $CDIR/output/target/root/$i; then
 		echo "failed creating $pkg package ($i not found)"
 		exit 1
 	fi
+	mkdir -p $(dirname $ROOTFSDIR/$i)
+	cp -pf $CDIR/output/target/$i $ROOTFSDIR/$i
 done
 
-tar -C root -c --no-recursion -T $IPKGDIR/$pkg.lst-noc | tar -C $CDIR/tmp -x
-if test $? = 1; then 
+tar -C $ROOTFSDIR -c --no-recursion -T $IPKGDIR/$pkg.lst-noc | tar -C $CDIR/tmp -x
+if test $? = 1; then
 	echo failed creating $pkg package
 	exit 1
 fi
@@ -510,10 +519,10 @@ for i in control conffiles preinst postinst prerm postrm; do
 	fi
 done
 
-ipkg-build -o root -g root tmp
+./board/dns32x/ipkg-build.sh -o $ROOTFSDIR -g $ROOTFSDIR tmp
 
 pname=$(awk '/^Package:/{print $2}' $IPKGDIR/$pkg.control) # underscores in pkg name
-mv ${pname}_${version}_${ARCH}.ipk pkgs
+mv ${pname}_${version}_${ARCH}.ipk output/pkgs
 rm -rf tmp
 
 # my own "sm" ipkg-build

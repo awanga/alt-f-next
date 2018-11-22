@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source .config
+source .config >2 /dev/null
 source board/dns32x/exports.source
 
 check() {
@@ -71,7 +71,7 @@ fi
 
 DESTD=$BLDDIR/images/$board
 KVER=$BR2_LINUX_KERNEL_VERSION #$(cat $BLDDIR/build/.linux-version)
-VER=$(cut -f2 -d" " customroot/etc/Alt-F)
+VER=$(cut -f2 -d" " board/dns32x/customroot/etc/Alt-F)
 
 if ! test -f ${DESTD}/zImage -a -f ${DESTD}/$rootfs; then
 	echo "mkfw: ${DESTD}/zImage or ${DESTD}/$rootfs not found, exiting"

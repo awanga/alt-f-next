@@ -31,18 +31,22 @@ check_current() {
 	local st=0
 	for i in BR2_UCLIBC_VERSION_STRING BR2_UCLIBC_CONFIG \
 		BR2_BUSYBOX_VERSION BR2_PACKAGE_BUSYBOX_CONFIG \
+		BR2_TOOLCHAIN_BUILDROOT_LIBC \
 		BR2_LINUX_KERNEL_VERSION BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE; do
 		eval $(grep ^$i .config)
 	done
 
 	cbusybox=$BLDDIR/build/busybox-$BR2_BUSYBOX_VERSION/.config
-	cuclibc=$BLDDIR/build/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
 	ckernel=$BLDDIR/$BR2_PROJECT/linux-$BR2_LINUX_KERNEL_VERSION/.config
 
 	tailcmp local/$BR2_PROJECT/$BR2_PROJECT.config .config board || ((st++))
-	tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc || ((st++))
 	tailcmp $BR2_PACKAGE_BUSYBOX_CONFIG $cbusybox Busybox || ((st++))
 	tailcmp $BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE $ckernel Kernel || ((st++))
+
+	if test $BR2_TOOLCHAIN_BUILDROOT_LIBC = "uclibc"; then
+		cuclibc=$BLDDIR/build/uClibc-$BR2_UCLIBC_VERSION_STRING/.config
+		tailcmp $BR2_UCLIBC_CONFIG $cuclibc uClibc || ((st++))
+	fi
 	return $st
 }
 
@@ -55,18 +59,23 @@ do_exports() {
 	export PKGDIR=$BLDDIR/build
 	export ROOTFS=$BLDDIR/target
 	export KERNEL=$BLDDIR/build/linux-$linux_version
-	export UCLIBC=$BLDDIR/build/uClibc-1.0.24
 	export STAGING=$BLDDIR/staging
 	export HOSTDIR=$BLDDIR/host
 	export BINARIES=$BLDDIR/binaries/$board
 
-	#if test -z "$OPATH"; then OPATH=$PATH; fi
-	#export PATH=$HOSTDIR/usr/bin:$OPATH
+	if test -n $BR2_TOOLCHAIN_BUILDROOT_MUSL; then
+		export UCLUBC=$(realpath $BLDDIR/build/musl-[0-9]*)
+	else
+		export UCLIBC=$(realpath $BLDDIR/build/uClibc-$BR2_UCLIBC_VERSION_STRING)
+	fi
 
-	#export EDITOR=uemacs
+	if test -z "$OPATH"; then OPATH=$PATH; fi
+	export PATH=$HOSTDIR/usr/bin:$OPATH
+
+	export EDITOR=uemacs
 
 	#make olddefconfig
-	#if ! test -d "$BLDDIR"; then make dirs; fi
+	if ! test -d "$BLDDIR"; then make dirs; fi
 
 	echo -e "\nBuild ready for \"$board\" at \"$BLDDIR\""
 }
