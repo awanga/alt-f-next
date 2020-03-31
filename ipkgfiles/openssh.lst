@@ -2,10 +2,9 @@
 ./etc/ssh/moduli
 ./etc/ssh/ssh_config
 ./etc/ssh/sshd_config
-./usr/bin/scp
+./usr/bin/scp-openssh
 ./usr/bin/sftp
-./usr/bin/slogin
-./usr/bin/ssh
+./usr/bin/ssh-openssh
 ./usr/bin/ssh-add
 ./usr/bin/ssh-agent
 ./usr/bin/ssh-keygen
