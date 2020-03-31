@@ -4,13 +4,18 @@
 #
 #############################################################
 
-LIBCURL_VERSION = 7.22.0
-LIBCURL_SOURCE = curl-$(LIBCURL_VERSION).tar.bz2
-LIBCURL_SITE = http://curl.haxx.se/download/
+#LIBCURL_VERSION = 7.22.0
+# too many pkg depend on libcurl, and it changed lib version from so.4.2.0 to so.4.6.0.
+# is it still API compatible? They say at https://ec.haxx.se/libcurl/libcurl-api:
+#The last time we changed the API in an non-compatible way was for 7.16.0 in 2006
+# and we plan to never do it again... so have they maintained their promise?
+LIBCURL_VERSION = 7.68.0
+LIBCURL_SOURCE = curl-$(LIBCURL_VERSION).tar.xz
+LIBCURL_SITE = https://curl.haxx.se/download
 
 LIBCURL_INSTALL_STAGING = YES
 LIBCURL_LIBTOOL_PATCH = NO
-LIBCURL_CONF_OPT = --disable-verbose --disable-manual --enable-hidden-symbols
+LIBCURL_CONF_OPT = --disable-verbose --disable-manual --enable-hidden-symbols --disable-static
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
 LIBCURL_DEPENDENCIES += openssl
@@ -39,7 +44,7 @@ $(LIBCURL_HOOK_POST_INSTALL):
 	       $(if $(BR2_PACKAGE_CURL),,$(TARGET_DIR)/usr/bin/curl)
 	touch $@
 
-curl: libcurl
-curl-clean: libcurl-clean
-curl-dirclean: libcurl-dirclean
-curl-source: libcurl-source
+#curl: libcurl
+#curl-clean: libcurl-clean
+#curl-dirclean: libcurl-dirclean
+#curl-source: libcurl-source

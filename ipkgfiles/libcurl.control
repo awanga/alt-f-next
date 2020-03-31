@@ -2,9 +2,9 @@ Package: libcurl
 Description: A tool for getting files from FTP, HTTP, Gopher,
  Telnet, and Dict servers, using any of the supported protocols.
 Depends: ipkg
-Version: 7.22.0-2
+Version: 7.68.0
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://curl.haxx.nu/
+Source: http://curl.haxx.se
 Maintainer: jcard
