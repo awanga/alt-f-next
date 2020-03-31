@@ -1,5 +1,9 @@
 config BR2_PACKAGE_TAR
 	bool "tar"
+	select BR2_PACKAGE_ACL
+	select BR2_PACKAGE_LIBICONV
+	select BR2_PACKAGE_GZIP
+	select BR2_PACKAGE_BZIP2
 	depends on BR2_USE_WCHAR && BR2_PROGRAM_INVOCATION
 	help
 	  A program that saves many files together into a single tape or disk

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# register firmware distributed busybox tar
+update-alternatives --install /bin/tar tar /bin/busybox 5

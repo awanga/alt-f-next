@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-alternatives --remove tar /usr/bin/tar
+

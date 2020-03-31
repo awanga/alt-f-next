@@ -3,82 +3,55 @@
 # tar
 #
 #############################################################
-GNUTAR_VERSION:=1.21
-GNUTAR_SOURCE:=tar-$(GNUTAR_VERSION).tar.bz2
-GNUTAR_SITE:=$(BR2_GNU_MIRROR)/tar/
-GNUTAR_DIR:=$(BUILD_DIR)/tar-$(GNUTAR_VERSION)
-GNUTAR_CAT:=$(BZCAT)
-GNUTAR_BINARY:=src/tar
-GNUTAR_TARGET_BINARY:=bin/tar
 
-$(DL_DIR)/$(GNUTAR_SOURCE):
-	 $(call DOWNLOAD,$(GNUTAR_SITE),$(GNUTAR_SOURCE))
+TAR_VERSION:=1.32
+TAR_SOURCE:=tar-$(TAR_VERSION).tar.bz2
+TAR_SITE:=$(BR2_GNU_MIRROR)/tar/
+TAR_DIR:=$(BUILD_DIR)/tar-$(TAR_VERSION)
+TAR_CAT:=$(BZCAT)
+TAR_BINARY:=src/tar
+TAR_TARGET_BINARY:=bin/tar
 
-tar-source: $(DL_DIR)/$(GNUTAR_SOURCE)
-
-$(GNUTAR_DIR)/.unpacked: $(DL_DIR)/$(GNUTAR_SOURCE)
-	$(GNUTAR_CAT) $(DL_DIR)/$(GNUTAR_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
-	toolchain/patch-kernel.sh $(GNUTAR_DIR) package/tar/ tar\*.patch
-	$(CONFIG_UPDATE) $(GNUTAR_DIR)
-	$(CONFIG_UPDATE) $(GNUTAR_DIR)/build-aux
-	touch $@
-
-$(GNUTAR_DIR)/.configured: $(GNUTAR_DIR)/.unpacked
-	(cd $(GNUTAR_DIR); rm -rf config.cache; \
-		$(TARGET_CONFIGURE_OPTS) \
-		$(TARGET_CONFIGURE_ARGS) \
+TAR_DEPENDENCIES:=libiconv acl
+#TAR_CONF_OPT += --enable-backup-scripts # conflicts with Alt-F backup
+TAR_CONF_ENV += DEFAULT_ARCHIVE_FORMAT=POSIX \
+		RSH=/usr/bin/ssh \
 		ac_cv_func_chown_works=yes \
+		gl_cv_func_chown_slash_works=yes \
 		gl_cv_func_chown_follows_symlink=yes \
-		./configure \
-		--target=$(GNU_TARGET_NAME) \
-		--host=$(GNU_TARGET_NAME) \
-		--build=$(GNU_HOST_NAME) \
-		--prefix=/usr \
-		--exec-prefix=/usr \
-		--bindir=/usr/bin \
-		--sbindir=/usr/sbin \
-		--libdir=/lib \
-		--libexecdir=/usr/lib \
-		--sysconfdir=/etc \
-		--datadir=/usr/share \
-		--localstatedir=/var \
-		--mandir=/usr/man \
-		--infodir=/usr/info \
-		$(DISABLE_NLS) \
-		$(DISABLE_LARGEFILE) \
-	)
-	touch $@
+		gl_cv_func_chown_ctime_works=yes \
+		gl_cv_func_link_follows_symlink=no \
+		gl_cv_struct_dirent_d_ino=yes \
+		gl_cv_func_fchownat_nofollow_works=yes \
+		ac_cv_func_lstat_dereferences_slashed_symlink=yes \
+		gl_cv_func_mkdir_trailing_dot_works=yes \
+		gl_cv_func_gettimeofday_clobber=no \
+		gl_cv_func_getcwd_path_max=no \
+		gl_cv_header_working_fcntl_h=yes \
+		gl_cv_func_working_utimes=yes \
+		gl_cv_func_mkfifo_works=yes \
+		gl_cv_func_readlink_works=yes \
+		gl_cv_func_rename_dest_works=yes \
+		gl_cv_func_rename_link_works=yes \
+		gl_cv_func_stat_file_slash=yes \
+		ac_cv_sys_file_offset_bits=64 \
 
-$(GNUTAR_DIR)/$(GNUTAR_BINARY): $(GNUTAR_DIR)/.configured
-	$(MAKE) -C $(GNUTAR_DIR)
-
-# This stuff is needed to work around GNU make deficiencies
-tar-target_binary: $(GNUTAR_DIR)/$(GNUTAR_BINARY)
-	@if [ -L $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY) ]; then \
-		rm -f $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY); \
-	fi
-	@if [ ! -f $(GNUTAR_DIR)/$(GNUTAR_BINARY) -o $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY) \
-	-ot $(GNUTAR_DIR)/$(GNUTAR_BINARY) ]; then \
-		set -x; \
-		rm -f $(TARGET_DIR)/$(GNUTAR_TARGET_BINARY); \
-		cp -a $(GNUTAR_DIR)/$(GNUTAR_BINARY) \
-			$(TARGET_DIR)/$(GNUTAR_TARGET_BINARY); \
-	fi
-
-tar: uclibc tar-target_binary
-
-tar-clean:
-	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(GNUTAR_DIR) uninstall
-	-$(MAKE) -C $(GNUTAR_DIR) clean
-
-tar-dirclean:
-	rm -rf $(GNUTAR_DIR)
-
-#############################################################
-#
-# Toplevel Makefile options
-#
-#############################################################
-ifeq ($(BR2_PACKAGE_TAR),y)
-TARGETS+=tar
+ifeq ($(BR2_PACKAGE_ACL),y)
+TAR_DEPENDENCIES += acl
+TAR_CONF_OPTS += --with-posix-acls
+else
+TAR_CONF_OPTS += --without-posix-acls
 endif
+
+ifeq ($(BR2_PACKAGE_ATTR),y)
+TAR_DEPENDENCIES += attr
+TAR_CONF_OPTS += --with-xattrs
+else
+TAR_CONF_OPTS += --without-xattrs
+endif
+
+$(eval $(call AUTOTARGETS,package,tar))
+
+$(TAR_HOOK_POST_INSTALL):
+	rm -f $(TARGET_DIR)/usr/lib/rmt
+	touch $@
