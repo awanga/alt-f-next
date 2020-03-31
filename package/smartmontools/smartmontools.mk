@@ -2,9 +2,9 @@
 #
 # smartmontools
 #
-#############################################################
+############################################################
 
-SMARTMONTOOLS_VERSION:=6.5
+SMARTMONTOOLS_VERSION:=6.6
 SMARTMONTOOLS_SOURCE:=smartmontools-$(SMARTMONTOOLS_VERSION).tar.gz
 SMARTMONTOOLS_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/smartmontools/smartmontools/$(SMARTMONTOOLS_VERSION)
 
@@ -15,7 +15,11 @@ SMARTMONTOOLS_BINARY2:=smartd
 SMARTMONTOOLS_TARGET_BINARY:=usr/sbin/smartctl
 SMARTMONTOOLS_TARGET_BINARY2:=usr/sbin/smartd
 
-SMARTMONTOOLS_CFLAGS=-Os
+#SMARTMONTOOLS_CFLAGS="$(TARGET_CFLAGS)"
+#ifneq ($(BR2_PACKAGE_SMARTMONTOOLS_OPTIM),)
+	SMARTMONTOOLS_CFLAGS = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_SMARTMONTOOLS_OPTIM)" \
+	CXXFLAGS="$(TARGET_CXXFLAGS) $(BR2_PACKAGE_SMARTMONTOOLS_OPTIM)"
+#endif
 
 $(DL_DIR)/$(SMARTMONTOOLS_SOURCE):
 	 $(call DOWNLOAD,$(SMARTMONTOOLS_SITE),$(SMARTMONTOOLS_SOURCE))
@@ -32,8 +36,7 @@ $(SMARTMONTOOLS_DIR)/.configured: $(SMARTMONTOOLS_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_ENV) \
-		CFLAGS="$(TARGET_CFLAGS) $(SMARTMONTOOLS_CFLAGS)" \
-		CXXFLAGS="$(TARGET_CFLAGS) $(SMARTMONTOOLS_CFLAGS)" \
+		$(SMARTMONTOOLS_CFLAGS) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -49,6 +52,7 @@ $(SMARTMONTOOLS_DIR)/.configured: $(SMARTMONTOOLS_DIR)/.unpacked
 		--localstatedir=/var \
 		--mandir=/usr/man \
 		--infodir=/usr/info \
+		--with-cxx11-option=no \
 		$(DISABLE_NLS) \
 		$(DISABLE_LARGEFILE) \
 	)

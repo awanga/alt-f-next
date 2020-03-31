@@ -7,3 +7,9 @@ config BR2_PACKAGE_SMARTMONTOOLS
 	  Control and monitor storage systems using S.M.A.R.T.
 
 	  http://smartmontools.sourceforge.net/
+
+config BR2_PACKAGE_SMARTMONTOOLS_OPTIM
+	string "smartmontools optim"
+	depends on BR2_PACKAGE_SMARTMONTOOLS
+	help
+	  Compile optimization options (-Os, -O2)
