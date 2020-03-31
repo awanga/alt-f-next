@@ -10,3 +10,8 @@ config BR2_PACKAGE_STUNNEL
 
 	  http://www.stunnel.org/
 
+config BR2_PACKAGE_STUNNEL_OPTIM
+	string "stunnel optim"
+	depends on BR2_PACKAGE_STUNNEL
+	help
+	  Compile optimization options (-Os, -O2)

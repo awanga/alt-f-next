@@ -4,14 +4,19 @@
 #
 ############################################################
 
-STUNNEL_VERSION:=5.42
-STUNNEL_SITE:=http://www.usenix.org.uk/mirrors/stunnel/archive/5.x
+STUNNEL_VERSION:=5.56
+STUNNEL_SITE:=https://www.stunnel.org/downloads
 
 STUNNEL_SOURCE:=stunnel-$(STUNNEL_VERSION).tar.gz
 STUNNEL_CAT:=$(ZCAT)
 STUNNEL_DIR:=$(BUILD_DIR)/stunnel-$(STUNNEL_VERSION)
 STUNNEL_LIBTOOL_PATCH = NO
 STUNNEL_DEPENDENCIES := uclibc openssl
+
+#STUNNEL_CFLAGS = CFLAGS="$(TARGET_CFLAGS) -fPIE"
+#ifneq ($(BR2_PACKAGE_STUNNEL_OPTIM),)
+	STUNNEL_CFLAGS = CFLAGS="$(TARGET_CFLAGS) -fPIE $(BR2_PACKAGE_STUNNEL_OPTIM)"
+#endif
 
 $(DL_DIR)/$(STUNNEL_SOURCE):
 	 $(call DOWNLOAD,$(STUNNEL_SITE),$(STUNNEL_SOURCE))
@@ -29,6 +34,8 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 		ax_cv_check_cflags___fstack_protector=no \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
+		$(TARGET_CONFIGURE_ENV) \
+		$(STUNNEL_CFLAGS) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -59,7 +66,7 @@ $(STUNNEL_DIR)/.configured: $(STUNNEL_DIR)/.unpacked
 	touch $(STUNNEL_DIR)/.configured
 
 $(STUNNEL_DIR)/src/stunnel: $(STUNNEL_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS) -fPIE" -C $(STUNNEL_DIR)
+	$(MAKE) -C $(STUNNEL_DIR)
 
 $(TARGET_DIR)/usr/bin/stunnel: $(STUNNEL_DIR)/src/stunnel
 	install -c $(STUNNEL_DIR)/src/stunnel $(TARGET_DIR)/usr/bin/stunnel
@@ -70,7 +77,7 @@ ifeq ($(BR2_CROSS_TOOLCHAIN_TARGET_UTILS),y)
 		$(STAGING_DIR)/usr/$(REAL_GNU_TARGET_NAME)/target_utils/stunnel
 endif
 
-stunnel-configure: $(STUNNEL_DIR)/.configured
+stunnel-configure: openssl $(STUNNEL_DIR)/.configured
 
 stunnel-build: $(STUNNEL_DIR)/src/stunnel
 
