@@ -4,8 +4,7 @@
 #
 ############################################################
 
-NETSNMP_VERSION:=5.5.2
-#NETSNMP_VERSION:=5.7.2
+NETSNMP_VERSION:=5.7.3
 NETSNMP_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/net-snmp/net-snmp/$(NETSNMP_VERSION)
 NETSNMP_DIR:=$(BUILD_DIR)/net-snmp-$(NETSNMP_VERSION)
 NETSNMP_SOURCE:=net-snmp-$(NETSNMP_VERSION).tar.gz
@@ -60,8 +59,7 @@ $(NETSNMP_HOOK_POST_INSTALL):
 		-e "s|^libdir=.*|libdir=\'$(STAGING_DIR)/usr/lib\'|g" \
 		$(STAGING_DIR)/usr/bin/net-snmp-config
 	# Copy the .conf files.
-	#$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/EXAMPLE.conf $(TARGET_DIR)/etc/snmp/snmpd.conf
-	-mv $(TARGET_DIR)/usr/share/snmp/mib2c*.conf $(TARGET_DIR)/etc/snmp
+	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/EXAMPLE.conf $(TARGET_DIR)/etc/snmp/EXAMPLE.conf
 	# Install the "broken" headers
 	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/struct.h $(STAGING_DIR)/usr/include/net-snmp/agent/struct.h
 	$(INSTALL) -D -m 0644 $(NETSNMP_DIR)/agent/mibgroup/util_funcs.h $(STAGING_DIR)/usr/include/net-snmp/util_funcs.h
