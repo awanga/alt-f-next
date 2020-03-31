@@ -2,9 +2,9 @@
 #
 # libxml2
 #
-#############################################################
+############################################################
 
-LIBXML2_VERSION = 2.7.8
+LIBXML2_VERSION = 2.9.9
 LIBXML2_SOURCE = libxml2-sources-$(LIBXML2_VERSION).tar.gz
 LIBXML2_SITE = ftp://xmlsoft.org/libxml2
 
@@ -42,7 +42,8 @@ $(LIBXML2_HOOK_POST_INSTALL):
 		$(STAGING_DIR)/usr/bin/xml2-config
 	rm -rf $(TARGET_DIR)/usr/share/aclocal \
 	       $(TARGET_DIR)/usr/share/doc/libxml2-$(LIBXML2_VERSION) \
-	       $(TARGET_DIR)/usr/share/gtk-doc
+	       $(TARGET_DIR)/usr/share/gtk-doc \
+	       $(TARGET_DIR)/usr/lib/cmake/libxml2/libxml2-config.cmake
 	touch $@
 
 $(LIBXML2_HOST_HOOK_POST_INSTALL):
@@ -51,3 +52,4 @@ $(LIBXML2_HOST_HOOK_POST_INSTALL):
 		-e "s|^libdir=.*|libdir=\'$(HOST_DIR)/usr/lib\'|g" \
 		-e "s|echo -L${libdir}|echo $(HOST_RPATH) -L${libdir}|" \
 		$(HOST_DIR)/usr/bin/xml2-config
+	touch $@
