@@ -10,3 +10,9 @@ config BR2_PACKAGE_MSMTP
 		call msmtp instead of /usr/sbin/sendmail. 
 
 		http://msmtp.sourceforge.net
+
+config BR2_PACKAGE_MSMTP_OPTIM
+	string "msmtp optim"
+	depends on BR2_PACKAGE_MSMTP
+	help
+	  Compile optimization options (-Os, -O2)
