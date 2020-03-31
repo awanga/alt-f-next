@@ -1,0 +1,50 @@
+#!/bin/sh
+
+VERSION=8.5.1
+SITE=http://download.twonky.com/$VERSION
+TBALL=twonky-armel-uclibc-1.0.9-$VERSION.zip
+
+ST_DIR=/opt/twonky
+
+if ! test -f /tmp/$TBALL; then
+	echo "Downloading $SITE/${TBALL}..."
+	if ! wget --progress=dot:mega -O /tmp/$TBALL $SITE/$TBALL; then
+		rm -f /tmp/$TBALL
+		cat<<-EOF
+
+			******************************************************
+			* Downloading of Twonky from its home site failed *
+			******************************************************
+
+		EOF
+		exit 1
+	fi
+fi
+
+mkdir -p /opt/twonky # created under /Alt-F
+echo "Extracting ${TBALL}..."
+if ! unzip -qo /tmp/$TBALL -d /opt/twonky; then
+	rm -f /tmp/$TBALL
+	cat<<-EOF
+
+		**********************************
+		* Extraction of Twonky failed *
+		**********************************
+
+	EOF
+	exit 1
+fi
+
+rm -f /tmp/$TBALL
+
+ln -sf /usr/sbin/rcscript /sbin/rctwonky
+
+ln -sf /lib/libpthread-0.9.30.3.so $ST_DIR/libpthread.so.1
+ln -sf /lib/libuClibc-0.9.30.3.so $ST_DIR/libc.so.1
+
+rctwonky status
+
+chown -R twonky:multimedia $ST_DIR
+chmod +x /opt/twonky/twonkyserver
+
+exit 0

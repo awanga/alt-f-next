@@ -1,0 +1,9 @@
+Package: twonky
+Description: DLNA/UPnP Media Server
+Version: 8.5.1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: upnp-dlna servers
+Source: http://download.twonky.com
+Maintainer: jcard
