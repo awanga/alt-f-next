@@ -11,3 +11,9 @@ config BR2_PACKAGE_ZLIB_TARGET_HEADERS
 	depends on BR2_PACKAGE_ZLIB
 	help
 	  Put headers files in the target.
+
+config BR2_PACKAGE_ZLIB_OPTIM
+	string "zlib optim"
+	depends on BR2_PACKAGE_ZLIB
+	help
+	  Compile optimization options (-Os, -O2)

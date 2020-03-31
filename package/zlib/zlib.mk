@@ -4,7 +4,7 @@
 #
 #############################################################
 
-ZLIB_VERSION:=1.2.8
+ZLIB_VERSION:=1.2.11
 ZLIB_SOURCE:=zlib-$(ZLIB_VERSION).tar.xz
 ZLIB_CAT:=$(XZCAT)
 ZLIB_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/libpng/zlib/$(ZLIB_VERSION)
@@ -33,7 +33,7 @@ $(ZLIB_DIR)/.configured: $(ZLIB_DIR)/.patched
 	(cd $(ZLIB_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_OPTS) \
-		CFLAGS="$(TARGET_CFLAGS) $(ZLIB_PIC)" \
+		CFLAGS="$(TARGET_CFLAGS) $(ZLIB_PIC) $(BR2_PACKAGE_ZLIB_OPTIM)" \
 		./configure \
 		$(ZLIB_SHARED) \
 		--prefix=/usr \
@@ -99,7 +99,7 @@ zlib-patched: $(ZLIB_DIR)/.patched
 
 zlib-configure:  $(ZLIB_DIR)/.configured
 
-zlib-build: $(ZLIB_DIR)/libz.a
+zlib-build: $(ZLIB_DIR)/.built
 
 zlib-clean:
 	rm -f $(TARGET_DIR)/usr/lib/libz.* \
@@ -109,6 +109,7 @@ zlib-clean:
 	      $(STAGING_DIR)/usr/include/zconf.h \
 	      $(STAGING_DIR)/usr/lib/libz.*
 	-$(MAKE) -C $(ZLIB_DIR) clean
+	rm $(ZLIB_DIR)/.built
 
 zlib-dirclean:
 	rm -rf $(ZLIB_DIR)
