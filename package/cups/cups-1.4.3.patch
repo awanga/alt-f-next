@@ -1,3 +1,15 @@
+--- cups-1.4.3/conf/cupsd.conf.in-orig     2020-03-01 14:42:16.792411134 +0000
++++ cups-1.4.3/conf/cupsd.conf.in  2020-03-01 14:43:23.863179719 +0000
+@@ -26,6 +26,9 @@
+ # Default authentication type, when authentication is required...
+ DefaultAuthType Basic
+ 
++ServerCertificate /etc/ssl/certs/cups.crt
++ServerKey /etc/ssl/certs/cups.key
++
+ # Restrict access to the server...
+ <Location />
+   Order allow,deny
 --- cups-1.4.3/Makefile-orig	2010-04-30 00:21:56.189160873 +0100
 +++ cups-1.4.3/Makefile	2010-04-30 00:22:11.653034282 +0100
 @@ -27,8 +27,8 @@

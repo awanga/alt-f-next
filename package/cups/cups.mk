@@ -1,8 +1,8 @@
-################################################################################
+############################################################
 #
 # cups
 #
-################################################################################
+############################################################
 
 #CUPS_VERSION = 1.7.5 works, but cups-filters is needed: 
 # http://www.linuxfoundation.org/collaborate/workgroups/openprinting/cups-filters
@@ -132,8 +132,8 @@ $(TARGET_DIR)/$(CUPS_TARGET_BINARY): $(CUPS_DIR)/.compiled
 	$(SED) "s,^includedir=.*,includedir=\'$(STAGING_DIR)/usr/include\',g" $(STAGING_DIR)/usr/bin/cups-config
 	$(SED) "s,^libdir=.*,libdir=\'$(STAGING_DIR)/usr/lib\',g" $(STAGING_DIR)/usr/bin/cups-config
 	(cd $(TARGET_DIR); \
-	rm -rf 	./etc/rc?.d ./etc/xinetd.d ./etc/cups/*.conf.* \
-		./etc/init.d/cups; \
+	rm -rf ./etc/rc?.d ./etc/xinetd.d ./etc/cups/*.conf.* ./etc/dbus-1/system.d/cups.conf \
+		./etc/init.d/cups ./usr/share/applications/; \
 	cp -f ./usr/share/cups/charmaps/iso-8859-1.txt \
 		./usr/share/cups/charmaps/us-ascii.txt; \
 	)
