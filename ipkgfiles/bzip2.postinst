@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-alternatives --install /usr/bin/bunzip2 bunzip2 /usr/bin/bunzip2-bzip2 10
+update-alternatives --install /usr/bin/bzcat bzcat /usr/bin/bzcat-bzip2 10

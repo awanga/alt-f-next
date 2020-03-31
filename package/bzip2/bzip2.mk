@@ -3,11 +3,12 @@
 # bzip2
 #
 #############################################################
+
 BZIP2_VERSION:=1.0.6
-BZIP2_SOURCE:=bzip2-$(BZIP2_VERSION).tar.gz
-BZIP2_SITE:=http://www.bzip.org/$(BZIP2_VERSION)
+BZIP2_SOURCE:=bzip2_$(BZIP2_VERSION).orig.tar.bz2
+BZIP2_SITE:=http://ftp.debian.org/debian/pool/main/b/bzip2
 BZIP2_DIR:=$(BUILD_DIR)/bzip2-$(BZIP2_VERSION)
-BZIP2_CAT:=$(ZCAT)
+BZIP2_CAT:=$(BZCAT)
 BZIP2_BINARY:=$(BZIP2_DIR)/bzip2
 BZIP2_TARGET_BINARY:=$(TARGET_DIR)/usr/bin/bzmore
 
@@ -67,8 +68,8 @@ $(BZIP2_TARGET_BINARY): $(BZIP2_BINARY)
 		ln -snf libbz2.so.$(BZIP2_VERSION) libbz2.so; \
 	)
 	(cd $(TARGET_DIR)/usr/bin; \
-		ln -snf bzip2 bunzip2; \
-		ln -snf bzip2 bzcat; \
+		ln -snf bzip2 bunzip2-bzip2; \
+		ln -snf bzip2 bzcat-bzip2; \
 		ln -snf bzdiff bzcmp; \
 		ln -snf bzmore bzless; \
 		ln -snf bzgrep bzegrep; \

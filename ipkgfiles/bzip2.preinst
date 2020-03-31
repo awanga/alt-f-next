@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# register firmware distributed busybox bunzip2/bzcat
+update-alternatives --install /usr/bin/bunzip2 bunzip2 /bin/busybox 5
+update-alternatives --install /usr/bin/bzcat bzcat /bin/busybox 5
