@@ -5,3 +5,9 @@ config BR2_PACKAGE_DROPBEAR
 	  A small SSH 2 server designed for small memory environments.
 
 	  http://matt.ucc.asn.au/dropbear/dropbear.html
+
+config BR2_PACKAGE_DROPBEAR_OPTIM
+	string "busybox optim"
+	depends on BR2_PACKAGE_DROPBEAR
+	help
+	  Compile optimization options (-Os, -O2)

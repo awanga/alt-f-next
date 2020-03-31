@@ -3,5 +3,8 @@
 ./usr/bin/dropbearconvert
 ./usr/bin/dropbearkey
 ./usr/bin/dbclient
+./usr/bin/scp-dropbear
 ./usr/bin/scp
+./usr/bin/ssh-dropbear
+./usr/bin/ssh
 ./usr/www/cgi-bin/dropbear.cgi

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-alternatives --remove scp /usr/bin/scp-dropbear
+update-alternatives --remove ssh /usr/bin/ssh-dropbear

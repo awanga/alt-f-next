@@ -1,30 +1,25 @@
-#############################################################
+###########################################################
 #
 # dropbear
 #
-#############################################################
+###########################################################
 
-DROPBEAR_VERSION = 2017.75
+DROPBEAR_VERSION = 2019.78
 DROPBEAR_SOURCE = dropbear-$(DROPBEAR_VERSION).tar.bz2
-DROPBEAR_SITE = http://matt.ucc.asn.au/dropbear/releases
+DROPBEAR_SITE = https://matt.ucc.asn.au/dropbear/releases
 DROPBEAR_DEPENDENCIES = uclibc zlib
 DROPBEAR_TARGET_BINS = dbclient dropbearkey dropbearconvert scp ssh
 DROPBEAR_MAKE =	$(MAKE) MULTI=1 SCPPROGRESS=1 \
 		PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp"
 
-DROPBEAR_CONF_OPT = --disable-wtmp --disable-lastlog
-
-ifeq ($(BR2_PACKAGE_OPENSSL),y)
-DROPBEAR_DEPENDENCIES += openssl
-endif
+DROPBEAR_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_DROPBEAR_OPTIM)"
+DROPBEAR_CONF_OPT = --disable-wtmp --disable-lastlog --disable-harden 
 
 $(eval $(call AUTOTARGETS,package,dropbear))
 
 $(DROPBEAR_HOOK_POST_EXTRACT):
-	$(SED) 's|^#define XAUTH_COMMAND.*/xauth|#define XAUTH_COMMAND "/usr/bin/xauth|g' \
-	-e 's|^#define SFTPSERVER_PATH.*|#define SFTPSERVER_PATH "/usr/lib/sftp-server"|g' \
-	-e 's|.*#define DROPBEAR_NONE_CIPHER.*|#define DROPBEAR_NONE_CIPHER|' \
-	$(DROPBEAR_DIR)/options.h
+	echo '#define SFTPSERVER_PATH "/usr/lib/sftp-server"' > $(DROPBEAR_DIR)/localoptions.h
+	echo '#define DROPBEAR_X11FWD 0' >> $(DROPBEAR_DIR)/localoptions.h
 	touch $@
 
 $(DROPBEAR_TARGET_INSTALL_TARGET):
@@ -34,11 +29,10 @@ $(DROPBEAR_TARGET_INSTALL_TARGET):
 	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/dbclient
 	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/dropbearkey
 	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/dropbearconvert
+	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/scp-dropbear
 	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/scp
+	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/ssh-dropbear
 	ln -snf ../sbin/dropbear $(TARGET_DIR)/usr/bin/ssh
-	#if [ ! -f $(TARGET_DIR)/etc/init.d/S50dropbear ]; then \
-	#	$(INSTALL) -m 0755 -D package/dropbear/S50dropbear $(TARGET_DIR)/etc/init.d/S50dropbear; \
-	#fi
 	touch $@
 
 $(DROPBEAR_TARGET_UNINSTALL):
