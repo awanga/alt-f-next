@@ -8,4 +8,4 @@
 ./usr/lib/p7zip/7zr
 ./usr/lib/p7zip/7z.so
 ./usr/lib/p7zip/Codecs
-./usr/lib/p7zip/Codecs/Rar29.so
+./usr/lib/p7zip/Codecs/Rar.so

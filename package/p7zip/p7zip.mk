@@ -4,7 +4,7 @@
 #
 #############################################################
 
-P7ZIP_VERSION:=9.20.1
+P7ZIP_VERSION:=16.02
 P7ZIP_SOURCE:=p7zip_$(P7ZIP_VERSION)_src_all.tar.bz2
 P7ZIP_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/p7zip/p7zip/$(P7ZIP_VERSION)
 
