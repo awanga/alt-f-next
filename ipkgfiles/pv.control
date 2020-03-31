@@ -1,0 +1,10 @@
+Package: pv
+Description: Pipe Viewer - is a terminal-based tool for monitoring
+	  the progress of data through a pipeline.
+Version: 1.6.6
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.ivarch.com/programs/pv.shtml
+Maintainer: jcard
