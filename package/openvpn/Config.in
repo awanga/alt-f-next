@@ -13,4 +13,4 @@ config BR2_PACKAGE_OPENVPN
 	  remote access solutions with load balancing, failover, and
 	  fine-grained access-controls.
 
-	  http://openvpn.sourceforge.net/
+	  https://community.openvpn.net
