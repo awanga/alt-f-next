@@ -1,10 +1,10 @@
-#############################################################
+###########################################################
 #
 # wget
 #
-#############################################################
+###########################################################
 
-WGET_VERSION:=1.19.1
+WGET_VERSION:=1.20.3
 WGET_SOURCE:=wget-$(WGET_VERSION).tar.gz
 WGET_SITE:=$(BR2_GNU_MIRROR)/wget
 
@@ -12,6 +12,8 @@ WGET_DIR:=$(BUILD_DIR)/wget-$(WGET_VERSION)
 WGET_CAT:=$(ZCAT)
 WGET_BINARY:=src/wget
 WGET_TARGET_BINARY:=usr/bin/wget
+
+WGET_CFLAGS = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_WGET_OPTIM)"
 
 ifeq ($(BR2_PACKAGE_OPENSSL),n)
 	DISABLE_SSL += --without-ssl
@@ -37,6 +39,7 @@ $(WGET_DIR)/.configured: $(WGET_DIR)/.unpacked
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
 		$(TARGET_CONFIGURE_ENV) \
+		$(WGET_CFLAGS) \
 		./configure \
 		--target=$(GNU_TARGET_NAME) \
 		--host=$(GNU_TARGET_NAME) \
@@ -44,6 +47,7 @@ $(WGET_DIR)/.configured: $(WGET_DIR)/.unpacked
 		--with-libssl-prefix=$(STAGING_DIR) \
 		--prefix=/ \
 		--disable-pcre \
+		--with-included-libunistring \
 		$(DISABLE_IPV6) \
 		$(DISABLE_NLS) \
 		$(DISABLE_SSL) \
