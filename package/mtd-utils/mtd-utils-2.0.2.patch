@@ -1,0 +1,66 @@
+--- a/tests/mtd-tests/flash_speed.c-orig	2018-04-18 14:55:50.761208909 +0100
++++ b/tests/mtd-tests/flash_speed.c	2018-04-18 15:00:15.145940117 +0100
+@@ -37,6 +37,9 @@
+ #include <fcntl.h>
+ #include <time.h>
+ 
++/* from <linux/time.h> */
++#define CLOCK_MONOTONIC_RAW             4
++
+ #include "common.h"
+ 
+ static struct mtd_dev_info mtd;
+--- a/tests/checkfs/makefiles.c-orig	2018-04-18 14:50:40.457417740 +0100
++++ b/tests/checkfs/makefiles.c	2018-04-18 14:54:13.994141873 +0100
+@@ -32,6 +32,41 @@
+ #include <stdlib.h>
+ #include "common.h"
+ 
++/* Conversion interfaces.  */ 
++# include <byteswap.h> 
++ 
++# if __BYTE_ORDER == __LITTLE_ENDIAN 
++#  define htobe16(x) __bswap_16 (x) 
++#  define htole16(x) (x) 
++#  define be16toh(x) __bswap_16 (x) 
++#  define le16toh(x) (x) 
++ 
++#  define htobe32(x) __bswap_32 (x) 
++#  define htole32(x) (x) 
++#  define be32toh(x) __bswap_32 (x) 
++#  define le32toh(x) (x) 
++ 
++#  define htobe64(x) __bswap_64 (x) 
++#  define htole64(x) (x) 
++#  define be64toh(x) __bswap_64 (x) 
++#  define le64toh(x) (x) 
++# else 
++#  define htobe16(x) (x) 
++#  define htole16(x) __bswap_16 (x) 
++#  define be16toh(x) (x) 
++#  define le16toh(x) __bswap_16 (x) 
++ 
++#  define htobe32(x) (x) 
++#  define htole32(x) __bswap_32 (x) 
++#  define be32toh(x) (x) 
++#  define le32toh(x) __bswap_32 (x) 
++ 
++#  define htobe64(x) (x) 
++#  define htole64(x) __bswap_64 (x) 
++#  define be64toh(x) (x) 
++#  define le64toh(x) __bswap_64 (x) 
++# endif 
++
+ #define FILESIZE_MAX    20000.0 /* for each file in sizeof(int). Must be a float #
+                                    Hence, 20000.0 = 20000*4 = 80KB max file size
+                                  */
+--- a/tests/fs-tests/integrity/integck.c-orig	2018-04-18 14:44:55.602360621 +0100
++++ b/tests/fs-tests/integrity/integck.c	2018-04-18 14:46:01.747024748 +0100
+@@ -35,6 +35,7 @@
+ #include <sys/vfs.h>
+ #include <sys/mount.h>
+ #include <sys/statvfs.h>
++#include <linux/fs.h>
+ 
+ #define PROGRAM_NAME "integck"
+ #include "common.h"
