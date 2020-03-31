@@ -11,3 +11,9 @@ config BR2_PACKAGE_RSYNC_ACL
 	select BR2_PACKAGE_ACL
 	help
 	  compile rsync with ACL an XATTR support
+
+config BR2_PACKAGE_RSYNC_OPTIM
+	string "rsync optim"
+	depends on BR2_PACKAGE_RSYNC
+	help
+	  Compile optimization options (-Os, -O2)
