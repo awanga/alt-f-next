@@ -1,0 +1,10 @@
+Package: libxslt
+Description: The xslt library which is used to transform XML files to other XML files.
+	  XSLT is designed for use as part of XSL, which is a stylesheet language for XML.
+Version: 1.1.33
+Depends: ipkg, libxml2
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.w3.org/TR/xslt
+Maintainer: jcard
