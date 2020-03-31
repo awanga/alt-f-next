@@ -1,0 +1,5 @@
+#!/bin/sh
+
+update-alternatives --install /bin/gzip gzip /usr/bin/gzip 20
+update-alternatives --install /bin/gunzip gunzip /usr/bin/gunzip 20
+update-alternatives --install /bin/zcat zcat /usr/bin/zcat 20

@@ -1,0 +1,9 @@
+Package: gzip
+Description: Standard GNU compressor. Provides things like gzip, gunzip, gzcat, etc...
+Version: 1.10-1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.gnu.org/software/gzip/gzip.html
+Maintainer: jcard
