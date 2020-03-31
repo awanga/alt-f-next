@@ -1,0 +1,9 @@
+Package: miniupnpc
+Description: upnpc allows to open and close ports on your router. The MiniUPnP project offers software which supports the UPnP Internet Gateway Device (IGD) specifications.
+Version: 2.1.20191224
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://miniupnp.free.fr
+Maintainer: jcard
