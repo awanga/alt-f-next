@@ -4,8 +4,8 @@
 #
 ############################################################
 
-OPENSSL_VERSION:=1.0.2l
-OPENSSL_SITE:=http://www.openssl.org/source
+OPENSSL_VERSION:=1.0.2u
+OPENSSL_SITE:=https://www.openssl.org/source
 
 OPENSSL_MAKE = $(MAKE1)
 
@@ -30,21 +30,17 @@ OPENSSL_INSTALL_TARGET_OPT = INSTALL_PREFIX=$(TARGET_DIR) install_sw
 
 OPENSSL_DEPENDENCIES = zlib
 
-# specific compiler optimization
-OPENSSL_CFLAGS = $(TARGET_OPTIMIZATION)
-ifneq ($(BR2_PACKAGE_OPENSSL_SIZEOPTIM),)
-	OPENSSL_CFLAGS += $(BR2_PACKAGE_OPENSSL_SIZEOPTIM)
-endif
-
 OPENSSL_CONF_OPT = -DOPENSSL_SMALL_FOOTPRINT 
 ifeq ($(BR2_PACKAGE_CRYPTODEV),y)
 	OPENSSL_DEPENDENCIES += cryptodev
 	OPENSSL_CONF_OPT += -DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS -DHASH_MAX_LEN=64
 endif
 
-OPENSSL_CFLAGS += $(OPENSSL_CONF_OPT)
+OPENSSL_CFLAGS = $(TARGET_OPTIMIZATION) $(OPENSSL_CONF_OPT) $(BR2_PACKAGE_OPENSSL_OPTIM)
 
 $(eval $(call AUTOTARGETS,package,openssl))
+
+$(eval $(call AUTOTARGETS_HOST,package,openssl))
 
 # load cryptodev.ko mv_cesa.ko
 # MV-CESA:Could not register sha1 driver FIXME
@@ -61,6 +57,17 @@ $(eval $(call AUTOTARGETS,package,openssl))
 # / # openssl speed -evp sha1
 # sha1               575.41k     1823.25k     4580.09k     7323.65k     8909.83k (no mv_cesa)
 # sha1               541.06k     1754.84k     4469.86k     7254.65k     8866.47k (mv_cesa)
+			
+$(OPENSSL_HOST_CONFIGURE):
+	(cd $(OPENSSL_HOST_DIR); \
+		./config \
+			--prefix=$(HOST_DIR)/usr \
+			--libdir=lib \
+			--openssldir=$(HOST_DIR)/usr/etc/ssl \
+			threads shared no-zlib; \
+		$(MAKE) depend \
+	)
+	touch $@
 
 $(OPENSSL_TARGET_CONFIGURE):
 	(cd $(OPENSSL_DIR); \
@@ -84,7 +91,7 @@ $(OPENSSL_TARGET_BUILD):
 	$(SED) "s:-O[s0-9]:$(OPENSSL_CFLAGS):" $(OPENSSL_DIR)/Makefile
 	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) depend build_libs
 	# openssl program compiled with -Os, saves 27KB
-	$(SED) "s:-O[0-9]:-Os:" $(OPENSSL_DIR)/Makefile
+	$(SED) "s:-O[s0-9]:$(BR2_PACKAGE_OPENSSL_OPTIM2):" $(OPENSSL_DIR)/Makefile
 	$(OPENSSL_MAKE) CC=$(TARGET_CC) MAKEDEPPROG=$(TARGET_CC) -C $(OPENSSL_DIR) build_apps
 	touch $@
 

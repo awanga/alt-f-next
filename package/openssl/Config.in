@@ -22,8 +22,15 @@ config BR2_PACKAGE_OPENSSL_ENGINES
 	help
 	  Install additional encryption engine libraries.
 
-config BR2_PACKAGE_OPENSSL_SIZEOPTIM
-	bool "openssl sizeoptim"
+config BR2_PACKAGE_OPENSSL_OPTIM
+	string "openssl libs optim"
 	depends on BR2_PACKAGE_OPENSSL
 	help
-	  Compile for space saving (-Os)
+	  Compile optimization options (-Os, -O2)
+
+config BR2_PACKAGE_OPENSSL_OPTIM2
+	string "openssl prog optim"
+	default -O2
+	depends on BR2_PACKAGE_OPENSSL
+	help
+	  Compile optimization options (-Os, -O2)
