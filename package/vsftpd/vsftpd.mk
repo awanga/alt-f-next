@@ -2,7 +2,7 @@
 #
 # vsftpd
 #
-#############################################################
+############################################################
 
 VSFTPD_VERSION:=3.0.3
 VSFTPD_SOURCE:=vsftpd-$(VSFTPD_VERSION).tar.gz
@@ -46,7 +46,7 @@ endif
 	touch $@
 
 $(VSFTPD_DIR)/.built: $(VSFTPD_DIR)/.configured
-	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS)" LDFLAGS="$(TARGET_LDFLAGS)" LIBS="$(VSFTPD_LIBS)" -C $(VSFTPD_DIR)
+	$(MAKE) CC=$(TARGET_CC) CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_VSFTPD_OPTIM)" LDFLAGS="$(TARGET_LDFLAGS)" LIBS="$(VSFTPD_LIBS)" -C $(VSFTPD_DIR)
 	touch $@
 
 $(TARGET_DIR)/$(VSFTPD_TARGET_BINARY): $(VSFTPD_DIR)/.built
