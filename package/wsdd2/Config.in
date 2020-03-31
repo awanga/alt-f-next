@@ -1,0 +1,7 @@
+config BR2_PACKAGE_WSDD2
+	bool "wsdd2"
+	help
+	WSD/LLMNR Discovery/Name Service Daemon
+	With Microsoft turning off SMB1 feature completely on Windwos 10, any Samba shares on the local network become invisible to Windwos 10 computers. That's due to the fact that SMB1 is required for Computer Browser service to function.
+	 
+	 https://github.com/Andy2244/wsdd2

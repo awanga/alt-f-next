@@ -1,0 +1,4 @@
+#!/bin/sh
+
+ln -sf /usr/sbin/rcscript /sbin/rcwsdd2
+return 0
