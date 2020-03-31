@@ -10,7 +10,7 @@ check_https
 
 CONFF=/etc/inadyn.conf
 
-mktt tt_host "Registered hostname.<br>For freedns.afraid.org don't use hash, use username and password."
+mktt tt_host "Registered hostname.<br>For freedns.afraid.org don't use hash, use username and password<br>For duckdns.org use hash as username and a dummy password<br>Share your experience."
 mktt tt_ipsn "Server name to determine your current IP. If left blank the default is used, if it is an URL end it with a '/'."
 
 sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org

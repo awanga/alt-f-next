@@ -4,3 +4,9 @@ config BR2_PACKAGE_INADYN_MT
 	  inadyn-mt contains some substantive bug fixes over inadyn, a Dynamic DNS client.
 
 	  https://sourceforge.net/projects/inadyn-mt
+
+config BR2_PACKAGE_INADYN_MT_OPTIM
+	string "inadyn-mt optim"
+	depends on BR2_PACKAGE_INADYN_MT
+	help
+	  Compile optimization options (-Os, -O2)

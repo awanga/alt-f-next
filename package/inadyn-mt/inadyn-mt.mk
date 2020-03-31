@@ -14,9 +14,7 @@ INADYN_MT_INSTALL_TARGET = YES
 
 INADYN_MT_DEPENDENCIES = uclibc
 INADYN_MT_CONF_OPT = --program-prefix="" --disable-threads --disable-sound
-
-INADYN_MT_CFLAGS = -Os
-INADYN_MT_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) $(INADYN_MT_CFLAGS)" 
+INADYN_MT_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_INADYN_MT_OPTIM)" 
 
 $(eval $(call AUTOTARGETS,package,inadyn-mt))
 
@@ -31,4 +29,5 @@ $(INADYN_MT_HOOK_POST_EXTRACT):
 
 $(INADYN_MT_HOOK_POST_INSTALL):
 	$(RM) -r $(TARGET_DIR)/usr/inadyn-mt
+	cp $(INADYN_MT_DIR)/extra/servers_additional.cfg $(TARGET_DIR)/etc/
 	touch $@

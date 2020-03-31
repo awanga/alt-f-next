@@ -10,7 +10,6 @@ check_cookie
 #debug
 
 CONFF=/etc/inadyn.conf
-SSCRIPT=/etc/init.d/S44ddns
 SCACHE=/var/cache/ddns
 
 sites="dyndns@dyndns.org default@zoneedit.com default@no-ip.com default@freedns.afraid.org
