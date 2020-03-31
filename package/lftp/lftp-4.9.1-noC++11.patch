@@ -1,0 +1,64 @@
+--- lftp-4.9.1/src/ftpclass.h-orig	2020-03-29 17:47:22.624871178 +0100
++++ lftp-4.9.1/src/ftpclass.h	2020-03-29 17:48:18.299812279 +0100
+@@ -120,7 +120,7 @@
+       bool epsv_supported;
+       bool tvfs_supported;
+       bool mode_z_supported;
+-      bool cepr_supported = false;
++      bool cepr_supported;
+ 
+       bool ssl_after_proxy;
+ 
+--- lftp-4.9.1/src/ftpclass.cc-orig	2020-03-29 17:47:42.176499318 +0100
++++ lftp-4.9.1/src/ftpclass.cc	2020-03-29 17:51:07.572592827 +0100
+@@ -1035,6 +1035,7 @@
+    epsv_supported=false;
+    tvfs_supported=false;
+    mode_z_supported=false;
++   cepr_supported=false;
+ 
+    proxy_is_http=false;
+    may_show_password=false;
+@@ -4057,6 +4058,9 @@
+ #endif
+    pret_supported=false;
+    epsv_supported=false;
++   tvfs_supported=false;
++   mode_z_supported=false;
++   cepr_supported=false;
+ 
+    char *scan=strchr(reply,'\n');
+    if(scan)
+--- lftp-4.9.1/src/SSH_Access.cc-orig	2020-03-29 18:11:10.217304958 +0100
++++ lftp-4.9.1/src/SSH_Access.cc	2020-03-29 18:18:56.740524305 +0100
+@@ -20,6 +20,7 @@
+ #include <config.h>
+ #include "SSH_Access.h"
+ #include "misc.h"
++#include "ascii_ctype.h"
+ #include <algorithm>
+ #include <cctype>
+ #include <string>
+@@ -47,15 +48,17 @@
+    return (e-b>=len && !strncasecmp(b,suffix,len));
+ }
+ 
+-static bool contains(char const *begin, char const *end, char const *needle)
++
++struct nocase_eq
+ {
+-   struct nocase_eq
+-   {
+       inline bool operator() (char lhs, char rhs) const
+       {
+-         return std::tolower(lhs) == std::tolower(rhs);
++		return c_tolower(lhs) == c_tolower(rhs);
+       };
+-   };
++};
++   
++static bool contains(char const *begin, char const *end, char const *needle)
++{
+    return std::search(begin, end, needle, needle+strlen(needle), nocase_eq()) != end;
+ }
+ 
