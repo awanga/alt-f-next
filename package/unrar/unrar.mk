@@ -3,7 +3,7 @@
 # UNRAR
 #
 #############################################################
-UNRAR_VERSION = 5.3.11
+UNRAR_VERSION = 5.5.8
 UNRAR_SOURCE = unrarsrc-$(UNRAR_VERSION).tar.gz
 UNRAR_SITE = http://www.rarlab.com/rar
 
