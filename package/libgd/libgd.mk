@@ -22,5 +22,6 @@ $(LIBGD_HOOK_POST_CONFIGURE):
 	touch $@
 
 $(LIBGD_HOOK_POST_INSTALL):
+	sed -i "s|^prefix=/usr|prefix=$(STAGING_DIR)/usr|" $(STAGING_DIR)/usr/bin/gdlib-config
 	rm -f $(TARGET_DIR)/usr/bin/gdlib-config
 	touch $@
