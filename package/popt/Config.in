@@ -3,4 +3,10 @@ config BR2_PACKAGE_POPT
 	help
 	  Popt is a C library for parsing command line parameters.
 
-	  http://rpm5.org/files/popt
+	  https://ftp.openbsd.org/pub/OpenBSD/distfiles
+
+config BR2_PACKAGE_POPT_OPTIM
+	string "popt optim"
+	depends on BR2_PACKAGE_POPT
+	help
+	  Compile optimization options (-Os, -O2)
