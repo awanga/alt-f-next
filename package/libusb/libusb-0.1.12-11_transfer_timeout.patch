@@ -1,0 +1,40 @@
+--- a/linux.c
++++ b/linux.c
+@@ -190,6 +190,8 @@
+     tv_ref.tv_sec++;
+   }
+ 
++  waiting = 1;
++
+   do {
+     fd_set writefds;
+ 
+@@ -214,7 +216,6 @@
+     }
+ 
+ restart:
+-    waiting = 1;
+     context = NULL;
+     while (!urb.usercontext && ((ret = ioctl(dev->fd, IOCTL_USB_REAPURBNDELAY, &context)) == -1) && waiting) {
+       if (ret == -1)
+@@ -243,6 +244,7 @@
+     if (context && context != &urb) {
+       context->usercontext = URB_USERCONTEXT_COOKIE;
+       /* We need to restart since we got a successful URB, but not ours */
++      waiting = 1;
+       goto restart;
+     }
+ 
+@@ -255,10 +257,10 @@
+       USB_ERROR_STR(-errno, "error reaping URB: %s", strerror(errno));
+ 
+     bytesdone += urb.actual_length;
+-  } while ((ret == 0 || urb.usercontext) && bytesdone < size && urb.actual_length == requested);
++  } while ((ret == 0 || urb.usercontext) && bytesdone < size && urb.actual_length == requested && waiting);
+ 
+   /* If the URB didn't complete in success or error, then let's unlink it */
+-  if (ret < 0 && !urb.usercontext) {
++  if ((ret < 0 && !urb.usercontext) || (!waiting && bytesdone < size)) {
+     int rc;
+ 
+     if (!waiting)

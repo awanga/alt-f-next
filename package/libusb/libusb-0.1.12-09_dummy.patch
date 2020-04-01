@@ -1,0 +1,218 @@
+Index: libusb-0.1.12/configure.in
+===================================================================
+--- libusb-0.1.12.orig/configure.in	2009-05-22 17:47:19.000000000 +0000
++++ libusb-0.1.12/configure.in	2009-05-22 17:48:07.000000000 +0000
+@@ -11,6 +11,7 @@
+ #undef LINUX_API
+ #undef BSD_API
+ #undef DARWIN_API
++#undef DUMMY_API
+ 
+ #undef HAVE_OLD_DEV_USB_USB_H
+ 
+@@ -89,6 +90,7 @@
+ LINUX_API=0
+ DARWIN_API=0
+ BSD_API=0
++DUMMY_API=0
+ 
+ AC_MSG_CHECKING(for what USB OS support)
+ case $host in
+@@ -96,6 +98,7 @@
+     AC_DEFINE(LINUX_API, 1)
+     AC_DEFINE(BSD_API, 0)
+     AC_DEFINE(DARWIN_API, 0)
++    AC_DEFINE(DUMMY_API, 0)
+     LINUX_API=1
+     os_support=linux
+     AC_MSG_RESULT(Linux)
+@@ -105,6 +108,7 @@
+     AC_DEFINE(BSD_API, 1)
+     AC_DEFINE(LINUX_API, 0)
+     AC_DEFINE(DARWIN_API, 0)
++    AC_DEFINE(DUMMY_API, 0)
+     BSD_API=1
+     os_support=bsd
+     AC_MSG_RESULT(FreeBSD, OpenBSD and/or NetBSD)
+@@ -114,24 +118,33 @@
+     AC_DEFINE(DARWIN_API, 1) 
+     AC_DEFINE(LINUX_API, 0)
+     AC_DEFINE(BSD_API, 0)
++    AC_DEFINE(DUMMY_API, 0)
+     DARWIN_API=1
+     os_support=darwin
+     AC_MSG_RESULT(Darwin and/or MacOS 10)
+     OSLIBS="-Wl,-framework -Wl,IOKit -Wl,-framework -Wl,CoreFoundation -Wl,-prebind"
+     ;;
+   *)
+-    AC_MSG_RESULT(unknown operating system)
+-    AC_MSG_ERROR(libusb does not support compiling for $host)
++    AC_DEFINE(DARWIN_API, 0) 
++    AC_DEFINE(LINUX_API, 0)
++    AC_DEFINE(BSD_API, 0)
++    AC_DEFINE(DUMMY_API, 1)
++    DUMMY_API=1
++    os_support=dummy
++    AC_MSG_RESULT(unknown operating system $host)
++    OSLIBS=""
+     ;;
+ esac
+ 
+ AC_SUBST(DARWIN_API)
+ AC_SUBST(LINUX_API)
+ AC_SUBST(BSD_API)
++AC_SUBST(DUMMY_API)
+ 
+ AM_CONDITIONAL(LINUX_API, test "$os_support" = "linux")
+ AM_CONDITIONAL(BSD_API, test "$os_support" = "bsd")
+ AM_CONDITIONAL(DARWIN_API, test "$os_support" = "darwin")
++AM_CONDITIONAL(DUMMY_API, test "$os_support" = "dummy")
+ 
+ AC_SUBST(OSLIBS)
+ 
+Index: libusb-0.1.12/Makefile.am
+===================================================================
+--- libusb-0.1.12.orig/Makefile.am	2009-05-22 17:47:19.000000000 +0000
++++ libusb-0.1.12/Makefile.am	2009-05-22 17:48:07.000000000 +0000
+@@ -17,7 +17,7 @@
+ EXTRA_DIST = LICENSE libusb.spec.in libusb.spec libusb-config.in README.in README \
+              INSTALL.libusb.in INSTALL.libusb Doxyfile apidocs/header.html \
+              apidocs/footer.html apidocs/doxygen.css apidocs/doxygen.png libusb.pc.in
+-EXTRA_libusb_la_SOURCE = linux.c linux.h bsd.c darwin.c
++EXTRA_libusb_la_SOURCE = linux.c linux.h bsd.c darwin.c dummy.c
+ 
+ lib_LTLIBRARIES = libusb.la libusbpp.la
+ 
+@@ -36,7 +36,7 @@
+ PREBIND_FLAGS=-Wl,-seg1addr,0x01666000
+ PREBIND_FLAGSPP=-Wl,-seg1addr,0x01676000
+ else
+-OS_SUPPORT = 
++OS_SUPPORT = dummy.c
+ endif
+ endif
+ endif
+Index: libusb-0.1.12/dummy.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ libusb-0.1.12/dummy.c	2009-05-22 17:47:34.000000000 +0000
+@@ -0,0 +1,119 @@
++/*
++ * dummy USB support
++ *
++ * Derived from BSD version by Samuel Thibault
++ *
++ * This library is covered by the LGPL, read LICENSE for details.
++ */
++
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <stdio.h>
++#include <fcntl.h>
++#include <errno.h>
++#include <assert.h>
++#include <sys/time.h>
++#include <sys/ioctl.h>
++
++#include "usbi.h"
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif
++
++int usb_os_open(usb_dev_handle *dev)
++{
++  return 0;
++}
++
++int usb_os_close(usb_dev_handle *dev)
++{
++  return 0;
++}
++
++int usb_set_configuration(usb_dev_handle *dev, int configuration)
++{
++  return 0;
++}
++
++int usb_claim_interface(usb_dev_handle *dev, int interface)
++{
++  return 0;
++}
++
++int usb_release_interface(usb_dev_handle *dev, int interface)
++{
++  return 0;
++}
++
++int usb_set_altinterface(usb_dev_handle *dev, int alternate)
++{
++  return 0;
++}
++
++int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
++                   int timeout)
++{
++  return -ENOSYS;
++}
++
++int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
++                  int timeout)
++{
++  return -ENOSYS;
++}
++
++int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
++                        int timeout)
++{
++  return -ENOSYS;
++}
++
++int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes, int size,
++                       int timeout)
++{
++  return -ENOSYS;
++}
++
++int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
++                     int value, int index, char *bytes, int size, int timeout)
++{
++  return -ENOSYS;
++}
++
++int usb_os_find_busses(struct usb_bus **busses)
++{
++  *busses = NULL;
++  return 0;
++}
++
++int usb_os_find_devices(struct usb_bus *bus, struct usb_device **devices)
++{
++  *devices = NULL;
++  return 0;
++}
++
++int usb_os_determine_children(struct usb_bus *bus)
++{
++  return -ENOSYS;
++}
++
++void usb_os_init(void)
++{
++}
++
++int usb_resetep(usb_dev_handle *dev, unsigned int ep)
++{
++  return -ENOSYS;
++}
++
++int usb_clear_halt(usb_dev_handle *dev, unsigned int ep)
++{
++  return -ENOSYS;
++}
++
++int usb_reset(usb_dev_handle *dev)
++{
++  return -ENOSYS;
++}
++

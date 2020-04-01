@@ -1,0 +1,28 @@
+--- a/usb.h.in
++++ b/usb.h.in
+@@ -240,10 +240,15 @@
+  * we must only add entries to the end of this structure. NEVER delete or
+  * move members and only change types if you really know what you're doing.
+  */
++#ifdef PATH_MAX
++#define LIBUSB_PATH_MAX PATH_MAX
++#else
++#define LIBUSB_PATH_MAX 4096
++#endif
+ struct usb_device {
+   struct usb_device *next, *prev;
+ 
+-  char filename[PATH_MAX + 1];
++  char filename[LIBUSB_PATH_MAX + 1];
+ 
+   struct usb_bus *bus;
+ 
+@@ -261,7 +266,7 @@
+ struct usb_bus {
+   struct usb_bus *next, *prev;
+ 
+-  char dirname[PATH_MAX + 1];
++  char dirname[LIBUSB_PATH_MAX + 1];
+ 
+   struct usb_device *devices;
+   uint32_t location;

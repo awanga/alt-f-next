@@ -1,0 +1,106 @@
+The maximum allowed path is defined by PATH_MAX and *includes* the
+final zero byte. The size value passed to snprintf also includes the
+final zero byte. Therefore the arrays should be of size PATH_MAX and
+not PATH_MAX + 1.
+
+To make GCC 7 & 8 happy, check the return value of the snprintf function
+and bail out with an error message. In practice this just improve a
+tiny bit the user experience, as the truncated path would just not be
+found by open or opendir.
+
+--- a/linux.c
++++ b/linux.c
+@@ -18,15 +18,18 @@
+ #include "linux.h"
+ #include "usbi.h"
+ 
+-static char usb_path[PATH_MAX + 1] = "";
++static char usb_path[PATH_MAX] = "";
+ 
+ static int device_open(struct usb_device *dev)
+ {
+-  char filename[PATH_MAX + 1];
+-  int fd;
++  char filename[PATH_MAX];
++  int fd, r;
+ 
+-  snprintf(filename, sizeof(filename) - 1, "%s/%s/%s",
++  r = snprintf(filename, sizeof(filename) - 1, "%s/%s/%s",
+     usb_path, dev->bus->dirname, dev->filename);
++  if (r < 0 || r >= sizeof(filename))
++    USB_ERROR_STR(-ENAMETOOLONG, "failed to open: %s",
++	strerror(ENAMETOOLONG));
+ 
+   fd = open(filename, O_RDWR);
+   if (fd < 0) {
+@@ -377,9 +380,13 @@
+   struct usb_device *fdev = NULL;
+   DIR *dir;
+   struct dirent *entry;
+-  char dirpath[PATH_MAX + 1];
++  char dirpath[PATH_MAX];
++  int r;
+ 
+-  snprintf(dirpath, PATH_MAX, "%s/%s", usb_path, bus->dirname);
++  r = snprintf(dirpath, PATH_MAX, "%s/%s", usb_path, bus->dirname);
++  if (r < 0 || r >= PATH_MAX)
++    USB_ERROR_STR(-ENAMETOOLONG, "couldn't opendir: %s",
++	strerror(ENAMETOOLONG));
+ 
+   dir = opendir(dirpath);
+   if (!dir)
+@@ -388,7 +395,7 @@
+ 
+   while ((entry = readdir(dir)) != NULL) {
+     unsigned char device_desc[DEVICE_DESC_LENGTH];
+-    char filename[PATH_MAX + 1];
++    char filename[PATH_MAX];
+     struct usb_device *dev;
+     struct usb_connectinfo connectinfo;
+     int i, fd, ret;
+@@ -408,7 +415,11 @@
+     strncpy(dev->filename, entry->d_name, sizeof(dev->filename) - 1);
+     dev->filename[sizeof(dev->filename) - 1] = 0;
+ 
+-    snprintf(filename, sizeof(filename) - 1, "%s/%s", dirpath, entry->d_name);
++    r = snprintf(filename, sizeof(filename) - 1, "%s/%s", dirpath, entry->d_name);
++    if (r < 0 || r >= PATH_MAX)
++      USB_ERROR_STR(-ENAMETOOLONG, "couldn't open: %s",
++          strerror(ENAMETOOLONG));
++
+     fd = open(filename, O_RDWR);
+     if (fd < 0) {
+       fd = open(filename, O_RDONLY);
+--- a/error.c
++++ b/error.c
+@@ -12,7 +12,7 @@
+ #include "usb.h"
+ #include "error.h"
+ 
+-char usb_error_str[1024] = "";
++char usb_error_str[8192] = "";
+ int usb_error_errno = 0;
+ usb_error_type_t usb_error_type = USB_ERROR_TYPE_NONE;
+ 
+--- a/error.h
++++ b/error.h
+@@ -7,7 +7,7 @@
+   USB_ERROR_TYPE_ERRNO,
+ } usb_error_type_t;
+ 
+-extern char usb_error_str[1024];
++extern char usb_error_str[8192];
+ extern int usb_error_errno;
+ extern usb_error_type_t usb_error_type;
+ 
+--- a/tests/testlibusb.c
++++ b/tests/testlibusb.c
+@@ -62,7 +62,7 @@
+ int print_device(struct usb_device *dev, int level)
+ {
+   usb_dev_handle *udev;
+-  char description[256];
++  char description[259];
+   char string[256];
+   int ret, i;
+ 
