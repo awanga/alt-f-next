@@ -13,18 +13,20 @@ SAMBA_SUBDIR=source3
 
 SAMBA_SOURCE:=samba-$(SAMBA_VERSION).tar.gz
 SAMBA_SITE:=http://samba.org/samba/ftp/stable/
-SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/$(SAMBA_SUBDIR)
+#SAMBA_DIR:=$(BUILD_DIR)/samba-$(SAMBA_VERSION)/$(SAMBA_SUBDIR)
 SAMBA_DEPS =  popt libiconv 
 SAMBA_CAT:=$(ZCAT)
 SAMBA_BINARY:=bin/samba_multicall
 SAMBA_TARGET_BINARY:=usr/sbin/nmbd
 
 ifeq ($(BR2_PACKAGE_SAMBA_SMALL),y)
-	SAMBA_MODE= $(SAMBA_DIR)/.small
+	#SAMBA_MODE= $(SAMBA_DIR)/.small
+	SAMBA_DIRM:=$(BUILD_DIR)/samba-small-$(SAMBA_VERSION)
 	SAMBA_BUILD_TARGET = basics libs $(SAMBA_BINARY)
 	SAMBA_ACL=--without-acl-support
 else
-	SAMBA_MODE= $(SAMBA_DIR)/.large
+	#SAMBA_MODE= $(SAMBA_DIR)/.large
+	SAMBA_DIRM:=$(BUILD_DIR)/samba-large-$(SAMBA_VERSION)
 ifeq ($(BR2_PACKAGE_ACL),y)
 	SAMBA_ACL = --with-acl-support
 	SAMBA_DEPS += acl
@@ -32,6 +34,7 @@ ifeq ($(BR2_PACKAGE_ACL),y)
 endif
 endif
 
+SAMBA_DIR:=$(SAMBA_DIRM)/$(SAMBA_SUBDIR)
 
 # specific package compiler optimization
 # Optim Free
@@ -51,7 +54,8 @@ $(DL_DIR)/$(SAMBA_SOURCE):
 	$(call DOWNLOAD,$(SAMBA_SITE),$(SAMBA_SOURCE))
 
 $(SAMBA_DIR)/.unpacked: $(DL_DIR)/$(SAMBA_SOURCE)
-	$(SAMBA_CAT) $(DL_DIR)/$(SAMBA_SOURCE) | tar -C $(BUILD_DIR) $(TAR_OPTIONS) -
+	mkdir -p $(SAMBA_DIRM)
+	$(SAMBA_CAT) $(DL_DIR)/$(SAMBA_SOURCE) | tar --strip-components=1 -C $(SAMBA_DIRM)  $(TAR_OPTIONS) -
 	toolchain/patch-kernel.sh `dirname $(SAMBA_DIR)` package/samba/ samba-$(SAMBA_VERSION)-\*.patch
 	$(CONFIG_UPDATE) $(SAMBA_DIR)
 	touch $@
@@ -67,19 +71,21 @@ $(SAMBA_DIR)/.unpacked: $(DL_DIR)/$(SAMBA_SOURCE)
 #SRVSVC_SUPPORT 
 #WINREG_SUPPORT 
 
-$(SAMBA_MODE):
-	if test -f $(SAMBA_DIR)/.small -a $(SAMBA_MODE) != $(SAMBA_DIR)/.small; then \
-		$(MAKE)  samba-clean; \
-		rm -f $(SAMBA_DIR)/.configured $(SAMBA_DIR)/.small; \
-	elif test -f $(SAMBA_DIR)/.large -a $(SAMBA_MODE) != $(SAMBA_DIR)/.large; then \
-		$(MAKE) samba-clean; \
-		rm -f $(SAMBA_DIR)/.configured $(SAMBA_DIR)/.large; \
-	else \
-		rm -f $(SAMBA_DIR)/{.large,.small}; \
-	fi
-	touch $@
+# $(SAMBA_MODE):
+# 	if test -f $(SAMBA_DIR)/.small -a $(SAMBA_MODE) != $(SAMBA_DIR)/.small; then \
+# 		$(MAKE)  samba-clean; \
+# 		rm -f $(SAMBA_DIR)/.configured $(SAMBA_DIR)/.small; \
+# 	elif test -f $(SAMBA_DIR)/.large -a $(SAMBA_MODE) != $(SAMBA_DIR)/.large; then \
+# 		$(MAKE) samba-clean; \
+# 		rm -f $(SAMBA_DIR)/.configured $(SAMBA_DIR)/.large; \
+# 	else \
+# 		rm -f $(SAMBA_DIR)/{.large,.small}; \
+# 	fi
+# 	touch $@
+#
+#$(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked $(SAMBA_MODE)
 
-$(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked $(SAMBA_MODE)
+$(SAMBA_DIR)/.configured: $(SAMBA_DIR)/.unpacked
 	(cd $(SAMBA_DIR); rm -rf config.cache; \
 		$(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CONFIGURE_ARGS) \
@@ -292,7 +298,7 @@ samba-clean:
 	-$(MAKE) -C $(SAMBA_DIR) clean
 
 samba-dirclean:
-	rm -rf $(SAMBA_DIR)
+	rm -rf $(SAMBA_DIRM)
 #############################################################
 #
 # Toplevel Makefile options
