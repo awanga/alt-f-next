@@ -1,0 +1,11 @@
+--- a/librpc/idl/dcerpc.idl-orig	2018-04-03 17:58:53.479655607 +0100
++++ b/librpc/idl/dcerpc.idl	2018-04-03 17:59:22.277148017 +0100
+@@ -468,7 +468,7 @@
+ 	/* Cancel was pending at sender */
+ 	const int DCERPC_PFC_FLAG_PENDING_CANCEL =
+ 		DCERPC_PFC_FLAG_PENDING_CANCEL_OR_HDR_SIGNING;
+-	const ist DCERPC_PFC_FLAG_SUPPORT_HEADER_SIGN =
++	const int DCERPC_PFC_FLAG_SUPPORT_HEADER_SIGN =
+ 		DCERPC_PFC_FLAG_PENDING_CANCEL_OR_HDR_SIGNING;
+ 
+ 	/* these offsets are needed by the signing code */
