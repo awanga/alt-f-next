@@ -4,3 +4,9 @@ config BR2_PACKAGE_LIBICONV
 	  unicode conversion library
 
 	  http://ftp.gnu.org/pub/gnu/libiconv
+
+config BR2_PACKAGE_LIBICONV_OPTIM
+	string "libiconv optim"
+	depends on BR2_PACKAGE_LIBICONV
+	help
+	  Compile optimization options (-Os, -O2)

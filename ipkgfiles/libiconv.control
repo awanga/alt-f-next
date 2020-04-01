@@ -1,6 +1,6 @@
 Package: libiconv
 Description: A unicode conversion library
-Version: 1.14
+Version: 1.16
 Depends: ipkg
 Architecture: arm
 Priority: optional

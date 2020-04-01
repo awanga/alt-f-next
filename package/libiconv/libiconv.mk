@@ -2,9 +2,9 @@
 #
 # libiconv
 #
-#############################################################
+############################################################
 
-LIBICONV_VERSION = 1.14
+LIBICONV_VERSION = 1.16
 LIBICONV_SOURCE = libiconv-$(LIBICONV_VERSION).tar.gz
 LIBICONV_SITE = $(BR2_GNU_MIRROR)/libiconv
 
@@ -16,8 +16,7 @@ LIBICONV_INSTALL_TARGET = YES
 LIBICONV_DEPENDENCIES = uclibc
 
 LIBICONV_CONF_OPT = --libdir=/usr/lib
-# save 13K
-#TARGET_CFLAGS += -Os
+LIBICONV_CONF_ENV = CFLAGS="$(TARGET_CFLAGS) $(BR2_PACKAGE_LIBICONV_OPTIM)"
 
 ifeq ($(BR2_ENABLE_DEBUG),y)
 LIBICONV_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
