@@ -97,3 +97,9 @@ config BR2_PACKAGE_BUSYBOX_SKELETON
 #	depends on BR2_PACKAGE_BUSYBOX
 #	help
 #	  Build small initramfs perusing busybox.
+
+config BR2_PACKAGE_BUSYBOX_OPTIM
+	string "busybox optim"
+	depends on BR2_PACKAGE_BUSYBOX
+	help
+	  Compile optimization options (-Os, -O2)
