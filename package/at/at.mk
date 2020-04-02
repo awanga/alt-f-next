@@ -4,7 +4,7 @@
 #
 #############################################################
 
-AT_VERSION:=3.1.16
+AT_VERSION:=3.1.23
 AT_SOURCE:=at_$(AT_VERSION).orig.tar.gz
 AT_SITE:=$(BR2_DEBIAN_MIRROR)/debian/pool/main/a/at
 
