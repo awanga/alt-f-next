@@ -108,14 +108,13 @@ typedef struct {
 		*front_button_command1, *front_button_command2, *back_button_command;
 } args_t;
 
-enum FanMode {FAN_AUTO = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST};
+enum FanMode { FAN_AUTO = 0, FAN_ALWAYS_OFF, FAN_ALWAYS_SLOW , FAN_ALWAYS_FAST };
 
 // configuration default values, overriden by configuration files
 args_t args =
-    { 2.0, 2000, 5000, 40, 50, 0, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL,
-  NULL };
+    { 2.0, 2000, 5000, 40, 50, 0, 1, 1, 38, 6000, 52, 54, FAN_AUTO, NULL, "/usr/sbin/poweroff", NULL, NULL, NULL };
 
-enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_Ax, DNS_325_Ax, DNS_320_Ax, DNS_320_Bx, DNS_320L_Ax, DNS_327L_Ax};
+enum Board { DNS_323_A1, DNS_323_B1, DNS_323_C1, DNS_321_Ax, DNS_325_Ax, DNS_320_Ax, DNS_320_Bx, DNS_320L_Ax, DNS_327L_Ax, DNR_322L_Ax };
 int board;
 
 enum Button { NO_BT=0, FRONT_BT, RESET_BT, USB_BT };
@@ -123,12 +122,12 @@ enum PwdValue { PWM_OFF = 0, PWM_LOW = 127, PWM_FAST = 255 };
 enum RPMValue { RPM_OFF = 0, RPM_LOW = 3000, RPM_FAST = 6000 };
 
 enum Led { left_led = 0, right_led, usb_led, power_led};
-char *leds[] = { "/tmp/sys/left_led/", "/tmp/sys/right_led/", "/tmp/sys/usb_led/", "/tmp/sys/power_led/"};
+char *leds[] = { "/tmp/sys/left_led/", "/tmp/sys/right_led/", "/tmp/sys/usb_led/", "/tmp/sys/power_led/" };
 
 #define NSLOTS 3
 int nslots = NSLOTS;
 
-enum Slot { left_dev = 0, right_dev, usb_dev};
+enum Slot { left_dev = 0, right_dev, usb_dev };
 typedef struct {
 	char *dev;
 	char *slot;
@@ -470,8 +469,8 @@ void smail(char *type, int fan, float temp, int limit) {
 		syslog(LOG_ERR, "error sending mail");
 		return;
 	}
-	fprintf(fo, "To: %s"
-		"From: %s"
+	fprintf(fo, "To: <%s>"
+		"From: <%s>"
 		"Subject: Alt-F System Control %s message\n\n"
 		"This is a %s message from %s\n"
 		"Fan speed=%d\nSystem Temperature=%.1f\nLimit Temperature=%d\n\n"
@@ -811,6 +810,12 @@ void check_board() {
 		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
 		args.fan_mode = FAN_ALWAYS_SLOW; 
 	}
+	else if (strcmp("DNR-322L-Ax", res) == 0) {
+		board = DNR_322L_Ax;
+		args.lo_temp = 45;	// redefine defaults for D1. At temp > lo_temp, fan goes fast 
+		args.fan_mode = FAN_ALWAYS_SLOW; 
+	}
+
 	else {
 		char buf[BUFSZ];
 		snprintf(buf, BUFSZ, "Hardware board %s not supported, exiting.", res);
