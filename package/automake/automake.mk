@@ -52,6 +52,7 @@ $(STAMP_DIR)/host_automake_compiled: $(STAMP_DIR)/host_automake_configured
 $(STAMP_DIR)/host_automake_installed: $(STAMP_DIR)/host_automake_compiled
 	$(MAKE) -C $(AUTOMAKE_HOST_DIR) install
 	mkdir -p $(STAGING_DIR)/usr/share/aclocal
+	$(SED) '/$$text.*substitute_ac_/s/$${/$$\\{/' $(HOST_DIR)/usr/bin/automake
 	touch $@
 
 host-automake: $(STAMP_DIR)/host_automake_installed
