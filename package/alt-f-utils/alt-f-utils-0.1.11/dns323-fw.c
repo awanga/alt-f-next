@@ -140,9 +140,10 @@ sig_t signatures[] = {
 	{2, 64, 1572864, 14417920, 0, 131072, "\x55\xAA" "Gandolf" "\x00\x55\xAA"},	/* DNS-343 */
 	{3, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS-325" "\x00\x55\xAA"},	/* DNS-325-A1A2 */
 	{4, 128, 5242880, 5242880, 106954752, 5242880, "\x55\xAA" "DNS323D1" "\x55\xAA"},	/* DNS-320-A1A2 */
-	{5, 128, 5242880, 5242880, 104857600, 5242880, "\x55\xAA" "DNS320B" "\x00\x55\xAA"},	/* DNS-320-B1 */
-	{6, 128, 5242880, 5242880, 104857600, 5242880, "\x55\xAA" "DNS320L" "\x00\x55\xAA"},	/* DNS-320L */
-	{7, 128, 5242880, 5242880, 81788928, 10485760, "\x55\xAA" "DNS327L" "\x00\x55\xAA"}	/* DNS-327L */
+	{5, 128, 5242880, 5242880, 104857600, 5242880, "\x55\xAA" "DNS320B" "\x00\x55\xAA"}, /* DNS-320-B1 */
+	{6, 128, 5242880, 5242880, 104857600, 5242880, "\x55\xAA" "DNS320L" "\x00\x55\xAA"}, /* DNS-320L */
+	{7, 128, 5242880, 5242880, 81788928, 10485760, "\x55\xAA" "DNS327L" "\x00\x55\xAA"}, /* DNS-327L */
+	{8, 128, 5242880, 5242880, 73400320, 5242880, "\x55\xAA" "DNR-322" "\x00\x55\xAA"}  /* DNR-322L-A1A2 */
 };
 
 int nsig = sizeof(signatures)/sizeof(sig_t);
@@ -511,7 +512,8 @@ void usage() {
 		"\tdns323-fw -m [-q (quiet)]\n"
 		"\t-k kernel_file -i initramfs_file [-a sqimage_file] [-d defaults_file]\n"
 		"\t[-p product_id]  [-c custom_id] [-l model_id ] [-u sub_id] [-v new_version]\n"
-		"\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf, 3-DNS-325-A1A2, 4-DNS-320-A1A2, 5-DNS-320-B 6-DNS-320L, 7-DNS-327L] firmware_file\n");
+		"\t[-t type (0-FrodoII, 1-Chopper, 2-Gandolf, 3-DNS-325-Ax, 4-DNS-320-Ax, 5-DNS-320-Bx,\n"
+		"\t\t6-DNS-320L-Ax, 7-DNS-327L-Ax, 8-DNR-322L-Ax)] firmware_file\n");
   
 	fprintf(stderr, "-Print information from a firmware file:\n"
 		"\tdns323-fw -f firmware_file\n");
@@ -651,7 +653,7 @@ int split() {
 
 	int fd = open_read(&myhd);
 
-	if ( myhd.Next_offset != 0) {
+	if (myhd.Next_offset != 0) {
 		if (!quiet)
 			printf("\nWARNING, this firmware has unknown components.\n");
 	}
