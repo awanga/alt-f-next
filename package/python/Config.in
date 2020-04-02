@@ -94,6 +94,14 @@ config BR2_PACKAGE_PYTHON_NIS
 	help
 	  nis module for Python.
 
+config BR2_PACKAGE_PYTHON_LIBFFI
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_LIBFFI
+    default y
+	bool "libffi"
+	help
+	  use system libffi
+
 config BR2_PACKAGE_PYTHON_PYEXPAT
 	depends on BR2_PACKAGE_PYTHON
 	select BR2_PACKAGE_EXPAT

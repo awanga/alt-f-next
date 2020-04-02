@@ -2,5 +2,6 @@
 
 PVER=2.7
 
+#pip uninstall $(pip list | awk '{printf "%s ", $1}') -y
 rm -rf /usr/include/python$PVER /usr/lib/python$PVER/config
-find /usr/lib/python$PVER/ -name \*.pyc -exec rm {} \;
+find /usr/lib/python$PVER/ -name \*.py[co] -exec rm {} \;

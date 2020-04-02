@@ -1,0 +1,9 @@
+#!/bin/sh
+
+PVER=2.7
+
+# looks like it was a tar format issue,
+# using --format=oldgnu instead of --format=gnu in ipkg-build (./mkpkgs) seems to solve it
+
+# ipkg chokes on this (long? deep?) path, so create it first before extraction
+#mkdir -p /usr/lib/python$PVER/site-packages/pip/_vendor/requests/packages/urllib3/packages/ssl_match_hostname
