@@ -4,7 +4,7 @@
 #
 #############################################################
 
-AMULE_VERSION:=2.3.1
+AMULE_VERSION:=2.3.2
 AMULE_SOURCE:=aMule-$(AMULE_VERSION).tar.bz2
 AMULE_SITE:=$(BR2_SOURCEFORGE_MIRROR)/project/amule/aMule/$(AMULE_VERSION)
 
@@ -17,7 +17,7 @@ AMULE_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
 
 AMULE_CONF_OPT = --enable-optimize \
 	--with-wx-prefix=$(STAGING_DIR)/usr --with-crypto-prefix=$(STAGING_DIR)/usr \
-	--disable-monolithic --disable-amule-gui \
+	--with-gdlib-prefix=$(STAGING_DIR)/usr --disable-monolithic --disable-amule-gui \
 	--disable-wxcas --enable-cas --disable-alc --enable-alcc \
 	--enable-fileview --enable-xas --enable-amulecmd --enable-amule-daemon --enable-webserver
 
