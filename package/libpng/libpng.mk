@@ -4,9 +4,9 @@
 #
 #############################################################
 
-LIBPNG_VERSION:=1.2.38
-LIBPNG_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/libpng/libpng12/older-releases/$(LIBPNG_VERSION)
-LIBPNG_SOURCE = libpng-$(LIBPNG_VERSION).tar.bz2
+LIBPNG_VERSION:=1.2.59
+LIBPNG_SITE = $(BR2_SOURCEFORGE_MIRROR)/project/libpng/libpng12/$(LIBPNG_VERSION)
+LIBPNG_SOURCE = libpng-$(LIBPNG_VERSION).tar.xz
 
 LIBPNG_LIBTOOL_PATCH = NO
 LIBPNG_INSTALL_STAGING = YES
