@@ -4,15 +4,15 @@
 #
 ############################################################
 
-#OPENVPN_VERSION = 2.2.1
 OPENVPN_VERSION = 2.4.8
 OPENVPN_SOURCE = openvpn-$(OPENVPN_VERSION).tar.xz
 OPENVPN_SITE = https://swupdate.openvpn.org/community/releases
 
 OPENVPN_LIBTOOL_PATCH = NO
 OPENVPN_DEPENDENCIES = lzo openssl uclibc
-OPENVPN_CONF_OPT = --enable-password-save --disable-plugin-auth-pam
-#OPENVPN_INSTALL_TARGET_OPT = DESTDIR=$(TARGET_DIR) install
+OPENVPN_CONF_OPT = --enable-password-save --disable-plugin-auth-pam --disable-systemd
+OPENVPN_CONF_ENV = IFCONFIG=/sbin/ifconfig ROUTE=/sbin/route IPROUTE=/bin/iproute \
+	NETSTAT=/bin/netstat SYSTEMD_ASK_PASSWORD=
 
 ifeq ($(BR2_PTHREADS_NATIVE),y)
 	OPENVPN_CONF_OPT += --enable-threads=posix
@@ -21,6 +21,8 @@ else
 endif
 
 $(eval $(call AUTOTARGETS,package,openvpn))
+
+# see https://wiki.debian.org/OpenVPN on how to test
 
 $(OPENVPN_HOOK_POST_CONFIGURE):
 	(echo '#include <errno.h>'; \
