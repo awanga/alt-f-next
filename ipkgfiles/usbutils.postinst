@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/bin/update_usbid.sh
+
+ln -sf /usr/sbin/rcscript /sbin/rcusbid
+rcusbid start
