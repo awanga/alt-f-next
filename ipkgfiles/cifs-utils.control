@@ -1,6 +1,6 @@
 Package: cifs-utils
 Description: Tools for managing Linux CIFS client mounts	  
-Version: 6.6
+Version: 6.8
 Depends: ipkg
 Architecture: arm
 Priority: optional
