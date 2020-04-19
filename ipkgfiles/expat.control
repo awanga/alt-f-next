@@ -1,6 +1,6 @@
 Package: expat
 Depends: ipkg
-Version: 2.0.1-4
+Version: 2.2.5
 Description: The Expat XML Parser.
 Architecture: arm
 Priority: optional

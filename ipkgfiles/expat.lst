@@ -1,3 +1,4 @@
+./usr/bin/xmlwf
 ./usr/lib/libexpat.so
 ./usr/lib/libexpat.so.1
-./usr/lib/libexpat.so.1.5.2
+./usr/lib/libexpat.so.1.6.7
