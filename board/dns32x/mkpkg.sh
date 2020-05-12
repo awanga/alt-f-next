@@ -393,12 +393,12 @@ if test "$force" != "y"; then
 
 			# default to faster method, but does not expand makefile variables
 			# nor takes conditionals into account
-			eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]*//gp' $PKGDIR/$pkg.mk)
+			eval $(sed -n '/^'$PKG'_VERSION[ :=]/s/[ :]+//gp' $PKGDIR/$pkg.mk)
 			version=$(eval echo \$${PKG}_VERSION)
 
 			# use make to evaluate varaibles (slower) if conditionals detected
 			if [[ \$${PKG}_VERSION =~ ^.*VERSION.*+$ ]]; then
-				version=$(make O=$BLDDIR -p -n $pkg 2>/dev/null | sed -n '/^'$PKG'_VERSION[ :=]/s/.*=[ ]\(.*\)/\1/p')
+				version=$(make O=$BLDDIR -p -n $pkg 2>/dev/null | grep -G -m 1 '^'$PKG'_VERSION[ :=]' | sed -n '/^'$PKG'_VERSION[ :=]/s/.*=[ ]\(.*\)/\1/p')
 			fi
 		else
 			echo $pkg is not configured.
