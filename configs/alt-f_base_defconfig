@@ -5,12 +5,16 @@ BR2_WGET="wget --passive-ftp -nd"
 BR2_GIT="git clone"
 BR2_DL_DIR="$(BASE_DIR)/dl"
 BR2_KERNEL_MIRROR="http://www.kernel.org/pub/"
-BR2_TOOLCHAIN_BUILDROOT_MUSL=y
+BR2_UCLIBC_CONFIG="./board/dns32x/pkgs/uclibc.config"
+BR2_TOOLCHAIN_BUILDROOT_WCHAR=y
 BR2_TOOLCHAIN_BUILDROOT_CXX=y
+BR2_PTHREAD_DEBUG=y
 BR2_BINUTILS_VERSION_2_28_X=y
 BR2_BINUTILS_EXTRA_CONFIG_OPTIONS="--enable-gold --enable-interwork"
 BR2_GCC_VERSION_4_9_X=y
 BR2_EXTRA_GCC_CONFIG_OPTIONS="--enable-interwork"
+BR2_GCC_ENABLE_LTO=y
+BR2_GCC_ENABLE_GRAPHITE=y
 BR2_TARGET_OPTIMIZATION="-pipe -fomit-frame-pointer -mabi=aapcs-linux"
 BR2_ROOTFS_SKELETON_CUSTOM=y
 BR2_ROOTFS_SKELETON_CUSTOM_PATH="./board/dns32x/customroot"
