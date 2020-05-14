@@ -18,7 +18,7 @@ HOST_FLEX_DEPENDENCIES = host-m4
 define FLEX_DISABLE_PROGRAM
 	$(SED) 's/^bin_PROGRAMS.*//' $(@D)/Makefile.in
 endef
-FLEX_POST_PATCH_HOOKS += FLEX_DISABLE_PROGRAM
+#FLEX_POST_PATCH_HOOKS += FLEX_DISABLE_PROGRAM
 
 # flex++ symlink is broken when flex binary is not installed
 define FLEX_REMOVE_BROKEN_SYMLINK

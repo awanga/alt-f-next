@@ -81,4 +81,9 @@ else
 CUPS_CONF_OPTS += --disable-avahi
 endif
 
+define CUPS_INITD_FIX
+	mv $(TARGET_DIR)/etc/init.d/cups $(TARGET_DIR)/etc/init.d/S42cups
+endef
+CUPS_POST_INSTALL_TARGET_HOOKS += CUPS_INITD_FIX
+
 $(eval $(autotools-package))
