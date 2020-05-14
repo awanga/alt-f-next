@@ -1,0 +1,10 @@
+Package: python-setuptools
+Description: 	  Download, build, install, upgrade, and uninstall Python packages.
+	  http://pypi.python.org/pypi/setuptools
+Version: 18.7.1
+Depends: python3, python3_pyexpat, python, python_pyexpat, python3, python3_zlib, python, python_zlib, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

@@ -1,0 +1,14 @@
+Package: lcms2
+Description: 	  Little Color Management Software (CMS) intends to be an OPEN
+	  SOURCE small-footprint color management engine, with special
+	  focus on accuracy and performance.
+	  It uses the International Color Consortium standard (ICC), which is
+	  the modern standard when regarding to color management.
+	  http://www.littlecms.com/
+Version: 2.8
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

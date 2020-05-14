@@ -1,0 +1,10 @@
+Package: fontconfig
+Description: 	  Fontconfig is a library for configuring and customizing font access.
+	  http://www.fontconfig.org/
+Version: 2.12.1
+Depends: expat, freetype, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

@@ -1,0 +1,11 @@
+Package: python-pycrypto
+Description: 	  PyCrypto is a collection of cryptographic algorithms and
+	  protocols, implemented for use from Python.
+	  http://www.pycrypto.org/
+Version: 2.6.1
+Depends: gmp, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

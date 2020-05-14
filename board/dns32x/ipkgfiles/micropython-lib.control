@@ -1,0 +1,10 @@
+Package: micropython-lib
+Description: 	  Core Python libraries ported to MicroPython.
+	  http://micropython.org
+Version: v1.8.6
+Depends: pcre, micropython, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

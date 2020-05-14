@@ -2,7 +2,7 @@
 ./etc/slsh.rc
 ./usr/lib/libslang.so
 ./usr/lib/libslang.so.2
-./usr/lib/libslang.so.2.2.4
+./usr/lib/libslang.so.2.3.0
 ./usr/lib/slang/v2/modules/csv-module.so
 ./usr/lib/slang/v2/modules/fcntl-module.so
 ./usr/lib/slang/v2/modules/fork-module.so

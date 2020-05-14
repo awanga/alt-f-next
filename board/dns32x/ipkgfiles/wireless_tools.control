@@ -1,0 +1,10 @@
+Package: wireless_tools
+Description: 	  A collection of tools to configure wireless lan cards.
+	  http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/Tools.html
+Version: 30.pre9
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

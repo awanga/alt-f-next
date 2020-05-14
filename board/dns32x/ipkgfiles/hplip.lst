@@ -1,5 +1,4 @@
 ./etc/hp/hplip.conf
-./usr/bin/hp-mkuri
 ./usr/lib/cups/backend/hp
 ./usr/lib/cups/filter/hpcups
 ./usr/lib/cups/filter/pstotiff
@@ -9,9 +8,6 @@
 ./usr/lib/libhpmud.so
 ./usr/lib/libhpmud.so.0
 ./usr/lib/libhpmud.so.0.0.6
-./usr/lib/sane/libsane-hpaio.so
-./usr/lib/sane/libsane-hpaio.so.1
-./usr/lib/sane/libsane-hpaio.so.1.0.0
 ./usr/share/cups/drv/hp/hpcups.drv
 ./usr/share/ppd/HP/apollo-2100.ppd.gz
 ./usr/share/ppd/HP/apollo-2150.ppd.gz
@@ -457,7 +453,6 @@
 ./usr/share/ppd/HP/hp-laserjet_3392.ppd.gz
 ./usr/share/ppd/HP/hp-laserjet_4000_series-pcl3.ppd.gz
 ./usr/share/ppd/HP/hp-laserjet_4000_series-ps.ppd.gz
-./usr/share/ppd/HP/hp-laserjet_400_m401d-ps.ppd.gz
 ./usr/share/ppd/HP/hp-laserjet_400_m401-ps.ppd.gz
 ./usr/share/ppd/HP/hp-laserjet_400_mfp_m425-ps.ppd.gz
 ./usr/share/ppd/HP/hp-laserjet_4050_series-pcl3.ppd.gz

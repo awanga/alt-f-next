@@ -1,9 +1,0 @@
-Package: jpeg-libs
-Depends: ipkg
-Version: 8c-3
-Description: The ubiquitous C library for manipulating JPEG images.
-Architecture: arm
-Priority: optional
-Section: libraries
-Source: http://www.ijg.org/
-Maintainer: jcard

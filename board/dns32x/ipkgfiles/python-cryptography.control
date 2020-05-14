@@ -1,0 +1,11 @@
+Package: python-cryptography
+Description: 	  cryptography is a package designed to expose cryptographic
+	  primitives and recipes to Python developers.
+	  https://cryptography.io
+Version: 1.7.2
+Depends: python, python_ipaddress, python3, python3_ssl, python, python_ssl, python3, python3_pyexpat, python, python_pyexpat, python_setuptools, python, python_enum34, python_six, python_pyasn, python_idna, python_cffi, openssl, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

@@ -1,4 +1,3 @@
-./etc/init.d/S14btrfs
 ./usr/bin/btrfs
 ./usr/bin/btrfsck
 ./usr/bin/btrfs-convert
@@ -7,7 +6,6 @@
 ./usr/bin/btrfs-image
 ./usr/bin/btrfs-map-logical
 ./usr/bin/btrfs-select-super
-./usr/bin/btrfs-show-super
 ./usr/bin/btrfstune
 ./usr/bin/btrfs-zero-log
 ./usr/bin/fsck.btrfs

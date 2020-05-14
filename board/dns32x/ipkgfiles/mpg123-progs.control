@@ -1,6 +1,6 @@
 Package: mpg123-progs
 Description: Fast, free and portable MPEG audio player for Unix.  It supports MPEG 1.0/2.0 layers 1, 2 and 3.
-Version: 1.22.1
+Version: 1.25.2
 Depends: mpg123-libs, ipkg
 Architecture: arm
 Priority: optional

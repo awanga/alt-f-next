@@ -1,0 +1,12 @@
+Package: wavpack
+Description: 	  WavPack is a completely open audio compression format
+	  providing lossless, high-quality lossy, and a unique
+	  hybrid compression mode.
+	  http://www.wavpack.com/
+Version: 5.1.0
+Depends: locale, libiconv, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

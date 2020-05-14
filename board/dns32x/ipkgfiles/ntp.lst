@@ -1,2 +1,2 @@
 ./usr/sbin/ntpd
-./usr/bin/sntp
+./usr/bin/fsntp

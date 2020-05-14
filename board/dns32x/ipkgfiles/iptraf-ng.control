@@ -1,0 +1,13 @@
+Package: iptraf-ng
+Description: 	  IPTraf-ng is a ncurses-based network monitoring utility. It gathers
+	  data like TCP connection packet and byte counts, interface statistics
+	  and activity indicators.
+	  https://fedorahosted.org/iptraf-ng/
+	  IPTraf-ng is a fork of original IPTraf v3.0.0 (http://iptraf.seul.org).
+Version: 1.1.4
+Depends: ncurses, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

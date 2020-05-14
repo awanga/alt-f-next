@@ -1,0 +1,10 @@
+Package: ortp
+Description: 	  oRTP, a Real-time Transport Protocol (RTP,RFC3550) library
+	  http://www.linphone.org/eng/documentation/dev/ortp.html
+Version: 0.27.0
+Depends: bctoolbox, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

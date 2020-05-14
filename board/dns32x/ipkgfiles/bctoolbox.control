@@ -1,0 +1,12 @@
+Package: bctoolbox
+Description: 	  Utilities library used by Belledonne Communications
+	  softwares like belle-sip, mediastreamer2 and linphone.
+	  Select BR2_PACKAGE_MBEDTLS for crypto support.
+	  https://github.com/BelledonneCommunications/bctoolbox
+Version: 0.4.0
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

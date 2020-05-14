@@ -1,0 +1,10 @@
+Package: quota
+Description: 	  Implementation of the disk quota system.
+	  http://sourceforge.net/projects/linuxquota/
+Version: 4.01
+Depends: in_has_native_rpc, libtirpc, ttext_if_locale, gettext, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

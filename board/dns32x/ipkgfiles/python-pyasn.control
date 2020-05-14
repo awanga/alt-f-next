@@ -1,0 +1,12 @@
+Package: python-pyasn
+Description: 	  PyASN is a Python extension module that enables you to
+	  perform very fast IP address to Autonomous System Number
+	  lookups.
+	  https://github.com/hadiasghari/pyasn
+Version: 0.1.9
+Depends: python, python_zlib, python3, python3_zlib, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

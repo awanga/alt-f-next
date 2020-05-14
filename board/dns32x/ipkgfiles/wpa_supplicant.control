@@ -1,0 +1,10 @@
+Package: wpa_supplicant
+Description: 	  WPA supplicant for secure wireless networks
+	  http://hostap.epitest.fi/wpa_supplicant/
+Version: 2.6
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

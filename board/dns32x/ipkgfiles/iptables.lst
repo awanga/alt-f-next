@@ -1,6 +1,4 @@
-./etc/xtables
-./etc/xtables/connlabel.conf
-./usr/bin/iptables-xml
+#./usr/bin/iptables-xml
 ./usr/lib/libip4tc.so
 ./usr/lib/libip4tc.so.0
 ./usr/lib/libip4tc.so.0.1.0
@@ -11,9 +9,8 @@
 ./usr/lib/libiptc.so.0
 ./usr/lib/libiptc.so.0.0.0
 ./usr/lib/libxtables.so
-./usr/lib/libxtables.so.10
-./usr/lib/libxtables.so.10.0.0
-./usr/lib/xtables
+./usr/lib/libxtables.so.12
+./usr/lib/libxtables.so.12.0.0
 ./usr/lib/xtables/libip6t_ah.so
 ./usr/lib/xtables/libip6t_DNAT.so
 ./usr/lib/xtables/libip6t_DNPT.so
@@ -41,17 +38,14 @@
 ./usr/lib/xtables/libipt_icmp.so
 ./usr/lib/xtables/libipt_LOG.so
 ./usr/lib/xtables/libipt_MASQUERADE.so
-./usr/lib/xtables/libipt_MIRROR.so
 ./usr/lib/xtables/libipt_NETMAP.so
 ./usr/lib/xtables/libipt_realm.so
 ./usr/lib/xtables/libipt_REDIRECT.so
 ./usr/lib/xtables/libipt_REJECT.so
-./usr/lib/xtables/libipt_SAME.so
 ./usr/lib/xtables/libipt_SNAT.so
 ./usr/lib/xtables/libipt_ttl.so
 ./usr/lib/xtables/libipt_TTL.so
 ./usr/lib/xtables/libipt_ULOG.so
-./usr/lib/xtables/libipt_unclean.so
 ./usr/lib/xtables/libxt_addrtype.so
 ./usr/lib/xtables/libxt_AUDIT.so
 ./usr/lib/xtables/libxt_bpf.so
@@ -60,7 +54,6 @@
 ./usr/lib/xtables/libxt_cluster.so
 ./usr/lib/xtables/libxt_comment.so
 ./usr/lib/xtables/libxt_connbytes.so
-./usr/lib/xtables/libxt_connlabel.so
 ./usr/lib/xtables/libxt_connlimit.so
 ./usr/lib/xtables/libxt_connmark.so
 ./usr/lib/xtables/libxt_CONNMARK.so

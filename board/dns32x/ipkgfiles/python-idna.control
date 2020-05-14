@@ -1,0 +1,14 @@
+Package: python-idna
+Description: 	  A library to support the Internationalised Domain Names in
+	  Applications (IDNA) protocol as specified in RFC 5891. This
+	  version of the protocol is often referred to as “IDNA2008”
+	  and can produce different results from the earlier standard
+	  from 2003.
+	  https://github.com/kjd/idna
+Version: 2.2
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

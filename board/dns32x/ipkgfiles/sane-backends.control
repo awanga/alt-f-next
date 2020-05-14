@@ -1,0 +1,13 @@
+Package: sane-backends
+Description: 	  SANE - Scanner Access Now Easy
+	  http://www.sane-project.org
+	  Backends are included automatically based on the libraries that have
+	  been selected: libusb, jpeg, tiff, avahi (with dbus and libglib2),
+	  and netsnmp.
+Version: 1.0.25
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

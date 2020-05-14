@@ -1,0 +1,10 @@
+Package: pptp-linux
+Description: 	  An implementation of the Point-to-point protocol client.
+	  http://pptpclient.sourceforge.net/
+Version: 1.8.0
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

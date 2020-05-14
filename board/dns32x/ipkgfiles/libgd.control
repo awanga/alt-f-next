@@ -1,7 +1,7 @@
 Package: libgd
 Description: A graphics library for fast image creation.
 Version: 2.0.33-2
-Depends: libpng, jpeg, ipkg
+Depends: libpng, libjpeg, ipkg
 Architecture: arm
 Priority: optional
 Section: admin

@@ -1,7 +1,6 @@
 ./usr/sbin/dnsmasq
-./etc/dnsmasq-opts
-./etc/dnsmasq.conf
-./etc/init.d/S42dnsmasq
-./usr/www/dnsmasq_hlp.html
-./usr/www/cgi-bin/dnsmasq.cgi
-./usr/www/cgi-bin/dnsmasq_proc.cgi
+./etc/dbus-1/system.d/dnsmasq.conf
+./etc/init.d/S80dnsmasq
+#./usr/www/cgi-bin/dnsmasq.cgi
+#./usr/www/cgi-bin/dnsmasq_proc.cgi
+

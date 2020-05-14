@@ -6,4 +6,4 @@
 ./usr/lib/apr-util-1/apr_dbm_db.so
 ./usr/lib/libaprutil-1.so
 ./usr/lib/libaprutil-1.so.0
-./usr/lib/libaprutil-1.so.0.5.1
+./usr/lib/libaprutil-1.so.0.5.4

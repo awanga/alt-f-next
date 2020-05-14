@@ -1,0 +1,12 @@
+Package: libsndfile
+Description: 	  Libsndfile is a C library for reading and writing files containing
+	  sampled sound (such as MS Windows WAV and the Apple/SGI AIFF format)
+	  through one standard library interface.
+	  http://www.mega-nerd.com/libsndfile/
+Version: 1.0.28
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

@@ -1,4 +1,4 @@
-./etc/init.d/S81transmission
+./etc/init.d/S92transmission
 ./usr/bin/transmission-cli
 ./usr/bin/transmission-create
 ./usr/bin/transmission-daemon
@@ -70,5 +70,5 @@
 ./usr/share/transmission/web/style/transmission/images/turtle.png
 ./usr/share/transmission/web/style/transmission/images/wrench.png
 ./usr/share/transmission/web/style/transmission/mobile.css
-./usr/www/cgi-bin/transmission.cgi
-./usr/www/cgi-bin/transmission_proc.cgi
+#./usr/www/cgi-bin/transmission.cgi
+#./usr/www/cgi-bin/transmission_proc.cgi

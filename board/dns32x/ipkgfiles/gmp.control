@@ -1,0 +1,10 @@
+Package: gmp
+Description: 	  GNU Multiple Precision Arithmetic Library.
+	  http://gmplib.org/
+Version: 6.1.2
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

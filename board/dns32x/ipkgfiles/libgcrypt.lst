@@ -1,3 +1,2 @@
-./usr/lib/libgcrypt.so
-./usr/lib/libgcrypt.so.11
-./usr/lib/libgcrypt.so.11.7.0
+./usr/lib/libcrypto.so
+./usr/lib/libcrypto.so.1.0.0

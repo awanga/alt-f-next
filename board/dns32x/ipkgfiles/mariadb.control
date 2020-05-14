@@ -1,0 +1,9 @@
+Package: mariadb
+Description: The MariaDB Database Management System
+Version: 10.1.23
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: https://mariadb.org
+Maintainer: jcard

@@ -1,0 +1,9 @@
+Package: aufs
+Description: advanced multi-layered unification filesystem
+Version: aufs4.11.7+
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

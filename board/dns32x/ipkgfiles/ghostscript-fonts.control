@@ -1,0 +1,12 @@
+Package: ghostscript-fonts
+Description: 	  Fonts and font metrics customarily distributed with Ghostscript.
+	  Currently includes the 35 standard PostScript fonts and a
+	  grab-bag of others.
+	  http://sourceforge.net/projects/gs-fonts
+Version: 8.11
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

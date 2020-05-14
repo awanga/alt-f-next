@@ -1,9 +1,6 @@
-./usr/bin/ncat
 ./usr/bin/ndiff
 ./usr/bin/nmap
 ./usr/bin/nping
-./usr/share/ncat
-./usr/share/ncat/ca-bundle.crt
 ./usr/share/nmap
 ./usr/share/nmap/nmap.dtd
 ./usr/share/nmap/nmap-mac-prefixes

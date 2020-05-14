@@ -1,0 +1,10 @@
+Package: faad2
+Description: 	  FAAD2 is an open source MPEG-4 and MPEG-2 AAC decoder,
+	  http://www.audiocoding.com/faad2.html
+Version: 2.7
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

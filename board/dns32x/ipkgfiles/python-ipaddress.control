@@ -1,0 +1,10 @@
+Package: python-ipaddress
+Description: 	  Python 3.3's ipaddress for older Python versions.
+	  https://github.com/phihag/ipaddress
+Version: 1.0.18
+Depends: python, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard

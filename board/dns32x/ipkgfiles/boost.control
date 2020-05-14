@@ -1,0 +1,10 @@
+Package: boost
+Description: 	  A general purpose C++ library
+	  http://www.boost.org/
+Version: 1.63.0
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://code.google.com/p/alt-f/
+Maintainer: jcard
