@@ -1,0 +1,20 @@
+--- a/Zend/zend_multiply.h	2020-05-13 19:23:18.774741083 +0000
++++ b/Zend/zend_multiply.h	2020-05-13 19:27:03.272356755 +0000
+@@ -34,7 +34,7 @@
+ 	else (lval) = __tmpvar;											\
+ } while (0)
+ 
+-#elif defined(__arm__) && defined(__GNUC__)
++#elif defined(__arm__) && defined(__GNUC__) && (defined(__thumb2__) || !defined(__thumb__))
+ 
+ #define ZEND_SIGNED_MULTIPLY_LONG(a, b, lval, dval, usedval) do {	\
+ 	zend_long __tmpvar; 													\
+@@ -168,7 +168,7 @@
+ 	return res;
+ }
+ 
+-#elif defined(__GNUC__) && defined(__arm__)
++#elif defined(__GNUC__) && defined(__arm__) && (defined(__thumb2__) || !defined(__thumb__))
+ 
+ static zend_always_inline size_t zend_safe_address(size_t nmemb, size_t size, size_t offset, int *overflow)
+ {

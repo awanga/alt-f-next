@@ -72,6 +72,10 @@ MPG123_DEPENDENCIES += alsa-lib
 MPG123_CONF_ENV += LIBS="`$(PKG_CONFIG_HOST_BINARY) --libs alsa`"
 endif
 
+ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
+MPG123_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -marm"
+endif
+
 MPG123_CONF_OPTS += --with-audio=$(subst $(space),$(comma),$(MPG123_AUDIO))
 
 # output modules are loaded with dlopen()

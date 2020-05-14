@@ -1,0 +1,20 @@
+For ARM builds, force some code to compile as 32-bit instructions
+
+On older ARM processors that do not support Thumb-2, micropython
+generates code that cannot be compiled in Thumb mode. This code is
+forced to compile in ARM mode to avoid this problem.
+---
+--- micropython-v1.8.7-old/py/py.mk	2018-08-19 17:07:56.146860850 +0000
++++ micropython-v1.8.7/py/py.mk	2018-08-19 17:11:21.684196599 +0000
+@@ -253,6 +253,11 @@
+ PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
+ endif
+ 
++ifneq (,$(findstring arm-,$(CC)))
++$(PY_BUILD)/nlrthumb.o: CFLAGS += -marm
++$(PY_BUILD)/asmarm.o: CFLAGS += -marm
++endif
++
+ # Sources that may contain qstrings
+ SRC_QSTR_IGNORE = nlr% emitnx86% emitnx64% emitnthumb% emitnarm% emitnxtensa%
+ SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)
