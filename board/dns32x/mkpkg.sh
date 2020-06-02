@@ -201,7 +201,7 @@ case "$1" in
 	-index)
 		if test "$#" != 2; then usage; fi
 		shift
-		ipkg-make-index $1 > $1/Packages
+		./board/dns32x/ipkg-make-index.sh $1 > $1/Packages
 		exit 0
 		;;
 
@@ -211,7 +211,7 @@ case "$1" in
 			p=$(basename $i .control)
 			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y $CONFIGFILE; then
 				echo -n Creating package ${p}...
-				res=$(./mkpkg.sh $p)
+				res=$(./board/dns32x/mkpkg.sh $p)
 				st=$?
 				if test -n "$res"; then res="($res)"; fi
 				if test $st = 0; then
@@ -231,19 +231,19 @@ case "$1" in
 		else
 			echo "All packages build OK."
 		fi
-		ipkg-make-index output/pkgs/ > output/pkgs/Packages
+		./board/dns32x/ipkg-make-index.sh output/pkgs/ > output/pkgs/Packages
 		exit $gst
 		;;
 
 	-check)
 		if test "$#" = 2; then
-			./mkpkg.sh -ls $2 1> /dev/null
+			./board/dns32x/mkpkg.sh -ls $2 1> /dev/null
 			exit $?
 		else
 			for i in $(ls $IPKGDIR/*.control); do
 				p=$(basename $i .control)
 				if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y $CONFIGFILE; then
-					if ! ./mkpkg.sh -ls $p >& /dev/null; then
+					if ! ./board/dns32x/mkpkg.sh -ls $p >& /dev/null; then
 						echo "Package $p FAILS"
 					else
 						echo "Package $p OK"
@@ -291,7 +291,7 @@ case "$1" in
 		for i in $(ls $IPKGDIR/*.control); do
 			p=$(basename $i .control)
 			echo -n Removing files from package ${p}...
-			res=$(./mkpkg.sh -rm $p)
+			res=$(./board/dns32x/mkpkg.sh -rm $p)
 			if test $? != 0; then
 				echo " FAIL ($res)"
 			else

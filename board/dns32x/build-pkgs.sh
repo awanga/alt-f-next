@@ -71,5 +71,8 @@ while IFS= read -r pkgargs; do
 #done
 done < board/dns32x/pkgs/pkg.lst
 
+# add Packages index
+./board/dns32x/mkpkg.sh -index output/pkgs
+
 echo "Package build complete!"
 exit 0
