@@ -60,12 +60,12 @@ echo kernel=$kver
 			cd $BLDDIR/target/lib/modules/$kver
 			echo "configfs: removing unwanted kernel modules (total: $(find . -name \*.ko | wc -l))"
 			echo "configfs: and keeping $(echo $KMOD | wc -w) wanted kernel modules"
-			# remove unwanted kernel modules
-			for i in $(find . -name \*.ko); do
-				if ! echo $KMOD | grep -q $i; then
-					rm -f $i
-				fi
-			done
+			# remove unwanted kernel modules (FIXME: disabled for now)
+			#for i in $(find . -name \*.ko); do
+			#	if ! echo $KMOD | grep -q $i; then
+			#		rm -f $i
+			#	fi
+			#done
 			find . -depth -type d -empty -exec rmdir {} \;
 
 			# strip modules.* of inexistent modules

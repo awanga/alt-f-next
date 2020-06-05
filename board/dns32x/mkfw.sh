@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source .config >2 /dev/null
+source .config 2> /dev/null
 source board/dns32x/exports.source
 
 check() {
@@ -24,6 +24,8 @@ if test -z "$BLDDIR"; then
 	echo "mkfw: Run '. exports [board]' first."
 	exit 1
 fi
+
+export PATH="$PATH:$BLDDIR/output/host/usr/bin:$BLDDIR/output/host/usr/sbin"
 
 if test "$#" = 0; then
 	TYPE=sqall
@@ -50,7 +52,7 @@ if test $TYPE != "cpio" -a $TYPE != "squsr" -a $TYPE != "sqall" -a $TYPE != "sqs
 	usage
 fi
 
-. .config 2> /dev/null
+#. .config 2> /dev/null
 board=$BR2_PROJECT
 
 if test $# = 0 -a \( "$board" = "dns325" -o "$board" = "dns327" \); then
@@ -72,6 +74,9 @@ fi
 DESTD=$BLDDIR/images/$board
 KVER=$BR2_LINUX_KERNEL_VERSION #$(cat $BLDDIR/build/.linux-version)
 VER=$(cut -f2 -d" " board/dns32x/customroot/etc/Alt-F)
+
+# FIXME: buildroot places kernel in image folder (assume only one built at a time)
+cp ${DESTD}/../zImage ${DESTD}/zImage | true
 
 if ! test -f ${DESTD}/zImage -a -f ${DESTD}/$rootfs; then
 	echo "mkfw: ${DESTD}/zImage or ${DESTD}/$rootfs not found, exiting"
@@ -284,7 +289,7 @@ for i in ${!name[*]}; do
 	fi
 
 	# merge kernel and initramfs (notice that dns323-fw only validates flash partitions sizes, not u-boot load limits)
-	dns323-fw -m -p ${prod[i]} -c ${cust[i]} -l ${model[i]} \
+	$BLDDIR/host/usr/sbin/dns323-fw -m -p ${prod[i]} -c ${cust[i]} -l ${model[i]} \
 		-u ${sub[i]} -v ${nver[i]} -t ${type[i]} \
 		-k ${DESTD}/uImage -i ${DESTD}/urootfs $sq_opts ${DESTD}/Alt-F-${VER}-${name[i]}.bin
 	check $? "merging (max: ${kernel_max[i]}/${initramfs_max[i]}/${sqimage_max[i]})"
@@ -293,7 +298,7 @@ for i in ${!name[*]}; do
 	(cd ${DESTD}; sha1sum Alt-F-${VER}-${name[i]}.bin > Alt-F-${VER}-${name[i]}.sha1)
 
 	# verification, check that spliting the created fw works fine
-	err=$(dns323-fw -s ${DESTD}/Alt-F-${VER}-${name[i]}.bin)
+	err=$($BLDDIR/host/usr/sbin/dns323-fw -s ${DESTD}/Alt-F-${VER}-${name[i]}.bin)
 	check $? "split, err:\n$err\n"
 
 	# paranoic, verify that the splited components equal the originals
@@ -319,7 +324,7 @@ for i in ${!name[*]}; do
 	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat -c %s kernel)) bytes
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat -c %s initramfs)) bytes
 
-	(cd ${DESTD}; cp uImage /srv/tftpboot/uImage-${name[i]})
+	#(cd ${DESTD}; cp uImage /srv/tftpboot/uImage-${name[i]})
 
 done
 
