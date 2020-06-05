@@ -1,0 +1,5 @@
+config BR2_PACKAGE_HOST_ALT_F_UTILS
+	bool "Alt-F-utils-host"
+	depends on BR2_PACKAGE_ALT_F_UTILS
+	help
+	  firmware builder for the host

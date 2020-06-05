@@ -9,8 +9,8 @@ config BR2_PACKAGE_ALT_F_UTILS_TARGET
 	help
 	  tools for the target
 
-config BR2_PACKAGE_ALT_F_UTILS_HOST
-	bool "Alt-F-utils-host"
-	depends on BR2_PACKAGE_ALT_F_UTILS
-	help
-	  firmware builder for the host
+#config BR2_PACKAGE_ALT_F_UTILS_HOST
+#	bool "Alt-F-utils-host"
+#	depends on BR2_PACKAGE_ALT_F_UTILS
+#	help
+#	  firmware builder for the host
