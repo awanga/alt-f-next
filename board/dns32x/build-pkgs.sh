@@ -27,8 +27,17 @@ while IFS= read -r pkgargs; do
 	largs="${args%%\;*}"
 	args="${args##*\;}"
 
+	pkg_clean=""
+
 	# force alternate buildroot package name if manually set
 	if [ "${largs}" != "${args}" ]; then
+
+		# check for leading minus to allow pkg rebuild
+		if [[ "$largs" =~ ^\-.*+$ ]]; then
+			largs="${largs#?}"
+			pkg_clean="y"
+		fi
+
 		bb_pkg="$largs"
 		pkg_force="-force"
 	else
@@ -41,6 +50,11 @@ while IFS= read -r pkgargs; do
 		echo "skipping $lpkg package..."
 		SKIP_FORWARD=y
 		continue
+	fi
+
+	# remove any previous builds if indicated
+	if [ "$pkg_clean" == "y" ]; then
+		rm -fR ./output/build/$bb_pkg-*
 	fi
 
 	# only baseline files if not fast-forwarding

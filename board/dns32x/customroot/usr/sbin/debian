@@ -59,6 +59,12 @@ for i in $inst; do
 	fi
 done
 
+if test -z "$debdir"; then
+		echo "No Debian installation found"
+		echo "usage: debian [-chroot [command] | -kexec]"
+		exit 1
+fi
+
 if test $# != 0 -a "$1" = "-chroot"; then
 
 	shift
@@ -164,11 +170,6 @@ cd /tmp
 nohup /tmp/deb &
 
 else
+	echo "A $(cat $debdir/etc/issue.net) installation was found at $debdir"
 	echo "usage: debian [-chroot [command] | -kexec]"
-	if test -n "$debdir"; then
-		echo "A $(cat $debdir/etc/issue.net) installation was found at $debdir"
-	else
-		echo "No Debian installation found"
-		exit 1
-	fi
 fi

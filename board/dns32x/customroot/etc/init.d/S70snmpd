@@ -1,0 +1,18 @@
+#! /bin/sh
+
+DESC="Simple Network Management Protocol (SNMP) server"
+NAME=snmpd
+#TYPE=net
+
+. /etc/init.d/common
+
+RC_PIDFILE=/var/run/snmpd.pid
+SNMPD_OPTS="-a -p $RC_PIDFILE"
+
+case "$1" in
+	start) start $NAME -- $SNMPD_OPTS ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac

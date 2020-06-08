@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser shellinabox
+delgroup shellinabox
+rm -f /sbin/rcshellinabox

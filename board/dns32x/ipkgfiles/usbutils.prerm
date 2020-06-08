@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rcusbid stop
+rm -f /sbin/rcusbid /usr/share/usb.ids

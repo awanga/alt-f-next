@@ -1,0 +1,11 @@
+--- smartmontools-6.6/os_linux.cpp-orig	2018-05-30 21:42:59.987331488 +0100
++++ smartmontools-6.6/os_linux.cpp	2018-05-30 21:44:46.746316288 +0100
+@@ -3176,7 +3176,7 @@
+ {
+   char path[128];
+   snprintf(path, sizeof(path), "/sys/block/%s/device", name);
+-  char * syshostpath = canonicalize_file_name(path);
++  char * syshostpath = realpath(path, NULL);
+   if (!syshostpath)
+     return false;
+ 

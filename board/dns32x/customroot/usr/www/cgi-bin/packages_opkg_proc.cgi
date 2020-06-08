@@ -13,14 +13,14 @@ CONFF=/opt/etc/opkg.conf
 opkg_cmd() {
 	opt=$1
 	if test $1 = "install"; then
-		write_header "Installing Entware-ng package $2"
+		write_header "Installing Entware package $2"
 	elif test $1 = "remove"; then
-		write_header "Removing Entware-ng package $2"
+		write_header "Removing Entware package $2"
 		opt="--autoremove $opt"
 	elif test $1 = "upgrade"; then
-		write_header "Upgrading all Entware-ng packages"
+		write_header "Upgrading all Entware packages"
 	elif test $1 = "update"; then
-		write_header "Updating Entware-ng packages list"
+		write_header "Updating Entware packages list"
 	fi
 
 	cat<<-EOF
@@ -68,18 +68,18 @@ if test "$install" = "Install"; then
 		mkdir -p /opt # creates /Alt-F/opt, which appears as /opt
 	fi
 	
-	write_header "Installing Entware-ng"
+	write_header "Installing Entware"
 	busy_cursor_start
 
 	feed=$(httpd -d $feed_1)
 	echo "<p><strong>Downloading...</strong></p><pre>"
-	if ! wget $feed/installer/entware_install.sh -O /tmp/entware_install.sh; then
+	if ! wget $feed/installer/generic.sh -O /tmp/generic.sh; then
 		echo "</pre><p><strong>Downloading the installer from $feed failed.</strong></p>"
-		rm -f /tmp/entware_install.sh
+		rm -f /tmp/generic.sh
 		err=1
 	else
 		echo "</pre><p><strong>Installing...</strong></p><pre>"
-		if ! sh /tmp/entware_install.sh; then
+		if ! sh /tmp/generic.sh; then
 			echo "</pre><p><strong>Executing the installer failed.</strong></p>"
 			err=1
 		fi
@@ -88,16 +88,21 @@ if test "$install" = "Install"; then
 	busy_cursor_end
 
 	if test -z "$err"; then
+		if ! test -d /Alt-F/etc/init.d; then
+			aufs.sh -n
+			mkdir -p /Alt-F/etc/init.d # fix, a defective install might exists
+			aufs.sh -r
+		fi
 		cat<<-EOF  >/etc/init.d/S81entware
 			#!/bin/sh
 
-			DESC="software repository for network attached storages, routers and other embedded devices."
+			DESC="Software repository for network attached storages, routers and other embedded devices."
 			TYPE=user
 
 			. /etc/init.d/common
 
 			if ! test -f /opt/etc/init.d/rc.unslung; then
-				echo "No Entware-ng installation found."
+				echo "No Entware installation found."
 				exit 1    
 			fi
  
@@ -124,7 +129,7 @@ if test "$install" = "Install"; then
 	exit 0
 
 elif test -n "$RemoveAll"; then
-	write_header "Removing Entware-ng"
+	write_header "Removing Entware"
 	echo "<pre>"
 	busy_cursor_start
 	rcentware stop >& /dev/null

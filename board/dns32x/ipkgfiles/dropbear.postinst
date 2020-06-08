@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-alternatives --install /usr/bin/scp scp /usr/bin/scp-dropbear 10
+update-alternatives --install /usr/bin/ssh ssh /usr/bin/ssh-dropbear 10

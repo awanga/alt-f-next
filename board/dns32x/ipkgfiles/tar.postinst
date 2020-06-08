@@ -1,0 +1,3 @@
+#!/bin/sh
+
+update-alternatives --install /bin/tar tar /usr/bin/tar 20

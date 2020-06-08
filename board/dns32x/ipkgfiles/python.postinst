@@ -3,32 +3,17 @@
 # because the ipkg order of dependent package postinstall scripts execution is reversed,
 # the duplicity package also execute those
 
-# python needs pyconfig.h and Makefile at runtime!
-
 PVER=2.7
 
+# python needs pyconfig.h and Makefile at runtime!
 INCDIR=/usr/include/python$PVER
 CONFDIR=/usr/lib/python$PVER/config
 
-PIP_SITE=https://bootstrap.pypa.io
-PIP_SOURCE=get-pip.py
-
 if ! test -f $INCDIR/pyconfig.h -o -f $CONFDIR/Makefile; then
 	mkdir -p $INCDIR $CONFDIR
-	mv /usr/lib/python$PVER/pyconfig.h $INCDIR
-	mv /usr/lib/python$PVER/Makefile $CONFDIR
+	cp /usr/lib/python$PVER/pyconfig.h $INCDIR
+	cp /usr/lib/python$PVER/Makefile $CONFDIR
 fi
 
-if ! test -f /usr/bin/pip -a -d /usr/lib/python$PVER/site-packages/pip; then
-	echo "Downloading pip... "
-	if ! wget -P /tmp --progress=dot:mega $PIP_SITE/$PIP_SOURCE -P /tmp/; then
-		echo "failed"
-		exit 1
-	fi
-	echo -n "Installing pip, please wait... "
-	if ! python /tmp/$PIP_SOURCE; then
-		echo "failed"
-		exit 1
-	fi
-	rm -f /tmp/$PIP_SOURCE
-fi
+echo "Python byte compiling..."
+python -m compileall /usr/lib/python$PVER/ /usr/lib/python$PVER/site-packages >& /dev/null

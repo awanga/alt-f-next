@@ -1,0 +1,8 @@
+config BR2_PACKAGE_PYNACL
+	bool "pynacl"
+	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_LIBSODIUM
+	help
+	  Python binding to the libsodium library
+
+	  https://github.com/pyca/pynacl

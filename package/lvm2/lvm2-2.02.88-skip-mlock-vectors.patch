@@ -1,0 +1,27 @@
+Gitweb:        http://git.fedorahosted.org/git/?p=lvm2.git;a=commitdiff;h=d5697b29ee009104a4ed91f79543e22cc8c8d2c4
+Commit:        d5697b29ee009104a4ed91f79543e22cc8c8d2c4
+Parent:        5ef6ca00b99e0a2ed83a00c4ddcb577dd3b52a7b
+Author:        Zdenek Kabelac <zkabelac at redhat.com>
+AuthorDate:    Tue Nov 20 09:58:53 2012 +0100
+Committer:     Zdenek Kabelac <zkabelac at redhat.com>
+CommitterDate: Tue Nov 20 10:02:51 2012 +0100
+
+mm: skip mlocking [vectors]
+
+Somehow forgotten:
+https://www.redhat.com/archives/linux-lvm/2012-June/msg00019.html
+Need for arm architecture support.
+---
+
+diff --git a/lib/mm/memlock.c b/lib/mm/memlock.c
+index 2240a1d..6d0996a 100644
+--- a/lib/mm/memlock.c
++++ b/lib/mm/memlock.c
+@@ -84,6 +84,7 @@ static int _default_priority;
+ static const char * const _ignore_maps[] = {
+     "[vdso]",
+     "[vsyscall]",
++    "[vectors]",
+ };
+ 
+ /* default blacklist for maps */

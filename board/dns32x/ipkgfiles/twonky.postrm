@@ -1,0 +1,8 @@
+#!/bin/sh
+
+delgroup twonky multimedia
+deluser twonky
+delgroup multimedia
+
+rm -rf /opt/twonky
+rm -f /sbin/rctwonky

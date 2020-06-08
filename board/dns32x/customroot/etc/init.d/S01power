@@ -1,0 +1,145 @@
+#!/bin/sh
+
+NAME=power
+
+CRONF=/var/spool/cron/crontabs/root
+
+#set -x
+
+. /etc/init.d/common
+
+. /etc/misc.conf
+
+# this is not intended to be a user script, it is only convenient. It should only be executed once
+# - at boot, to setup the powerdown cron entry and the next powerup alarm if necessary
+# - and at powerdow, to set the next powerup alarm if necessary
+# there are some possible issues: the next alarm elapses while the box is up and power fails
+# before the alarm is re-armed, power is not available when the alarm triggers, etc.
+#
+#POWERUP_ALARM_REPEAT=+1d # set to current alarm value plus N days or month
+#POWERUP_ALARM_SET="1 3 18 30" # if disabled, set to month day hour minute
+#POWERUP_AFTER_POWER_FAIL=1 # auto powerup after power fail. Default, recommended
+#POWERUP_ON_WOL=1 # powerup on WOL (wake on lan). Not working
+#POWERDOW_SET="0 21 * * 1,15" # cron entry for sheduled power down
+#
+# The DNS-325 and DNS-320-Ax have the equivalent of
+# POWERUP_AFTER_POWER_FAIL, which is set unconditionaly at rcS
+
+
+
+if ! grep -qE "DNS-320-Bx|DNS-320L|DNS-327L" /tmp/board; then return 0; fi
+
+crondel() {
+	TF=$(mktemp -t)
+	crontab -l > $TF 2> /dev/null
+	sed -i '\|/usr/sbin/poweroff|d' $TF
+	touch -r $CRONF $TF
+	crontab $TF 2> /dev/null
+	touch -r $TF $CRONF
+	rm $TF
+}
+
+cronset() {
+	if test -n "$POWERDOW_SET"; then
+		require $NAME cron
+		TF=$(mktemp -t)
+		crontab -l > $TF 2> /dev/null
+		sed -i '\|/usr/sbin/poweroff|d' $TF
+		echo "$POWERDOW_SET /usr/sbin/poweroff #!# Alt-F cron" >> $TF
+		touch -r $CRONF $TF
+		crontab $TF 2> /dev/null
+		touch -r $TF $CRONF
+		rm $TF
+	else
+		crondel
+	fi
+}
+
+rearm() {
+	if test -n "$POWERUP_AFTER_POWER_FAIL"; then
+		dns320l-daemon -x EnablePowerRecovery > /dev/null
+	else
+		dns320l-daemon -x DisablePowerRecovery > /dev/null
+	fi
+
+	if test -n "$POWERUP_ON_WOL"; then
+		dns320l-daemon -x EnableWOL > /dev/null
+	else
+		dns320l-daemon -x  DisableWOL > /dev/null
+	fi
+
+	# alarm might be disabled, set it
+	if test -n "$POWERUP_ALARM_SET"; then
+		if dns320l-daemon -x readalarm | grep -q disabled; then
+			dns320l-daemon -x writealarm "$POWERUP_ALARM_SET" > /dev/null
+		fi
+	fi
+
+	# alarm migh have elapsed, advance it to next event
+	if test -n "$POWERUP_ALARM_REPEAT"; then
+		res=$(dns320l-daemon -x readalarm)
+		while echo "$res"| grep -q 'elapsed'; do
+			res=$(dns320l-daemon -x writealarm "$POWERUP_ALARM_REPEAT")
+		done
+		echo $res
+	fi
+}
+
+case "$1" in
+	start)
+		echo -n "Starting $NAME: "
+		cronset
+		rearm
+		;;
+	stop)
+		echo -n "Stopping $NAME: "
+		crondel
+		rearm
+		;;
+	status)
+		echo "$NAME: "
+
+		alarm_res=$(dns320l-daemon -x readalarm)
+		echo $alarm_res | grep -qv 'disabled'; alarm_st=$?
+		echo "$alarm_res"
+
+		crontab -l | grep -q /usr/sbin/poweroff; spd_st=$?
+		if test $spd_st = 0; then
+			spd_res="Poweroff set to \"$(crontab -l | grep /usr/sbin/poweroff | cut -d" " -f1-5)\""
+		else
+			spd_res="Poweroff NOT set"
+		fi
+		echo "$spd_res"
+
+		dns320l-daemon -x GetPowerRecoveryState | grep -q 128; apr_st=$?
+		if test $apr_st = 0; then
+			apr_res="Automatic Power Recovery set"
+		else
+			apr_res="Automatic Power Recovery NOT set"
+		fi
+		echo "$apr_res"
+
+		dns320l-daemon -x GetWOLState | grep -q 1; wol_st=$?
+		if test $wol_st = 0; then
+			wol_res="Wake on Lan set"
+		else
+			wol_res="Wake on Lan NOT set"
+		fi
+		echo "$wol_res"
+
+		if test $alarm_st = 0  -o $spd_st = 0 -o  $apr_st = 0 -o $wol_st = 0; then 
+			return 0
+		else
+			return 1
+		fi
+		;;
+	restart)
+		echo -n "Restarting $NAME: "
+		# just stop it, init will relaunch it
+		stop dns320l-daemon
+		sleep 3
+		cronset
+		rearm
+		;;
+	*) usage $0 "start|stop|status|restart|enable alarm|disable alarm" ;;
+esac

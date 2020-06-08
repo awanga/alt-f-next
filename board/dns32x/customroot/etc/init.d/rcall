@@ -11,7 +11,8 @@ case "$1" in
 	stop)
 		for i in $(ls -r /etc/init.d/S*) ;do
 			bn=$(basename $i); nm=rc${bn:3}
-			if test "$nm" = "rcinetd" -o "$nm" = "rcstunnel" -o "$nm" = "rchttp"; then continue; fi
+			# don't allow inetd, stunnel or httpd to be stopped, or webUI will stop working
+			if test "$nm" = "rcsysctrl" -o "$nm" = "rcinetd" -o "$nm" = "rcstunnel" -o "$nm" = "rchttp"; then continue; fi
 			if $nm status >& /dev/null; then
 				logger -s $($nm stop)
 			fi

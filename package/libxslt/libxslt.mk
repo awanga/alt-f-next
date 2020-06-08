@@ -4,8 +4,10 @@
 #
 ################################################################################
 
-LIBXSLT_VERSION = 1.1.29
+LIBXSLT_VERSION = 1.1.33
 LIBXSLT_SITE = ftp://xmlsoft.org/libxslt
+
+LIBXSLT_LIBTOOL_PATCH = NO
 LIBXSLT_INSTALL_STAGING = YES
 LIBXSLT_LICENSE = MIT
 LIBXSLT_LICENSE_FILES = COPYING

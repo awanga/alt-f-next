@@ -1,0 +1,417 @@
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2014-12-07 22:21:05.000000000 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dnskw.dtsi	2015-10-28 17:11:06.779240420 +0000
+@@ -2,7 +2,7 @@
+ #include "kirkwood-6281.dtsi"
+ 
+ / {
+-	model = "D-Link DNS NASes (kirkwood-based)";
++	model = "D-Link DNS 320-rev-Ax, 325-rev-Ax NASes";
+ 	compatible = "dlink,dns-kirkwood", "marvell,kirkwood-88f6281", "marvell,kirkwood";
+ 
+ 	gpio_keys {
+@@ -20,7 +20,7 @@
+ 		};
+ 		button@2 {
+ 			label = "USB unmount button";
+-			linux,code = <KEY_EJECTCD>;
++			linux,code = <KEY_COPY>;
+ 			gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+ 		};
+ 		button@3 {
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320-a.dts	2015-10-28 17:09:49.065675679 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320-a.dts	2015-10-28 15:20:28.003095948 +0000
+@@ -0,0 +1,58 @@
++/dts-v1/;
++
++#include "kirkwood-dnskw.dtsi"
++
++/ {
++	model = "D-Link DNS-320-rev-Ax NAS";
++	compatible = "dlink,dns-320-a", "dlink,dns-320", "dlink,dns-kirkwood", "marvell,kirkwood-88f6281", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x8000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200n8 root=/dev/ram0 init=/init earlyprintk";
++		linux,stdout-path = &uart0;
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-0 = <&pmx_led_power &pmx_led_red_usb_320
++			     &pmx_led_red_left_hdd &pmx_led_red_right_hdd
++			     &pmx_led_white_usb>;
++		pinctrl-names = "default";
++
++		blue-power {
++			label = "dns320:blue:power";
++			gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
++			default-state = "timer";
++		};
++		blue-usb {
++			label = "dns320:blue:usb";
++			gpios = <&gpio1 11 GPIO_ACTIVE_LOW>;
++		};
++		orange-l_hdd {
++			label = "dns320:orange:l_hdd";
++			gpios = <&gpio0 28 GPIO_ACTIVE_LOW>;
++		};
++		orange-r_hdd {
++			label = "dns320:orange:r_hdd";
++			gpios = <&gpio0 27 GPIO_ACTIVE_LOW>;
++		};
++		orange-usb {
++			label = "dns320:orange:usb";
++			gpios = <&gpio1 3 GPIO_ACTIVE_LOW>; /* GPIO 35 */
++		};
++	};
++
++	ocp@f1000000 {
++		uart0: serial@12000 {
++			status = "okay";
++		};
++
++		uart1: serial@12100 {
++			status = "okay";
++		};
++	};
++};
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320-b.dts	2015-10-28 17:09:49.065675679 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320-b.dts	2015-10-28 15:30:52.004068394 +0000
+@@ -0,0 +1,29 @@
++/dts-v1/;
++
++/*
++ * Device Tree file for DLINK DNS-320L
++ *
++ * Copyright (C) 2014, Andreas Boehler <dev@aboehler.at>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include "kirkwood-dns320l.dtsi"
++
++/ {
++	model = "D-Link DNS-320-rev-Bx NAS";
++	compatible = "dlink,dns-320-b", "dlink,dns-320l", "marvell,kirkwood-88f6702", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x08000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk";
++		linux,stdout-path = &uart0;
++	};
++};
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-26 17:01:36.559569041 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-28 16:09:18.440338961 +0000
+@@ -0,0 +1,29 @@
++/dts-v1/;
++
++/*
++ * Device Tree file for DLINK DNS-320L
++ *
++ * Copyright (C) 2014, Andreas Boehler <dev@aboehler.at>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include "kirkwood-dns320l.dtsi"
++
++/ {
++	model = "D-Link DNS-320L-rev-Ax NAS";
++	compatible = "dlink,dns-320l-a", "dlink,dns-320l", "marvell,kirkwood-88f6702", "marvell,kirkwood";
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x10000000>;
++	};
++
++	chosen {
++		bootargs = "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk";
++		linux,stdout-path = &uart0;
++	};
++};
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 17:09:49.065675679 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 16:38:57.639149447 +0000
+@@ -0,0 +1,213 @@
++/*
++ * Device Tree file for DLINK DNS-320L
++ *
++ * Copyright (C) 2014, Andreas Boehler <dev@aboehler.at>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ * 
++ * Adapted to Alt-F by Joao Cardoso
++ */
++
++#include "kirkwood.dtsi"
++#include "kirkwood-6281.dtsi"
++
++/ {
++	model = "D-Link DNS-320-rev-Bx, DNS-320L-rev-Ax NASes";
++	compatible = "dlink,dns-320l", "marvell,kirkwood-88f6702", "marvell,kirkwood";
++
++	ocp@f1000000 {
++		serial@12000 {
++			status = "okay";
++		};
++
++		serial@12100 {
++			pinctrl-0 = <&pmx_uart1>;
++			pinctrl-names = "default";
++			status = "okay";
++		};
++
++		pinctrl: pin-controller@10000 {
++
++			pinctrl-names = "default";
++
++			pmx_sata0: pmx-sata0 {
++				marvell,pins = "mpp20";
++				marvell,function = "sata1";
++			};
++			pmx_sata1: pmx-sata1 {
++				marvell,pins = "mpp21";
++				marvell,function = "sata0";
++			};
++
++			pmx_led_red_right_hdd: pmx-led-red-right-hdd {
++			    marvell,pins = "mpp22";
++			    marvell,function = "gpio";
++			};
++			pmx_led_red_left_hdd: pmx-led-red-left-hdd {
++			    marvell,pins = "mpp23";
++			    marvell,function = "gpio";
++			};
++			pmx_power_sata: pmx-power-sata {
++			    marvell,pins = "mpp24";
++			    marvell,function = "gpio";
++			};
++			pmx_led_usb_blue: pmx-led-usb-blue {
++			    marvell,pins = "mpp25";
++			    marvell,function = "gpio";
++			};
++			pmx_led_usb_orange: pmx-led-usb-orange {
++				marvell,pins = "mpp26";
++				marvell,function = "gpio";
++			};
++			pmx_button_usb_copy: pmx-button-usb-copy {
++				marvell,pins = "mpp27";
++				marvell,function = "gpio";
++			};			
++			pmx_button_reset: pmx-button-reset {
++				marvell,pins = "mpp28";
++				marvell,function = "gpio";
++			};
++			pmx_button_power: pmx-button-power {
++				marvell,pins = "mpp29";
++				marvell,function = "gpio";
++			};
++		};
++		sata@80000 {
++			status = "okay";
++			nr-ports = <2>;
++		};
++	};
++
++	gpio_keys {
++		compatible = "gpio-keys";
++		pinctrl-0 = <&pmx_button_reset &pmx_button_usb_copy &pmx_button_power>;
++		pinctrl-names = "default";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		button@1 {
++			label = "USB unmount button";
++			linux,code = <KEY_COPY>;
++			gpios = <&gpio0 27 1>;
++		};
++		button@2 {
++			label = "Reset push button";
++			linux,code = <KEY_RESTART>;
++			gpios = <&gpio0 28 1>;
++		};
++/*	Doesn't trigger interrupt on button press.
++	It's already active (low) at boot, see rcS for a hack.
++	Could instead use a gpio-keys-polled?
++		button@3 {
++			label = "Power button";
++			linux,code = <KEY_POWER>;
++			gpios = <&gpio0 29 1>;
++		};
++*/
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-0 = <&pmx_led_usb_blue &pmx_led_usb_orange
++			     &pmx_led_red_left_hdd &pmx_led_red_right_hdd>;
++		pinctrl-names = "default";
++
++		blue-usb {
++			label = "dns320l:blue:usb";
++			gpios = <&gpio0 25 0>; 
++		};
++		orange-l_hdd {
++			label = "dns320l:red:sata1";
++			gpios = <&gpio0 22 0>; 
++		};
++		orange-r_hdd {
++			label = "dns320l:red:sata0";
++			gpios = <&gpio0 23 0>; 
++		};
++		orange-usb {
++			label = "dns320l:orange:usb";
++			gpios = <&gpio0 26 0>; 
++		};
++	};
++
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		pinctrl-0 = <&pmx_power_sata>;
++		pinctrl-names = "default";
++
++		sata_power: regulator@1 {
++			compatible = "regulator-fixed";
++			reg = <1>;
++			regulator-name = "SATA Power";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			enable-active-high;
++			regulator-always-on;
++			regulator-boot-on;
++			gpio = <&gpio1 24 0>;
++		};
++	};
++};
++
++&nand {
++	pinctrl-0 = <&pmx_nand>;
++	pinctrl-names = "default";
++	status = "okay";
++	chip-delay = <40>;
++
++	partition@0 {
++		label = "u-boot";
++		reg = <0x0000000 0x100000>;
++		read-only;
++	};
++
++	partition@100000 {
++		label = "uImage";
++		reg = <0x0100000 0x500000>;
++	};
++
++	partition@600000 {
++		label = "ramdisk";
++		reg = <0x0600000 0x500000>;
++	};
++
++	partition@b00000 {
++		label = "image";
++		reg = <0x0b00000 0x6400000>;
++	};
++
++	partition@6f00000 {
++		label = "mini firmware";
++		reg = <0x6f00000 0xa00000>;
++	};
++
++	partition@7900000 {
++		label = "config";
++		reg = <0x7900000 0x500000>;
++	};
++
++	partition@7e00000 {
++		label = "my-dlink";
++		reg = <0x7e00000 0x200000>;
++	};
++};
++
++&mdio {
++	status = "okay";
++	ethphy0: ethernet-phy@0 {
++		device_type = "ethernet-phy";
++		reg = <0>;
++	};
++};
++
++&eth0 {
++	status = "okay";
++	ethernet0-port@0 {
++		phy-handle = <&ethphy0>;
++	};
++};
+--- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns325.dts	2014-12-07 22:21:05.000000000 +0000
++++ linux-4.4.22/arch/arm/boot/dts/kirkwood-dns325.dts	2015-10-28 15:20:09.820387713 +0000
+@@ -3,8 +3,8 @@
+ #include "kirkwood-dnskw.dtsi"
+ 
+ / {
+-	model = "D-Link DNS-325 NAS (Rev A1)";
+-	compatible = "dlink,dns-325-a1", "dlink,dns-325", "dlink,dns-kirkwood", "marvell,kirkwood-88f6281", "marvell,kirkwood";
++	model = "D-Link DNS-325-rev-Ax NAS";
++	compatible = "dlink,dns-325-a", "dlink,dns-325", "dlink,dns-kirkwood", "marvell,kirkwood-88f6281", "marvell,kirkwood";
+ 
+ 	memory {
+ 		device_type = "memory";
+@@ -12,8 +12,8 @@
+ 	};
+ 
+ 	chosen {
+-		bootargs = "console=ttyS0,115200n8 earlyprintk";
+-		stdout-path = &uart0;
++		bootargs = "console=ttyS0,115200n8 root=/dev/ram0 init=/init earlyprintk";
++		linux,stdout-path = &uart0;
+ 	};
+ 
+ 	gpio-leds {
+@@ -26,7 +26,7 @@
+ 		white-power {
+ 			label = "dns325:white:power";
+ 			gpios = <&gpio0 26 GPIO_ACTIVE_LOW>;
+-			default-state = "keep";
++			default-state = "timer";
+ 		};
+ 		white-usb {
+ 			label = "dns325:white:usb";
+@@ -55,7 +55,7 @@
+ 				reg = <0x48>;
+ 			};
+ 		};
+-		serial@12000 {
++		uart0: serial@12000 {
+ 			status = "okay";
+ 		};
+ 	};
+--- linux-4.4.22-orig/arch/arm/boot/dts/Makefile	2014-12-07 22:21:05.000000000 +0000
++++ linux-4.4.22/arch/arm/boot/dts/Makefile	2015-10-28 16:51:26.150243368 +0000
+@@ -159,7 +159,9 @@
+ 	kirkwood-d2net.dtb \
+ 	kirkwood-db-88f6281.dtb \
+ 	kirkwood-db-88f6282.dtb \
+	kirkwood-dir665.dtb \
+-	kirkwood-dns320.dtb \
++	kirkwood-dns320-a.dtb \
++	kirkwood-dns320-b.dtb \
++	kirkwood-dns320l.dtb \
+ 	kirkwood-dns325.dtb \
+ 	kirkwood-dockstar.dtb \
+ 	kirkwood-dreamplug.dtb \

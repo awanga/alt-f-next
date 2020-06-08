@@ -1,0 +1,12 @@
+#!/bin/sh
+
+LIBS="/usr/lib/mysql/libmysqlclient_r.so
+/usr/lib/mysql/libmysqlclient_r.so.16
+/usr/lib/mysql/libmysqlclient_r.so.16.0.0
+/usr/lib/mysql/libmysqlclient.so
+/usr/lib/mysql/libmysqlclient.so.16
+/usr/lib/mysql/libmysqlclient.so.16.0.0"
+
+for i in $LIBS; do
+	rm -f /usr/lib/$(basename $i)
+done

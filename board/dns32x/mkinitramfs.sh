@@ -1,9 +1,12 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 source $BASE_DIR/../.config 2> /dev/null
 source $BASE_DIR/../board/dns32x/exports.source $BR2_PROJECT
+
+# prioritize host tools
+PATH=$BLDDIR/host/usr/bin:$PATH
 
 # recursively find packages that <package> depends on:
 rdeps() {
@@ -112,7 +115,7 @@ fi
 # sq_pkgs: pre-installed packages on sqimage 
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
-base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear portmap nfs-utils kexec openssl zlib popt"
+base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear nfs-utils kexec openssl zlib popt"
 base_pkgs2="inadyn-mt smartmontools at ntp-common cifs-utils openssh-sftp vsftpd rsync wget msmtp stunnel libiconv"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
@@ -174,7 +177,7 @@ elif test "$TYPE" = "squsr"; then # standard initramfs with /usr squashed
 	cp rootfs.arm.ext2 rootfs.arm.ext2.tmp
 	mount -o loop rootfs.arm.ext2.tmp tmp
 
-	mksquashfs tmp/usr/ usr.squashfs -comp $COMP -b $SQFSBLK \
+	mksquashfs tmp/usr/ usr.squashfs -comp $COMP -b $SQFSBLK -Xbcj arm,armthumb \
 		-always-use-fragments -keep-as-directory -all-root
 	rm -rf tmp/usr/*
 	mv usr.squashfs tmp
@@ -217,7 +220,7 @@ elif test "$TYPE" = "sqall"; then # squashfs initrd, everything squashed
 
 	cd ${BLDDIR}/images
 
-	mksquashfs ${BLDDIR}/target rootfs.arm.$TYPE.$EXT -comp $COMP -noappend -b $SQFSBLK \
+	mksquashfs ${BLDDIR}/target rootfs.arm.$TYPE.$EXT -comp $COMP -noappend -b $SQFSBLK -Xbcj arm,armthumb \
 		-always-use-fragments -all-root -pf $BASE_DIR/build/mksquashfs.pf
 
 	mv rootfs.arm.sqall.$EXT ${BLDDIR}/images/$board/
@@ -274,22 +277,22 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	for i in $(echo "$sq_pkgs_deps" | cut -d' ' -f1); do
 		deps_check $i
 		deps_status $i
-		cat $CWD/board/dns32x/ipkgfiles/$i.lst >> $TF
+		cat $BLDDIR/../board/dns32x/ipkgfiles/$i.lst >> $TF
 	done >> etc/preinst.status 
 
-	cd ${BLDDIR}/images
+	cd $BLDDIR/images
 
 	# sqimage files list, to be removed from base and present only on sqimage
 	sqimagefiles=$(cat $TF | sort -u)
 	rm $TF
 
 	rm -rf image sqimage
-	cp -a root image
+	cp -a $BLDDIR/target image
 	mkdir -p sqimage
 	cd image
 	# create dirs first, as packages often don't have dirs name on it
 	# and its permission needs to be preserved
-	find . -type d | cpio -p ../sqimage 
+	find . -type d | cpio -p ../sqimage
 	echo "$sqimagefiles" | cpio -pu ../sqimage
 	rm -f $sqimagefiles >& /dev/null
 	cd ..
@@ -297,16 +300,16 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 	find sqimage -depth -type d -empty -exec rmdir {} \;
 
 	rm -f image/dev/null image/dev/console # mksquashfs can create device nodes
-	if ! test -f $CWD/output/build/mksquashfs.pf; then
-		cat<<-EOF > $CWD/output/build/mksquashfs.pf
+	if ! test -f $BASE_DIR/build/mksquashfs.pf; then
+		cat<<-EOF > $BASE_DIR/build/mksquashfs.pf
 		/dev/null c 666 root root 1 3
 		/dev/console c 600 root root 5 1
 		EOF
 	fi
-	mksquashfs image rootfs.arm.sqall.$EXT -comp $COMP -noappend -b $SQFSBLK \
-		-always-use-fragments -all-root -pf $CWD/output/build/mksquashfs.pf
+	mksquashfs image rootfs.arm.sqall.$EXT -comp $COMP -noappend -b $SQFSBLK -Xbcj arm,armthumb \
+		-always-use-fragments -all-root -pf $BASE_DIR/build/mksquashfs.pf
 
-	mksquashfs sqimage rootfs.arm.sqimage.$EXT -comp $COMP -noappend -b $SQFSBLK \
+	mksquashfs sqimage rootfs.arm.sqimage.$EXT -comp $COMP -noappend -b $SQFSBLK -Xbcj arm,armthumb \
 		-always-use-fragments -all-root
 
 	mv rootfs.arm.sqall.$EXT rootfs.arm.sqimage.$EXT ${BLDDIR}/images/$board/

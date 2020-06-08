@@ -30,7 +30,7 @@
 # emulation for fan/temperature/buttons/etc:
 # sysctrl: Hardware board qemu not supported, exiting
 
-DSITE="http://downloads.sourceforge.net/project/alt-f/Releases/0.1RC5/Simulator"
+DSITE="http://downloads.sourceforge.net/project/alt-f/Releases/1.0/Simulator"
 ADIR="$HOME/qemu-Alt-F"
 
 if ! which qemu-img > /dev/null 2>&1; then
@@ -79,4 +79,5 @@ QEMU_AUDIO_DRV=none qemu-system-arm \
 -drive file=qemu-flash.img,format=raw,if=pflash \
 -netdev user,id=eth0 -device e1000,netdev=eth0 \
 -redir tcp:5555::80 \
--redir tcp:5556::22
+-redir tcp:5556::22 \
+-redir tcp:5557::443

@@ -15,7 +15,7 @@ The changes you make to Alt-F configuration, using its administrative web page, 
 Alt-F doesn't delete the vendor's settings, either because they are needed to boot the box if you have not yet flashed Alt-F, or to keep your old environment in the eventuality that you decide to return to the vendor's firmware, flashing it from within Alt-F.<br>
 Depending on the current Alt-F and vendor's settings, there can be not enough flash memory to save Alt-F settings when you try to do it; if this is the case, you have to decide if you still need the vendor's settings and erase them. <strong>Don't do it</strong> if you have not flashed Alt-F, or on reboot the box will behave as if a factory reset happened.
 
-<p>In any case, when reflashing the vendor's firmware back, Alt-F offers you the possibility of restoring the vendor's settings from an alternative flash memory location, or in alternative to use the vendor's firmware defaults.
+<p>In any case, when reflashing the vendor's firmware back, for the DNS-321/323, Alt-F offers you the possibility of restoring the vendor's settings from an alternative flash memory location, or in alternative to use the vendor's firmware defaults.
 
 <p>Alt-F has an emergency/last resort way of clearing settings to default values: press and keep pressing the box back button for more than twenty seconds (both LEDs will be flashing twice a second) -- all settings will be erased and a reboot will happen. Read <a href="sysctrl_hlp.html">Temperature, Fan and Buttons Setup</a> near the end for more details.
 
@@ -39,12 +39,12 @@ help you restore any needed settings later.<br>
 
 If rebooted without settings, the box will first try to use a DHCP
 assigned IP address, and if not successful it will try to find a free IP address in the
-192.168.1.254-240 range."</li>
+192.168.1.254-240 range.</li>
 
 <li><strong>FormatFlashSettings</strong>: identical to <strong>ClearSettings</strong> above,
 but the flash-memory used to store settings will also be reformated.
-This has to be done when the filesystem in the flash memory is damaged and be fixed
-and Settings can't be saved, listed or loaded.<br>
+This has to be done when the filesystem in the flash memory is damaged and Settings can't be saved,
+ listed or loaded.<br>
 </ul>
 
 <p>In the lower <strong>Computer Disk</strong> section, you can:

@@ -27,17 +27,19 @@ while read type name feed; do
 	fi
 done < $CONFF
 
+install_loc=$(find /mnt -type d -maxdepth 2 -name Alt-F 2>/dev/null)
+if test -z "$install_loc"; then updpkg_dis="disabled"; fi
+
 cat<<-EOF
 	<tr><td align="center"><input type=checkbox name=dis_$cnt></td><td><input type=text size=40 name=feed_$cnt value=""></td></tr>
 	<tr><td></td><td><input type=submit name=changeFeeds value=Submit>
-	<input type=submit name=updatelist value=UpdatePackageList></td></tr>
+	<input type=submit name=updatelist $updpkg_dis value=UpdatePackageList></td></tr>
 	</table>
 	<input type=hidden name=nfeeds value="$cnt">
 	</fieldset>
 	<fieldset><legend>Packages Installed On</legend>
 EOF
 
-install_loc=$(find /mnt -type d -maxdepth 2 -name Alt-F 2>/dev/null)
 if test -z "$install_loc"; then
 	cat<<-EOF
 		<table><tr><td>No Alt-F package installation found, install in:</td>

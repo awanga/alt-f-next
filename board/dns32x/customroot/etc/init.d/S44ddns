@@ -18,11 +18,11 @@ mkdir -p $DDNS_CACHE
 
 case "$1" in
 	start)
-		if ! test -f $CONF; then
+		if ! test -f $DDNS_CONF; then
 			echo "Starting $NAME: No $DDNS_CONF configuration file, exiting."
 			exit 1
 		fi
-		start $NAME
+		start $NAME -- --input_file $DDNS_CONF
 		;;
 	stop) stop $NAME ;;
 	status) status $NAME ;;

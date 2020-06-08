@@ -1,9 +1,9 @@
 ./etc/lftp.conf
 ./usr/bin/lftp
 ./usr/bin/lftpget
-./usr/lib/lftp/4.7.4/cmd-mirror.so
-./usr/lib/lftp/4.7.4/cmd-sleep.so
-./usr/lib/lftp/4.7.4/liblftp-network.so
-./usr/lib/lftp/4.7.4/liblftp-pty.so
-./usr/lib/lftp/4.7.4/proto-file.so
-./usr/lib/lftp/4.7.4/proto-ftp.so
+./usr/lib/lftp/4.9.1/cmd-mirror.so
+./usr/lib/lftp/4.9.1/cmd-sleep.so
+./usr/lib/lftp/4.9.1/liblftp-network.so
+./usr/lib/lftp/4.9.1/liblftp-pty.so
+./usr/lib/lftp/4.9.1/proto-file.so
+./usr/lib/lftp/4.9.1/proto-ftp.so

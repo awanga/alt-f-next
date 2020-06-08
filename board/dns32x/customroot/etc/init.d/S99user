@@ -99,6 +99,9 @@ writelog() {
 	echo -e "\n\n$SEP SERVICES $SEP\n"
 	rcall status 2>&1
 
+	echo -e "\n\n$SEP INETD SERVICES $SEP\n"
+	cat /etc/inetd.conf
+
 	echo -e "\n\n$SEP TOP $SEP\n"
 	top -bn1
 

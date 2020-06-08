@@ -1,0 +1,11 @@
+--- a/source3/libsmb/libsmb_dir.c-orig	2018-04-03 18:19:30.807629058 +0100
++++ b/source3/libsmb/libsmb_dir.c	2018-04-03 18:19:50.918250991 +0100
+@@ -1123,7 +1123,7 @@
+ 
+ 		/* Try and align the struct for the next entry
+ 		   on a valid pointer boundary by appending zeros */
+-		while((rem > 0) && ((unsigned long long)ndir & (sizeof(void*) - 1))) {
++		while((rem > 0) && ((uintptr_t)ndir & (sizeof(void*) - 1))) {
+ 			*ndir = '\0';
+ 			rem--;
+ 			ndir++;

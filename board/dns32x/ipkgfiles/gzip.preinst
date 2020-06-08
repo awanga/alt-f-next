@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# register firmware shiped busybox gzip
+update-alternatives --install /bin/gzip gzip /bin/busybox 5
+update-alternatives --install /bin/gunzip gunzip /bin/busybox 5
+update-alternatives --install /bin/zcat zcat /bin/busybox 5

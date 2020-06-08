@@ -1,0 +1,42 @@
+diff -urNp binutils-2.23.2-orig/bfd/doc/bfd.texinfo binutils-2.23.2/bfd/doc/bfd.texinfo
+--- binutils-2.23.2-orig/bfd/doc/bfd.texinfo	2017-06-28 02:38:12.000000000 +0000
++++ binutils-2.23.2/bfd/doc/bfd.texinfo	2017-06-28 16:18:07.000000000 +0000
+@@ -322,7 +322,7 @@ All of BFD lives in one directory.
+ @printindex cp
+ 
+ @tex
+-% I think something like @colophon should be in texinfo.  In the
++% I think something like @@colophon should be in texinfo.  In the
+ % meantime:
+ \long\def\colophon{\hbox to0pt{}\vfill
+ \centerline{The body of this manual is set in}
+@@ -333,7 +333,7 @@ All of BFD lives in one directory.
+ \centerline{{\sl\fontname\tensl\/}}
+ \centerline{are used for emphasis.}\vfill}
+ \page\colophon
+-% Blame: doc@cygnus.com, 28mar91.
++% Blame: doc@@cygnus.com, 28mar91.
+ @end tex
+ 
+ @bye
+diff -urNp binutils-2.23.2-orig/ld/ld.texinfo binutils-2.23.2/ld/ld.texinfo
+--- binutils-2.23.2-orig/ld/ld.texinfo	2017-06-28 02:36:41.000000000 +0000
++++ binutils-2.23.2/ld/ld.texinfo	2017-06-28 16:33:38.000000000 +0000
+@@ -7875,7 +7875,7 @@ If you have more than one @code{SECT} st
+ @printindex cp
+ 
+ @tex
+-% I think something like @colophon should be in texinfo.  In the
++% I think something like @@colophon should be in texinfo.  In the
+ % meantime:
+ \long\def\colophon{\hbox to0pt{}\vfill
+ \centerline{The body of this manual is set in}
+@@ -7886,7 +7886,7 @@ If you have more than one @code{SECT} st
+ \centerline{{\sl\fontname\tensl\/}}
+ \centerline{are used for emphasis.}\vfill}
+ \page\colophon
+-% Blame: doc@cygnus.com, 28mar91.
++% Blame: doc@@cygnus.com, 28mar91.
+ @end tex
+ 
+ @bye

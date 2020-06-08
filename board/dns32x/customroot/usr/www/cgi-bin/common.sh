@@ -251,23 +251,23 @@ fs_progress() {
 					ln=$(cat /tmp/${k}-${part}.log | tr -s '\b\r\001\002' '\n' | tail -n1)
 				fi
 				if test $k = "check" -o $k = "fix"; then
-					ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0) printf "step %d: %d%%", $1, $2*100/$3}')
+					ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0 && $3 > $2) printf "step %d: %d%%", $1, $2*100/$3}')
 				elif test $k = "format"; then
-					ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
+					ln=$(echo $ln | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0 && $2 > $1) printf "%d%%", $1*100/$2}')
 				elif test $k = "shrink" -o $k = "enlarg"; then
-					if grep -q resize2fs  /tmp/${k}-${part}.log; then
+					if grep -q resize2fs  /tmp/${k}-${part}.log 2> /dev/null; then
 						ln=$(echo $ln | grep -o X)
 						if test -n "$ln"; then
 							step=$(tail -2 /tmp/${k}-${part}.log | head -1 | sed -n 's/Begin pass \([[:digit:]]\).*/\1/p')
 							ln=" step 2.$step: $(expr $(echo "$ln" | wc -l) \* 100 / 40)%"
 						fi
 					else
-						ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0) printf "step 1.%d: %d%%", $1, $2*100/$3}')
+						ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0 && $3 > $2) printf "step 1.%d: %d%%", $1, $2*100/$3}')
 					fi 
 				elif test $k = "wip" ; then
 					kill -SIGUSR1 $(cat /tmp/${k}-${part}.pid)
-					tsz=$(head -1 /tmp/${k}-${part}.log)
-					csz=$(tail -1  /tmp/${k}-${part}.log | cut -f1 -d" ")
+					tsz=$(head -1 /tmp/${k}-${part}.log 2> /dev/null)
+					csz=$(tail -1  /tmp/${k}-${part}.log 2> /dev/null | cut -f1 -d" ")
 					ln=$(printf "%d%%" $(expr $csz \* 100 / $tsz))
 				fi
 				ln="${k}ing...$ln"

@@ -153,5 +153,5 @@ mount / -o remount,ro
 echo "rcE: Poweroff NOW!"
 
 if test -f /boot/.poweroff; then
-	dns320l-daemon -x DeviceShutdown
+	dns320l-daemon -x DeviceShutdown 3
 fi

@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-WGET_VERSION = 1.19.1
-WGET_SOURCE = wget-$(WGET_VERSION).tar.xz
+WGET_VERSION = 1.20.3
+WGET_SOURCE = wget-$(WGET_VERSION).tar.gz
 WGET_SITE = $(BR2_GNU_MIRROR)/wget
 WGET_DEPENDENCIES = host-pkgconf
 WGET_LICENSE = GPL-3.0+

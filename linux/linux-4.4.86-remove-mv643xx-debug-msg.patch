@@ -1,0 +1,22 @@
+remove kernel debug message from mv643xx_eth.c:
+
+mv643xx_eth_port mv643xx_eth_port.0 eth0: failed to linearize skb with tiny unaligned fragment
+
+as no data corruption occurs after extensive testing, and the message is user distressing.
+NFS seems to deploy the message more frequently, but it also appears under other protocols.
+
+See also https://www.spinics.net/lists/netdev/msg398014.html
+
+--- linux-4.4.86/drivers/net/ethernet/marvell/mv643xx_eth.c-orig	2017-09-11 18:47:33.830274922 +0100
++++ linux-4.4.86/drivers/net/ethernet/marvell/mv643xx_eth.c	2017-09-11 18:49:17.267320579 +0100
+@@ -1021,8 +1021,8 @@
+ 	nq = netdev_get_tx_queue(dev, queue);
+ 
+ 	if (has_tiny_unaligned_frags(skb) && __skb_linearize(skb)) {
+-		netdev_printk(KERN_DEBUG, dev,
+-			      "failed to linearize skb with tiny unaligned fragment\n");
++/*		netdev_printk(KERN_DEBUG, dev,
++			      "failed to linearize skb with tiny unaligned fragment\n"); */
+ 		return NETDEV_TX_BUSY;
+ 	}
+ 

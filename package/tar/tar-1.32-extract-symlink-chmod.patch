@@ -1,0 +1,11 @@
+--- tar-1.32/src/extract.c-orig	2020-01-01 17:46:15.937235278 +0000
++++ tar-1.32/src/extract.c	2020-01-01 17:49:16.253969133 +0000
+@@ -257,7 +257,7 @@
+       current_mode &= MODE_ALL;
+       mode = (current_mode & ~ mode_mask) | (mode & mode_mask);
+ 
+-      if (current_mode != mode)
++      if (current_mode != mode && typeflag != SYMTYPE)
+ 	{
+ 	  int chmod_errno =
+ 	    fd_chmod (fd, file_name, mode, atflag) == 0 ? 0 : errno;

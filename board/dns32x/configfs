@@ -30,6 +30,7 @@ echo configfs:
 
 board=$BR2_PROJECT
 
+# 1.1-keep only minimum set of kernel modules if the kernel-modules package is not configured
 if test -z "$BR2_KERNEL_none"; then
 	if test -n "$BR2_KERNEL_THIS_VERSION"; then
 		kver=$BR2_KERNEL_THIS_VERSION.$BR2_KERNEL_PATCH_LEVEL
@@ -37,7 +38,7 @@ if test -z "$BR2_KERNEL_none"; then
 		kver=$BR2_LINUX_KERNEL_VERSION
 	fi
 
-echo kernel=$kver
+	echo kernel=$kver
 
 	# FIXME THE FIRST make will reinstall modules (linux26 is a late target),
 	# so TWO makes have to be done the first time!!! Isn't this already solved?
@@ -47,7 +48,7 @@ echo kernel=$kver
 	KMOD="
 ./kernel/fs/ext2/ext2.ko
 ./kernel/drivers/usb/class/usblp.ko
-./kernel/fs/cifs/cifs.ko
+./kernel/fs/cifs/cifs.ko ./kernel/crypto/md4.ko ./kernel/crypto/md5.ko ./kernel/crypto/arc4.ko
 ./kernel/fs/fuse/fuse.ko
 ./kernel/fs/nfs/nfsv3.ko ./kernel/fs/nfs/nfs.ko ./kernel/fs/nfsd/nfsd.ko ./kernel/fs/exportfs/exportfs.ko ./kernel/fs/lockd/lockd.ko ./kernel/net/sunrpc/sunrpc.ko ./kernel/fs/nfs_common/grace.ko"
 
@@ -94,6 +95,13 @@ echo kernel=$kver
 	fi
 fi
 
+# 1.2-update CA certificates bundle every month, if a newer one is available
+ca_bundle=board/dns32x/customroot/etc/ssl/ca-bundle.crt
+if test $(expr $(stat -c %Y $ca_bundle 2> /dev/null) + 2592000) -lt $(date +%s); then
+	curl -o $ca_bundle --time-cond $ca_bundle https://curl.haxx.se/ca/cacert.pem
+	cp $ca_bundle $ROOTFS/etc/ssl/ca-bundle.crt
+fi
+
 # 2-customroot has additional needed files, copy them to root
 find $BASE_DIR/../board/dns32x/customroot/ \( -name \*~ -o -name .directory -o -name \.*kate-swp \) -delete
 cp -a --remove-destination $BASE_DIR/../board/dns32x/customroot/* $1/
@@ -138,6 +146,7 @@ BR2_PACKAGE_POLIPO="etc/init.d/S45polipo"
 BR2_PACKAGE_AVAHI="etc/avahi etc/init.d/S50avahi_daemon"
 BR2_PACKAGE_NETATALK="etc/init.d/S51netatalk etc/afp.conf usr/www/cgi-bin/netatalk.cgi usr/www/cgi-bin/netatalk_proc.cgi"
 BR2_PACKAGE_OPENSSH_EXTRA="etc/init.d/S62opensshd usr/www/cgi-bin/sshd.cgi usr/www/cgi-bin/sshd_proc.cgi usr/www/cgi-bin/opensshd.cgi"
+BR2_PACKAGE_NETSNMP="etc/init.d/S70snmpd etc/snmp/snmpd.conf"
 
 BR2_PACKAGE_ISCSITARGET="etc/init.d/S64iscsitarget"
 BR2_PACKAGE_LVM2_DEVICE_MAPPER="etc/init.d/S12device_mapper"

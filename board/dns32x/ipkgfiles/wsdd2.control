@@ -1,0 +1,9 @@
+Package: wsdd2
+Description: WSD/LLMNR Discovery/Name Service Daemon
+Version: 1.8-1
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: network
+Source: https://github.com/Andy2244/wsdd2
+Maintainer: jcard

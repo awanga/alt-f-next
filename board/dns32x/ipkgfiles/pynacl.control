@@ -1,0 +1,9 @@
+Package: pynacl
+Depends: libsodium, cffi, ipkg
+Version: 1.1.2
+Description: Python binding to the libsodium library
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/pyca/pynacl
+Maintainer: jcard

@@ -3,7 +3,7 @@
 sed -i "\|/usr/sbin/sshd|d" /etc/inetd.conf
 rcinetd reload
 
-ln -sf /usr/sbin/dropbear /usr/bin/scp
-ln -sf /usr/sbin/dropbear /usr/bin/ssh
+update-alternatives --remove scp /usr/bin/scp-openssh
+update-alternatives --remove ssh /usr/bin/ssh-openssh
 
 rm -f /sbin/rcopensshd

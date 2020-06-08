@@ -80,14 +80,15 @@ if test "$submit" = "Install"; then
 		msg "Debian is already installed in this filesystem."
 	fi
 
-	# cdebootstrap-static contains a static binary and a standalone tar.
-	# The standalone tar can be used on non-Debian systems. Use it instead under Alt-F?
-
 	CDEBOOT=$(wget -q -O - $DEBMIRROR/pool/main/c/cdebootstrap/ | sed -n "s/.*>\(cdebootstrap-static_.*_$arch.deb\)<.*/\1/p" | tail -1)
 
 	write_header "Installing Debian"
 
-	echo "<small><h4>Downloading installer...</h4><pre>"
+	echo "<small><h4>Installing Alt-F xz and libcurl packages...</h4><pre>"
+	ipkg install xz && ipkg install libcurl
+	if test $? != 0; then cleanup; fi
+
+	echo "</pre><small><h4>Downloading installer...</h4><pre>"
 
 	cd /tmp
 	wget --progress=dot:binary $DEBMIRROR/pool/main/c/cdebootstrap/$CDEBOOT
@@ -101,10 +102,6 @@ if test "$submit" = "Install"; then
 	if test -f data.tar.gz; then
 		DCOMP="zcat data.tar.gz"
 	elif test -f data.tar.xz; then
-		if ! which xzcat >& /dev/null; then
-			rm -f data.tar.* control.tar.* debian-binary $CDEBOOT
-			msg "Debian Installer in \"xz\" format, you have to install the \"xz\" Alt-F package first."
-		fi
 		DCOMP="xzcat data.tar.xz"
 	else
 		msg "Unknown compressor"
@@ -129,6 +126,8 @@ if test "$submit" = "Install"; then
 	echo "deb $DEBMIRROR jessie-backports main" >> $DEBDIR/etc/apt/sources.list
 
 	chroot $DEBDIR /usr/bin/apt-get update
+	chroot $DEBDIR /usr/bin/apt-get -y upgrade
+	chroot $DEBDIR /usr/bin/apt-get -y dist-upgrade
 
 #	mdadm --detail --test /dev/$DEBDEV >& /dev/null
 #	if test $? -lt 2; then # allow degraded but working RAID
@@ -160,7 +159,7 @@ if test "$submit" = "Install"; then
 		
 		ver=$(cat /etc/Alt-F)
 		bfile=Alt-F-$ver-$mod-rev-$rev.bin
-		site="http://sourceforge.net/projects/alt-f/files/Releases"
+		site="https://sourceforge.net/projects/alt-f/files/Releases"
 		
 		echo "</pre><p>Downloading $bfile from $site/$ver...</p><pre>"
 
@@ -232,7 +231,7 @@ if test "$submit" = "Install"; then
 
 	clean
 
-	echo "<h4>Success.</h4>$(goto_button Continue /cgi-bin/debian.cgi)</body></html>"
+	echo "<h4>Success, Debian $(cat $DEBDIR/etc/debian_version) installed.</h4>$(goto_button Continue /cgi-bin/debian.cgi)</body></html>"
 
 elif test "$submit" = "Uninstall"; then
 

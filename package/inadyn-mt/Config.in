@@ -1,0 +1,7 @@
+config BR2_PACKAGE_INADYN_MT
+	depends on BR2_USE_MMU # Uses fork()
+	bool "inadyn-mt"
+	help
+	  inadyn-mt contains some substantive bug fixes over inadyn, a Dynamic DNS client.
+
+	  https://sourceforge.net/projects/inadyn-mt

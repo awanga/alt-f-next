@@ -73,6 +73,27 @@ config BR2_PACKAGE_PYTHON_READLINE
 	  readline module for Python (required for command-line
 	  editing in the Python shell).
 
+config BR2_PACKAGE_PYTHON_NIS
+	depends on BR2_PACKAGE_PYTHON
+	bool "nis module"
+	help
+	  nis module for Python.
+
+config BR2_PACKAGE_PYTHON_LIBFFI
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_LIBFFI
+    default y
+	bool "libffi"
+	help
+	  use system libffi
+
+config BR2_PACKAGE_PYTHON_PYEXPAT
+	depends on BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_EXPAT
+	bool "pyexpat"
+	help
+	  pyexpat module for Python.
+
 config BR2_PACKAGE_PYTHON_SSL
 	bool "ssl"
 	select BR2_PACKAGE_OPENSSL

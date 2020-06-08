@@ -1,0 +1,10 @@
+Package: tar
+Description: A program that saves many files together into a single tape or disk
+	  archive, and can restore individual files from the archive.
+Version: 1.32
+Depends: acl, libiconv, gzip, bzip2, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.gnu.org/software/tar/
+Maintainer: jcard

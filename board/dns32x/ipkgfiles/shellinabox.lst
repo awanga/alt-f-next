@@ -1,0 +1,4 @@
+./etc/init.d/S65shellinabox
+./etc/shellinabox.conf
+./usr/bin/shellinaboxd
+./usr/www/cgi-bin/shellinabox.cgi

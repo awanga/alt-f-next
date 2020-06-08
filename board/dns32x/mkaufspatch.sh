@@ -25,7 +25,7 @@ aufssite=git://aufs.git.sourceforge.net/gitroot/aufs
 case $kver in
 	3.10.32) aufsver=3.10.x ;;
 	3.18.28|3.18.37) aufsver=3.18.25+ ;;
-	4.4.45) aufsver=4.4; aufssite=git://github.com/sfjro ;;
+	4.4.45|4.4.86) aufsver=4.4; aufssite=git://github.com/sfjro ;;
 	*) echo "No aufs configuration found for kernel $kver, exiting."
 		exit 1;;
 esac

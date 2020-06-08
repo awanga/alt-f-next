@@ -1,0 +1,10 @@
+config BR2_PACKAGE_LXML
+	bool "lxml"
+	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_LIBXML2
+	select BR2_PACKAGE_LIBXSLT
+	select BR2_PACKAGE_ZLIB
+	help
+	  library for processing XML and HTML in Python
+
+	  http://lxml.de

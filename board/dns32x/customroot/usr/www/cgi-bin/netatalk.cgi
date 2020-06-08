@@ -51,7 +51,7 @@ cat<<EOF
 		<th>Allow</th>
 		<th>Read<br>Only</th>
 		<th>Time<br>Machine</th>
-		<th>Max<br>Size</th>
+		<th>Max Size<br>(MiB)</th>
 	</tr>
 EOF
 

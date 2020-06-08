@@ -1,0 +1,9 @@
+Package: lxml
+Description: library for processing XML and HTML in Python
+Version: 4.4.1
+Depends: libxslt, python, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://lxml.de
+Maintainer: jcard

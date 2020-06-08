@@ -1,0 +1,8 @@
+config BR2_PACKAGE_CFFI
+	bool "cffi"
+	select BR2_PACKAGE_PYTHON
+	select BR2_PACKAGE_LIBFFI
+	help
+	  Foreign Function Interface for Python calling C code
+
+	  http://cffi.readthedocs.io

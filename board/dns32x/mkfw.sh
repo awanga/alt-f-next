@@ -52,7 +52,6 @@ if test $TYPE != "cpio" -a $TYPE != "squsr" -a $TYPE != "sqall" -a $TYPE != "sqs
 	usage
 fi
 
-#. .config 2> /dev/null
 board=$BR2_PROJECT
 
 if test $# = 0 -a \( "$board" = "dns325" -o "$board" = "dns327" \); then
@@ -71,6 +70,7 @@ if test $TYPE = "sqsplit"; then
 	sqimage=rootfs.arm.sqimage.$COMP
 fi
 
+TFTPD=/srv/tftpboot # for development using tftp on u-boot using serial adapter
 DESTD=$BLDDIR/images/$board
 KVER=$BR2_LINUX_KERNEL_VERSION #$(cat $BLDDIR/build/.linux-version)
 VER=$(cut -f2 -d" " board/dns32x/customroot/etc/Alt-F)
@@ -324,17 +324,19 @@ for i in ${!name[*]}; do
 	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat -c %s kernel)) bytes
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat -c %s initramfs)) bytes
 
-	#(cd ${DESTD}; cp uImage /srv/tftpboot/uImage-${name[i]})
+	#(cd ${DESTD}; cp uImage $TFTPD/uImage-${name[i]})
 
 done
 
 (
 	cd ${DESTD};
-	cp urootfs /srv/tftpboot/urootfs-$board
+	cp urootfs $TFTPD/urootfs-$board
 	if test "$board" = dns325 -o "$board" = dns327; then
-		cp rootfs.arm.sqimage.xz /srv/tftpboot/rootfs.arm.sqimage.xz-$board
+		cp rootfs.arm.sqimage.xz $TFTPD/rootfs.arm.sqimage.xz-$board
 	fi
 )
 
-rm -f kernel initramfs defaults \
+if ! test -d $TFTPD -a -w $TFTPD; then echo "WARNING: tftp folder non existing or writable. Only useful for users with serial adapter on the box and using u-boot."; fi
+
+rm -f kernel initramfs defaults sqimage \
 	${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage ${DESTD}/tsqimage

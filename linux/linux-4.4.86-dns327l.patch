@@ -1,0 +1,150 @@
+--- linux-4.4.22/arch/arm/boot/dts/armada-370-dlink-dns327l.dts-orig	2016-10-31 17:27:32.753297670 +0000
++++ linux-4.4.22/arch/arm/boot/dts/armada-370-dlink-dns327l.dts	2016-11-07 15:49:46.154819007 +0000
+@@ -53,12 +53,13 @@
+ #include "armada-370.dtsi"
+ 
+ / {
+-	model = "D-Link DNS-327L";
++	model = "D-Link DNS-327L-rev-Ax";
+ 	compatible = "dlink,dns327l",
+ 		"marvell,armada370",
+ 		"marvell,armada-370-xp";
+ 
+ 	chosen {
++		bootargs = "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk";
+ 		stdout-path = &uart0;
+ 	};
+ 
+@@ -105,49 +106,41 @@
+ 				nand-ecc-strength = <4>;
+ 				nand-ecc-step-size = <512>;
+ 
++				/* partition sizes and names identical to the board vendor's firmware */
+ 				partition@0 {
+-					label = "u-boot";
+-					/* 1.0 MiB */
+-					reg = <0x0000000 0x100000>;
++					label = "u-Boot";
++					reg = <0x0000000 0x500000>;
+ 					read-only;
+ 				};
+ 
+-				partition@100000 {
+-					label = "u-boot-env";
+-					/* 128 KiB */
+-					reg = <0x100000 0x20000>;
+-					read-only;
++				partition@500000 {
++					label = "uImage";
++					reg = <0x500000 0x500000>;
+ 				};
+ 
+-				partition@120000 {
+-					label = "uImage";
+-					/* 7 MiB */
+-					reg = <0x120000 0x700000>;
++				partition@a00000 {
++					label = "ramdisk";
++					reg = <0xa00000 0x500000>;
+ 				};
+ 
+-				partition@820000 {
+-					label = "ubifs";
+-					/* ~ 84 MiB */
+-					reg = <0x820000 0x54e0000>;
++				partition@f00000 {
++					label = "image.cfs";
++					reg = <0xf00000 0x4e00000>;
+ 				};
+ 
+-				/* Hardcoded into stock bootloader */
+ 				partition@5d00000 {
+-					label = "failsafe-uImage";
+-					/* 5 MiB */
+-					reg = <0x5d00000 0x500000>;
++					label = "rescue firmware";
++					reg = <0x5d00000 0xf00000>;
+ 				};
+ 
+-				partition@6200000 {
+-					label = "failsafe-fs";
+-					/* 29 MiB */
+-					reg = <0x6200000 0x1d00000>;
++				partition@6c00000 {
++					label = "config";
++					reg = <0x6c00000 0xa00000>;
+ 				};
+ 
+-				partition@7f00000 {
+-					label = "bbt";
+-					/* 1 MiB for BBT */
+-					reg = <0x7f00000 0x100000>;
++				partition@7600000 {
++					label = "mydlink";
++					reg = <0x7600000 0xa00000>;
+ 				};
+ 			};
+ 		};
+@@ -161,12 +154,13 @@
+ 			&reset_button_pin>;
+ 		pinctrl-names = "default";
+ 
++/*  Can't generate interrups, it's already (zero) active!
+ 		power-button {
+ 			label = "Power Button";
+ 			linux,code = <KEY_POWER>;
+ 			gpios = <&gpio2 1 GPIO_ACTIVE_LOW>;
+ 		};
+-
++*/
+ 		backup-button {
+ 			label = "Backup Button";
+ 			linux,code = <KEY_COPY>;
+@@ -185,7 +179,7 @@
+ 		pinctrl-0 = <
+ 			&sata_l_amber_pin
+ 			&sata_r_amber_pin
+-			&backup_led_pin
++			/* &backup_led_pin */
+ 			/* Ensure these are managed by hardware */
+ 			&sata_l_white_pin
+ 			&sata_r_white_pin>;
+@@ -263,12 +257,12 @@
+ };
+ 
+ &pinctrl {
+-	sata_l_white_pin: sata-l-white-pin {
++	sata_r_white_pin: sata-r-white-pin {
+ 		marvell,pins = "mpp57";
+ 		marvell,function = "sata0";
+ 	};
+ 
+-	sata_r_white_pin: sata-r-white-pin {
++	sata_l_white_pin: sata-l-white-pin {
+ 		marvell,pins = "mpp55";
+ 		marvell,function = "sata1";
+ 	};
+@@ -282,12 +276,12 @@
+ 		marvell,pins = "mpp53";
+ 		marvell,function = "gpio";
+ 	};
+-
++/* conflicts with uart1_pins mpp61
+ 	backup_led_pin: backup-led-pin {
+ 		marvell,pins = "mpp61";
+ 		marvell,function = "gpo";
+ 	};
+-
++*/
+ 	xhci_pwr_pin: xhci-pwr-pin {
+ 		marvell,pins = "mpp13";
+ 		marvell,function = "gpio";
+@@ -295,7 +289,7 @@
+ 
+ 	sata_r_pwr_pin: sata-r-pwr-pin {
+ 		marvell,pins = "mpp54";
+-		marvell,function = "gpio";
++		marvell,function = "gpo";
+ 	};
+ 
+ 	sata_l_pwr_pin: sata-l-pwr-pin {

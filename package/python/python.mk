@@ -5,7 +5,7 @@
 ################################################################################
 
 PYTHON_VERSION_MAJOR = 2.7
-PYTHON_VERSION = $(PYTHON_VERSION_MAJOR).13
+PYTHON_VERSION = $(PYTHON_VERSION_MAJOR).14
 PYTHON_SOURCE = Python-$(PYTHON_VERSION).tar.xz
 PYTHON_SITE = http://python.org/ftp/python/$(PYTHON_VERSION)
 PYTHON_LICENSE = Python-2.0, others
@@ -76,6 +76,11 @@ else
 PYTHON_CONF_OPTS += --disable-curses
 endif
 
+ifeq ($(BR2_PACKAGE_PYTHON_LIBFFI),y)
+PYTHON_DEPENDENCIES += libffi
+PYTHON_CONF_OPTS += --with-system-ffi
+endif
+
 ifeq ($(BR2_PACKAGE_PYTHON_PYEXPAT),y)
 PYTHON_DEPENDENCIES += expat
 PYTHON_CONF_OPTS += --with-expat=system
@@ -115,6 +120,12 @@ ifeq ($(BR2_PACKAGE_PYTHON_UCS4),y)
 # python
 HOST_PYTHON_CONF_OPTS += --enable-unicode=ucs4
 PYTHON_CONF_OPTS += --enable-unicode=ucs4
+endif
+
+ifeq ($(BR2_PACKAGE_PYTHON_GDBM),y)
+PYTHON_DEPENDENCIES += gdbm
+else
+PYTHON_CONF_OPTS += --disable-gdbm 
 endif
 
 ifeq ($(BR2_PACKAGE_PYTHON_BZIP2),y)

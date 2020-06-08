@@ -1,0 +1,16 @@
+--- wsdd2-1.8/wsd.c-orig	2019-09-24 15:26:40.294785298 +0100
++++ wsdd2-1.8/wsd.c	2019-09-24 15:44:40.368667464 +0100
+@@ -128,8 +128,11 @@
+ #define __FUNCTION__	"get_smbparm"
+ 	char *cmd = NULL, *result = NULL;
+ 
+-	if (asprintf(&cmd, "testparm -s --parameter-name=\"%s\" 2>/dev/null",
+-			name) <= 0) {
++/* 	testparm is not available on the dns-323/321, replace with sed
++ * 	if (asprintf(&cmd, "testparm -s --parameter-name=\"%s\" 2>/dev/null",
++ *		name) <= 0) {
++ */
++	if (asprintf(&cmd, "sed -n 's/^[[:space:]]*%s[[:space:]]*=[[:space:]]*\\(.*\\)/\\1/Ip' /etc/samba/smb.conf", name) <= 0) {
+ 		ep->_errno = errno;
+ 		ep->errstr = __FUNCTION__ ": Can't allocate cmd string";
+ 		return NULL;

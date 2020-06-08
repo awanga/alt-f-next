@@ -313,7 +313,7 @@ add_partition() {
 					modprobe -q dm-crypt
 					if test "$MODLOAD_CESA" = "y"; then
 						modprobe -q crypto_hash
-						modprobe -q mv_cesa
+						modprobe -q marvell_cesa
 					fi
 				fi
 				

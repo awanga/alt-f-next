@@ -39,14 +39,14 @@ cat<<-EOF
 	<form name="loginf" action="/cgi-bin/login_proc.cgi" method="post">
     <table>
 	<tr><td>Password:</td>
-		<td><input type="password" autocomplete="off" name="passwd" id="passwd_id" onsubmit="return csubmit()" $(ttip tt_login)></td>
+		<td><input type="password" name="passwd" id="passwd_id" onsubmit="return csubmit()" $(ttip tt_login)></td>
 EOF
 
 if ! test -s $SECR; then
 	cat<<-EOF
 		<td></td></tr>
 		<tr><td>Again:</td>
-			<td><input type="password" autocomplete="off" name="passwd_again" id="passwd_again" onsubmit="return csubmit()" $(ttip tt_again)></td>
+			<td><input type="password" name="passwd_again" id="passwd_again" onsubmit="return csubmit()" $(ttip tt_again)></td>
 	EOF
 else
 	salt=$(uuidgen)
