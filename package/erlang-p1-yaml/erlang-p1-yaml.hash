@@ -1,2 +1,3 @@
 # Locally calculated
-sha256 8eaaddda056f1ebb515a5456ba2be855e5b71b9b6eb35788527f39c6600ac6b4 erlang-p1-yaml-1.0.0.tar.gz
+sha256 b915612c06ef190bfed6d0370906b071274ed4ce4143b668cdad66588a9484a0 erlang-p1-yaml-1.0.21.tar.gz
+sha256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30 LICENSE.txt

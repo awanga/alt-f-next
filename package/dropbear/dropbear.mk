@@ -87,6 +87,11 @@ DROPBEAR_DEPENDENCIES += zlib libtomcrypt
 DROPBEAR_CONF_OPTS += --disable-bundled-libtom
 endif
 
+define DROPBEAR_CUSTOM_PATH
+	echo '#define DEFAULT_PATH $(BR2_SYSTEM_DEFAULT_PATH)' >>$(@D)/localoptions.h
+endef
+DROPBEAR_POST_EXTRACT_HOOKS += DROPBEAR_CUSTOM_PATH
+
 define DROPBEAR_INSTALL_INIT_SYSTEMD
 	$(INSTALL) -D -m 644 package/dropbear/dropbear.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/dropbear.service

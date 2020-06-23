@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBGTK3_VERSION_MAJOR = 3.22
+LIBGTK3_VERSION_MAJOR = 3.24
 LIBGTK3_VERSION = $(LIBGTK3_VERSION_MAJOR).12
 LIBGTK3_SOURCE = gtk+-$(LIBGTK3_VERSION).tar.xz
 LIBGTK3_SITE = http://ftp.gnome.org/pub/gnome/sources/gtk+/$(LIBGTK3_VERSION_MAJOR)
@@ -14,19 +14,22 @@ LIBGTK3_INSTALL_STAGING = YES
 LIBGTK3_AUTORECONF = YES
 
 LIBGTK3_CONF_ENV = \
-	ac_cv_path_GTK_UPDATE_ICON_CACHE=$(HOST_DIR)/usr/bin/gtk-update-icon-cache \
-	ac_cv_path_GDK_PIXBUF_CSOURCE=$(HOST_DIR)/usr/bin/gdk-pixbuf-csource \
-	PKG_CONFIG_FOR_BUILD=$(HOST_DIR)/usr/bin/pkgconf
+	ac_cv_path_GTK_UPDATE_ICON_CACHE=$(HOST_DIR)/bin/gtk-update-icon-cache \
+	ac_cv_path_GDK_PIXBUF_CSOURCE=$(HOST_DIR)/bin/gdk-pixbuf-csource \
+	PKG_CONFIG_FOR_BUILD=$(HOST_DIR)/bin/pkgconf
 
 LIBGTK3_CONF_OPTS = \
 	--disable-glibtest \
 	--enable-explicit-deps=no
+HOST_LIBGTK3_CONF_OPTS = --disable-introspection
 
 # Override pkg-config pkgdatadir variable, it needs the prefix
 LIBGTK3_MAKE_OPTS = \
-	WAYLAND_PROTOCOLS_DATADIR=$(STAGING_DIR)/usr/share/wayland-protocols
+	WAYLAND_PROTOCOLS_DATADIR=$(STAGING_DIR)/usr/share/wayland-protocols \
+	LIBS=$(TARGET_NLS_LIBS)
 
-LIBGTK3_DEPENDENCIES = host-pkgconf host-libgtk3 atk libglib2 cairo pango gdk-pixbuf libepoxy
+LIBGTK3_DEPENDENCIES = host-pkgconf host-libgtk3 atk libglib2 cairo pango \
+	gdk-pixbuf libepoxy $(TARGET_NLS_DEPENDENCIES)
 
 ifeq ($(BR2_PACKAGE_LIBGTK3_X11),y)
 LIBGTK3_DEPENDENCIES += fontconfig xlib_libX11 xlib_libXext xlib_libXrender xlib_libXi
@@ -37,6 +40,13 @@ LIBGTK3_CONF_OPTS += \
 	--x-libraries=$(STAGING_DIR)/usr/lib
 else
 LIBGTK3_CONF_OPTS += --disable-x11-backend
+endif
+
+ifeq ($(BR2_PACKAGE_GOBJECT_INTROSPECTION),y)
+LIBGTK3_CONF_OPTS += --enable-introspection
+LIBGTK3_DEPENDENCIES += gobject-introspection
+else
+LIBGTK3_CONF_OPTS += --disable-introspection
 endif
 
 ifeq ($(BR2_PACKAGE_LIBGTK3_WAYLAND),y)
@@ -123,7 +133,7 @@ LIBGTK3_CONF_OPTS += --disable-installed-tests
 endif
 
 define LIBGTK3_COMPILE_GLIB_SCHEMAS
-	$(HOST_DIR)/usr/bin/glib-compile-schemas \
+	$(HOST_DIR)/bin/glib-compile-schemas \
 		$(TARGET_DIR)/usr/share/glib-2.0/schemas
 endef
 
@@ -151,8 +161,8 @@ HOST_LIBGTK3_DEPENDENCIES = \
 	host-librsvg
 
 HOST_LIBGTK3_CFLAGS = \
-	`$(HOST_DIR)/usr/bin/pkgconf --cflags --libs gdk-pixbuf-2.0` \
-	`$(HOST_DIR)/usr/bin/pkgconf --cflags --libs gio-2.0`
+	`$(HOST_MAKE_ENV) $(PKG_CONFIG_HOST_BINARY) --cflags --libs gdk-pixbuf-2.0` \
+	`$(HOST_MAKE_ENV) $(PKG_CONFIG_HOST_BINARY) --cflags --libs gio-2.0`
 
 define HOST_LIBGTK3_CONFIGURE_CMDS
 	echo "#define GETTEXT_PACKAGE \"gtk30\"" >> $(@D)/gtk/config.h
@@ -173,16 +183,16 @@ endef
 
 define HOST_LIBGTK3_INSTALL_CMDS
 	$(INSTALL) -D -m 0755 $(@D)/gtk/gtk-update-icon-cache \
-		$(HOST_DIR)/usr/bin/gtk-update-icon-cache
+		$(HOST_DIR)/bin/gtk-update-icon-cache
 	$(INSTALL) -D -m 0755 $(@D)/gtk/gtk-encode-symbolic-svg \
-		$(HOST_DIR)/usr/bin/gtk-encode-symbolic-svg
+		$(HOST_DIR)/bin/gtk-encode-symbolic-svg
 endef
 
 # Create icon-theme.cache for each of the icon directories/themes
 # It's not strictly necessary but speeds up lookups
 define LIBGTK3_UPDATE_ICON_CACHE
 	find $(TARGET_DIR)/usr/share/icons -maxdepth 1 -mindepth 1 -type d \
-		-exec $(HOST_DIR)/usr/bin/gtk-update-icon-cache {} \;
+		-exec $(HOST_DIR)/bin/gtk-update-icon-cache {} \;
 endef
 LIBGTK3_TARGET_FINALIZE_HOOKS += LIBGTK3_UPDATE_ICON_CACHE
 

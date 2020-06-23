@@ -4,22 +4,28 @@
 #
 ################################################################################
 
-LXC_VERSION = 2.0.7
+LXC_VERSION = 3.2.1
 LXC_SITE = https://linuxcontainers.org/downloads/lxc
 LXC_LICENSE = LGPL-2.1+
 LXC_LICENSE_FILES = COPYING
-LXC_DEPENDENCIES = libcap host-pkgconf
+LXC_DEPENDENCIES = host-pkgconf
 LXC_INSTALL_STAGING = YES
+# We're patching configure.ac
+LXC_AUTORECONF = YES
 
 LXC_CONF_OPTS = --disable-apparmor --with-distro=buildroot \
-	--disable-python --disable-werror \
+	--disable-werror \
 	$(if $(BR2_PACKAGE_BASH),,--disable-bash)
 
-ifeq ($(BR2_PACKAGE_GNUTLS),y)
-LXC_CONF_OPTS += --enable-gnutls
-LXC_DEPENDENCIES += gnutls
+ifeq ($(BR2_PACKAGE_BASH_COMPLETION),y)
+LXC_DEPENDENCIES += bash-completion
+endif
+
+ifeq ($(BR2_PACKAGE_LIBCAP),y)
+LXC_CONF_OPTS += --enable-capabilities
+LXC_DEPENDENCIES += libcap
 else
-LXC_CONF_OPTS += --disable-gnutls
+LXC_CONF_OPTS += --disable-capabilities
 endif
 
 ifeq ($(BR2_PACKAGE_LIBSECCOMP),y)
@@ -36,15 +42,11 @@ else
 LXC_CONF_OPTS += --disable-selinux
 endif
 
-ifeq ($(BR2_PACKAGE_HAS_LUAINTERPRETER),y)
-LXC_CONF_OPTS += --enable-lua
-LXC_DEPENDENCIES += luainterpreter
-ifeq ($(BR2_PACKAGE_LUAJIT),y)
-# By default, lxc will only search for lua.pc
-LXC_CONF_OPTS += --with-lua-pc=luajit
-endif
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+LXC_CONF_OPTS += --enable-openssl
+LXC_DEPENDENCIES += openssl
 else
-LXC_CONF_OPTS += --disable-lua
+LXC_CONF_OPTS += --disable-openssl
 endif
 
 $(eval $(autotools-package))

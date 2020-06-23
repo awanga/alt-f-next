@@ -1,2 +1,4 @@
-# From https://www.kernel.org/pub/linux/utils/cryptsetup/v1.7/sha256sums.asc
-sha256 7ccf893ef79a38fb92d61f03c17b964982119f5319cdaa85a1335b8558cca016  cryptsetup-1.7.4.tar.xz
+# From https://www.kernel.org/pub/linux/utils/cryptsetup/v2.2/sha256sums.asc
+sha256 2af0ec9551ab9c870074cae9d3f68d82cab004f4095fa89db0e4413713424a46  cryptsetup-2.2.2.tar.xz
+sha256 45670cce8b6a0ddd66c8016cd8ccef6cd71f35717cbacc7f1e895b3855207b33  COPYING
+sha256 8c33cc37871654ec7ed87e6fbb896c8cf33ef5ef05b1611a5aed857596ffafa5  COPYING.LGPL

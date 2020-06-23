@@ -1,3 +1,5 @@
-# md5 from https://pypi.python.org/pypi/simplejson/json, sha256 locally computed
-md5 426a9631d22851a7a970b1a677368b15 simplejson-3.10.0.tar.gz
-sha256 953be622e88323c6f43fad61ffd05bebe73b9fd9863a46d68b052d2aa7d71ce2 simplejson-3.10.0.tar.gz
+# md5, sha256 from https://pypi.org/pypi/simplejson/json
+md5	8a5ed75c367b90fedc3d685742e2a1c7  simplejson-3.17.0.tar.gz
+sha256	2b4b2b738b3b99819a17feaf118265d0753d5536049ea570b3c43b51c4701e81  simplejson-3.17.0.tar.gz
+# Locally computed sha256 checksums
+sha256	fcaa1e313a99304322e2e0836ea4ee7d839ce9a480438f3922a853edfdde129f  LICENSE.txt

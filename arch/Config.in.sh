@@ -1,7 +1,7 @@
 choice
 	prompt "Target Architecture Variant"
-	depends on BR2_sh
 	default BR2_sh4
+	depends on BR2_sh
 	help
 	  Specific CPU variant to use
 
@@ -30,3 +30,6 @@ config BR2_ENDIAN
 
 config BR2_READELF_ARCH_NAME
 	default "Renesas / SuperH SH"
+
+# vim: ft=kconfig
+# -*- mode:kconfig; -*-

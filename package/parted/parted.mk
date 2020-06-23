@@ -4,14 +4,11 @@
 #
 ################################################################################
 
-PARTED_VERSION = 3.1
+PARTED_VERSION = 3.3
 PARTED_SOURCE = parted-$(PARTED_VERSION).tar.xz
 PARTED_SITE = $(BR2_GNU_MIRROR)/parted
 PARTED_DEPENDENCIES = host-pkgconf util-linux
 PARTED_INSTALL_STAGING = YES
-# For uclinux patch
-PARTED_AUTORECONF = YES
-PARTED_GETTEXTIZE = YES
 PARTED_LICENSE = GPL-3.0+
 PARTED_LICENSE_FILES = COPYING
 
@@ -29,8 +26,8 @@ else
 PARTED_CONF_OPTS += --disable-device-mapper
 endif
 
-ifeq ($(BR2_STATIC_LIBS),y)
-PARTED_CONF_OPTS += --disable-dynamic-loading
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+PARTED_DEPENDENCIES += libiconv
 endif
 
 HOST_PARTED_DEPENDENCIES = host-pkgconf host-util-linux

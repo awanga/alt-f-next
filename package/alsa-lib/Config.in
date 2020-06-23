@@ -13,8 +13,8 @@ menuconfig BR2_PACKAGE_ALSA_LIB
 	# is fixed
 	select BR2_PACKAGE_ALSA_LIB_PCM
 	help
-	  The Advanced Linux Sound Architecture (ALSA) provides audio and MIDI
-	  functionality to the Linux operating system.
+	  The Advanced Linux Sound Architecture (ALSA) provides audio
+	  and MIDI functionality to the Linux operating system.
 
 	  http://www.alsa-project.org/
 
@@ -65,6 +65,11 @@ config BR2_PACKAGE_ALSA_LIB_HWDEP
 config BR2_PACKAGE_ALSA_LIB_SEQ
 	bool "seq"
 	default y
+
+config BR2_PACKAGE_ALSA_LIB_UCM
+	bool "ucm"
+	default y
+	select BR2_PACKAGE_ALSA_LIB_MIXER
 
 config BR2_PACKAGE_ALSA_LIB_ALISP
 	bool "alisp"

@@ -1,7 +1,7 @@
 import os
-import subprocess
 
 import infra.basetest
+
 
 def jffs2dump_find_file(files_list, fname):
     for file_name in files_list:
@@ -10,17 +10,18 @@ def jffs2dump_find_file(files_list, fname):
             return True
     return False
 
+
 class TestJffs2(infra.basetest.BRTest):
     config = infra.basetest.BASIC_TOOLCHAIN_CONFIG + \
-"""
-BR2_TARGET_ROOTFS_JFFS2=y
-BR2_TARGET_ROOTFS_JFFS2_CUSTOM=y
-BR2_TARGET_ROOTFS_JFFS2_CUSTOM_EBSIZE=0x80000
-BR2_TARGET_ROOTFS_JFFS2_NOCLEANMARKER=y
-BR2_TARGET_ROOTFS_JFFS2_PAD=y
-BR2_TARGET_ROOTFS_JFFS2_PADSIZE=0x4000000
-# BR2_TARGET_ROOTFS_TAR is not set
-"""
+        """
+        BR2_TARGET_ROOTFS_JFFS2=y
+        BR2_TARGET_ROOTFS_JFFS2_CUSTOM=y
+        BR2_TARGET_ROOTFS_JFFS2_CUSTOM_EBSIZE=0x80000
+        BR2_TARGET_ROOTFS_JFFS2_NOCLEANMARKER=y
+        BR2_TARGET_ROOTFS_JFFS2_PAD=y
+        BR2_TARGET_ROOTFS_JFFS2_PADSIZE=0x4000000
+        # BR2_TARGET_ROOTFS_TAR is not set
+        """
 
     # TODO: there are some scary JFFS2 messages when one starts to
     # write files in the rootfs: "jffs2: Newly-erased block contained
@@ -28,9 +29,8 @@ BR2_TARGET_ROOTFS_JFFS2_PADSIZE=0x4000000
 
     def test_run(self):
         img = os.path.join(self.builddir, "images", "rootfs.jffs2")
-        out = subprocess.check_output(["host/usr/sbin/jffs2dump", "-c", img],
-                                      cwd=self.builddir,
-                                      env={"LANG": "C"})
+        cmd = ["host/sbin/jffs2dump", "-c", img]
+        out = infra.run_cmd_on_host(self.builddir, cmd)
         out = out.splitlines()
         self.assertTrue(jffs2dump_find_file(out, "busybox"))
 

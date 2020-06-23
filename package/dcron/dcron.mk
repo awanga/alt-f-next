@@ -9,11 +9,6 @@ DCRON_SITE = http://www.jimpryor.net/linux/releases
 # The source code does not specify the version of the GPL that is used.
 DCRON_LICENSE = GPL
 
-# Overwrite cron-related Busybox commands if available
-ifeq ($(BR2_PACKAGE_BUSYBOX),y)
-DCRON_DEPENDENCIES = busybox
-endif
-
 define DCRON_BUILD_CMDS
 	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) $(TARGET_CONFIGURE_OPTS)
 endef
@@ -36,9 +31,6 @@ endef
 define DCRON_INSTALL_INIT_SYSTEMD
 	$(INSTALL) -D -m 644 package/dcron/dcron.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/dcron.service
-	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
-	ln -sf ../../../../usr/lib/systemd/system/dcron.service \
-		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/dcron.service
 endef
 
 $(eval $(generic-package))

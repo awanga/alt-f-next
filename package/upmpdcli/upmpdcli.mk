@@ -4,11 +4,16 @@
 #
 ################################################################################
 
-UPMPDCLI_VERSION = 1.2.12
+UPMPDCLI_VERSION = 1.4.6
 UPMPDCLI_SITE = http://www.lesbonscomptes.com/upmpdcli/downloads
-UPMPDCLI_LICENSE = GPL-2.0+
+UPMPDCLI_LICENSE = LGPL-2.1+
 UPMPDCLI_LICENSE_FILES = COPYING
 UPMPDCLI_DEPENDENCIES = host-pkgconf libmpdclient libupnpp libmicrohttpd jsoncpp
+
+# Disable spotify plugin which requires dlfcn.h
+ifeq ($(BR2_STATIC_LIBS),y)
+UPMPDCLI_CONF_OPTS = --disable-spotify
+endif
 
 # Upmpdcli only runs if user upmpdcli exists
 define UPMPDCLI_USERS
@@ -22,9 +27,6 @@ endef
 define UPMPDCLI_INSTALL_INIT_SYSTEMD
 	$(INSTALL) -D -m 644 $(@D)/systemd/upmpdcli.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/upmpdcli.service
-	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
-	ln -sf ../../../../usr/lib/systemd/system/upmpdcli.service \
-		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/upmpdcli.service
 endef
 
 define UPMPDCLI_INSTALL_CONF_FILE

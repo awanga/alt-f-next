@@ -21,7 +21,8 @@ choice
 	prompt "python module format to install"
 	default BR2_PACKAGE_PYTHON_PYC_ONLY
 	help
-	  Select Python module format to install on target (py, pyc or both)
+	  Select Python module format to install on target (py, pyc or
+	  both)
 
 config BR2_PACKAGE_PYTHON_PY_ONLY
 	bool ".py sources only"
@@ -37,6 +38,11 @@ endchoice
 menu "core python modules"
 
 comment "The following modules are unusual or require extra libraries"
+
+config BR2_PACKAGE_PYTHON_2TO3
+	bool "2to3 module"
+	help
+	  code translation from python 2 to 3
 
 config BR2_PACKAGE_PYTHON_BZIP2
 	bool "bzip2 module"
@@ -104,7 +110,8 @@ config BR2_PACKAGE_PYTHON_UNICODEDATA
 	bool "unicodedata module"
 	default y
 	help
-	  Unicode character database (used by stringprep module) (large).
+	  Unicode character database (used by stringprep module)
+	  (large).
 
 if BR2_PACKAGE_PYTHON_UNICODEDATA
 

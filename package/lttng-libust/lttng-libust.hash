@@ -1,3 +1,5 @@
-# From http://lttng.org/files/lttng-ust/lttng-ust-2.9.0.tar.bz2.{md5,sha1}
-md5 77f3378ba37a36801420bce87b702e9c  lttng-ust-2.9.0.tar.bz2
-sha1 9937eae64540821b8597cce081e92be76e6b5568  lttng-ust-2.9.0.tar.bz2
+# From https://lttng.org/files/lttng-ust/lttng-ust-2.11.0.tar.bz2.sha256
+sha256 683280cfe5e12021e64c32cef9eeb0128f1f23dec32ba28adb5a2074be37c4d8  lttng-ust-2.11.0.tar.bz2
+
+# Hash for license file
+sha256 74125a84c2166300776980166e29de40d5f98d1a75e487f0bbc0c03b4cd2342e  COPYING

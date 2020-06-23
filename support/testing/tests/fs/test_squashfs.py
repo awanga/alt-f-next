@@ -3,20 +3,19 @@ import subprocess
 
 import infra.basetest
 
+
 class TestSquashfs(infra.basetest.BRTest):
     config = infra.basetest.BASIC_TOOLCHAIN_CONFIG + \
-"""
-BR2_TARGET_ROOTFS_SQUASHFS=y
-# BR2_TARGET_ROOTFS_SQUASHFS4_GZIP is not set
-BR2_TARGET_ROOTFS_SQUASHFS4_LZ4=y
-# BR2_TARGET_ROOTFS_TAR is not set
-"""
+        """
+        BR2_TARGET_ROOTFS_SQUASHFS=y
+        # BR2_TARGET_ROOTFS_SQUASHFS4_GZIP is not set
+        BR2_TARGET_ROOTFS_SQUASHFS4_LZ4=y
+        # BR2_TARGET_ROOTFS_TAR is not set
+        """
 
     def test_run(self):
-        unsquashfs_cmd = ["host/usr/bin/unsquashfs", "-s", "images/rootfs.squashfs"]
-        out = subprocess.check_output(unsquashfs_cmd,
-                                      cwd=self.builddir,
-                                      env={"LANG": "C"})
+        unsquashfs_cmd = ["host/bin/unsquashfs", "-s", "images/rootfs.squashfs"]
+        out = infra.run_cmd_on_host(self.builddir, unsquashfs_cmd)
         out = out.splitlines()
         self.assertEqual(out[0],
                          "Found a valid SQUASHFS 4:0 superblock on images/rootfs.squashfs.")

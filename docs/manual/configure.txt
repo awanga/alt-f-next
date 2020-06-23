@@ -146,19 +146,17 @@ cross-compilation toolchains. Buildroot knows about a number of
 well-known cross-compilation toolchains (from
 http://www.linaro.org[Linaro] for ARM,
 http://www.mentor.com/embedded-software/sourcery-tools/sourcery-codebench/editions/lite-edition/[Sourcery
-CodeBench] for ARM, x86, x86-64, PowerPC, MIPS and SuperH,
-https://blackfin.uclinux.org/gf/project/toolchain[Blackfin toolchains
-from Analog Devices], etc.) and is capable of downloading them
-automatically, or it can be pointed to a custom toolchain, either
-available for download or installed locally.
+CodeBench] for ARM, x86-64, PowerPC, and MIPS, and is capable of
+downloading them automatically, or it can be pointed to a custom
+toolchain, either available for download or installed locally.
 
 Then, you have three solutions to use an external toolchain:
 
 * Use a predefined external toolchain profile, and let Buildroot
   download, extract and install the toolchain. Buildroot already knows
-  about a few CodeSourcery, Linaro, Blackfin and Xilinx toolchains.
-  Just select the toolchain profile in +Toolchain+ from the
-  available ones. This is definitely the easiest solution.
+  about a few CodeSourcery and Linaro toolchains. Just select the
+  toolchain profile in +Toolchain+ from the available ones. This is
+  definitely the easiest solution.
 
 * Use a predefined external toolchain profile, but instead of having
   Buildroot download and extract the toolchain, you can tell Buildroot
@@ -208,9 +206,9 @@ Buildroot or crosstool-NG.
 
 If you want to generate a custom toolchain for your project, that can
 be used as an external toolchain in Buildroot, our recommendation is
-definitely to build it with http://crosstool-ng.org[crosstool-NG]. We
-recommend to build the toolchain separately from Buildroot, and then
-_import_ it in Buildroot using the external toolchain backend.
+to build it either with Buildroot itself (see
+xref:build-toolchain-with-buildroot[]) or with
+http://crosstool-ng.org[crosstool-NG].
 
 Advantages of this backend:
 
@@ -221,13 +219,57 @@ Advantages of this backend:
   often very significant in the overall build time of an embedded
   Linux system.
 
-* Not limited to uClibc: glibc and eglibc toolchains are supported.
-
 Drawbacks of this backend:
 
 * If your pre-built external toolchain has a bug, may be hard to get a
   fix from the toolchain vendor, unless you build your external
-  toolchain by yourself using Crosstool-NG.
+  toolchain by yourself using Buildroot or Crosstool-NG.
+
+[[build-toolchain-with-buildroot]]
+==== Build an external toolchain with Buildroot
+
+The Buildroot internal toolchain option can be used to create an
+external toolchain. Here are a series of steps to build an internal
+toolchain and package it up for reuse by Buildroot itself (or other
+projects).
+
+Create a new Buildroot configuration, with the following details:
+
+* Select the appropriate *Target options* for your target CPU
+  architecture
+
+* In the *Toolchain* menu, keep the default of *Buildroot toolchain*
+  for *Toolchain type*, and configure your toolchain as desired
+
+* In the *System configuration* menu, select *None* as the *Init
+  system* and *none* as */bin/sh*
+
+* In the *Target packages* menu, disable *BusyBox*
+
+* In the *Filesystem images* menu, disable *tar the root filesystem*
+
+Then, we can trigger the build, and also ask Buildroot to generate a
+SDK. This will conveniently generate for us a tarball which contains
+our toolchain:
+
+-----
+make sdk
+-----
+
+This produces the SDK tarball in +$(O)/images+, with a name similar to
++arm-buildroot-linux-uclibcgnueabi_sdk-buildroot.tar.gz+. Save this
+tarball, as it is now the toolchain that you can re-use as an external
+toolchain in other Buildroot projects.
+
+In those other Buildroot projects, in the *Toolchain* menu:
+
+* Set *Toolchain type* to *External toolchain*
+
+* Set *Toolchain* to *Custom toolchain*
+
+* Set *Toolchain origin* to *Toolchain to be downloaded and installed*
+
+* Set *Toolchain URL* to +file:///path/to/your/sdk/tarball.tar.gz+
 
 ===== External toolchain wrapper
 

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-APACHE_VERSION = 2.4.27
+APACHE_VERSION = 2.4.43
 APACHE_SOURCE = httpd-$(APACHE_VERSION).tar.bz2
 APACHE_SITE = http://archive.apache.org/dist/httpd
 APACHE_LICENSE = Apache-2.0
@@ -15,6 +15,14 @@ APACHE_INSTALL_STAGING = YES
 # so we need to autoreconf:
 APACHE_AUTORECONF = YES
 APACHE_DEPENDENCIES = apr apr-util pcre
+
+ifeq ($(BR2_PER_PACKAGE_DIRECTORIES),y)
+define APACHE_FIXUP_APR_LIBTOOL
+	$(SED) "s@$(PER_PACKAGE_DIR)/[^/]\+/@$(PER_PACKAGE_DIR)/apache/@g" \
+		$(STAGING_DIR)/usr/build-1/libtool
+endef
+APACHE_POST_CONFIGURE_HOOKS += APACHE_FIXUP_APR_LIBTOOL
+endif
 
 APACHE_CONF_ENV= \
 	ap_cv_void_ptr_lt_long=no \
@@ -40,7 +48,6 @@ APACHE_CONF_OPTS = \
 	--without-suexec-bin \
 	--enable-mods-shared=all \
 	--with-mpm=$(APACHE_MPM) \
-	--disable-lua \
 	--disable-luajit
 
 ifeq ($(BR2_PACKAGE_LIBXML2),y)
@@ -55,6 +62,22 @@ else
 APACHE_CONF_OPTS += \
 	--disable-xml2enc \
 	--disable-proxy-html
+endif
+
+ifeq ($(BR2_PACKAGE_LUA),y)
+APACHE_CONF_OPTS += --enable-lua
+APACHE_DEPENDENCIES += lua
+else
+APACHE_CONF_OPTS += --disable-lua
+endif
+
+ifeq ($(BR2_PACKAGE_NGHTTP2),y)
+APACHE_CONF_OPTS += \
+	--enable-http2 \
+	--with-nghttp2=$(STAGING_DIR)/usr
+APACHE_DEPENDENCIES += nghttp2
+else
+APACHE_CONF_OPTS += --disable-http2
 endif
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
@@ -76,6 +99,7 @@ APACHE_CONF_OPTS += --disable-deflate
 endif
 
 define APACHE_FIX_STAGING_APACHE_CONFIG
+	$(SED) 's%"/usr/bin"%"$(STAGING_DIR)/usr/bin"%' $(STAGING_DIR)/usr/bin/apxs
 	$(SED) 's%/usr/build%$(STAGING_DIR)/usr/build%' $(STAGING_DIR)/usr/bin/apxs
 	$(SED) 's%^prefix =.*%prefix = $(STAGING_DIR)/usr%' $(STAGING_DIR)/usr/build/config_vars.mk
 endef
@@ -85,5 +109,15 @@ define APACHE_CLEANUP_TARGET
 	$(RM) -rf $(TARGET_DIR)/usr/manual $(TARGET_DIR)/usr/build
 endef
 APACHE_POST_INSTALL_TARGET_HOOKS += APACHE_CLEANUP_TARGET
+
+define APACHE_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 package/apache/S50apache \
+		$(TARGET_DIR)/etc/init.d/S50apache
+endef
+
+define APACHE_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 package/apache/apache.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/apache.service
+endef
 
 $(eval $(autotools-package))

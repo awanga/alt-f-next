@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-RSYSLOG_VERSION = 8.22.0
+RSYSLOG_VERSION = 8.2002.0
 RSYSLOG_SITE = http://rsyslog.com/files/download/rsyslog
 RSYSLOG_LICENSE = GPL-3.0, LGPL-3.0, Apache-2.0
 RSYSLOG_LICENSE_FILES = COPYING COPYING.LESSER COPYING.ASL20
@@ -17,10 +17,14 @@ RSYSLOG_PLUGINS = imdiag imfile impstats imptcp \
 RSYSLOG_CONF_OPTS = --disable-generate-man-pages \
 	$(foreach x,$(call qstrip,$(RSYSLOG_PLUGINS)),--enable-$(x))
 
-# Build after BusyBox
-ifeq ($(BR2_PACKAGE_BUSYBOX),y)
-RSYSLOG_DEPENDENCIES += busybox
-endif
+# Disable items requiring libcurl
+RSYSLOG_CONF_OPTS += --disable-elasticsearch \
+	--disable-clickhouse \
+	--disable-omhttp \
+	--disable-fmhttp \
+	--disable-imdocker \
+	--disable-omhttpfs \
+	--disable-mmkubernetes
 
 ifeq ($(BR2_PACKAGE_GNUTLS),y)
 RSYSLOG_DEPENDENCIES += gnutls
@@ -77,22 +81,8 @@ RSYSLOG_CONF_OPTS += \
 endif
 
 define RSYSLOG_INSTALL_INIT_SYSV
-	$(INSTALL) -m 0755 -D package/rsyslog/S01logging \
-		$(TARGET_DIR)/etc/init.d/S01logging
-endef
-
-# The rsyslog.service is installed by rsyslog, but the link is not created
-# so the service is not enabled.
-# We need to create another link which is due to the fact that the
-# rsyslog.service contains an Alias=
-# If we were to use systemctl enable to enable the service, it would
-# create both, so we mimic that.
-define RSYSLOG_INSTALL_INIT_SYSTEMD
-	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
-	ln -sf ../../../../usr/lib/systemd/system/rsyslog.service \
-		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/rsyslog.service
-	ln -sf ../../../../usr/lib/systemd/system/rsyslog.service \
-		$(TARGET_DIR)/etc/systemd/system/syslog.service
+	$(INSTALL) -m 0755 -D package/rsyslog/S01rsyslogd \
+		$(TARGET_DIR)/etc/init.d/S01rsyslogd
 endef
 
 define RSYSLOG_INSTALL_CONF

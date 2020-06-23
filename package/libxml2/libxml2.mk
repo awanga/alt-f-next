@@ -4,11 +4,15 @@
 #
 ################################################################################
 
-LIBXML2_VERSION = 2.9.9
-LIBXML2_SITE = ftp://xmlsoft.org/libxml2
+LIBXML2_VERSION = 2.9.10
+LIBXML2_SITE = http://xmlsoft.org/sources
 LIBXML2_INSTALL_STAGING = YES
 LIBXML2_LICENSE = MIT
 LIBXML2_LICENSE_FILES = COPYING
+# 0001-Fix-infinite-loop-in-xmlStringLenDecodeEntities.patch
+LIBXML2_IGNORE_CVES += CVE-2020-7595
+# 0002-Fix-memory-leak-in-xmlSchemaValidateStream.patch
+LIBXML2_IGNORE_CVES += CVE-2019-20388
 LIBXML2_CONFIG_SCRIPTS = xml2-config
 
 # relocation truncated to fit: R_68K_GOT16O
@@ -49,4 +53,4 @@ $(eval $(autotools-package))
 $(eval $(host-autotools-package))
 
 # libxml2 for the host
-LIBXML2_HOST_BINARY = $(HOST_DIR)/usr/bin/xmllint
+LIBXML2_HOST_BINARY = $(HOST_DIR)/bin/xmllint

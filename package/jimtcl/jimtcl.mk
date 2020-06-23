@@ -4,9 +4,8 @@
 #
 ################################################################################
 
-JIMTCL_VERSION = 0.75
-JIMTCL_SITE = http://snapshot.debian.org/archive/debian/20141023T043132Z/pool/main/j/jimtcl
-JIMTCL_SOURCE = jimtcl_$(JIMTCL_VERSION).orig.tar.xz
+JIMTCL_VERSION = 0.79
+JIMTCL_SITE = $(call github,msteveb,jimtcl,$(JIMTCL_VERSION))
 JIMTCL_INSTALL_STAGING = YES
 JIMTCL_LICENSE = BSD-2-Clause
 JIMTCL_LICENSE_FILES = LICENSE
@@ -38,10 +37,23 @@ define JIMTCL_INSTALL_LIB
 endef
 endif
 
+# build system doesn't use autotools, but does use an old version of
+# gnuconfig which doesn't know all the architectures supported by
+# Buildroot, so update config.guess / config.sub like we do in
+# pkg-autotools.mk
+JIMTCL_POST_PATCH_HOOKS += UPDATE_CONFIG_HOOK
+HOST_JIMTCL_POST_PATCH_HOOKS += UPDATE_CONFIG_HOOK
+
+# jimtcl really wants to find a existing $CXX, so feed it false
+# when we do not have one.
 define JIMTCL_CONFIGURE_CMDS
 	(cd $(@D); \
-		$(TARGET_CONFIGURE_OPTS) CCACHE=none \
+		$(TARGET_CONFIGURE_OPTS) \
+		CCACHE=none \
+		$(if $(BR2_INSTALL_LIBSTDCPP),,CXX=false) \
 		./configure --prefix=/usr \
+		--host=$(GNU_TARGET_NAME) \
+		--build=$(GNU_HOST_NAME) \
 		$(JIMTCL_SHARED) \
 	)
 endef
@@ -67,4 +79,25 @@ define JIMTCL_INSTALL_TARGET_CMDS
 	$(JIMTCL_LINK_TCLSH)
 endef
 
+define HOST_JIMTCL_CONFIGURE_CMDS
+	cd $(@D) && \
+		$(HOST_CONFIGURE_OPTS) \
+		CCACHE=none \
+		./configure --prefix=$(HOST_DIR) --shared
+endef
+
+define HOST_JIMTCL_BUILD_CMDS
+	$(HOST_MAKE_ENV) $(MAKE) -C $(@D)
+endef
+
+define HOST_JIMTCL_INSTALL_CMDS
+	for i in $(JIMTCL_HEADERS_TO_INSTALL); do \
+		cp -a $(@D)/$$i $(HOST_DIR)/usr/include/ || exit 1 ; \
+	done;
+	$(INSTALL) -m 0755 -D $(@D)/libjim.so.$(JIMTCL_VERSION) \
+		$(HOST_DIR)/usr/lib/libjim.so.$(JIMTCL_VERSION)
+	ln -sf libjim.so.$(JIMTCL_VERSION) $(HOST_DIR)/usr/lib/libjim.so
+endef
+
 $(eval $(generic-package))
+$(eval $(host-generic-package))

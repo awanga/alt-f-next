@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LIBCEC_VERSION = 4.0.2
+LIBCEC_VERSION = 5.0.0
 LIBCEC_SITE = $(call github,Pulse-Eight,libcec,libcec-$(LIBCEC_VERSION))
 LIBCEC_LICENSE = GPL-2.0+
 LIBCEC_LICENSE_FILES = COPYING
@@ -36,5 +36,12 @@ endif
 ifeq ($(BR2_PACKAGE_XLIB_LIBXRANDR),y)
 LIBCEC_DEPENDENCIES += xlib_libXrandr
 endif
+
+# Disable information about how libCEC is compiled.
+LIBCEC_CONF_OPTS += -DHAVE_GIT_BIN="" \
+	-DHAVE_DATE_BIN="" \
+	-DHAVE_WHOAMI_BIN="" \
+	-DHAVE_HOSTNAME_BIN="" \
+	-DHAVE_UNAME_BIN=""
 
 $(eval $(cmake-package))

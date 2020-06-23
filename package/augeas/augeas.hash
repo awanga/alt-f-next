@@ -1,3 +1,4 @@
-# Locally calculated
-sha256  b9315575d07f7ba28ca2f9f60b4987dfe77b5970c98b59dc6ca7873fc4979763  augeas-1.7.0.tar.gz
-sha256  12a987e78166032b59d816aced96c97813cb109108e7c2336cb8ae369c32e2bf  05a27f4e374e9f0dc2cda6301b52d2a6b109b2e8.patch
+# Locally calculated after checking pgp signature from
+# http://download.augeas.net/augeas-1.12.0.tar.gz.sig
+sha256  321942c9cc32185e2e9cb72d0a70eea106635b50269075aca6714e3ec282cb87  augeas-1.12.0.tar.gz
+sha256  ca0061fc1381a3ab242310e4b3f56389f28e3d460eb2fd822ed7a21c6f030532  COPYING

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-KTAP_VERSION = eb66d40310c93dc82bc8eac889744c1ed1f01f7b
+KTAP_VERSION = 23bc7a4a94bd9e4e1b8b7c06632e61c041d57b5f
 KTAP_SITE = $(call github,ktap,ktap,$(KTAP_VERSION))
 KTAP_LICENSE = GPL-2.0
 KTAP_LICENSE_FILES = LICENSE-GPL
@@ -24,6 +24,13 @@ define KTAP_INSTALL_TARGET_CMDS
 endef
 
 KTAP_MODULE_MAKE_OPTS = KVERSION=$(LINUX_VERSION_PROBED)
+
+define KTAP_LINUX_CONFIG_FIXUPS
+	$(call KCONFIG_ENABLE_OPT,CONFIG_DEBUG_FS)
+	$(call KCONFIG_ENABLE_OPT,CONFIG_ENABLE_DEFAULT_TRACERS)
+	$(call KCONFIG_ENABLE_OPT,CONFIG_PERF_EVENTS)
+	$(call KCONFIG_ENABLE_OPT,CONFIG_FUNCTION_TRACER)
+endef
 
 $(eval $(kernel-module))
 $(eval $(generic-package))

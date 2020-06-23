@@ -13,10 +13,9 @@
 #  * Toolchains provided by Linaro for the ARM and AArch64
 #    architectures
 #  * Sourcery CodeBench toolchains (from Mentor Graphics) for the ARM,
-#    MIPS, PowerPC, x86, x86_64 and NIOS 2 architectures. For the MIPS
+#    MIPS, PowerPC, x86_64 and NIOS 2 architectures. For the MIPS
 #    toolchain, the -muclibc variant isn't supported yet, only the
 #    default glibc-based variant is.
-#  * Xilinx toolchains for the Microblaze architecture
 #  * Synopsys DesignWare toolchains for ARC cores
 #
 # The basic principle is the following
@@ -55,7 +54,7 @@
 #  so we're sure the correct configuration is always used and the
 #  toolchain behaves similar to an internal toolchain.
 #  This toolchain wrapper and symlinks are installed into
-#  $(HOST_DIR)/usr/bin like for the internal toolchains, and the rest
+#  $(HOST_DIR)/bin like for the internal toolchains, and the rest
 #  of Buildroot is handled identical for the 2 toolchain types.
 ################################################################################
 
@@ -75,10 +74,14 @@ endif
 ifeq ($(TOOLCHAIN_EXTERNAL_INSTALL_DIR),)
 ifneq ($(TOOLCHAIN_EXTERNAL_PREFIX),)
 # if no path set, figure it out from path
-TOOLCHAIN_EXTERNAL_BIN := $(shell dirname $(shell which $(TOOLCHAIN_EXTERNAL_PREFIX)-gcc))
+TOOLCHAIN_EXTERNAL_BIN := $(dir $(shell which $(TOOLCHAIN_EXTERNAL_PREFIX)-gcc))
 endif
 else
-TOOLCHAIN_EXTERNAL_BIN := $(TOOLCHAIN_EXTERNAL_INSTALL_DIR)/bin
+TOOLCHAIN_EXTERNAL_REL_BIN_PATH = $(call qstrip,$(BR2_TOOLCHAIN_EXTERNAL_REL_BIN_PATH))
+ifeq ($(TOOLCHAIN_EXTERNAL_REL_BIN_PATH),)
+TOOLCHAIN_EXTERNAL_REL_BIN_PATH = bin
+endif
+TOOLCHAIN_EXTERNAL_BIN = $(TOOLCHAIN_EXTERNAL_INSTALL_DIR)/$(TOOLCHAIN_EXTERNAL_REL_BIN_PATH)
 endif
 
 # If this is a buildroot toolchain, it already has a wrapper which we want to
@@ -90,6 +93,7 @@ TOOLCHAIN_EXTERNAL_SUFFIX = \
 TOOLCHAIN_EXTERNAL_CROSS = $(TOOLCHAIN_EXTERNAL_BIN)/$(TOOLCHAIN_EXTERNAL_PREFIX)-
 TOOLCHAIN_EXTERNAL_CC = $(TOOLCHAIN_EXTERNAL_CROSS)gcc$(TOOLCHAIN_EXTERNAL_SUFFIX)
 TOOLCHAIN_EXTERNAL_CXX = $(TOOLCHAIN_EXTERNAL_CROSS)g++$(TOOLCHAIN_EXTERNAL_SUFFIX)
+TOOLCHAIN_EXTERNAL_GDC = $(TOOLCHAIN_EXTERNAL_CROSS)gdc$(TOOLCHAIN_EXTERNAL_SUFFIX)
 TOOLCHAIN_EXTERNAL_FC = $(TOOLCHAIN_EXTERNAL_CROSS)gfortran$(TOOLCHAIN_EXTERNAL_SUFFIX)
 TOOLCHAIN_EXTERNAL_READELF = $(TOOLCHAIN_EXTERNAL_CROSS)readelf
 
@@ -108,13 +112,15 @@ endif
 #
 # Definitions of the list of libraries that should be copied to the target.
 #
-ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GLIBC)$(BR2_TOOLCHAIN_EXTERNAL_UCLIBC),y)
-TOOLCHAIN_EXTERNAL_LIBS += libatomic.so.* libc.so.* libcrypt.so.* libdl.so.* libgcc_s.so.* libm.so.* libnsl.so.* libresolv.so.* librt.so.* libutil.so.*
-ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GLIBC)$(BR2_ARM_EABIHF),yy)
-TOOLCHAIN_EXTERNAL_LIBS += ld-linux-armhf.so.*
-else
-TOOLCHAIN_EXTERNAL_LIBS += ld*.so.*
+
+TOOLCHAIN_EXTERNAL_LIBS += ld*.so.* libgcc_s.so.* libatomic.so.*
+
+ifneq ($(BR2_SSP_NONE),y)
+TOOLCHAIN_EXTERNAL_LIBS += libssp.so.*
 endif
+
+ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GLIBC)$(BR2_TOOLCHAIN_EXTERNAL_UCLIBC),y)
+TOOLCHAIN_EXTERNAL_LIBS += libc.so.* libcrypt.so.* libdl.so.* libm.so.* libnsl.so.* libresolv.so.* librt.so.* libutil.so.*
 ifeq ($(BR2_TOOLCHAIN_HAS_THREADS),y)
 TOOLCHAIN_EXTERNAL_LIBS += libpthread.so.*
 ifneq ($(BR2_PACKAGE_GDB)$(BR2_TOOLCHAIN_EXTERNAL_GDB_SERVER_COPY),)
@@ -128,7 +134,7 @@ TOOLCHAIN_EXTERNAL_LIBS += libnss_files.so.* libnss_dns.so.* libmvec.so.* libanl
 endif
 
 ifeq ($(BR2_TOOLCHAIN_EXTERNAL_MUSL),y)
-TOOLCHAIN_EXTERNAL_LIBS += libc.so libgcc_s.so.*
+TOOLCHAIN_EXTERNAL_LIBS += libc.so
 endif
 
 ifeq ($(BR2_INSTALL_LIBSTDCPP),y)
@@ -143,23 +149,21 @@ TOOLCHAIN_EXTERNAL_LIBS += libquadmath.so*
 endif
 endif
 
-TOOLCHAIN_EXTERNAL_LIBS += $(call qstrip,$(BR2_TOOLCHAIN_EXTRA_EXTERNAL_LIBS))
+ifeq ($(BR2_TOOLCHAIN_HAS_OPENMP),y)
+TOOLCHAIN_EXTERNAL_LIBS += libgomp.so.*
+endif
+
+ifeq ($(BR2_TOOLCHAIN_HAS_DLANG),y)
+TOOLCHAIN_EXTERNAL_LIBS += libgdruntime.so* libgphobos.so*
+endif
+
+TOOLCHAIN_EXTERNAL_LIBS += $(addsuffix .so*,$(call qstrip,$(BR2_TOOLCHAIN_EXTRA_LIBS)))
 
 
 #
 # Definition of the CFLAGS to use with the external toolchain, as well as the
 # common toolchain wrapper build arguments
 #
-ifeq ($(call qstrip,$(BR2_GCC_TARGET_CPU_REVISION)),)
-CC_TARGET_CPU_ := $(call qstrip,$(BR2_GCC_TARGET_CPU))
-else
-CC_TARGET_CPU_ := $(call qstrip,$(BR2_GCC_TARGET_CPU)-$(BR2_GCC_TARGET_CPU_REVISION))
-endif
-CC_TARGET_ARCH_ := $(call qstrip,$(BR2_GCC_TARGET_ARCH))
-CC_TARGET_ABI_ := $(call qstrip,$(BR2_GCC_TARGET_ABI))
-CC_TARGET_FPU_ := $(call qstrip,$(BR2_GCC_TARGET_FPU))
-CC_TARGET_FLOAT_ABI_ := $(call qstrip,$(BR2_GCC_TARGET_FLOAT_ABI))
-CC_TARGET_MODE_ := $(call qstrip,$(BR2_GCC_TARGET_MODE))
 
 # march/mtune/floating point mode needs to be passed to the external toolchain
 # to select the right multilib variant
@@ -167,29 +171,39 @@ ifeq ($(BR2_x86_64),y)
 TOOLCHAIN_EXTERNAL_CFLAGS += -m64
 TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_64
 endif
-ifneq ($(CC_TARGET_ARCH_),)
-TOOLCHAIN_EXTERNAL_CFLAGS += -march=$(CC_TARGET_ARCH_)
-TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_ARCH='"$(CC_TARGET_ARCH_)"'
+ifneq ($(GCC_TARGET_ARCH),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -march=$(GCC_TARGET_ARCH)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_ARCH='"$(GCC_TARGET_ARCH)"'
 endif
-ifneq ($(CC_TARGET_CPU_),)
-TOOLCHAIN_EXTERNAL_CFLAGS += -mcpu=$(CC_TARGET_CPU_)
-TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_CPU='"$(CC_TARGET_CPU_)"'
+ifneq ($(GCC_TARGET_CPU),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mcpu=$(GCC_TARGET_CPU)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_CPU='"$(GCC_TARGET_CPU)"'
 endif
-ifneq ($(CC_TARGET_ABI_),)
-TOOLCHAIN_EXTERNAL_CFLAGS += -mabi=$(CC_TARGET_ABI_)
-TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_ABI='"$(CC_TARGET_ABI_)"'
+ifneq ($(GCC_TARGET_ABI),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mabi=$(GCC_TARGET_ABI)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_ABI='"$(GCC_TARGET_ABI)"'
 endif
-ifneq ($(CC_TARGET_FPU_),)
-TOOLCHAIN_EXTERNAL_CFLAGS += -mfpu=$(CC_TARGET_FPU_)
-TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_FPU='"$(CC_TARGET_FPU_)"'
+ifeq ($(BR2_TOOLCHAIN_HAS_MNAN_OPTION),y)
+ifneq ($(GCC_TARGET_NAN),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mnan=$(GCC_TARGET_NAN)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_NAN='"$(GCC_TARGET_NAN)"'
 endif
-ifneq ($(CC_TARGET_FLOAT_ABI_),)
-TOOLCHAIN_EXTERNAL_CFLAGS += -mfloat-abi=$(CC_TARGET_FLOAT_ABI_)
-TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_FLOAT_ABI='"$(CC_TARGET_FLOAT_ABI_)"'
 endif
-ifneq ($(CC_TARGET_MODE_),)
-TOOLCHAIN_EXTERNAL_CFLAGS += -m$(CC_TARGET_MODE_)
-TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_MODE='"$(CC_TARGET_MODE_)"'
+ifneq ($(GCC_TARGET_FP32_MODE),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mfp$(GCC_TARGET_FP32_MODE)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_FP32_MODE='"$(GCC_TARGET_FP32_MODE)"'
+endif
+ifneq ($(GCC_TARGET_FPU),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mfpu=$(GCC_TARGET_FPU)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_FPU='"$(GCC_TARGET_FPU)"'
+endif
+ifneq ($(GCC_TARGET_FLOAT_ABI),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -mfloat-abi=$(GCC_TARGET_FLOAT_ABI)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_FLOAT_ABI='"$(GCC_TARGET_FLOAT_ABI)"'
+endif
+ifneq ($(GCC_TARGET_MODE),)
+TOOLCHAIN_EXTERNAL_CFLAGS += -m$(GCC_TARGET_MODE)
+TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS += -DBR_MODE='"$(GCC_TARGET_MODE)"'
 endif
 ifeq ($(BR2_BINFMT_FLAT),y)
 TOOLCHAIN_EXTERNAL_CFLAGS += -Wl,-elf2flt
@@ -231,13 +245,13 @@ endif
 
 #
 # The following functions creates the symbolic links needed to get the
-# cross-compilation tools visible in $(HOST_DIR)/usr/bin. Some of
+# cross-compilation tools visible in $(HOST_DIR)/bin. Some of
 # links are done directly to the corresponding tool in the external
 # toolchain installation directory, while some other links are done to
 # the toolchain wrapper (preprocessor, C, C++ and Fortran compiler)
 #
 # We skip gdb symlink when we are building our own gdb to prevent two
-# gdb's in $(HOST_DIR)/usr/bin.
+# gdb's in $(HOST_DIR)/bin.
 #
 # The LTO support in gcc creates wrappers for ar, ranlib and nm which load
 # the lto plugin. These wrappers are called *-gcc-ar, *-gcc-ranlib, and
@@ -246,23 +260,23 @@ endif
 # match the *cc-* pattern. Therefore, an additional case is added for *-ar,
 # *-ranlib and *-nm.
 define TOOLCHAIN_EXTERNAL_INSTALL_WRAPPER
-	$(Q)cd $(HOST_DIR)/usr/bin; \
+	$(Q)cd $(HOST_DIR)/bin; \
 	for i in $(TOOLCHAIN_EXTERNAL_CROSS)*; do \
 		base=$${i##*/}; \
 		case "$$base" in \
 		*-ar|*-ranlib|*-nm) \
-			ln -sf $$(echo $$i | sed 's%^$(HOST_DIR)%../..%') .; \
+			ln -sf $$(echo $$i | sed 's%^$(HOST_DIR)%..%') .; \
 			;; \
-		*cc|*cc-*|*++|*++-*|*cpp|*-gfortran) \
+		*cc|*cc-*|*++|*++-*|*cpp|*-gfortran|*-gdc) \
 			ln -sf toolchain-wrapper $$base; \
 			;; \
 		*gdb|*gdbtui) \
 			if test "$(BR2_PACKAGE_HOST_GDB)" != "y"; then \
-				ln -sf $$(echo $$i | sed 's%^$(HOST_DIR)%../..%') .; \
+				ln -sf $$(echo $$i | sed 's%^$(HOST_DIR)%..%') .; \
 			fi \
 			;; \
 		*) \
-			ln -sf $$(echo $$i | sed 's%^$(HOST_DIR)%../..%') .; \
+			ln -sf $$(echo $$i | sed 's%^$(HOST_DIR)%..%') .; \
 			;; \
 		esac; \
 	done
@@ -326,7 +340,7 @@ endef
 #
 # And variations on these.
 define toolchain_find_sysroot
-$$(printf $(call toolchain_find_libc_a,$(1)) | sed -r -e 's:(usr/)?lib(32|64)?([^/]*)?/([^/]*/)?libc\.a::')
+$$(printf $(call toolchain_find_libc_a,$(1)) | sed -r -e 's:/(usr/)?lib(32|64)?([^/]*)?/([^/]*/)?libc\.a:/:')
 endef
 
 # Returns the lib subdirectory for the given compiler + flags (i.e
@@ -471,30 +485,6 @@ define TOOLCHAIN_EXTERNAL_INSTALL_GDBINIT
 	fi
 endef
 
-# Various utility functions used by the external toolchain based on musl.
-
-# With the musl C library, the libc.so library directly plays the role
-# of the dynamic library loader. We just need to create a symbolic
-# link to libc.so with the appropriate name.
-ifeq ($(BR2_TOOLCHAIN_EXTERNAL_MUSL):$(BR2_STATIC_LIBS),y:)
-ifeq ($(BR2_i386),y)
-MUSL_ARCH = i386
-else ifeq ($(BR2_ARM_EABIHF),y)
-MUSL_ARCH = armhf
-else ifeq ($(BR2_mips):$(BR2_SOFT_FLOAT),y:y)
-MUSL_ARCH = mips-sf
-else ifeq ($(BR2_mipsel):$(BR2_SOFT_FLOAT),y:y)
-MUSL_ARCH = mipsel-sf
-else ifeq ($(BR2_sh),y)
-MUSL_ARCH = sh
-else
-MUSL_ARCH = $(ARCH)
-endif
-define TOOLCHAIN_EXTERNAL_MUSL_LD_LINK
-	ln -sf libc.so $(TARGET_DIR)/lib/ld-musl-$(MUSL_ARCH).so.1
-endef
-endif
-
 # uClibc-ng dynamic loader is called ld-uClibc.so.1, but gcc is not
 # patched specifically for uClibc-ng, so it continues to generate
 # binaries that expect the dynamic loader to be named ld-uClibc.so.0,
@@ -509,6 +499,12 @@ define TOOLCHAIN_EXTERNAL_FIXUP_UCLIBCNG_LDSO
 	fi
 endef
 
+define TOOLCHAIN_EXTERNAL_INSTALL_TARGET_LDD
+	$(Q)if test -f $(STAGING_DIR)/usr/bin/ldd ; then \
+		$(INSTALL) -D $(STAGING_DIR)/usr/bin/ldd $(TARGET_DIR)/usr/bin/ldd ; \
+		$(SED) 's:.*/bin/bash:#!/bin/sh:' $(TARGET_DIR)/usr/bin/ldd ; \
+	fi
+endef
 
 ################################################################################
 # inner-toolchain-external-package -- defines the generic installation rules
@@ -550,8 +546,10 @@ define $(2)_CONFIGURE_CMDS
 	$$(Q)$$(call check_unusable_toolchain,$$(TOOLCHAIN_EXTERNAL_CC))
 	$$(Q)SYSROOT_DIR="$$(call toolchain_find_sysroot,$$(TOOLCHAIN_EXTERNAL_CC))" ; \
 	$$(call check_kernel_headers_version,\
+		$$(BUILD_DIR),\
 		$$(call toolchain_find_sysroot,$$(TOOLCHAIN_EXTERNAL_CC)),\
-		$$(call qstrip,$$(BR2_TOOLCHAIN_HEADERS_AT_LEAST))); \
+		$$(call qstrip,$$(BR2_TOOLCHAIN_HEADERS_AT_LEAST)),\
+		$$(if $$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM),loose,strict)); \
 	$$(call check_gcc_version,$$(TOOLCHAIN_EXTERNAL_CC),\
 		$$(call qstrip,$$(BR2_TOOLCHAIN_GCC_AT_LEAST))); \
 	if test "$$(BR2_arm)" = "y" ; then \
@@ -561,19 +559,24 @@ define $(2)_CONFIGURE_CMDS
 	if test "$$(BR2_INSTALL_LIBSTDCPP)" = "y" ; then \
 		$$(call check_cplusplus,$$(TOOLCHAIN_EXTERNAL_CXX)) ; \
 	fi ; \
+	if test "$$(BR2_TOOLCHAIN_HAS_DLANG)" = "y" ; then \
+		$$(call check_dlang,$$(TOOLCHAIN_EXTERNAL_GDC)) ; \
+	fi ; \
 	if test "$$(BR2_TOOLCHAIN_HAS_FORTRAN)" = "y" ; then \
 		$$(call check_fortran,$$(TOOLCHAIN_EXTERNAL_FC)) ; \
+	fi ; \
+	if test "$$(BR2_TOOLCHAIN_HAS_OPENMP)" = "y" ; then \
+		$$(call check_openmp,$$(TOOLCHAIN_EXTERNAL_CC)) ; \
 	fi ; \
 	if test "$$(BR2_TOOLCHAIN_EXTERNAL_UCLIBC)" = "y" ; then \
 		$$(call check_uclibc,$$$${SYSROOT_DIR}) ; \
 	elif test "$$(BR2_TOOLCHAIN_EXTERNAL_MUSL)" = "y" ; then \
 		$$(call check_musl,\
-			"$$(TOOLCHAIN_EXTERNAL_CC) $$(TOOLCHAIN_EXTERNAL_CFLAGS)",\
-			$$(TOOLCHAIN_EXTERNAL_READELF)) ; \
+			"$$(TOOLCHAIN_EXTERNAL_CC) $$(TOOLCHAIN_EXTERNAL_CFLAGS)") ; \
 	else \
 		$$(call check_glibc,$$$${SYSROOT_DIR}) ; \
 	fi
-	$$(Q)$$(call check_toolchain_ssp,$$(TOOLCHAIN_EXTERNAL_CC))
+	$$(Q)$$(call check_toolchain_ssp,$$(TOOLCHAIN_EXTERNAL_CC),$(BR2_SSP_OPTION))
 endef
 
 $(2)_TOOLCHAIN_WRAPPER_ARGS += $$(TOOLCHAIN_EXTERNAL_TOOLCHAIN_WRAPPER_ARGS)
@@ -588,10 +591,6 @@ define $(2)_INSTALL_STAGING_CMDS
 	$$(TOOLCHAIN_EXTERNAL_INSTALL_GDBINIT)
 endef
 
-ifeq ($$(BR2_TOOLCHAIN_EXTERNAL_MUSL),y)
-$(2)_POST_INSTALL_STAGING_HOOKS += TOOLCHAIN_EXTERNAL_MUSL_LD_LINK
-endif
-
 # Even though we're installing things in both the staging, the host
 # and the target directory, we do everything within the
 # install-staging step, arbitrarily.
@@ -600,6 +599,7 @@ define $(2)_INSTALL_TARGET_CMDS
 	$$(TOOLCHAIN_EXTERNAL_INSTALL_TARGET_LIBS)
 	$$(TOOLCHAIN_EXTERNAL_INSTALL_TARGET_GDBSERVER)
 	$$(TOOLCHAIN_EXTERNAL_FIXUP_UCLIBCNG_LDSO)
+	$$(TOOLCHAIN_EXTERNAL_INSTALL_TARGET_LDD)
 endef
 
 # Call the generic package infrastructure to generate the necessary

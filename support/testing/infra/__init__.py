@@ -1,12 +1,14 @@
-import contextlib
 import os
 import re
 import sys
 import tempfile
 import subprocess
-from urllib2 import urlopen, HTTPError, URLError
+from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
 
 ARTIFACTS_URL = "http://autobuild.buildroot.net/artefacts/"
+BASE_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "../../.."))
+
 
 def open_log_file(builddir, stage, logtofile=True):
     """
@@ -20,8 +22,15 @@ def open_log_file(builddir, stage, logtofile=True):
         fhandle = sys.stdout
     return fhandle
 
+
+def basepath(relpath=""):
+    """Return the absolute path for a file or directory relative to the Buildroot top directory."""
+    return os.path.join(BASE_DIR, relpath)
+
+
 def filepath(relpath):
-    return os.path.join(os.getcwd(), "support/testing", relpath)
+    return os.path.join(BASE_DIR, "support/testing", relpath)
+
 
 def download(dldir, filename):
     finalpath = os.path.join(dldir, filename)
@@ -32,19 +41,30 @@ def download(dldir, filename):
         os.makedirs(dldir)
 
     tmpfile = tempfile.mktemp(dir=dldir)
-    print "Downloading to {}".format(tmpfile)
+    print("Downloading to {}".format(tmpfile))
 
     try:
         url_fh = urlopen(os.path.join(ARTIFACTS_URL, filename))
-        with open(tmpfile, "w+") as tmpfile_fh:
+        with open(tmpfile, "w+b") as tmpfile_fh:
             tmpfile_fh.write(url_fh.read())
-    except (HTTPError, URLError), err:
+    except (HTTPError, URLError) as err:
         os.unlink(tmpfile)
         raise err
 
-    print "Renaming from %s to %s" % (tmpfile, finalpath)
+    print("Renaming from {} to {}".format(tmpfile, finalpath))
     os.rename(tmpfile, finalpath)
     return finalpath
+
+
+def run_cmd_on_host(builddir, cmd):
+    """Call subprocess.check_output and return the text output."""
+    out = subprocess.check_output(cmd,
+                                  stderr=open(os.devnull, "w"),
+                                  cwd=builddir,
+                                  env={"LANG": "C"},
+                                  universal_newlines=True)
+    return out
+
 
 def get_elf_arch_tag(builddir, prefix, fpath, tag):
     """
@@ -55,9 +75,9 @@ def get_elf_arch_tag(builddir, prefix, fpath, tag):
     v5TEJ
     >>>
     """
-    cmd = ["host/usr/bin/{}-readelf".format(prefix),
+    cmd = ["host/bin/{}-readelf".format(prefix),
            "-A", os.path.join("target", fpath)]
-    out = subprocess.check_output(cmd, cwd=builddir, env={"LANG": "C"})
+    out = run_cmd_on_host(builddir, cmd)
     regexp = re.compile("^  {}: (.*)$".format(tag))
     for line in out.splitlines():
         m = regexp.match(line)
@@ -66,8 +86,10 @@ def get_elf_arch_tag(builddir, prefix, fpath, tag):
         return m.group(1)
     return None
 
+
 def get_file_arch(builddir, prefix, fpath):
     return get_elf_arch_tag(builddir, prefix, fpath, "Tag_CPU_arch")
+
 
 def get_elf_prog_interpreter(builddir, prefix, fpath):
     """
@@ -80,9 +102,9 @@ def get_elf_prog_interpreter(builddir, prefix, fpath):
     /lib/ld-linux-armhf.so.3
     >>>
     """
-    cmd = ["host/usr/bin/{}-readelf".format(prefix),
+    cmd = ["host/bin/{}-readelf".format(prefix),
            "-l", os.path.join("target", fpath)]
-    out = subprocess.check_output(cmd, cwd=builddir, env={"LANG": "C"})
+    out = run_cmd_on_host(builddir, cmd)
     regexp = re.compile("^ *\[Requesting program interpreter: (.*)\]$")
     for line in out.splitlines():
         m = regexp.match(line)

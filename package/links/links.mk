@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LINKS_VERSION = 2.14
+LINKS_VERSION = 2.20.2
 LINKS_SOURCE = links-$(LINKS_VERSION).tar.bz2
 LINKS_SITE = http://links.twibright.com/download
 LINKS_DEPENDENCIES = host-pkgconf
@@ -15,7 +15,10 @@ ifeq ($(BR2_PACKAGE_LINKS_GRAPHICS),y)
 LINKS_CONF_OPTS += --enable-graphics
 LINKS_DEPENDENCIES += libpng
 ifeq ($(BR2_PACKAGE_XLIB_LIBXT),y)
-LINKS_CONF_OPTS += --with-x
+LINKS_CONF_OPTS += \
+	--with-x \
+	--x-includes=$(STAGING_DIR)/usr/include \
+	--x-libraries=$(STAGING_DIR)/usr/lib
 LINKS_DEPENDENCIES += xlib_libXt
 else
 LINKS_CONF_OPTS += --without-x

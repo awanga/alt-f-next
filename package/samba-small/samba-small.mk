@@ -4,43 +4,60 @@
 #
 ################################################################################
 
-SAMBA_SMALL_VERSION = 4.6.7
+SAMBA_SMALL_VERSION = 4.10.16
 SAMBA_SMALL_SITE = https://download.samba.org/pub/samba/stable
 SAMBA_SMALL_SOURCE = samba-$(SAMBA_SMALL_VERSION).tar.gz
 SAMBA_SMALL_INSTALL_STAGING = YES
 SAMBA_SMALL_LICENSE = GPL-3.0+
 SAMBA_SMALL_LICENSE_FILES = COPYING
 SAMBA_SMALL_DEPENDENCIES = \
-	host-e2fsprogs host-heimdal host-python zlib
+	host-e2fsprogs host-heimdal host-nfs-utils host-python3 \
+	popt zlib \
+
+SAMBA_SMALL_CONF_ENV = \
+	XSLTPROC=false \
+	WAF_NO_PREFORK=1
 
 SAMBA_SMALL_CONF_OPTS += \
 	--with-static-modules=!FORCED \
 	--with-shared-modules=LEASES_DB,LEASES_UTIL,LIBCLI_AUTH,LIBTSOCKET,LOCKING,NDR_IOCTL,NDR_QUOTA,NDR_SECURITY,NDR_SRVSVC,NDR_SVCCTL,PROFILE,RPC_NDR_SRVSVC,!FORCED \
-	--without-winbind \
-	--without-acl-support \
-	--disable-cups \
 	--disable-avahi \
-	--without-fam \
-	--disable-gnutls \
-	--without-regedit \
-	--without-ad-dc \
 	--disable-cephfs \
-	--without-systemd \
-	--without-lttng \
-	--without-ads --without-ldap \
-	--without-gpgme \
-	--without-ntvfs-fileserver \
+	--disable-cups \
+	--disable-gnutls \
 	--disable-python \
+	--without-ad-dc \
+	--without-ads \
+	--without-fam \
+	--without-gettext \
+	--without-gpgme \
+	--without-json \
+	--without-libarchive \
+	--without-ldap \
+	--without-lttng \
+	--without-ntvfs-fileserver \
+	--without-systemd \
+	--without-winbind \
 	--nopyc --nopyo
 
-ifeq ($(BR2_PACKAGE_POPT),y)
-SAMBA_SMALL_DEPENDENCIES += popt
+ifeq ($(BR2_PACKAGE_LIBTIRPC),y)
+SAMBA_SMALL_CFLAGS += `$(PKG_CONFIG_HOST_BINARY) --cflags libtirpc`
+SAMBA_SMALL_LDFLAGS += `$(PKG_CONFIG_HOST_BINARY) --libs libtirpc`
+SAMBA_SMALL_DEPENDENCIES += libtirpc host-pkgconf
 endif
 
-ifeq ($(BR2_PACKAGE_GETTEXT),y)
-SAMBA_SMALL_DEPENDENCIES += gettext
+ifeq ($(BR2_PACKAGE_ACL),y)
+SAMBA_SMALL_CONF_OPTS += --with-acl-support
+SAMBA_SMALL_DEPENDENCIES += acl
 else
-SAMBA_SMALL_CONF_OPTS += --without-gettext
+SAMBA_SMALL_CONF_OPTS += --without-acl-support
+endif
+
+ifeq ($(BR2_PACKAGE_NCURSES),y)
+SAMBA_SMALL_CONF_ENV += NCURSES_CONFIG="$(STAGING_DIR)/usr/bin/$(NCURSES_CONFIG_SCRIPTS)"
+SAMBA_SMALL_DEPENDENCIES += ncurses
+else
+SAMBA_SMALL_CONF_OPTS += --without-regedit
 endif
 
 # The ctdb tests (cluster) need bash and take up some space

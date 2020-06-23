@@ -1,2 +1,5 @@
+# From https://pub.freerdp.com/releases/freerdp-2.1.1.tar.gz.sha256
+sha256  6c6bf72fba1058ca6524c040d0825e4cdaa88682884a6c1c360e1cd5b8e21723  freerdp-2.1.1.tar.gz
+
 # Locally calculated
-sha256 1db496cca391f76382ef284db2d0306d5c15bf515ee2c964319c22272d969a32  freerdp-17834af7bb378f85a3b3cc4dcadaa5125a337e16.tar.gz
+sha256  cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30  LICENSE

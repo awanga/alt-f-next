@@ -4,10 +4,10 @@
 #
 ################################################################################
 
-FIO_VERSION = fio-2.13
-FIO_SITE = git://git.kernel.dk/fio.git
-FIO_LICENSE = GPL-2.0 + special obligations
-FIO_LICENSE_FILES = COPYING
+FIO_VERSION = 3.19
+FIO_SITE = http://brick.kernel.dk/snaps
+FIO_LICENSE = GPL-2.0
+FIO_LICENSE_FILES = COPYING MORAL-LICENSE
 
 ifeq ($(BR2_PACKAGE_LIBAIO),y)
 FIO_DEPENDENCIES += libaio

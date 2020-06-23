@@ -5,17 +5,17 @@
 ################################################################################
 
 RUBY_VERSION_MAJOR = 2.4
-RUBY_VERSION = $(RUBY_VERSION_MAJOR).1
+RUBY_VERSION = $(RUBY_VERSION_MAJOR).9
 RUBY_VERSION_EXT = 2.4.0
 RUBY_SITE = http://cache.ruby-lang.org/pub/ruby/$(RUBY_VERSION_MAJOR)
 RUBY_SOURCE = ruby-$(RUBY_VERSION).tar.xz
 RUBY_DEPENDENCIES = host-pkgconf host-ruby
-HOST_RUBY_DEPENDENCIES = host-pkgconf
+HOST_RUBY_DEPENDENCIES = host-pkgconf host-openssl
 RUBY_MAKE_ENV = $(TARGET_MAKE_ENV)
 RUBY_CONF_OPTS = --disable-install-doc --disable-rpath --disable-rubygems
 HOST_RUBY_CONF_OPTS = \
 	--disable-install-doc \
-	--with-out-ext=curses,openssl,readline \
+	--with-out-ext=curses,readline \
 	--without-gmp
 RUBY_LICENSE = Ruby or BSD-2-Clause, BSD-3-Clause, others
 RUBY_LICENSE_FILES = LEGAL COPYING BSDL
@@ -40,13 +40,6 @@ RUBY_CONF_ENV += \
 	ac_cv_func_isnan=yes
 endif
 
-ifeq ($(BR2_bfin),y)
-RUBY_CONF_ENV += ac_cv_func_dl_iterate_phdr=no
-# Blackfin doesn't have FFI closure support, needed by the fiddle
-# extension.
-RUBY_CONF_OPTS += --with-out-ext=fiddle
-endif
-
 ifeq ($(BR2_TOOLCHAIN_HAS_SSP),)
 RUBY_CONF_ENV += stack_protector=no
 endif
@@ -54,6 +47,12 @@ endif
 # Force optionals to build before we do
 ifeq ($(BR2_PACKAGE_BERKELEYDB),y)
 RUBY_DEPENDENCIES += berkeleydb
+endif
+ifeq ($(BR2_PACKAGE_LIBFFI),y)
+RUBY_DEPENDENCIES += libffi
+else
+# Disable fiddle to avoid a build failure with bundled-libffi on MIPS
+RUBY_CONF_OPTS += --with-out-ext=fiddle
 endif
 ifeq ($(BR2_PACKAGE_GDBM),y)
 RUBY_DEPENDENCIES += gdbm

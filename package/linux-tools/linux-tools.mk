@@ -10,15 +10,14 @@
 #
 # So, all tools refer to $(LINUX_DIR) instead of $(@D).
 
-# Note: we need individual tools .mk files to be included *before* this one
-# to guarantee that each tool has a chance to register itself before we build
-# the list of build and install hooks, below.
-#
-# This is currently guaranteed by the naming of each file:
-# - they get included by the top-level Makefile, with $(sort $(wildcard ...))
-# - make's $(sort) function will aways sort in the C locale
-# - the files names correctly sort out in the C locale so that each tool's
-#   .mk file is included before this one.
+# Note: we need individual tools makefiles to be included *before* we build
+# the list of build and install hooks below to guarantee that each tool has
+# a chance to register itself once, and only once. Therefore, the makefiles
+# are named linux-tool-*.mk.in, so they won't be picked up by the top-level
+# Makefile, but can be included here, guaranteeing the single inclusion and
+# the proper ordering.
+
+include $(sort $(wildcard package/linux-tools/*.mk.in))
 
 # We only need the kernel to be extracted, not actually built
 LINUX_TOOLS_PATCH_DEPENDENCIES = linux
@@ -42,5 +41,27 @@ LINUX_TOOLS_POST_INSTALL_STAGING_HOOKS += $(foreach tool,$(LINUX_TOOLS),\
 LINUX_TOOLS_POST_INSTALL_TARGET_HOOKS += $(foreach tool,$(LINUX_TOOLS),\
 	$(if $(BR2_PACKAGE_LINUX_TOOLS_$(call UPPERCASE,$(tool))),\
 		$(call UPPERCASE,$(tool))_INSTALL_TARGET_CMDS))
+
+define LINUX_TOOLS_INSTALL_INIT_SYSTEMD
+	$(foreach tool,$(LINUX_TOOLS),\
+		$(if $(BR2_PACKAGE_LINUX_TOOLS_$(call UPPERCASE,$(tool))),\
+			$($(call UPPERCASE,$(tool))_INSTALL_INIT_SYSTEMD))
+	)
+endef
+
+define LINUX_TOOLS_INSTALL_INIT_SYSV
+	$(foreach tool,$(LINUX_TOOLS),\
+		$(if $(BR2_PACKAGE_LINUX_TOOLS_$(call UPPERCASE,$(tool))),\
+			$($(call UPPERCASE,$(tool))_INSTALL_INIT_SYSV))
+	)
+endef
+
+define LINUX_TOOLS_INSTALL_INIT_OPENRC
+	$(foreach tool,$(LINUX_TOOLS),\
+		$(if $(BR2_PACKAGE_LINUX_TOOLS_$(call UPPERCASE,$(tool))),\
+			$(or $($(call UPPERCASE,$(tool))_INSTALL_INIT_OPENRC),\
+			     $($(call UPPERCASE,$(tool))_INSTALL_INIT_SYSV)))
+	)
+endef
 
 $(eval $(generic-package))

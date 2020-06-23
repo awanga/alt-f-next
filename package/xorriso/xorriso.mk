@@ -4,13 +4,15 @@
 #
 ################################################################################
 
-XORRISO_VERSION = 1.4.6
+XORRISO_VERSION = 1.5.0
 XORRISO_SITE = $(BR2_GNU_MIRROR)/xorriso
 XORRISO_LICENSE = GPL-3.0+
 XORRISO_LICENSE_FILES = COPYING COPYRIGHT
+
 # Disable everything until we actually need those features, and add the correct
 # host libraries
 HOST_XORRISO_CONF_OPTS = \
+	--disable-xattr-h-pref-attr \
 	--disable-zlib \
 	--disable-bzip2 \
 	--disable-libcdio \
@@ -21,6 +23,10 @@ HOST_XORRISO_CONF_OPTS = \
 # libcdio doesn't make sense for Linux
 # http://lists.gnu.org/archive/html/bug-xorriso/2017-04/msg00004.html
 XORRISO_CONF_OPTS = --disable-libcdio
+
+# we need sys/xattr.h
+XORRISO_CONF_OPTS += \
+	--disable-xattr-h-pref-attr
 
 ifeq ($(BR2_PACKAGE_LIBICONV),y)
 XORRISO_DEPENDENCIES += libiconv

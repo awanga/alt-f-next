@@ -4,15 +4,29 @@
 #
 ################################################################################
 
-DANTE_VERSION = 1.4.1
+DANTE_VERSION = 1.4.2
 DANTE_SITE = http://www.inet.no/dante/files
 DANTE_LICENSE = BSD-3-Clause
 DANTE_LICENSE_FILES = LICENSE
 
-# Dante uses a *VERY* old configure.ac
-DANTE_LIBTOOL_PATCH = NO
+# Needed so that our libtool patch applies properly
+DANTE_AUTORECONF = YES
 
 DANTE_CONF_OPTS += --disable-client --disable-preload
+
+ifeq ($(BR2_PACKAGE_LIBMINIUPNPC),y)
+DANTE_DEPENDENCIES += libminiupnpc
+DANTE_CONF_OPTS += --with-upnp
+else
+DANTE_CONF_OPTS += --without-upnp
+endif
+
+ifeq ($(BR2_PACKAGE_LINUX_PAM),y)
+DANTE_DEPENDENCIES += linux-pam
+DANTE_CONF_OPTS += --with-pam
+else
+DANTE_CONF_OPTS += --without-pam
+endif
 
 define DANTE_INSTALL_CONFIG_FILE
 	$(INSTALL) -D -m 644 $(@D)/example/sockd.conf \

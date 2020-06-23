@@ -1,2 +1,3 @@
 # Locally calculated
-sha256 8e8b848a112ff6bf146df34b4f6bc50160a8858a18499a7a6124193b37237a40 erlang-p1-tls-1.0.0.tar.gz
+sha256 6444e174650054a53624490155a914b8bea31cdefbcd5f87fc1862102dc1db6e erlang-p1-tls-1.1.2.tar.gz
+sha256 6e68ca4488fcdacf80ea0a3f5a6a294d48c2d8dc9de520cc3d6b3f3c1bc12847 LICENSE.txt

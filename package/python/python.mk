@@ -5,9 +5,9 @@
 ################################################################################
 
 PYTHON_VERSION_MAJOR = 2.7
-PYTHON_VERSION = $(PYTHON_VERSION_MAJOR).14
+PYTHON_VERSION = $(PYTHON_VERSION_MAJOR).18
 PYTHON_SOURCE = Python-$(PYTHON_VERSION).tar.xz
-PYTHON_SITE = http://python.org/ftp/python/$(PYTHON_VERSION)
+PYTHON_SITE = https://python.org/ftp/python/$(PYTHON_VERSION)
 PYTHON_LICENSE = Python-2.0, others
 PYTHON_LICENSE_FILES = LICENSE
 PYTHON_LIBTOOL_PATCH = NO
@@ -32,7 +32,6 @@ HOST_PYTHON_CONF_OPTS += \
 	--disable-bsddb \
 	--disable-test-modules \
 	--disable-bz2 \
-	--disable-ssl \
 	--disable-ossaudiodev \
 	--disable-pyo-build
 
@@ -54,15 +53,17 @@ HOST_PYTHON_CONF_ENV += \
 # MAKE1 has shown to workaround the problem.
 HOST_PYTHON_MAKE = $(MAKE1)
 
-PYTHON_DEPENDENCIES = host-python libffi
+PYTHON_DEPENDENCIES = host-python libffi $(TARGET_NLS_DEPENDENCIES)
 
 HOST_PYTHON_DEPENDENCIES = host-expat host-zlib
 
-PYTHON_INSTALL_STAGING = YES
-
-ifeq ($(BR2_PACKAGE_GETTEXT),y)
-PYTHON_DEPENDENCIES += gettext
+ifeq ($(BR2_PACKAGE_HOST_PYTHON_SSL),y)
+HOST_PYTHON_DEPENDENCIES += host-openssl
+else
+HOST_PYTHON_CONF_OPTS += --disable-ssl
 endif
+
+PYTHON_INSTALL_STAGING = YES
 
 ifeq ($(BR2_PACKAGE_PYTHON_READLINE),y)
 PYTHON_DEPENDENCIES += readline
@@ -122,10 +123,10 @@ HOST_PYTHON_CONF_OPTS += --enable-unicode=ucs4
 PYTHON_CONF_OPTS += --enable-unicode=ucs4
 endif
 
-ifeq ($(BR2_PACKAGE_PYTHON_GDBM),y)
-PYTHON_DEPENDENCIES += gdbm
+ifeq ($(BR2_PACKAGE_PYTHON_2TO3),y)
+PYTHON_CONF_OPTS += --enable-lib2to3
 else
-PYTHON_CONF_OPTS += --disable-gdbm 
+PYTHON_CONF_OPTS += --disable-lib2to3
 endif
 
 ifeq ($(BR2_PACKAGE_PYTHON_BZIP2),y)
@@ -175,7 +176,6 @@ PYTHON_CONF_OPTS += \
 	--with-system-ffi \
 	--disable-pydoc \
 	--disable-test-modules \
-	--disable-lib2to3 \
 	--disable-gdbm \
 	--disable-tk \
 	--disable-nis \
@@ -242,15 +242,15 @@ PYTHON_AUTORECONF = YES
 # for the target, otherwise the default python program may be missing.
 ifneq ($(BR2_PACKAGE_PYTHON3),y)
 define HOST_PYTHON_INSTALL_PYTHON_SYMLINK
-	ln -sf python2 $(HOST_DIR)/usr/bin/python
-	ln -sf python2-config $(HOST_DIR)/usr/bin/python-config
+	ln -sf python2 $(HOST_DIR)/bin/python
+	ln -sf python2-config $(HOST_DIR)/bin/python-config
 endef
 
 HOST_PYTHON_POST_INSTALL_HOOKS += HOST_PYTHON_INSTALL_PYTHON_SYMLINK
 endif
 
 # Provided to other packages
-PYTHON_PATH = $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/sysconfigdata/:$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages/
+PYTHON_PATH = $(STAGING_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/sysconfigdata/
 
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
@@ -265,7 +265,7 @@ endif
 define PYTHON_CREATE_PYC_FILES
 	$(PYTHON_FIX_TIME)
 	PYTHONPATH="$(PYTHON_PATH)" \
-	cd $(TARGET_DIR) && $(HOST_DIR)/usr/bin/python$(PYTHON_VERSION_MAJOR) \
+	cd $(TARGET_DIR) && $(HOST_DIR)/bin/python$(PYTHON_VERSION_MAJOR) \
 		$(TOPDIR)/support/scripts/pycompile.py \
 		$(if $(BR2_REPRODUCIBLE),--force) \
 		usr/lib/python$(PYTHON_VERSION_MAJOR)
@@ -277,7 +277,9 @@ endif
 
 ifeq ($(BR2_PACKAGE_PYTHON_PYC_ONLY),y)
 define PYTHON_REMOVE_PY_FILES
-	find $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR) -name '*.py' -print0 | \
+	find $(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR) -name '*.py' \
+		$(if $(strip $(KEEP_PYTHON_PY_FILES)),-not \( $(call finddirclauses,$(TARGET_DIR),$(KEEP_PYTHON_PY_FILES)) \) ) \
+		-print0 | \
 		xargs -0 --no-run-if-empty rm -f
 endef
 PYTHON_TARGET_FINALIZE_HOOKS += PYTHON_REMOVE_PY_FILES

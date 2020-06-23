@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-OPENBLAS_VERSION = f04af36ad0e85b64f12a7c38095383192cc52345
-OPENBLAS_SITE = $(call github,xianyi,OpenBLAS,$(OPENBLAS_VERSION))
+OPENBLAS_VERSION = 0.3.9
+OPENBLAS_SITE = $(call github,xianyi,OpenBLAS,v$(OPENBLAS_VERSION))
 OPENBLAS_LICENSE = BSD-3-Clause
 OPENBLAS_LICENSE_FILES = LICENSE
 OPENBLAS_INSTALL_STAGING = YES

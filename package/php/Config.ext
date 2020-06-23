@@ -45,9 +45,14 @@ config BR2_PACKAGE_PHP_EXT_PHAR
 	help
 	  PHP Archive support
 
+comment "zip needs a toolchain w/ dynamic library"
+	depends on BR2_STATIC_LIBS
+
 config BR2_PACKAGE_PHP_EXT_ZIP
 	bool "zip"
+	depends on !BR2_STATIC_LIBS # libzip
 	select BR2_PACKAGE_ZLIB
+	select BR2_PACKAGE_LIBZIP
 	help
 	  Zip read/write support
 
@@ -64,6 +69,24 @@ config BR2_PACKAGE_PHP_EXT_HASH
 	bool "hash"
 	help
 	  HASH message digest framework
+
+comment "libargon2 needs a toolchain w/ dynamic library"
+	depends on BR2_USE_MMU
+	depends on BR2_STATIC_LIBS
+
+config BR2_PACKAGE_PHP_EXT_LIBARGON2
+	bool "libargon2"
+	depends on BR2_USE_MMU # libargon2
+	depends on !BR2_STATIC_LIBS # libargon2
+	select BR2_PACKAGE_LIBARGON2
+	help
+	  libargon2 support
+
+config BR2_PACKAGE_PHP_EXT_LIBSODIUM
+	bool "libsodium"
+	select BR2_PACKAGE_LIBSODIUM
+	help
+	  libsodium support
 
 config BR2_PACKAGE_PHP_EXT_MCRYPT
 	bool "mcrypt"
@@ -113,8 +136,22 @@ endif
 
 config BR2_PACKAGE_PHP_EXT_MYSQLI
 	bool "Mysqli"
+	select BR2_PACKAGE_PHP_EXT_HASH
 	help
 	  MySQL Improved extension support
+
+config BR2_PACKAGE_PHP_EXT_PGSQL
+	bool "PostgreSQL"
+	depends on BR2_USE_MMU # postgresql
+	depends on !BR2_STATIC_LIBS
+	depends on BR2_USE_WCHAR # postgresql
+	select BR2_PACKAGE_POSTGRESQL
+	help
+	  PostgreSQL support
+
+comment "PostgreSQL extension needs a toolchain w/ dynamic library, wchar"
+	depends on BR2_USE_MMU
+	depends on BR2_STATIC_LIBS || !BR2_USE_WCHAR
 
 config BR2_PACKAGE_PHP_EXT_SQLITE
 	bool "SQLite3"
@@ -131,6 +168,7 @@ if BR2_PACKAGE_PHP_EXT_PDO
 
 config BR2_PACKAGE_PHP_EXT_PDO_MYSQL
 	bool "MySQL"
+	select BR2_PACKAGE_PHP_EXT_HASH
 	help
 	  PDO driver for MySQL
 
@@ -138,13 +176,14 @@ config BR2_PACKAGE_PHP_EXT_PDO_POSTGRESQL
 	bool "PostgreSQL"
 	depends on BR2_USE_MMU # postgresql
 	depends on !BR2_STATIC_LIBS
+	depends on BR2_USE_WCHAR # postgresql
 	select BR2_PACKAGE_POSTGRESQL
 	help
 	  PDO driver for PostgreSQL
 
-comment "PostgreSQL drivers need a toolchain w/ dynamic library"
+comment "PostgreSQL drivers need a toolchain w/ wchar, dynamic library"
 	depends on BR2_USE_MMU
-	depends on BR2_STATIC_LIBS
+	depends on BR2_STATIC_LIBS || !BR2_USE_WCHAR
 
 config BR2_PACKAGE_PHP_EXT_PDO_SQLITE
 	bool "SQLite3"
@@ -154,9 +193,13 @@ config BR2_PACKAGE_PHP_EXT_PDO_SQLITE
 
 config BR2_PACKAGE_PHP_EXT_PDO_UNIXODBC
 	bool "unixODBC"
+	depends on !BR2_STATIC_LIBS # unixodbc
 	select BR2_PACKAGE_UNIXODBC
 	help
 	  unixODBC driver for PDO
+
+comment "unixodbc driver needs a toolchain w/ dynamic library"
+	depends on BR2_STATIC_LIBS
 
 endif
 
@@ -164,13 +207,12 @@ comment "Human language and character encoding support"
 
 config BR2_PACKAGE_PHP_EXT_GETTEXT
 	bool "Gettext"
-	depends on BR2_USE_WCHAR
-	select BR2_PACKAGE_GETTEXT if BR2_NEEDS_GETTEXT
+	depends on BR2_SYSTEM_ENABLE_NLS
 	help
 	  Gettext support
 
-comment "Gettext support needs a toolchain w/ wchar"
-	depends on !BR2_USE_WCHAR
+comment "Gettext support needs NLS enabled"
+	depends on !BR2_SYSTEM_ENABLE_NLS
 
 config BR2_PACKAGE_PHP_EXT_ICONV
 	bool "iconv"
@@ -182,18 +224,23 @@ config BR2_PACKAGE_PHP_EXT_INTL
 	bool "intl"
 	depends on BR2_INSTALL_LIBSTDCPP
 	depends on BR2_USE_WCHAR
+	depends on BR2_TOOLCHAIN_GCC_AT_LEAST_4_8 # icu
 	depends on !BR2_BINFMT_FLAT # icu
 	depends on BR2_TOOLCHAIN_HAS_THREADS # icu
+	depends on !BR2_STATIC_LIBS
 	select BR2_PACKAGE_ICU
 	help
 	  Internationalization support
 
-comment "intl support needs a toolchain w/ C++, wchar, threads"
+comment "intl support needs a toolchain w/ C++, wchar, threads, dynamic library, gcc >= 4.8"
 	depends on !BR2_BINFMT_FLAT
-	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_USE_WCHAR || !BR2_TOOLCHAIN_HAS_THREADS
+	depends on !BR2_INSTALL_LIBSTDCPP || !BR2_USE_WCHAR || \
+		!BR2_TOOLCHAIN_HAS_THREADS || BR2_STATIC_LIBS || \
+		!BR2_TOOLCHAIN_GCC_AT_LEAST_4_8
 
 config BR2_PACKAGE_PHP_EXT_MBSTRING
 	bool "mbstring"
+	select BR2_PACKAGE_ONIGURUMA
 	help
 	  multibyte string support
 
@@ -209,6 +256,7 @@ config BR2_PACKAGE_PHP_EXT_GD
 	select BR2_PACKAGE_FREETYPE
 	select BR2_PACKAGE_JPEG
 	select BR2_PACKAGE_LIBPNG
+	select BR2_PACKAGE_ZLIB
 	help
 	  GD support
 

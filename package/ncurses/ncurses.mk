@@ -4,13 +4,51 @@
 #
 ################################################################################
 
-NCURSES_VERSION = 6.0
+NCURSES_VERSION = 6.1
 NCURSES_SITE = $(BR2_GNU_MIRROR)/ncurses
 NCURSES_INSTALL_STAGING = YES
 NCURSES_DEPENDENCIES = host-ncurses
 NCURSES_LICENSE = MIT with advertising clause
-NCURSES_LICENSE_FILES = README
+NCURSES_LICENSE_FILES = COPYING
 NCURSES_CONFIG_SCRIPTS = ncurses$(NCURSES_LIB_SUFFIX)6-config
+NCURSES_PATCH = \
+	$(addprefix https://invisible-mirror.net/archives/ncurses/$(NCURSES_VERSION)/, \
+		ncurses-6.1-20190609-patch.sh.bz2 \
+		ncurses-6.1-20190615.patch.gz \
+		ncurses-6.1-20190623.patch.gz \
+		ncurses-6.1-20190630.patch.gz \
+		ncurses-6.1-20190706.patch.gz \
+		ncurses-6.1-20190713.patch.gz \
+		ncurses-6.1-20190720.patch.gz \
+		ncurses-6.1-20190727.patch.gz \
+		ncurses-6.1-20190728.patch.gz \
+		ncurses-6.1-20190803.patch.gz \
+		ncurses-6.1-20190810.patch.gz \
+		ncurses-6.1-20190817.patch.gz \
+		ncurses-6.1-20190824.patch.gz \
+		ncurses-6.1-20190831.patch.gz \
+		ncurses-6.1-20190907.patch.gz \
+		ncurses-6.1-20190914.patch.gz \
+		ncurses-6.1-20190921.patch.gz \
+		ncurses-6.1-20190928.patch.gz \
+		ncurses-6.1-20191005.patch.gz \
+		ncurses-6.1-20191012.patch.gz \
+		ncurses-6.1-20191015.patch.gz \
+		ncurses-6.1-20191019.patch.gz \
+		ncurses-6.1-20191026.patch.gz \
+		ncurses-6.1-20191102.patch.gz \
+		ncurses-6.1-20191109.patch.gz \
+		ncurses-6.1-20191116.patch.gz \
+		ncurses-6.1-20191123.patch.gz \
+		ncurses-6.1-20191130.patch.gz \
+		ncurses-6.1-20191207.patch.gz \
+		ncurses-6.1-20191214.patch.gz \
+		ncurses-6.1-20191221.patch.gz \
+		ncurses-6.1-20191228.patch.gz \
+		ncurses-6.1-20200104.patch.gz \
+		ncurses-6.1-20200111.patch.gz \
+		ncurses-6.1-20200118.patch.gz \
+	)
 
 NCURSES_CONF_OPTS = \
 	--without-cxx \
@@ -25,6 +63,7 @@ NCURSES_CONF_OPTS = \
 	--enable-const \
 	--enable-overwrite \
 	--enable-pc-files \
+	--disable-stripping \
 	--with-pkg-config-libdir="/usr/lib/pkgconfig" \
 	$(if $(BR2_PACKAGE_NCURSES_TARGET_PROGS),,--without-progs) \
 	--without-manpages
@@ -50,6 +89,7 @@ NCURSES_TERMINFO_FILES = \
 	d/dumb \
 	l/linux \
 	p/putty \
+	p/putty-256color \
 	p/putty-vt100 \
 	s/screen \
 	s/screen-256color \
@@ -59,8 +99,11 @@ NCURSES_TERMINFO_FILES = \
 	v/vt200 \
 	v/vt220 \
 	x/xterm \
+	x/xterm+256color \
+	x/xterm-256color \
 	x/xterm-color \
-	x/xterm-xfree86
+	x/xterm-xfree86 \
+	$(call qstrip,$(BR2_PACKAGE_NCURSES_ADDITIONAL_TERMINFO))
 
 ifeq ($(BR2_PACKAGE_NCURSES_WCHAR),y)
 NCURSES_CONF_OPTS += --enable-widec
@@ -97,10 +140,6 @@ NCURSES_LINK_STAGING_LIBS = \
 NCURSES_LINK_STAGING_PC = $(call NCURSES_LINK_PC)
 
 NCURSES_CONF_OPTS += --enable-ext-colors
-NCURSES_TERMINFO_FILES += \
-	p/putty-256color \
-	x/xterm+256color \
-	x/xterm-256color
 
 NCURSES_POST_INSTALL_STAGING_HOOKS += NCURSES_LINK_STAGING_LIBS
 NCURSES_POST_INSTALL_STAGING_HOOKS += NCURSES_LINK_STAGING_PC
@@ -152,6 +191,8 @@ HOST_NCURSES_CONF_OPTS = \
 	--without-cxx \
 	--without-cxx-binding \
 	--without-ada \
+	--with-default-terminfo-dir=/usr/share/terminfo \
+	--disable-db-install \
 	--without-normal
 
 $(eval $(autotools-package))

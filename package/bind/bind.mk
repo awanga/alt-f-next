@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-BIND_VERSION = 9.11.1-P3
-BIND_SITE = ftp://ftp.isc.org/isc/bind9/$(BIND_VERSION)
+BIND_VERSION = 9.11.19
+BIND_SITE = https://ftp.isc.org/isc/bind9/$(BIND_VERSION)
 # bind does not support parallel builds.
 BIND_MAKE = $(MAKE1)
 BIND_INSTALL_STAGING = YES
@@ -18,21 +18,22 @@ BIND_TARGET_SERVER_SBIN += dnssec-settime dnssec-verify genrandom
 BIND_TARGET_SERVER_SBIN += isc-hmac-fixup named-journalprint nsec3hash
 BIND_TARGET_SERVER_SBIN += lwresd named named-checkconf named-checkzone
 BIND_TARGET_SERVER_SBIN += named-compilezone rndc rndc-confgen dnssec-dsfromkey
-BIND_TARGET_SERVER_SBIN += dnssec-keyfromlabel dnssec-signzone
+BIND_TARGET_SERVER_SBIN += dnssec-keyfromlabel dnssec-signzone tsig-keygen
 BIND_TARGET_TOOLS_BIN = dig host nslookup nsupdate
 BIND_CONF_ENV = \
 	BUILD_CC="$(TARGET_CC)" \
 	BUILD_CFLAGS="$(TARGET_CFLAGS)"
 BIND_CONF_OPTS = \
+	$(if $(BR2_TOOLCHAIN_HAS_THREADS),--enable-threads,--disable-threads) \
+	--without-lmdb \
 	--with-libjson=no \
 	--with-randomdev=/dev/urandom \
 	--enable-epoll \
-	--with-libtool \
 	--with-gssapi=no \
 	--enable-filter-aaaa
 
 ifeq ($(BR2_PACKAGE_ZLIB),y)
-BIND_CONF_OPTS += --with-zlib=$(STAGING_DIR)/usr/include
+BIND_CONF_OPTS += --with-zlib=$(STAGING_DIR)/usr
 BIND_DEPENDENCIES += zlib
 else
 BIND_CONF_OPTS += --without-zlib
@@ -53,14 +54,13 @@ BIND_CONF_OPTS += --with-libxml2=no
 endif
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
-BIND_DEPENDENCIES += openssl
-BIND_CONF_ENV += \
-	ac_cv_func_EVP_sha256=yes \
-	ac_cv_func_EVP_sha384=yes \
-	ac_cv_func_EVP_sha512=yes
+BIND_DEPENDENCIES += host-pkgconf openssl
 BIND_CONF_OPTS += \
-	--with-openssl=$(STAGING_DIR)/usr LIBS="-lz" \
-	--with-ecdsa=yes
+	--with-openssl=$(STAGING_DIR)/usr \
+	--with-ecdsa=yes \
+	--with-eddsa=no \
+	--with-aes=yes
+BIND_CONF_ENV += LIBS=`$(PKG_CONFIG_HOST_BINARY) --libs openssl`
 # GOST cipher support requires openssl extra engines
 ifeq ($(BR2_PACKAGE_OPENSSL_ENGINES),y)
 BIND_CONF_OPTS += --with-gost=yes
@@ -71,8 +71,11 @@ else
 BIND_CONF_OPTS += --with-openssl=no
 endif
 
-# Used by dnssec-checkds and dnssec-coverage
-ifeq ($(BR2_PACKAGE_PYTHON)$(BR2_PACKAGE_PYTHON3),)
+# Used by dnssec-keymgr
+ifeq ($(BR2_PACKAGE_PYTHON_PLY),y)
+BIND_DEPENDENCIES += host-python-ply
+BIND_CONF_OPTS += --with-python=$(HOST_DIR)/usr/bin/python
+else
 BIND_CONF_OPTS += --with-python=no
 endif
 
@@ -80,6 +83,16 @@ ifeq ($(BR2_PACKAGE_READLINE),y)
 BIND_DEPENDENCIES += readline
 else
 BIND_CONF_OPTS += --with-readline=no
+endif
+
+ifeq ($(BR2_STATIC_LIBS),y)
+BIND_CONF_OPTS += \
+	--without-dlopen \
+	--without-libtool
+else
+BIND_CONF_OPTS += \
+	--with-dlopen \
+	--with-libtool
 endif
 
 define BIND_TARGET_REMOVE_SERVER
@@ -92,17 +105,12 @@ endef
 
 ifeq ($(BR2_PACKAGE_BIND_SERVER),y)
 define BIND_INSTALL_INIT_SYSV
-	$(INSTALL) -m 0755 -D package/bind/S81named \
+	$(INSTALL) -m 0755 -D $(BIND_PKGDIR)/S81named \
 		$(TARGET_DIR)/etc/init.d/S81named
 endef
 define BIND_INSTALL_INIT_SYSTEMD
-	$(INSTALL) -D -m 644 package/bind/named.service \
+	$(INSTALL) -D -m 644 $(BIND_PKGDIR)/named.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/named.service
-
-	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
-
-	ln -sf /usr/lib/systemd/system/named.service \
-		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/named.service
 endef
 else
 BIND_POST_INSTALL_TARGET_HOOKS += BIND_TARGET_REMOVE_SERVER

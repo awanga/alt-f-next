@@ -1,2 +1,3 @@
-# Locally calculated
-sha256	3d30dd5a273438e39741fcf87ae5e147d8700bd8faa7dfe9916ea425f9c716f7  lua-resty-http-0.10-0.src.rock
+# computed by luarocks/buildroot
+sha256 df913a055ddc2f029017602732c7a497225f4e0df1bcc6858e13f9f4d9524184  lua-resty-http-0.15-0.src.rock
+sha256 407e4b1412d8afa317dc703a1d318866c3de87d78899402125cbd90548c6057d  lua-resty-http/LICENSE

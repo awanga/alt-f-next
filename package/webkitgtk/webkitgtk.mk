@@ -4,17 +4,17 @@
 #
 ################################################################################
 
-WEBKITGTK_VERSION = 2.16.6
-WEBKITGTK_SITE = http://www.webkitgtk.org/releases
+WEBKITGTK_VERSION = 2.28.2
+WEBKITGTK_SITE = https://www.webkitgtk.org/releases
 WEBKITGTK_SOURCE = webkitgtk-$(WEBKITGTK_VERSION).tar.xz
 WEBKITGTK_INSTALL_STAGING = YES
 WEBKITGTK_LICENSE = LGPL-2.1+, BSD-2-Clause
 WEBKITGTK_LICENSE_FILES = \
 	Source/WebCore/LICENSE-APPLE \
 	Source/WebCore/LICENSE-LGPL-2.1
-WEBKITGTK_DEPENDENCIES = host-ruby host-flex host-bison host-gperf \
+WEBKITGTK_DEPENDENCIES = host-ruby host-python host-gperf \
 	enchant harfbuzz icu jpeg libgcrypt libgtk3 libsecret libsoup \
-	libxml2 libxslt sqlite webp
+	libtasn1 libxml2 libxslt openjpeg sqlite webp woff2
 WEBKITGTK_CONF_OPTS = \
 	-DENABLE_API_TESTS=OFF \
 	-DENABLE_GEOLOCATION=OFF \
@@ -23,15 +23,21 @@ WEBKITGTK_CONF_OPTS = \
 	-DENABLE_MINIBROWSER=ON \
 	-DENABLE_SPELLCHECK=ON \
 	-DPORT=GTK \
+	-DSILENCE_CROSS_COMPILATION_NOTICES=ON \
 	-DUSE_LIBNOTIFY=OFF \
-	-DUSE_LIBHYPHEN=OFF
+	-DUSE_LIBHYPHEN=OFF \
+	-DUSE_OPENJPEG=ON \
+	-DUSE_WOFF2=ON \
+	-DUSE_WPE_RENDERER=OFF
 
-# ARM needs NEON for JIT
-# i386 & x86_64 don't seem to have any special requirements
-ifeq ($(BR2_ARM_CPU_HAS_NEON)$(BR2_i386)$(BR2_x86_64),y)
-WEBKITGTK_CONF_OPTS += -DENABLE_JIT=ON
+ifeq ($(BR2_PACKAGE_WEBKITGTK_SANDBOX),y)
+WEBKITGTK_CONF_OPTS += \
+	-DENABLE_BUBBLEWRAP_SANDBOX=ON \
+	-DBWRAP_EXECUTABLE=/usr/bin/bwrap \
+	-DDBUS_PROXY_EXECUTABLE=/usr/bin/xdg-dbus-proxy
+WEBKITGTK_DEPENDENCIES += libseccomp
 else
-WEBKITGTK_CONF_OPTS += -DENABLE_JIT=OFF
+WEBKITGTK_CONF_OPTS += -DENABLE_BUBBLEWRAP_SANDBOX=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_WEBKITGTK_MULTIMEDIA),y)
@@ -43,6 +49,12 @@ else
 WEBKITGTK_CONF_OPTS += \
 	-DENABLE_VIDEO=OFF \
 	-DENABLE_WEB_AUDIO=OFF
+endif
+
+ifeq ($(BR2_PACKAGE_WEBKITGTK_WEBDRIVER),y)
+WEBKITGTK_CONF_OPTS += -DENABLE_WEBDRIVER=ON
+else
+WEBKITGTK_CONF_OPTS += -DENABLE_WEBDRIVER=OFF
 endif
 
 # Only one target platform can be built, assume X11 > Wayland
@@ -84,6 +96,21 @@ endif
 ifeq ($(BR2_PACKAGE_LIBGTK3_WAYLAND),y)
 WEBKITGTK_CONF_OPTS += -DENABLE_WAYLAND_TARGET=ON
 endif
+endif
+
+ifeq ($(BR2_PACKAGE_WEBKITGTK_USE_GSTREAMER_GL),y)
+WEBKITGTK_CONF_OPTS += -DUSE_GSTREAMER_GL=ON
+else
+WEBKITGTK_CONF_OPTS += -DUSE_GSTREAMER_GL=OFF
+endif
+
+# JIT is not supported for MIPS r6, but the WebKit build system does not
+# have a check for these processors. Disable JIT forcibly here and use
+# the CLoop interpreter instead.
+#
+# Upstream bug: https://bugs.webkit.org/show_bug.cgi?id=191258
+ifeq ($(BR2_MIPS_CPU_MIPS32R6)$(BR2_MIPS_CPU_MIPS64R6),y)
+WEBKITGTK_CONF_OPTS += -DENABLE_JIT=OFF -DENABLE_C_LOOP=ON
 endif
 
 $(eval $(cmake-package))

@@ -9,7 +9,7 @@ ORACLE_MYSQL_VERSION = $(ORACLE_MYSQL_VERSION_MAJOR).73
 ORACLE_MYSQL_SOURCE = mysql-$(ORACLE_MYSQL_VERSION).tar.gz
 ORACLE_MYSQL_SITE = http://dev.mysql.com/get/Downloads/MySQL-$(ORACLE_MYSQL_VERSION_MAJOR)
 ORACLE_MYSQL_INSTALL_STAGING = YES
-ORACLE_MYSQL_DEPENDENCIES = readline ncurses
+ORACLE_MYSQL_DEPENDENCIES = ncurses
 ORACLE_MYSQL_AUTORECONF = YES
 ORACLE_MYSQL_LICENSE = GPL-2.0
 ORACLE_MYSQL_LICENSE_FILES = README COPYING
@@ -21,6 +21,7 @@ MYSQL_SOCKET = /run/mysql/mysql.sock
 ORACLE_MYSQL_CONF_ENV = \
 	ac_cv_sys_restartable_syscalls=yes \
 	ac_cv_path_PS=/bin/ps \
+	ac_cv_path_HOSTNAME=/bin/hostname \
 	ac_cv_FIND_PROC="/bin/ps p \$\$PID | grep -v grep | grep mysqld > /dev/null" \
 	ac_cv_have_decl_HAVE_IB_ATOMIC_PTHREAD_T_GCC=yes \
 	ac_cv_have_decl_HAVE_IB_ATOMIC_PTHREAD_T_SOLARIS=no \
@@ -37,7 +38,7 @@ ORACLE_MYSQL_CONF_OPTS = \
 	--without-docs \
 	--without-man \
 	--without-libedit \
-	--without-readline \
+	--with-readline \
 	--with-low-memory \
 	--enable-thread-safe-client \
 	--with-unix-socket-path=$(MYSQL_SOCKET) \
@@ -63,7 +64,7 @@ define HOST_ORACLE_MYSQL_BUILD_CMDS
 endef
 
 define HOST_ORACLE_MYSQL_INSTALL_CMDS
-	$(INSTALL) -m 0755  $(@D)/sql/gen_lex_hash $(HOST_DIR)/usr/bin/
+	$(INSTALL) -m 0755  $(@D)/sql/gen_lex_hash $(HOST_DIR)/bin/
 endef
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
@@ -120,9 +121,6 @@ endef
 define ORACLE_MYSQL_INSTALL_INIT_SYSTEMD
 	$(INSTALL) -D -m 644 $(ORACLE_MYSQL_PKGDIR)/mysqld.service \
 		$(TARGET_DIR)/usr/lib/systemd/system/mysqld.service
-	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
-	ln -sf ../../../../usr/lib/systemd/system/mysqld.service \
-		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/mysqld.service
 endef
 
 else

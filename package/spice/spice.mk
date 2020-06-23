@@ -4,42 +4,46 @@
 #
 ################################################################################
 
-SPICE_VERSION = 0.12.8
+SPICE_VERSION = 0.14.2
 SPICE_SOURCE = spice-$(SPICE_VERSION).tar.bz2
-SPICE_SITE = http://www.spice-space.org/download/releases
+SPICE_SITE = http://www.spice-space.org/download/releases/spice-server
 SPICE_LICENSE = LGPL-2.1+
 SPICE_LICENSE_FILES = COPYING
 SPICE_INSTALL_STAGING = YES
 SPICE_DEPENDENCIES = \
+	host-pkgconf \
 	jpeg \
 	libglib2 \
 	openssl \
 	pixman \
 	spice-protocol
+# We're patching subprojects/spice-common/configure.ac
+SPICE_AUTORECONF = YES
 
 # We disable everything for now, because the dependency tree can become
 # quite deep if we try to enable some features, and I have not tested that.
 SPICE_CONF_OPTS = \
+	--disable-gstreamer \
 	--disable-opengl \
 	--disable-smartcard \
-	--disable-automated-tests \
 	--without-sasl \
-	--disable-manual
+	--disable-manual \
+	--disable-tests
 
 SPICE_DEPENDENCIES += host-pkgconf
-
-ifeq ($(BR2_PACKAGE_CELT051),y)
-SPICE_CONF_OPTS += --enable-celt051
-SPICE_DEPENDENCIES += celt051
-else
-SPICE_CONF_OPTS += --disable-celt051
-endif
 
 ifeq ($(BR2_PACKAGE_LZ4),y)
 SPICE_CONF_OPTS += --enable-lz4
 SPICE_DEPENDENCIES += lz4
 else
 SPICE_CONF_OPTS += --disable-lz4
+endif
+
+ifeq ($(BR2_PACKAGE_OPUS),y)
+SPICE_CONF_OPTS += --enable-opus
+SPICE_DEPENDENCIES += opus
+else
+SPICE_CONF_OPTS += --disable-opus
 endif
 
 # no enable/disable, detected using pkg-config

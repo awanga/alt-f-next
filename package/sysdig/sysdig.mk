@@ -4,13 +4,12 @@
 #
 ################################################################################
 
-SYSDIG_VERSION = 0.1.100
+SYSDIG_VERSION = 0.23.1
 SYSDIG_SITE = $(call github,draios,sysdig,$(SYSDIG_VERSION))
 SYSDIG_LICENSE = GPL-2.0
 SYSDIG_LICENSE_FILES = COPYING
-SYSDIG_CONF_OPTS = -DUSE_BUNDLED_LUAJIT=OFF -DUSE_BUNDLED_ZLIB=OFF \
-	-DUSE_BUNDLED_JSONCPP=OFF -DENABLE_DKMS=OFF
-SYSDIG_DEPENDENCIES = zlib luajit jsoncpp
+SYSDIG_CONF_OPTS = -DENABLE_DKMS=OFF -DUSE_BUNDLED_DEPS=OFF
+SYSDIG_DEPENDENCIES = zlib luajit jsoncpp libcurl ncurses openssl jq libb64 elfutils
 SYSDIG_SUPPORTS_IN_SOURCE_BUILD = NO
 
 # sysdig creates the module Makefile from a template, which contains a
@@ -22,6 +21,7 @@ SYSDIG_SUPPORTS_IN_SOURCE_BUILD = NO
 define SYSDIG_MODULE_GEN_MAKEFILE
 	$(INSTALL) -m 0644 $(@D)/driver/Makefile.in $(@D)/driver/Makefile
 	$(SED) 's/@KBUILD_FLAGS@//;' $(@D)/driver/Makefile
+	$(SED) 's/@PROBE_NAME@/sysdig-probe/;' $(@D)/driver/Makefile
 endef
 SYSDIG_POST_PATCH_HOOKS += SYSDIG_MODULE_GEN_MAKEFILE
 

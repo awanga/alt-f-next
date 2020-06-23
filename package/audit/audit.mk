@@ -4,10 +4,12 @@
 #
 ################################################################################
 
-AUDIT_VERSION = 2.7.1
+AUDIT_VERSION = 2.8.5
 AUDIT_SITE = http://people.redhat.com/sgrubb/audit
-AUDIT_LICENSE = GPL-2.0+ (programs), unclear (libraries)
-AUDIT_LICENSE_FILES = COPYING
+AUDIT_LICENSE = GPL-2.0+ (programs), LGPL-2.1+ (libraries)
+AUDIT_LICENSE_FILES = COPYING COPYING.LIB
+# 0002-Add-substitue-functions-for-strndupa-rawmemchr.patch
+AUDIT_AUTORECONF = YES
 
 AUDIT_INSTALL_STAGING = YES
 
@@ -38,23 +40,24 @@ AUDIT_CONF_OPTS += --disable-systemd
 endif
 
 define AUDIT_INSTALL_INIT_SYSV
-	$(INSTALL) -D -m 755 package/audit/S01auditd $(TARGET_DIR)/etc/init.d/S01auditd
+	$(INSTALL) -D -m 755 package/audit/S02auditd $(TARGET_DIR)/etc/init.d/S02auditd
 endef
 
 define AUDIT_INSTALL_INIT_SYSTEMD
-	mkdir -p $(TARGET_DIR)/etc/systemd/system/multi-user.target.wants
-	ln -fs ../../../../usr/lib/systemd/system/auditd.service \
-		$(TARGET_DIR)/etc/systemd/system/multi-user.target.wants/auditd.service
-
 	$(INSTALL) -D -m 644 package/audit/audit_tmpfiles.conf \
 		$(TARGET_DIR)/usr/lib/tmpfiles.d/audit.conf
 endef
 
 define AUDIT_INSTALL_CLEANUP
-	$(RM) -rf $(TARGET_DIR)/etc/rc.d
-	$(RM) -rf $(TARGET_DIR)/etc/sysconfig
+	$(RM) $(TARGET_DIR)/etc/rc.d/init.d/auditd
+	$(RM) $(TARGET_DIR)/etc/sysconfig/auditd
 endef
 AUDIT_POST_INSTALL_TARGET_HOOKS += AUDIT_INSTALL_CLEANUP
+
+define AUDIT_LINUX_CONFIG_FIXUPS
+	$(call KCONFIG_ENABLE_OPT,CONFIG_NET)
+	$(call KCONFIG_ENABLE_OPT,CONFIG_AUDIT)
+endef
 
 HOST_AUDIT_CONF_OPTS = \
 	--without-python \

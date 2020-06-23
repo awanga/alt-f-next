@@ -22,8 +22,8 @@ endef
 
 define HOST_LINUX_SYSCALL_SUPPORT_INSTALL_CMDS
 	$(INSTALL) -D -m 0644 $(@D)/linux_syscall_support.h \
-		$(HOST_DIR)/usr/include/linux_syscall_support.h
+		$(HOST_DIR)/include/linux_syscall_support.h
 endef
 
-$(eval $(host-generic-package))
 $(eval $(generic-package))
+$(eval $(host-generic-package))

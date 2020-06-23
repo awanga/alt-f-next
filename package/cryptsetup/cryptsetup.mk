@@ -4,19 +4,17 @@
 #
 ################################################################################
 
-CRYPTSETUP_VERSION_MAJOR = 1.7
-CRYPTSETUP_VERSION = $(CRYPTSETUP_VERSION_MAJOR).4
+CRYPTSETUP_VERSION_MAJOR = 2.2
+CRYPTSETUP_VERSION = $(CRYPTSETUP_VERSION_MAJOR).2
 CRYPTSETUP_SOURCE = cryptsetup-$(CRYPTSETUP_VERSION).tar.xz
 CRYPTSETUP_SITE = $(BR2_KERNEL_MIRROR)/linux/utils/cryptsetup/v$(CRYPTSETUP_VERSION_MAJOR)
-CRYPTSETUP_DEPENDENCIES = lvm2 popt util-linux host-pkgconf \
-	$(if $(BR2_NEEDS_GETTEXT_IF_LOCALE),gettext)
+CRYPTSETUP_DEPENDENCIES = lvm2 popt util-linux host-pkgconf json-c libargon2 \
+	$(TARGET_NLS_DEPENDENCIES)
 CRYPTSETUP_LICENSE = GPL-2.0+ (programs), LGPL-2.1+ (library)
 CRYPTSETUP_LICENSE_FILES = COPYING COPYING.LGPL
 CRYPTSETUP_INSTALL_STAGING = YES
-
-ifeq ($(BR2_NEEDS_GETTEXT_IF_LOCALE),y)
-CRYPTSETUP_CONF_ENV += LDFLAGS="$(TARGET_LDFLAGS) -lintl"
-endif
+CRYPTSETUP_CONF_ENV += LDFLAGS="$(TARGET_LDFLAGS) $(TARGET_NLS_LIBS)"
+CRYPTSETUP_CONF_OPTS += --enable-blkid --enable-libargon2
 
 # cryptsetup uses libgcrypt by default, but can be configured to use OpenSSL
 # or kernel crypto modules instead
@@ -31,4 +29,17 @@ else
 CRYPTSETUP_CONF_OPTS += --with-crypto_backend=kernel
 endif
 
+HOST_CRYPTSETUP_DEPENDENCIES = \
+	host-pkgconf \
+	host-lvm2 \
+	host-popt \
+	host-util-linux \
+	host-json-c \
+	host-openssl
+
+HOST_CRYPTSETUP_CONF_OPTS = --with-crypto_backend=openssl \
+	--disable-kernel_crypto \
+	--enable-blkid
+
 $(eval $(autotools-package))
+$(eval $(host-autotools-package))

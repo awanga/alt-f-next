@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-KMOD_VERSION = 24
+KMOD_VERSION = 27
 KMOD_SOURCE = kmod-$(KMOD_VERSION).tar.xz
 KMOD_SITE = $(BR2_KERNEL_MIRROR)/linux/utils/kernel/kmod
 KMOD_INSTALL_STAGING = YES
@@ -28,6 +28,10 @@ KMOD_CONF_OPTS = --disable-static --enable-shared
 KMOD_CONF_OPTS += --disable-manpages
 HOST_KMOD_CONF_OPTS = --disable-manpages
 
+ifeq ($(BR2_PACKAGE_BASH_COMPLETION),y)
+KMOD_CONF_OPTS += --with-bashcompletiondir=/usr/share/bash-completion/completions
+endif
+
 ifeq ($(BR2_PACKAGE_ZLIB),y)
 KMOD_DEPENDENCIES += zlib
 KMOD_CONF_OPTS += --with-zlib
@@ -38,6 +42,13 @@ KMOD_DEPENDENCIES += xz
 KMOD_CONF_OPTS += --with-xz
 endif
 
+ifeq ($(BR2_PACKAGE_OPENSSL),y)
+KMOD_DEPENDENCIES += openssl
+KMOD_CONF_OPTS += --with-openssl
+else
+KMOD_CONF_OPTS += --without-openssl
+endif
+
 ifeq ($(BR2_PACKAGE_PYTHON)$(BR2_PACKAGE_PYTHON3),y)
 KMOD_DEPENDENCIES += $(if $(BR2_PACKAGE_PYTHON),python,python3)
 KMOD_CONF_OPTS += --enable-python
@@ -46,11 +57,8 @@ endif
 ifeq ($(BR2_PACKAGE_KMOD_TOOLS),y)
 
 # add license info for kmod tools
-KMOD_LICENSE := $(KMOD_LICENSE), GPL-2.0+ (tools)
+KMOD_LICENSE += , GPL-2.0+ (tools)
 KMOD_LICENSE_FILES += COPYING
-
-# take precedence over busybox implementation
-KMOD_DEPENDENCIES += $(if $(BR2_PACKAGE_BUSYBOX),busybox)
 
 # /sbin is really /usr/sbin with merged /usr, so adjust relative symlink
 ifeq ($(BR2_ROOTFS_MERGED_USR),y)
@@ -74,7 +82,7 @@ endif
 # host.
 define HOST_KMOD_INSTALL_TOOLS
 	mkdir -p $(HOST_DIR)/sbin/
-	ln -sf ../usr/bin/kmod $(HOST_DIR)/sbin/depmod
+	ln -sf ../bin/kmod $(HOST_DIR)/sbin/depmod
 endef
 
 HOST_KMOD_POST_INSTALL_HOOKS += HOST_KMOD_INSTALL_TOOLS

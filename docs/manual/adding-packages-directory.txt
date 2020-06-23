@@ -46,9 +46,11 @@ is as follows:
 
 1. The type of option: +bool+, +string+... with the prompt
 2. If needed, the +default+ value(s)
-3. Any dependency of the +depends on+ form
-4. Any dependency of the +select+ form
-5. The help keyword and help text.
+3. Any dependencies on the target in +depends on+ form
+4. Any dependencies on the toolchain in +depends on+ form
+5. Any dependencies on other packages in +depends on+ form
+6. Any dependency of the +select+ form
+7. The help keyword and help text.
 
 You can add other sub-options into a +if BR2_PACKAGE_LIBFOO...endif+
 statement to configure particular things in your software. You can look at
@@ -292,13 +294,13 @@ use in the comment.
 
 * Kernel headers
 ** Dependency symbol: +BR2_TOOLCHAIN_HEADERS_AT_LEAST_X_Y+, (replace
-   +X_Y+ with the proper version, see +toolchain/toolchain-common.in+)
+   +X_Y+ with the proper version, see +toolchain/Config.in+)
 ** Comment string: +headers >= X.Y+ and/or `headers <= X.Y` (replace
    +X.Y+ with the proper version)
 
 * GCC version
 ** Dependency symbol: +BR2_TOOLCHAIN_GCC_AT_LEAST_X_Y+, (replace
-   +X_Y+ with the proper version, see +toolchain/toolchain-common.in+)
+   +X_Y+ with the proper version, see +toolchain/Config.in+)
 ** Comment string: +gcc >= X.Y+ and/or `gcc <= X.Y` (replace
    +X.Y+ with the proper version)
 
@@ -319,6 +321,10 @@ use in the comment.
 * C++ support
 ** Dependency symbol: +BR2_INSTALL_LIBSTDCPP+
 ** Comment string: `C++`
+
+* D support
+** Dependency symbol: +BR2_TOOLCHAIN_HAS_DLANG+
+** Comment string: `Dlang`
 
 * Fortran support
 ** Dependency symbol: +BR2_TOOLCHAIN_HAS_FORTRAN+
@@ -439,14 +445,23 @@ rules].
 [[adding-packages-hash]]
 === The +.hash+ file
 
-Optionally, you can add a third file, named +libfoo.hash+, that contains
-the hashes of the downloaded files for the +libfoo+ package.
+When possible, you must add a third file, named +libfoo.hash+, that
+contains the hashes of the downloaded files for the +libfoo+
+package. The only reason for not adding a +.hash+ file is when hash
+checking is not possible due to how the package is downloaded.
+
+When a package has a version selection choice, then the hash file may be
+stored in a subdirectory named after the version, e.g.
++package/libfoo/1.2.3/libfoo.hash+. This is especially important if the
+different versions have different licensing terms, but they are stored
+in the same file. Otherwise, the hash file should stay in the package's
+directory.
 
 The hashes stored in that file are used to validate the integrity of the
-downloaded files.
+downloaded files and of the license files.
 
 The format of this file is one line for each file for which to check the
-hash, each line being space-separated, with these three fields:
+hash, each line with the following three fields separated by two spaces:
 
 * the type of hash, one of:
 ** +md5+, +sha1+, +sha224+, +sha256+, +sha384+, +sha512+, +none+
@@ -458,7 +473,10 @@ hash, each line being space-separated, with these three fields:
 ** for +sha256+, 64 hexadecimal characters
 ** for +sha384+, 96 hexadecimal characters
 ** for +sha512+, 128 hexadecimal characters
-* the name of the file, without any directory component
+* the name of the file:
+** for a source archive: the basename of the file, without any directory
+   component,
+** for a license file: the path as it appears in +FOO_LICENSE_FILES+.
 
 Lines starting with a +#+ sign are considered comments, and ignored. Empty
 lines are ignored.
@@ -476,8 +494,11 @@ strong hash yourself (preferably +sha256+, but not +md5+), and mention
 this in a comment line above the hashes.
 
 .Note
-The number of spaces does not matter, so one can use spaces (or tabs) to
-properly align the different fields.
+The hashes for license files are used to detect a license change when a
+package version is bumped. The hashes are checked during the make legal-info
+target run. For a package with multiple versions (like Qt5),
+create the hash file in a subdirectory +<packageversion>+ of that package
+(see also xref:patch-apply-order[]).
 
 The +none+ hash type is reserved to those archives downloaded from a
 repository, like a 'git clone', a 'subversion checkout'...
@@ -489,18 +510,22 @@ downloaded patch, and an archive with no hash:
 
 ----
 # Hashes from: http://www.foosoftware.org/download/libfoo-1.2.3.tar.bz2.{sha1,sha256}:
-sha1   486fb55c3efa71148fe07895fd713ea3a5ae343a                         libfoo-1.2.3.tar.bz2
-sha256 efc8103cc3bcb06bda6a781532d12701eb081ad83e8f90004b39ab81b65d4369 libfoo-1.2.3.tar.bz2
+sha1  486fb55c3efa71148fe07895fd713ea3a5ae343a  libfoo-1.2.3.tar.bz2
+sha256  efc8103cc3bcb06bda6a781532d12701eb081ad83e8f90004b39ab81b65d4369  libfoo-1.2.3.tar.bz2
 
 # md5 from: http://www.foosoftware.org/download/libfoo-1.2.3.tar.bz2.md5, sha256 locally computed:
-md5    2d608f3c318c6b7557d551a5a09314f03452f1a1                         libfoo-data.bin
-sha256 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b libfoo-data.bin
+md5  2d608f3c318c6b7557d551a5a09314f03452f1a1  libfoo-data.bin
+sha256  01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b  libfoo-data.bin
 
 # Locally computed:
-sha256 ff52101fb90bbfc3fe9475e425688c660f46216d7e751c4bbdb1dc85cdccacb9 libfoo-fix-blabla.patch
+sha256  ff52101fb90bbfc3fe9475e425688c660f46216d7e751c4bbdb1dc85cdccacb9  libfoo-fix-blabla.patch
 
 # No hash for 1234:
-none   xxx                                                              libfoo-1234.tar.gz
+none  xxx  libfoo-1234.tar.gz
+
+# Hash for license files:
+sha256  a45a845012742796534f7e91fe623262ccfb99460a2bd04015bd28d66fba95b8  COPYING
+sha256  01b1f9f2c8ee648a7a596a1abe8aa4ed7899b1c9e5551bda06da6e422b04aa55  doc/COPYING.LGPL
 ----
 
 If the +.hash+ file is present, and it contains one or more hashes for a
@@ -515,10 +540,17 @@ the downloaded file is left in the download directory since this
 typically indicates that the +.hash+ file is wrong but the downloaded
 file is probably OK.
 
-Sources that are downloaded from a version control system (git, subversion,
-etc...) can not have a hash, because the version control system and tar
-may not create exactly the same file (dates, files ordering...), so the
-hash could be wrong even for a valid download. Therefore, the hash check
-is entirely skipped for such sources.
+Hashes are currently checked for files fetched from http/ftp servers,
+Git repositories, files copied using scp and local files. Hashes are
+not checked for other version control systems (such as Subversion,
+CVS, etc.) because Buildroot currently does not generate reproducible
+tarballs when source code is fetched from such version control
+systems.
+
+Hashes should only be added in +.hash+ files for files that are
+guaranteed to be stable. For example, patches auto-generated by Github
+are not guaranteed to be stable, and therefore their hashes can change
+over time. Such patches should not be downloaded, and instead be added
+locally to the package folder.
 
 If the +.hash+ file is missing, then no check is done at all.

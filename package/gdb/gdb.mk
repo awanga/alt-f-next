@@ -14,8 +14,8 @@ GDB_SOURCE = gdb-$(GDB_VERSION).tar.gz
 GDB_FROM_GIT = y
 endif
 
-ifeq ($(BR2_microblaze),y)
-GDB_SITE = $(call github,Xilinx,gdb,$(GDB_VERSION))
+ifeq ($(BR2_csky),y)
+GDB_SITE = $(call github,c-sky,binutils-gdb,$(GDB_VERSION))
 GDB_SOURCE = gdb-$(GDB_VERSION).tar.gz
 GDB_FROM_GIT = y
 endif
@@ -35,7 +35,9 @@ endif
 # For the host variant, we really want to build with XML support,
 # which is needed to read XML descriptions of target architectures. We
 # also need ncurses.
-HOST_GDB_DEPENDENCIES = host-expat host-ncurses
+# As for libiberty, gdb may use a system-installed one if present, so
+# we must ensure ours is installed first.
+HOST_GDB_DEPENDENCIES = host-expat host-libiberty host-ncurses
 
 # Disable building documentation
 GDB_MAKE_OPTS += MAKEINFO=true
@@ -44,12 +46,14 @@ HOST_GDB_MAKE_OPTS += MAKEINFO=true
 HOST_GDB_INSTALL_OPTS += MAKEINFO=true install
 
 # Apply the Xtensa specific patches
-ifneq ($(ARCH_XTENSA_CORE_NAME),)
+ifneq ($(ARCH_XTENSA_OVERLAY_FILE),)
 define GDB_XTENSA_OVERLAY_EXTRACT
 	$(call arch-xtensa-overlay-extract,$(@D),gdb)
 endef
 GDB_POST_EXTRACT_HOOKS += GDB_XTENSA_OVERLAY_EXTRACT
+GDB_EXTRA_DOWNLOADS += $(ARCH_XTENSA_OVERLAY_URL)
 HOST_GDB_POST_EXTRACT_HOOKS += GDB_XTENSA_OVERLAY_EXTRACT
+HOST_GDB_EXTRA_DOWNLOADS += $(ARCH_XTENSA_OVERLAY_URL)
 endif
 
 ifeq ($(GDB_FROM_GIT),y)
@@ -59,9 +63,11 @@ endif
 
 # When gdb sources are fetched from the binutils-gdb repository, they
 # also contain the binutils sources, but binutils shouldn't be built,
-# so we disable it.
+# so we disable it (additionally the option --disable-install-libbfd
+# prevents the un-wanted installation of libobcodes.so and libbfd.so).
 GDB_DISABLE_BINUTILS_CONF_OPTS = \
 	--disable-binutils \
+	--disable-install-libbfd \
 	--disable-ld \
 	--disable-gas
 
@@ -89,6 +95,16 @@ GDB_CONF_ENV = \
 GDB_CONF_ENV += gl_cv_func_gettimeofday_clobber=no
 GDB_MAKE_ENV += gl_cv_func_gettimeofday_clobber=no
 
+# Similarly, starting with gdb 8.1, the bundled gnulib tries to use
+# rpl_strerror. Let's tell gnulib the C library implementation works
+# well enough.
+GDB_CONF_ENV += \
+	gl_cv_func_working_strerror=yes \
+	gl_cv_func_strerror_0_works=yes
+GDB_MAKE_ENV += \
+	gl_cv_func_working_strerror=yes \
+	gl_cv_func_strerror_0_works=yes
+
 # Starting with glibc 2.25, the proc_service.h header has been copied
 # from gdb to glibc so other tools can use it. However, that makes it
 # necessary to make sure that declaration of prfpregset_t declaration
@@ -111,11 +127,12 @@ GDB_CONF_OPTS = \
 	--without-x \
 	--disable-sim \
 	$(GDB_DISABLE_BINUTILS_CONF_OPTS) \
-	$(if $(BR2_PACKAGE_GDB_SERVER),--enable-gdbserver) \
+	$(if $(BR2_PACKAGE_GDB_SERVER),--enable-gdbserver,--disable-gdbserver) \
 	--with-curses \
 	--without-included-gettext \
 	--disable-werror \
-	--enable-static
+	--enable-static \
+	--without-mpfr
 
 # When gdb is built as C++ application for ARC it segfaults at runtime
 # So we pass --disable-build-with-cxx config option to force gdb not to
@@ -128,6 +145,11 @@ endif
 # when we don't have C++ support in the toolchain
 ifneq ($(BR2_INSTALL_LIBSTDCPP),y)
 GDB_CONF_OPTS += --disable-build-with-cxx
+endif
+
+# inprocess-agent can't be built statically
+ifeq ($(BR2_STATIC_LIBS),y)
+GDB_CONF_OPTS += --disable-inprocess-agent
 endif
 
 ifeq ($(BR2_PACKAGE_GDB_TUI),y)
@@ -166,6 +188,7 @@ else
 GDB_CONF_OPTS += --without-zlib
 endif
 
+ifeq ($(BR2_PACKAGE_GDB_PYTHON),)
 # This removes some unneeded Python scripts and XML target description
 # files that are not useful for a normal usage of the debugger.
 define GDB_REMOVE_UNNEEDED_FILES
@@ -173,6 +196,7 @@ define GDB_REMOVE_UNNEEDED_FILES
 endef
 
 GDB_POST_INSTALL_TARGET_HOOKS += GDB_REMOVE_UNNEEDED_FILES
+endif
 
 # This installs the gdbserver somewhere into the $(HOST_DIR) so that
 # it becomes an integral part of the SDK, if the toolchain generated
@@ -181,7 +205,7 @@ GDB_POST_INSTALL_TARGET_HOOKS += GDB_REMOVE_UNNEEDED_FILES
 # does.
 define GDB_SDK_INSTALL_GDBSERVER
 	$(INSTALL) -D -m 0755 $(TARGET_DIR)/usr/bin/gdbserver \
-		$(HOST_DIR)/usr/$(GNU_TARGET_NAME)/debug-root/usr/bin/gdbserver
+		$(HOST_DIR)/$(GNU_TARGET_NAME)/debug-root/usr/bin/gdbserver
 endef
 
 ifeq ($(BR2_PACKAGE_GDB_SERVER),y)
@@ -201,6 +225,8 @@ HOST_GDB_CONF_OPTS = \
 	--enable-threads \
 	--disable-werror \
 	--without-included-gettext \
+	--with-curses \
+	--without-mpfr \
 	$(GDB_DISABLE_BINUTILS_CONF_OPTS)
 
 ifeq ($(BR2_PACKAGE_HOST_GDB_TUI),y)
@@ -210,29 +236,24 @@ HOST_GDB_CONF_OPTS += --disable-tui
 endif
 
 ifeq ($(BR2_PACKAGE_HOST_GDB_PYTHON),y)
-HOST_GDB_CONF_OPTS += --with-python=$(HOST_DIR)/usr/bin/python2
+HOST_GDB_CONF_OPTS += --with-python=$(HOST_DIR)/bin/python2
 HOST_GDB_DEPENDENCIES += host-python
+else ifeq ($(BR2_PACKAGE_HOST_GDB_PYTHON3),y)
+HOST_GDB_CONF_OPTS += --with-python=$(HOST_DIR)/bin/python3
+HOST_GDB_DEPENDENCIES += host-python3
 else
 HOST_GDB_CONF_OPTS += --without-python
 endif
 
-# workaround a bug if in-tree build is used for bfin sim
-define HOST_GDB_BFIN_SIM_WORKAROUND
-	$(RM) $(@D)/sim/common/tconfig.h
-endef
-
 ifeq ($(BR2_PACKAGE_HOST_GDB_SIM),y)
 HOST_GDB_CONF_OPTS += --enable-sim
-ifeq ($(BR2_bfin),y)
-HOST_GDB_PRE_CONFIGURE_HOOKS += HOST_GDB_BFIN_SIM_WORKAROUND
-endif
 else
 HOST_GDB_CONF_OPTS += --disable-sim
 endif
 
 # legacy $arch-linux-gdb symlink
 define HOST_GDB_ADD_SYMLINK
-	cd $(HOST_DIR)/usr/bin && \
+	cd $(HOST_DIR)/bin && \
 		ln -snf $(GNU_TARGET_NAME)-gdb $(ARCH)-linux-gdb
 endef
 

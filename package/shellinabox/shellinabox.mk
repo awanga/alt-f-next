@@ -4,10 +4,13 @@
 #
 ################################################################################
 
-SHELLINABOX_VERSION = v2.20
-SHELLINABOX_SITE = $(call github,shellinabox,shellinabox,$(SHELLINABOX_VERSION))
+SHELLINABOX_VERSION = 2.20
+SHELLINABOX_SITE = $(call github,shellinabox,shellinabox,v$(SHELLINABOX_VERSION))
 SHELLINABOX_LICENSE = GPL-2.0 with OpenSSL exception
 SHELLINABOX_LICENSE_FILES = COPYING GPL-2
+
+# 0002-CVE-2018-16789-fix-for-broken-multipart-form-data.patch
+SHELLINABOX_IGNORE_CVES += CVE-2018-16789
 
 # Fetching from Github, and patching Makefile.am, so we need to autoreconf
 SHELLINABOX_AUTORECONF = YES
@@ -23,7 +26,7 @@ SHELLINABOX_CONF_OPTS = \
 # musl's implementation of utmpx is a dummy one, and some aspects of
 # it cause build failures in shellinabox
 ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
-SHELLINABOX_CONF_ENV += ac_cv_header_utmpx_h=no
+SHELLINABOX_CONF_OPTS += --disable-utmp
 endif
 
 $(eval $(autotools-package))

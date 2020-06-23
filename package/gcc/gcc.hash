@@ -1,17 +1,13 @@
-# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-4.5.4/sha512.sum
-sha512  78696b287d46aacd6f150920da376ea32f58ad9f0dafd2d3b7fa6dbdd8dd7afe659108d1dfaa5807617fc5248719f50b39c37ade0173ea5b9fec2091f4656115  gcc-4.5.4.tar.bz2
-# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-4.7.4/sha512.sum
-sha512  dfcb737073191e628231031a3571ec77ee760a59377630f4a6e4fdfa66f9ddad39fde47e3f0f227eb43cdf90e0d34cde5abdc9ac892c1e111a911062a66c9189  gcc-4.7.4.tar.bz2
-# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-4.8.5/sha512.sum
-sha512  47fdfeca0c0a624cdec9c4ae47137d056c918d5c386d4b96985bb3c8172aba377cb66cbcc30e80832fd244a7d98f562c20198056915c70cfef0977545073a8ea  gcc-4.8.5.tar.bz2
-# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-4.9.4/sha512.sum
-sha512  93abb78e16277454f41a8e9810f41f66c0fdffdc539a762ff6b67d3037f78db971378683fd2ebf707d1d51c059fad2161fe42d110c330027f40214b7db0f3efe  gcc-4.9.4.tar.bz2
-# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-5.4.0/sha512.sum
-sha512  2941cc950c8f2409a314df497631f9b0266211aa74746c1839c46e04f1c7c299afe2528d1ef16ea39def408a644ba48f97519ec7a7dd37d260c3e9423514265b  gcc-5.4.0.tar.bz2
-# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-6.3.0/sha512.sum
-sha512  234dd9b1bdc9a9c6e352216a7ef4ccadc6c07f156006a59759c5e0e6a69f0abcdc14630eff11e3826dd6ba5933a8faa43043f3d1d62df6bd5ab1e82862f9bf78  gcc-6.3.0.tar.bz2
+# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-7.5.0/sha512.sum
+sha512  fe716cc19f2e3255d3a8b1b8290777bf769c6d98e6e0b07b81a3d6ad43f8af74cb170dfa18b1555dbfcd3f55ae582b91a286ccef496b9b65c1579902f96a1f60  gcc-7.5.0.tar.xz
+# From ftp://gcc.gnu.org/pub/gcc/releases/gcc-8.4.0/sha512.sum
+sha512  6de904f552a02de33b11ef52312bb664396efd7e1ce3bbe37bfad5ef617f133095b3767b4804bc7fe78df335cb53bc83f1ac055baed40979ce4c2c3e46b70280  gcc-8.4.0.tar.xz
+#  From ftp://gcc.gnu.org/pub/gcc/releases/gcc-9.3.0/sha512.sum
+sha512  4b9e3639eef6e623747a22c37a904b4750c93b6da77cf3958d5047e9b5ebddb7eebe091cc16ca0a227c0ecbd2bf3b984b221130f269a97ee4cc18f9cf6c444de  gcc-9.3.0.tar.xz
 
 # Locally calculated (fetched from Github)
-sha512  282f76b8b63372f5b4426092b80d36da96cd0bda2a8588405b9ec22806c69fafb696b0e0df65bc36c3c3aa8ce5befc24246fd5c6ddb21dcde01f45f7b11ff7c4  gcc-arc-2017.03.tar.gz
+sha512  84648d13f174102733e06ccdf7b351150babe06af0f2b99b8dfb2b2d3c3f13e424547349939806fe19932ad347977cad79cd8b37be9cbb03e6a4d03cdf95a72e  gcc-arc-2019.09-release.tar.gz
 # Locally calculated (fetched from Github)
-sha512  841101f7de45f327bf2e92f3efc73ca88a021e4b9b541458ce80a16e55882bd8606a8492d75c57c589ee2c10d42ae2865b67690155d7289a541df1d68096402f  gcc-musl-5.4.0.tar.gz
+sha512  2de7cf47333a4092b02d3bb98f4206f14966f1d139a724d09cf3b22f8a43ae0c704f33e6477d6367a03c29b265480dc900169e9d417006c5d46f0ae446b8c6f1  gcc-or1k-musl-5.4.0-20170218.tar.gz
+# Locally calculated (fetched from https://github.com/c-sky/gcc)
+sha512  1c3564fd6573dce13451a73015e7d88fecbb214dc1df96607976255b1d8b9e60318405333f4f218eea8d07e3675a802b66eff6df3921d505c4036481512792c2  gcc-48152afb96c59733d5bc79e3399bb7b3d4b44266.tar.gz

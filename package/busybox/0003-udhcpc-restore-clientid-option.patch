@@ -1,6 +1,6 @@
---- a/networking/udhcp/dhcpc.c	2018-01-05 13:43:22.790833000 -0500
-+++ b/networking/udhcp/dhcpc.c	2018-01-05 14:23:51.463720600 -0500
-@@ -55,6 +55,7 @@
+--- a/networking/udhcp/dhcpc.c	2019-06-10 10:50:53.000000000 +0000
++++ b/networking/udhcp/dhcpc.c	2020-06-23 16:43:49.132529840 +0000
+@@ -54,6 +54,7 @@
  
  #if ENABLE_LONG_OPTS
  static const char udhcpc_longopts[] ALIGN1 =
@@ -8,7 +8,7 @@
  	"clientid-none\0"  No_argument       "C"
  	"vendorclass\0"    Required_argument "V"
  	"hostname\0"       Required_argument "H"
-@@ -81,29 +82,30 @@
+@@ -82,29 +83,30 @@
  #endif
  /* Must match getopt32 option string order */
  enum {
@@ -61,24 +61,24 @@
  	USE_FOR_MMU(             OPTBIT_b,)
  	IF_FEATURE_UDHCPC_ARPING(OPTBIT_a,)
  	IF_FEATURE_UDHCP_PORT(   OPTBIT_P,)
-@@ -1179,7 +1181,7 @@
+@@ -1195,7 +1197,7 @@
  //usage:#define udhcpc_trivial_usage
  //usage:       "[-fbq"IF_UDHCP_VERBOSE("v")"RB]"IF_FEATURE_UDHCPC_ARPING(" [-a[MSEC]]")" [-t N] [-T SEC] [-A SEC/-n]\n"
  //usage:       "	[-i IFACE]"IF_FEATURE_UDHCP_PORT(" [-P PORT]")" [-s PROG] [-p PIDFILE]\n"
 -//usage:       "	[-oC] [-r IP] [-V VENDOR] [-F NAME] [-x OPT:VAL]... [-O OPT]..."
 +//usage:       "	[-oC] [-r IP] [-c CID] [-V VENDOR] [-F NAME] [-x OPT:VAL]... [-O OPT]..."
  //usage:#define udhcpc_full_usage "\n"
- //usage:	IF_LONG_OPTS(
- //usage:     "\n	-i,--interface IFACE	Interface to use (default eth0)"
-@@ -1213,6 +1215,7 @@
- //usage:     "\n				-x 0x3d:0100BEEFC0FFEE - option 61 (client id)"
- //usage:     "\n	-F,--fqdn NAME		Ask server to update DNS mapping for NAME"
- //usage:     "\n	-V,--vendorclass VENDOR	Vendor identifier (default 'udhcp VERSION')"
+ //usage:     "\n	-i IFACE	Interface to use (default eth0)"
+ //usage:	IF_FEATURE_UDHCP_PORT(
+@@ -1230,6 +1232,7 @@
+ //usage:     "\n	-F NAME		Ask server to update DNS mapping for NAME"
+ //usage:     "\n	-V VENDOR	Vendor identifier (default 'udhcp VERSION')"
+ //usage:     "\n	-C		Don't send MAC as client identifier"
 +//usage:     "\n	-c,--clientid=CLIENTID	Set client identifier - type is first char"
- //usage:     "\n	-C,--clientid-none	Don't send MAC as client identifier"
  //usage:	IF_UDHCP_VERBOSE(
- //usage:     "\n	-v			Verbose"
-@@ -1264,7 +1267,7 @@
+ //usage:     "\n	-v		Verbose"
+ //usage:	)
+@@ -1242,7 +1245,7 @@
  int udhcpc_main(int argc UNUSED_PARAM, char **argv)
  {
  	uint8_t *message;
@@ -87,29 +87,31 @@
  	IF_FEATURE_UDHCPC_ARPING(const char *str_a = "2000";)
  	IF_FEATURE_UDHCP_PORT(char *str_P;)
  	void *clientid_mac_ptr;
-@@ -1298,12 +1301,12 @@
- 	/* O,x: list; -T,-t,-A take numeric param */
- 	IF_UDHCP_VERBOSE(opt_complementary = "vv";)
- 	IF_LONG_OPTS(applet_long_options = udhcpc_longopts;)
--	opt = getopt32(argv, "CV:H:h:F:i:np:qRr:s:T:+t:+SA:+O:*ox:*fB"
-+	opt = getopt32(argv, "c:CV:H:h:F:i:np:qRr:s:T:+t:+SA:+O:*ox:*fB"
+@@ -1278,14 +1281,14 @@
+ 	/* Parse command line */
+ 	opt = getopt32long(argv, "^"
+ 		/* O,x: list; -T,-t,-A take numeric param */
+-		"CV:H:h:F:i:np:qRr:s:T:+t:+SA:+O:*ox:*fB"
++		"c:CV:H:h:F:i:np:qRr:s:T:+t:+SA:+O:*ox:*fB"
  		USE_FOR_MMU("b")
  		IF_FEATURE_UDHCPC_ARPING("a::")
  		IF_FEATURE_UDHCP_PORT("P:")
  		"v"
+ 		"\0" IF_UDHCP_VERBOSE("vv") /* -v is a counter */
+ 		, udhcpc_longopts
 -		, &str_V, &str_h, &str_h, &str_F
 +		, &str_c, &str_V, &str_h, &str_h, &str_F
- 		, &client_config.interface, &client_config.pidfile, &str_r /* i,p */
- 		, &client_config.script /* s */
- 		, &discover_timeout, &discover_retries, &tryagain_timeout /* T,t,A */
-@@ -1378,7 +1381,9 @@
+ 		, &client_data.interface, &client_data.pidfile /* i,p */
+ 		, &str_r /* r */
+ 		, &client_data.script /* s */
+@@ -1360,7 +1363,9 @@
  	}
  
  	clientid_mac_ptr = NULL;
--	if (!(opt & OPT_C) && !udhcp_find_option(client_config.options, DHCP_CLIENT_ID)) {
+-	if (!(opt & OPT_C) && !udhcp_find_option(client_data.options, DHCP_CLIENT_ID)) {
 +	if (opt & OPT_c) {
-+		client_config.clientid = alloc_dhcp_option(DHCP_CLIENT_ID, str_c, 0);
-+	} else if (!(opt & OPT_C) && !udhcp_find_option(client_config.options, DHCP_CLIENT_ID)) {
++		client_data.clientid = alloc_dhcp_option(DHCP_CLIENT_ID, str_c, 0);
++	} else if (!(opt & OPT_C) && !udhcp_find_option(client_data.options, DHCP_CLIENT_ID)) {
  		/* not suppressed and not set, set the default client ID */
- 		client_config.clientid = alloc_dhcp_option(DHCP_CLIENT_ID, "", 7);
- 		client_config.clientid[OPT_DATA] = 1; /* type: ethernet */
+ 		client_data.clientid = alloc_dhcp_option(DHCP_CLIENT_ID, "", 7);
+ 		client_data.clientid[OPT_DATA] = 1; /* type: ethernet */

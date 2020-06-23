@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-4TH_VERSION = 3.62.4
+4TH_VERSION = 3.62.5
 4TH_SOURCE = 4th-$(4TH_VERSION)-unix.tar.gz
 4TH_SITE = http://downloads.sourceforge.net/project/forth-4th/4th-$(4TH_VERSION)
 4TH_LICENSE = GPL-3.0+, LGPL-3.0+
@@ -27,7 +27,7 @@ define 4TH_BUILD_CMDS
 	$(4TH_MAKE_ENV) $(MAKE) -C $(@D)/sources all \
 		CROSS="$(TARGET_CROSS)" \
 		CFLAGS="$(4TH_CFLAGS)" \
-		FOURTH=$(HOST_DIR)/usr/bin/4th
+		FOURTH=$(HOST_DIR)/bin/4th
 endef
 
 define 4TH_INSTALL_STAGING_CMDS
@@ -59,11 +59,11 @@ define HOST_4TH_BUILD_CMDS
 endef
 
 define HOST_4TH_INSTALL_CMDS
-	mkdir -p $(HOST_DIR)/usr/bin
-	mkdir -p $(HOST_DIR)/usr/lib
+	mkdir -p $(HOST_DIR)/bin
+	mkdir -p $(HOST_DIR)/lib
 	$(HOST_MAKE_ENV) $(MAKE) -C $(@D)/sources mostlyinstall \
-		BINARIES=$(HOST_DIR)/usr/bin \
-		LIBRARIES=$(HOST_DIR)/usr/lib
+		BINARIES=$(HOST_DIR)/bin \
+		LIBRARIES=$(HOST_DIR)/lib
 endef
 
 $(eval $(generic-package))

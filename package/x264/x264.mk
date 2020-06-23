@@ -4,8 +4,9 @@
 #
 ################################################################################
 
-X264_VERSION = 97eaef2ab82a46d13ea5e00270712d6475fbe42b
-X264_SITE = git://git.videolan.org/x264.git
+X264_VERSION = 20191217-2245
+X264_SITE = http://download.videolan.org/x264/snapshots
+X264_SOURCE = x264-snapshot-$(X264_VERSION).tar.bz2
 X264_LICENSE = GPL-2.0+
 X264_DEPENDENCIES = host-pkgconf
 X264_LICENSE_FILES = COPYING
@@ -13,9 +14,9 @@ X264_INSTALL_STAGING = YES
 X264_CONF_OPTS = --disable-avs --disable-lavf --disable-swscale
 
 ifeq ($(BR2_i386)$(BR2_x86_64),y)
-# yasm needed for assembly files
-X264_DEPENDENCIES += host-yasm
-X264_CONF_ENV += AS="$(HOST_DIR)/usr/bin/yasm"
+# nasm needed for assembly files
+X264_DEPENDENCIES += host-nasm
+X264_CONF_ENV += AS="$(HOST_DIR)/bin/nasm"
 else ifeq ($(BR2_ARM_CPU_ARMV7A)$(BR2_aarch64),y)
 # We need to pass gcc as AS, because the ARM assembly files have to be
 # preprocessed
