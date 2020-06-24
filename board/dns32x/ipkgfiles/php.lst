@@ -1,3 +1,12 @@
-./etc/php.ini
 ./usr/bin/php
 ./usr/bin/php-cgi
+./usr/bin/zipcmp
+./usr/bin/zipmerge
+./usr/bin/ziptool
+./usr/lib/libfts.so
+./usr/lib/libfts.so.0
+./usr/lib/libfts.so.0.0.0
+./usr/lib/libzip.so
+./usr/lib/libzip.so.5
+./usr/lib/libzip.so.5.1
+./usr/lib/php

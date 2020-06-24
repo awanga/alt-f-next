@@ -1,10 +1,10 @@
 Package: python-pyopenssl
 Description: 	  Python wrapper module around the OpenSSL library.
 	  https://github.com/pyca/pyopenssl
-Version: 17.0.0
+Version: 19.1.0
 Depends: python_six, python_cryptography, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: https://github.com/awanga/alt-f-next
 Maintainer: jcard

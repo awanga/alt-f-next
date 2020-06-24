@@ -1,6 +1,6 @@
 Package: sysstat
 Description: A collection of performance monitoring tools for Linux
-Version: 11.4.3
+Version: 12.2.1
 Depends: ipkg
 Architecture: arm
 Priority: optional

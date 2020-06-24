@@ -1,6 +1,6 @@
 ./usr/sbin/dnsmasq
 ./etc/dbus-1/system.d/dnsmasq.conf
 ./etc/init.d/S80dnsmasq
-#./usr/www/cgi-bin/dnsmasq.cgi
-#./usr/www/cgi-bin/dnsmasq_proc.cgi
+./usr/www/cgi-bin/dnsmasq.cgi
+./usr/www/cgi-bin/dnsmasq_proc.cgi
 

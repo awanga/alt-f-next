@@ -4,11 +4,11 @@
 ./usr/bin/cifsiostat
 ./usr/bin/iostat
 ./usr/bin/mpstat
-./usr/sbin/nfsiostat
 ./usr/bin/pidstat
 ./usr/bin/sadf
 ./usr/bin/sar
-./usr/lib64/sa
+./usr/bin/tapestat
+./usr/lib64
 ./usr/lib64/sa/sa1
 ./usr/lib64/sa/sa2
 ./usr/lib64/sa/sadc

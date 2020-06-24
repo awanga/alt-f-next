@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 check_cookie
 
 CONF_LIGHTY=/etc/lighttpd/lighttpd.conf

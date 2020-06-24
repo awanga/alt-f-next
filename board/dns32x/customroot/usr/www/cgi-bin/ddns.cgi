@@ -2,7 +2,7 @@
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-. common.sh
+source ./common.sh
 
 check_cookie
 write_header "Dynamic DNS Setup"

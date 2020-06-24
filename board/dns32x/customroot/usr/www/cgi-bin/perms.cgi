@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 check_cookie
 
 hdr="Folder Ownership and Access Permissions"

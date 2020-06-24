@@ -1,6 +1,6 @@
 Package: screen
 Description: A full-screen window manager that multiplexes a physical terminal between several processes.
-Version: 4.5.1
+Version: 4.8.0
 Depends: ncurses, ipkg
 Architecture: arm
 Priority: optional

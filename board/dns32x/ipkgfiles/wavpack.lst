@@ -1,0 +1,7 @@
+./usr/bin/wavpack
+./usr/bin/wvgain
+./usr/bin/wvtag
+./usr/bin/wvunpack
+./usr/lib/libwavpack.so
+./usr/lib/libwavpack.so.1
+./usr/lib/libwavpack.so.1.2.2

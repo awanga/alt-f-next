@@ -1,7 +1,7 @@
 ./usr/bin/gpg
+./usr/bin/gpg-zip
 ./usr/bin/gpgsplit
 ./usr/bin/gpgv
-./usr/bin/gpg-zip
 ./usr/share/gnupg
 ./usr/share/gnupg/FAQ
 ./usr/share/gnupg/options.skel

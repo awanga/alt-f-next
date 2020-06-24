@@ -1,6 +1,6 @@
 Package: iperf
 Description: Internet Protocol bandwidth measuring tool for measuring TCP/UDP performance.
-Version: 2.0.9
+Version: 2.0.13
 Depends: ipkg
 Architecture: arm
 Priority: optional

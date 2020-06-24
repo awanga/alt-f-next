@@ -1,0 +1,14 @@
+./lib/libblkid.so.1
+./lib/libblkid.so.1.1.0
+./lib/libfdisk.so.1
+./lib/libfdisk.so.1.1.0
+./lib/libsmartcols.so.1
+./lib/libsmartcols.so.1.1.0
+./lib/libuuid.so.1
+./lib/libuuid.so.1.3.0
+./sbin/fdisk
+./sbin/sfdisk
+./usr/lib/libblkid.so
+./usr/lib/libfdisk.so
+./usr/lib/libsmartcols.so
+./usr/lib/libuuid.so

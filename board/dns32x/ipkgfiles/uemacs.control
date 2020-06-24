@@ -1,6 +1,6 @@
 Package: uemacs
 Description: A small emacs.	  
-Version: 8841922689769960fa074fbb053cb8507f2f3ed9
+Version: 1cdcf9df88144049750116e36fe20c8c39fa2517
 Depends: ncurses , ipkg
 Architecture: arm
 Priority: optional

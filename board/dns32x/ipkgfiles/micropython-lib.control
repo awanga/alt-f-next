@@ -1,10 +1,10 @@
 Package: micropython-lib
 Description: 	  Core Python libraries ported to MicroPython.
 	  http://micropython.org
-Version: v1.8.6
+Version: 1.9.3
 Depends: pcre, micropython, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: https://github.com/awanga/alt-f-next
 Maintainer: jcard

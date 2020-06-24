@@ -1,6 +1,6 @@
 Package: libgpg-error
 Description: A small library with error codes and descriptions shared by most GnuPG related software.
-Version: 1.27
+Version: 1.37
 Depends: ipkg
 Architecture: arm
 Priority: optional

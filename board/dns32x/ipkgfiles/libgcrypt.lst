@@ -1,2 +1,6 @@
-./usr/lib/libcrypto.so
-./usr/lib/libcrypto.so.1.0.0
+./usr/bin/dumpsexp
+./usr/bin/hmac256
+./usr/bin/mpicalc
+./usr/lib/libgcrypt.so
+./usr/lib/libgcrypt.so.20
+./usr/lib/libgcrypt.so.20.2.5

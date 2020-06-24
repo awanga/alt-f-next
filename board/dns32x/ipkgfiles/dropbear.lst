@@ -1,8 +1,7 @@
-./etc/init.d/S62dropbear
-./usr/sbin/dropbear
+./etc/init.d/S50dropbear
+./usr/bin/dbclient
 ./usr/bin/dropbearconvert
 ./usr/bin/dropbearkey
-./usr/bin/dbclient
 ./usr/bin/scp
 ./usr/bin/ssh
-./usr/www/cgi-bin/dropbear.cgi
+./usr/sbin/dropbear

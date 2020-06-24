@@ -1,0 +1,9 @@
+Package: libstdc++
+Description: GNU C++ Library 
+Version: 6.0.25
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://gcc.gnu.org
+Maintainer: awanga

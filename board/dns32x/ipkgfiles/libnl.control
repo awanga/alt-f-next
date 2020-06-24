@@ -1,6 +1,6 @@
 Package: libnl
 Description: A library for applications dealing with netlink socket.
-Version: 3.3.0
+Version: 3.5.0
 Depends: ipkg
 Architecture: arm
 Priority: optional

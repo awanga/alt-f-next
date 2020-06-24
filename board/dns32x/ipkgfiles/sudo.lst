@@ -1,3 +1,17 @@
 ./etc/sudoers
+./run/sudo
+./usr/bin/cvtsudoers
 ./usr/bin/sudo
+./usr/bin/sudoedit
+./usr/bin/sudoreplay
+./usr/lib/tmpfiles.d
+./usr/lib/tmpfiles.d/sudo.conf
+./usr/libexec/sudo
+./usr/libexec/sudo/group_file.so
+./usr/libexec/sudo/libsudo_util.so
+./usr/libexec/sudo/libsudo_util.so.0
+./usr/libexec/sudo/libsudo_util.so.0.0.0
+./usr/libexec/sudo/sudo_noexec.so
+./usr/libexec/sudo/sudoers.so
+./usr/libexec/sudo/system_group.so
 ./usr/sbin/visudo

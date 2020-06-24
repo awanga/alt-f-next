@@ -1,6 +1,6 @@
 Package: apr-util
 Description: The utility library for the apache runtime project
-Version: 1.5.4
+Version: 1.6.1
 Depends: apr, expat, db, sqlite, ipkg
 Architecture: arm
 Priority: optional

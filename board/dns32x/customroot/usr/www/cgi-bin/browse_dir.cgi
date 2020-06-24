@@ -95,7 +95,7 @@ flat() {
 	
 }
 
-. common.sh
+source ./common.sh
 check_cookie
 
 if test -n "$QUERY_STRING"; then

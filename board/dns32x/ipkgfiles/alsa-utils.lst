@@ -11,10 +11,16 @@
 ./usr/bin/iecset
 ./usr/bin/speaker-test
 ./usr/sbin/alsactl
+./usr/share/alsa/init
+./usr/share/alsa/init/00main
+./usr/share/alsa/init/ca0106
+./usr/share/alsa/init/default
+./usr/share/alsa/init/help
+./usr/share/alsa/init/info
+./usr/share/alsa/init/test
 ./usr/share/alsa/speaker-test
 ./usr/share/alsa/speaker-test/sample_map.csv
 ./usr/share/sounds
-./usr/share/sounds/alsa
 ./usr/share/sounds/alsa/Front_Center.wav
 ./usr/share/sounds/alsa/Front_Left.wav
 ./usr/share/sounds/alsa/Front_Right.wav

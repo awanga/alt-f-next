@@ -1,9 +1,8 @@
-./etc/init.d/S27at
 ./etc/at.deny
+./etc/init.d/S27at
 ./usr/bin/at
-./usr/sbin/atd
 ./usr/bin/atq
 ./usr/bin/atrm
-./usr/sbin/atrun
 ./usr/bin/batch
-
+./usr/sbin/atd
+./usr/sbin/atrun

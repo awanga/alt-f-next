@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 write_header "Alt-F Login"
 
 #debug

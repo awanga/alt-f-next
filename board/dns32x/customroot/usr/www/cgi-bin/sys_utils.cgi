@@ -3,7 +3,7 @@
 CONFM=/etc/misc.conf
 THM_DIR=/usr/www/scripts
 
-. common.sh
+source ./common.sh
 check_cookie
 
 #write_header "System utilities" "document.sysutilsf.reset()"

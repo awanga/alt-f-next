@@ -501,10 +501,6 @@ else
 FFMPEG_CONF_OPTS += --disable-neon
 endif
 
-ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
-FFMPEG_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -marm"
-endif
-
 ifeq ($(BR2_mips)$(BR2_mipsel)$(BR2_mips64)$(BR2_mips64el),y)
 ifeq ($(BR2_MIPS_SOFT_FLOAT),y)
 FFMPEG_CONF_OPTS += --disable-mipsfpu
@@ -550,6 +546,10 @@ FFMPEG_CFLAGS = $(TARGET_CFLAGS)
 ifeq ($(BR2_TOOLCHAIN_HAS_GCC_BUG_85180),y)
 FFMPEG_CONF_OPTS += --disable-optimizations
 FFMPEG_CFLAGS += -O0
+endif
+
+ifeq ($(BR2_ARM_INSTRUCTIONS_THUMB),y)
+FFMPEG_CFLAGS += -marm
 endif
 
 FFMPEG_CONF_ENV += CFLAGS="$(FFMPEG_CFLAGS)"

@@ -1,7 +1,7 @@
 Package: samba-small
-Description: The stripped-down version of Samba shipped in the firmware.
-Depends: ipkg
-Version: 4.6.7
+Description: A stripped-down version of Samba.
+Depends: zlib, popt, ipkg
+Version: 4.10.17
 Architecture: arm
 Priority: optional
 Section: admin

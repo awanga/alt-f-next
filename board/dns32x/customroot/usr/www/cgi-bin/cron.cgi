@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 check_cookie
 
 LOCAL_STYLE='.cron {color:gray;}'

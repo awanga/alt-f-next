@@ -1,6 +1,6 @@
 Package: xz
 Description: provide a general-purpose data-compression library plus command-line tools.
-Version: 5.2.3
+Version: 5.2.4
 Depends: ipkg, xz-libs
 Architecture: arm
 Priority: optional

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 check_cookie
 
 eval $(echo -n $QUERY_STRING | tr '\r' '\n' | sed -e 's/'"'"'/%27/g' | \

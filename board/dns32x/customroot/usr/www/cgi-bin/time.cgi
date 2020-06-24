@@ -108,7 +108,7 @@ CONFT=/etc/timezone	# dont edit, use the web time setup interface!
 CONFZ=/etc/TZ	# this is the real thing, if you known how, you can modify it
 CONFNTP=/etc/ntp.conf
 
-. common.sh
+source ./common.sh
 check_cookie
 write_header "Time Setup"
 

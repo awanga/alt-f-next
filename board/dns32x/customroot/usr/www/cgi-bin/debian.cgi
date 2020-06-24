@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 check_cookie
 write_header "Debian Setup"
 

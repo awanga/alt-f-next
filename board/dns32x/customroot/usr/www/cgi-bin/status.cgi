@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-. common.sh
+source ./common.sh
 
 # Based on original idea and code contributed by Dwight Hubbard, dwight.hubbard <guess> gmail.com
 # Modified and adapted by Joao Cardoso

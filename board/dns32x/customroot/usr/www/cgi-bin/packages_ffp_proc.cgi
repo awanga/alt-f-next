@@ -37,7 +37,7 @@ download() {
 	exit 0
 }
 
-. common.sh
+source ./common.sh
 check_cookie
 read_args
 

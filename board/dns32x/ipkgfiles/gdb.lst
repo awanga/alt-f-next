@@ -1,3 +1,4 @@
+./usr/bin/gcore
 ./usr/bin/gdb
+./usr/bin/gdb-add-index
 ./usr/bin/gdbserver
-

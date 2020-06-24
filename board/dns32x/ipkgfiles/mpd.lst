@@ -1,3 +1,5 @@
 ./etc/init.d/S95mpd
-./etc/mpd.conf
 ./usr/bin/mpd
+./usr/share/icons/hicolor/scalable
+./usr/share/icons/hicolor/scalable/apps
+./usr/share/icons/hicolor/scalable/apps/mpd.svg

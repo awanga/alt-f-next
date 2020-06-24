@@ -2,6 +2,6 @@
 
 rm -f /tmp/cookie /tmp/firstboot
 
-. common.sh
+source ./common.sh
 gotopage /cgi-bin/login.cgi
 

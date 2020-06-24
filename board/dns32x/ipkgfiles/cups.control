@@ -1,5 +1,5 @@
 Package: cups
-Version: 2.2.3
+Version: 2.3.1
 Description: The Common Unix Printing System
 Depends: gs, libusb, ipkg
 Architecture: arm

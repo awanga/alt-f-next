@@ -1,7 +1,8 @@
 ./usr/bin/iconv
-./usr/lib/libiconv.so
-./usr/lib/libiconv.so.2
-./usr/lib/libiconv.so.2.6.0
+./usr/lib/charset.alias
 ./usr/lib/libcharset.so
 ./usr/lib/libcharset.so.1
 ./usr/lib/libcharset.so.1.0.0
+./usr/lib/libiconv.so
+./usr/lib/libiconv.so.2
+./usr/lib/libiconv.so.2.6.0

@@ -3,7 +3,7 @@
 # Copyright (c) 2010 Augusto Bott <augusto at bott com br>
 # Licence GNU GPL, see the /COPYING file for details
 
-. common.sh
+source ./common.sh
 check_cookie
 read_args
 

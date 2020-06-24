@@ -1,6 +1,6 @@
 Package: strace
 Depends: ipkg
-Version: 4.16
+Version: 5.7
 Description: A useful diagnostic, instructional, and debugging tool.
  Allows you to track what system calls a program makes while it is running.
 Architecture: arm

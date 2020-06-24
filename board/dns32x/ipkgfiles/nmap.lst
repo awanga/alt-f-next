@@ -1,8 +1,7 @@
-./usr/bin/ndiff
 ./usr/bin/nmap
-./usr/bin/nping
+./usr/lib/liblinear.so
+./usr/lib/liblinear.so.3
 ./usr/share/nmap
-./usr/share/nmap/nmap.dtd
 ./usr/share/nmap/nmap-mac-prefixes
 ./usr/share/nmap/nmap-os-db
 ./usr/share/nmap/nmap-payloads
@@ -10,4 +9,5 @@
 ./usr/share/nmap/nmap-rpc
 ./usr/share/nmap/nmap-service-probes
 ./usr/share/nmap/nmap-services
+./usr/share/nmap/nmap.dtd
 ./usr/share/nmap/nmap.xsl

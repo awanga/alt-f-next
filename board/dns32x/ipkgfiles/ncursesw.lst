@@ -1,3 +1,12 @@
+./usr/lib/libformw.so
+./usr/lib/libformw.so.6
+./usr/lib/libformw.so.6.1
+./usr/lib/libmenuw.so
+./usr/lib/libmenuw.so.6
+./usr/lib/libmenuw.so.6.1
 ./usr/lib/libncursesw.so
 ./usr/lib/libncursesw.so.6
-./usr/lib/libncursesw.so.6.0
+./usr/lib/libncursesw.so.6.1
+./usr/lib/libpanelw.so
+./usr/lib/libpanelw.so.6
+./usr/lib/libpanelw.so.6.1

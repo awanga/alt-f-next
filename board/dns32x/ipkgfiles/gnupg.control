@@ -1,6 +1,6 @@
 Package: gnupg
 Description: Allows to encrypt and sign your data and communication.
-Version: 1.4.21
+Version: 1.4.23
 Depends: readline, libusb, ipkg
 Architecture: arm
 Priority: optional

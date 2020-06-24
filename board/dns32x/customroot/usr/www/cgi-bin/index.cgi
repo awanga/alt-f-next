@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. common.sh
+source ./common.sh
 
 if test -s "$CONF_MISC"; then . $CONF_MISC; fi
 

@@ -1,6 +1,4 @@
 ./usr/bin/msmtp
-./usr/sbin/sendmail
-./usr/lib/sendmail
-#./usr/www/cgi-bin/mail.cgi
-#./usr/www/cgi-bin/mail_proc.cgi
-
+./usr/bin/msmtpd
+./usr/www/cgi-bin/mail.cgi
+./usr/www/cgi-bin/mail_proc.cgi

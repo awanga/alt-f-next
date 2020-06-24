@@ -3,7 +3,7 @@
 SECR=/etc/web-secret
 TZF=/etc/TZ
 
-. common.sh
+source ./common.sh
 read_args
 
 #debug

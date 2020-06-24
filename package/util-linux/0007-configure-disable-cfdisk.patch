@@ -1,0 +1,11 @@
+--- a/configure	2020-01-31 09:26:02.616255272 +0000
++++ b/configure	2020-07-01 19:09:59.113637803 +0000
+@@ -23412,7 +23412,7 @@
+ 
+ enable_fdisk=$enable_fdisks
+ enable_sfdisk=$enable_fdisks
+-enable_cfdisk=$enable_fdisks
++enable_cfdisk=no #$enable_fdisks
+ 
+ 
+ 

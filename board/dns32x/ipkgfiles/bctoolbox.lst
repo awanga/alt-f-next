@@ -1,0 +1,13 @@
+./usr/lib/libbctoolbox.so
+./usr/lib/libbctoolbox.so.1
+./usr/share/bctoolbox
+./usr/share/bctoolbox/cmake
+./usr/share/bctoolbox/cmake/BcGitVersion.cmake
+./usr/share/bctoolbox/cmake/ConfigureSpecfile.cmake
+./usr/share/bctoolbox/cmake/MakeArchive.cmake
+./usr/share/bctoolbox/cmake/bctoolboxCMakeUtils.cmake
+./usr/share/bctoolbox/cmake/bctoolboxConfig.cmake
+./usr/share/bctoolbox/cmake/bctoolboxConfigVersion.cmake
+./usr/share/bctoolbox/cmake/bctoolboxTargets-release.cmake
+./usr/share/bctoolbox/cmake/bctoolboxTargets.cmake
+./usr/share/bctoolbox/cmake/gitversion.h.in

@@ -1,6 +1,6 @@
 Package: libfuse
 Depends: kernel-modules, ipkg
-Version: 2.9.7
+Version: 2.9.9
 Description: provides FUSE, Filesystem in UserSpacE
 Architecture: arm
 Priority: optional

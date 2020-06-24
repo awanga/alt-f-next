@@ -5,10 +5,10 @@ Description: 	  Mediastreamer is a powerful and lightweighted streaming
 	  and sending of multimedia streams in linphone, including
 	  voice/video capture, encoding and decoding, and rendering.
 	  http://www.linphone.org/eng/documentation/dev/mediastreamer2.html
-Version: 2.14.0
+Version: 4.3.1
 Depends: ortp, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: https://github.com/awanga/alt-f-next
 Maintainer: jcard

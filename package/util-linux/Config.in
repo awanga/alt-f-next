@@ -64,6 +64,16 @@ config BR2_PACKAGE_UTIL_LINUX_BINARIES
 	  The setarch utility also installs architecture-specific
 	  symlinks like linux32, linux64, uname26, i386 and x86_64.
 
+config BR2_PACKAGE_UTIL_LINUX_FDISKS
+	bool "fdisk/sfdisk"
+	depends on BR2_USE_MMU # fork()
+	depends on !BR2_PACKAGE_UTIL_LINUX_BINARIES
+	select BR2_PACKAGE_UTIL_LINUX_LIBFDISK
+	select BR2_PACKAGE_UTIL_LINUX_LIBSMARTCOLS
+	select BR2_PACKAGE_UTIL_LINUX_LIBUUID
+	help
+	  Alternative linux fdisks (independant of other binaries)
+
 config BR2_PACKAGE_UTIL_LINUX_AGETTY
 	bool "agetty"
 	depends on BR2_USE_MMU # fork()

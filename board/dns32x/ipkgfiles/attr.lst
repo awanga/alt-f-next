@@ -1,5 +1,6 @@
+./etc/xattr.conf
 ./usr/bin/attr
 ./usr/bin/getfattr
-./usr/bin/setfattr
+./usr/lib/libattr.so
 ./usr/lib/libattr.so.1
-./usr/lib/libattr.so.1.1.0
+./usr/lib/libattr.so.1.1.2448

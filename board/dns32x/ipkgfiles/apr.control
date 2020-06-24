@@ -1,6 +1,6 @@
 Package: apr
 Description: The Apache Portable Runtime (APR) project
-Version: 1.5.1
+Version: 1.7.0
 Depends: ipkg
 Architecture: arm
 Priority: optional

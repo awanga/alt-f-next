@@ -1,7 +1,8 @@
-./usr/bin/stunnel
-./usr/bin/stunnel3
 ./etc/init.d/S50stunnel
 ./etc/stunnel/stunnel.conf
 ./etc/ssl/certs/stunnel.pem
+./usr/bin/stunnel
+./usr/bin/stunnel3
+./usr/lib/stunnel
 ./usr/lib/stunnel/libstunnel.so
-#./usr/www/cgi-bin/stunnel.cgi
+./usr/www/cgi-bin/stunnel.cgi

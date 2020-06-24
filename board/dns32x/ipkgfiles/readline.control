@@ -1,5 +1,5 @@
 Package: readline
-Version: 7.0
+Version: 8.0
 Description: The GNU readline library
 Depends: ncurses, ipkg
 Architecture: arm

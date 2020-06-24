@@ -14,6 +14,8 @@ mount -t tmpfs tmpfs /tmp
 #mkdir /dev/pts
 /bin/mount -t devpts devpts /dev/pts
 
+depmod -a &
+
 rmdir /newroot/rootmnt /newroot >& /dev/null
 
 for i in lib run log cache spool db lock; do
@@ -229,6 +231,9 @@ hwclock -su
 
 logger -st rcS "Board: $board"
 logger -st rcS "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"
+
+# load modules
+depmod
 
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1

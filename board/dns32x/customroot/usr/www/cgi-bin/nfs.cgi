@@ -59,7 +59,7 @@ exports_row() {
 	done    
 }
 
-. common.sh
+source ./common.sh
 check_cookie
 read_args
 write_header "NFS exports Setup"

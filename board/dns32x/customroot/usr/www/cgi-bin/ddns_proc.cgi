@@ -2,7 +2,7 @@
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-. common.sh
+source ./common.sh
 
 read_args
 check_cookie

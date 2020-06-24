@@ -1,6 +1,6 @@
 Package: dbus
 Description: The D-Bus message bus system.
-Version: 1.10.18
+Version: 1.12.16
 Depends: expat, ipkg
 Architecture: arm
 Priority: optional

@@ -12,8 +12,6 @@ LIBMAD_SITE = \
 LIBMAD_INSTALL_STAGING = YES
 LIBMAD_LICENSE = GPL-2.0+
 LIBMAD_LICENSE_FILES = COPYING
-LIBMAD_PATCH = \
-	https://sources.debian.net/data/main/libm/libmad/0.15.1b-8/debian/patches/frame_length.diff
 
 define LIBMAD_APPLY_DEBIAN_PATCHES
 	if [ -d $(@D)/debian/patches ]; then \

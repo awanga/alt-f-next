@@ -8,7 +8,7 @@
 +	$(WAF) build --targets=nmbd,smbd/smbd,smbstatus,smbpasswd,smbtree
 +
 +install-small_samba:
-+	$(WAF) install --targets=nmbd,smbd/smbd,smbstatus,smbpasswd,smbtree
++	$(WAF) install # --targets=nmbd,smbd/smbd,smbstatus,smbpasswd,smbtree
 +
  all:
  	$(WAF) build

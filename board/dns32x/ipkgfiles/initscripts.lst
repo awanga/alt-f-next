@@ -1,0 +1,3 @@
+./etc/init.d/S20urandom
+./etc/init.d/rcK
+./etc/init.d/rcS

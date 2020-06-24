@@ -1,6 +1,6 @@
 Package: tiff
 Description: Library for handling TIFF (Tag Image File Format) images.
-Version: 4.0.8
+Version: 4.1.0
 Depends: libjpeg, ipkg
 Architecture: arm
 Priority: optional

@@ -1,7 +1,1 @@
-./usr/lib/libgettextlib-0.19.8.1.so
-./usr/lib/libgettextlib.so
-./usr/lib/libgettextpo.so
-./usr/lib/libgettextpo.so.0
-./usr/lib/libgettextpo.so.0.5.4
-./usr/lib/libgettextsrc-0.19.8.1.so
-./usr/lib/libgettextsrc.so
+./usr/bin/gettext

@@ -1,6 +1,6 @@
 Package: acl
 Description: Utilities to administer Access Control Lists, ACL.
-Version: 2.2.52-1
+Version: 2.2.53
 Depends: gettext, attr, ipkg
 Architecture: arm
 Priority: optional

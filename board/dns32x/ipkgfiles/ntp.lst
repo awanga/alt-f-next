@@ -1,2 +1,1 @@
-./usr/sbin/ntpd
-./usr/bin/fsntp
+./etc/init.d/S49ntp

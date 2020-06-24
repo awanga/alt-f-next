@@ -5,10 +5,10 @@ Description: 	  Python 3.4 Enum backported to 2.x.
 	  can be compared by identity, and the enumeration itself can
 	  be iterated over.
 	  https://pypi.python.org/pypi/enum34
-Version: 1.1.6
+Version: 1.1.10
 Depends: python, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
-Source: http://code.google.com/p/alt-f/
+Source: https://github.com/awanga/alt-f-next
 Maintainer: jcard

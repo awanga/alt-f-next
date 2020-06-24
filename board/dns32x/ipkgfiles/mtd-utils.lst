@@ -1,6 +1,5 @@
-./usr/sbin/docfdisk
 ./usr/sbin/doc_loadbios
-./usr/sbin/flashcp
+./usr/sbin/docfdisk
 ./usr/sbin/flash_erase
 ./usr/sbin/flash_lock
 ./usr/sbin/flash_otp_dump
@@ -8,6 +7,7 @@
 ./usr/sbin/flash_otp_lock
 ./usr/sbin/flash_otp_write
 ./usr/sbin/flash_unlock
+./usr/sbin/flashcp
 ./usr/sbin/ftl_check
 ./usr/sbin/ftl_format
 ./usr/sbin/jffs2dump
@@ -19,8 +19,8 @@
 ./usr/sbin/nanddump
 ./usr/sbin/nandtest
 ./usr/sbin/nandwrite
-./usr/sbin/nftldump
 ./usr/sbin/nftl_format
+./usr/sbin/nftldump
 ./usr/sbin/recv_image
 ./usr/sbin/rfddump
 ./usr/sbin/rfdformat
@@ -34,7 +34,6 @@
 ./usr/sbin/ubimkvol
 ./usr/sbin/ubinfo
 ./usr/sbin/ubinize
-./usr/sbin/ubirename
 ./usr/sbin/ubirmvol
 ./usr/sbin/ubirsvol
 ./usr/sbin/ubiupdatevol

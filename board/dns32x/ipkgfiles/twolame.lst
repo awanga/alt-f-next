@@ -1,3 +1,4 @@
+./usr/bin/twolame
 ./usr/lib/libtwolame.so
 ./usr/lib/libtwolame.so.0
 ./usr/lib/libtwolame.so.0.0.0

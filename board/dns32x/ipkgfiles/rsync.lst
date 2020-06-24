@@ -1,9 +1,5 @@
 ./etc/init.d/S63rsyncd
 ./usr/bin/rsync
-./usr/lib/librsync.so
-./usr/lib/librsync.so.1
-./usr/lib/librsync.so.1.0.2
-#./usr/www/cgi-bin/rsync.cgi
-#./usr/www/cgi-bin/rsyncd.cgi
-#./usr/www/cgi-bin/rsync_proc.cgi
-
+./usr/www/cgi-bin/rsync.cgi
+./usr/www/cgi-bin/rsyncd.cgi
+./usr/www/cgi-bin/rsync_proc.cgi

@@ -38,7 +38,7 @@ start_stop() {
 	fi
 }
 
-. common.sh
+source ./common.sh
 read_args
 check_cookie
 

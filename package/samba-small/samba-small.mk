@@ -4,14 +4,14 @@
 #
 ################################################################################
 
-SAMBA_SMALL_VERSION = 4.10.16
+SAMBA_SMALL_VERSION = 4.10.17
 SAMBA_SMALL_SITE = https://download.samba.org/pub/samba/stable
 SAMBA_SMALL_SOURCE = samba-$(SAMBA_SMALL_VERSION).tar.gz
 SAMBA_SMALL_INSTALL_STAGING = YES
 SAMBA_SMALL_LICENSE = GPL-3.0+
 SAMBA_SMALL_LICENSE_FILES = COPYING
 SAMBA_SMALL_DEPENDENCIES = \
-	host-e2fsprogs host-heimdal host-nfs-utils host-python3 \
+	host-e2fsprogs host-heimdal host-nfs-utils \
 	popt zlib \
 
 SAMBA_SMALL_CONF_ENV = \
@@ -53,12 +53,7 @@ else
 SAMBA_SMALL_CONF_OPTS += --without-acl-support
 endif
 
-ifeq ($(BR2_PACKAGE_NCURSES),y)
-SAMBA_SMALL_CONF_ENV += NCURSES_CONFIG="$(STAGING_DIR)/usr/bin/$(NCURSES_CONFIG_SCRIPTS)"
-SAMBA_SMALL_DEPENDENCIES += ncurses
-else
 SAMBA_SMALL_CONF_OPTS += --without-regedit
-endif
 
 # The ctdb tests (cluster) need bash and take up some space
 # They're normally intended for debugging so remove them

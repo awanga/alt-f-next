@@ -1,3 +1,4 @@
-./usr/sbin/mdadm
+./sbin/mdadm
+./sbin/mdmon
 ./usr/www/cgi-bin/mdadm.cgi
 ./usr/www/cgi-bin/mdadm_proc.cgi

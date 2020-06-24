@@ -54,7 +54,7 @@ fstab_row() {
 EOF
 }
 
-. common.sh
+source ./common.sh
 check_cookie
 read_args
 write_header "Remote NFS and CIFS Imports Setup"
