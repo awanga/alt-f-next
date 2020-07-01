@@ -78,14 +78,18 @@ IPKGDIR=$CDIR/board/dns32x/ipkgfiles
 source $CONFIGFILE 2> /dev/null
 
 BOARD=$BR2_PROJECT
-source ./board/dns32x/exports.source $BR2_PROJECT
+source ./board/dns32x/exports.source $BR2_PROJECT > /dev/null
 
 if test -z "$BLDDIR"; then
 	echo "Run '. exports [board]' first."
 	exit 1
 fi
 
-ROOTFSDIR=output/images/$BOARD/root
+if [[ "$BR2_PROJECT" == "base" ]]; then
+	ROOTFSDIR=output/target
+else
+	ROOTFSDIR=output/images/$BOARD/root
+fi
 
 mkdir -p $ROOTFSDIR
 
@@ -441,7 +445,7 @@ if ! test -f $IPKGDIR/$pkg.control; then # first time build
 			printf "Architecture: arm\n";
 			printf "Priority: optional\n";
 			printf "Section: admin\n";
-			printf "Source: http://code.google.com/p/alt-f/\n";
+			printf "Source: https://github.com/awanga/alt-f-next\n";
 			printf "Maintainer: jcard\n";
 		}
 	' $PKGDIR/Config.in > $IPKGDIR/$pkg.control
@@ -492,14 +496,14 @@ cd ${BLDDIR}/images/$BOARD
 # but using tar with a pipe, if the first tar fails we can't know it,
 # so check files first
 grep -v '^#' $IPKGDIR/$pkg.lst > $IPKGDIR/$pkg.lst-noc
-for i in $(cat $IPKGDIR/$pkg.lst-noc); do
-	if test ! -e $CDIR/output/target/$i -a ! -h $CDIR/output/target/root/$i; then
+while IFS= read -r i; do
+	if test ! -e $CDIR/output/target/$i -a ! -h $CDIR/output/target/$i; then
 		echo "failed creating $pkg package ($i not found)"
 		exit 1
 	fi
 	mkdir -p $(dirname $ROOTFSDIR/$i)
-	cp -pf $CDIR/output/target/$i $ROOTFSDIR/$i
-done
+	cp -dpf "$CDIR/output/target/$i" $ROOTFSDIR/$i
+done < $IPKGDIR/$pkg.lst-noc
 
 tar -C $ROOTFSDIR -c --no-recursion -T $IPKGDIR/$pkg.lst-noc | tar -C $CDIR/tmp -x
 if test $? = 1; then

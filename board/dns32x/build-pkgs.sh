@@ -10,8 +10,17 @@ build_fail() {
 	echo "$1 build failed. Continuing..."
 }
 
-SKIP_FORWARD=n
+# scrub_file(file_path, pattern)
+scrub_file() {
+	sed -i "/.*${2}\$/d" $1
+}
+
 VAR_CACHE=output/var.cache
+
+# baseline root filesystem before building pkgs (if not yet done)
+if [ ! -f output/rootfsfiles-base.lst ]; then
+	./board/dns32x/mkpkg.sh -setroot
+fi
 
 while IFS= read -r pkgargs; do
 
@@ -46,23 +55,14 @@ while IFS= read -r pkgargs; do
 	fi
 
 	# skip if package already built (allow resume after failure)
-	if [ -e output/pkgs/${lpkg}_*.ipk ]; then
+	if [ -f output/pkgs/${lpkg}_*.ipk ]; then
 		echo "skipping $lpkg package..."
-		SKIP_FORWARD=y
 		continue
 	fi
 
 	# remove any previous builds if indicated
 	if [ "$pkg_clean" == "y" ]; then
 		rm -fR ./output/build/$bb_pkg-*
-	fi
-
-	# only baseline files if not fast-forwarding
-	if [ "$SKIP_FORWARD" != "y" ]; then
-		./board/dns32x/mkpkg.sh -set
-	else
-		# resume running baseline after this package
-		SKIP_FORWARD=n
 	fi
 
 	# find conditionals and append to the config file
@@ -79,10 +79,39 @@ while IFS= read -r pkgargs; do
 		fi
 	done
 
+	./board/dns32x/mkpkg.sh -set
 	make olddefconfig
 	make $bb_pkg 2>&1 > output/pkg-build.log || build_fail "$lpkg"
-	./board/dns32x/mkpkg.sh $pkg_force $lpkg || build_fail "$lpkg"
-#done
+
+	# overwrite pkg list when environment variable is set
+	if [ "$OVERWRITE_PKG_LST" != "" ]; then
+		PKG_DIFF=$(mktemp)
+		./board/dns32x/mkpkg.sh -diff > $PKG_DIFF
+		# catch null case and avoid zeroing out pkg file list
+		if [[ $(cat $PKG_DIFF) != "" ]]; then
+			scrub_file $PKG_DIFF ".a"
+			scrub_file $PKG_DIFF ".la"
+			scrub_file $PKG_DIFF "\/etc\/rc[0-9].d.*"
+			scrub_file $PKG_DIFF "\/usr\/include.*"
+			scrub_file $PKG_DIFF "\/usr\/doc.*"
+			scrub_file $PKG_DIFF "\/usr\/lib\/cmake.*"
+			scrub_file $PKG_DIFF "\/usr\/lib\/pkgconfig.*"
+			scrub_file $PKG_DIFF "\/usr\/man.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/aclocal.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/bash-completion.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/doc.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/info.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/locale.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/.*\-doc.*"
+			scrub_file $PKG_DIFF "\/usr\/share\/man.*"
+			scrub_file $PKG_DIFF "\/var\/.*"
+			cat $PKG_DIFF > board/dns32x/ipkgfiles/$lpkg.lst
+		fi
+		rm $PKG_DIFF
+	fi
+
+	fakeroot ./board/dns32x/mkpkg.sh $pkg_force $lpkg || build_fail "$lpkg"
+
 done < board/dns32x/pkgs/pkg.lst
 
 # add Packages index
