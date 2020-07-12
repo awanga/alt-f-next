@@ -1,0 +1,35 @@
+name: dns327-firmware-builder
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+
+    - name: Install
+      run: sudo apt-get update -qqy && sudo apt-get install -qqy devio git rsync
+
+    - name: Build
+      run: |
+        echo "building dns327 firmware..."
+        make alt-f_dns327_defconfig
+        make
+        mkdir output/dns327
+        mv output/images/dns327/Alt-F*.* output/dns327/
+
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: firmware/dns327 # The branch the action should deploy to.
+        FOLDER: output/dns327 # The folder the action should deploy.

@@ -1,0 +1,35 @@
+name: dns323-firmware-builder
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+
+    - name: Install
+      run: sudo apt-get update -qqy && sudo apt-get install -qqy devio git rsync
+
+    - name: Build
+      run: |
+        echo "building dns323 firmware..."
+        make alt-f_dns323_defconfig
+        make
+        mkdir output/dns323
+        mv output/images/dns323/Alt-F* output/dns323/
+
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: firmware/dns323 # The branch the action should deploy to.
+        FOLDER: output/dns323 # The folder the action should deploy.

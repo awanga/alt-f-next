@@ -1,0 +1,34 @@
+name: stable-package-builder
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+
+    - name: Install
+      run: sudo apt-get update -qqy && sudo apt-get install -qqy devio git rsync
+
+    - name: Build
+      run: |
+        echo "building base firmware..."
+        make alt-f_base_defconfig
+        echo "building packages..."
+        ./board/dns32x/build-pkgs.sh
+
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: pkgs/stable # The branch the action should deploy to.
+        FOLDER: output/pkgs # The folder the action should deploy.
