@@ -45,7 +45,7 @@ bctoolbox
 bonnie
 icu
 bridge-utils
-e2fsprogs
+e2fsprogs:BR2_PACKAGE_E2FSPROGS=y,BR2_PACKAGE_E2FSPROGS_RESIZE2FS=y
 lzo
 btrfs-progs
 cifs-utils
