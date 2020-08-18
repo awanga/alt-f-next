@@ -1,0 +1,9 @@
+Package: libgpiod
+Depends: ipkg
+Version: 1.4.1
+Description: A C library that abstracts the GPIO character device operations on linux.
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: https://github.com/brgl/libgpiod
+Maintainer: awanga

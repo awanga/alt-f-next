@@ -1,0 +1,12 @@
+./usr/bin/gpiodetect
+./usr/bin/gpiofind
+./usr/bin/gpioget
+./usr/bin/gpioinfo
+./usr/bin/gpiomon
+./usr/bin/gpioset
+./usr/lib/libgpiod.so
+./usr/lib/libgpiod.so.2
+./usr/lib/libgpiod.so.2.1.1
+./usr/lib/libgpiodcxx.so
+./usr/lib/libgpiodcxx.so.1
+./usr/lib/libgpiodcxx.so.1.0.3
