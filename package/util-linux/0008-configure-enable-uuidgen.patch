@@ -1,0 +1,14 @@
+--- a/configure	2020-08-18 15:56:29.634362689 +0000
++++ b/configure	2020-08-18 15:58:39.765206966 +0000
+@@ -24258,6 +24258,11 @@
+ fi
+ 
+ 
++# Check whether --enable-uuidgen was given.
++if test "${enable_uuidgen+set}" = set; then :
++  enable_uuidgen=yes
++  build_uuidgen=yes
++fi
+ 
+ 
+   if test "x$build_uuidgen" != xno; then

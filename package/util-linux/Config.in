@@ -404,6 +404,13 @@ config BR2_PACKAGE_UTIL_LINUX_UUIDD
 	help
 	  UUID generation daemon
 
+config BR2_PACKAGE_UTIL_LINUX_UUIDGEN
+	bool "uuidgen"
+	depends on BR2_USE_MMU # fork()
+	select BR2_PACKAGE_UTIL_LINUX_LIBUUID
+	help
+	  UUID generation tool
+
 config BR2_PACKAGE_UTIL_LINUX_VIPW
 	bool "vipw"
 	depends on BR2_USE_MMU # fork()
