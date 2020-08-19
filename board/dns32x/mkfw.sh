@@ -324,7 +324,7 @@ for i in ${!name[*]}; do
 	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat -c %s kernel)) bytes
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat -c %s initramfs)) bytes
 
-	#(cd ${DESTD}; cp uImage $TFTPD/uImage-${name[i]})
+	(cd ${DESTD}; cp uImage $TFTPD/uImage-${name[i]})
 
 done
 
