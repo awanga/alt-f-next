@@ -110,7 +110,7 @@ if test -f /boot/zImage -o -f /boot/rootfs.arm.* -o -f /boot/.kexec; then
 			nanddump -q /dev/mtd1 | dd of=zImage bs=64 skip=1
 		fi
 	fi
-	
+
 	initrfs=$(ls rootfs.arm.* 2> /dev/null)
 	# no rootfs, use flashed rootfs
 	if ! test -f "$initrfs"; then
@@ -145,7 +145,7 @@ if test -f /boot/zImage -o -f /boot/rootfs.arm.* -o -f /boot/.kexec; then
 	if test -s zImage -a -n "$initrfs"; then
 		mount / -o remount,ro
 		echo "rcE: starting a new kernel and root filesystem"
-		kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" $atags && kexec -e
+		kexec -l zImage --command-line="$cmdline" --initrd="$initrfs" --image-size=0x1000000 $atags && kexec -e
 	fi
 fi
 

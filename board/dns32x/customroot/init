@@ -115,7 +115,7 @@ elif grep -q 'Hardware.*321/323' /proc/cpuinfo && ! grep -q 'kexecmode' /proc/cm
 	cd /newroot
 	pivot_root . boot
 	#exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; rm -rf /rootmnt/dev; exec /sbin/init'
-	exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; exec /sbin/init' < dev/console > dev/console 2>&1
+	exec chroot . sh -c 'umount /boot/dev /boot; freeramdisk /rootmnt/dev/ram0; exec /sbin/init' < dev/console > dev/console 2>&1
 
 # DNS-321/323 after SpecialReboot (for flashing), DNS-320/320L/325/327 normal operation at powerup
 # same as above, but don't use mtd, use instead squashfs from ramdisk (initrd).
@@ -130,7 +130,7 @@ else # squashrd is the default
 	umount /proc
 	cd /newroot
 	pivot_root . boot
-	exec chroot . sh -c 'umount /boot; exec /sbin/init' < dev/console > dev/console 2>&1
+	exec chroot . sh -c 'umount /boot/dev /boot; exec /sbin/init' < dev/console > dev/console 2>&1
 	#exec chroot . /sbin/init < dev/console > dev/console 2>&1
 	#exec chroot . /bin/sh < dev/console > dev/console 2>&1
 fi

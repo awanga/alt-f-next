@@ -1272,10 +1272,10 @@ int md_stat() {
 		} else
 			degraded[dev] = 0;
 	}
-	
+
 	for (dev=0; dev<9; dev++)
 		ret += degraded[dev];
-		
+
 	if (last_degraded == 1 && ret == 0) {
 		last_degraded = 0;
 		leds_set(PHIGH, LEDOFF); //leds_off();
@@ -1283,7 +1283,7 @@ int md_stat() {
 	return ret;
 }
 
-#define GPIO_INPUT_DEVICE "/dev/event0"
+#define GPIO_INPUT_DEVICE "/dev/input/event0"
 
 #define FRONT_EV	0x0074	// DNS-320/320L/323/325/327L front button event (KEY_POWER)
 #define RESET_EV	0x0198	// DNS-320/320L/323/325/327L reset button event (KEY_RESTART)

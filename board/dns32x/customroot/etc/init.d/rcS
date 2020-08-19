@@ -11,7 +11,7 @@ mount -t tmpfs tmpfs /tmp
 #mount -t tmpfs tmpfs /dev
 #mknod /dev/null c 1 3
 #mknod /dev/console c 5 1
-#mkdir /dev/pts
+mkdir -p /dev/pts
 /bin/mount -t devpts devpts /dev/pts
 
 depmod -a &
@@ -28,6 +28,8 @@ chmod a+wt /var/spool/lpd /var/spool/samba
 
 echo > /etc/bay
 echo -n > /etc/printcap
+
+echo 1 > /sys/kernel/mm/ksm/run
 
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
 TSYSLOG=/var/log/boot.log
@@ -70,7 +72,7 @@ if echo $board | grep -qE "qemu"; then
 elif echo $board | grep -qE "DNS-321|DNS-323"; then
 	kernel_mtd=/dev/mtd2; kernel_mn="90 4"
 	config_mtd=/dev/mtdblock0; config_mn="31 0"
-	
+
 	ln -sf "/sys/class/leds/power:blue" /tmp/sys/power_led
 	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
 	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
@@ -82,10 +84,7 @@ elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 	# Tell PMU to turn back on after a power failure
 	# From http://jamie.lentin.co.uk/devices/dlink-dns325/userland-configuration/
 	if test $board = "DNS-320-Ax" -o $board = "DNS-325-Ax"; then
-		echo 37 > /sys/class/gpio/export
-		echo out > /sys/class/gpio/gpio37/direction
-		echo 1 > /sys/class/gpio/gpio37/value
-		echo 37 > /sys/class/gpio/unexport
+		gpioset -b 0 37=1
 	fi
 
 	# MAC is stored in /dev/mtd4, configure eth0
@@ -145,12 +144,14 @@ elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 		ln -sf "/sys/class/leds/dns320l:red:sata1" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns320l:orange:usb" /tmp/sys/usb_led
  		ln -sf "/sys/class/leds/dns320l:blue:usb" /tmp/sys/usb2_led
-		if ! test -f /sys/class/gpio/gpio29/value; then # power button don't generate interrup!
-			echo 29 > /sys/class/gpio/export
-			echo out > /sys/class/gpio/gpio29/direction # sigh...
-			echo in > /sys/class/gpio/gpio29/direction # sigh...
+		if ! test -f $(gpioget 0 29); then # power button don't generate interrupt!
+			#echo 29 > /sys/class/gpio/export
+			#echo out > /sys/class/gpio/gpio29/direction # sigh...
+			#echo in > /sys/class/gpio/gpio29/direction # sigh...
+			gpioset 0 29=0
+			gpioget 0 29
 		fi
-		ln -sf /sys/class/gpio/gpio29/value /tmp/sys/power_button
+		#ln -sf /sys/class/gpio/gpio29/value /tmp/sys/power_button
 		mkdir -p /tmp/sys/power_led
 		echo none > /tmp/sys/power_led/trigger
 		echo 1 > /tmp/sys/power_led/brightness
@@ -172,13 +173,15 @@ elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 		ln -sf "/sys/class/leds/dns327l:amber:sata-l" /tmp/sys/left_led
 		ln -sf "/sys/class/leds/dns327l:amber:sata-r" /tmp/sys/right_led
 		ln -sf "/sys/class/leds/dns327l:white:usb" /tmp/sys/usb2_led
-		
-		if ! test -f /sys/class/gpio/gpio65/value; then # power button don't generate interrup!
-			echo 65 > /sys/class/gpio/export
-			echo out > /sys/class/gpio/gpio65/direction # sigh...
-			echo in > /sys/class/gpio/gpio65/direction # sigh...
+
+		if ! test -f $(gpioget 0 65); then # power button don't generate interrup!
+			#echo 65 > /sys/class/gpio/export
+			#echo out > /sys/class/gpio/gpio65/direction # sigh...
+			#echo in > /sys/class/gpio/gpio65/direction # sigh...
+			gpioset 0 65=0
+			gpioget 0 65
 		fi
- 		ln -sf /sys/class/gpio/gpio65/value /tmp/sys/power_button
+ 		#ln -sf /sys/class/gpio/gpio65/value /tmp/sys/power_button
 
 		ln -sf /sys/class/hwmon/hwmon0/temp1_input /tmp/sys/cpu_temp
 		mkdir -p /tmp/sys/power_led

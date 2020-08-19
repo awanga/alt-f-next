@@ -26,9 +26,9 @@ format() {
 
 check() {
 	if test "$fs_type" = "minix"; then
-		if ! fsck -t minix -a $MTD >& /dev/null; then
+		if ! fsck.minix -a $MTD >& /dev/null; then
 			echo "loadsave_settings: $MTD damaged, force fsck it."
-			if ! fsck -t minix -af $MTD; then
+			if ! fsck.minix -af $MTD; then
 				echo "loadsave_settings: Can't fix $MTD, reformating it."
 				format
 			fi
