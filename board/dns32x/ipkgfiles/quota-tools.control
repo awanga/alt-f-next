@@ -1,9 +1,0 @@
-Package: quota-tools
-Description: Tools and patches for the Linux Diskquota system
-Version: 4.01-1
-Depends: ipkg, kernel-modules
-Architecture: arm
-Priority: optional
-Section: fstools
-Source: https://sourceforge.net/projects/linuxquota
-Maintainer: jcard

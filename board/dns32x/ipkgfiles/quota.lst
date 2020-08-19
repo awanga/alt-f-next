@@ -1,3 +1,4 @@
+./etc/init.d/S19quota
 ./etc/quotagrpadmins
 ./etc/quotatab
 ./etc/warnquota.conf
@@ -15,3 +16,6 @@
 ./usr/sbin/setquota
 ./usr/sbin/warnquota
 ./usr/sbin/xqmstats
+./usr/www/cgi-bin/quota.cgi
+./usr/www/cgi-bin/quota_proc.cgi
+./usr/www/cgi-bin/Disk_quotas.men

@@ -6,6 +6,7 @@
 # IPKG_NAME:BUILDROOT_PKG;COMMA_SEPERATED_BUILD_OPT=y,#DISABLED_BUILD_OPT
 #
 kernel-modules: ;
+kernel-modules-armv5: ;
 libstdc++: ;
 attr
 acl
@@ -101,7 +102,7 @@ libmcrypt
 libnl:BR2_PACKAGE_LIBNL=y,BR2_PACKAGE_LIBNL_TOOLS=y
 libpcap
 popt
-gptfdisk:BR2_PACKAGE_GPTFDISK=y,BR2_PACKAGE_GPTFDISK_GDISK=y,BR2_PACKAGE_GPTFDISK_CGDISK=y
+gptfdisk-sgfdisk:BR2_PACKAGE_GPTFDISK=y,BR2_PACKAGE_GPTFDISK_SGFDISK=y
 librsync
 libunistring
 libupnp
