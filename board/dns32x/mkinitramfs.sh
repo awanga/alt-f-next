@@ -10,7 +10,11 @@ PATH=$BLDDIR/host/usr/bin:$PATH
 
 # recursively find packages that <package> depends on:
 rdeps() {
-	if ! grep -q ^BR2_PACKAGE_$(echo $1 | tr '[:lower:]-' '[:upper:]_')=y $BASE_DIR/../.config; then return; fi
+	if ! test "$1" = "libstdc++"; then
+		if ! grep -q ^BR2_PACKAGE_$(echo $1 | tr '[:lower:]-' '[:upper:]_')=y $BASE_DIR/../.config; then
+			return;
+		fi
+	fi
 	echo $1 $(awk '/Version:/{print $2}' $BASE_DIR/../board/dns32x/ipkgfiles/$1.control)
 	deps=$(awk '/Depends:/{for (i=2; i<=NF; i++) print $i}' $BASE_DIR/../board/dns32x/ipkgfiles/$1.control)
 	for i in $deps; do
@@ -110,13 +114,12 @@ else
 	exit 1
 fi
 
-# FIXME: shouldn't this be in .config instead? to diminish redundancy and missing dependencies?
 # fw_pkgs: pre-installed packages in base firmware
 # sq_pkgs: pre-installed packages on sqimage 
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
-base_pkgs="alt-f-utils mdadm e2fsprogs dosfstools ntfs-3g gptfdisk-sgdisk sfdisk dropbear nfs-utils kexec openssl zlib popt"
-base_pkgs2="inadyn-mt smartmontools at ntp-common cifs-utils openssh-sftp vsftpd rsync wget msmtp stunnel libiconv libgpiod"
+base_pkgs="alt-f-utils dosfstools dropbear kexec mdadm nfs-utils openssl libgpiod libtirpc popt zlib"
+base_pkgs2="acl at cifs-utils e2fsprogs gptfdisk-sgdisk inadyn-mt libiconv libstdc++ msmtp ntfs-3g ntp-common openssh-sftp rsync smartmontools stunnel util-linux vsftpd wget"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
 SQFSBLK=131072
@@ -124,7 +127,7 @@ SQFSBLK=131072
 case $board in
 	dns323|qemu)
 		SQFSBLK=262144
-		fw_pkgs="$base_pkgs $base_pkgs2 samba-small"
+		fw_pkgs="$base_pkgs $base_pkgs2"
 		all_pkgs=$fw_pkgs
 		;;
 	dns325|dns327)
@@ -133,7 +136,7 @@ case $board in
 			COMP=xz
 		fi
 		fw_pkgs="$base_pkgs mtd-utils"
-		sq_pkgs="$base_pkgs2  samba gptfdisk ntfs-3g-ntfsprogs btrfs-progs dnsmasq quota-tools minidlna netatalk forked-daapd transmission sqlite"
+		sq_pkgs="$base_pkgs2 btrfs-progs dnsmasq quota lzo"
 		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
 	*) echo "mkinitramfs: Unsupported \"$board\" board"; exit 1;;
@@ -237,6 +240,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 	sq_pkgs_deps=$(for i in $sq_pkgs; do rdeps $i; done | sort -u)
+	sq_pkgs_deps="$sq_pkgs_deps libstdc++"
 
 # HACK! with the dns327 we now have two architectures, armv5 and armv7.
 # armv5 binaries are the default and runs on both archs, but kernel modules are different for both.
