@@ -81,7 +81,7 @@ while IFS= read -r pkgargs; do
 
 	./board/dns32x/mkpkg.sh -set
 	make olddefconfig
-	make $bb_pkg 2>&1 > output/pkg-build.log || build_fail "$lpkg"
+	make 2>&1 > output/pkg-build.log || build_fail "$lpkg"
 
 	# overwrite pkg list when environment variable is set
 	if [ "$OVERWRITE_PKG_LST" != "" ]; then

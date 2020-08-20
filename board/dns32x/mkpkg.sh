@@ -85,7 +85,8 @@ if test -z "$BLDDIR"; then
 	exit 1
 fi
 
-if [[ "$BR2_PROJECT" == "base" ]]; then
+if test "$BR2_PROJECT" = "base"; then
+	mkdir -p ${BLDDIR}/images/$BOARD
 	ROOTFSDIR=output/target
 else
 	ROOTFSDIR=output/images/$BOARD/root
