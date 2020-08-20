@@ -240,7 +240,6 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 
 	fw_pkgs_deps=$(for i in $fw_pkgs; do rdeps $i; done | sort -u)
 	sq_pkgs_deps=$(for i in $sq_pkgs; do rdeps $i; done | sort -u)
-	sq_pkgs_deps="$sq_pkgs_deps libstdc++"
 
 # HACK! with the dns327 we now have two architectures, armv5 and armv7.
 # armv5 binaries are the default and runs on both archs, but kernel modules are different for both.
