@@ -1,4 +1,4 @@
-./etc/init.d/S92transmission
+./etc/init.d/S81transmission
 ./usr/bin/transmission-cli
 ./usr/bin/transmission-create
 ./usr/bin/transmission-daemon

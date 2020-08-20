@@ -7,9 +7,9 @@
 ./etc/cups/snmp.conf
 ./etc/cups/snmp.conf.default
 ./etc/cups/ssl
-./etc/init.d/S42cups
 ./etc/dbus-1/system.d
 ./etc/dbus-1/system.d/cups.conf
+./etc/init.d/S42cups
 ./usr/bin/cancel
 ./usr/bin/cupstestppd
 ./usr/bin/ippeveprinter
@@ -82,7 +82,6 @@
 ./usr/share/applications/cups.desktop
 ./usr/share/cups
 ./usr/share/cups/banners
-./usr/share/cups/data
 ./usr/share/cups/drv
 ./usr/share/cups/drv/sample.drv
 ./usr/share/cups/examples

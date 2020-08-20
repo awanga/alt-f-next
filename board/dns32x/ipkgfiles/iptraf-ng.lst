@@ -1,2 +1,2 @@
-./sbin/iptraf-ng
-./sbin/rvnamed-ng
+./usr/sbin/iptraf-ng
+./usr/sbin/rvnamed-ng

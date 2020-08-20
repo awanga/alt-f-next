@@ -1,3 +1,4 @@
+./etc/init.d/S14btrfs
 ./usr/bin/btrfs
 ./usr/bin/btrfs-convert
 ./usr/bin/btrfs-find-root

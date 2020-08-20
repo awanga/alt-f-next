@@ -2,11 +2,18 @@
 ./etc/init.d/S60nfs
 ./etc/exports
 ./etc/nfsmount.conf
-./sbin/mount.nfs
+./run/nfs
+./run/nfs/etab
+./run/nfs/rmtab
+./run/nfs/sm
+./run/nfs/sm.bak
+./run/nfs/state
 ./sbin/mount.nfs4
 ./sbin/umount.nfs
 ./sbin/umount.nfs4
+./usr/bin/rpcinfo
 ./usr/sbin/exportfs
+./usr/sbin/mount.nfs
 ./usr/sbin/mountstats
 ./usr/sbin/nfsconf
 ./usr/sbin/nfsiostat
@@ -14,6 +21,7 @@
 ./usr/sbin/rpc.mountd
 ./usr/sbin/rpc.nfsd
 ./usr/sbin/rpc.statd
+./usr/sbin/rpcbind
 ./usr/sbin/showmount
 ./usr/sbin/sm-notify
 ./usr/sbin/start-statd

@@ -2,9 +2,5 @@
 ./usr/lib/libmediastreamer.so.10
 ./usr/share/Mediastreamer2
 ./usr/share/Mediastreamer2/cmake
-./usr/share/Mediastreamer2/cmake/Mediastreamer2Config.cmake
-./usr/share/Mediastreamer2/cmake/Mediastreamer2ConfigVersion.cmake
-./usr/share/Mediastreamer2/cmake/Mediastreamer2Targets-release.cmake
-./usr/share/Mediastreamer2/cmake/Mediastreamer2Targets.cmake
 ./usr/share/images
 ./usr/share/images/nowebcamCIF.jpg

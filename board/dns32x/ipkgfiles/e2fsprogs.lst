@@ -39,7 +39,9 @@
 ./usr/sbin/filefrag
 ./usr/sbin/fsck
 ./usr/sbin/logsave
+./usr/sbin/mke2fs
 ./usr/sbin/mklost+found
+./usr/sbin/resize2fs
 ./usr/sbin/tune2fs
 ./usr/share/et
 ./usr/share/et/et_c.awk

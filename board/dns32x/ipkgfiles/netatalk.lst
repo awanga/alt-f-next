@@ -1,6 +1,7 @@
+./etc/afp.conf
 ./etc/dbus-session.conf
 ./etc/extmap.conf
-./etc/init.d/S50netatalk
+./etc/init.d/S51netatalk
 ./usr/bin/ad
 ./usr/bin/afpldaptest
 ./usr/bin/afppasswd
@@ -26,3 +27,5 @@
 ./usr/sbin/cnid_dbd
 ./usr/sbin/cnid_metad
 ./usr/sbin/netatalk
+./usr/www/cgi-bin/netatalk.cgi
+./usr/www/cgi-bin/netatalk_proc.cgi

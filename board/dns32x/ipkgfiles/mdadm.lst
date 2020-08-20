@@ -1,4 +1,5 @@
-./sbin/mdadm
-./sbin/mdmon
-./usr/www/cgi-bin/mdadm.cgi
-./usr/www/cgi-bin/mdadm_proc.cgi
+./etc/init.d/S29mdadm
+./usr/sbin/mdadm
+./usr/sbin/mdmon
+./usr/www/cgi-bin/raid.cgi
+./usr/www/cgi-bin/raid_proc.cgi

@@ -1,4 +1,4 @@
-./etc/init.d/S50dropbear
+./etc/init.d/S62dropbear
 ./usr/bin/dbclient
 ./usr/bin/dropbearconvert
 ./usr/bin/dropbearkey

@@ -1,5 +1,6 @@
 ./etc/init.d/S50stunnel
-./etc/stunnel/stunnel.conf
+./etc/stunnel/stunnel-https.conf
+./etc/stunnel/stunnel-swats.conf
 ./etc/ssl/certs/stunnel.pem
 ./usr/bin/stunnel
 ./usr/bin/stunnel3

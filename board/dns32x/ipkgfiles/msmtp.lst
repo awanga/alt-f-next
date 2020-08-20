@@ -1,4 +1,6 @@
+./etc/msmtprc
 ./usr/bin/msmtp
 ./usr/bin/msmtpd
 ./usr/www/cgi-bin/mail.cgi
 ./usr/www/cgi-bin/mail_proc.cgi
+./usr/www/mail_hlp.html

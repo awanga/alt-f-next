@@ -1,2 +1,2 @@
-./etc/init.d/S60openvpn
+./etc/init.d/S41openvpn
 ./usr/sbin/openvpn

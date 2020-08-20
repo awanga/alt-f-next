@@ -6,7 +6,6 @@
 ./usr/lib/modules/4.19.140/kernel/crypto/jitterentropy_rng.ko
 ./usr/lib/modules/4.19.140/kernel/crypto/pcbc.ko
 ./usr/lib/modules/4.19.140/kernel/crypto/sha256_generic.ko
-./usr/lib/modules/4.19.140/kernel/crypto/xor.ko
 ./usr/lib/modules/4.19.140/kernel/drivers/hid/usbhid/usbhid.ko
 ./usr/lib/modules/4.19.140/kernel/drivers/scsi/sg.ko
 ./usr/lib/modules/4.19.140/kernel/drivers/usb/class/usblp.ko
@@ -39,8 +38,6 @@
 ./usr/lib/modules/4.19.140/kernel/lib/crc16.ko
 ./usr/lib/modules/4.19.140/kernel/lib/lzo/lzo_compress.ko
 ./usr/lib/modules/4.19.140/kernel/lib/lzo/lzo_decompress.ko
-./usr/lib/modules/4.19.140/kernel/lib/oid_registry.ko
-./usr/lib/modules/4.19.140/kernel/lib/raid6/raid6_pq.ko
 ./usr/lib/modules/4.19.140/kernel/lib/xxhash.ko
 ./usr/lib/modules/4.19.140/kernel/lib/zlib_deflate/zlib_deflate.ko
 ./usr/lib/modules/4.19.140/kernel/lib/zlib_inflate/zlib_inflate.ko

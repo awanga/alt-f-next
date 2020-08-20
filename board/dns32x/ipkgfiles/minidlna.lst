@@ -1,4 +1,5 @@
 ./etc/init.d/S60minidlnad
+./etc/minidlna.conf
 ./usr/sbin/minidlnad
 ./usr/www/cgi-bin/minidlna.cgi
 ./usr/www/cgi-bin/minidlna_proc.cgi

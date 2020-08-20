@@ -1,4 +1,5 @@
-./etc/init.d/S95mpd
+./etc/init.d/S81mpd
+./etc/mpd.conf
 ./usr/bin/mpd
 ./usr/share/icons/hicolor/scalable
 ./usr/share/icons/hicolor/scalable/apps

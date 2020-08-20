@@ -1,3 +1,4 @@
+./etc/php.ini
 ./usr/bin/php
 ./usr/bin/php-cgi
 ./usr/bin/zipcmp
