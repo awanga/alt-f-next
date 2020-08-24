@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 
 source ./common.sh
 
@@ -25,7 +25,7 @@ jscripts() {
 		<script type="text/javascript">
 			arefresh = false
 			function requestfromserver(target, refresh) {
-				var req = new XMLHttpRequest();    			
+				var req = new XMLHttpRequest();
 				if (req == null)
 					return;
 
@@ -44,7 +44,7 @@ jscripts() {
 
 			function frefresh(obj) {
 				arg = obj.checked == true ? "yes" : "no"
-	
+
 				if (arg == "yes") {
 					arefresh = true
 					requestfromserver('systems_st', 11)
@@ -102,9 +102,8 @@ systems_st() {
 
 	mem=0; physmem=0
 	swap=0; swapv="None"
-	eval $(free | awk '/^Mem:/ { physmem=$2 } \
-            /^-\/+/ { printf "mem=%d; physmem=%d;", $3*100/physmem, physmem/1024} \
-            /^Swap:/ { if ($2 != 0) { printf "swap=%d; swapv=\"%dMB\";", $3*100/$2, $2/1024}}')
+	eval $(free | awk '/^Mem:/ { physmem=$2; printf "mem=%d; physmem=%d;", $3*100/physmem, physmem/1024}')
+	eval $(free | awk '/^Swap:/ { if ($2 != 0) { printf "swap=%d; swapv=\"%dMB\";", $3*100/$2, $2/1024}}')
 	if test "$swapv" = "None"; then
 		memalert=""
 		swap=100	# Trigger red alert if no swap
@@ -329,7 +328,7 @@ filesys() {
 
 	cnt=""; dirty=""; days="";
 	cap=0; free=0; perc=0
-	
+
 	if test -b $dsk; then
 		eval $(df -h $dsk | awk '/'$dev'/{printf "cap=%s;free=%s;perc=%d", $2, $4, $5}')
 		type=$(blkid -s TYPE -o value $dsk)
@@ -577,7 +576,7 @@ printers_st() {
 			fi
 		fi
 		echo "<tr><td>$pr</td><td>$desc</td><td>$jb</td></tr>"
-		
+
 	done < /etc/printcap
 	echo "</table></fieldset>"
 }
