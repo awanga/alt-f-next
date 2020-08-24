@@ -222,9 +222,10 @@ for i in $(grep -rl '#![[:space:]]*'$HOSTDIR $ROOTFS); do
 done
 
 
-# 8- mklibs
+# 8- copy license information
 
-#$1/../host/usr/bin/mklibs --target arm-buildroot-linux-uclibcgnueabi --ldlib $1/lib/ld-uClibc.so.0 --root $1 -L $1/lib:$1/usr/lib -d $1/usr/lib $1/usr/bin/* $1/bin/*
+cp $BASE_DIR/../COPYING $ROOTFS/
+cp $BASE_DIR/../LICENSE $ROOTFS/
 
 
 # 9 mkinitfs script
