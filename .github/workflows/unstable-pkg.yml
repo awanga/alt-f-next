@@ -21,8 +21,18 @@ jobs:
 
     - name: Build
       run: |
-        echo "building base firmware..."
+        echo "building base firmware with armv7 kernel modules..."
         make alt-f_base_defconfig
+        sed -i 's,base,dns327,g' .config
+        sed -i 's,pkgs/linux.config,dns327/linux.config,g' .config
+        make
+        fakeroot ./board/dns32x/mkpkg.sh -force kernel-modules-armv7
+
+        echo "reconfiguring for armv5 kernel..."
+        rm -fR ./output/target/usr/lib/modules/* ./output/build/linux-{4,5}*
+        make alt-f_base_defconfig
+        make
+
         echo "building packages..."
         ./board/dns32x/build-pkgs.sh
 
