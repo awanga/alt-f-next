@@ -1,6 +1,6 @@
 Package: ntp
 Description: Network Time Protocol suite/programs
-Version: 4.2.8p14
+Version: 4.2.8p15
 Depends: ntp-common, ipkg
 Architecture: arm
 Priority: optional

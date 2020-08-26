@@ -13,7 +13,7 @@
 ./usr/bin/dbus-uuidgen
 ./usr/lib/libdbus-1.so
 ./usr/lib/libdbus-1.so.3
-./usr/lib/libdbus-1.so.3.19.11
+./usr/lib/libdbus-1.so.3.19.12
 ./usr/libexec
 ./usr/libexec/dbus-daemon-launch-helper
 ./usr/share/dbus-1
