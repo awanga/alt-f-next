@@ -225,7 +225,7 @@ fi
 
 # create initramfs uboot image
 mkimage -A arm -O linux -T ramdisk -C none \
-	-e 0x00800000 -a 0x00800000 \
+	-e 0x01400000 -a 0x01400000 \
 	-n "Alt-F-${VER}, initrd" -d ${DESTD}/$rootfs \
 	${DESTD}/urootfs
 check $? "initramfs mkimage"
