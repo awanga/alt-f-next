@@ -200,6 +200,13 @@ for i in $1/sbin/*; do
 	fi
 done
 
+# try to automagically fix symlinks broken by moving files from /sbin -> /usr/sbin
+export bdir=$1
+find $bdir/sbin -type l -exec sh -c 'if test -e {}; then exit 0; fi; lname="{}"; \
+	find $bdir/usr -type f -name $(basename $(readlink $lname)) \
+		-exec ln -sfr \{\} $lname \; -quit' \;
+unset bdir
+
 # 5-no kernel modules are needed at boot time, so move them to /usr/lib
 # to squashfs-lzma them and save memory
 if ! test -d $1/lib/modules -a -h $1/lib/modules; then
