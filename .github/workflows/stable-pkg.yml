@@ -34,6 +34,7 @@ jobs:
         make
 
         echo "building packages..."
+        cp ./board/dns32x/pkgs/ipkg*.ipk ./output/pkgs/
         ./board/dns32x/build-pkgs.sh
 
     - name: Deploy
