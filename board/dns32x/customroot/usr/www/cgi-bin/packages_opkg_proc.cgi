@@ -33,7 +33,7 @@ opkg_cmd() {
 
 	busy_cursor_start
 	echo "<pre>"
-	opkg $opt $2				
+	opkg $opt $2
 	if test $? = 0; then
 		cat<<-EOF
 			</pre>
@@ -67,7 +67,7 @@ if test "$install" = "Install"; then
 	else
 		mkdir -p /opt # creates /Alt-F/opt, which appears as /opt
 	fi
-	
+
 	write_header "Installing Entware"
 	busy_cursor_start
 
@@ -103,9 +103,9 @@ if test "$install" = "Install"; then
 
 			if ! test -f /opt/etc/init.d/rc.unslung; then
 				echo "No Entware installation found."
-				exit 1    
+				exit 1
 			fi
- 
+
 			export PATH=/opt/bin:/opt/sbin:\$PATH
 
 			case "\$1" in

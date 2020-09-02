@@ -11,7 +11,7 @@ CONF_MISC=/etc/misc.conf
 
 if test -n "$Submit"; then
 
-	if test -s $CONF_MISC; then 
+	if test -s $CONF_MISC; then
 		. $CONF_MISC
 	fi
 

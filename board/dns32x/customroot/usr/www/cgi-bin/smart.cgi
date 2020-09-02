@@ -43,7 +43,7 @@ if test -e $CONFF; then
 		-n) shift; if test "$1" = "never"; then WAKEF=checked; fi; shift;;
 		-s) shift; tests="$1"; shift;;
 		-o) AUTOF=checked; shift; offlineauto=$1; shift ;;
-		esac		
+		esac
 	done
 
 # FIXME this is a mess, parsing extended regular expression...
@@ -104,9 +104,9 @@ cat<<-EOF
 	<form id="smartf" action="/cgi-bin/smart_proc.cgi" method="post">
 	<table>
 	<tr><td><input type=checkbox $STF name="shorttest" value="yes">
-		Do a short disk test every: $(when s) 
+		Do a short disk test every: $(when s)
 		at <input type=text size=2 name=shorthour value="$shour">:00</td>
-	</tr> 
+	</tr>
 	<tr><td><input type=checkbox $LTF name="longtest" value="yes">
 		Do a long disk test every:&nbsp; $(when l)
 		at <input type=text size=2 name=longhour value="$lhour">:00</td>

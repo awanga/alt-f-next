@@ -39,6 +39,6 @@ cat<<-EOF
 	</table>
 	<p><input type=submit name="submit" value="Submit">
 		$(back_button)
-		<input type=submit name="webPage" value="WebPage"> 
+		<input type=submit name="webPage" value="WebPage">
 	</form></body></html>
 EOF

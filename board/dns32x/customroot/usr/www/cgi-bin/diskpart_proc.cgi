@@ -49,7 +49,7 @@ loadall() {
 
 # $1=dsk
 reread_part() { # FIXME needed with GPT?
-	sfdisk -R /dev/$1 >& /dev/null 
+	sfdisk -R /dev/$1 >& /dev/null
 	sleep 3
 
 	# somehow, in this scenario, mdev does not remove device, only creates them
@@ -97,7 +97,7 @@ finalize() {
 		# NO, user might want to enlarge/shrink the filesystem
 		# dd if=/dev/zero of=$part count=100 >& /dev/null
 
-		case "$type" in				
+		case "$type" in
 			swap)
 				mkswap $part >& /dev/null
 				;;
@@ -145,7 +145,7 @@ if test -n "$cp_from"; then
 
 elif test -n "$Erase"; then
 	dsk=${Erase#op_}
-	
+
 	pre
 	echo "<p>Erasing partition table from ${dsk}..."
 
@@ -235,7 +235,7 @@ elif test -n "$Conv_GPT"; then # MBR to GPT
 	fi
 
 	reread_part $dsk
-	
+
 elif test -n "$Partition" -a "$in_use" = "MBR"; then
 	dsk="$Partition"
 	FMTFILE=$(mktemp -t sfdisk-XXXXXX)

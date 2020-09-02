@@ -58,7 +58,7 @@ if test -n "$Submit"; then
 		if test -z "$nm" -o -z "$ip" -o -z "$mac"; then
 			msg "You must specify a name, IP and MAC"
 		fi
-		
+
 		if ! $(checkname $nm); then
 			msg "The host name can only have letters and digits, no spaces, and must begin with a letter"
 		elif ! $(checkip $ip); then
@@ -77,7 +77,7 @@ if test -n "$Submit"; then
 			echo "$mac,$nm,$ip,$lease" >> $CONF_H
 		fi
 	done
-	
+
 	sed -i '/enable-tftp/d' $CONF_F
 	if test -n "$tftp"; then
 		echo "enable-tftp" >> $CONF_F

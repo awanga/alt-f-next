@@ -42,7 +42,7 @@ remount() {
 
 	lumount "$part"
 
-	TF=$(mktemp -t) 
+	TF=$(mktemp -t)
 	awk '{
 		if ($1 == "/dev/'$part'") {
 			$4 = "'$mopts'"
@@ -59,7 +59,7 @@ remount() {
 	if test "$mopts" != "defaults"; then
 		echo "mopts_${uuid}=$mopts" >> $CONFM
 	fi
-	
+
 	lmount "$part"
 }
 

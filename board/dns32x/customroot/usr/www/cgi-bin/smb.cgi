@@ -28,12 +28,12 @@ if test -e $CONF_SMB; then
 		chgfl=1; sed -i '/print command/a\
 	#min protocol = SMB2' $CONF_SMB
 	fi
-	
+
 	if ! grep -q '^[[:space:]#]*client ipc signing' $CONF_SMB; then
 		chgfl=1; sed -i '/print command/a\
 	client ipc signing = auto' $CONF_SMB
 	fi
-	
+
 	if ! grep -q '^[[:space:]#]*client signing' $CONF_SMB; then
 		chgfl=1; sed -i '/print command/a\
 	client signing = auto' $CONF_SMB
@@ -48,7 +48,7 @@ if test -e $CONF_SMB; then
 	if test -n "$chgflg" && rcsmb status >& /dev/null; then
 		rcsmb reload >& /dev/null
 	fi
-	
+
 	SMB1_EN_check="checked"
 	if grep -q '^[[:space:]]*max protocol = SMB2' $CONF_SMB; then
 		SMB2_EN_check="checked"
@@ -115,7 +115,7 @@ awk -F = 'BEGIN {
 			while (getline <"/etc/samba/smbpasswd")
 				users[i++] = $1
 		while (getline <"/etc/group")
-			if ($3 >= 100 || $3 == 34 || $3 == 80 || $3 == 84) 
+			if ($3 >= 100 || $3 == 34 || $3 == 80 || $3 == 84)
 				users[i++] = "+" $1
 	FS = t
 	}
@@ -165,7 +165,7 @@ function spit(cnt, opts) {
 		if (opts["inherit permissions"] == "yes" || opts["share_name"] == "Public (Read Write)")
 			inhperms_chk = "checked"
 
-	} else 
+	} else
 		rdonly_chk = dis_chk = browse_chk = ""
 
 	for (j in users) {
@@ -182,8 +182,8 @@ function spit(cnt, opts) {
 	printf "<td><input type=text size=16 name=cmt_%d value=\"%s\"></td>\n", cnt, opts["comment"]
 	printf "<td align=center><select name=user_%d>%s</select></td>\n", cnt, useropt
 	printf "<td align=center><input %s type=checkbox name=browse_%d value=yes></td>\n", browse_chk, cnt
-	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=yes></td>\n", rdonly_chk, cnt 
-	printf "<td align=center><input %s type=checkbox name=inhperms_%d value=yes></td>\n", inhperms_chk, cnt 
+	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=yes></td>\n", rdonly_chk, cnt
+	printf "<td align=center><input %s type=checkbox name=inhperms_%d value=yes></td>\n", inhperms_chk, cnt
 	print "</tr>\n"
 }
 
@@ -193,7 +193,7 @@ function parse(share_name, line) {
 
 	cnt++
 	delete opts
-	opts["share_name"] = share_name 
+	opts["share_name"] = share_name
 	while (st = getline) {
 		fc = substr($0,1,1)
 		if (fc == "#" || fc == ";")

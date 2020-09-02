@@ -65,7 +65,7 @@ source ./common.sh
 
 check_cookie
 read_args
-		    
+
 #debug
 
 CONFT=/etc/misc.conf

@@ -22,7 +22,7 @@ if test -n "$submit"; then
 	fi
 
 	if test "$(basename $conf_dir)" = "Public"; then
-		msg "You must create a folder for Sickbeard." 
+		msg "You must create a folder for Sickbeard."
 	elif ! res=$(check_folder "$conf_dir"); then
 		msg "$res"
 	fi
@@ -96,7 +96,7 @@ elif test -n "$webPage"; then
 		PROTO="https"
 	fi
 
-	embed_page "$PROTO://${HTTP_HOST%%:*}:$PORT" "SickBeard Page"	
+	embed_page "$PROTO://${HTTP_HOST%%:*}:$PORT" "SickBeard Page"
 fi
 
 #enddebug

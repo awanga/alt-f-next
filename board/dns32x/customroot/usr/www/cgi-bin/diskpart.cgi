@@ -35,17 +35,17 @@ It will disappear after a reboot or powerdown.')
 		}
 		else if (op == "Load") {
 			ret = confirm('You are going to write the ' + cap + ' ' + bay + ' disk\n\
-partition table  with a previously saved one.\n\nContinue?') 
+partition table  with a previously saved one.\n\nContinue?')
 		}
 
 		else if (op == "Conv_MBR") {
 			ret = confirm('You are going to convert the ' + cap + ' ' + bay + ' disk\
-partition table to the MBR format.\n\Adjustments might be necessary afterwards.\n\nContinue?') 
+partition table to the MBR format.\n\Adjustments might be necessary afterwards.\n\nContinue?')
 		}
 
 		else if (op == "Conv_GPT") {
 			ret = confirm('You are going to convert the ' + cap + ' ' + bay + ' disk\
-partition table to the GPT format.\n\Adjustments might be necessary afterwards.\n\nContinue?') 
+partition table to the GPT format.\n\Adjustments might be necessary afterwards.\n\nContinue?')
 		}
 
 		if (ret == false) {
@@ -88,7 +88,7 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 	}
 
 	function advanced(dcap, disk) {
-		st = document.getElementById("adv_id").value == "Advanced" ? true : false 
+		st = document.getElementById("adv_id").value == "Advanced" ? true : false
 		if ( st == false)
 			updatesect(dcap, disk)
 		for (i=1; i<=4; i++) {
@@ -201,7 +201,7 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 				nsect = part[i].cap * 1e9 / 512
 				nsect -= nsect % 8
 				if (nsect == 0) {
-					st = 0 
+					st = 0
 				} else {
 					for (j in free) {
 						if (free[j].len >= nsect) {
@@ -209,11 +209,11 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 							free[j].start += nsect
 							free[j].len -= nsect
 							found = 1
-							break	
+							break
 						}
 					}
 					if (found == 0)
-						msg += "No continuos free disk space for partition " + part[i].pn 
+						msg += "No continuos free disk space for partition " + part[i].pn
 				}
 			}
 			p = part[i].pn
@@ -254,7 +254,7 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 		}
 
 		for (i=1; i<=4; i++) {
-			if (isNaN(start[i])) 
+			if (isNaN(start[i]))
 				emsg += "Start of partition " + i + " is not a number" + '\n'
 			if (isNaN(len[i]))
 				emsg += "Length of partition " + i + " is not a number" + '\n'
@@ -290,7 +290,7 @@ partition table to the GPT format.\n\Adjustments might be necessary afterwards.\
 			alert(emsg)
 			return false;
 		}
-		
+
 		if (! confirm("Partitioning the " + diskcap + " " + bay + " disk can make all its data inacessible.\n\nContinue?")) {
 			re_set(disk, pst)
 			return false
@@ -340,7 +340,7 @@ cat<<EOF
 EOF
 
 opt_disks="$(for i in $disks; do echo "<option>$(basename $i)</option>"; done)"
- 
+
 for i in $disks; do
 	disk=$(basename $i)
 
@@ -349,17 +349,17 @@ for i in $disks; do
 	optd=$(echo $opt_disks | sed 's|<option>'$disk'</option>||')
 
 	conv_gpt_dis=""; conv_mbr_dis=""
-	if fdisk -lu $i 2> /dev/null | grep -q "Found valid GPT with protective MBR; using GPT"; then
+	if fdisk -lu $i 2> /dev/null | grep -q "Disklabel type: gpt"; then
 		conv_gpt_dis="disabled"
 	else
 		conv_mbr_dis="disabled"
 	fi
-	
+
 	if test $(cat /sys/block/$disk/size) -gt $TWOTB; then
 		conv_mbr_dis="disabled"
 	fi
 
-	chkd=""	
+	chkd=""
 	if test "$i" = "$dsk"; then chkd="checked"; fi
 
 	cat<<EOF
@@ -424,7 +424,7 @@ ${dsk}4          0       -       0          0    0  Empty"
 	keepchk=""
 	keepdis=""
 
-elif echo $fout | grep -q "Found valid GPT with protective MBR; using GPT"; then
+elif echo $fout | grep -q "Disklabel type: gpt"; then
 	in_use="GPT"
 	windd_dis=""
 	ntfsd="disabled"
@@ -482,16 +482,16 @@ for pl in $(seq 1 $npart); do
 
 	cat<<EOF
 	<tr>
-	<td align=center><input type="checkbox" $extendeddis $keepchk id="keep_$ppart" name="keep_$ppart" value="yes" 
+	<td align=center><input type="checkbox" $extendeddis $keepchk id="keep_$ppart" name="keep_$ppart" value="yes"
 		onclick="keeppart('$ppart')" $(ttip tt_keep)></td>
 	<td>$ppart</td>
 	<td><input type=text disabled size=10 id=start_$ppart name=start_$ppart value="$start"
 		onchange="check_adv('$rawcap', '$ddsk', '$pl')"  $(ttip tt_pstart)></td>
 	<td><input type=text disabled size=10 id=len_$ppart name=len_$ppart value="$len"
 		onchange="check_adv('$rawcap', '$ddsk', '$pl')" $(ttip tt_plen)></td>
-	<!--td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
+	<!--td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart
 		value="$cap" onkeyup="updatesect('$rawcap', '$ddsk', '$pl')" $(ttip tt_psize)></td-->
-	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart 
+	<td><input type=text $keepdis size=6 id=cap_$ppart name=cap_$ppart
 		value="$cap" onchange="updatesect('$rawcap', '$ddsk', '$pl')" $(ttip tt_psize)></td>
 	<td><select $keepdis id=type_$ppart name=type_$ppart>
 	<option $emptys>empty</option>
@@ -508,7 +508,7 @@ for pl in $(seq 1 $npart); do
 	</tr>
 EOF
 
-done 
+done
 
 free=$(awk 'BEGIN {printf "%.3f", ('$rawcap' - '$used') * 512/1e9}')
 

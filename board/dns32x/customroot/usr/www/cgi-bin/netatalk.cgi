@@ -62,7 +62,7 @@ awk -F = 'BEGIN {
 			while (getline <"/etc/samba/smbpasswd")
 				users[i++] = $1
 		while (getline <"/etc/group")
-			if ($3 >= 100 || $3 == 34 || $3 == 80) 
+			if ($3 >= 100 || $3 == 34 || $3 == 80)
 				users[i++] = "@" $1
 	FS = t
 	}
@@ -82,7 +82,7 @@ function pshare(line) {
 }
 
 function spit(cnt, opts) {
-	
+
 	rdir = rdonly_chk = tm_chk = ""
 	sel = "anybody"
 	size_dis = "disabled"
@@ -118,8 +118,8 @@ function spit(cnt, opts) {
 	printf "<td><input type=button onclick=\"browse_dir_popup(%cldir_%d%c)\" value=Browse></td>\n", 047, cnt, 047
 	printf "<td><input type=text size=12 name=shname_%d value=\"%s\"></td>\n", cnt, opts["share_name"]
 	printf "<td align=center><select name=user_%d>%s</select></td>\n", cnt, useropt
-	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=\"yes\"></td>\n", rdonly_chk, cnt 
-	printf "<td align=center><input %s type=checkbox name=tm_%d value=\"yes\" onclick=\"toogle(%d)\"></td>\n", tm_chk, cnt, cnt 
+	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=\"yes\"></td>\n", rdonly_chk, cnt
+	printf "<td align=center><input %s type=checkbox name=tm_%d value=\"yes\" onclick=\"toogle(%d)\"></td>\n", tm_chk, cnt, cnt
 	printf "<td><input %s type=text size=4 name=maxsz_%d id=maxsz_%d value=\"%s\"></td>\n", size_dis, cnt, cnt, opts["vol size limit"]
 	print "</tr>\n"
 }
@@ -130,7 +130,7 @@ function parse(share_name, line) {
 
 	cnt++
 	delete opts
-	opts["share_name"] = share_name 
+	opts["share_name"] = share_name
 	while (st = getline) {
 		fc = substr($0,1,1)
 		if (fc == "#" || fc == ";")

@@ -3,7 +3,7 @@ CONF_MISC=/etc/misc.conf
 CONF_HOSTS=/etc/hosts
 
 # sed removes any ' or " that would upset quoted assignment
-# awk ensures that 
+# awk ensures that
 # - all variables passed have legal names
 # - special characters are not interpreted by sh
 read_args() {
@@ -18,7 +18,7 @@ read_args() {
 	eval $(echo -n $args |  sed -e 's/'"'"'/%27/g;s/"/%22/g' | \
 		awk 'BEGIN{RS="&";FS="="}
 			$2~/^[a-zA-Z][a-zA-Z0-9_]*$/ {
-			printf "%s=%c%s%c\n",$2,39,$1,39}' )                
+			printf "%s=%c%s%c\n",$2,39,$1,39}' )
 }
 
 # like read_args above but for QUERY_STRING (does not evaluate value=key)
@@ -34,7 +34,7 @@ isnumber() {
 	echo "$1" | grep -qE '^[0-9.]+$'
 }
 
-# Celsius to Fahrenheit 
+# Celsius to Fahrenheit
 celtofar() {
 	awk 'END{ printf "%d", 9 * '$1' / 5 + 32}' </dev/null
 }
@@ -84,7 +84,7 @@ gethname() {
         echo $1
     elif ! th=$(awk '/^'$1'[[:space:]]+/{print $3; exit 1}' $CONF_HOSTS); then
         echo $th
-    elif ! th=$(nslookup $1 | awk '/Address.*'$1'/{if (length($4) != 0) {print $4; exit 1}}'); then  
+    elif ! th=$(nslookup $1 | awk '/Address.*'$1'/{if (length($4) != 0) {print $4; exit 1}}'); then
         echo $th
     else
         echo $1
@@ -240,7 +240,7 @@ find_dm() {
 	awk '/'$mj' *'$mi'/{printf "%s", $4}' /proc/partitions
 }
 
-# $1=sda global: ln 
+# $1=sda global: ln
 fs_progress() {
 	part=$1
 	ln=""
@@ -263,7 +263,7 @@ fs_progress() {
 						fi
 					else
 						ln=$(echo $ln | awk '{ $3 += 0; if ($3 != 0 && $3 > $2) printf "step 1.%d: %d%%", $1, $2*100/$3}')
-					fi 
+					fi
 				elif test $k = "wip" ; then
 					kill -SIGUSR1 $(cat /tmp/${k}-${part}.pid)
 					tsz=$(head -1 /tmp/${k}-${part}.log 2> /dev/null)
@@ -311,13 +311,13 @@ You should do it whenever you want your changes to survive a box reboot."
 	case "$currst" in
 		host) next=time_1;;
 		time_1) next=time_2;;
-		time_2) next=diskwiz;; 
+		time_2) next=diskwiz;;
 		diskwiz) next=newuser_1;;
-		newuser_1) next=newuser_2;; 
+		newuser_1) next=newuser_2;;
 		newuser_2) next=smb;;
 		smb) if grep -q 'DNS-323' /tmp/board; then next=settings; else next=packages_ipkg; fi;;
 		packages_ipkg) next=settings;;
-		settings) next=status;; 
+		settings) next=status;;
 		*) rm /tmp/firstboot; firstmsg=""; return ;;
 	esac
 
@@ -348,7 +348,7 @@ html_header() {
 			html { height: 100%; }
 			body { height: 100%; font-family: arial,verdana; }
 		</style>
-		$(load_thm default.thm)	
+		$(load_thm default.thm)
 		<title></title></head>
 		<body>
 		$center
@@ -402,7 +402,7 @@ select_part() {
 		partl=$(plabel $part)
 		partb=$(sed -n "s/${part%[0-9]}=\(.*\)/, \1 disk/p" /etc/bay)
 		if test -z "$partl"; then partl=$part; fi
-		sel=""; if test "$presel" = "$part"; then sel="selected"; fi		
+		sel=""; if test "$presel" = "$part"; then sel="selected"; fi
 		echo "<option $sel value=$part> $partl ($part, ${pcap}B, ${avai}B free${partb})</option>"
 	done
 	echo "</select>"
@@ -435,7 +435,7 @@ upload_file() {
 	read -r Content_Type
 	read -r empty_line
 
-	if ! ( echo "$CONTENT_TYPE" | grep -q multipart/form-data && 
+	if ! ( echo "$CONTENT_TYPE" | grep -q multipart/form-data &&
 		echo "$Content_Disposition" | grep -q form-data ); then
 			cat > /dev/null # discard transfer
 			echo "Not a (simple) POST response."
@@ -494,7 +494,7 @@ gotoback() {
 
 gotopage() {
 	if echo $0 | grep -q '_proc\.cgi'; then firstboot; fi
-	
+
 	echo -e "HTTP/1.1 303\r"
 	echo -e "Content-Type: text/html; charset=UTF-8\r"
 	echo -e "Location: $1\r\n\r"
@@ -516,7 +516,7 @@ js_gotopage() {
 
 check_cookie() {
 	if test -n "$HTTP_COOKIE" -a -O /tmp/cookie; then
-		ALTFID=$(echo $HTTP_COOKIE | sed -n 's/ALTFID=\([^[:space:],;]*\).*/\1/p')   
+		ALTFID=$(echo $HTTP_COOKIE | sed -n 's/ALTFID=\([^[:space:],;]*\).*/\1/p')
         if test -n "$ALTFID"; then
 			if test $(expr $(date +%s) - $(date +%s -r /tmp/cookie) ) -lt 1800; then
 				if test "$(cat /tmp/cookie)" = "${ALTFID}"; then
@@ -576,7 +576,7 @@ wait_count_start() {
 
 wait_count_stop() {
 	rm -f $tmp_id
-	cat<<-EOF	
+	cat<<-EOF
 		<script type="text/javascript">
 			clearInterval(waittimerID);
 			document.body.style.cursor = '';
@@ -636,7 +636,7 @@ drawbargraph() {
 	EOF
 }
 
-# usage: mktt tt_id "tooltip msg" 
+# usage: mktt tt_id "tooltip msg"
 mktt() {
 	echo "<div id=\"$1\" class=\"ttip\">$2</div>"
 }

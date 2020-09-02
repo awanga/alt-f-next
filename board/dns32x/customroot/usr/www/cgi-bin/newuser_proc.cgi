@@ -44,7 +44,7 @@ if test "$submit" = "Submit" -o "$chpass" = "ChangePass"; then
 
 		if test -z "$uname" -o -n "$ouname"; then
 			msg "The user name can't be empty or a user with that name already exists"
-		elif test -z "$nick" -o -n "$onick" -o "$nick" != "$snick"; then 
+		elif test -z "$nick" -o -n "$onick" -o "$nick" != "$snick"; then
 			msg "The nickname cant be empty, have spaces, or a user with same nickname already exists"
 		elif test -z "$uid" -o "$(awk -F: '$3 == "'$uid'" {print $3}' $CONFP)"; then
 			msg "A user with that user id already exists"
@@ -118,14 +118,14 @@ elif test "$create_dir" = "CreateDir"; then
 	IFS="$OIFS"
 
 	if ! grep -q "^\[Users\]" $CONFSMB; then
-		cat<<EOF >> $CONFSMB		
+		cat<<EOF >> $CONFSMB
 
 [Users]
 	comment = Users private folder
 	path = /home
 	read only = no
 	available = yes
-			
+
 [Public (Read Write)]
 	comment = Public Area where everybody can read and write
 	inherit permissions = yes
@@ -133,7 +133,7 @@ elif test "$create_dir" = "CreateDir"; then
 	public = yes
 	read only = no
 	available = yes
-		
+
 [Public (Read Only)]
 	comment = Public Area that everybody can read
 	path = /Public/RO

@@ -21,7 +21,7 @@ fi
 mktt disable_tt "Check to temporarily disable this backup."
 mktt id_tt "Backup identifier."
 mktt type_tt "Backup source."
-mktt runas_tt "Run the backup as the selected user.<br><br>Should be the \"root\" user for local folders, or the<br> user owning the files when the folder is mounted by NFS or Samba." 
+mktt runas_tt "Run the backup as the selected user.<br><br>Should be the \"root\" user for local folders, or the<br> user owning the files when the folder is mounted by NFS or Samba."
 mktt host_tt "Computer to backup from."
 mktt src_tt "Folder to backup from."
 mktt when_tt "Week or Month day(s) to perform the backup.<br><br><strong>Week day</strong>: 0-Sun, 1-Mon, 2-Tue...<br>0,2,4 means Sun, Tue and Thu<br>0-2 means Sun, Mon and Tue<br>* means everyday.<br><br><strong>Month day:</strong> first character must be a 'd',<br> 1 to 31 allowed, same rules as above applies,<br> e.g., 'd1,15' or 'd1-5' or 'd28' are valid.<br><br>No spaces allowed, no checks done"
@@ -171,7 +171,7 @@ if test -f $CONF_BACKUP; then
 			</tr>
 		EOF
 		cnt=$((cnt+1))
-	done < $CONF_BACKUP 
+	done < $CONF_BACKUP
 fi
 
 IFS="$OIFS"

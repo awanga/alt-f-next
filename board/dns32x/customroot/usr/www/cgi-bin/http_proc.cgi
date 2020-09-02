@@ -73,7 +73,7 @@ cat<<-EOF
 	var server = "${proto}://${host}:${jsport}"
 	var testimg = server + "/help.png?" + Math.random()
 
-	function testServer() {    
+	function testServer() {
 		var img = new Image()
 
 		img.onload = function() {

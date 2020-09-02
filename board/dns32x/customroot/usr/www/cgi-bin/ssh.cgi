@@ -14,7 +14,7 @@ mktt server_tt "Server mode: always running, faster, always consuming memory<br>
 
 eval $(awk '{ if ($6 == "/usr/sbin/dropbear") {
 		if ($1 == "ssh_alt" || $1 == "#ssh_alt")
-			print "DB_2222=checked; odb_port=2222"; 
+			print "DB_2222=checked; odb_port=2222";
 		else
 			print "DB_22=checked; odb_port=22";
 		if (index($1,"#")) print "db_server=checked;"; else print "db_inetd=checked;";

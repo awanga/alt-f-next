@@ -13,7 +13,7 @@ action=${pg:0:3}
 
 for i in $(ls -r $CONFD); do
 	if $(grep -q "^TYPE=$action" $CONFD/$i); then
-		srv="$srv ${i:3}" 
+		srv="$srv ${i:3}"
 	fi
 done
 

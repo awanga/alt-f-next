@@ -8,7 +8,7 @@ write_header "Disk Utilities" "document.disku.reset()"
 CONFT=/etc/misc.conf
 
 mktt power_tt "Advanced Power Management<br>
-(If grayed disk does not supported APM)<br> 
+(If grayed disk does not supported APM)<br>
 Higher power savings, lower performance, can spindown<br>
 Medium power savings and performance, can spindown<br>
 Low power saving, higher performance, can't spindown."
@@ -65,7 +65,7 @@ cat<<EOF
 	<th>Swap Pri.</th>
 	<th>Power Mode</th>
 	<th>Power Sav.</th>
-	<th class="highcol">Spindown</th> 
+	<th class="highcol">Spindown</th>
 EOF
 
 cnt=0
@@ -121,8 +121,8 @@ for disk in $disks; do
 		254) lowpower_sel="selected" ;;
 		0|255) dispower_sel="selected"; hdtimeout_dis="" ;;
 	esac
-	
-	cat<<-EOF	 
+
+	cat<<-EOF
 		<tr><td>$dbay</td><td>$dsk</td><td>$dcap</td><td>$dmod</td>
 		<td><input type="submit" name="$dsk" value="$ejectop" onClick="return msubmit('load_eject_act')"></td>
 		<td><select name="$dsk" onChange="return msubmit('smart_act')">

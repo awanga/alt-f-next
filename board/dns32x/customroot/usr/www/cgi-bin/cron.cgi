@@ -40,7 +40,7 @@ while read min hour monthday month weekday cmd; do
 	if echo "$cmd" | grep -q "#!#"; then
 		altf_cron="readonly class=\"cron\""
 		cmd=$(echo "$cmd" | sed -n 's/#.*$//p')
-		inp=""		 
+		inp=""
 	fi
 
 	cat<<-EOF
@@ -52,7 +52,7 @@ while read min hour monthday month weekday cmd; do
 	i=$((i+1))
 done < $TF
 
-for j in $(seq $i $((i+2))); do 
+for j in $(seq $i $((i+2))); do
 	cat<<-EOF
 		<tr><td align="center"><input type=checkbox name=dis_$j></td>
 		<td><input type=text size=10 name=weekday_$j value="" $(ttip wday_tt)></td>

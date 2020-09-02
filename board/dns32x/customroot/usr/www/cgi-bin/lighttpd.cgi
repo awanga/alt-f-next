@@ -50,7 +50,7 @@ LOCAL_STYLE="
 }
 .cellfill {
 	width: 100%;
-}" 
+}"
 
 write_header "Lighttpd Setup"
 

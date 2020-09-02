@@ -78,7 +78,7 @@ cat<<-EOF
 	<form id="diskm" name="diskm" action="/cgi-bin/diskmaint_proc.cgi" method="post">
 	<fieldset><legend>Filesystems</legend>
 EOF
-	
+
 cat<<-EOF
 	<table>
 	<tr><th>Dev.</th><th>Size</th>

@@ -38,7 +38,7 @@ showlog() {
 	fi
 
 	if test "$2" != "SystemLog" -a "$2" != "Processes" -a \
-		"$2" != "KernelLog" -a "$2" != "SystemConf"; then 
+		"$2" != "KernelLog" -a "$2" != "SystemConf"; then
 			clearbutton="<input type=submit name=\"$2\" value=\"Clear\">"
 	fi
 
@@ -77,7 +77,7 @@ lreboot() {
 		var page = server + "/cgi-bin/status.cgi"
 		var testimg = server + "/help.png?" + Math.random()
 
-		function testServer() {    
+		function testServer() {
 			var img = new Image()
 
 			img.onload = function() {
@@ -217,7 +217,7 @@ case "$action" in
 				if test -n "$(pidof print)"; then kill $(pidof print); fi
 				for j in $(ls /var/spool/lpd/$i); do
 					p=$(top -bn1 | grep $j | grep -v grep | cut -f2 -d" ")
-					if test -n "$p"; then kill $p; fi	
+					if test -n "$p"; then kill $p; fi
 					rm -f /var/spool/lpd/$i/$j >& /dev/null
 				done
 				rmdir /var/spool/lpd/$i/.lockdir >& /dev/null
@@ -327,7 +327,7 @@ case "$action" in
 		sed -i -e '/^TOP_MENU/d' -e '/^SIDE_MENU/d' $CONFM
 		if test -n "$notop_menu"; then echo 'TOP_MENU=no' >> $CONFM; fi
 		if test -n "$noside_menu"; then echo 'SIDE_MENU=no' >> $CONFM; fi
-		if test "$was" != "$noside_menu"; then 
+		if test "$was" != "$noside_menu"; then
 			html_header
 			echo "<script type="text/javascript">parent.location.reload(true)</script></body></html>"
 			exit 0

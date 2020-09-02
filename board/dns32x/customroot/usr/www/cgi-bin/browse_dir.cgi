@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# spaces at pathnames end are not properly handled 
-# as QUERY_STRING doesn't has them (busybox httpd bug?) 
+# spaces at pathnames end are not properly handled
+# as QUERY_STRING doesn't has them (busybox httpd bug?)
 # also 'basename' and 'dirname' strips all but one leading/trailing space
 
 # there is url-encode, for URLs, that use %<2hex>
@@ -92,7 +92,7 @@ flat() {
 		echo "$turl=${tbi}\">${tbn}</a></td>
 			<td>$user</td><td>$group</td><td class=\"monospace\">$perm</td></tr>"
 	done
-	
+
 }
 
 source ./common.sh
@@ -227,7 +227,7 @@ cat <<-EOF
 				edir = edir.substr(0, edir.length-2)
 			pcomp = edir.split("/")
 			if (pcomp.length == 3)
-				return confirm("ARE YOU REALLY SURE THAT YOU WANT TO DELETE ALL THE\n\n   " 
+				return confirm("ARE YOU REALLY SURE THAT YOU WANT TO DELETE ALL THE\n\n   "
 + pcomp[2] + "\n\nFILESYSTEM DATA? REALLY?")
 			return confirm("Delete folder\n\n   " + edir + "\n\nand all its files and sub-folders?");
 		}
@@ -240,7 +240,7 @@ cat <<-EOF
 		function ops(op, dir, id, wind) {
 			//edir = window.encodeURIComponent(dir);
 			window.location.assign("/cgi-bin/browse_dir.cgi?" +
-wind + id + "op=" + op + "?srcdir=" + dir + "?browse=" + dir) 
+wind + id + "op=" + op + "?srcdir=" + dir + "?browse=" + dir)
 		}
 		function op_paste(op, srcdir, destdir) {
 			srcdir = window.decodeURIComponent(srcdir);
@@ -253,11 +253,11 @@ wind + id + "op=" + op + "?srcdir=" + dir + "?browse=" + dir)
 			else if (srcdir == destdir)
 				alert("Source and destination folder are the same.")
 			else if (op == 'Move')
-				msg = "Move folder"	
+				msg = "Move folder"
 			else if (op == 'Copy')
-				msg = "Copy folder"	
+				msg = "Copy folder"
 			else if (op == 'CopyContent')
-				msg = "Copy all files and folders from"	
+				msg = "Copy all files and folders from"
 
 			ret = confirm(msg + "\n\n   " + srcdir + "\n\nto\n\n   " +
 				 destdir + "\n\nThis operation can take a long time to accomplish,\n" +

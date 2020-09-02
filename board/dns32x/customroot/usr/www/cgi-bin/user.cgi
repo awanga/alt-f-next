@@ -3,7 +3,7 @@
 source ./common.sh
 check_cookie
 
-LOCAL_STYLE=".tb_on { 
+LOCAL_STYLE=".tb_on {
 	background: #ccc;
     border-top: solid 2px #777;
     border-left: solid 2px #777;
@@ -12,7 +12,7 @@ LOCAL_STYLE=".tb_on {
 }
 
 .tb_off {
-	background: #bbb; 
+	background: #bbb;
     border-top: solid 2px #eaeaea;
     border-left: solid 2px #eaeaea;
     border-bottom: solid 2px #777;
@@ -54,7 +54,7 @@ defscript='#!/bin/sh
 # Script to execute as the root user at boot time.
 # You can loose your data or make the system inaccessible
 # if using the wrong commands. You have been warned!
- 
+
 exec >> /var/log/user.log 2>&1
 
 case "$1" in

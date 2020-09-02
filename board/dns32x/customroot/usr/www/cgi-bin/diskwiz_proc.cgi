@@ -44,7 +44,7 @@ minsize() {
 			msz=$sz
 		fi
 	done
-	
+
 	# subtract 1MB(2048 sectors), as fdisk, sfdisk, sgdisk, /sys/block/.../size report different sizes
 	echo $(expr $msz - 2048)
 }
@@ -157,7 +157,7 @@ fi
 	sleep 3
 
 	# somehow, in this scenario, mdev does not remove device, only creates them
-	# yes, but mdev -s calls hot.sh, temporarily disable it 
+	# yes, but mdev -s calls hot.sh, temporarily disable it
 	mv /etc/mdev.conf /etc/mdev.conf-
 	rm -f ${i}[0-9]
 	mdev -s
@@ -214,7 +214,7 @@ gpt_partition() {
 	sleep 3
 
 	# somehow, in this scenario, mdev does not remove device, only creates them
-	# yes, but mdev -s calls hot.sh, temporarily disable it 
+	# yes, but mdev -s calls hot.sh, temporarily disable it
 	mv /etc/mdev.conf /etc/mdev.conf-
 	rm -f ${i}[0-9]
 	mdev -s
@@ -226,7 +226,7 @@ gpt_partition() {
 # partition all disks
 # $1=std|raid, $2=equal, with equal sized partitions
 partition() {
-	local i 
+	local i
 
 	commonsect=""
 	if test "$2" = "equal"; then
@@ -318,7 +318,7 @@ create_fs() {
 	chmod +x /tmp/format-$dev
 	/tmp/format-$dev < /dev/console > /dev/null 2> /dev/null &
 	sleep 1
-	
+
 	cat<<-EOF
 		<script type="text/javascript">
 		obj = document.getElementById("$sid");
@@ -327,7 +327,7 @@ create_fs() {
 
 	pgr="-\|/"; i=0;
 	while kill -0 $(cat /tmp/format-${dev}.pid) 2> /dev/null; do
-		ln=$(cat /tmp/format-${dev}.log | tr -s '\b\r\001\002' '\n' | tail -n1 | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}') 
+		ln=$(cat /tmp/format-${dev}.log | tr -s '\b\r\001\002' '\n' | tail -n1 | awk -F/ '/.*\/.*/{ $2 += 0; if ($2 != 0) printf "%d%%", $1*100/$2}')
 		cat<<-EOF
 			<script type="text/javascript">
 			obj.innerHTML = '\\${pgr:$i:1} $ln'
@@ -341,12 +341,12 @@ create_fs() {
 	if test -f /tmp/${dev}.err; then
 		msg=$(cat /tmp/${dev}.err)
 		rm /tmp/${dev}.err
-		err "mk2efs error: $msg" 
+		err "mk2efs error: $msg"
 	fi
-		
+
 	cat<<-EOF
 		<script type="text/javascript">
-		obj.innerHTML = " done."  
+		obj.innerHTML = " done."
 		</script>
 	EOF
 }
@@ -372,7 +372,7 @@ create_raid() {
 		done
 	fi
 
-	opts="--chunk=512"; 
+	opts="--chunk=512";
 	case "$1" in
 		linear|raid0)
 			if test $ndisks = 3; then
@@ -428,8 +428,8 @@ raid0() {
 	create_swap
 	create_raid raid0
 	create_fs /dev/$MD
-        for i in $disks; do                                                            
-        	create_fs ${i}3                                                        
+        for i in $disks; do
+        	create_fs ${i}3
 	done
 }
 

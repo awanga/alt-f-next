@@ -77,7 +77,7 @@ awk -F = 'BEGIN {
 				users[i++] = $1
 		}
 		FS = t
-	} 
+	}
 	/\[.*\]/ {
 		parse( pshare($0), $0)
 		delete opts
@@ -116,7 +116,7 @@ function spit(cnt, opts) {
 			rdonly_chk = ""
 		if (opts["max connections"] == "-1")
 			dis_chk = "checked"
-	} else 
+	} else
 		rdonly_chk = dis_chk = browse_chk = ""
 
 	for (j in users) {
@@ -133,7 +133,7 @@ function spit(cnt, opts) {
 	printf "<td><input type=text name=cmt_%d value=\"%s\"></td>\n", cnt, opts["comment"]
 	printf "<td align=center><select name=user_%d>%s</select></td>\n", cnt, useropt
 	printf "<td align=center><input %s type=checkbox name=browse_%d value=yes></td>\n", browse_chk, cnt
-	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=yes></td>\n", rdonly_chk, cnt 
+	printf "<td align=center><input %s type=checkbox name=rdonly_%d value=yes></td>\n", rdonly_chk, cnt
 	print "</tr>\n"
 }
 
@@ -143,7 +143,7 @@ function parse(share_name, line) {
 
 	cnt++
 	delete opts
-	opts["share_name"] = share_name 
+	opts["share_name"] = share_name
 	while (st = getline) {
 		fc = substr($0,1,1)
 		if (fc == "#" || fc == ";")

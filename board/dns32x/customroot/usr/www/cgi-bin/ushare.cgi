@@ -10,7 +10,7 @@ CONF_USHARE=/etc/ushare.conf
 mktt dlna_tt "Some devices might require this. A full rescan will be needed each time the server starts."
 
 if test -e $CONF_USHARE; then
-	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)" 
+	USHARE_DIR="$(awk -F= '/^USHARE_DIR/{print $2}' $CONF_USHARE)"
 	USHARE_NAME="$(awk -F= '/^USHARE_NAME/{print $2}' $CONF_USHARE)"
 	eval $(grep ^USHARE_ENABLE_ /etc/ushare.conf | sed 's/yes/checked/')
 fi

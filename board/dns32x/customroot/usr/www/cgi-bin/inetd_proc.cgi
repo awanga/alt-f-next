@@ -7,7 +7,7 @@ check_cookie
 CONFF=/etc/inetd.conf
 
 #debug
-#set -x 
+#set -x
 
 if test -n "$Configure"; then
 	gotopage /cgi-bin/${Configure}.cgi

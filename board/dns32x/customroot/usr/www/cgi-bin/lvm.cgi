@@ -121,7 +121,7 @@ if test -n "$pvd"; then
 			<td class="highcol">$inuse</td></tr>
 		EOF
 	done
-	
+
 	echo "</table>"
 	if echo "$pvd" | grep -q "unknown device"; then
 		echo "<p>Missing volumes:<input type=submit name=rmMissing value=\"Force Removal\">"
@@ -145,7 +145,7 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 		echo "$lvd" | while read ldev vg attr cap orig snap move log copy conv type; do
 
 			# Device error: "Couldn't find device with uuid mbXtaf-..."
-			# do we need command stderr in string? 
+			# do we need command stderr in string?
 			if test "$ldev" = "Couldn't"; then continue; fi
 
 			if echo "$ldev" | grep -qE _mimage_\|_mlog; then continue; fi
@@ -190,7 +190,7 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 				<td align=center>${cap%g}GB</td><td>$op</td>
 				<td><input type=hidden name=vg_$i value="$vg">
 					<input type=hidden name=ldev_$i value="$(echo $ldev | tr -d ' ')">
-					<select $all_dis name=$i onchange="return submit()"> 			
+					<select $all_dis name=$i onchange="return submit()">
 						<option value="none">Operation</option>
 						<option value=delete>Delete</option>
 						<option $dis_tolin value=tolinear>Conv. to Linear</option>
@@ -210,7 +210,7 @@ if test "$altfvg" = 0 -o -n "$lvd"; then
 
 	if test "$altfvg" = 0; then
 		cat<<-EOF
-			</table><br>New 
+			</table><br>New
 			<select name=type><option>Linear</option><option>Mirror</option>
 			<option>Stripped</option></select> volume with
 			<input type=text size=4 name=lvsize> GB

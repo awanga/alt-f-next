@@ -36,8 +36,8 @@ cat <<EOF
 	function upnick() {
 		nm = document.frm.uname.value;
 		snm = nm.split(" ");
-		document.frm.nick.value = 
-			snm[0].substr(0,4).toLowerCase() + 
+		document.frm.nick.value =
+			snm[0].substr(0,4).toLowerCase() +
 			snm[snm.length - 1].substr(0,4).toLowerCase();
 	}
 	function pcheck() {

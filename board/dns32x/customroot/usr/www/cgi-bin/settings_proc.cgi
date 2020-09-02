@@ -8,7 +8,7 @@ restart() {
 	busy_cursor_start
 
 	hostname -f /etc/hostname >& /dev/null
-	
+
 	start-stop-daemon -K -x udhcpc >& /dev/null
 
 	ifdown eth0 >& /dev/null

@@ -16,7 +16,7 @@ if test -n "$submit"; then
 	fi
 
 	if test "$(basename $conf_dir)" = "Public"; then
-		msg "You must create a folder for NZBget." 
+		msg "You must create a folder for NZBget."
 	elif ! res=$(check_folder "$conf_dir"); then
 		msg "$res"
 	fi
@@ -28,7 +28,7 @@ if test -n "$submit"; then
 			usleep 200000
 		done
 	fi
-		
+
 	sed -i 's|^MainDir=.*|MainDir='"$conf_dir"'|' $NZBCONF
 
 	chown -R nzbget:TV "$conf_dir"
@@ -47,7 +47,7 @@ EOF
 	else
 		sed -i "/\[NZBget\]/,/\[.*\]/ { s|path.*|path = $conf_dir|}" $SMBCF
 	fi
-	
+
 	if rcsmb status >& /dev/null; then
 		rcsmb reload >& /dev/null
 	fi
@@ -60,7 +60,7 @@ elif test -n "$webPage"; then
 
 	PROTO="http"
 	PORT=$(awk -F= '/^ControlPort/{print $2}' $NZBCONF)
-	
+
 	if echo $HTTP_REFERER | grep -q 'https://'; then
 		if grep -q '^SecureControl=yes' $NZBCONF; then
 			PROTO="https"

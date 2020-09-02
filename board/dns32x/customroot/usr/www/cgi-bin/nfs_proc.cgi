@@ -11,7 +11,7 @@ CONFM=/etc/misc.conf
 
 if test -n "$Submit"; then
 	TF=$(mktemp)
-	for i in $(seq 1 $((n_exports+3))); do 
+	for i in $(seq 1 $((n_exports+3))); do
 		if test -n "$(eval echo \$exp_$i)"; then
 			if test -z "$(eval echo \$xopts_$i)"; then
 				# keep in sync with nfs.cgi

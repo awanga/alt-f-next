@@ -74,7 +74,7 @@ error_st() {
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 			Examine and Clear the error/warning messages:
 			<input type=submit name="logaction" value="$SERRORL">
-			</form> 
+			</form>
 			<ul>$(cat $SERRORL)</ul>
 			</fieldset>
 		EOF
@@ -88,7 +88,7 @@ news_st() {
 			<form action="/cgi-bin/sys_utils_proc.cgi" method="post">
 			Examine and Clear News messages:
 			<input type=submit name="logaction" value="/var/log/news.log">
-			</form> 
+			</form>
 			<pre>$(cat $NEWSL)</pre>
 			</fieldset>
 		EOF
@@ -229,7 +229,7 @@ disks_st() {
 				else if  (st == 32) color="blue"
 				else color="red"
 				printf "health_st=\"<span class=\"%s\">%s</span>\";", color, tolower($NF) }
-			/Power mode is:/ { printf "pstatus=\"%s\";", 
+			/Power mode is:/ { printf "pstatus=\"%s\";",
 				tolower(substr($0, index($0,":")+2))} ' /tmp/smt_$dsk)
 		rm -f /tmp/smt_$dsk
 
@@ -244,7 +244,7 @@ disks_st() {
 			<td align=left>$dmod</td>
 			<td> $dcap </td>
 			<td id=${dsk}_pstatus_id> $pstatus </td>
-			<td id=${dsk}_temp_id> $temp </td> 
+			<td id=${dsk}_temp_id> $temp </td>
 			<td id=${dsk}_health_id> $health_st </td>
 			</tr>
 		EOF
@@ -261,7 +261,7 @@ raid_st() {
 	cat<<-EOF
 		<fieldset><legend>RAID</legend>
 		<table><tr align=center>
-		<th align=left>Dev.</th> 
+		<th align=left>Dev.</th>
 		<th>Capacity</th>
 		<th>Level</th><th>State</th>
 		<th>Status</th><th>Action</th>
@@ -303,7 +303,7 @@ raid_st() {
 		fi
 		cat<<-EOF
 			<tr align=center>
-			<td align=left>$mdev</td> 
+			<td align=left>$mdev</td>
 			<td>$sz</td>
 			<td>$type</td>
 			<td>$state</td>
@@ -340,9 +340,9 @@ filesys() {
 					'/^Filesystem state:/ { if ($3 != "clean") printf "dirty=*;"} \
 					/^Mount count:/ {FS=":"; curr_cnt=$2} \
 					/^Maximum mount count:/ {FS=":"; max_cnt=$2} \
-					/^Next check after:/ {FS=" "; 
-						mth = index("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", $5) / 4 + 1; 
-						printf "days=\"%s-%d-%s %s\";", $8, mth, $6, $7 } 
+					/^Next check after:/ {FS=" ";
+						mth = index("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", $5) / 4 + 1;
+						printf "days=\"%s-%d-%s %s\";", $8, mth, $6, $7 }
 					END {printf "cnt=%d;", max_cnt - curr_cnt}')
 			fi
 
@@ -400,7 +400,7 @@ mounted_filesystems_st() {
 		<th>Label</th>
 		<th>Capacity</th><th>Available</th>
 		<th>FS</th><th>Mode</th>
-		<th>Dirty</th><th>Automatic FSCK in</th> 
+		<th>Dirty</th><th>Automatic FSCK in</th>
 		</tr>
 	EOF
 
@@ -434,7 +434,7 @@ mounted_remote_filesystems_st() {
 			if test "$fs" = "cifs"; then
 				rrhost=$(echo $rhost | cut -d'/' -f3)
 				rrdir=$(echo $rhost | cut -d'/' -f4)
-			else 
+			else
 				rrhost=${rhost%:*}
 				rrdir=${rhost#*:/}
 			fi
@@ -607,7 +607,7 @@ if test -n "$refresh"; then
 fi
 
 ver="$(cat /etc/Alt-F)"
-LOCAL_STYLE='.bgl {text-align: center; font-weight: bold; width: 100px; }' 
+LOCAL_STYLE='.bgl {text-align: center; font-weight: bold; width: 100px; }'
 write_header "Alt-F $ver Status Page"
 jscripts
 

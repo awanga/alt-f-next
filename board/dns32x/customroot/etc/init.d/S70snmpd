@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 DESC="Simple Network Management Protocol (SNMP) server"
 NAME=snmpd

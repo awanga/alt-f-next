@@ -19,7 +19,7 @@ if test -n "$uscript"; then
 
 	mkdir -p "$sdir"
 	httpd -d "$userscript" | dos2unix > $uscript
-	chmod +x,og-wx "$uscript" 
+	chmod +x,og-wx "$uscript"
 fi
 
 if test -z "$create_log"; then

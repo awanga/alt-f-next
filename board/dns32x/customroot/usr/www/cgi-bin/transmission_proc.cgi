@@ -16,7 +16,7 @@ if test -n "$WebPage"; then
 	if ! rctransmission status >& /dev/null; then
 		rctransmission start  >& /dev/null
 	fi
-	
+
 	rpc_port=$(sed -n 's/.*"rpc-port":[[:space:]]*\([[:digit:]]*\).*/\1/p' $TCONF)
 	embed_page "http://${HTTP_HOST%%:*}:${rpc_port}" "Transmission Page"
 
@@ -42,7 +42,7 @@ elif test -n "$Submit"; then
 	fi
 
 	if test "$(basename $WATCH_DIR)" = "Public"; then
-		msg "You must create a folder for Transmission." 
+		msg "You must create a folder for Transmission."
 	elif ! res=$(check_folder "$WATCH_DIR"); then
 		msg "$res"
 	fi
@@ -69,7 +69,7 @@ elif test -n "$Submit"; then
 	"$TCONF"
 
 	if test -n "$PASSWORD"; then
-		sed -i 's|.*"rpc-password":.*|    "rpc-password": "'"$PASSWORD"'",|' "$TCONF" 
+		sed -i 's|.*"rpc-password":.*|    "rpc-password": "'"$PASSWORD"'",|' "$TCONF"
 	fi
 
 	chown $TRANSMISSION_USER:$TRANSMISSION_GROUP "$TCONF"

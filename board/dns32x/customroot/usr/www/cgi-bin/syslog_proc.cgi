@@ -20,7 +20,7 @@ fi
 for i in $cmd; do
 	arg="$(eval echo \$$i)"
 #	if test -z "$arg"; then continue; fi
-	if test -z "$arg"; then 
+	if test -z "$arg"; then
 		val=""
 	else
 		val=$(httpd -d "$arg")

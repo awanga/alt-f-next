@@ -46,7 +46,7 @@ and formated with " + fstype + " and all its content will be lost.\n\n\
 Continue?")
 	}
 	</script>
-	<form name=wizf action="/cgi-bin/diskwiz_proc.cgi" method="post">	
+	<form name=wizf action="/cgi-bin/diskwiz_proc.cgi" method="post">
 	<fieldset>
 	<legend>Select the disks you want to format</legend>
 	<table><tr>
@@ -87,7 +87,7 @@ for i in $disks; do
 	EOF
 	j=$((j+1))
 done
-echo "</table></fieldset><input type=hidden name=num_disks value=$((j-1))>"	
+echo "</table></fieldset><input type=hidden name=num_disks value=$((j-1))>"
 
 nusb="$(cat /etc/bay | grep =usb | wc -l)"
 if test  "$nusb" -ge 2; then

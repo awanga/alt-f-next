@@ -34,7 +34,7 @@ if test -n "$WebPage"; then
 			PROTO="https"
 		fi
 	fi
-	
+
 	embed_page "$PROTO://${HTTP_HOST%%:*}:${PORT}" "Lighttpd Page"
 fi
 
@@ -69,7 +69,7 @@ if ! grep -q '\[WebData\]' $SMBCF; then
 [WebData]
 	comment = Lighttpd area
 	path = $sroot/htdocs
-	public = no 
+	public = no
 	available = yes
 	read only = yes
 EOF

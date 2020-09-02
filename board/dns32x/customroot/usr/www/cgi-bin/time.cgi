@@ -21,7 +21,7 @@ opt_month() {
 		j=$((j+1))
 	done
 }
-	
+
 opt_wday() {
 	j=0
 	for i in Sun Mon Tue Wed Thu Fri Sat; do
@@ -83,7 +83,7 @@ tzones() {
 		echo "<option SELECTED value=\"\">Select one Continent/City</option>"
 	fi
 
-	echo "</select>"	
+	echo "</select>"
 }
 
 # not used
@@ -136,10 +136,10 @@ if test -e $CONFNTP; then
 		fi
 	done < $CONFNTP
 fi
- 
+
 parse_tz
 
-#debug 
+#debug
 
 cat<<-EOF
 	<script type="text/javascript">
@@ -154,21 +154,21 @@ cat<<-EOF
 	function update_tz2() {
 		// FIXME at start (interlock with update_tz() above)
 		// should read the current dst date/time
-		// from document.frm.tz_opt.value and 
+		// from document.frm.tz_opt.value and
 		// update the dst date/time selectors accordingly
 		ttz = String(document.frm.tz_opt.value);
 		end = ttz.indexOf(",");
-		if (end != -1) 
+		if (end != -1)
 			ttz = ttz.slice(0, end);
-		document.frm.tz.value = ttz + ",M" + 
+		document.frm.tz.value = ttz + ",M" +
 		document.frm.dst_mth_start.value + "." +
 		document.frm.dst_week_start.value + "." +
-		document.frm.dst_day_start.value + "/" + 
+		document.frm.dst_day_start.value + "/" +
 		document.frm.dst_hour_start.value + ":" +
 		document.frm.dst_min_start.value + ",M" +
 		document.frm.dst_mth_end.value + "." +
 		document.frm.dst_week_end.value + "." +
-		document.frm.dst_day_end.value + "/" + 
+		document.frm.dst_day_end.value + "/" +
 		document.frm.dst_hour_end.value + ":" +
 		document.frm.dst_min_end.value;
 	}
@@ -250,19 +250,19 @@ cat<<-EOF
 </fieldset>
 
 <fieldset>
-<legend>Adjust time manually</legend>	
-<table>	
+<legend>Adjust time manually</legend>
+<table>
 	<tr><td>Set Hour:</td>
 		<td><input type=text name=hour value="$hour"></td>
 		<td>24H</td></tr>
-	
+
 	<tr><td>And Date:</td>
 		<td><input type=text name=date value="$date"></td>
 		<td>YYYY-MM-DD</td></tr>
 
 	<tr><td></td><td><input type="submit" name="manual" value="Submit"></td>
 	<td></td></tr>
-</table>	
+</table>
 </fieldset>
 
 </form></body></html>

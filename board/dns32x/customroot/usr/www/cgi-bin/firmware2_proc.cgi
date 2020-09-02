@@ -38,20 +38,20 @@ flash_error() {
 # rev-A:
 # - Flashing kernel, it should take about 21 seconds: 23 Verifying... OK
 # - Flashing rootfs, it should take about 86 seconds: 91 Verifying... OK
-# 
+#
 # rev-B:
 # - Flashing kernel, it should take about 21 seconds: 30 Verifying... OK
 # - Flashing rootfs, it should take about 86 seconds: 109 Verifying... OK
-# 
+#
 # rev-C:
 # - Flashing kernel, it should take about 21 seconds: 47 Verifying... OK
-# - Flashing rootfs, it should take about 86 seconds: 195 Verifying... OK 
+# - Flashing rootfs, it should take about 86 seconds: 195 Verifying... OK
 
 nor_flash() {
 	sz=$(stat -t $1 | cut -d" " -f2)
 	tm=$(expr $sz / 75126 + 1); tm2=$(expr $tm \* 25 / 10)
 	wait_count_start "<p>Flashing $3, it should take between $tm and $tm2 seconds"
-	cat $1 > /dev/mtdblock${2:3} # use block device, no need to erase (no mtd-utils) 
+	cat $1 > /dev/mtdblock${2:3} # use block device, no need to erase (no mtd-utils)
 	wait_count_stop
 
 	echo "Verifying... "
@@ -122,7 +122,7 @@ elif test "$flash" = "FlashIt"; then
 	rcall stop >& /dev/null
 
 	echo timer > /tmp/sys/power_led/trigger
-	echo 50 > /tmp/sys/power_led/delay_off 
+	echo 50 > /tmp/sys/power_led/delay_off
 	echo 50 > /tmp/sys/power_led/delay_on
 
 	if grep -qE 'DNS-321-Ax|DNS-323' /tmp/board; then

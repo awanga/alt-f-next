@@ -18,7 +18,7 @@ if test -n "$submit"; then
 	fi
 
 	if test "$(basename $conf_dir)" = "Public"; then
-		msg "You must create a folder for CouchPotato2." 
+		msg "You must create a folder for CouchPotato2."
 	elif ! res=$(check_folder "$conf_dir"); then
 		msg "$res"
 	fi

@@ -95,7 +95,7 @@ fi
 
 echo "</table></fieldset>"
 opkg -V0 info | awk -v printall=$search '
-	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field 
+	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field
 	/Version:/ { ver[i] = $2 }
 	/Description:/ { des[i] = substr($0, index($0,$2)) }
 	/Status:/ { if ($4 == "installed") inst[nm] = i; else { uinst[nm] = i; ucnt++; } }
@@ -121,7 +121,7 @@ opkg -V0 info | awk -v printall=$search '
 					else
 						upd = sprintf("<td><input type=submit name=\"%s\" value=Update></td><td>(%s)</td>", nm, ver[uinst[nm]]);
 
-					delete uinst[nm]; ucnt--; delete inst[nm]; 
+					delete uinst[nm]; ucnt--; delete inst[nm];
 				} else {
 					j = i; v = ver[i];
 					upd="<td></td><td></td>";

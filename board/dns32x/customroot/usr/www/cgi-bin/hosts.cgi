@@ -19,7 +19,7 @@ while read ip fname nm; do
 	#if echo "$ip" | grep -q ':'; then
 		if test -z "$nm" -a -n "$fname"; then nm=$fname; fname=""; fi
 	#fi
-	
+
 	mac=""; lease=""
 	echo "<tr><td><input size=12 type=text name=knm_$cnt value=$nm></td>
 		<td><input size=12 type=text name=kip_$cnt value=$ip></td></tr>"

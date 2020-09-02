@@ -46,7 +46,7 @@ cat <<-EOF
 	<input type=radio $sel_cron name=runasdaemon value=no>
 	Run once every <select name=croni>$opt</select> hours<br><br>
 	<input type=checkbox id=bootcheck $sel_boot name=runatboot value=yes>
-		Adjust time when starts<br> 
+		Adjust time when starts<br>
 	<br><table>
 EOF
 

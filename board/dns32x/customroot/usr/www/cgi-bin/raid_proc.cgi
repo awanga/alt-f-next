@@ -31,7 +31,7 @@ raid() {
 			;;
 
 		raid1)
-			opts="$opts --bitmap=internal"	
+			opts="$opts --bitmap=internal"
 			if test "$pair2" = "none"; then
 				pair2="missing"
 			else
@@ -43,7 +43,7 @@ raid() {
 			else
 				pair3=""
 			fi
-			
+
 			ndevices=2
 			;;
 
@@ -121,7 +121,7 @@ source ./common.sh
 
 check_cookie
 read_args
-		    
+
 #debug
 
 CONFT=/etc/misc.conf
@@ -151,7 +151,7 @@ elif test -n "$Stop"; then
 	if grep -q ^/dev/$mdev /proc/mounts ; then
 		lumount $mdev "Stoping RAID $mdev"
 	fi
- 
+
 	res="$(mdadm --stop /dev/$mdev 2>&1)"
 	if test $? != 0; then
 		msg "Stopping the $mdev RAID device failed:\n\n$res"
@@ -198,12 +198,12 @@ elif test -n "$Shrink_raid"; then
 		lmount $mdev "RAID Shrinking"
 	fi
 	eval $(df -k /dev/$mdev | awk '/'$mdev'/{
-		chk='$chunk' / 1024; nsz = int (($2 * 1.1 + 128) / chk) * chk 
+		chk='$chunk' / 1024; nsz = int (($2 * 1.1 + 128) / chk) * chk
 		printf "nsz=%d", nsz}')
 	if ismount $mdev; then
 		lumount $mdev "RAID Shrinking"
 	fi
-	
+
 	if test "$(cat /sys/block/$mdev/md/bitmap/location)" != "none"; then
 		had_bitmap="true"
 		mdadm --grow --bitmap=none /dev/$mdev >& /dev/null
@@ -249,7 +249,7 @@ elif test -n "$Add_part"; then
 	if test $? != 0; then
 		msg "Adding the $rdev partition to the $mdev RAID device failed:\n\n$res"
 	fi
-	
+
 elif test -n "$Remove_part"; then
 	mdev="$Remove_part"
 	rdev=$(eval echo \$rdev_$mdev)

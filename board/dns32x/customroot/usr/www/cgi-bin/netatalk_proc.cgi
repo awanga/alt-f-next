@@ -99,7 +99,7 @@ if test "$submit" = "Submit"; then
 
 	if rcnetatalk status >& /dev/null; then
 		rcnetatalk reload >& /dev/null
-	fi	
+	fi
 
 fi
 

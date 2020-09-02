@@ -27,7 +27,7 @@ if test -n "$WebPage"; then
 			PROTO="https"
 		fi
 	fi
-	
+
 	embed_page "$PROTO://${HTTP_HOST%%:*}:${PORT}/aria2web" "Aria2 Page"
 
 elif test -n "$Submit"; then
@@ -37,7 +37,7 @@ elif test -n "$Submit"; then
 	fi
 
 	if test "$(basename $DL_DIR)" = "Public"; then
-		msg "You must create a folder for Aria2." 
+		msg "You must create a folder for Aria2."
 	elif ! res=$(check_folder "$DL_DIR"); then
 		msg "$res"
 	fi

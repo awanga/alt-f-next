@@ -62,7 +62,7 @@ while read group gpass ggid userl; do
 	ul=$(echo -e "$userl,$ul" | tr ',' '\n' | sort -u | tr '\n' ':')
 
 	un="" # get user name
-	for i in $ul; do 
+	for i in $ul; do
 		un="$(awk -F: '/^'$i':/{printf "%s, ", $5}' $CONFP)${un}"
 	done
 

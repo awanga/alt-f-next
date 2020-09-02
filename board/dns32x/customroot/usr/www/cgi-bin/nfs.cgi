@@ -41,7 +41,7 @@ exports_row() {
 		else
 			sel=""
 		fi
-		
+
 		share=$(path_unescape $share)
 		share=$(httpd -e "$share")
 
@@ -56,7 +56,7 @@ exports_row() {
 			spit_exports "$cnt" "$share" "$host" "$opts"
 		done
 		return $cnt # trick to return value from subshell
-	done    
+	done
 }
 
 source ./common.sh
@@ -145,7 +145,7 @@ cat<<-EOF
 EOF
 
 if ! aufs.sh -s >& /dev/null; then
-	dnfs_dis="disabled"	
+	dnfs_dis="disabled"
 fi
 
 if test -n "$DELAY_NFS"; then

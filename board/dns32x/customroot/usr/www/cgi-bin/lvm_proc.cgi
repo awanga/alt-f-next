@@ -55,7 +55,7 @@ elif test -n "$Remove"; then
 	run vgreduce $VG /dev/$pdev
 
 # physical volumes
- 
+
 elif test -n "$Empty"; then
 	i=$Empty
 	pdev=$(eval echo \$pdev_$i)
@@ -92,7 +92,7 @@ elif test "$action" = "Create"; then
 		flg="-i2"
 	fi
 
-	run lvcreate --size ${lvsize}G $flg $VG 
+	run lvcreate --size ${lvsize}G $flg $VG
 
 elif test -n "$delete"; then
 	i=$delete
@@ -104,21 +104,21 @@ elif test -n "$delete"; then
 	#eval $(awk '/'$mj' *'$mi'/{printf "tdm=%s", $4}' /proc/partitions)
 	tdm=$(find_dm $vg $ldev)
 
-	if ismount $tdm; then umount /dev/$tdm; fi # FIXME fstab 
+	if ismount $tdm; then umount /dev/$tdm; fi # FIXME fstab
 
-	run lvremove -f /dev/$vg/$ldev 
+	run lvremove -f /dev/$vg/$ldev
 
 elif test -n "$tolinear"; then
 	i=$tolinear
 	vg=$(eval echo \$vg_$i)
 	ldev=$(eval echo \$ldev_$i)
-	run lvm lvconvert -m0 /dev/$vg/$ldev 
+	run lvm lvconvert -m0 /dev/$vg/$ldev
 
 elif test -n "$tomirror"; then
 	i=$tomirror
 	vg=$(eval echo \$vg_$i)
 	ldev=$(eval echo \$ldev_$i)
-	run lvm lvconvert -b -m1 /dev/$vg/$ldev 
+	run lvm lvconvert -b -m1 /dev/$vg/$ldev
 
 elif test -n "$csnap"; then
 	i=$csnap

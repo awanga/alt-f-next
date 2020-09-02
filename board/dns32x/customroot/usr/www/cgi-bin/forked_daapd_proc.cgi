@@ -30,7 +30,7 @@ done
 sed -i -e 's|[^#]directories =.*$|\tdirectories = { '"$shares"' } |' -e 's/, }/ }/' $CONF_FORKED
 
 sname="$(httpd -d $sname)"
-sed -i 's|\tname =.*$|\tname = "'"$sname"'"|' $CONF_FORKED 
+sed -i 's|\tname =.*$|\tname = "'"$sname"'"|' $CONF_FORKED
 
 if rcforked_daapd status >& /dev/null; then
 	rcforked_daapd restart >& /dev/null

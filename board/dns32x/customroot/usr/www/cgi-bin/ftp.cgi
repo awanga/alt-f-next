@@ -7,7 +7,7 @@ write_header "vsftpd server Setup"
 mktt tt_jail "If checked, the user will be restricted to use only its own home folder."
 mktt tt_wchroot "If checked, the user home folder is allowed to be writable<br>(except for the anonymous user)."
 mktt tt_dusers "Space separated list of usernames to deny ftp access"
-mktt tt_anon "Allow anonymous access (the password-less 'ftp' user)." 
+mktt tt_anon "Allow anonymous access (the password-less 'ftp' user)."
 mktt tt_anonf "Folder for the anonymous user.<br>Must not be writable (sub folders can be, but must be previously created.)"
 mktt tt_impl "On port 990 only SSL protocol is expected.<br>For server mode a second server will be run."
 

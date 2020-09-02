@@ -24,7 +24,7 @@ Continue?")
 		else if (op == "Create_bitmap") // write intent bitmap
 			res = confirm("Creating a Write Intent Bitmap makes resyncing much faster\n\
 at the expense of a small performance degradation.\n\n\
-Continue?")	
+Continue?")
 
 		else if (op == "Verify" || op == "Repair" || op == "Details" || op == "Examine_part")
 			res = true
@@ -88,7 +88,7 @@ It must have already been removed from the array.\n\nContinue?")
 					comp1.substr(0,3) == comp2.substr(0,3)) || \
 				(comp1 != "none" && comp3 != "none" && \
 					comp1.substr(0,3) == comp3.substr(0,3)) || \
-				(comp2 != "none" && comp3 != "none" && 	
+				(comp2 != "none" && comp3 != "none" &&
 					comp2.substr(0,3) == comp3.substr(0,3))) {
 					st = confirm ("Warning: RAID components should be on different disks.\n\
 If you continue, performance will be worse than that of a single disk.\n\nContinue?")
@@ -211,7 +211,7 @@ if echo "$mout" | grep -q ARRAY; then
 		<fieldset><legend>RAID Maintenance</legend>
 		<table>
 		<tr>
-		<th>Dev.</th> 
+		<th>Dev.</th>
 		<th>Capacity</th>
 		<th>Level</th>
 		<th>Ver.</th>
@@ -273,15 +273,15 @@ if echo "$mout" | grep -q ARRAY; then
 					devs="$devs $j"
 				fi
 			done
-	
+
 			otype=$type
 			if test "$(cat /sys/block/$mdev/md/degraded 2>/dev/null )" = 1; then
 				otype="<span class=\"red\">$type</span>"
 			fi
-	
+
 			cat<<-EOF
 				<tr>
-				<td>$mdev</td> 
+				<td>$mdev</td>
 				<td>$pcap</td>
 				<td>$otype</td>
 				<td>${mdata:0:3}</td>
@@ -292,17 +292,17 @@ if echo "$mout" | grep -q ARRAY; then
 			if ! test "$type" = "raid1" -o "$type" = "raid5"; then
 				remops="disabled"
 			fi
-		
+
 			bitmap="Remove"
 			if test "$(cat /sys/block/$mdev/md/bitmap/location)" = "none"; then
 				bitmap="Create"
 			fi
-	
+
 			action="idle"
 			if test -f /sys/block/$mdev/md/sync_action; then
 				action=$(cat /sys/block/$mdev/md/sync_action)
 			fi
-	
+
 			if test "$action" != "idle"; then
 				abort=""
 				if test "$action" = "check" -o "$action" = "repair"; then
@@ -322,7 +322,7 @@ if echo "$mout" | grep -q ARRAY; then
 			else
 				cat<<-EOF
 					<td></td>
-					<td><input type=submit name=$mdev value=$act></td>		
+					<td><input type=submit name=$mdev value=$act></td>
 					<td><select id="raidop_$mdev" name="$mdev" onChange="msubmit('raidop_$mdev', '$mdev')">
 						<option>Operation</option>
 						<option $remops value="${bitmap}_bitmap">$bitmap Bitmap</option>
@@ -360,7 +360,7 @@ if echo "$mout" | grep -q ARRAY; then
 if false; then
 	# now handle stoped arrays, /dev/md? does not exists
 
-	# "Preferred Minor" is for 0.9 metadata, 
+	# "Preferred Minor" is for 0.9 metadata,
 	# for 1.x metadata minor can be extracted from "Name : host:minor"
 
 	ex=""

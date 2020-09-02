@@ -7,7 +7,7 @@ download() {
 		msg "You don't seem to have a name server configured, or a working internet connection."
 	fi
 
-	write_header "Installing ffp package $2" 
+	write_header "Installing ffp package $2"
 
 	pname=$2.$arch_ext
 
@@ -68,7 +68,7 @@ elif test "$ffpver" = "0.7"; then
 		FFP_ARCH=arm
 	fi
 	arch=$FFP_ARCH
-	FFP_DIR="$ffpver/$arch" 
+	FFP_DIR="$ffpver/$arch"
 	bbext="-netutils"
 	arch_ext=txz
 else
@@ -76,7 +76,7 @@ else
 fi
 
 TMPDIR=/ffp/tmp
-PATH=$PATH:/ffp/bin:/ffp/sbin 
+PATH=$PATH:/ffp/bin:/ffp/sbin
 
 if test "$install" = "Install"; then
 	if test "$part" = "none"; then

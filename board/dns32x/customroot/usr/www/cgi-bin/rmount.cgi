@@ -69,7 +69,7 @@ if test -f $CONFM; then
 fi
 
 if ! aufs.sh -s >& /dev/null; then
-	dnfs_dis="disabled"	
+	dnfs_dis="disabled"
 fi
 
 if test -n "$DELAY_NFS"; then
@@ -147,13 +147,13 @@ while read -r ln; do
 	if $(echo "$ln" | grep -q nfs); then
 		fstab_row "$ln" $cnt nfs
 		cnt=$((cnt+1))
-	fi	
+	fi
 done < $CONFT
 
 for i in $(seq $cnt $((cnt+2))); do
 	fstab_row "" $i nfs # ln cnt
 done
-	
+
 cat<<-EOF
 	</table>
 	<table>

@@ -128,7 +128,7 @@ if grep -qE 'DNS-320-Bx|DNS-320L-Ax|DNS327L-Ax' /tmp/board; then
 		fi
 		spd_chk="checked"
 		spd_wday=$weekday
-		spd_at="$hour:$min"	
+		spd_at="$hour:$min"
 	else
 		crontab -l > $TF 2> /dev/null
 		while read min hour monthday month weekday cmd; do
@@ -198,7 +198,7 @@ cat<<-EOF
 	<fieldset><legend>View Logs</legend>
 	$logsel
 	</fieldset>
-	
+
 	<fieldset><legend>Services</legend>
 	<input type="submit" name="action" value="StartAll">
 	<input type="submit" name="action" value="StopAll">
@@ -233,7 +233,7 @@ eval $(openssl x509 -in /etc/ssl/certs/server.pem -noout -subject | awk  -F '/' 
 
 cat<<-EOF
 	<fieldset><legend>Current SSL Certificate</legend>
-Issued by <strong>$O</strong> for a <strong>$OU</strong> with <strong>$CN</strong> as hostname 
+Issued by <strong>$O</strong> for a <strong>$OU</strong> with <strong>$CN</strong> as hostname
 	<input type=submit name="action" value="createNew" $(ttip ssl_tt)>
 	</fieldset>
 	</form>

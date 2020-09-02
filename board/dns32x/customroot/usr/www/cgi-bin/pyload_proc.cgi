@@ -16,7 +16,7 @@ if test -n "$submit"; then
 	fi
 
 	if test "$(basename $conf_dir)" = "Public"; then
-		msg "You must create a folder for pyLoad." 
+		msg "You must create a folder for pyLoad."
 	elif ! res=$(check_folder "$conf_dir"); then
 		msg "$res"
 	fi
@@ -29,7 +29,7 @@ if test -n "$submit"; then
 		done
 	fi
 
-	sed -i '/download_folder/s|\(.*=\).*|\1 '$conf_dir'|' $PYLCONF	
+	sed -i '/download_folder/s|\(.*=\).*|\1 '$conf_dir'|' $PYLCONF
 
 	if ! grep -q '\[pyLoad\]' $SMBCF; then
 		cat <<EOF >> $SMBCF
@@ -44,7 +44,7 @@ EOF
 	else
 		sed -i "/\[pyLoad\]/,/\[.*\]/ { s|path.*|path = $conf_dir|}" $SMBCF
 	fi
-	
+
 	if rcsmb status >& /dev/null; then
 		rcsmb reload >& /dev/null
 	fi

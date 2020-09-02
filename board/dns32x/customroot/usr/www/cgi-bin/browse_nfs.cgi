@@ -5,7 +5,7 @@ check_cookie
 
 html_header "NFS Browse"
 
-if test -n "$QUERY_STRING"; then		
+if test -n "$QUERY_STRING"; then
 	parse_qstring
 else
 	echo "<h3>No arguments given.</h3></body></html>"

@@ -7,7 +7,7 @@ html_header
 
 #debug
 
-if test -n "$QUERY_STRING"; then		
+if test -n "$QUERY_STRING"; then
 	parse_qstring
 else
 	echo "<script type="text/javascript"> window.close() </script></body></html>"

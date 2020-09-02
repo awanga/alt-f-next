@@ -56,7 +56,7 @@ fi
 
 if rcddns status >& /dev/null; then
 	rcddns restart >& /dev/null
-fi	
+fi
 
 #enddebug
 gotopage /cgi-bin/net_services.cgi

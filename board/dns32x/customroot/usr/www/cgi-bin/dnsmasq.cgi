@@ -132,7 +132,7 @@ if false; then
 	echo "</fieldset>"
 fi
 
-if test -e $CONFNTP; then 
+if test -e $CONFNTP; then
 	while read ntp_srv host; do
 		if test "$ntp_srv" = "server" -a "$host" != "127.127.1.0"; then
 			break
@@ -197,7 +197,7 @@ EOF
 eval $(awk '/log-queries/{print "dnslog=CHECKED"} \
 		/log-dhcp/{print "dhcplog=CHECKED"}' $CONF_F)
 
-cat<<EOF	
+cat<<EOF
 	<fieldset><legend>Logging</legend><table>
 	<tr><td>Log DNS queries</td>
 		<td><input type=checkbox $dnslog name=dnslog value=true></td></tr>

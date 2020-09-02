@@ -31,7 +31,7 @@ cat<<-EOF
 	<td><input type=text size=32 id="conf_dir" name="conf_dir" value="$(httpd -e "$DL_DIR")"></td>
 	<td><input type=button onclick="browse_dir_popup('conf_dir')" value=Browse></td>
 	</tr></table>
-	
+
 	<p><input type=submit name=submit value=Submit> $(back_button)
 	<input type="submit" $webbut name=webPage value=WebPage>
 	</form></body></html>

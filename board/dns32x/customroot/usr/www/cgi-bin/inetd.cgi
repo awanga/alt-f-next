@@ -36,7 +36,7 @@ while read srv tp nt wt ow exep exe args; do
 		srv=${srv:1}
 		chkf=""
 	fi
-	
+
 	disf="";
 	if test -f $PWD/${srv}.cgi; then
 		conf="<td><input type="submit" name=$srv value="Configure"></td>"
@@ -62,7 +62,7 @@ cat<<-EOF
 	<tr><td></td><td></td>
 	<td class="highcol">
 	<input type=hidden name=cnt value=$i>
-	<input type="submit" name=submit value="Submit"></td><td>$(back_button)</td>	
+	<input type="submit" name=submit value="Submit"></td><td>$(back_button)</td>
 	</tr></table></form></body></html>
 EOF
 

@@ -36,7 +36,7 @@ if test -n "$unMount"; then
 	res="$(umount -f "$mp" 2>&1)"
 	st=$?
 	if test $st != 0; then
-        msg "Error $st: $res"  
+        msg "Error $st: $res"
     fi
 
 elif test -n "$Mount"; then
@@ -46,14 +46,14 @@ elif test -n "$Mount"; then
 	res=$(mount "$mp" 2>&1)
 	st=$?
 	if test $st != 0; then
-        msg "Error $st: $res"  
+        msg "Error $st: $res"
     fi
 
 elif test -n "$Submit"; then
 	cp $CONFT $CONFT-
 	sed -i -e '/\(\t\| \)nfs\(\t\| \)/d' -e '/\(\t\| \)cifs\(\t\| \)/d' $CONFT
 
-	for i in $(seq 1 $cnt); do 
+	for i in $(seq 1 $cnt); do
 		if test -z "$(eval echo \$rhost_$i)" -o -z "$(eval echo \$rdir_$i)" -o \
 			-z "$(eval echo \$mdir_$i)"; then continue; fi
 
@@ -73,13 +73,13 @@ elif test -n "$Submit"; then
 
 		if test $fstype = "nfs"; then
 		httpd -d "$(eval echo \$fcmtd_$i)$(eval echo \$rhost_$i):$rdir $mdir $fstype $mopts 0 0"
-		
+
 		else
 		httpd -d "$(eval echo \$fcmtd_$i)//$(eval echo \$rhost_$i)/$rdir $mdir $fstype $mopts 0 0"
 		fi
 		echo
 	done >> $CONFT
-	
+
 	rm $CONFT-
 
 	sed -i '/^DELAY_NFS=/d' $CONFM
@@ -90,7 +90,7 @@ elif test -n "$Submit"; then
 
 	if rcrmount status >& /dev/null; then
 		rcrmount restart >& /dev/null
-	fi	
+	fi
 
 fi
 

@@ -85,7 +85,7 @@ elif test -n "$submit"; then
 	fi
 
 	if test "$(basename $conf_dir)" = "Public"; then
-		msg "You must create a folder for SABnzbd." 
+		msg "You must create a folder for SABnzbd."
 	elif ! res=$(check_folder "$conf_dir"); then
 		msg "$res"
 	fi
@@ -112,7 +112,7 @@ elif test -n "$submit"; then
 
 	if test -e $SBCONF -a ! -d $SABHOME/scripts; then # SickBeard is installed
 		#daemon_stop rcsickbeard
-	
+
 		# copy SickBeard postprocess script to SAPnzbd
 		# autoProcessTV.cfg must be edited by the user if he adds a password to SAB/Sick
 		mkdir -p $SABHOME/scripts

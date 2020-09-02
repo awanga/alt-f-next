@@ -79,7 +79,7 @@ cat<<-EOF
 
 	<tr><td>To</td>
 		<td><input type=text size=20 name=to value="$MAILTO">
-		<input type=submit $distest name=submit value=Test>	
+		<input type=submit $distest name=submit value=Test>
 		</td></tr>
 	</table>
 	<p><input type=submit name=submit value=Submit>

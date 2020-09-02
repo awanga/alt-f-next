@@ -5,7 +5,7 @@ check_cookie
 
 html_header "Samba Browse"
 
-if test -n "$QUERY_STRING"; then		
+if test -n "$QUERY_STRING"; then
 	parse_qstring
 else
 	echo "<h3>No arguments given.</h3></body></html>"
@@ -25,7 +25,7 @@ EOF
 wait_count_start "Browsing the network for Samba servers, it takes 10 seconds"
 
 # this seems to be needed to start the window drawn...
-for i in $(seq 1 20); do sleep 1; echo; done & 
+for i in $(seq 1 20); do sleep 1; echo; done &
 
 #F1=domain
 #F2=host
@@ -45,7 +45,7 @@ smbtree -N 2> /dev/null | tr '\t' ':' | awk -F : '{
 		if (index($3,"$"))
 			next
 		split($3, a,"\\");
-		gsub(" *$","",a[3]); # not workink in js gsub(" ","\\ ",a[3]); 
+		gsub(" *$","",a[3]); # not workink in js gsub(" ","\\ ",a[3]);
 		gsub(" *$","",a[4]); # not workink in js gsub(" ","\\ ",a[4]);
 		rhost=a[3];  rdir=a[4];
 		printf "<tr><td><a href=\"\" onclick=\"ret_val(%c'$id1'%c, %c%s%c, %c'$id2'%c, %c%s%c)\">%s</a></td><td>%s</td></tr>\n", \

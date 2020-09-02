@@ -119,7 +119,7 @@ elif test -n "$user" -o -n "$group"; then
 fi
 
 cat<<-EOF
-	
+
 	<input type=hidden name=kind value="$kind">
 	<input type=hidden name=targ value="$targ">
 	<input type=hidden name=opt value="$opt">

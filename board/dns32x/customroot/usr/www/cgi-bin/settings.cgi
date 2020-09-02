@@ -8,7 +8,7 @@ write_header "Settings Management"
 res=$(loadsave_settings -ls)
 for i in $res; do
 	sets="$sets <option>$i</option>"
-done	
+done
 
 cat<<-EOF
 	<script type="text/javascript">

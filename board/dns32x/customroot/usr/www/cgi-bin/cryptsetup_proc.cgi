@@ -29,7 +29,7 @@ if test "$action" = "Format"; then
 		msg "Password file $CRYPT_KEYFILE or device /dev/$devto does not exist."
 	fi
 
-	# is a normal partition mounted?	
+	# is a normal partition mounted?
 	if grep -q ^/dev/$devto /proc/mounts; then
 		if ! umount /dev/$devto >& /dev/null; then
 			msg "Device $devto is currently mounted and couldn't be unmounted, stop services first."
@@ -64,8 +64,8 @@ elif test -n "$Open"; then
 elif test -n "$Close"; then
 	dsk=$Close
 	dm=${dsk}-crypt
-	
-	# find device-mapper name under /dev, e.g. /dev/dm-3 
+
+	# find device-mapper name under /dev, e.g. /dev/dm-3
 	eval $(dmsetup ls | awk '/'$dm'/{printf "mj=%d mi=%d", substr($2,2), $3}')
 	eval $(awk '/'$mj' *'$mi'/{printf "tdm=%s", $4}' /proc/partitions)
 

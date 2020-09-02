@@ -3,7 +3,7 @@
 source ./common.sh
 check_cookie
 
-if test -n "$QUERY_STRING"; then		
+if test -n "$QUERY_STRING"; then
 	parse_qstring
 else
 	write_header "NFS options error"
@@ -34,7 +34,7 @@ cat <<-EOF
 			ret="";
 			for (i=0; i<x.length; i++) {
 				if (x.options[i].selected == true)
-					ret += x.options[i].text + ",";	
+					ret += x.options[i].text + ",";
 			}
 			window.opener.document.getElementById(id).value = ret;
 			window.close();

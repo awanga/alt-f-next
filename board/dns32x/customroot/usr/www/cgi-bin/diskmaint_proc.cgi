@@ -15,7 +15,7 @@ tune() {
 			tune2fs -c $mounts $tuneopts -i $days $part >& /dev/null
 		fi
 	done < /proc/mounts
-} 
+}
 
 # lumount part msg
 lumount() {
@@ -46,7 +46,7 @@ lmount() {
 # check $1=part $2=type $3=name
 check() {
 	case $2 in
-		ext2|ext3|ext4) 
+		ext2|ext3|ext4)
 			if test "$3" = "fix"; then
 				opts="-fyD"
 			else
@@ -55,7 +55,7 @@ check() {
 			;;
 		vfat) opts="-a" ;;
 		ntfs) opts="" ;;
-		btrfs) 
+		btrfs)
 			lmount $1
 			msg "Checking or Fixing a btrfs filesystem has to be done from the command line." ;;
 		*) msg "Unsuported $2 filesystem, you have to resort to the command line." ;;
@@ -69,7 +69,7 @@ check() {
 		echo heartbeat > $PLED
 		mkfifo /tmp/fsck_pipe-$1 >& /dev/null
 		(while true; do
-			dd if=/tmp/fsck_pipe-$1 of=$logf- bs=64K count=1 2> /dev/null 
+			dd if=/tmp/fsck_pipe-$1 of=$logf- bs=64K count=1 2> /dev/null
 			mv $logf- $logf
 			sleep 10
 		done)&
@@ -146,7 +146,7 @@ format() {
 		logger "Formated /dev/$1 with $2 OK"
 
 		if test -n "$3"; then
-			plabel $1 "$3" 
+			plabel $1 "$3"
 		fi
 
 		if test "${1:0:2}" = "sd"; then
@@ -171,7 +171,7 @@ format() {
 	/tmp/format-$1 < /dev/console > /dev/null 2> /dev/null &
 }
 
-# $1=part $2=shrink|enlarg 
+# $1=part $2=shrink|enlarg
 resize() {
 	if test $type = "btrfs"; then
 		if ! ismount $1; then
@@ -201,7 +201,7 @@ resize() {
 		echo heartbeat > $PLED
 		mkfifo /tmp/fsck_pipe-$1 >& /dev/null
 		(while true; do
-			dd if=/tmp/fsck_pipe-$1 of=$logf- bs=64K count=1 2> /dev/null 
+			dd if=/tmp/fsck_pipe-$1 of=$logf- bs=64K count=1 2> /dev/null
 			mv $logf- $logf
 			sleep 10
 		done)&
@@ -221,7 +221,7 @@ resize() {
 			exit 1
 		fi
 		logger "Checking /dev/$1 OK"
-		
+
 		if test $type = btrfs; then
 			nice btrfs filesystem resize $nsz $mp > $logf 2>&1
 		else
@@ -258,7 +258,7 @@ wipe() {
 
 	nsize=$(expr $(cat $devf)  \* 512)
 	nblk=$(expr $nsize / 4194304)
-	
+
 	cat<<-EOF > /tmp/wip-$1
 		#!/bin/sh
 		trap "" 1
@@ -286,7 +286,7 @@ wipe() {
 convert() {
 	html_header "Converting filesystem on $1"
 	busy_cursor_start
-	if test "$2" = "ext2"; then # 2->3, perhaps intermediate step	
+	if test "$2" = "ext2"; then # 2->3, perhaps intermediate step
 		echo "<p>Converting from ext2 to ext3..."
 		res="$(tune2fs -j /dev/$1)"
 		if test $? != 0; then
@@ -358,7 +358,7 @@ elif test -n "$setMountOpts"; then
 	# FIXME: if fs is mounted, use 'remount' mount option instead, as fs might be busy
 	lumount "$part"
 
-	TF=$(mktemp -t) 
+	TF=$(mktemp -t)
 	awk '{
 		if ($1 == "/dev/'$part'") {
 			$4 = "'$mopts'"
@@ -375,7 +375,7 @@ elif test -n "$setMountOpts"; then
 	if test "$mopts" != "defaults"; then
 		echo "mopts_${uuid}=$mopts" >> /etc/misc.conf
 	fi
-	
+
 	lmount "$part"
 
 elif test -n "$Mount"; then
@@ -397,7 +397,7 @@ elif test -n "$ForceFix"; then
 	type=$(blkid -s TYPE -o value /dev/$part)
 	lumount "$part" "fixing"
 	check "$part" "$type" "fix"
-		
+
 elif test -n "$Format"; then
 	eval part=\$part_$Format
 	eval type=\$type_$Format
@@ -419,7 +419,7 @@ elif test -n "$Convert"; then
 	if test "$type" != "ext3" -a "$type" != "ext4"; then
 		msg "Can only convert upward from 'ext' filesystems."
 	fi
-	
+
 	from=$(blkid -s TYPE -o value /dev/$part)
 	lumount "$part" "converting"
 

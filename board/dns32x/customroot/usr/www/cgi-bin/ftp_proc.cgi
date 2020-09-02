@@ -37,7 +37,7 @@ for i in $vars; do
 	echo "$i=$(eval echo \$$i)" >> $CONFF
 done
 
-sed -i '/implicit_ssl/d' $CONFF 
+sed -i '/implicit_ssl/d' $CONFF
 echo "#implicit_ssl=$implicit_ssl #!# Alt-F usage, don't uncomment" >> $CONFF
 
 if test "$ftp_inetd" = "inetd"; then
@@ -47,7 +47,7 @@ if test "$ftp_inetd" = "inetd"; then
 		rcinetd disable ftps >& /dev/null
 	fi
 	#sed -i 's/^TYPE=/#TYPE=/' $CONFS
-	
+
 else
 	rcinetd disable ftp ftps >& /dev/null
 	#sed -i 's/^#TYPE=/TYPE=/' $CONFS

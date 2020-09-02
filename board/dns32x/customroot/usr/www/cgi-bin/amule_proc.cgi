@@ -16,7 +16,7 @@ if test -n "$WebPage"; then
 	if ! rcamule status >& /dev/null; then
 		rcamule start  >& /dev/null
 	fi
-	port=$(sed -n '/\[WebServer\]/,/\[/{s|^Port=\(.*\)|\1|p}' $TCONF)	
+	port=$(sed -n '/\[WebServer\]/,/\[/{s|^Port=\(.*\)|\1|p}' $TCONF)
 	embed_page "http://${HTTP_HOST%%:*}:${port}" "aMule Page"
 
 elif test -n "$Submit"; then
@@ -26,7 +26,7 @@ elif test -n "$Submit"; then
 	fi
 
 	if test "$(basename $DL_DIR)" = "Public"; then
-		msg "You must create a folder for aMule." 
+		msg "You must create a folder for aMule."
 	elif ! res=$(check_folder "$DL_DIR"); then
 		msg "$res"
 	fi

@@ -113,7 +113,7 @@ elif test "$submit" = "Submit"; then
 
 	if rcsmb status >& /dev/null; then
 		rcsmb restart >& /dev/null
-	fi	
+	fi
 
 fi
 

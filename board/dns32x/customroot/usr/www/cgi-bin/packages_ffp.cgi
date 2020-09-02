@@ -67,7 +67,7 @@ else
 	if test "$arch" = "oarm"; then
 		warnmsg='<h4 class="warn">Warning: you are using the obsolete "oabi/oarm" architecture.</h4>'
 	fi
-	FFP_DIR="$ffpver/$arch" 
+	FFP_DIR="$ffpver/$arch"
 	inst_pkg=$(ls /ffp/funpkg/installed)
 	arch_ext=txz
 	spat='-*-'$arch'-*'
@@ -107,7 +107,7 @@ fi
 cat <<-EOF
 	<form action="/cgi-bin/packages_ffp_proc.cgi" method=post>
 	<input type=hidden name=ffpver value="$ffpver">
-	
+
 	<fieldset><legend>Package Feed</legend><table>
 	<tr><td>Download site</td><td><input type=text size=40 name=ffpsite value="$FFPSITE"><input type=submit name=feed value="Change"</td></tr>
 	<tr><td>Uninstall ffp-$ffpver</td>

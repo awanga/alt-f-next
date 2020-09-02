@@ -33,7 +33,7 @@ if test -z "$part" -o "$part" = "none"; then
 fi
 
 DEBDEV=$part
-DEBDIR=/mnt/$DEBDEV 
+DEBDIR=/mnt/$DEBDEV
 
 if ! test -d "$DEBDIR"; then
 	DEBDIR="$(awk '/'$part'/{print $2}' /proc/mounts)"
@@ -65,8 +65,8 @@ if test "$submit" = "Install"; then
 			;;
 		DNS-327L)
 # Alt-F kernel has to have Thumb user support and VFP configured
-# debian armhf requirements: ARMv7-A + Thumb-2 + VFPv3D16 
-			SoC=armmp 
+# debian armhf requirements: ARMv7-A + Thumb-2 + VFPv3D16
+			SoC=armmp
 			arch=armhf
 			linuximg=linux-image-$SoC # armel doesn't has a linux-image for armmp in jessie
 			;;
@@ -106,14 +106,14 @@ if test "$submit" = "Install"; then
 	else
 		msg "Unknown compressor"
 	fi
-	
+
 	filelist=$($DCOMP | tar -tf -)
 	$DCOMP | tar -C / -xf -
 	if test $? != 0; then cleanup; fi
 
 	echo "</pre><h4>Downloading and installing Debian, this might take some time...</h4><pre>"
 
-	mkdir -p $DEBDIR 
+	mkdir -p $DEBDIR
 	cdebootstrap-static --allow-unauthenticated --arch=$arch \
 		--include=openssh-server,kexec-tools,mdadm,$linuximg \
 		jessie $DEBDIR $DEBMIRROR
@@ -154,13 +154,13 @@ if test "$submit" = "Install"; then
 				(cd $DEBDIR; ln -sf boot/$pf $i)
 			fi
 		done
-		
+
 		echo "</pre><h4>Downloading and installing Alt-F into Debian...</h4><pre>"
-		
+
 		ver=$(cat /etc/Alt-F)
 		bfile=Alt-F-$ver-$mod-rev-$rev.bin
 		site="https://sourceforge.net/projects/alt-f/files/Releases"
-		
+
 		echo "</pre><p>Downloading $bfile from $site/$ver...</p><pre>"
 
 		if wget --progress=dot:mega $site/$ver/$bfile; then
@@ -195,7 +195,7 @@ if test "$submit" = "Install"; then
 		fi
 		rm -f $bfile kernel initramfs defaults
 	fi
-	
+
 	echo "</pre><h4>Setting up some Debian installation details...</h4>"
 
 	mkdir -p $DEBDIR/proc $DEBDIR/sys $DEBDIR/dev $DEBDIR/dev/pts $DEBDIR/tmp
@@ -213,7 +213,7 @@ if test "$submit" = "Install"; then
 	done
 
 	dropbearconvert dropbear openssh /etc/dropbear/dropbear_rsa_host_key \
-		$DEBDIR/etc/ssh/ssh_host_rsa_key 
+		$DEBDIR/etc/ssh/ssh_host_rsa_key
 	dropbearconvert dropbear openssh /etc/dropbear/dropbear_dss_host_key \
 		$DEBDIR/etc/ssh/ssh_host_dsa_key
 	dropbearconvert dropbear openssh /etc/dropbear/dropbear_ecdsa_host_key \
@@ -258,7 +258,7 @@ elif test "$submit" = "Execute"; then
 	html_header "Executing Debian"
 
 	debian -kexec > /dev/null
-	
+
 	echo "</body></html>"
 fi
 

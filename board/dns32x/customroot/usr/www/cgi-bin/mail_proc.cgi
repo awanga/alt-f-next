@@ -74,7 +74,7 @@ if test "$submit" = "Test"; then
 		To: $to
 		From: $from
 		Subject: ALT-F on $(hostname) mail test
-		
+
 		This is an Alt-F test message
 	EOF
 	if test $? = 0; then

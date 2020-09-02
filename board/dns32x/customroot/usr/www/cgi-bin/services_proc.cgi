@@ -27,7 +27,7 @@ start_stop() {
 			for i in $(seq 1 50); do
 				if ! $rcscript status >& /dev/null; then
 					break
-				fi	
+				fi
 				usleep 200000
 			done
 			if test "$i" -eq 50; then

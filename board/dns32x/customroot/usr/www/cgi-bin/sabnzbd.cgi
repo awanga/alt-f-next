@@ -63,7 +63,7 @@ cat<<-EOF
 	</tr>
 	<tr><td>Update to version</td><td><input type=text name=version value="$lastver" $(ttip tt_update)>(current is $curver)</td>
 	<td><input type=submit $update_dis name=update value=Update></td></tr></table>
-	
+
 	<input type=hidden name=curver value="$curver">
 	<p><input type=submit name=submit value=Submit> $(back_button)
 	<input type="submit" $webbut_dis name=webPage value=WebPage>

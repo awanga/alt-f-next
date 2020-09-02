@@ -146,7 +146,7 @@ case "$board" in
 		</table></fieldset>
 	EOF
 	;;
-	
+
 	*)
 	echo "Unknown board $board</table></fieldset>"
 	;;
@@ -164,7 +164,7 @@ cat<<-EOF
 			</tr>
 			<tr><td>Critical Temp.</td>
 				<td><input type=text size=4 name=crit_temp value="$crit_temp">&deg;C</td>
-				<td></td>	
+				<td></td>
 				<td>Command to execute:</td>
 				<td><input type=text name=crit_temp_command value="$crit_temp_command"></td>
 			</tr>

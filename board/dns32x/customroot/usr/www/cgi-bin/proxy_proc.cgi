@@ -44,7 +44,7 @@ if test "$useproxy" = "yes"; then
 		echo https_proxy=$(httpd -d ${https_proxy}$prt) >> $CONFF
 	fi
 
-	if test -n "$ftp_port"; then prt=":$(httpd -d $ftp_port)"; fi	
+	if test -n "$ftp_port"; then prt=":$(httpd -d $ftp_port)"; fi
 	if test -n "$ftp_proxy"; then
 		echo ftp_proxy=$(httpd -d ${ftp_proxy}$prt) >> $CONFF
 	fi

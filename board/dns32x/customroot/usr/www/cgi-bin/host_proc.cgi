@@ -66,7 +66,7 @@ if test -z "$ns1"; then ns1=$gateway; fi
 hostname $hostname
 echo $hostname > /etc/hostname
 
-# remove entries with oldip and oldname 
+# remove entries with oldip and oldname
 sed -i "/^[^#].*$oldname$/d" $CONFH
 sed -i "/^$oldip[ \t]/d" $CONFH
 # even if incorrect with old ip (dhcp), host and domain are correct
@@ -107,7 +107,7 @@ if test "$iptype" = "static"; then
 	test -f $DNSMASQ_F && echo "domain=$domain" >> $DNSMASQ_F
 	test -f $DNSMASQ_O && sed -i '/^option:router,/d' $DNSMASQ_O
 	test -f $DNSMASQ_O && echo "option:router,$gateway	# default route" >> $DNSMASQ_O
-	
+
 	# remove any hosts with same name or ip
 	sed -i "/[[:space:]]$hostname$/d" $CONFH
 	sed -i "/^$hostip[[:space:]]/d" $CONFH
@@ -172,7 +172,7 @@ cat<<-EOF
 	var page = server + "/cgi-bin/host.cgi"
 	var testimg = server + "/help.png?" + Math.random()
 
-	function testServer() {    
+	function testServer() {
 		var img = new Image()
 
 		img.onload = function() {

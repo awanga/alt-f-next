@@ -8,7 +8,7 @@ write_header "fuppes Setup"
 CONFF=/etc/fuppes/fuppes.cfg
 
 if test -e $CONFF; then # damned spaces in file names!
-	sed -i '/<!--<dir>/d' $CONFF	
+	sed -i '/<!--<dir>/d' $CONFF
 	FUPPES_DIR="$(sed -n '/<shared_objects>/,/<\/shared_objects>/s/.*<dir>\(.*\)<\/dir>/\1:/p }' $CONFF)"
 
 	aip=$(sed -n '/<allowed_ips>/,/<\/allowed_ips>/p' $CONFF | awk ' \

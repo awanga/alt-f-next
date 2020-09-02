@@ -15,7 +15,7 @@ read_args
 LOCAL_STYLE='
 #ellapsed {
 	position: relative;
-	z-index: -1;  
+	z-index: -1;
 	margin-left: auto;
 	margin-right: auto;
 	width: 33%;
@@ -55,7 +55,7 @@ if test -n "$CreateDir"; then
 	else
 		msg "Can't create, parent folder\n\n   $bdir\n\ndoes not exists."
 	fi
-	
+
 elif test -n "$RenameDir"; then
 	if test "$oldname" = "$wdir"; then
 		msg "The new and old names are identical."
@@ -68,7 +68,7 @@ elif test -n "$RenameDir"; then
 	if test -d "$wdir"; then
 		msg "Can't rename, folder\n\n   $wdir\n\nalready exists."
 	fi
-	
+
 	if ! test -d "$bdir"; then
 		msg "Can't rename, parent folder\n\n   $bdir\n\ndoesn't exists."
 	fi
@@ -190,7 +190,7 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 	touch /tmp/folders_op.$bpid
 	td="$wdir/$(basename "$srcdir")"
 	# FIXME: not suitable to TB operations, don't limit it, use an exponential waiting time
-	sleep_time=$(expr $src_sz / 100 + 1) 
+	sleep_time=$(expr $src_sz / 100 + 1)
 	if test $sleep_time -gt 10; then sleep_time=10; fi
 		cat<<-EOF
 		<script type="text/javascript">
@@ -227,7 +227,7 @@ elif test -n "$Copy" -o -n "$Move" -o -n "$CopyContent"; then
 elif test -n "$Permissions"; then
 	nuser="$(httpd -d $nuser)"
 	ngroup="$(httpd -d $ngroup)"
-		
+
 	if test -z "$recurse"; then
 		optr="-maxdepth 0"
 	fi

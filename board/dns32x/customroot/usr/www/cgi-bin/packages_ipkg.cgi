@@ -88,7 +88,7 @@ if ipkg status >/dev/null; then
 				preinst[a[1]] = a[2];
 			}
 	}
-	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field 
+	/Package:/ { i++; nm=$2; pkg[i] = nm } # this relies on Package being the first field
 	/Version:/ { ver[i] = $2 }
 	/Source:/ { url[i] = $2 }
 	/Description:/ { des[i] = substr($0, index($0,$2)) }
@@ -139,7 +139,7 @@ if ipkg status >/dev/null; then
 				printf "<td>%s</td></tr>\n\n", des[j];
 			}
 		}
-	
+
 		print "<tr><td colspan=6><br></td></tr>"
 		if (update != 0)
 			print "<tr><td colspan=2><strong>Update all installed</strong></td> \
