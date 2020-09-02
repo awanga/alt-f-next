@@ -11,5 +11,6 @@
 ./usr/lib/libfdisk.so
 ./usr/lib/libsmartcols.so
 ./usr/lib/libuuid.so
+./usr/sbin/blkid
 ./usr/sbin/fdisk
 ./usr/sbin/sfdisk

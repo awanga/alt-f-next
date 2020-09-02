@@ -1,0 +1,16 @@
+--- a/configure	2020-09-02 14:43:44.268105951 +0000
++++ b/configure	2020-09-02 14:45:32.579542892 +0000
+@@ -24368,8 +24368,11 @@
+   enable_blkid=check
+ fi
+ 
+-
+-
++# Check whether --enable-blkid was given.
++if test "${enable_blkid+set}" = set; then :
++  enable_blkid=yes
++  build_blkid=yes
++fi
+ 
+   if test "x$build_blkid" != xno; then
+     case $enable_blkid:$build_libblkid in #(

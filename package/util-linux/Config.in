@@ -85,6 +85,12 @@ config BR2_PACKAGE_UTIL_LINUX_BFS
 	help
 	  SCO bfs filesystem support
 
+config BR2_PACKAGE_UTIL_LINUX_BLKID
+	bool "bfs"
+	depends on BR2_PACKAGE_UTIL_LINUX_LIBBLKID
+	help
+	  Print UUIDs of all filesystems
+
 config BR2_PACKAGE_UTIL_LINUX_CAL
 	bool "cal"
 	help
