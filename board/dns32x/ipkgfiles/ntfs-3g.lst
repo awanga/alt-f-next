@@ -1,9 +1,15 @@
+./sbin/mkfs.ntfs
 ./sbin/mount.lowntfs-3g
 ./sbin/mount.ntfs-3g
 ./usr/bin/lowntfs-3g
 ./usr/bin/ntfs-3g
 ./usr/bin/ntfs-3g.probe
+./usr/bin/ntfsfix
 ./usr/lib/libntfs-3g.so
 ./usr/lib/libntfs-3g.so.88
 ./usr/lib/libntfs-3g.so.88.0.0
 ./usr/lib/ntfs-3g
+./usr/sbin/fsck.ntfs
+./usr/sbin/fsck.ntfs-3g
+./usr/sbin/mkfs.ntfs
+./usr/sbin/mkntfs

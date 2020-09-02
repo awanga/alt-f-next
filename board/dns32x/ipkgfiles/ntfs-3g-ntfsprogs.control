@@ -1,6 +1,6 @@
 Package: ntfs-3g-ntfsprogs
 Description: Additional NTFS programs to the ntfs-3g package
-Version: 2012.1.15-2
+Version: 2017.3.23
 Depends: ntfs-3g, ipkg
 Architecture: arm
 Priority: optional
