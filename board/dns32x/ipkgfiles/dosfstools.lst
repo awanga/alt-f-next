@@ -1,6 +1,4 @@
 ./sbin/dosfsck
-./sbin/dosfslabel
 ./sbin/fsck.msdos
 ./sbin/fsck.vfat
-./usr/sbin/fatlabel
 ./usr/sbin/fsck.fat
