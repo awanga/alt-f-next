@@ -136,7 +136,7 @@ case $board in
 			COMP=xz
 		fi
 		fw_pkgs="$base_pkgs mtd-utils"
-		sq_pkgs="$base_pkgs2 btrfs-progs dnsmasq quota lzo"
+		sq_pkgs="$base_pkgs2 btrfs-progs dnsmasq ntfs-3g-ntfsprogs quota lzo"
 		all_pkgs="$fw_pkgs $sq_pkgs"
 		;;
 	*) echo "mkinitramfs: Unsupported \"$board\" board"; exit 1;;
