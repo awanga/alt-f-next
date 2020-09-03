@@ -9,5 +9,4 @@
 ./usr/lib/libfts.so.0.0.0
 ./usr/lib/libzip.so
 ./usr/lib/libzip.so.5
-./usr/lib/libzip.so.5.1
-./usr/lib/php
+./usr/lib/libzip.so.5.3

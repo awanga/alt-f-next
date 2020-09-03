@@ -12,7 +12,6 @@
 ./usr/libexec/sftp-server
 ./usr/libexec/ssh-keysign
 ./usr/libexec/ssh-pkcs11-helper
-./usr/libexec/ssh-sk-helper
 ./usr/sbin/sshd
 ./usr/www/cgi-bin/opensshd.cgi
 ./usr/www/cgi-bin/sshd.cgi

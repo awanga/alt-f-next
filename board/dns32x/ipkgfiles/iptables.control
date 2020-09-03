@@ -1,6 +1,6 @@
 Package: iptables
 Description: Linux kernel firewall, NAT, and packet mangling tools.
-Version: 1.8.3
+Version: 1.8.4
 Depends: kernel-modules, ipkg
 Architecture: arm
 Priority: optional

@@ -5,7 +5,7 @@ Description: 	  Little Color Management Software (CMS) intends to be an OPEN
 	  It uses the International Color Consortium standard (ICC), which is
 	  the modern standard when regarding to color management.
 	  http://www.littlecms.com/
-Version: 2.9
+Version: 2.11
 Depends: ipkg
 Architecture: arm
 Priority: optional

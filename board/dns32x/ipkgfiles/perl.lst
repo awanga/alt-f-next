@@ -1865,6 +1865,7 @@
 ./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/A.pm
 ./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/AAAA.pm
 ./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/AFSDB.pm
+./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/AMTRELAY.pm
 ./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/APL.pm
 ./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/CAA.pm
 ./usr/lib/perl5/site_perl/5.30.3/Net/DNS/RR/CDNSKEY.pm

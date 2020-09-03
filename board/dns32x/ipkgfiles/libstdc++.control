@@ -1,6 +1,6 @@
 Package: libstdc++
 Description: GNU C++ Library 
-Version: 6.0.25
+Version: 6.0.28
 Depends: ipkg
 Architecture: arm
 Priority: optional

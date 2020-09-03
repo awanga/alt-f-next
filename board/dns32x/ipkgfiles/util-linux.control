@@ -1,6 +1,6 @@
 Package: util-linux
 Description: Various useful/essential linux libraries and utilities.
-Version: 2.35.1
+Version: 2.35.2
 Depends: gettext, ipkg
 Architecture: arm
 Priority: optional

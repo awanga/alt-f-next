@@ -1,6 +1,6 @@
 Package: aufs
 Description: advanced multi-layered unification filesystem
-Version: aufs4.19.63+
+Version: aufs5.4.3
 Depends: ipkg
 Architecture: arm
 Priority: optional

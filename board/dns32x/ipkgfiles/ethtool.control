@@ -1,6 +1,6 @@
 Package: ethtool
 Description: Utility for examining and tuning your ethernet-based network interface.
-Version: 5.4
+Version: 5.7
 Depends: ipkg
 Architecture: arm
 Priority: optional

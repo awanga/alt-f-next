@@ -1,6 +1,10 @@
 ./etc/init.d/S81mpd
 ./etc/mpd.conf
 ./usr/bin/mpd
+./usr/lib/libboost_nowide.so
+./usr/lib/libboost_nowide.so.1
+./usr/lib/libboost_nowide.so.1.73
+./usr/lib/libboost_nowide.so.1.73.0
 ./usr/share/icons/hicolor/scalable
 ./usr/share/icons/hicolor/scalable/apps
 ./usr/share/icons/hicolor/scalable/apps/mpd.svg

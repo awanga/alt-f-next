@@ -2,7 +2,7 @@ Package: bridge-utils
 Description: 	  Manage ethernet bridging; a way to connect networks together to
 	  form a larger network.
 	  https://git.kernel.org/cgit/linux/kernel/git/shemminger/bridge-utils.git/
-Version: 1.6
+Version: 1.7
 Depends: ipkg
 Architecture: arm
 Priority: optional

@@ -3,7 +3,7 @@
 # These packages are roughly in alphabetical
 # order of dependancy with the folowing format:
 #
-# IPKG_NAME:[-]BUILDROOT_PKG;COMMA_SEPERATED_BUILD_OPT=y,#DISABLED_BUILD_OPT
+# IPKG_NAME[:[-][BUILDROOT_PKG;]COMMA_SEPERATED_BUILD_OPT=y,#DISABLED_BUILD_OPT]
 #
 kernel-modules: ;
 kernel-modules-armv5: ;
@@ -110,7 +110,7 @@ libunistring
 libupnp:libupnp18;BR2_PACKAGE_LIBUPNP18=y
 libusb-compat
 lighttpd:BR2_PACKAGE_LIGHTTPD=y,BR2_PACKAGE_LIGHTTPD_OPENSSL=y,BR2_PACKAGE_LIGHTTPD_ZLIB=y,BR2_PACKAGE_LIGHTTPD_PCRE=y,BR2_PACKAGE_LIGHTTPD_WEBDAV=y
-lz4
+lz4:BR2_PACKAGE_LZ4=y,BR2_PACKAGE_LZ4_PROGS=y
 make
 slang
 mc

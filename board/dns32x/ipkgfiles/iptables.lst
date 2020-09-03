@@ -5,9 +5,6 @@
 ./usr/lib/libip6tc.so
 ./usr/lib/libip6tc.so.2
 ./usr/lib/libip6tc.so.2.0.0
-./usr/lib/libiptc.so
-./usr/lib/libiptc.so.0
-./usr/lib/libiptc.so.0.0.0
 ./usr/lib/libxtables.so
 ./usr/lib/libxtables.so.12
 ./usr/lib/libxtables.so.12.2.0

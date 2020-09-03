@@ -1,6 +1,6 @@
 Package: icu
 Description: International Components for Unicode.
-Version: 65-1
+Version: 67-1
 Depends: ipkg
 Architecture: arm
 Priority: optional

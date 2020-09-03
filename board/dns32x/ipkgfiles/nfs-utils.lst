@@ -16,6 +16,7 @@
 ./usr/sbin/mount.nfs
 ./usr/sbin/mountstats
 ./usr/sbin/nfsconf
+./usr/sbin/nfsdclnts
 ./usr/sbin/nfsiostat
 ./usr/sbin/nfsstat
 ./usr/sbin/rpc.mountd
