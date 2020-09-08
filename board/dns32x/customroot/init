@@ -113,6 +113,7 @@ elif grep -q 'Hardware.*321/323' /proc/cpuinfo && ! grep -q 'kexecmode' /proc/cm
 	mount --move /rootmnt /newroot/rootmnt
 	umount /proc
 	cd /newroot
+	mkdir /newroot/boot
 	pivot_root . boot
 	#exec chroot . sh -c 'umount /boot; freeramdisk /rootmnt/dev/ram0; rm -rf /rootmnt/dev; exec /sbin/init'
 	exec chroot . sh -c 'umount /boot/dev /boot; freeramdisk /rootmnt/dev/ram0; exec /sbin/init' < dev/console > dev/console 2>&1
@@ -129,6 +130,7 @@ else # squashrd is the default
 	mount --move /rootmnt /newroot/rootmnt
 	umount /proc
 	cd /newroot
+	mkdir /newroot/boot
 	pivot_root . boot
 	exec chroot . sh -c 'umount /boot/dev /boot; exec /sbin/init' < dev/console > dev/console 2>&1
 	#exec chroot . /sbin/init < dev/console > dev/console 2>&1
