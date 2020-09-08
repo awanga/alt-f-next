@@ -235,16 +235,13 @@ hwclock -su
 logger -st rcS "Board: $board"
 logger -st rcS "Flashed Firmware: $(dd if=$kernel_mtd ibs=32 skip=1 count=1 2> /dev/null | strings)"
 
-# load modules
-depmod
-
 # don't load flash-saved defaults if "nodef" exists in kernel cmdline
 no_defaults=1
 if ! grep -q "nodef" /proc/cmdline; then
 	res=$(loadsave_settings -lf)
 	no_defaults=$?
 	logger -st rcS "$res"
-	
+
 	if loadsave_settings -gb; then
 		touch /tmp/fsckboot
 		logger -st rcS "Forcing fsck at boot"
