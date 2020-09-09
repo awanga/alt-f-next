@@ -1,7 +1,7 @@
 config BR2_PACKAGE_DOSFSTOOLS
 	bool "dosfstools"
 	depends on BR2_USE_WCHAR
-	select BR2_PACKAGE_LIBICONV if !BR2_ENABLE_LOCALE
+	select BR2_PACKAGE_LIBICONV if !BR2_ENABLE_LOCALE && !BR2_PACKAGE_ALT_F_UTILS_TARGET
 	help
 	  Tools for creating and checking DOS FAT filesystems.
 

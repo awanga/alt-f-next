@@ -119,7 +119,7 @@ fi
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
 base_pkgs="alt-f-utils dosfstools dropbear kexec mdadm nfs-utils libgpiod libtirpc popt zlib"
-base_pkgs2="acl at cifs-utils e2fsprogs gptfdisk-sgdisk inadyn-mt libiconv libstdc++ msmtp ntfs-3g ntp-common openssl openssh-sftp rsync smartmontools stunnel util-linux vsftpd wget"
+base_pkgs2="acl at cifs-utils e2fsprogs gptfdisk-sgdisk inadyn-mt libstdc++ msmtp ntfs-3g ntp-common openssl openssh-sftp rsync smartmontools stunnel util-linux vsftpd wget"
 
 # SQFSBLK: squashfs compression block sizes: 131072 262144 524288 1048576
 SQFSBLK=131072

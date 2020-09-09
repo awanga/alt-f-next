@@ -21,7 +21,9 @@ endif
 
 ifneq ($(BR2_ENABLE_LOCALE),y)
 DOSFSTOOLS_CONF_OPTS += LIBS="-liconv"
+ifneq ($(BR2_PACKAGE_ALT_F_UTILS_TARGET),y)
 DOSFSTOOLS_DEPENDENCIES += libiconv
+endif
 endif
 
 ifeq ($(BR2_PACKAGE_DOSFSTOOLS_FATLABEL),y)
