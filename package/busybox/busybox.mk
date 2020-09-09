@@ -142,6 +142,7 @@ endif
 
 # If mdev will be used for device creation enable it and copy S10mdev to /etc/init.d
 ifeq ($(BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_MDEV),y)
+ifneq ($(BR2_PACKAGE_ALT_F_UTILS_TARGET),y)
 define BUSYBOX_INSTALL_MDEV_SCRIPT
 	$(INSTALL) -D -m 0755 package/busybox/S10mdev \
 		$(TARGET_DIR)/etc/init.d/S10mdev
@@ -150,6 +151,7 @@ define BUSYBOX_INSTALL_MDEV_CONF
 	$(INSTALL) -D -m 0644 package/busybox/mdev.conf \
 		$(TARGET_DIR)/etc/mdev.conf
 endef
+endif
 define BUSYBOX_SET_MDEV
 	$(call KCONFIG_ENABLE_OPT,CONFIG_MDEV)
 	$(call KCONFIG_ENABLE_OPT,CONFIG_FEATURE_MDEV_CONF)

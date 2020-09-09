@@ -40,6 +40,11 @@ if test \( "${MDEV%%[0-9]*}" = "md" -o "${MDEV%%[0-9]*}" = "dm-" \) -a "$DEVTYPE
 	DEVTYPE="partition"
 fi
 
+# catch mysterious disk events with no DEVTYPE
+if test \( "$ACTION" = "add" -o "$ACTION" = "remove" \) -a -d /sys/block/$MDEV -a -z "$DEVTYPE"; then
+	DEVTYPE="disk"
+fi
+
 PCAP=/etc/printcap
 FSTAB=/etc/fstab
 MISCC=/etc/misc.conf
