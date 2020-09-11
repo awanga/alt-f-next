@@ -337,13 +337,16 @@ filesys() {
 		if test "$type" == "ext2" -o "$type" == "ext3" -o "$type" == "ext4"; then
 			if res=$(tune2fs -l $dsk 2> /dev/null); then
 				eval $(echo "$res" | awk \
-					'/^Filesystem state:/ { if ($3 != "clean") printf "dirty=*;"} \
-					/^Mount count:/ {FS=":"; curr_cnt=$2} \
-					/^Maximum mount count:/ {FS=":"; max_cnt=$2} \
-					/^Next check after:/ {FS=" ";
+					'/^Filesystem state:/ { if ($3 != "clean") printf "dirty=*;"}')
+				eval $(echo "$res" | awk \
+					'/^Mount count:/ {FS=":"; printf "curr_cnt=%d", $3}')
+				eval $(echo "$res" | awk \
+					'/^Maximum mount count:/ {FS=":"; printf "max_cnt=%d", $4}')
+				eval $(echo "$res" | awk \
+					'/^Next check after:/ {FS=" ";
 						mth = index("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec", $5) / 4 + 1;
-						printf "days=\"%s-%d-%s %s\";", $8, mth, $6, $7 }
-					END {printf "cnt=%d;", max_cnt - curr_cnt}')
+						printf "days=\"%s-%d-%s %s\";", $8, mth, $6, $7 }')
+				cnt=$(expr "$max_cnt" - "$curr_cnt")
 			fi
 
 			if test -n "$days"; then
