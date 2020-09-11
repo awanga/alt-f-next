@@ -58,7 +58,6 @@
 ./usr/lib/modules/4.19.142/kernel/fs/jfs/jfs.ko
 ./usr/lib/modules/4.19.142/kernel/fs/lockd/lockd.ko
 ./usr/lib/modules/4.19.142/kernel/fs/mbcache.ko
-./usr/lib/modules/4.19.142/kernel/fs/minix/minix.ko
 ./usr/lib/modules/4.19.142/kernel/fs/nfs/nfs.ko
 ./usr/lib/modules/4.19.142/kernel/fs/nfs/nfsv2.ko
 ./usr/lib/modules/4.19.142/kernel/fs/nfs/nfsv3.ko
