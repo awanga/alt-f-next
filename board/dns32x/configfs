@@ -30,6 +30,9 @@ echo configfs:
 
 board=$BR2_PROJECT
 
+mnt_points="dev newroot proc rootmnt sys tmp"
+for i in $mnt_points; do mkdir -p $BLDDIR/target/$i; done
+
 # 1.1-keep only minimum set of kernel modules if the kernel-modules package is not configured
 if test -z "$BR2_KERNEL_none"; then
 	if test -n "$BR2_KERNEL_THIS_VERSION"; then
