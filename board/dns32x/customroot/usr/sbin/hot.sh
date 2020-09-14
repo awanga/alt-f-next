@@ -44,6 +44,9 @@ fi
 if test \( "$ACTION" = "add" -o "$ACTION" = "remove" \) -a -d /sys/block/$MDEV -a -z "$DEVTYPE"; then
 	DEVTYPE="disk"
 fi
+if test \( "$ACTION" = "add" -o "$ACTION" = "remove" \) -a -d /sys/block/${MDEV%%[0-9]*}/$MDEV -a -z "$DEVTYPE"; then
+	DEVTYPE="partition"
+fi
 
 PCAP=/etc/printcap
 FSTAB=/etc/fstab
@@ -108,7 +111,7 @@ add_disk() {
 		elif grep -qE 'qemu' /tmp/board; then
 			lhost="/0:0:1:0"; rhost="/0:0:0:0"
 		fi
-		# which bay?	
+		# which bay?
 		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
 		PHYSD=$(realpath /sys/block/$MDEV/device) 
 		if echo $PHYSD | grep -q $lhost; then
@@ -123,7 +126,7 @@ add_disk() {
 		else
 			bay="unk"${MDEV:2}
 		fi
-	
+
 		if test -n "$bay"; then
 			sed -i '/^'$bay'_/d' $BAYC
 			sed -i '/^'$MDEV'/d' $BAYC
@@ -161,7 +164,7 @@ add_disk() {
 				# set disk spin down
 				eval tm=$(echo \$HDSLEEP_$bay | tr 'a-z' 'A-Z' )
 				if test -n "$tm"; then
-		
+
 					if test "$tm" -le "20"; then
 						val=$((tm * 60 / 5))
 					elif test "$tm" -le "300"; then
@@ -177,7 +180,7 @@ add_disk() {
 
 		# no low latency (server, not desktop)
 		echo 0 > /sys/block/$MDEV/queue/iosched/low_latency
-	
+
 		# for now use only disk partition-based md
 		if ! fdisk -l /dev/$MDEV | awk '$6 == "da" || $6 == "fd" || $6 == "fd00" { exit 1 }'; then
 			mdadm --examine --scan --config=partitions > $MDADMC
