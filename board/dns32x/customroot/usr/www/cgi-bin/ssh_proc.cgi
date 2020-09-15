@@ -49,7 +49,7 @@ else
 fi
 
 if test -f sshd_proc.cgi; then
-	. sshd_proc.cgi
+	. ./sshd_proc.cgi
 fi
 
 #enddebug

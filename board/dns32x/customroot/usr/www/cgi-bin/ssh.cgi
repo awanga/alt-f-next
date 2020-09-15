@@ -57,7 +57,7 @@ cat<<-EOF
 EOF
 
 if test -f sshd.cgi; then
-	. sshd.cgi
+	. ./sshd.cgi
 fi
 
 cat<<-EOF
