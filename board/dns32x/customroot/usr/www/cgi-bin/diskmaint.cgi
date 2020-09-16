@@ -131,7 +131,7 @@ for j in $(ls /dev/sd[a-z]* /dev/md[0-9]* /dev/dm-[0-9]* 2> /dev/null); do
 	fi
 
 	LABEL=""; TYPE="none"
-	eval $(echo "$blk" | sed -n '\|^'$j':|s|.*:||p');
+	eval $(echo "$blk" | sed -n '\|^'$j':|s|.*: ||p');
 
 	if test "$TYPE" = "swap" -o "$TYPE" = "mdraid" \
 		-o "$TYPE" = "lvm2pv" -o "$TYPE" = "crypt_LUKS"; then
