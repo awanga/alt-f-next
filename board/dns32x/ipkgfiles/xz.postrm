@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-alternatives --remove unlzma /usr/bin/xz
+update-alternatives --remove lzma /usr/bin/xz

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+update-alternatives --install /usr/bin/unlzma unlzma /usr/bin/xz 10
+update-alternatives --install /usr/bin/lzma lzma /usr/bin/xz 10

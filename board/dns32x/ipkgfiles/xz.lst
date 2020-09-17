@@ -4,11 +4,9 @@
 ./usr/bin/lzfgrep
 ./usr/bin/lzgrep
 ./usr/bin/lzless
-./usr/bin/lzma
 ./usr/bin/lzmadec
 ./usr/bin/lzmainfo
 ./usr/bin/lzmore
-./usr/bin/unlzma
 ./usr/bin/unxz
 ./usr/bin/xz
 ./usr/bin/xzcmp
