@@ -76,7 +76,13 @@ ifeq ($(BR2_TOOLCHAIN_HAS_LIBATOMIC),y)
 MARIADB_CXXFLAGS += -latomic
 endif
 
+MARIADB_CFLAGS = $(TARGET_CFLAGS)
+ifeq ($(BR2_PACKAGE_LIBICONV),y)
+MARIADB_CFLAGS += -Diconv=libiconv -Diconv_open=libiconv_open -Diconv_close=libiconv_close
+endif
+
 MARIADB_CONF_OPTS += \
+	-DCMAKE_C_FLAGS="$(MARIADB_CFLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(MARIADB_CXXFLAGS)" \
 	-DINSTALL_DOCDIR=share/doc/mariadb-$(MARIADB_VERSION) \
 	-DINSTALL_DOCREADMEDIR=share/doc/mariadb-$(MARIADB_VERSION) \

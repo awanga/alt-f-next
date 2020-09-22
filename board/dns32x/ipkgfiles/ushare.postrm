@@ -1,5 +1,0 @@
-#!/bin/sh
-
-deluser ushare
-delgroup multimedia
-rm -f /sbin/rcushare

@@ -1,7 +1,7 @@
 Package: flac
 Version: 1.3.3
 Description: An Open Source lossless audio codec.
-Depends: flac-libs, ipkg
+Depends: flac, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
