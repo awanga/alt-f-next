@@ -315,6 +315,8 @@ binkp	24554/tcp			# Binkley
 binkp	24554/udp			# Binkley
 asp		27374/tcp			# Address Search Protocol
 asp		27374/udp			# Address Search Protocol
+gerbera	49152/tcp			# Gerbera
+gerbera	49152/udp			# Gerbera
 tfido	60177/tcp			# Ifmail
 tfido	60177/udp			# Ifmail
 fido	60179/tcp			# Ifmail

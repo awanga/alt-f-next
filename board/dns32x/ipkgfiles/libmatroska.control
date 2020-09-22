@@ -1,0 +1,9 @@
+Package: libmatroska
+Description: Extensible open standard audio/video container format access library.
+Version: 1.5.2
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: http://matroska.org
+Maintainer: awanga

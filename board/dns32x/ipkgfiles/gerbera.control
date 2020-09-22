@@ -1,0 +1,10 @@
+Package: gerbera
+Description: A free media server.
+	  Stream your media to devices on your home network.
+Version: 1.4.0
+Depends: avahi, curl, expat, libexif, file, flac, libmatroska, libvorbis, sqlite, ffmpeg, ipkg
+Architecture: arm
+Priority: optional
+Section: upnp-dlna servers
+Source: http://gerbera.io
+Maintainer: awanga

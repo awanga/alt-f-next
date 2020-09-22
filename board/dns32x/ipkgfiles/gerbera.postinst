@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ln -sf /usr/sbin/rcscript /sbin/rcgerbera
+rcgerbera status
+return 0

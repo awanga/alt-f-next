@@ -1,0 +1,5 @@
+#!/bin/sh
+
+deluser gerbera
+delgroup multimedia
+rm -f /sbin/rcgerbera
