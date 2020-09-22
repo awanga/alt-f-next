@@ -41,5 +41,7 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ACCESS_TOKEN: ${{ secrets.CROSS_DEPLOY_KEY }}
+        REPOSITORY_NAME: awanga/alt-f-next_binaries
         BRANCH: pkgs/stable # The branch the action should deploy to.
         FOLDER: output/pkgs # The folder the action should deploy.
