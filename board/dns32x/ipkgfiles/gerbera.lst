@@ -1,4 +1,5 @@
 ./etc/gerbera/config.xml
+./usr/bin/gerbera
 ./usr/share/gerbera/js
 ./usr/share/gerbera/js/common.js
 ./usr/share/gerbera/js/import.js
