@@ -1,4 +1,5 @@
-./usr/bin/bzcmp
+./usr/bin/bunzip2-bzip2
+./usr/bin/bzcat-bzip2
 ./usr/bin/bzdiff
 ./usr/bin/bzegrep
 ./usr/bin/bzfgrep

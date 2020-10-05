@@ -1,6 +1,6 @@
 Package: php
 Description: A widely-used general-purpose scripting language
-Version: 7.4.8
+Version: 7.4.9
 Depends: ipkg, bzip2, netsnmp, libjpeg, libpng, libxml2, ncurses, curl, libmcrypt
 Architecture: arm
 Priority: optional

@@ -1,7 +1,7 @@
 Package: mariadb
 Description: The MariaDB Database Management System
 Version: 10.3.23
-Depends: ncurses, openssl, libxml2, zlib, ipkg
+Depends: ncurses, openssl, libaio, libxml2, zlib, ipkg
 Architecture: arm
 Priority: optional
 Section: libraries

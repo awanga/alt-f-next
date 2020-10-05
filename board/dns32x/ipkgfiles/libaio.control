@@ -1,0 +1,9 @@
+Package: libaio
+Description: A Linux-native asynchronous I/O access library 
+Version: 0.3.111
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://pagure.io/libaio
+Maintainer: awanga

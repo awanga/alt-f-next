@@ -2,7 +2,7 @@ Package: ghostscript
 Description: 	  Ghostscript is an interpreter for PostScript and Portable
 	  Document Format (PDF) files.
 	  http://ghostscript.com
-Version: 9.50
+Version: 9.52
 Depends: tiff, libpng, lcms2, libjpeg, ghostscript_fonts, fontconfig, ipkg
 Architecture: arm
 Priority: optional

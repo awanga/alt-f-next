@@ -44,12 +44,25 @@ endef
 endif
 
 # make sure busybox doesn't get overwritten by make install
+ifeq ($(BR2_PACKAGE_ALT_F_UTILS_TARGET),y)
+define BZIP2_INSTALL_TARGET_CMDS
+	mv $(TARGET_DIR)/usr/bin/bunzip2 $(TARGET_DIR)/usr/bin/bunzip2.bkp
+	mv $(TARGET_DIR)/usr/bin/bzcat $(TARGET_DIR)/usr/bin/bzcat.bkp
+	$(TARGET_MAKE_ENV) $(MAKE) \
+		PREFIX=$(TARGET_DIR)/usr -C $(@D) install
+	mv $(TARGET_DIR)/usr/bin/bunzip2 $(TARGET_DIR)/usr/bin/bunzip2-bzip2
+	mv $(TARGET_DIR)/usr/bin/bzcat $(TARGET_DIR)/usr/bin/bzcat-bzip2
+	mv $(TARGET_DIR)/usr/bin/bunzip2.bkp $(TARGET_DIR)/usr/bin/bunzip2
+	mv $(TARGET_DIR)/usr/bin/bzcat.bkp $(TARGET_DIR)/usr/bin/bzcat
+endef
+else
 define BZIP2_INSTALL_TARGET_CMDS
 	rm -f $(addprefix $(TARGET_DIR)/usr/bin/,bzip2 bunzip2 bzcat)
 	$(TARGET_MAKE_ENV) $(MAKE) \
 		PREFIX=$(TARGET_DIR)/usr -C $(@D) install
 	$(BZIP2_INSTALL_TARGET_SHARED_CMDS)
 endef
+endif
 
 define HOST_BZIP2_BUILD_CMDS
 	$(HOST_MAKE_ENV) $(HOST_CONFIGURE_OPTS) \
