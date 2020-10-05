@@ -1,6 +1,6 @@
 Package: kernel-modules
 Description: Aditional linux kernel modules
-Version: 4.19.149
+Version: 4.19.145
 Depends: ipkg
 Architecture: arm
 Priority: optional
