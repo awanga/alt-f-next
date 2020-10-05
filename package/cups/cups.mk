@@ -21,7 +21,8 @@ CUPS_CONF_OPTS = \
 	--with-docdir=/usr/share/cups/doc-root \
 	--disable-gssapi \
 	--disable-pam \
-	--libdir=/usr/lib
+	--libdir=/usr/lib \
+	--without-rcdir
 CUPS_CONFIG_SCRIPTS = cups-config
 CUPS_DEPENDENCIES = \
 	host-autoconf \
@@ -71,9 +72,9 @@ else
 CUPS_CONF_OPTS += --disable-avahi
 endif
 
-define CUPS_INITD_FIX
-	mv $(TARGET_DIR)/etc/init.d/cups $(TARGET_DIR)/etc/init.d/S42cups
+define CUPS_INSTALL_INIT_SYSV
+	$(INSTALL) -D -m 0755 package/cups/S81cupsd \
+		$(TARGET_DIR)/etc/init.d/S81cupsd
 endef
-CUPS_POST_INSTALL_TARGET_HOOKS += CUPS_INITD_FIX
 
 $(eval $(autotools-package))
