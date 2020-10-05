@@ -2,9 +2,8 @@ name: dns323-firmware-builder
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    tags:
+      - 'Release-*'
 
 jobs:
   build-and-deploy:
