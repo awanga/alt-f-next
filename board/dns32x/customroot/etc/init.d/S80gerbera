@@ -1,0 +1,67 @@
+#!/bin/sh
+
+NAME=gerbera
+DESC="gerbera provides an A/V UPnP service"
+TYPE=user
+NEED_ALTF_DIR=1
+
+RC_USER=gerbera
+RC_USERN=31
+RC_GROUP=multimedia
+RC_GROUPN=80
+RC_DESC="gerbera daemon"
+
+MT_PIDFILE=/var/run/gerbera.pid
+MT_LOGFILE=/var/log/gerbera.log
+
+MT_HOME=/var/lib
+MT_DIR=$NAME
+MT_CFG=/etc/gerbera/config.xml
+
+MT_PORT=49152
+
+MT_ARGS="-d -u $RC_USER -g $RC_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
+-m $MT_HOME -f $MT_DIR -p $MT_PORT -e eth0"
+
+. /etc/init.d/common
+
+if ! test -f $MT_PIDFILE; then touch $MT_PIDFILE; fi
+
+check_user $MT_HOME/$NAME $MT_PIDFILE
+
+if ! test -e $MT_CFG; then
+	gerbera $MT_ARGS
+	sleep 2
+	kill $(cat $MT_PIDFILE)
+	for i in $(seq 0 60); do
+		if ! kill -0 $(cat $MT_PIDFILE) 2> /dev/null; then break; fi
+		usleep 100000
+	done
+
+	# add holder for shares
+	sed -i '/<import hidden-files/a \
+    	<autoscan> \
+        	<directory location="/Public" mode="inotify" recursive="yes"/> \
+	    </autoscan> \
+    	<filesystem-charset>UTF-8</filesystem-charset> \
+	    <metadata-charset>UTF-8</metadata-charset> \
+    	<playlist-charset>UTF-8</playlist-charset> ' $MT_CFG
+fi
+
+case "$1" in
+  start)
+	# Applying multicast settings to eth0
+	route add -net 239.0.0.0 netmask 255.0.0.0 eth0
+	ifconfig eth0 allmulti
+	start $NAME -- $MT_ARGS
+	;;
+  stop)
+	stop $NAME
+	ifconfig eth0 -allmulti
+	route del -net 239.0.0.0 netmask 255.0.0.0 eth0
+	;;
+  reload) reload $NAME ;;
+  restart) restart $NAME ;;
+  status) status $NAME ;;
+  *) usage $0 "start|stop|status|restart|reload" ;;
+esac
