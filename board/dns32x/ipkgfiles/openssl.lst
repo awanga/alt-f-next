@@ -3,16 +3,10 @@
 ./etc/ssl/ca-bundle.pem
 ./etc/ssl/cert.pem
 ./etc/ssl/ct_log_list.cnf
-./etc/ssl/misc
 ./etc/ssl/misc/tsget.pl
 ./etc/ssl/openssl.cnf
 ./etc/ssl/server.cnf
-./etc/ssl/private
 ./usr/bin/openssl
-./usr/lib/engines-1.1
-./usr/lib/engines-1.1/afalg.so
-./usr/lib/engines-1.1/capi.so
-./usr/lib/engines-1.1/padlock.so
 ./usr/lib/libcrypto.so
 ./usr/lib/libcrypto.so.1.1
 ./usr/lib/libssl.so
