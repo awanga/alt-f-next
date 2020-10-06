@@ -54,6 +54,7 @@ define BZIP2_INSTALL_TARGET_CMDS
 	mv $(TARGET_DIR)/usr/bin/bzcat $(TARGET_DIR)/usr/bin/bzcat-bzip2
 	mv $(TARGET_DIR)/usr/bin/bunzip2.bkp $(TARGET_DIR)/usr/bin/bunzip2
 	mv $(TARGET_DIR)/usr/bin/bzcat.bkp $(TARGET_DIR)/usr/bin/bzcat
+	$(BZIP2_INSTALL_TARGET_SHARED_CMDS)
 endef
 else
 define BZIP2_INSTALL_TARGET_CMDS
