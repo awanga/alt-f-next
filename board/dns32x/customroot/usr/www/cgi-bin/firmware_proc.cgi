@@ -139,7 +139,7 @@ else
 	SHA1: $sha1<br>"
 fi
 
-if losetup | grep -q /dev/mtdblock3; then
+if losetup -a | grep -q /dev/mtdblock3; then
 	runfromflash="disabled"
 	flmsg='<h4 class="blue">To flash Alt-F you have first to reboot into a special mode by hitting
 		the "SpecialReboot" button,<br> and afterwards the "Reboot" button.
