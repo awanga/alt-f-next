@@ -46,7 +46,6 @@
 ./usr/lib/modules/5.4.69/kernel/net/bridge/bridge.ko
 ./usr/lib/modules/5.4.69/kernel/net/dsa/dsa_core.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/ip_tables.ko
-./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/ipt_MASQUERADE.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/ipt_REJECT.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/iptable_filter.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/iptable_mangle.ko
