@@ -5,36 +5,38 @@ DESC="gerbera provides an A/V UPnP service"
 TYPE=user
 NEED_ALTF_DIR=1
 
+RC_PIDFILE=/var/run/$NAME.pid
+RC_MAKE_PID=yes
+RC_START_BG=yes
+
 RC_USER=gerbera
 RC_USERN=31
 RC_GROUP=multimedia
 RC_GROUPN=80
 RC_DESC="gerbera daemon"
 
-MT_PIDFILE=/var/run/gerbera.pid
-MT_LOGFILE=/var/log/gerbera.log
+GB_LOGFILE=/var/log/gerbera.log
 
-MT_HOME=/var/lib
-MT_DIR=$NAME
-MT_CFG=/etc/gerbera/config.xml
+GB_HOME=/var/lib
+GB_DIR=$NAME
+GB_CFG=/etc/gerbera/config.xml
 
-MT_PORT=49152
+GB_PORT=49152
 
-MT_ARGS="-d -u $RC_USER -g $RC_GROUP -P $MT_PIDFILE -l $MT_LOGFILE \
--m $MT_HOME -f $MT_DIR -p $MT_PORT -e eth0"
+GB_ARGS="-c $GB_CFG -l $GB_LOGFILE -m $GB_HOME -f $GB_DIR -p $GB_PORT -e eth0"
 
 . /etc/init.d/common
 
-if ! test -f $MT_PIDFILE; then touch $MT_PIDFILE; fi
+if ! test -f $RC_PIDFILE; then touch $RC_PIDFILE; fi
 
-check_user $MT_HOME/$NAME $MT_PIDFILE
+check_user $GB_HOME/$NAME $RC_PIDFILE
 
-if ! test -e $MT_CFG; then
-	gerbera $MT_ARGS
+if ! test -e $GB_CFG; then
+	gerbera $GB_ARGS
 	sleep 2
-	kill $(cat $MT_PIDFILE)
+	kill $(top -n 1 | grep $NAME | cut -d ' ' -f 1) 2> /dev/null
 	for i in $(seq 0 60); do
-		if ! kill -0 $(cat $MT_PIDFILE) 2> /dev/null; then break; fi
+		if ! kill -0 $(top -n 1 | grep $NAME | cut -d ' ' -f 1) 2> /dev/null; then break; fi
 		usleep 100000
 	done
 
@@ -45,7 +47,7 @@ if ! test -e $MT_CFG; then
 	    </autoscan> \
     	<filesystem-charset>UTF-8</filesystem-charset> \
 	    <metadata-charset>UTF-8</metadata-charset> \
-    	<playlist-charset>UTF-8</playlist-charset> ' $MT_CFG
+	<playlist-charset>UTF-8</playlist-charset> ' $GB_CFG
 fi
 
 case "$1" in
@@ -53,7 +55,7 @@ case "$1" in
 	# Applying multicast settings to eth0
 	route add -net 239.0.0.0 netmask 255.0.0.0 eth0
 	ifconfig eth0 allmulti
-	start $NAME -- $MT_ARGS
+	start $NAME -- $GB_ARGS
 	;;
   stop)
 	stop $NAME
