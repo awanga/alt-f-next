@@ -1,0 +1,6 @@
+config BR2_PACKAGE_FORKED_DAAPD
+	bool "forked-daapd"
+	help
+	  forked-daapd is a Linux/FreeBSD media server
+
+	  https://github.com/ejurgensen/forked-daapd

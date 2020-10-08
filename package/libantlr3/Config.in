@@ -1,0 +1,6 @@
+config BR2_PACKAGE_LIBANTLR3
+	bool "libantlr"
+	help
+	  ANTLR 3 Runtime
+
+	  http://www.antlr3.org/

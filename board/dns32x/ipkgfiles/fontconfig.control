@@ -2,7 +2,7 @@ Package: fontconfig
 Description: 	  Fontconfig is a library for configuring and customizing font access.
 	  http://www.fontconfig.org/
 Version: 2.13.1
-Depends: expat, freetype, ipkg
+Depends: libpng, expat, freetype, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
