@@ -1,0 +1,9 @@
+Package: protobuf-c
+Description: Code generator and runtime libraries to use Protocol Buffers from pure C (not C++).
+Version: 1.3.3
+Depends: libstdc++, ipkg
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: https://github.com/protobuf-c/protobuf-c
+Maintainer: awanga
