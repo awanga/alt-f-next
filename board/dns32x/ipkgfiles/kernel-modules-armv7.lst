@@ -1,6 +1,10 @@
 ./usr/lib/modules/5.4.69/kernel/crypto/ccm.ko
 ./usr/lib/modules/5.4.69/kernel/crypto/cmac.ko
 ./usr/lib/modules/5.4.69/kernel/crypto/ctr.ko
+./usr/lib/modules/5.4.69/kernel/crypto/essiv.ko
+./usr/lib/modules/5.4.69/kernel/crypto/gcm.ko
+./usr/lib/modules/5.4.69/kernel/crypto/gf128mul.ko
+./usr/lib/modules/5.4.69/kernel/crypto/ghash-generic.ko
 ./usr/lib/modules/5.4.69/kernel/crypto/md4.ko
 ./usr/lib/modules/5.4.69/kernel/crypto/pcbc.ko
 ./usr/lib/modules/5.4.69/kernel/crypto/seqiv.ko
@@ -53,7 +57,6 @@
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/nf_defrag_ipv4.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/nf_log_arp.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/nf_log_ipv4.ko
-./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/nf_nat_ipv4.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv4/netfilter/nf_reject_ipv4.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv6/netfilter/ip6_tables.ko
 ./usr/lib/modules/5.4.69/kernel/net/ipv6/netfilter/ip6t_REJECT.ko
@@ -81,6 +84,7 @@
 ./usr/lib/modules/5.4.69/kernel/net/netfilter/nfnetlink_log.ko
 ./usr/lib/modules/5.4.69/kernel/net/netfilter/x_tables.ko
 ./usr/lib/modules/5.4.69/kernel/net/netfilter/xt_LOG.ko
+./usr/lib/modules/5.4.69/kernel/net/netfilter/xt_MASQUERADE.ko
 ./usr/lib/modules/5.4.69/kernel/net/netfilter/xt_NETMAP.ko
 ./usr/lib/modules/5.4.69/kernel/net/netfilter/xt_NFLOG.ko
 ./usr/lib/modules/5.4.69/kernel/net/netfilter/xt_REDIRECT.ko
@@ -97,6 +101,7 @@
 ./usr/lib/modules/5.4.69/modules.builtin
 ./usr/lib/modules/5.4.69/modules.builtin.alias.bin
 ./usr/lib/modules/5.4.69/modules.builtin.bin
+./usr/lib/modules/5.4.69/modules.builtin.modinfo
 ./usr/lib/modules/5.4.69/modules.dep
 ./usr/lib/modules/5.4.69/modules.dep.bin
 ./usr/lib/modules/5.4.69/modules.devname

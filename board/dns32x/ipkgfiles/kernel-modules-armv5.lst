@@ -53,10 +53,10 @@
 ./usr/lib/modules/5.4.69/kernel/fs/cifs/cifs.ko
 ./usr/lib/modules/5.4.69/kernel/fs/exportfs/exportfs.ko
 ./usr/lib/modules/5.4.69/kernel/fs/ext4/ext4.ko
-./usr/lib/modules/5.4.69/kernel/fs/fuse/fuse.ko
 ./usr/lib/modules/5.4.69/kernel/fs/fat/fat.ko
 ./usr/lib/modules/5.4.69/kernel/fs/fat/msdos.ko
 ./usr/lib/modules/5.4.69/kernel/fs/fat/vfat.ko
+./usr/lib/modules/5.4.69/kernel/fs/fuse/fuse.ko
 ./usr/lib/modules/5.4.69/kernel/fs/hfs/hfs.ko
 ./usr/lib/modules/5.4.69/kernel/fs/hfsplus/hfsplus.ko
 ./usr/lib/modules/5.4.69/kernel/fs/isofs/isofs.ko
