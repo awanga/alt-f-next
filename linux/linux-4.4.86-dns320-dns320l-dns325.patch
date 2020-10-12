@@ -36,7 +36,7 @@
 +
 +	chosen {
 +		bootargs = "console=ttyS0,115200n8 root=/dev/ram0 init=/init earlyprintk";
-+		linux,stdout-path = &uart0;
++		stdout-path = &uart0;
 +	};
 +
 +	gpio-leds {
@@ -108,7 +108,7 @@
 +
 +	chosen {
 +		bootargs = "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk";
-+		linux,stdout-path = &uart0;
++		stdout-path = &uart0;
 +	};
 +};
 --- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320l.dts	2015-10-26 17:01:36.559569041 +0000
@@ -140,7 +140,7 @@
 +
 +	chosen {
 +		bootargs = "console=ttyS0,115200 root=/dev/ram0 init=/init earlyprintk";
-+		linux,stdout-path = &uart0;
++		stdout-path = &uart0;
 +	};
 +};
 --- linux-4.4.22-orig/arch/arm/boot/dts/kirkwood-dns320l.dtsi	2015-10-28 17:09:49.065675679 +0000
@@ -379,7 +379,7 @@
 -		bootargs = "console=ttyS0,115200n8 earlyprintk";
 -		stdout-path = &uart0;
 +		bootargs = "console=ttyS0,115200n8 root=/dev/ram0 init=/init earlyprintk";
-+		linux,stdout-path = &uart0;
++		stdout-path = &uart0;
  	};
  
  	gpio-leds {
