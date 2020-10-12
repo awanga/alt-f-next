@@ -74,7 +74,7 @@ case "$1" in
 			fi
 			if test "$NTPD_BOOT" = "yes" ; then
 				echo -n "$NAME: Getting initial time through NTP: "
-				fsntp -s ${ntpserver##*-p} >& /dev/null
+				fsntp ${ntpserver##*-p} >& /dev/null
 				omsg $?
 			fi
 
