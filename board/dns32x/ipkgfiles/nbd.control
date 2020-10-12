@@ -1,0 +1,11 @@
+Package: nbd
+Description: 	  NBD is a set of utilities to configure network block devices,
+	  allowing access to remote block devices over TCP/IP network.
+	  http://nbd.sf.net/
+Version: 3.20
+Depends: libglib2, ipkg, pcre
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/awanga/alt-f-next
+Maintainer: jcard

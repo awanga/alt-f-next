@@ -1,0 +1,2 @@
+./usr/bin/nbd-server
+./usr/bin/nbd-client
