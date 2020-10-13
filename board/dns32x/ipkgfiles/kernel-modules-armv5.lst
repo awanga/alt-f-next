@@ -45,13 +45,10 @@
 ./usr/lib/modules/4.19.145/kernel/drivers/usb/host/ehci-pci.ko
 ./usr/lib/modules/4.19.145/kernel/drivers/usb/serial/usbserial.ko
 ./usr/lib/modules/4.19.145/kernel/drivers/usb/storage/usb-storage.ko
-./usr/lib/modules/4.19.145/kernel/fs/btrfs/btrfs.ko
 ./usr/lib/modules/4.19.145/kernel/fs/cifs/cifs.ko
 ./usr/lib/modules/4.19.145/kernel/fs/exportfs/exportfs.ko
 ./usr/lib/modules/4.19.145/kernel/fs/ext4/ext4.ko
 ./usr/lib/modules/4.19.145/kernel/fs/fuse/fuse.ko
-./usr/lib/modules/4.19.145/kernel/fs/hfs/hfs.ko
-./usr/lib/modules/4.19.145/kernel/fs/hfsplus/hfsplus.ko
 ./usr/lib/modules/4.19.145/kernel/fs/isofs/isofs.ko
 ./usr/lib/modules/4.19.145/kernel/fs/jbd2/jbd2.ko
 ./usr/lib/modules/4.19.145/kernel/fs/jffs2/jffs2.ko
