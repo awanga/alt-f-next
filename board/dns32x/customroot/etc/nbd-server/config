@@ -1,0 +1,8 @@
+#
+# [generic]
+# [green] 
+#         exportname = /dev/sda1
+#         readonly = true
+#         authfile = /etc/nbd-server/allow
+#         listenaddr = fight
+

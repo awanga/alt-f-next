@@ -1,0 +1,20 @@
+#!/bin/sh
+
+DESC="NBD daemon"
+TYPE=net
+
+NAME=nbd-server
+
+RC_PIDFILE=/var/run/$NAME.pid
+RC_MAKE_PID=yes
+
+. /etc/init.d/common
+
+case "$1" in
+	start) start $NAME ;;
+	stop) stop $NAME ;;
+	status) status $NAME ;;
+	restart) restart $NAME ;;
+	*) usage $0 "start|stop|status|restart" ;;
+esac
+
