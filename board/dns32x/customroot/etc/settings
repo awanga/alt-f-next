@@ -21,6 +21,8 @@
 /etc/modprobe.conf
 /etc/msmtprc
 /etc/msmtprc.alias
+/etc/nbd-server/config
+/etc/nbd-server/allow
 /etc/network/interfaces
 /etc/ntp.conf
 /etc/ntp.drift
