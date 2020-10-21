@@ -55,7 +55,7 @@ elif test "$1" = "-restart"; then
 		adj=$(tail -1 $CONFF | cut -d" " -f2)
 	fi
 	adjtimex -qf $adj
-	fsntp $NTPD_SERVER
+	fsntp -s $NTPD_SERVER
 	echo "$(date +%s).0 $adj 0" >> $CONFF
 	tail -20 $CONFF > /tmp/adjtime
 	mv /tmp/adjtime $CONFF

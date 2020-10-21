@@ -24,7 +24,7 @@ elif test "$Submit" = "manual"; then
 
 elif test "$Submit" = "ntpserver"; then
 	if test -z "$ntps"; then ntps="0.pool.ntp.org"; fi
-	fsntp $ntps >& /dev/null
+	fsntp -s $ntps >& /dev/null
 fi
 
 hwclock -wu >& /dev/null
