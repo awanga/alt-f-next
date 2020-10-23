@@ -19,7 +19,7 @@ NFS_UTILS_CONF_OPTS = \
 	--disable-gss \
 	--disable-uuid \
 	--enable-tirpc \
-	--enable-ipv6 \
+	--disable-ipv6 \
 	--without-tcp-wrappers \
 	--with-statedir=/run/nfs \
 	--with-rpcgen=$(HOST_DIR)/bin/rpcgen
