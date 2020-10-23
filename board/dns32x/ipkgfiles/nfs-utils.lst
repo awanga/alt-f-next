@@ -2,7 +2,6 @@
 ./etc/init.d/S60nfs
 ./etc/exports
 ./etc/nfsmount.conf
-./run/nfs
 ./run/nfs/etab
 ./run/nfs/rmtab
 ./run/nfs/sm
@@ -16,12 +15,10 @@
 ./usr/sbin/mount.nfs
 ./usr/sbin/mountstats
 ./usr/sbin/nfsconf
-./usr/sbin/nfsiostat
 ./usr/sbin/nfsstat
 ./usr/sbin/rpc.mountd
 ./usr/sbin/rpc.nfsd
 ./usr/sbin/rpc.statd
-./usr/sbin/rpcbind
 ./usr/sbin/showmount
 ./usr/sbin/sm-notify
 ./usr/sbin/start-statd
