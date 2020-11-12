@@ -4,7 +4,7 @@ Description: 	  mbed TLS (formerly known as PolarSSL) makes it trivially easy
 	  capabilities in their (embedded) products, facilitating this
 	  functionality with a minimal coding footprint.
 	  https://tls.mbed.org/
-Version: 2.16.7
+Version: 2.16.8
 Depends: ipkg
 Architecture: arm
 Priority: optional
