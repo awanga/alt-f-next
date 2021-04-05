@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-FLUIDSYNTH_VERSION = 2.1.4
+FLUIDSYNTH_VERSION = 2.1.5
 FLUIDSYNTH_SITE = $(call github,FluidSynth,fluidsynth,v$(FLUIDSYNTH_VERSION))
 FLUIDSYNTH_LICENSE = LGPL-2.1+
 FLUIDSYNTH_LICENSE_FILES = LICENSE
@@ -64,6 +64,20 @@ FLUIDSYNTH_CONF_OPTS += -Denable-readline=1
 FLUIDSYNTH_DEPENDENCIES += readline
 else
 FLUIDSYNTH_CONF_OPTS += -Denable-readline=0
+endif
+
+ifeq ($(BR2_PACKAGE_FLUIDSYNTH_SDL2),y)
+FLUIDSYNTH_CONF_OPTS += -Denable-sdl2=1
+FLUIDSYNTH_DEPENDENCIES += sdl2
+else
+FLUIDSYNTH_CONF_OPTS += -Denable-sdl2=0
+endif
+
+ifeq ($(BR2_PACKAGE_SYSTEMD),y)
+FLUIDSYNTH_CONF_OPTS += -Denable-systemd=1
+FLUIDSYNTH_DEPENDENCIES += systemd
+else
+FLUIDSYNTH_CONF_OPTS += -Denable-systemd=0
 endif
 
 $(eval $(cmake-package))

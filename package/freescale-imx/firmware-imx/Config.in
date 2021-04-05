@@ -18,6 +18,8 @@ config BR2_PACKAGE_FIRMWARE_IMX_SDMA_FW_NAME
 	default "imx51" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX51
 	default "imx53" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX53
 	default "imx6q" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX6Q
+	default "imx6q" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX6S
+	default "imx6q" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX6UL
 	default "imx7d" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX7
 	default "imx7d" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX8M
 	default "imx7d" if BR2_PACKAGE_FREESCALE_IMX_PLATFORM_IMX8MM
@@ -68,6 +70,18 @@ config BR2_PACKAGE_FIRMWARE_IMX_DDR4
 	  Use DDR4 binaries (i.e.: ddr4_*_201810.bin).
 
 endchoice # DDR training FW
+
+config BR2_PACKAGE_FIRMWARE_IMX_IMEM_LEN
+	hex "(LP)DDR IMEM padding length"
+	default 0x8000
+	help
+	  The IMEM firmware will be padded to this length
+
+config BR2_PACKAGE_FIRMWARE_IMX_DMEM_LEN
+	hex "(LP)DDR DMEM padding length"
+	default 0x4000
+	help
+	  The DMEM firmware will be padded to this length
 
 endif # BR2_PACKAGE_FIRMWARE_IMX_NEEDS_DDR_FW
 
