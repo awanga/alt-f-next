@@ -1,7 +1,7 @@
 Package: cryptsetup
 Description: Setup cryptographic volumes for dm-crypt (including LUKS extension)
 Version: 1.7.4
-Depends: lvm2-device-mapper, libgcrypt, ipkg
+Depends: lvm2-device-mapper, libgcrypt, libiconv, ipkg
 Architecture: arm
 Priority: optional
 Section: disktools

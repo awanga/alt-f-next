@@ -1,6 +1,6 @@
 Package: dropbear
 Description: A small SSH2 server designed for small memory environments.
-Version: 2020.80
+Version: 2020.81
 Depends: ipkg
 Architecture: arm
 Priority: optional

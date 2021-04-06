@@ -1,6 +1,6 @@
 Package: wsdd2
 Description: WSD/LLMNR Discovery/Name Service Daemon
-Version: 1.8-1
+Version: 1.8.3.2
 Depends: ipkg
 Architecture: arm
 Priority: optional

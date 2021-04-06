@@ -1,6 +1,6 @@
 Package: pynacl
 Depends: libsodium, cffi, ipkg
-Version: 1.1.2
+Version: 1.4.0
 Description: Python binding to the libsodium library
 Architecture: arm
 Priority: optional

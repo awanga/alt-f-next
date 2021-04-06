@@ -1,9 +1,9 @@
 Package: libsodium
+Description: A software library for encryption, decryption, signatures, password hashing, and more
+Version: 1.0.18
 Depends: ipkg
-Version: 1.0.15
-Description: library for encryption, decryption, signatures, password hashing and more
 Architecture: arm
 Priority: optional
-Section: admin
-Source: https://download.libsodium.org/doc
-Maintainer: jcard
+Section: libraries
+Source: https://github.com/json-c/json-c/
+Maintainer: awanga

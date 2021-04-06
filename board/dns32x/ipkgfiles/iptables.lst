@@ -7,7 +7,7 @@
 ./usr/lib/libip6tc.so.2.0.0
 ./usr/lib/libxtables.so
 ./usr/lib/libxtables.so.12
-./usr/lib/libxtables.so.12.2.0
+./usr/lib/libxtables.so.12.3.0
 ./usr/lib/xtables
 ./usr/lib/xtables/libip6t_DNAT.so
 ./usr/lib/xtables/libip6t_DNPT.so
@@ -118,12 +118,14 @@
 ./usr/lib/xtables/libxt_u32.so
 ./usr/lib/xtables/libxt_udp.so
 ./usr/sbin/ip6tables
+./usr/sbin/ip6tables-apply
 ./usr/sbin/ip6tables-legacy
 ./usr/sbin/ip6tables-legacy-restore
 ./usr/sbin/ip6tables-legacy-save
 ./usr/sbin/ip6tables-restore
 ./usr/sbin/ip6tables-save
 ./usr/sbin/iptables
+./usr/sbin/iptables-apply
 ./usr/sbin/iptables-legacy
 ./usr/sbin/iptables-legacy-restore
 ./usr/sbin/iptables-legacy-save

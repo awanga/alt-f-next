@@ -1,2 +1,5 @@
 ./etc/init.d/S41openvpn
+./usr/lib/openvpn
+./usr/lib/openvpn/plugins
+./usr/lib/openvpn/plugins/openvpn-plugin-down-root.so
 ./usr/sbin/openvpn

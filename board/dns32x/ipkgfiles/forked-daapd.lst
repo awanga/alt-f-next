@@ -22,5 +22,14 @@
 ./usr/share/forked-daapd/htdocs/js/forked-daapd.js
 ./usr/share/forked-daapd/htdocs/js/vue.js
 ./usr/share/forked-daapd/htdocs/js/vue.min.js
+./usr/share/forked-daapd/htdocs/android-chrome-96x96.png
+./usr/share/forked-daapd/htdocs/apple-touch-icon.png
+./usr/share/forked-daapd/htdocs/browserconfig.xml
+./usr/share/forked-daapd/htdocs/favicon-16x16.png
+./usr/share/forked-daapd/htdocs/favicon-32x32.png
+./usr/share/forked-daapd/htdocs/favicon.ico
+./usr/share/forked-daapd/htdocs/mstile-150x150.png
+./usr/share/forked-daapd/htdocs/safari-pinned-tab.svg
+./usr/share/forked-daapd/htdocs/site.webmanifest
 ./usr/www/cgi-bin/forked_daapd.cgi
 ./usr/www/cgi-bin/forked_daapd_proc.cgi

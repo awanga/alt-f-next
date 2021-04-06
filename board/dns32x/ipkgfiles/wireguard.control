@@ -1,0 +1,9 @@
+Package: wireguard
+Description: A fast, modern, secure VPN tunnel
+Version: 1.0.20200827
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: https://www.wireguard.com
+Maintainer: awanga

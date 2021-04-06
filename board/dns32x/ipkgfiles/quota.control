@@ -1,6 +1,6 @@
 Package: quota
 Description: Implementation of the disk quota system.
-Version: 4.05
+Version: 4.06
 Depends: libtirpc, gettext, ipkg
 Architecture: arm
 Priority: optional

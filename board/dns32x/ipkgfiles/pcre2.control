@@ -1,0 +1,9 @@
+Package: pcre2
+Depends: ipkg
+Version: 10.35
+Description: Perl Compatible Regular Expressions
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.pcre.org/
+Maintainer: jcard

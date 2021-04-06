@@ -5,7 +5,7 @@ Description: 	  SoX is a cross-platform (Windows, Linux, MacOS X, etc.) command 
 	  It can also apply various effects to these sound files, and, as an
 	  added bonus, SoX can play and record audio files on most platforms.
 	  http://sox.sourceforge.net/
-Version: 14.4.2
+Version: 7524160b29a476f7e87bc14fddf12d349f9a3c5e
 Depends: ipkg
 Architecture: arm
 Priority: optional

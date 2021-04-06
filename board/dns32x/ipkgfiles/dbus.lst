@@ -1,4 +1,3 @@
-./etc/dbus-1
 ./etc/dbus-1/session.conf
 ./etc/dbus-1/system.conf
 ./etc/init.d/S20dbus
@@ -13,17 +12,13 @@
 ./usr/bin/dbus-uuidgen
 ./usr/lib/libdbus-1.so
 ./usr/lib/libdbus-1.so.3
-./usr/lib/libdbus-1.so.3.19.12
-./usr/libexec
+./usr/lib/libdbus-1.so.3.19.13
 ./usr/libexec/dbus-daemon-launch-helper
-./usr/share/dbus-1
 ./usr/share/dbus-1/services
 ./usr/share/dbus-1/session.conf
 ./usr/share/dbus-1/session.d
 ./usr/share/dbus-1/system-services
 ./usr/share/dbus-1/system.conf
 ./usr/share/dbus-1/system.d
-./usr/share/xml
-./usr/share/xml/dbus-1
 ./usr/share/xml/dbus-1/busconfig.dtd
 ./usr/share/xml/dbus-1/introspect.dtd

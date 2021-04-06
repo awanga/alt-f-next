@@ -1,0 +1,9 @@
+Package: fmt
+Description: A modern formatting library
+Version: 7.1.3
+Depends: ipkg
+Architecture: arm
+Priority: optional
+Section: libraries
+Source: https://github.com/fmtlib/fmt/
+Maintainer: awanga

@@ -17,4 +17,4 @@
 ./usr/bin/tiffsplit
 ./usr/lib/libtiff.so
 ./usr/lib/libtiff.so.5
-./usr/lib/libtiff.so.5.5.0
+./usr/lib/libtiff.so.5.6.0

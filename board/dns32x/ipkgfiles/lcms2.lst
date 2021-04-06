@@ -1,7 +1,6 @@
 ./usr/bin/jpgicc
 ./usr/bin/linkicc
 ./usr/bin/psicc
-./usr/bin/tificc
 ./usr/bin/transicc
 ./usr/lib/liblcms2.so
 ./usr/lib/liblcms2.so.2

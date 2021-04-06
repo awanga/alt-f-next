@@ -1,3 +1,5 @@
+./etc/sudo.conf
+./etc/sudo_logsrvd.conf
 ./etc/sudoers
 ./run/sudo
 ./usr/bin/cvtsudoers
@@ -7,11 +9,15 @@
 ./usr/lib/tmpfiles.d
 ./usr/lib/tmpfiles.d/sudo.conf
 ./usr/libexec/sudo
+./usr/libexec/sudo/audit_json.so
 ./usr/libexec/sudo/group_file.so
 ./usr/libexec/sudo/libsudo_util.so
 ./usr/libexec/sudo/libsudo_util.so.0
 ./usr/libexec/sudo/libsudo_util.so.0.0.0
+./usr/libexec/sudo/sample_approval.so
 ./usr/libexec/sudo/sudo_noexec.so
 ./usr/libexec/sudo/sudoers.so
 ./usr/libexec/sudo/system_group.so
+./usr/sbin/sudo_logsrvd
+./usr/sbin/sudo_sendlog
 ./usr/sbin/visudo

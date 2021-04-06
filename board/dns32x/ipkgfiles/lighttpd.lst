@@ -19,7 +19,6 @@
 ./usr/lib/lighttpd/mod_auth.so
 ./usr/lib/lighttpd/mod_authn_file.so
 ./usr/lib/lighttpd/mod_cgi.so
-./usr/lib/lighttpd/mod_compress.so
 ./usr/lib/lighttpd/mod_deflate.so
 ./usr/lib/lighttpd/mod_dirlisting.so
 ./usr/lib/lighttpd/mod_evasive.so

@@ -35,12 +35,14 @@
 ./usr/share/gerbera/web/js/gerbera-app.module.js
 ./usr/share/gerbera/web/js/gerbera-auth.module.js
 ./usr/share/gerbera/web/js/gerbera-autoscan.module.js
+./usr/share/gerbera/web/js/gerbera-clients.module.js
 ./usr/share/gerbera/web/js/gerbera-items.module.js
 ./usr/share/gerbera/web/js/gerbera-menu.module.js
 ./usr/share/gerbera/web/js/gerbera-trail.module.js
 ./usr/share/gerbera/web/js/gerbera-tree.module.js
 ./usr/share/gerbera/web/js/gerbera-updates.module.js
 ./usr/share/gerbera/web/js/jquery.gerbera.autoscan.js
+./usr/share/gerbera/web/js/jquery.gerbera.clients.js
 ./usr/share/gerbera/web/js/jquery.gerbera.editor.js
 ./usr/share/gerbera/web/js/jquery.gerbera.items.js
 ./usr/share/gerbera/web/js/jquery.gerbera.toast.js

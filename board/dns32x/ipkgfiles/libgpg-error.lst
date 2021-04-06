@@ -2,7 +2,7 @@
 ./usr/bin/gpgrt-config
 ./usr/lib/libgpg-error.so
 ./usr/lib/libgpg-error.so.0
-./usr/lib/libgpg-error.so.0.28.0
+./usr/lib/libgpg-error.so.0.31.1
 ./usr/share/common-lisp
 ./usr/share/common-lisp/source
 ./usr/share/common-lisp/source/gpg-error

@@ -1,5 +1,0 @@
-#!/bin/sh
-
-deluser fuppes
-delgroup multimedia
-rm -rf /sbin/rcfuppes

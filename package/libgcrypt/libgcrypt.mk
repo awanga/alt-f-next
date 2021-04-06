@@ -27,6 +27,7 @@ endif
 
 # Code doesn't build in thumb mode
 ifeq ($(BR2_arm),y)
+TARGET_CFLAGS += -marm
 LIBGCRYPT_CONF_ENV += CFLAGS="$(patsubst -mthumb,,$(TARGET_CFLAGS))"
 endif
 

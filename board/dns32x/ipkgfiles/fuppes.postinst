@@ -1,5 +1,0 @@
-#!/bin/sh
-
-ln -sf /usr/sbin/rcscript /sbin/rcfuppes
-rcfuppes status
-return 0

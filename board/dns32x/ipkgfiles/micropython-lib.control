@@ -2,7 +2,7 @@ Package: micropython-lib
 Description: 	  Core Python libraries ported to MicroPython.
 	  http://micropython.org
 Version: 1.9.3
-Depends: pcre, micropython, ipkg
+Depends: micropython, ipkg
 Architecture: arm
 Priority: optional
 Section: admin
