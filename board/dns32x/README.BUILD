@@ -7,8 +7,8 @@ Checkout the development tree:
 Then,
   
 	cd alt-f-next			# change to the checkout directory
-	make alt-f-{board}_defconfig	# setup configuration
-	make >& build-dns323.log	# make it all, logging to build-dns323.log
+	make alt-f_{board}_defconfig	# setup configuration
+	make >& build.log		# make it all, logging to build.log
 
 When finished, you should find:
 
@@ -18,3 +18,11 @@ When finished, you should find:
  root filesystem image, "rootfs.arm.*".
 -in $KERNEL the built linux kernel
 
+To build alt-f packages:
+
+	make alt-f_base_defconfig	# base (armv5) config for packages
+	./board/dns32x/build_pkgs.sh	# script to automatically build pkgs
+
+When finished, you should find:
+
+-in output/pkgs folder, the packake binaries and ipkg package index
