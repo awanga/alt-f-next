@@ -136,7 +136,7 @@ case "$1" in
 			mv -f $TFILES $TFILES-
 		fi
 		#find . ! -type d | sort > $TFILES
-		find . | sort > $TFILES
+		find . | sort > $TFILES 2> /dev/null
 		chmod -w $TFILES
 		exit 0
 		;;
@@ -145,7 +145,7 @@ case "$1" in
 		cd $ROOTFSDIR
 		TF=$(mktemp)
 		#find . ! -type d | sort > $TF
-		find . | sort > $TF
+		find . | sort > $TF 2> /dev/null
 		diff $TFILES $TF | sed -n 's\> ./\./\p'
 		rm $TF
 		exit 0
@@ -455,7 +455,13 @@ elif test "$force" != "y"; then
  	if test "$cver" != "$version"; then
 		if test "${cver%-[0-9]}" != "$version"; then
 			echo $pkg.control has version $cver and built package has version $version.
-			exit 1
+			if test -z $OVERWRITE_PKG_LST; then
+				exit 1
+			else
+				# attempt to autocorrect control file
+				echo updating $pkg.control version automatically...
+				sed -i 's,'$cver','$version',g' $IPKGDIR/$pkg.control
+			fi
 		else
 			version=$cver
 		fi

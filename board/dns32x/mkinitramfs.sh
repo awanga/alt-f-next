@@ -41,7 +41,7 @@ deps_status() {
 
 deps_check() {
 	if ! ( cd $BASE_DIR/..; ./board/dns32x/mkpkg.sh -check $1 >& /dev/null); then
-		echo "WARNING: Package $1 does not contains all files, might or not be OK!" > $(tty)
+		echo "WARNING: Package $1 does not contains all files, might or not be OK!"
 	fi
 }
 
@@ -142,7 +142,7 @@ case $board in
 	*) echo "mkinitramfs: Unsupported \"$board\" board"; exit 1;;
 esac
 
-rm ${BLDDIR}/target/THIS_IS_NOT_YOUR_ROOT_FILESYSTEM
+rm -f ${BLDDIR}/target/THIS_IS_NOT_YOUR_ROOT_FILESYSTEM
 mkdir -p ${BLDDIR}/images/$board
 
 CWD=$PWD

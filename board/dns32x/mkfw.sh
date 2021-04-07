@@ -324,10 +324,13 @@ for i in ${!name[*]}; do
 	echo Available kernel flash space: $(expr ${kernel_max[i]} - $(stat -c %s kernel)) bytes
 	echo Available initramfs flash space: $(expr ${initramfs_max[i]} - $(stat -c %s initramfs)) bytes
 
-	(cd ${DESTD}; cp uImage $TFTPD/uImage-${name[i]})
+	if test -d $TFTPD -a -w $TFTPD; then
+		(cd ${DESTD}; cp uImage $TFTPD/uImage-${name[i]})
+	fi
 
 done
 
+if test -d $TFTPD -a -w $TFTPD; then
 (
 	cd ${DESTD};
 	cp urootfs $TFTPD/urootfs-$board
@@ -335,8 +338,9 @@ done
 		cp rootfs.arm.sqimage.xz $TFTPD/rootfs.arm.sqimage.xz-$board
 	fi
 )
-
-if ! test -d $TFTPD -a -w $TFTPD; then echo "WARNING: tftp folder non existing or writable. Only useful for users with serial adapter on the box and using u-boot."; fi
+else
+	echo "WARNING: tftp folder non existing or writable. Only useful for users with serial adapter on the box and using u-boot."
+fi
 
 rm -f kernel initramfs defaults sqimage \
 	${DESTD}/urootfs ${DESTD}/uImage ${DESTD}/tImage ${DESTD}/tsqimage
