@@ -200,9 +200,6 @@ COLLECTD_DEPENDENCIES = \
 ifeq ($(BR2_PACKAGE_JANSSON),y)
 COLLECTD_CONF_OPTS += --with-libjansson=$(STAGING_DIR)/usr
 endif
-ifeq ($(BR2_PACKAGE_JANSSON),y)
-COLLECTD_CONF_OPTS += --with-libjansson=$(STAGING_DIR)/usr
-endif
 ifeq ($(BR2_PACKAGE_LIBCURL),y)
 COLLECTD_CONF_OPTS += --with-libcurl=$(STAGING_DIR)/usr
 endif

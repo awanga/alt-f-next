@@ -4,7 +4,7 @@
 #
 #############################################################
 
-WSDD2_VERSION = 1.8
+WSDD2_VERSION = 1.8.3.2
 WSDD2_SOURCE = wsdd2-$(WSDD2_VERSION).tar.gz
 WSDD2_SITE = https://github.com/Andy2244/wsdd2/archive
 

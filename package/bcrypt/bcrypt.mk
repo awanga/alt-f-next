@@ -4,7 +4,7 @@
 #
 ############################################################
 
-BCRYPT_VERSION = 3.1.4
+BCRYPT_VERSION = 3.2.0
 BCRYPT_SOURCE = bcrypt-$(BCRYPT_VERSION).tar.gz
 BCRYPT_SITE = https://pypi.python.org/packages/f3/ec/bb6b384b5134fd881b91b6aa3a88ccddaad0103857760711a5ab8c799358
 

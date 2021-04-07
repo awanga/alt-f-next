@@ -6,7 +6,7 @@
 
 # stop natively compiling on host after this version (are libxml2 or libxslt too old?)
 #LXML_VERSION = 4.1.1
-LXML_VERSION = 4.4.1
+LXML_VERSION = 4.6.3
 
 LXML_SOURCE = lxml-$(LXML_VERSION).tgz
 LXML_SITE = http://lxml.de/files/

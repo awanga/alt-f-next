@@ -1,6 +1,6 @@
 Package: bcrypt
 Depends: cffi, ipkg
-Version: 3.1.4
+Version: 3.2.0
 Description: Python modern password hashing
 Architecture: arm
 Priority: optional

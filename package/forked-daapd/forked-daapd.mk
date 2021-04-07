@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-FORKED_DAAPD_VERSION = 26.4
+FORKED_DAAPD_VERSION = 27.4
 FORKED_DAAPD_SITE = https://github.com/ejurgensen/forked-daapd/releases/download/$(FORKED_DAAPD_VERSION)
 FORKED_DAAPD_SOURCE = forked-daapd-$(FORKED_DAAPD_VERSION).tar.xz
 FORKED_DAAPD_AUTORECONF = YES

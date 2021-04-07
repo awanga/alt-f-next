@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SAMBA_SMALL_VERSION = 4.10.17
+SAMBA_SMALL_VERSION = 4.10.18
 SAMBA_SMALL_SITE = https://download.samba.org/pub/samba/stable
 SAMBA_SMALL_SOURCE = samba-$(SAMBA_SMALL_VERSION).tar.gz
 SAMBA_SMALL_INSTALL_STAGING = YES

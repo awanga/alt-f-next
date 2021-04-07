@@ -4,7 +4,7 @@
 #
 ############################################################
 
-CRYPTOGRAPHY_VERSION = 2.1.2
+CRYPTOGRAPHY_VERSION = 3.4.7
 CRYPTOGRAPHY_SOURCE = cryptography-$(CRYPTOGRAPHY_VERSION).tar.gz
 CRYPTOGRAPHY_SITE = https://pypi.python.org/packages/78/62/9e38f9b22efe08ec2b40a56c0f46848ce03c35fdd6e78ae445589f914462
 

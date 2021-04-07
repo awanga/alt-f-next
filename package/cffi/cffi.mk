@@ -4,7 +4,7 @@
 #
 ############################################################
 
-CFFI_VERSION = 1.11.2
+CFFI_VERSION = 1.14.5
 CFFI_SOURCE = cffi-$(CFFI_VERSION).tar.gz
 CFFI_SITE = https://pypi.python.org/packages/c9/70/89b68b6600d479034276fed316e14b9107d50a62f5627da37fafe083fde3
 

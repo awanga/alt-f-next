@@ -3,8 +3,7 @@
 # miniupnpc
 #
 #############################################################
-#http://miniupnp.free.fr/files/download.php?file=miniupnpc-2.1.20191224.tar.gz
-MINIUPNPC_VERSION:=2.1.20191224
+MINIUPNPC_VERSION:=2.2.2
 MINIUPNPC_SOURCE:=miniupnpc-$(MINIUPNPC_VERSION).tar.gz
 MINIUPNPC_SITE:=http://miniupnp.free.fr/files/
 

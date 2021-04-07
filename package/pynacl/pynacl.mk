@@ -4,7 +4,7 @@
 #
 ############################################################
 
-PYNACL_VERSION = 1.1.2
+PYNACL_VERSION = 1.4.0
 PYNACL_SOURCE = $(PYNACL_VERSION).tar.gz
 PYNACL_SITE = https://github.com/pyca/pynacl/archive
 

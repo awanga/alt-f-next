@@ -1,6 +1,6 @@
 Package: cffi
 Depends: libffi, python, ipkg
-Version: 1.11.2
+Version: 1.14.5
 Description: Foreign Function Interface for Python calling C code
 Architecture: arm
 Priority: optional

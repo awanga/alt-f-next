@@ -4,7 +4,7 @@
 #
 #############################################################
 
-LIBGD_VERSION:=2.0.33
+LIBGD_VERSION:=2.3.2
 LIBGD_SITE:=https://bitbucket.org/libgd/gd-libgd/get
 LIBGD_SOURCE=GD_$(subst .,_,$(LIBGD_VERSION)).tar.bz2
 LIBGD_SUBDIR = src
