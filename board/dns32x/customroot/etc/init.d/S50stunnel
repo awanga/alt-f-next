@@ -22,7 +22,7 @@ if test "$1" = "init"; then
 	exit
 fi
 
-if check_inetd https || check_inetd swats; then
+if check_inetd https; then
 	exit 2
 fi
 
@@ -30,12 +30,10 @@ case "$1" in
 	start)
 		sinit
 		avahi add https
-		avahi add swats
 		start $NAME
 		;;
 	stop)
 		avahi remove https
-		avahi remove swats
 		stop $NAME
 		;;
 	status)	status $NAME ;;

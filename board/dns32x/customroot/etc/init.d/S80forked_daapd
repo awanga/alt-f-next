@@ -39,8 +39,12 @@ case "$1" in
 	start)
 		if test "$FORKED_OVRW_LOG" = "yes"; then rm -f $FORKED_LOG; fi
 		start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS 2> /dev/null
+		avahi add daap
 		;;
-	stop) stop $NAME ;;
+	stop)
+		avahi remove daap
+		stop $NAME
+		;;
 	status) status $NAME ;;
 	restart) restart $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
