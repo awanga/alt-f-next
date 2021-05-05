@@ -44,7 +44,7 @@ check_shares() {
 		done
 		IFS="$OIFS"
 		if test -z "$conf_ok"; then
-			echo "$NAME: can't be started, no shares are configured." 
+			echo "$NAME: can't be started, no shares are configured."
 			exit 1
 		fi
 		return 0
@@ -60,7 +60,7 @@ check_user $CONF_MINIDLNA /var/lib/$RC_USER $RUN_MINIDLNA $LOG_MINIDLNA
 case "$1" in
 	start)
 		check_shares
-		start $NAME --chuid $RC_USER:$RC_GROUP -- $RESCAN $MINIDLNA_ARGS 
+		start $NAME --chuid $RC_USER:$RC_GROUP -- $RESCAN $MINIDLNA_ARGS
 		;;
 
 	stop) stop $NAME ;;

@@ -52,7 +52,7 @@ fi
 
 echo "rcE: unmounting or remounting read-only all mounted filesystems"
 for i in nfs cifs iso9660 davfs ext2 ext3 ext4 btrfs vfat ntfs fuseblk; do
-	umount -t $i -rf -a 
+	umount -t $i -rf -a
 done
 
 echo "rcE: unmouting tmpfs /tmp"
@@ -104,7 +104,7 @@ if test -f /boot/zImage -o -f /boot/rootfs.arm.* -o -f /boot/.kexec; then
 
 	# no kernel image, use flashed kernel
 	if ! test -f zImage; then
-		if test -n "$orion"; then 
+		if test -n "$orion"; then
 			dd if=/dev/mtdblock2 of=zImage bs=64 skip=1
 		else
 			nanddump -q /dev/mtd1 | dd of=zImage bs=64 skip=1

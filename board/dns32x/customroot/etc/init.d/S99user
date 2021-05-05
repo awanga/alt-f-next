@@ -30,9 +30,9 @@ bootlog() {
 
 writelog() {
 	echo -e "$SEP Alt-F $(cat /etc/Alt-F) $SEP\n"
-	date 
+	date
 
-	echo -e "\n\n$SEP BOARD $SEP\n" 
+	echo -e "\n\n$SEP BOARD $SEP\n"
 	cat /tmp/board
 
 	echo -e "\n\n$SEP CPU $SEP\n"
@@ -81,7 +81,7 @@ writelog() {
 		echo
 		mdadm --examine --scan --verbose --verbose --config=partitions 2> /dev/null
 	else
-		echo None 
+		echo None
 	fi
 
 	echo -e "\n\n$SEP SWAP $SEP\n"

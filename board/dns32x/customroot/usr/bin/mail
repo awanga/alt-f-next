@@ -34,7 +34,7 @@ done
 if test -z "$to"; then usage; fi
 
 if test -z "$from"; then
-	from=$(grep '^from' /etc/msmtprc | cut -f2)	
+	from=$(grep '^from' /etc/msmtprc | cut -f2)
 fi
 
 exec > $TF
@@ -42,7 +42,7 @@ exec > $TF
 echo "From: $from"
 if test -n "$subj"; then echo "Subject: $subj"; fi
 echo "To: $to"
-echo 
+echo
 cat
 echo
 

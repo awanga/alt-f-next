@@ -136,7 +136,7 @@ stop_altf_dir() {
 			start_altf_dir
 			return 1
 		fi
-		
+
 		rm  -f /Alt-F
 	fi
 }
@@ -170,7 +170,7 @@ lbl=$4
 fstype=$5
 
 if test "$fsckcmd" != "echo"; then
-	
+
 	trap "" 1
 
 	check
@@ -200,7 +200,7 @@ if true; then
 	mkfifo /tmp/fsck_pipe-$MDEV >& /dev/null
 	# create pipe consumer background job
 	(while true; do
-		dd if=/tmp/fsck_pipe-$MDEV of=$logf- bs=64K count=1 2> /dev/null 
+		dd if=/tmp/fsck_pipe-$MDEV of=$logf- bs=64K count=1 2> /dev/null
 		mv $logf- $logf
 		sleep 5
 	done)&
@@ -220,7 +220,7 @@ fi
 if true; then
 	kill $wj
 	#echo > /tmp/fsck_pipe-$MDEV # echo blocks here!
-	rm -f /tmp/fsck_pipe-$MDEV $logf- 
+	rm -f /tmp/fsck_pipe-$MDEV $logf-
 fi
 	rm -f $xf $logf $pidf
 

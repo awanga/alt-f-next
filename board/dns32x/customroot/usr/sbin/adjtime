@@ -43,7 +43,7 @@ elif test "$1" = "-setrtc"; then
 	while test $o = $(date +%s); do
 		true
 	done
-	
+
 	# adjust hwclock
 	hwclock -wu
 
@@ -67,11 +67,11 @@ elif test "$1" = "-adjust"; then
 		adjtime -restart
 	else
 		touch -r $CONFF /tmp/$(basename $CONFF) >& /dev/null
-	
+
 		# drift (sec) --- delta (sec)
 		#   x (ppm)   --- 1000000
 		#
-		# 11.5 PPM correspond roughly to one second drift per day. Expect also 1 PPM/ºC 
+		# 11.5 PPM correspond roughly to one second drift per day. Expect also 1 PPM/ºC
 		#
 		#   1 (ppm) --- 65536
 		#   x (ppm) --- adj
@@ -91,7 +91,7 @@ elif test "$1" = "-adjust"; then
 			logger -st adjtime Wait at least three hours between adjustments, not adjusting.
 			restore 1
 		fi
-	
+
 		up=$(cat /proc/uptime | cut -d'.' -f1)
 		if test $up -lt $delta; then
 			logger -st adjtime System has been rebooted since last adjustment, reusing last adjustment.
@@ -113,12 +113,12 @@ elif test "$1" = "-adjust"; then
 
 		adjtimex -qf $new_adj
 
-		logger -st adjtime drift=$drift new_adj=$new_adj 
-	
+		logger -st adjtime drift=$drift new_adj=$new_adj
+
 		echo "$curr_time $new_adj $drift" >> $CONFF
 		tail -20 $CONFF > /tmp/adjtime
 		mv /tmp/adjtime $CONFF
-	
+
 		adjtime -setrtc
 
 		if $(awk -v drift=$drift -v maxdrift=5 \

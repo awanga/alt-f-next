@@ -40,7 +40,7 @@ done
 
 chmod g+rwxs "$DL_DIR"
 
-check_user $CONF_DIR $PID_DIR $PROG_DIR "$DL_DIR" 
+check_user $CONF_DIR $PID_DIR $PROG_DIR "$DL_DIR"
 
 case "$1" in
 	start) start $PROG --chuid $RC_USER:$RC_GROUP -- $OPTS ;;

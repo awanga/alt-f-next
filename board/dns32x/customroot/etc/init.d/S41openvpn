@@ -1,14 +1,14 @@
-#!/bin/sh 
+#!/bin/sh
 
 #set -x
 
-DESC="OpenVPN daemon" 
-NAME=openvpn 
+DESC="OpenVPN daemon"
+NAME=openvpn
 TYPE=net
 
 OPENVPN_DIR=/etc/openvpn
 
-. /etc/init.d/common 
+. /etc/init.d/common
 
 if ! test -d $OPENVPN_DIR; then mkdir -p $OPENVPN_DIR; fi
 
@@ -26,31 +26,31 @@ doit() {
 		OPENVPN_OPTS=""
 		if test "$1" = "start"; then
 			OPENVPN_OPTS="-- --daemon openvpn-$nm --cd $OPENVPN_DIR \
-				--log /var/log/openvpn-$nm.log --writepid $RC_PIDFILE --config $i" 
+				--log /var/log/openvpn-$nm.log --writepid $RC_PIDFILE --config $i"
 		fi
-		$1 $NAME $OPENVPN_OPTS 
+		$1 $NAME $OPENVPN_OPTS
 		st=$((st+$?))
 		if test "$1" = "restart"; then return $st; fi
 	done
 	return $st
 }
 
-case "$1" in 
+case "$1" in
 	start)
 		modprobe tun >& /dev/null
 		# enable IP forwarding?
 		# echo 1 > /proc/sys/net/ipv4/ip_forward
 		doit start
-		;; 
+		;;
 	stop)
 		if doit stop; then rmmod -w tun >& /dev/null; fi
 		st=$?
 		# disable IP forwarding
 		# echo 0 > /proc/sys/net/ipv4/ip_forward
 		return $st
-		;; 
+		;;
 	status) doit status ;;
 	reload) doit reload ;;
 	restart) doit restart ;;
 	*) usage $0 "start|stop|status|restart|reload" ;;
-esac 
+esac

@@ -51,7 +51,7 @@ details() {
 		if test "${id:0:1}" = "#"; then continue; fi
 		if test "$1" = "$id"; then return 0; fi
 #echo $id $type $runas $host $mac $srcpath $dstpath $when $at $log +$nlogs+ -$rest-
-	done < $CONF_BACKUP 
+	done < $CONF_BACKUP
 
 	return 1
 }
@@ -62,7 +62,7 @@ clean_logs() {
 		clogs=$((clogs-1))
 		last=$(ls $ddname | grep '^....-..-.._..-..-..$' | head -1)
 		logger -st backup "backup $id with $clogs backups ($nlogs configured), removing oldest $last"
-		rm -rf "$last" "${last}.log" 
+		rm -rf "$last" "${last}.log"
 	done
 }
 
@@ -147,7 +147,7 @@ dir_backup() {
 	if test "$type" = "FTP" -o "$type" = "HTTP"; then
 		ddname=$(dirname $srcpath)
 	elif test "$type" = "NFS" -o "$type" = "CIFS"; then
-		dname=$(echo "${srcpath}" | cut -d"/" -f2- | tr -s "/ " "_")	
+		dname=$(echo "${srcpath}" | cut -d"/" -f2- | tr -s "/ " "_")
 		ddname="$dstpath/$dname"
 	fi
 
@@ -157,7 +157,7 @@ dir_backup() {
 		echo "<li><pre>Backup $msg</pre>" >> $SERRORL
 		return 1
 	fi
-	
+
 	destname="$dstpath/$(echo "$srcpath" | cut -d"/" -f3- | tr -s "/ " "_")"
 	do_backup
 }
@@ -211,10 +211,10 @@ cifs_nfs_backup() {
 	mkdir -p $mtddir
 
 	if test "$type" = "NFS"; then
-		destname="$dstpath/${host}$(echo "${srcpath}" | tr -s "/ " "_")" 
+		destname="$dstpath/${host}$(echo "${srcpath}" | tr -s "/ " "_")"
 		nfs_mount; st=$?
 	elif test "$type" = "CIFS"; then
-		destname="$dstpath/${host}_$(echo "${srcpath}" | tr -s "/ " "_")" 
+		destname="$dstpath/${host}_$(echo "${srcpath}" | tr -s "/ " "_")"
 		cifs_mount; st=$?
 	fi
 
@@ -250,7 +250,7 @@ ftp_http_backup() {
 
 	mkdir -p $destname/mirror
 	chown ${runas}:$(id -gn $runas) $destname/mirror
-	
+
 	res=$(su -c "wget -nv -m --no-parent -nH --cut-dirs=$dcnt \
 		-P $destname/mirror $type://$host/${srcpath}/" $runas 2>&1 )
 	st=$?
@@ -278,17 +278,17 @@ rsync_backup() {
 	tf=$(mktemp -t backup-XXXXXX)
 	chmod og-r $tf
 
-	mod=$srcpath	
+	mod=$srcpath
 	while test $(dirname $mod) != .; do mod=$(dirname $mod); done
 
 #	if rsync --password-file $tf -ax "${runas}@${host}::${srcpath}/" >& /dev/null; then
-	if rsync ${host}:: | grep -q ^$mod; then 
+	if rsync ${host}:: | grep -q ^$mod; then
 		echo "rsync module"
 		awk -F: '/'$runas'/{print $2}' /etc/rsyncd.secrets > $tf
 		chown ${runas}:users $tf
 		rsync_pass="--password-file $tf"
 		rsync_host="${runas}@${host}::"
-		destname="$dstpath/${host}_$(echo "${srcpath}" | tr -s "/ " "_")" 
+		destname="$dstpath/${host}_$(echo "${srcpath}" | tr -s "/ " "_")"
 		do_backup
 	else
 		echo "NO rsync module"
@@ -315,13 +315,13 @@ After accepting, you can logout."
 			echo "<li><pre>Backup ID $id: $msg</pre>" >> $SERRORL
 			echo "$msg" > ${bdir}/../Backup-rsync-ssh.txt
 			chmod a+rw ${bdir}/../Backup-rsync-ssh.txt
-			return 1		
+			return 1
 		fi
 		cp "$ident" $tf
 		chown ${runas}:users $tf
 		rsync_pass="-e \"ssh -i $tf\""
 		rsync_host="${runas}@${host}:"
-		destname="$dstpath/${host}_${runas}_$(echo "${srcpath}" | tr -s "/ " "_")" 
+		destname="$dstpath/${host}_${runas}_$(echo "${srcpath}" | tr -s "/ " "_")"
 		do_backup
 	fi
 

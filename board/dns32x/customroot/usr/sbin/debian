@@ -89,7 +89,7 @@ elif test $# != 0 -a "$1" = "-kexec"; then
 		exit 1
 	fi
 
-cat<<-NEOF > /tmp/deb	
+cat<<-NEOF > /tmp/deb
 	#!/bin/sh
 
 	# try to recover
@@ -135,7 +135,7 @@ cat<<-NEOF > /tmp/deb
 	for i in \$(blkid -t TYPE=swap -o device); do
 		echo "\$i	swap	swap	defaults	0	0" >> $debdir/etc/fstab
 	done
-	
+
 	cp $debdir/etc/default/kexec-debian  $debdir/etc/default/kexec >& /dev/null
 
 	echo "Now leaving Alt-F..."

@@ -14,7 +14,7 @@ istatus() {
 		echo "$1 stopped"
 		return 1
 	fi
-	
+
 	if crontab -l 2>/dev/null | grep -q /usr/bin/news.sh; then
 		echo "$1 running"
 		return 0

@@ -20,7 +20,7 @@ istatus() {
 		echo "$1 running"
 		return 0
 	else
-		crontab -l 2>/dev/null | grep -q /usr/sbin/adjtime 
+		crontab -l 2>/dev/null | grep -q /usr/sbin/adjtime
 		if test $? = 0; then
 			echo "$1 running"
 			return 0
@@ -81,7 +81,7 @@ case "$1" in
 			echo -n "Starting $NAME: "
 			update_cron
 			avahi add ntp
-			adjtimex -qf 0  # if != 0 affects ntpd drift calculation 
+			adjtimex -qf 0  # if != 0 affects ntpd drift calculation
 			start $NAME -- $OPTS
 		else
 			if test "$NTPD_DAEMON" = "no"; then NTPD_DAEMON=24; fi

@@ -21,7 +21,7 @@ if test $# = 0; then usage; fi
 while getopts nsucdh opt; do
 	case $opt in
 	n) new=y ;;  # new packages
-	s) same=y ;; # identical 
+	s) same=y ;; # identical
 	u) upg=y ;;  # upgraded
 	c) copy=y ;;  # copy
 	d) notbuilt=y ;;

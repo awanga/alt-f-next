@@ -20,7 +20,7 @@ RC_PIDFILE=$MYSQL_RUND/$NAME.pid
 RC_START_BG=yes
 
 MYSQL_DIRS="$MYSQL_RUND $MYSQL_LOGD $MYSQL_CONFD"
- 
+
 for i in $MYSQL_DIRS; do
 	if ! test -d $i; then mkdir -p $i; fi
 done

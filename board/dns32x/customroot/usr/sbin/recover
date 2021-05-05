@@ -10,7 +10,7 @@ case $1 in
 		;;
 	f)	# this should be only done as a last resort.
 		# clear the flash saved settings and reboot
-		# returns the box to Alt-F "factory" settings. 
+		# returns the box to Alt-F "factory" settings.
 		#
 		loadsave_settings -cf
 		reboot

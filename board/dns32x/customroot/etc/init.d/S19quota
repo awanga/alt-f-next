@@ -14,7 +14,7 @@ istart() {
 		if grep -qE "^$i.*(grpjquota|usrjquota)" /proc/mounts; then
 			if quotaon -p $i >& /dev/null; then quotaon -ug $i; fi
 		else
-			echo "quota on $dev is disabled" 
+			echo "quota on $dev is disabled"
 		fi
 	done
 }
@@ -25,7 +25,7 @@ istop() {
 		if grep -qE "^$i.*(grpjquota|usrjquota)" /proc/mounts; then
 			if ! quotaon -p $i >& /dev/null; then quotaon -ugf $i; fi
 		else
-			echo "quota on $dev is disabled" 
+			echo "quota on $dev is disabled"
 		fi
 	done
 }
@@ -42,7 +42,7 @@ istatus() {
 				echo quota on $dev is active
 			fi
 		else
-			echo "quota on $dev is disabled" 
+			echo "quota on $dev is disabled"
 		fi
 	done
 	if test "$act" != "0"; then return 0; else return 1; fi

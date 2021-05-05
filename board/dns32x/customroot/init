@@ -35,7 +35,7 @@ if grep -q "initdbg" /proc/cmdline; then
 	if ifconfig eth0 | grep -q UP; then
 		mkdir -p /var/run/vsftpd	# ftp needs it
 		inetd	# telnet or ftp the box
-		cmd="sleep 2" 
+		cmd="sleep 2"
 	fi
 
 	for i in left right; do	# signal the user
@@ -57,7 +57,7 @@ elif test -n "$(grep noaufs /proc/cmdline)" -o -z "$(grep aufs /proc/filesystems
 # run from initramfs setup by kernel. Used until RC3
 elif grep -q squashcpio /proc/cmdline; then
 	echo "pre-init: squash-cpio"
-	# don't overlay, enable access to the union branches 
+	# don't overlay, enable access to the union branches
 	mkdir /tmproot
 	mount -t tmpfs tmpfs /tmproot
 	mkdir /tmproot/root

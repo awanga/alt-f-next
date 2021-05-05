@@ -55,7 +55,7 @@ chmod g+rw,o-r $CONFF
 check_user $CONFF $LOG_DIR $PID_DIR "$DATA_DIR"
 
 case "$1" in
-	start) 
+	start)
 		check_net
 		check_certs
 		start $NAME --chuid $RC_USER:$RC_GROUP -- $OPTS

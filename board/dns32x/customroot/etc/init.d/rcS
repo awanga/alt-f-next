@@ -45,7 +45,7 @@ elif grep -q 'DNS-321/323' /proc/cpuinfo; then
 		0000) board="DNS-323-A1" ;;
 		0001) board="DNS-323-B1" ;;
 		0002) board="DNS-323-C1" ;;
-		0003) board="DNS-321-Ax" ;; 
+		0003) board="DNS-321-Ax" ;;
 	esac
 elif grep -q 'DNS-320L-rev-Ax' /proc/device-tree/model 2> /dev/null; then
 	board="DNS-320L-Ax"
@@ -263,15 +263,15 @@ aufslock=/tmp/.aufs-lock
 while ! mkdir $aufslock >& /dev/null; do usleep 500000; done
 
 # sequence hotplug events
-echo > /dev/mdev.seq 
+echo > /dev/mdev.seq
 # populate /dev
 /sbin/mdev -s
-# "hotplug", mdev.conf registers /usr/sbin/hot.sh, 
+# "hotplug", mdev.conf registers /usr/sbin/hot.sh,
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 
 # set a default hostname based on box model and network MAC
 if ! test -s /etc/hostname; then
-	echo $(cut -d"-" -f1,2  /tmp/board)-$(cut -d: -f4-6 /sys/class/net/eth0/address | tr -d ':' | tr '[a-f]' '[A-F]') > /etc/hostname 
+	echo $(cut -d"-" -f1,2  /tmp/board)-$(cut -d: -f4-6 /sys/class/net/eth0/address | tr -d ':' | tr '[a-f]' '[A-F]') > /etc/hostname
 fi
 hostname -F /etc/hostname
 
@@ -348,7 +348,7 @@ fi
 # setup minimum network services (httpd is mandatory)
 case $cip in
 	"kip" | "fip" | "sib")
-		# set hostname/hostip	
+		# set hostname/hostip
 		hostip=$(ifconfig eth0 | awk '/inet addr/ { print substr($2, 6) }')
 		netmask=$(ifconfig eth0 | awk '/inet addr/ { print substr($4, 6) }')
 		eval $(ipcalc -n $hostip $netmask) # evaluate NETWORK
@@ -368,7 +368,7 @@ case $cip in
 			-e "/[[:space:]]$hostname.$domain[[:space:]]/d" \
 			-e "/[[:space:]]${hostname}$/d" /etc/hosts
 		echo "$hostip $(hostname).$domain $(hostname)" >> /etc/hosts
-		
+
 		# set httpd hosts allow/deny
 		sed -i "s|^A:.*#!# Allow local net.*$|A:$NETWORK/$netmask #!# Allow local net|" /etc/httpd.conf
 
@@ -399,7 +399,7 @@ case $cip in
 			  client udhcpc
 			  hostname $(hostname)
 		EOF
-		
+
 		ifup eth0
 		;;
 

@@ -91,7 +91,7 @@ listchanged() {
 
 	for i in /etc/init.d/S*; do
 		# FIXME chmod doesnt change date, and stat is buggy
-		if test $i -nt $stamp; then 
+		if test $i -nt $stamp; then
 			echo -n "$i "
 		fi
 	done
@@ -112,7 +112,7 @@ status() {
 
 		for i in /etc/init.d/S*; do
 			# FIXME chmod doesnt change date, and stat is buggy
-			if test $i -nt $stamp; then 
+			if test $i -nt $stamp; then
 				save=1
 				break
 			fi
@@ -156,7 +156,7 @@ createdef() {
 	echo $nm
 }
 
-saveflashdef() { 
+saveflashdef() {
 	if status; then return 1; fi
 
 	lmount
@@ -205,11 +205,11 @@ loadflashdef() {
 	lmount
 
 	if test $# = 0; then
-		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1 
+		last=$(ls $save_dir/set_* | tail -1) > /dev/null 2>&1
 	elif ! test -f "$1"; then
 		last=$save_dir/$1
 	else
-		last="$1"	
+		last="$1"
 	fi
 
 	lf=$(basename $last 2> /dev/null)
@@ -241,7 +241,7 @@ loadflashdef() {
 
 		# there are several configuration files that would require services to reload them,
 		# such as inetd, samba, nfs... etc. This is not important at boot, only when the user
-		# loads a settings file when the box is already running. call 'rcall restart' 
+		# loads a settings file when the box is already running. call 'rcall restart'
 	fi
 
 	lumount
@@ -270,7 +270,7 @@ loadflashdef() {
 	return $res
 }
 
-# including stock firmware setings! 
+# including stock firmware setings!
 clearflashdef() {
 	lmount
 	rm -rf $save_dir/*
@@ -280,11 +280,11 @@ clearflashdef() {
 
 # copy from mtd1 to mtd0 (NOT for the DNS-320/325/327)
 # The vendors settings are saved in mtd0 and mtd1, one being the backup of the other
-# As Alt-F only uses mtd0, the original settings are still in mtd1 
+# As Alt-F only uses mtd0, the original settings are still in mtd1
 recover() {
 	rmdir $save_dir
 	if grep -qE "DNS-320-[AB]x|DNS-320L-Ax|DNS-325-Ax|DNS-327L-Ax" $BRD; then return 1; fi
- 
+
 	mtd0=$(mktemp -d)
 	mtd1=$(mktemp -d)
 
@@ -292,7 +292,7 @@ recover() {
 	if ! mount -r /dev/mtdblock1 $mtd1; then umount $mtd0; exit 1; fi
 
 	rm -f $mtd0/*
-	cp -a $mtd1/* $mtd0 	
+	cp -a $mtd1/* $mtd0
 
 	umount $mtd0
 	umount $mtd1
@@ -323,7 +323,7 @@ get_sib_var() {
 	grep "^$2[[:space:]]*=" $1 | \
 		sed "s/^$2[[:space:]]*=[[:space:]]*\"\(.*\)\"[[:space:]]*$/\1/"
 }
- 
+
 # from http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=30;filename=oldsys-preseed.patch;att=1;bug=502821
 # Parse the sib.conf file, as found in the Dlink DNS-323
 # $1 = path to sib.conf
@@ -375,7 +375,7 @@ to_AltF() {
 #			cp -a $i /Alt-F/$i # no need to copy, they will be copied when changed/created
 #		elif test -e /Alt-F/$i; then
 			rm -f /Alt-F/$i # remove old, probably outdated, files
-		fi 
+		fi
 	done
 }
 
@@ -428,7 +428,7 @@ case "$board" in
 	DNS-327L-Ax)
 		fs_type="ubifs"
 		MTD=/dev/ubi0_0
-		;;		
+		;;
 	*)
 		echo "Unsupported board"
 		exit 1

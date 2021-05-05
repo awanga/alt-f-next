@@ -16,7 +16,7 @@ sshd:x:67
 #multimedia 80
 #network	81
 netdev:x:82:
-#nut 84 
+#nut 84
 nobody:x:98:
 nogroup:x:99:
 users:x:100:

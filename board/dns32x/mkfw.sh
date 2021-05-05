@@ -167,9 +167,9 @@ postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320-a.dtb kirkwood-dns320-
 # Sets the cpu r1 to the machine ID, overriding the value that u-boot sets there.
 # This is necessary because D-Link uses a wrong mach-type (=526, a ARCH_MV88fxx81)
 # in their bootloader, which sets r1 to 526; the correct linux mach-id for the machine,
-# according to 'arch/arm/tools/mach-types' is 1542 (0x0606). 
+# according to 'arch/arm/tools/mach-types' is 1542 (0x0606).
 #
-# The bellow 'devio' command writes '06 1c a0 e3 06 10 81 e3' to the tImage start, 
+# The bellow 'devio' command writes '06 1c a0 e3 06 10 81 e3' to the tImage start,
 #	devio 'wl 0xe3a01c06,4' 'wl 0xe3811006,4'
 # which 'arm-linux-objdump -b binary -m armv5te -D tImage' dissasembles as:
 #
@@ -183,8 +183,8 @@ postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320-a.dtb kirkwood-dns320-
 # make menuconfig", "Kernel hacking", "Kernel low-level debugging functions")
 #
 # Error: unrecognized/unsupported machine ID (r1 = 0x0000020f).
-# Available machine support: (after patching arch/arm/tools/mach-types) 
-# 
+# Available machine support: (after patching arch/arm/tools/mach-types)
+#
 # ID (hex)	(dec) NAME
 # 00000ed8	3800  D-Link DNS-325
 # 00000f91	3985  D-Link DNS-320
@@ -200,7 +200,7 @@ postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320-a.dtb kirkwood-dns320-
 # NOTE-2: about kernel_max/initramfs_max above for the DNS-325:
 #
 # although the DNS-325 has 5MB flash partition for the kernel and rootfs,
-# u-boot only copies 0x300000 (3145728d) bytes from flash to memory, leading to a 
+# u-boot only copies 0x300000 (3145728d) bytes from flash to memory, leading to a
 # "Verifying Checksum ... Bad Data CRC" error at boot,see u-boot environment variable:
 # bootcmd=nand read.e 0xa00000 0x100000 0x300000;nand read.e 0xf00000 0x600000 0x300000;bootm 0xa00000 0xf00000
 #
@@ -212,7 +212,7 @@ postz=("" "" "" "" "" kirkwood-dns325.dtb kirkwood-dns320-a.dtb kirkwood-dns320-
 # 3145728 bytes read: OK
 #
 # One could use fw_printenv/fw_setenv from u-boot/tools/env to fix that, while *still*
-# running the stock firmware and *before* flashing bigger kernel/rootfs, 
+# running the stock firmware and *before* flashing bigger kernel/rootfs,
 # but most users would miss that (users just don't read README files)
 
 num=${#name[*]}

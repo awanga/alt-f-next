@@ -26,7 +26,7 @@ if ! test -d $LOGDIR; then
 	mkdir -p $LOGDIR
 fi
 
-check_user $FUPPES_CONF $FUPPES_DIR $LOGDIR 
+check_user $FUPPES_CONF $FUPPES_DIR $LOGDIR
 
 case "$1" in
 	start) start $NAME --chuid $RC_USER:$RC_GROUP -- $FUPPES_ARGS ;;

@@ -37,7 +37,7 @@ istart() {
 		pt=$(sed -n '\|<type>.*</type>|{n;s|.*<port>\(.*\)</port>|\1|p}' $i)
 		if test -z "$pt" -o "$pt" = 0; then continue; fi
 		if echo "$ntout" | grep -q ":$pt "; then
-			avahi add $srvn 
+			avahi add $srvn
 		else
 			avahi remove $srvn
 		fi
@@ -59,7 +59,7 @@ istop() {
 check_user /var/lib/$RC_USER $CONF_AVAHI
 
 case "$1" in
-	start) istart ;; 
+	start) istart ;;
 	stop) istop ;;
 	status) status $NAME ;;
 	reload) reload $NAME ;;

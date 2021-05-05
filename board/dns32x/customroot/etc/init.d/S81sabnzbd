@@ -28,12 +28,12 @@ OPTS="--daemon --pid=$PID_DIR --config-file $CONFF"
 . /etc/init.d/common
 
 if test "$(basename "$DL_DIR")" = "Public"; then
-	check_user $CONF_DIR $PROG_DIR 
+	check_user $CONF_DIR $PROG_DIR
 	echo "Fail: you have to configure SABnzbd first."
 	exit 1
 fi
 
-if ! test -h /var/log/sabnzbd.log; then 
+if ! test -h /var/log/sabnzbd.log; then
 	ln -sf $DATA_DIR/logs/sabnzbd.log /var/log/sabnzbd.log
 	ln -sf $DATA_DIR/logs/sabnzbd.error.log /var/log/sabnzbd-error.log
 fi

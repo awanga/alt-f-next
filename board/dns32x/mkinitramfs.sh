@@ -31,7 +31,7 @@ deps_status() {
 	echo "Installed-Time: $(date +%s)"
 
 	if test -f $BASE_DIR/../board/dns32x/ipkgfiles/$1.conffiles; then
-		echo Conffiles: 
+		echo Conffiles:
 		for j in $(cat $BASE_DIR/../board/dns32x/ipkgfiles/$1.conffiles); do
 			echo "$j $(md5sum $BLDDIR/target/$j | cut -d" " -f1)"
 		done
@@ -115,7 +115,7 @@ else
 fi
 
 # fw_pkgs: pre-installed packages in base firmware
-# sq_pkgs: pre-installed packages on sqimage 
+# sq_pkgs: pre-installed packages on sqimage
 # base_pkgs/base_pkgs2 contains all packages for the base firmware but uClibc and busybox.
 # Other packages often don't explicitly depends on them, so we have to list them all here.
 base_pkgs="alt-f-utils dosfstools dropbear kexec mdadm nfs-utils libgpiod libtirpc popt zlib"
@@ -243,7 +243,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 
 # HACK! with the dns327 we now have two architectures, armv5 and armv7.
 # armv5 binaries are the default and runs on both archs, but kernel modules are different for both.
-# The ideal situation would be to have the kernel-modules pkg to depends on the armv5 OR the armv7 
+# The ideal situation would be to have the kernel-modules pkg to depends on the armv5 OR the armv7
 # kernel-modules pkg, and at install time 'ipkg' would read the running machine arch and install
 # the appropriate kernel-module pkg. But that does not seems to be possible.
 # instead, the no-files kernel-modules pkg install script does that.
@@ -281,7 +281,7 @@ elif test "$TYPE" = "sqsplit"; then # as 'sqall' above but also create sqimage w
 		deps_check $i
 		deps_status $i
 		cat $BLDDIR/../board/dns32x/ipkgfiles/$i.lst >> $TF
-	done >> etc/preinst.status 
+	done >> etc/preinst.status
 
 	cd $BLDDIR/images
 

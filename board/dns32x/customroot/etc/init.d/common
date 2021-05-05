@@ -44,14 +44,14 @@ AVAHI_SRV_DIR=/etc/avahi/services
 # $1-add/remove $2-service name
 avahi() {
 	if ! test -d $AVAHI_SRV_DIR; then return 0; fi
- 
+
 	stype=$(sed -n "s|.*<type>\(.*$2.*\)</type>|\1|p" $AVAHI_SRV_DIR/$2.service* 2> /dev/null)
-	
+
 	for i in $(grep -l "<type>$stype</type>" $AVAHI_SRV_DIR/*.service*); do
 		sext=${i##*.}
 		sname=$(basename $i)
 		sname=${sname%%.*}
-		
+
 		if test "$1" = "add" -a "$sext" = "service-"; then
 				mv $AVAHI_SRV_DIR/$sname.service- $AVAHI_SRV_DIR/$sname.service
 		elif test "$1" = "remove" -a "$sext" = "service"; then
@@ -111,7 +111,7 @@ stoprequired() {
 	name=$1; shift
 	for i in $*; do
 		if rc$i status >& /dev/null; then
-			rc$i stop >& /dev/null 
+			rc$i stop >& /dev/null
 		fi
 	done
 }
@@ -169,7 +169,7 @@ omsg() {
 	else
 		echo "Fail."
 	fi
-	return $1	
+	return $1
 }
 
 # some services need to create its own user/group
@@ -201,7 +201,7 @@ start() {
 	fi
 
 	if test -n "$RC_PIDFILE"; then
-		ARGS_PID="--pidfile $RC_PIDFILE"	
+		ARGS_PID="--pidfile $RC_PIDFILE"
 		if test -n "$RC_MAKE_PID"; then
 			ARGS_PID="--make-pidfile $ARGS_PID"
 		fi

@@ -88,15 +88,15 @@ add_disk() {
 	# qemu:
 	# sda-left:  /sys/devices/pci0000:00/0000:00:0c.0/host0/target0:0:0/0:0:0:0
 	# sdb-right: /sys/devices/pci0000:00/0000:00:0c.0/host0/target0:0:1/0:0:1:0
-	# 
+	#
 	# 325:
 	# sda-left:  /sys/devices/ocp.0/f1080000.sata/ata1/host0/target0:0:0/0:0:0:0
 	# sdb-right: /sys/devices/ocp.0/f1080000.sata/ata2/host1/target1:0:0/1:0:0:0
-	# 
+	#
 	# 320l:
 	# sda-left:  /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0/0:0:0:0
 	# sdb-right: /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0/1:0:0:0
-	# 
+	#
 	# 323:
 	# sdb-left:  /sys/devices/platform/sata_mv.0/ata2/host1/target1:0:0/1:0:0:0
 	# sda-right: /sys/devices/platform/sata_mv.0/ata1/host0/target0:0:0/0:0:0:0
@@ -112,8 +112,8 @@ add_disk() {
 			lhost="/0:0:1:0"; rhost="/0:0:0:0"
 		fi
 		# which bay?
-		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS 
-		PHYSD=$(realpath /sys/block/$MDEV/device) 
+		# dont use PHYSDEVPATH, for easy mounting disks in /etc/init.d/rcS
+		PHYSD=$(realpath /sys/block/$MDEV/device)
 		if echo $PHYSD | grep -q $lhost; then
 			bay="right"
 		elif echo $PHYSD | grep -q $rhost; then
@@ -239,7 +239,7 @@ add_partition() {
 			fi
 			if test -e $PWD/md$MD_NAME -a -b $PWD/md$MD_NAME; then
 				mdadm --query --detail $PWD/md$MD_NAME
-				if test $? = 0; then # generate hotplug event for /dev/md?. 
+				if test $? = 0; then # generate hotplug event for /dev/md?.
 					(cd /dev && ACTION=add DEVTYPE=partition PWD=/dev MDEV=md$MD_NAME /usr/sbin/hot.sh)
 				fi
 			fi
@@ -276,7 +276,7 @@ add_partition() {
 			if ! test -x /usr/bin/ntfsfix; then fsckcmd="echo "; fi
 			fstype="ntfs-3g"
 			fsopt="-" # FIXME, hack for hot_aux arguments (can't be empty)
-			;; 
+			;;
 		swap) # don't mount swap on usb devices
 			if realpath /sys/block/${MDEV:0:3}/device | grep -q /usb./; then
 				if test -z "$USB_SWAP" -o "$USB_SWAP" = "no"; then
@@ -304,7 +304,7 @@ add_partition() {
 					modprobe -q dm-mirror
 					modprobe -q dm-snapshot
 				fi
-				vgscan --mknodes 
+				vgscan --mknodes
 				vgchange -a y
 			else
 				emsg="No LVM support found for partition type \"$fstype\" in \"$MDEV\""
@@ -324,7 +324,7 @@ add_partition() {
 						modprobe -q marvell_cesa
 					fi
 				fi
-				
+
 				if test -f "$CRYPT_KEYFILE" -a ! -b /dev/mapper/$MDEV-crypt; then
 					if cryptsetup isLuks $PWD/$MDEV >& /dev/null ; then
 						#usleep 1500000 # need a sleep here? see S14cryptsetup
@@ -421,7 +421,7 @@ remove_partition() {
 				return 1	# busy?
 			fi
  		fi
-		
+
 		if test -f /usr/sbin/quotaoff; then
 			quotaoff -ug $PWD/$MDEV
 		fi
@@ -434,7 +434,7 @@ remove_partition() {
 			umount -r $mpt # damage control
 		#	ret=$?	# "eject" should fail.
 		fi
-		
+
 	elif test -e /proc/mdstat -a -n "$(grep $MDEV /proc/mdstat)"; then
 		eval $(mdadm --examine --export $PWD/$MDEV)
 		md=$(ls /sys/block/${MDEV%%[0-9]}/$MDEV/holders) # 0.9 metadata

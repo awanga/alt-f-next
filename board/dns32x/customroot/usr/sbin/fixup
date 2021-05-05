@@ -19,7 +19,7 @@ usage() {
 
 create_dirs() {
 	if test -z "$FILES"; then return; fi
-	
+
 	aufs.sh -n
 	for i in $FILES; do
 		mkdir -p /Alt-F/$(dirname $i)
@@ -83,7 +83,7 @@ download() {
 		wget -q $flst
 	fi
 
-	# remove repository deleted fixes, rolling then back first if applied 
+	# remove repository deleted fixes, rolling then back first if applied
 	for i in $(ls -r $VER-*.fix 2> /dev/null); do
 		if ! grep -q "^$i" fixes.lst; then
 			lfix=$(echo $i | cut -d"-" -f2)
@@ -118,10 +118,10 @@ list() {
 }
 
 depends() {
-	fix2=$(echo $fix | cut -d"-" -f1,2)     
-	dep=$(grep -l "^REQUIRE=.*$fix2" *.fix)         
+	fix2=$(echo $fix | cut -d"-" -f1,2)
+	dep=$(grep -l "^REQUIRE=.*$fix2" *.fix)
 	if test -n "$dep"; then
-			fix3=$(echo $dep | cut -d"-" -f2)    
+			fix3=$(echo $dep | cut -d"-" -f2)
 			if fixup status $fix3 >& /dev/null; then
 					echo Can\'t rollback $(basename $fix .fix) because $(basename $dep .fix) is applied and depends on it
 					exit 1
@@ -133,7 +133,7 @@ VER=$(cat /etc/Alt-F)
 FIXDIR=/usr/share/fixes
 CONFM=/etc/misc.conf
 
-. $CONFM 
+. $CONFM
 
 if test -z "$FIXSITE"; then # FIXME: to remove after RC4
 	FIXSITE=http://sourceforge.net/projects/alt-f/files/fixes

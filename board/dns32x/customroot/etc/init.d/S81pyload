@@ -36,7 +36,7 @@ if test "$(basename "$DL_DIR")" = "Public"; then
 	echo "Fail: you have to configure pyLoad first."
 	exit 1
 fi
-	
+
 for i in $CONF_DIR $PID_DIR; do
 	if ! test -d "$i"; then mkdir -p "$i"; fi
 done
@@ -46,7 +46,7 @@ if ! test -h $DATA_DIR/pyload.conf; then
 	if ! test -d $DATA_DIR; then mkdir -p $DATA_DIR; fi
 	ln -sf $CONFF $DATA_DIR/pyload.conf
 	cp $CONF_DIR/files.db- $DATA_DIR/files.db
-	
+
 	echo -e ".\n.\n.\nAlt-F\n$(cat /tmp/board)\n$(hostname)\nroot@$(hostname -f)\n" | \
 		openssl req -x509 -nodes -days 3650 -newkey rsa:1024 \
 		-keyout $DATA_DIR/ssl.key -out $DATA_DIR/ssl.crt 2>/dev/null

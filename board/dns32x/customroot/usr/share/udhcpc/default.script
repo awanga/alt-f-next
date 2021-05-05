@@ -58,7 +58,7 @@ case "$1" in
 
 		logger -st udhcpc "Updating /etc/samba/smb.conf: allow $NETWORK/${subnet}"
 		sed -i "s|hosts allow = \([^ ]*\) \([^ ]*\)\(.*$\)|hosts allow = 127. $NETWORK/${subnet}\3|" /etc/samba/smb.conf
-		
+
 		if test -n "$router"; then
 			while route del default gw 0.0.0.0 dev $interface 2>/dev/null; do true; done
 			msg="adding route"

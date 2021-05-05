@@ -7,11 +7,11 @@ CONF=/etc/polipo/config
 
 # SIGUSR1 signal, it will write out all the in-memory data to disk (but
 # won't discard them), reopen the log file, and then reload the forbidden
-# URLs file (see Forbidden). 
+# URLs file (see Forbidden).
 #
 # SIGUSR2 signal, it will write out all the in-memory data to disk and
 # discard as much of the memory cache as possible.  It will then reopen
-# the log file and reload the forbidden URLs file. 
+# the log file and reload the forbidden URLs file.
 
 . /etc/init.d/common
 

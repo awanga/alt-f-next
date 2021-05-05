@@ -128,7 +128,7 @@ bay2disk() {
 
 # $1=dsk, not in use ret=0
 notinuse() {
-	
+
 	st=0
 
 	if test -n "$(grep /dev/$1 /proc/mounts 2> /dev/null)" -o \
@@ -152,7 +152,7 @@ disk2bay() {
 	bay=$(eval echo \$$1)
 }
 
-if test -f /etc/bay; then 
+if test -f /etc/bay; then
 	. /etc/bay
 else
 	echo "eject: error, /etc/bay not found!"

@@ -16,7 +16,7 @@
 # 	./mkpkg.sh <package name>
 #
 # If package "a" depends on package "b", you must first create the package
-# "b", with the above procedure, and then create the package "a" 
+# "b", with the above procedure, and then create the package "a"
 #
 # If the file contents of a package changes, do:
 # 	rm ipkfiles/<pkg>.lst
@@ -122,7 +122,7 @@ case "$1" in
 		if test $# != 2; then
 			usage
 		elif ! test -f $IPKGDIR/$2.lst; then
-			echo "No such package" >&2 
+			echo "No such package" >&2
 			exit 1
 		fi
 		cd $ROOTFSDIR
@@ -220,7 +220,7 @@ case "$1" in
 				st=$?
 				if test -n "$res"; then res="($res)"; fi
 				if test $st = 0; then
-					echo -e "\tOK $res" 
+					echo -e "\tOK $res"
 				else
 					echo -e "\tFAIL $res"
 				fi
@@ -266,7 +266,7 @@ case "$1" in
 		for i in $(ls $IPKGDIR/*.lst); do
 			p=$(basename $i .lst)
 			if grep -q ^BR2_PACKAGE_$(echo $p | tr '[:lower:]-' '[:upper:]_')=y $CONFIGFILE; then
-				cat $i >> $TF 
+				cat $i >> $TF
 			fi
 		done
 
@@ -321,9 +321,9 @@ case "$1" in
 
 		EOF
 		for i in  ipkgfiles/*.control ; do
-			awk '/Package:/ {pkg=$2} 
-				/Description:/ {desc=substr($0,index($0,":")+1)} 
-				/Version:/ {ver=$2} 
+			awk '/Package:/ {pkg=$2}
+				/Description:/ {desc=substr($0,index($0,":")+1)}
+				/Version:/ {ver=$2}
 				END {printf "<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n", pkg, ver, desc}' $i
 		done
 		echo "</table>"	
@@ -450,7 +450,7 @@ if ! test -f $IPKGDIR/$pkg.control; then # first time build
 			printf "Maintainer: jcard\n";
 		}
 	' $PKGDIR/Config.in > $IPKGDIR/$pkg.control
-elif test "$force" != "y"; then 
+elif test "$force" != "y"; then
 	cver=$(awk '/^Version/{print $2}' $IPKGDIR/$pkg.control)
  	if test "$cver" != "$version"; then
 		if test "${cver%-[0-9]}" != "$version"; then
@@ -491,7 +491,7 @@ fi
 #	(variable PKG_ROOT defined as root of pkg installation)
 #
 # in $IPKGDIR there will be:
-# <pkg>.control, <pkg>.lst, <pkg>.conffiles, 
+# <pkg>.control, <pkg>.lst, <pkg>.conffiles,
 # <pkg>.preinst, <pkg>.postinst, <pkg>.prerm, <pkg>.postrm
 
 mkdir -p tmp tmp/CONTROL
@@ -540,5 +540,5 @@ rm -rf tmp
 #tar -C ${BLDDIR}/images/dns323/root -T $IPKGDIR/$pkg.lst -czf data.tar.gz
 #tar -czf control.tar.gz ./control
 #echo "2.0" > tmp/debian-binary
-#ar -crf ${pkg}_${version}_arm.ipk ./debian-binary ./data.tar.gz ./control.tar.gz 
+#ar -crf ${pkg}_${version}_arm.ipk ./debian-binary ./data.tar.gz ./control.tar.gz
 #rm data.tar.gz control control.tar.gz debian-binary

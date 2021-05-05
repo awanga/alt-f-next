@@ -24,8 +24,8 @@ RC_DESC="CUPS Daemon"
 . /etc/init.d/common
 
 if ! test -e $CUPS_CRT; then
-	ln -sf $BOX_CRT $CUPS_CRT                                            
-	ln -sf $BOX_KEY $CUPS_KEY   
+	ln -sf $BOX_CRT $CUPS_CRT
+	ln -sf $BOX_KEY $CUPS_KEY
 fi
 
 CUPS_DIRS="/var/spool/cups /var/cache/cups /var/run/cups /var/log/cups"
@@ -60,9 +60,9 @@ case "$1" in
 		stop $NAME
 
 		# allow empty printcap
-		if grep -q cupsd $PRINTC >& /dev/null; then 
+		if grep -q cupsd $PRINTC >& /dev/null; then
 			echo -n > $PRINTC
-		fi		
+		fi
 
 		rcinetd enable printer
 		avahi remove ipp

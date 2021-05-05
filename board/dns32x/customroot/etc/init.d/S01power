@@ -127,7 +127,7 @@ case "$1" in
 		fi
 		echo "$wol_res"
 
-		if test $alarm_st = 0  -o $spd_st = 0 -o  $apr_st = 0 -o $wol_st = 0; then 
+		if test $alarm_st = 0  -o $spd_st = 0 -o  $apr_st = 0 -o $wol_st = 0; then
 			return 0
 		else
 			return 1

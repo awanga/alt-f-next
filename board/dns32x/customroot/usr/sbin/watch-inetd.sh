@@ -2,7 +2,7 @@
 
 # This script is launched and respawn by init.
 # It watchs for a running inetd every three minutes and if needed launchs one,
-# with only minimum services active. 
+# with only minimum services active.
 # To recover from a damage or missing inetd.conf just copy inetd.conf.default over it
 
 INETD_SCONF=/etc/inetd.conf.default

@@ -111,7 +111,7 @@ case $# in
 	;;
 *)
 	echo $usage >&2
-	exit 1 
+	exit 1
 	;;
 esac
 

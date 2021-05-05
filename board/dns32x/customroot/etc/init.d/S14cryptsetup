@@ -42,7 +42,7 @@ iunload() {
 			fi
 		done
 	done
-	stoprequired $NAME $REQUIRE 
+	stoprequired $NAME $REQUIRE
 }
 
 case "$1" in
@@ -73,8 +73,8 @@ case "$1" in
 			dev=$(basename $i)
 			if test -z "$(cryptsetup isLuks $i 2>&1)" -a -b /dev/mapper/${dev}-crypt; then
 				dm=${dev}-crypt
-	
-				# find device-mapper name under /dev, e.g. /dev/dm-3 
+
+				# find device-mapper name under /dev, e.g. /dev/dm-3
 				eval $(dmsetup ls | awk '/'$dm'/{printf "mj=%d mi=%d", substr($2,2), $3}')
 				eval $(awk '/'$mj' *'$mi'/{printf "tdm=%s", $4}' /proc/partitions)
 

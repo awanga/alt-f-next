@@ -35,7 +35,7 @@ istart() {
 			if ! test -d "$mp"; then
 				mkdir -p "$mp"
 			elif mountpoint -q "$mp"; then
-				continue		
+				continue
 			fi
 			mount "$mp" 2>&1 | logger -st rmount #>& /dev/null
 		fi
@@ -62,7 +62,7 @@ istatus() {
 	st=1
 	if test -n "$(mount -t nfs)"; then st=0; fi
 	if test -n "$(mount -t cifs)"; then st=0; fi
-	
+
 	if test $st = 0; then
 		echo "$NAME running"
 	else

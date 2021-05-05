@@ -2,28 +2,28 @@
 
 # http://www.networkupstools.org/docs/user-manual.chunked/ar01s06.html
 # http://www.networkupstools.org/docs/user-manual.chunked/ar01s09.html#_system_level_privileges_and_ownership
-# 
+#
 # -nut.conf set as 'none', NUT not configured, don't start anything.
-# 
+#
 # the UPS is controlled by this computer:
-# -nut.conf set as 
+# -nut.conf set as
 # 	-'standalone' (no other computer running NUT),
 # 	-or 'netserver' (to be able to shutdown other computers running NUT)
-# 	
+#
 # 	-needs to fill ups.conf with the UPS type and access driver
 # 		-start upsdrvctl (/usr/lib/nut/drivers/upsdrvctl start|stop|shutdown (UPS?))
-# 	-needs to fill upsd.conf 
+# 	-needs to fill upsd.conf
 # 		-start upsd (-c reload, -c stop, or use upsd.pid?)
 # 	-needs to fill upsmon.conf in master mode
 # 		-start upsmon (-c reload, -c stop, or use upsd.pid?)
 # 	-start upslog, a log daemon (uses upslog.pid?)
-# 
+#
 # this computer is powered by an UPS controlled by another computer:
 # 	-nut.conf set as 'netclient'
-# 
+#
 # 	-need to fill upsmon.conf for slave mode
 # 		-start upsmon
-# 
+#
 
 ################################
 # this script is UNTESTED!     #
@@ -132,7 +132,7 @@ case "$1" in
 	restart)
 		restart
 		;;
-		
+
 	*)
 		echo "Usage: $0 {start|stop|status|reload|restart}"
 		exit 1

@@ -30,18 +30,18 @@ OR ANY OF ITS SUB-DIRECTORIES, OR THE SYSTEM MIGHT HANG!" > $mp/Alt-F/README.txt
 
 	rm -f /Alt-F
 	ln -s $mp/Alt-F /Alt-F
-	
+
 	#mkdir -p /Alt-F/var/lib /Alt-F/var/spool
 	mkdir -p /Alt-F/var/lib
 	for i in nfs misc; do
-		cp -a /var/lib/$i /Alt-F/var/lib 2> /dev/null 
+		cp -a /var/lib/$i /Alt-F/var/lib 2> /dev/null
 	done
 	#for i in atjobs atspool cron lpd samba; do
 	#	if test -d /var/spool/$i; then
 	#		cp -a /var/spool/$i /Alt-F/var/spool
 	#	fi
 	#done
-	
+
 	loadsave_settings -ta
 	mount -t aufs -o remount,prepend:$mp/Alt-F=rw /
 	return $?
@@ -135,14 +135,14 @@ case $1 in
 		fi
 
 		dolock
-		trap cleanlock exit 
+		trap cleanlock exit
 
 		#mkdir -p /Alt-F/var/lib /Alt-F/var/spool
-		mkdir -p /Alt-F/var/lib 
+		mkdir -p /Alt-F/var/lib
 		#for i in nfs misc; do
-		#	cp -a /var/lib/$i /Alt-F/var/lib 
+		#	cp -a /var/lib/$i /Alt-F/var/lib
 		#done
-		cp -a /var/lib/misc /Alt-F/var/lib 
+		cp -a /var/lib/misc /Alt-F/var/lib
 		if ! grep -q 'DELAY_NFS=y' /etc/misc.conf; then
 			cp -a /var/lib/nfs /Alt-F/var/lib 2> /dev/null
 		fi

@@ -46,6 +46,6 @@ case "$1" in
 		;;
 	restart) restart $NAME ;;
 	reload) reload $NAME ;;
-	status) status $NAME ;;	
+	status) status $NAME ;;
 	*) usage $0 "start|stop|status|restart" ;;
 esac

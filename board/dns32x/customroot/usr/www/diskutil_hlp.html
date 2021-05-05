@@ -33,7 +33,7 @@ You can use Services->System->smart->Configure to automate tests.
 <li><strong>Swap Priority</strong> - allows specifying the swap priority of each disk. Swap over RAID is not supported on this webUI.
 On systems with low physical memory (RAM), the Operating System uses a special partition on disk to
 emulate memory; when more memory is needed, the contents of a portion of RAM is moved to disk and a
-portion of a previously saved memory contents on the disk is moved back to RAM -- thus the name 
+portion of a previously saved memory contents on the disk is moved back to RAM -- thus the name
 <a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swap or swapping</a>.
 As disks are much slower than RAM this process slows down the overal system and can spinup the disks.
 Swap <strong>is necessary</strong>, at least to allow the system to periodically check filesystem at boot time.
@@ -57,11 +57,11 @@ Disks with the same swap priority will be used in a round-robin mode, which prov
 
 </ul>
 
-<strong>Swapping on USB devices: </strong> <em>Enable</em> if you want to enable 
+<strong>Swapping on USB devices: </strong> <em>Enable</em> if you want to enable
 <a href="http://en.wikipedia.org/wiki/Paging" target="_blank">swapping</a> on USB devices.
 <ul>
 <li>By default swapping is not enabled on USB attached flash pens or disks,
-as it will degrade performance and can shorten the life of the USB flash pen 
+as it will degrade performance and can shorten the life of the USB flash pen
 (which has a limited number of write cycles).</li>
 <li>Swap <strong>is necessary</strong> and is enabled for internal disks,
 that must have a swap partition as its first partition.</li>

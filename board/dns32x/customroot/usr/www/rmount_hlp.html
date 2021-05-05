@@ -20,7 +20,7 @@ Specify remote folders to be locally mounted, e.g. to make them available under 
 <li><strong>Host:</strong> The remote hostname (or IP address) that exports the share.</li>
 <li><strong>Folder:</strong> The remote folder to mount locally.</li>
 <li><strong>Discover:</strong> Hit to NFS browse the network; hitting a line will fill the Host and Folder fields.</li>
-<li><strong>Local Folder:</strong> Local folder where the remote share should be made available. 
+<li><strong>Local Folder:</strong> Local folder where the remote share should be made available.
 It is recommended to use an empty folder directly under "/mnt"; if necessary create the folder, e.g. "/mnt/remoteNFS".</li>
 <li><strong>Search:</strong> Hit to browse the local folder structure (and possibly create the mount folder).</li>
 <li><strong>Mount Options:</strong> NFS mount options, comma separated, no spaces.</li>
@@ -30,7 +30,7 @@ clicking to select multiple options. Options of the form option=value
 does not preserve the current value.</li>
 
 <li><p><h4>Delay NFS start on boot:</h4> NFS stores some client information on disk, for recovery on reboot
-in case of server or client crash. That information is stored in a sub-directory where Alt-F 
+in case of server or client crash. That information is stored in a sub-directory where Alt-F
 packages are stored. At boot time, when NFS starts, the Alt-F directory might not yet be available
 and such recovery information is missing.<br>Checking this checkbox delays the NFS start until the
 Alt-F directory becomes available. Notice that if the checkbox is checked and the Alt-F directory
@@ -71,7 +71,7 @@ After an entry is filled-in and the Submit button is hit, a
 <strong>Mount</strong> button will appear, which will make the remote
 share locally available; when <em>mounted</em>, an
 <strong>unMount</strong> button will appear instead, which if selected will unmount
-(unmap) the remote share. 
+(unmap) the remote share.
 
 <br><button type=button onclick="history.back()">Back</button></body>
 </html>

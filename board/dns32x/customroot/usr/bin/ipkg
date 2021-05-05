@@ -38,11 +38,11 @@ clean() {
 		ipkg-cl remove ipkg # >& /dev/null
 	fi
 
-	if ! aufs.sh -u >& /dev/null; then 
+	if ! aufs.sh -u >& /dev/null; then
 		echo "ipkg: can't umount aufs branch, stopping services and retrying..."
 		rcall stop >& /dev/null
 		# check during 10 seconds that they are indeed stopped
-		# "rcall status" doesn't work cause of inetd, syslog and sysctrl 
+		# "rcall status" doesn't work cause of inetd, syslog and sysctrl
 		cnt=10; st=1
 		while test "$st" = "1" -a "$cnt" != "0"; do
 			st=0
@@ -68,7 +68,7 @@ clean() {
 		fi
 		rcall start >& /dev/null
 	fi
-	
+
 	rm -rf $(readlink -f /Alt-F) /Alt-F
 }
 
@@ -136,12 +136,12 @@ and no /tmp/ipkg_*_arm.ipk file found. Exiting"
 		/^Architecture:/ {
 			if ($2 != "arm") exit 1 }
 		' control
-		
+
 	if test $? != 0; then
 		rm -rf $TMPD
 		msg "Downloaded wrong package?"
 	fi
-	
+
 	aufs.sh -n
 	tar -C /Alt-F -xzf data.tar.gz
 	mkdir -p /Alt-F/etc/init.d
@@ -224,7 +224,7 @@ ipkg_upgrade() {
 		ipkg-cl -force-depends remove $to_rm
 		ipkg-cl -force-depends remove $to_rm # dooh!
 		aufs.sh -r
-		# restore conf-files 
+		# restore conf-files
 		for i in $to_save; do mv /$i.bck /$i; done
 	fi
 
@@ -251,7 +251,7 @@ elif test "$#" != 0 -a "$1" = "-install"; then
 
 	elif test "$#" != 2; then
 		usage
-	
+
 	elif ! $(mountpoint -q $2); then
 		echo "\"$2\" is not a mountpoint."
 		exit 1
@@ -291,7 +291,7 @@ elif test -f /usr/bin/ipkg-cl; then
 			ln -sf /usr/sbin/rcscript $rclink
 		fi
 		sed -n "/Package: $pkg/,/^$/p" /etc/preinst.status >> /usr/lib/ipkg/status
-	fi      
+	fi
 
 	exit $res
 
