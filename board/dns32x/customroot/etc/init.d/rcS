@@ -23,6 +23,7 @@ for i in lib run log cache spool db lock; do
 	ln -sf /tmp/$i /var/$i
 done
 
+ln -sf /var/run /run
 mkdir -p /mnt /var/spool/lpd /var/spool/samba /var/run/mdadm /var/run/dropbear
 chmod a+wt /var/spool/lpd /var/spool/samba
 

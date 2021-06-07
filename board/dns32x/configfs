@@ -19,6 +19,7 @@ source $BASE_DIR/../board/dns32x/exports.source $BR2_PROJECT
 RMF="etc/default/ntpd etc/random-seed
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
 etc/init.d/S30dbus
+run
 sbin/fsck.ext4dev sbin/mkfs.ext4dev
 usr/bin/ntpdate
 var/spool var/log var/cache var/run var/pcmcia var/lib var/lock
