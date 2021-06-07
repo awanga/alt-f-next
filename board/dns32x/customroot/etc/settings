@@ -16,7 +16,6 @@
 /etc/inadyn.conf
 /etc/inetd.conf
 /etc/init.d/rc.sys
-/etc/ipkg.conf
 /etc/misc.conf
 /etc/modprobe.conf
 /etc/msmtprc
