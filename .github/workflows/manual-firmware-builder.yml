@@ -1,0 +1,59 @@
+name: manual-firmware-builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      manual-tag:
+        description: 'Tag/Commit to build firmware'
+        required: true
+        default: 'master'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.manual-tag }}
+        persist-credentials: false
+
+    - name: Install
+      run: sudo apt-get update -qqy && sudo apt-get install -qqy devio git rsync
+
+    - name: Build
+      run: |
+        echo "building dns323 firmware..."
+        make alt-f_dns323_defconfig
+        make
+        mkdir output/dns323
+        mv output/images/dns323/Alt-F* output/dns323/
+        rm -fR output/build output/images output/host \
+          output/staging output/target output/.br2* .config*
+        echo "building dns325 firmware..."
+        make alt-f_dns325_defconfig
+        make
+        mkdir output/dns325
+        mv output/images/dns325/Alt-F* output/dns325/
+        rm -fR output/build output/images output/host \
+          output/staging output/target output/.br2* .config*
+        echo "building dns327 firmware..."
+        make alt-f_dns327_defconfig
+        make
+        mkdir output/dns327
+        mv output/images/dns327/Alt-F* output/dns327/
+    - name: Release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: stable
+          title: Release-${{ github.event.inputs.manual-tag }}
+          files: |
+            LICENSE
+            board/dns32x/README.INSTALL
+            board/dns32x/README.USE
+            output/dns323/*
+            output/dns325/*
+            output/dns327/*
