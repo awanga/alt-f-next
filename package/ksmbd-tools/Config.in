@@ -1,0 +1,9 @@
+config BR2_PACKAGE_KSMBD_TOOLS
+	bool "ksmbd-tools"
+	select BR2_PACKAGE_LIBGLIB2
+	select BR2_PACKAGE_LIBNL
+	help
+	  Set of utilities for creating and managing SMB3 shares for the ksmbd kernel
+	  module.
+
+	  https://github.com/cifsd-team/ksmbd-tools
