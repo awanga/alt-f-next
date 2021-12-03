@@ -1,0 +1,6 @@
+./etc/init.d/S61ksmbd
+./etc/ksmbd/smb.conf
+./usr/sbin/ksmbd.addshare
+./usr/sbin/ksmbd.adduser
+./usr/sbin/ksmbd.control
+./usr/sbin/ksmbd.mountd

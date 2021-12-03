@@ -1,0 +1,9 @@
+Package: ksmbd-tools
+Description: Set of utilities for creating and managing SMB3 shares for the ksmbd kernel module.
+Depends: libglib2, libnl, ipkg
+Version: 3.4.2
+Architecture: arm
+Priority: optional
+Section: admin
+Source: https://github.com/cifsd-team/ksmbd-tools
+Maintainer: awanga

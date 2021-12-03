@@ -1,0 +1,65 @@
+#!/bin/sh
+
+DESC="ksmbd Server"
+TYPE=net
+NAME=ksmbd.mountd
+
+SMB_CONF=/etc/ksmbd/smb.conf
+SMB_OPTS="--s"
+
+RETVAL=0
+
+. /etc/init.d/common
+
+if ! test -f /usr/sbin/smbd; then
+	echo "ksmb: samba detected. exiting..."
+	exit 1
+fi
+
+if ! test -f $SMB_CONF; then
+	echo "ksmb: no configuration file found."
+	exit 1
+fi
+
+# Make directories.
+for i in /var/log/ksmbd /var/run/ksmbd; do
+	if ! test -d $i; then mkdir -p $i; fi
+done
+
+istart() {
+	start $NAME -- $SMB_OPTS
+	RETVAL=$?
+
+	avahi add smb
+
+	if test $RETVAL -eq 0; then
+		return 0
+	fi
+
+	return 1
+
+}
+
+istop() {
+	stop $NAME
+	ksmbd.control -s
+	RETVAL=$?
+	rm -f /var/run/ksmbd.pid
+
+	avahi remove smb
+
+	if test $RETVAL -eq 0; then
+		return 0
+	fi
+
+	return 1
+}
+
+case "$1" in
+	start) istart ;;
+	stop) istop ;;
+	restart) restart $NAME ;;
+	reload) reload $NAME ;;
+	status) status $NAME ;;
+	*) usage $0 "start|stop|status|restart|reload" ;;
+esac
