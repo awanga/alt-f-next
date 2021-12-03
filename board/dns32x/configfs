@@ -193,6 +193,9 @@ done
 
 for i in $RMF; do rm -rf $1/$i; done
 
+# make symlink for (just deleted) /run
+ln -sf var/run $1/run
+
 # 4-move some files to /usr, that will be lzma squashfs compressed
 #
 # as a matter of fact everything but busybox and libUclibc could be moved,
