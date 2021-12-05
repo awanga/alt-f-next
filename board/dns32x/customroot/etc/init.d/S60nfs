@@ -14,8 +14,10 @@ if test -f $MISCC; then
 	. $MISCC
 fi
 
+mkdir -p /run/nfs/sm
+
 # remove possible leftovers from previous firmware
-rm -rf /etc/init.d/S60nfs /etc/init.d/S60nfs_client
+rm -rf /etc/init.d/S60nfs_client
 
 istart() {
 	if test -n "$DELAY_NFS"; then
