@@ -101,7 +101,7 @@ mbr_partition() {
 
 	clean_traces $i
 
-if true; then
+if false; then
 	eval $(sfdisk -l -uS $i | tr '*' ' ' | awk '
 		/cylinders/ {printf "maxsect=%.0f;", $3 * $5 * $7}')
 else
