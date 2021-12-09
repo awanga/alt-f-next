@@ -15,6 +15,7 @@ SOX_CPE_ID_PRODUCT = sound_exchange
 # From git and we're patching configure.ac
 SOX_AUTORECONF = YES
 SOX_AUTORECONF_OPTS = --include=$(HOST_DIR)/share/autoconf-archive
+SOX_INSTALL_STAGING = YES
 
 SOX_IGNORE_CVES += CVE-2017-11332 CVE-2017-11358 CVE-2017-11359 \
 	CVE-2017-15370 CVE-2017-15371 CVE-2017-15372 CVE-2017-15642 \
@@ -34,9 +35,9 @@ endif
 
 ifeq ($(BR2_PACKAGE_FILE),y)
 SOX_DEPENDENCIES += file
-SOX_CONF_OPTS += --with-magic
+SOX_CONF_OPTS += --enable-magic
 else
-SOX_CONF_OPTS += --without-magic
+SOX_CONF_OPTS += --disable-magic
 endif
 
 ifeq ($(BR2_PACKAGE_FLAC),y)

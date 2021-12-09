@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-KMOD_VERSION = 28
+KMOD_VERSION = 29
 KMOD_SOURCE = kmod-$(KMOD_VERSION).tar.xz
 KMOD_SITE = $(BR2_KERNEL_MIRROR)/linux/utils/kernel/kmod
 KMOD_INSTALL_STAGING = YES
@@ -39,6 +39,13 @@ KMOD_DEPENDENCIES += zlib
 KMOD_CONF_OPTS += --with-zlib
 else
 KMOD_CONF_OPTS += --without-zlib
+endif
+
+ifeq ($(BR2_PACKAGE_ZSTD),y)
+KMOD_DEPENDENCIES += zstd
+KMOD_CONF_OPTS += --with-zstd
+else
+KMOD_CONF_OPTS += --without-zstd
 endif
 
 ifeq ($(BR2_PACKAGE_XZ),y)
@@ -89,6 +96,13 @@ HOST_KMOD_DEPENDENCIES += host-zlib
 HOST_KMOD_CONF_OPTS += --with-zlib
 else
 HOST_KMOD_CONF_OPTS += --without-zlib
+endif
+
+ifeq ($(BR2_PACKAGE_HOST_KMOD_ZSTD),y)
+HOST_KMOD_DEPENDENCIES += host-zstd
+HOST_KMOD_CONF_OPTS += --with-zstd
+else
+HOST_KMOD_CONF_OPTS += --without-zstd
 endif
 
 ifeq ($(BR2_PACKAGE_HOST_KMOD_XZ),y)

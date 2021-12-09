@@ -21,6 +21,9 @@ GHOSTSCRIPT_DEPENDENCIES = \
 	libpng \
 	tiff
 
+# 0002-Bug-704342-Include-device-specifier-strings-in-acces.patch
+GHOSTSCRIPT_IGNORE_CVES += CVE-2021-3781
+
 # Ghostscript includes (old) copies of several libraries, delete them.
 # Inspired by linuxfromscratch:
 # http://www.linuxfromscratch.org/blfs/view/svn/pst/gs.html
@@ -68,7 +71,7 @@ endif
 
 ifeq ($(BR2_PACKAGE_CUPS),y)
 GHOSTSCRIPT_DEPENDENCIES += cups
-GHOSTSCRIPT_CONF_OPTS  += \
+GHOSTSCRIPT_CONF_OPTS += \
 	CUPSCONFIG=$(STAGING_DIR)/usr/bin/cups-config \
 	--enable-cups
 else

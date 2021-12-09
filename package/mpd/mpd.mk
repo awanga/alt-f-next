@@ -5,12 +5,13 @@
 ################################################################################
 
 MPD_VERSION_MAJOR = 0.22
-MPD_VERSION = $(MPD_VERSION_MAJOR).3
+MPD_VERSION = $(MPD_VERSION_MAJOR).11
 MPD_SOURCE = mpd-$(MPD_VERSION).tar.xz
 MPD_SITE = http://www.musicpd.org/download/mpd/$(MPD_VERSION_MAJOR)
 MPD_DEPENDENCIES = host-pkgconf boost
 MPD_LICENSE = GPL-2.0+
 MPD_LICENSE_FILES = COPYING
+MPD_SELINUX_MODULES = mpd
 MPD_CONF_OPTS = \
 	-Daudiofile=disabled \
 	-Ddocumentation=disabled
@@ -274,13 +275,6 @@ endif
 
 ifneq ($(BR2_PACKAGE_MPD_TCP),y)
 MPD_CONF_OPTS += -Dtcp=true
-endif
-
-ifeq ($(BR2_PACKAGE_MPD_TIDAL),y)
-MPD_DEPENDENCIES += yajl
-MPD_CONF_OPTS += -Dtidal=enabled
-else
-MPD_CONF_OPTS += -Dtidal=disabled
 endif
 
 ifeq ($(BR2_PACKAGE_MPD_TREMOR),y)
