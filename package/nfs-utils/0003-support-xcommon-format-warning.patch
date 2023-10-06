@@ -1,0 +1,10 @@
+--- a/configure.ac	2023-10-06 01:22:20.866337064 +0000
++++ b/configure.ac	2023-10-06 01:23:30.679600040 +0000
+@@ -630,6 +630,7 @@
+  -Werror=missing-prototypes \
+  -Werror=missing-declarations \
+  -Werror=format=2 \
++ -Wno-error=format-nonliteral \
+  -Werror=undef \
+  -Werror=missing-include-dirs \
+  -Werror=strict-aliasing=2 \

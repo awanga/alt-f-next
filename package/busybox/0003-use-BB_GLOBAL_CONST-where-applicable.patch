@@ -1,0 +1,89 @@
+From 6f53fa8303edff685aee3cc16a6c8967fae869db Mon Sep 17 00:00:00 2001
+From: Luis Marques <luismarques@lowrisc.org>
+Date: Wed, 4 Sep 2019 17:48:39 +0200
+Subject: [PATCH] use BB_GLOBAL_CONST where applicable
+
+Signed-off-by: Romain Naour <romain.naour@smile.fr>
+---
+ coreutils/test_ptr_hack.c |  2 +-
+ include/libbb.h           | 27 +++++++++++++++++++++++++--
+ libbb/lineedit_ptr_hack.c |  2 +-
+ libbb/ptr_to_globals.c    |  2 +-
+ shell/ash_ptr_hack.c      |  6 +++---
+ 5 files changed, 31 insertions(+), 8 deletions(-)
+
+diff --git a/coreutils/test_ptr_hack.c b/coreutils/test_ptr_hack.c
+index 5ba9dcc68..6759b2144 100644
+--- a/coreutils/test_ptr_hack.c
++++ b/coreutils/test_ptr_hack.c
+@@ -18,6 +18,6 @@ struct test_statics *test_ptr_to_statics;
+ /* gcc -combine will see through and complain */
+ /* Using alternative method which is more likely to break
+  * on weird architectures, compilers, linkers and so on */
+-struct test_statics *const test_ptr_to_statics __attribute__ ((section (".data")));
++struct test_statics *BB_GLOBAL_CONST test_ptr_to_statics __attribute__ ((section (".data")));
+ 
+ #endif
+diff --git a/include/libbb.h b/include/libbb.h
+index 021100db1..2523fd89c 100644
+--- a/include/libbb.h
++++ b/include/libbb.h
+@@ -380,7 +380,13 @@
+  * this optimization.
+  */
+ #ifndef BB_GLOBAL_CONST
+-# define BB_GLOBAL_CONST const
++# if defined(__clang__)
++#  define BB_GLOBAL_CONST
++# elif defined(__GNUC__)
++#  define BB_GLOBAL_CONST const
++# else
++#  define BB_GLOBAL_CONST
++# endif
+ #endif
+ 
+ #if defined(errno)
+diff --git a/libbb/lineedit_ptr_hack.c b/libbb/lineedit_ptr_hack.c
+index dc45855d5..ac33bd409 100644
+--- a/libbb/lineedit_ptr_hack.c
++++ b/libbb/lineedit_ptr_hack.c
+@@ -18,6 +18,6 @@ struct lineedit_statics *lineedit_ptr_to_statics;
+ /* gcc -combine will see through and complain */
+ /* Using alternative method which is more likely to break
+  * on weird architectures, compilers, linkers and so on */
+-struct lineedit_statics *const lineedit_ptr_to_statics __attribute__ ((section (".data")));
++struct lineedit_statics *BB_GLOBAL_CONST lineedit_ptr_to_statics __attribute__ ((section (".data")));
+ 
+ #endif
+diff --git a/libbb/ptr_to_globals.c b/libbb/ptr_to_globals.c
+index 8ba9cd154..26d7b2042 100644
+--- a/libbb/ptr_to_globals.c
++++ b/libbb/ptr_to_globals.c
+@@ -25,7 +25,7 @@ int *bb_errno;
+ /* gcc -combine will see through and complain */
+ /* Using alternative method which is more likely to break
+  * on weird architectures, compilers, linkers and so on */
+-struct globals *const ptr_to_globals __attribute__ ((section (".data")));
++struct globals *BB_GLOBAL_CONST ptr_to_globals __attribute__ ((section (".data")));
+ 
+ #ifdef __GLIBC__
+ int *const bb_errno __attribute__ ((section (".data")));
+diff --git a/shell/ash_ptr_hack.c b/shell/ash_ptr_hack.c
+index f69840825..af16cca27 100644
+--- a/shell/ash_ptr_hack.c
++++ b/shell/ash_ptr_hack.c
+@@ -22,8 +22,8 @@ struct globals_var      *ash_ptr_to_globals_var;
+ /* gcc -combine will see through and complain */
+ /* Using alternative method which is more likely to break
+  * on weird architectures, compilers, linkers and so on */
+-struct globals_misc     *const ash_ptr_to_globals_misc __attribute__ ((section (".data")));
+-struct globals_memstack *const ash_ptr_to_globals_memstack __attribute__ ((section (".data")));
+-struct globals_var      *const ash_ptr_to_globals_var __attribute__ ((section (".data")));
++struct globals_misc     *BB_GLOBAL_CONST ash_ptr_to_globals_misc __attribute__ ((section (".data")));
++struct globals_memstack *BB_GLOBAL_CONST ash_ptr_to_globals_memstack __attribute__ ((section (".data")));
++struct globals_var      *BB_GLOBAL_CONST ash_ptr_to_globals_var __attribute__ ((section (".data")));
+ 
+ #endif
+-- 
+2.21.0
+

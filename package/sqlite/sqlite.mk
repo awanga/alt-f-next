@@ -52,6 +52,12 @@ endif
 
 SQLITE_CONF_ENV = CFLAGS="$(SQLITE_CFLAGS)"
 
+ifeq ($(BR2_TOOLCHAIN_HAS_LIBATOMIC),y)
+SQLITE_LDFLAGS += -latomic
+endif
+
+SQLITE_CONF_ENV = LDFLAGS="$(SQLITE_LDFLAGS)"
+
 ifeq ($(BR2_STATIC_LIBS),y)
 SQLITE_CONF_OPTS += --enable-dynamic-extensions=no
 else

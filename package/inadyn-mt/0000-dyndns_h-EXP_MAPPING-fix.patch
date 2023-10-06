@@ -1,0 +1,11 @@
+--- a/src/dyndns.h	2023-10-04 15:58:53.199886539 +0000
++++ b/src/dyndns.h	2023-10-04 15:59:12.124619361 +0000
+@@ -657,7 +657,7 @@
+ 	int		is_password;
+ 	int		is_alias;
+ 	int		is_ip_addr;
+-}EXP_MAPPING;
++};
+ 
+ /*public functions*/
+ 
