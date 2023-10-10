@@ -137,7 +137,7 @@ add_disk() {
 				/^SMART support is:.*Enabled/ {print "smart=yes;"}')
 
 			if test -z "$smart"; then
-				smartctl -s on -S on $PWD/$MDEV
+				smartctl -T permissive -s on -S on $PWD/$MDEV
 				fam="$(cat /sys/block/$MDEV/device/vendor)"
 				mod="$(cat /sys/block/$MDEV/device/model)"
 			fi

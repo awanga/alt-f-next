@@ -7,12 +7,11 @@ mount -o remount,rw /
 mount -t sysfs sysfs /sys
 mount -t tmpfs tmpfs /tmp
 
-#mount -t devtmpfs devtmpfs /dev
-#mount -t tmpfs tmpfs /dev
+mount -t devtmpfs devtmpfs /dev
 #mknod /dev/null c 1 3
 #mknod /dev/console c 5 1
 mkdir -p /dev/pts
-/bin/mount -t devpts devpts /dev/pts
+mount -t devpts devpts /dev/pts
 
 depmod -a &
 
@@ -265,8 +264,10 @@ while ! mkdir $aufslock >& /dev/null; do usleep 500000; done
 
 # sequence hotplug events
 echo > /dev/mdev.seq
+
 # populate /dev
 /sbin/mdev -s
+
 # "hotplug", mdev.conf registers /usr/sbin/hot.sh,
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 
