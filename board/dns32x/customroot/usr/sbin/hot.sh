@@ -179,7 +179,9 @@ add_disk() {
 		fi
 
 		# no low latency (server, not desktop)
-		echo 0 > /sys/block/$MDEV/queue/iosched/low_latency
+		if test -f /sys/block/$MDEV/queue/iosched/low_latency; then
+			echo 0 > /sys/block/$MDEV/queue/iosched/low_latency
+		fi
 
 		# for now use only disk partition-based md
 		if ! fdisk -l /dev/$MDEV | awk '$6 == "da" || $6 == "fd" || $6 == "fd00" { exit 1 }'; then
