@@ -30,7 +30,7 @@ case "$1" in
 	elif test ! -e $BOX_PEM; then # first time, none exists
 		echo -n "Creating SSL self-signed certificate... "
 		HOST=$(hostname) FHOST=$(hostname -f) BOX=$(cat /tmp/board) openssl req -x509 \
-		-nodes -days 3650 -newkey rsa:1024 -keyout $BOX_PEM -out $BOX_PEM -config $BOX_CNF
+		-nodes -days 3650 -newkey rsa:2048 -keyout $BOX_PEM -out $BOX_PEM -config $BOX_CNF
 	fi
 
 	# generate box crt and key, needed by some packages

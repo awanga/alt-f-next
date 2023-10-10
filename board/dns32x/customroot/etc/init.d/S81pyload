@@ -48,7 +48,7 @@ if ! test -h $DATA_DIR/pyload.conf; then
 	cp $CONF_DIR/files.db- $DATA_DIR/files.db
 
 	echo -e ".\n.\n.\nAlt-F\n$(cat /tmp/board)\n$(hostname)\nroot@$(hostname -f)\n" | \
-		openssl req -x509 -nodes -days 3650 -newkey rsa:1024 \
+		openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
 		-keyout $DATA_DIR/ssl.key -out $DATA_DIR/ssl.crt 2>/dev/null
 	chmod o-r $DATA_DIR/ssl.key $DATA_DIR/ssl.crt
 fi
