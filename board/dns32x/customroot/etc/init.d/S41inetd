@@ -61,6 +61,7 @@ avahi_remove() {
 }
 
 istart() {
+		if ! test -f $CONFF; then cp $CONFS $CONFF; fi
 		if grep -q "^printer" $CONFF; then modprobe usblp; fi
 		if ! grep -qE '(^ftps|^#ftps).*implicit_ssl=' $CONFF; then # FIXME: add ftps, to remove after RC4
 			sed -i "/^ftp/a \
