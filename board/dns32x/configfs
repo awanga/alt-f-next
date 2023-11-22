@@ -100,11 +100,12 @@ if test -z "$BR2_KERNEL_none"; then
 fi
 
 # 1.2-update CA certificates bundle every month, if a newer one is available
-ca_bundle=board/dns32x/customroot/etc/ssl/ca-bundle.crt
+ca_bundle=board/dns32x/customroot/etc/ssl/certs/ca-bundle.crt
 if test $(expr $(stat -c %Y $ca_bundle 2> /dev/null) + 2592000) -lt $(date +%s); then
-	curl -o $ca_bundle --time-cond $ca_bundle https://curl.haxx.se/ca/cacert.pem
-	cp $ca_bundle $ROOTFS/etc/ssl/ca-bundle.crt
+	curl -o $ca_bundle --remote-name --time-cond $ca_bundle https://curl.se/ca/cacert.pem
 fi
+cp $ca_bundle $ROOTFS/etc/ssl/certs/ca-bundle.crt
+#c_rehash $ROOTFS/etc/ssl/certs/
 
 # 2-customroot has additional needed files, copy them to root
 find $BASE_DIR/../board/dns32x/customroot/ \( -name \*~ -o -name .directory -o -name \.*kate-swp \) -delete
