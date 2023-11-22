@@ -7,7 +7,13 @@ DESC="Telnet Daemon"
 NAME=telnetd
 TELNETD_ARGS=-F
 
+INETD_CONF=/etc/inetd.conf
+
 . /etc/init.d/common
+
+if check_inetd telnet; then
+	exit 2
+fi
 
 [ -r /etc/default/telnet ] && . /etc/default/telnet
 
