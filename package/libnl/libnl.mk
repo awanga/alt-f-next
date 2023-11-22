@@ -13,6 +13,10 @@ LIBNL_CPE_ID_VENDOR = libnl_project
 LIBNL_INSTALL_STAGING = YES
 LIBNL_DEPENDENCIES = host-bison host-flex host-pkgconf
 
+ifneq ($(BR2_PACKAGE_LIBNL_DEBUG),y)
+LIBNL_CONF_OPTS += --disable-debug
+endif
+
 ifeq ($(BR2_PACKAGE_LIBNL_TOOLS),y)
 LIBNL_CONF_OPTS += --enable-cli
 else

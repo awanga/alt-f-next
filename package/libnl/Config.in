@@ -15,6 +15,11 @@ config BR2_PACKAGE_LIBNL_TOOLS
 	help
 	  Install binary tools.
 
+config BR2_PACKAGE_LIBNL_DEBUG
+	bool "include debugging statements"
+	help
+	  Enable debugging statements
+
 comment "libnl tools needs a toolchain w/ dynamic library"
 	depends on BR2_STATIC_LIBS
 endif
