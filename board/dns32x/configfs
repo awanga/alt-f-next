@@ -19,11 +19,13 @@ source $BASE_DIR/../board/dns32x/exports.source $BR2_PROJECT
 RMF="etc/default/ntpd etc/random-seed
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
 etc/init.d/S30dbus
+etc/smartd.conf.sample etc/ksmbd/ksmbd.conf.example etc/ksmbd/smb.conf etc/ssl/openssl.cnf.dist
 run
 sbin/fsck.ext4dev sbin/mkfs.ext4dev
 usr/bin/ntpdate
 var/spool var/log var/cache var/run var/pcmcia var/lib var/lock
 usr/doc usr/share/locale usr/share/perl5 usr/lib/python2.7 usr/swat/lang
+usr/lib/libstdc++.so.*-gdb.py
 lib/udev lib/firmware"
 
 echo configfs:
@@ -167,8 +169,7 @@ BR2_PACKAGE_QUOTA="etc/init.d/S19quota usr/www/cgi-bin/quota.cgi usr/www/cgi-bin
 BR2_PACKAGE_KERNEL_MODULES="etc/init.d/S13modload"
 BR2_PACKAGE_BTRFS_PROGS="etc/init.d/S14btrfs"
 
-BR2_PACKAGE_LIGHTTPD="etc/init.d/S52lighttpd usr/www/cgi-bin/lighttpd.cgi
-usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
+BR2_PACKAGE_LIGHTTPD="etc/init.d/S52lighttpd usr/www/cgi-bin/lighttpd.cgi usr/www/cgi-bin/lighttpd_proc.cgi etc/lighttpd"
 
 BR2_PACKAGE_PHP="etc/php.ini"
 
