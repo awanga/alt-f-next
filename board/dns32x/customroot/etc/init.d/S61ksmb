@@ -4,14 +4,14 @@ DESC="ksmbd Server"
 TYPE=net
 NAME=ksmbd.mountd
 
-SMB_CONF=/etc/ksmbd/smb.conf
-SMB_OPTS="--s"
+SMB_CONF=/etc/samba/smb.conf
+SMB_OPTS="-c $SMB_CONF"
 
 RETVAL=0
 
 . /etc/init.d/common
 
-if ! test -f /usr/sbin/smbd; then
+if test -f /usr/sbin/smbd; then
 	echo "ksmb: samba detected. exiting..."
 	exit 1
 fi

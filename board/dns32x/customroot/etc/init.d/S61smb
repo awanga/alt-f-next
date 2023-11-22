@@ -15,6 +15,11 @@ RETVAL=0
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/samba
 
+if ! test -f /usr/sbin/smbd; then
+	# silently exit if samba is not installed
+	exit 1
+fi
+
 if ! test -f $SMB_CONF; then
 	echo "smb: no configuration file found."
 	exit 1
@@ -29,14 +34,18 @@ istart() {
 	start $NAME2 -- $NMB_OPTS
 	RETVAL2=$?
 
+	if test $RETVAL -eq 0; then
+		return 0
+	fi
+
 	start $NAME -- $SMB_OPTS
 	RETVAL=$?
 
-	avahi add smb
-
-	if test $RETVAL -eq 0 -a $RETVAL2 -eq 0; then
+	if test $RETVAL2 -eq 0; then
 		return 0
 	fi
+
+	avahi add smb
 
 	return 1
 

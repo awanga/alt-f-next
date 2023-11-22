@@ -2,13 +2,22 @@
 
 source ./common.sh
 check_cookie
-write_header "Samba Setup"
+write_header "SMB/CIFS Setup"
 
 CONF_SMB=/etc/samba/smb.conf
 
+# Check for Samba (overrules ksmbd)
+if test -f /usr/sbin/smbd; then
+	SMB_PROVIDER="samba"
+	USER_SMB=/etc/samba/smbpasswd
+else
+	SMB_PROVIDER="ksmbd"
+	USER_SMB=/etc/ksmbd/users.db
+fi
+
 mktt proto_tt "SMB1 is the the old MS-Windows protocol and is needed for most embedded devices and linux clients.<br>SMB2 is a newer protocol introduced in MS-Windows Vista but might have compatibility issues.<br>After changing it might be needed to reboot the NAS box and accessing PCs."
 
-if test -e $CONF_SMB; then
+if test -e $CONF_SMB -a $SMB_PROVIDER == "samba"; then
 	if ! grep -q '^[[:space:]#]*use sendfile' $CONF_SMB; then
 		chgfl=1; sed -i '/socket options/a\
 	use sendfile = yes' $CONF_SMB
@@ -223,22 +232,8 @@ cat<<-EOF
 	<tr><td>Enable SMB2</td><td><input type=checkbox $SMB2_EN_check name=enable_smb2 id=enable_smb2 value=yes $(ttip proto_tt)></td></tr>
 	</table>
 	</fieldset>
-EOF
 
-if grep -q "# Samba config file created using SWAT" $CONF_SMB; then
-	swat="<h4 class=\"warn\">The Advanced SWAT configuration tool has been used.<br>
-	If you Submit changes, then SWAT changes applied to shares will be lost</h4>"
-else
-	swat="<p>"
-fi
-
-cat<<EOF
-	$swat
 	<input type=submit name=submit value="Submit">
-	<input type=submit name=submit value="Advanced" onClick="return confirm('\
-On the next SWAT Authentication dialogue you have to enter' + '\n' +
-'\'root\' for the \'User Name\' and the webUI password for \'Password\'.' + '\n\n' +
-'Changes made might not be recognized latter in this web page.' + '\n\n' + 'Continue?')">
 	$(back_button)
 	</form></body></html>
 EOF

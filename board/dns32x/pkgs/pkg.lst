@@ -104,6 +104,7 @@ libid3tag
 libmad
 libmcrypt
 libnl:BR2_PACKAGE_LIBNL=y,BR2_PACKAGE_LIBNL_TOOLS=y
+ksmbd-tools
 libplist
 libpcap
 popt
