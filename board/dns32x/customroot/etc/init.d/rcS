@@ -29,7 +29,7 @@ chmod a+wt /var/spool/lpd /var/spool/samba
 echo > /etc/bay
 echo -n > /etc/printcap
 
-echo 1 > /sys/kernel/mm/ksm/run
+# echo 1 > /sys/kernel/mm/ksm/run
 
 # bootlog. syslog has not yet started, and hot.sh uses "logger",
 TSYSLOG=/var/log/boot.log
