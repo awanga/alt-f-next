@@ -231,7 +231,7 @@ fi
 echo NEWS_CHK=$(date +%s) >> $1/etc/misc.conf
 echo FILES_CHK=$(date +%s) >> $1/etc/misc.conf
 
-# 7- remove hardcoded paths in pyton and perl scripts
+# 7- remove hardcoded paths in python and perl scripts
 for i in $(grep -rl '#![[:space:]]*'$HOSTDIR $ROOTFS); do
 	sed -i "s|#![[:space:]]*$HOSTDIR|#!|" $i;
 done
