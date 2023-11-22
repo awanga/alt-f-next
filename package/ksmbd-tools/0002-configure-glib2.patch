@@ -1,0 +1,14 @@
+--- ksmbd-tools-3.4.6/configure	2022-10-09 15:25:27.734854070 +0000
++++ ksmbd-tools-3.4.6/configure	2023-11-03 17:21:14.447161220 +0000
+@@ -12973,11 +12973,6 @@
+ $as_echo "yes" >&6; }
+ 	have_glib=yes
+ fi
+-if test "x$have_glib" != xyes; then :
+-
+-	as_fn_error $? "glib (libglib2.0-dev or glib2-devel) was not found." "$LINENO" 5
+-
+-fi
+ 
+ 
+ pkg_failed=no

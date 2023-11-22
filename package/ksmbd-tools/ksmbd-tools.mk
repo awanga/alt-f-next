@@ -8,7 +8,9 @@ KSMBD_TOOLS_VERSION = 3.4.6
 KSMBD_TOOLS_SITE = https://github.com/cifsd-team/ksmbd-tools/releases/download/$(KSMBD_TOOLS_VERSION)
 KSMBD_TOOLS_LICENSE = GPL-2.0+
 KSMBD_TOOLS_LICENSE_FILES = COPYING
-KSMBD_TOOLS_DEPENDENCIES = host-pkgconf libglib2 libnl
+KSMBD_TOOLS_DEPENDENCIES = host-pkgconf libnl
+
+#KSMBD_TOOLS_DEPENDENCIES += libglib2
 
 ifeq ($(BR2_PACKAGE_LIBKRB5),y)
 KSMBD_TOOLS_CONF_OPTS += --enable-krb5

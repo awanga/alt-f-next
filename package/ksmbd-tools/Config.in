@@ -3,7 +3,7 @@ config BR2_PACKAGE_KSMBD_TOOLS
 	depends on BR2_USE_MMU # fork()
 	depends on BR2_USE_WCHAR # libglib2
 	depends on BR2_TOOLCHAIN_HAS_THREADS # libglib2, libnl
-	select BR2_PACKAGE_LIBGLIB2
+#	select BR2_PACKAGE_LIBGLIB2
 	select BR2_PACKAGE_LIBNL
 	help
 	  ksmbd kernel server userspace utilities.
