@@ -107,6 +107,9 @@ fi
 cp $ca_bundle $ROOTFS/etc/ssl/certs/ca-bundle.crt
 #c_rehash $ROOTFS/etc/ssl/certs/
 
+# 1.3-add link for interpreter in clang builds
+ln -sf lib-uClibc.so.1 $BLDDIR/target/lib/lib-linux.so.3
+
 # 2-customroot has additional needed files, copy them to root
 find $BASE_DIR/../board/dns32x/customroot/ \( -name \*~ -o -name .directory -o -name \.*kate-swp \) -delete
 cp -a --remove-destination $BASE_DIR/../board/dns32x/customroot/* $1/
