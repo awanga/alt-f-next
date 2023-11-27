@@ -150,7 +150,7 @@ BR2_PACKAGE_NUTS="etc/init.d/S22nut usr/www/cgi-bin/nut.cgi"
 BR2_PACKAGE_CUPS="etc/init.d/S42cups usr/www/cgi-bin/cups.cgi"
 BR2_PACKAGE_SAMBA_DOC="usr/swat/help/welcome.html"
 
-BR2_PACKAGE_NFS_UTILS="etc/init.d/S60nfs etc/init.d/S60nsm usr/www/cgi-bin/nfs_proc.cgi"
+BR2_PACKAGE_NFS_UTILS="etc/init.d/S61nfs etc/init.d/S60nsm usr/www/cgi-bin/nfs_proc.cgi"
 BR2_PACKAGE_NTFS_3G_NTFSPROGS="usr/sbin/fsck.ntfs usr/sbin/fsck.ntfs-3g usr/sbin/mkfs.ntfs"
 
 BR2_PACKAGE_DBUS="etc/init.d/S20dbus"

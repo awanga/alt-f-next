@@ -1,5 +1,5 @@
 ./etc/init.d/S60nsm
-./etc/init.d/S60nfs
+./etc/init.d/S61nfs
 ./etc/exports
 ./etc/nfsmount.conf
 ./run/nfs
