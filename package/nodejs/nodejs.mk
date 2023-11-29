@@ -4,13 +4,26 @@
 #
 ################################################################################
 
-NODEJS_VERSION = 14.18.1
+NODEJS_VERSION = 16.20.0
 NODEJS_SOURCE = node-v$(NODEJS_VERSION).tar.xz
 NODEJS_SITE = http://nodejs.org/dist/v$(NODEJS_VERSION)
-NODEJS_DEPENDENCIES = host-qemu host-python3 host-nodejs c-ares \
-	libuv zlib nghttp2 \
+NODEJS_DEPENDENCIES = \
+	host-ninja \
+	host-pkgconf \
+	host-python3 \
+	host-qemu \
+	c-ares \
+	libuv \
+	nghttp2 \
+	zlib \
 	$(call qstrip,$(BR2_PACKAGE_NODEJS_MODULES_ADDITIONAL_DEPS))
-HOST_NODEJS_DEPENDENCIES = host-icu host-libopenssl host-python3 host-zlib
+HOST_NODEJS_DEPENDENCIES = \
+	host-icu \
+	host-libopenssl \
+	host-ninja \
+	host-pkgconf \
+	host-python3 \
+	host-zlib
 NODEJS_INSTALL_STAGING = YES
 NODEJS_LICENSE = MIT (core code); MIT, Apache and BSD family licenses (Bundled components)
 NODEJS_LICENSE_FILES = LICENSE
@@ -25,7 +38,32 @@ NODEJS_CONF_OPTS = \
 	--without-dtrace \
 	--without-etw \
 	--cross-compiling \
-	--dest-os=linux
+	--dest-os=linux \
+	--ninja
+
+HOST_NODEJS_MAKE_OPTS = \
+	$(HOST_CONFIGURE_OPTS) \
+	CXXFLAGS="$(HOST_NODEJS_CXXFLAGS)" \
+	LDFLAGS.host="$(HOST_LDFLAGS)" \
+	NO_LOAD=cctest.target.mk \
+	PATH=$(@D)/bin:$(BR_PATH)
+
+NODEJS_MAKE_OPTS = \
+	$(TARGET_CONFIGURE_OPTS) \
+	NO_LOAD=cctest.target.mk \
+	PATH=$(@D)/bin:$(BR_PATH) \
+	LDFLAGS="$(NODEJS_LDFLAGS)" \
+	LD="$(TARGET_CXX)"
+
+# nodejs's build system uses python which can be a symlink to an unsupported
+# python version (e.g. python 3.10 with nodejs 14.18.1). We work around this by
+# forcing host-python3 early in the PATH, via a python->python3 symlink.
+define NODEJS_PYTHON3_SYMLINK
+	mkdir -p $(@D)/bin
+	ln -sf $(HOST_DIR)/bin/python3 $(@D)/bin/python
+endef
+HOST_NODEJS_PRE_CONFIGURE_HOOKS += NODEJS_PYTHON3_SYMLINK
+NODEJS_PRE_CONFIGURE_HOOKS += NODEJS_PYTHON3_SYMLINK
 
 ifeq ($(BR2_PACKAGE_OPENSSL),y)
 NODEJS_DEPENDENCIES += openssl
@@ -46,11 +84,11 @@ NODEJS_CONF_OPTS += --without-npm
 endif
 
 define HOST_NODEJS_CONFIGURE_CMDS
-	(cd $(@D); \
+	cd $(@D); \
 		$(HOST_CONFIGURE_OPTS) \
 		PATH=$(@D)/bin:$(BR_PATH) \
 		PYTHON=$(HOST_DIR)/bin/python3 \
-		$(HOST_DIR)/bin/python3 ./configure \
+		$(HOST_DIR)/bin/python3 configure.py \
 		--prefix=$(HOST_DIR) \
 		--without-dtrace \
 		--without-etw \
@@ -60,40 +98,28 @@ define HOST_NODEJS_CONFIGURE_CMDS
 		--shared-zlib \
 		--no-cross-compiling \
 		--with-intl=system-icu \
-	)
+		--ninja
 endef
 
-NODEJS_HOST_TOOLS_V8 = \
-	torque \
-	gen-regexp-special-case \
-	bytecode_builtins_list_generator
-NODEJS_HOST_TOOLS_NODE = mkcodecache
-NODEJS_HOST_TOOLS = $(NODEJS_HOST_TOOLS_V8) $(NODEJS_HOST_TOOLS_NODE)
-
-HOST_NODEJS_CXXFLAGS = $(HOST_CXXFLAGS) -DU_DISABLE_RENAMING=1
+HOST_NODEJS_CXXFLAGS = $(HOST_CXXFLAGS)
 
 define HOST_NODEJS_BUILD_CMDS
 	$(HOST_MAKE_ENV) PYTHON=$(HOST_DIR)/bin/python3 \
 		$(MAKE) -C $(@D) \
-		$(HOST_CONFIGURE_OPTS) \
-		CXXFLAGS="$(HOST_NODEJS_CXXFLAGS)" \
-		LDFLAGS.host="$(HOST_LDFLAGS)" \
-		NO_LOAD=cctest.target.mk \
-		PATH=$(@D)/bin:$(BR_PATH)
+		$(HOST_NODEJS_MAKE_OPTS)
 endef
+
+ifeq ($(BR2_PACKAGE_HOST_NODEJS_COREPACK),y)
+define HOST_NODEJS_ENABLE_COREPACK
+	$(COREPACK) enable
+endef
+endif
 
 define HOST_NODEJS_INSTALL_CMDS
 	$(HOST_MAKE_ENV) PYTHON=$(HOST_DIR)/bin/python3 \
 		$(MAKE) -C $(@D) install \
-		$(HOST_CONFIGURE_OPTS) \
-		CXXFLAGS="$(HOST_NODEJS_CXXFLAGS)" \
-		LDFLAGS.host="$(HOST_LDFLAGS)" \
-		NO_LOAD=cctest.target.mk \
-		PATH=$(@D)/bin:$(BR_PATH)
-
-	$(foreach f,$(NODEJS_HOST_TOOLS), \
-		$(INSTALL) -m755 -D $(@D)/out/Release/$(f) $(HOST_DIR)/bin/$(f)
-	)
+		$(HOST_NODEJS_MAKE_OPTS)
+	$(HOST_NODEJS_ENABLE_COREPACK)
 endef
 
 ifeq ($(BR2_i386),y)
@@ -181,7 +207,7 @@ define NODEJS_CONFIGURE_CMDS
 		LDFLAGS="$(NODEJS_LDFLAGS)" \
 		LD="$(TARGET_CXX)" \
 		PYTHON=$(HOST_DIR)/bin/python3 \
-		$(HOST_DIR)/bin/python3 ./configure \
+		$(HOST_DIR)/bin/python3 configure.py \
 		--prefix=/usr \
 		--dest-cpu=$(NODEJS_CPU) \
 		$(if $(NODEJS_ARM_FP),--with-arm-float-abi=$(NODEJS_ARM_FP)) \
@@ -195,11 +221,7 @@ endef
 define NODEJS_BUILD_CMDS
 	$(TARGET_MAKE_ENV) PYTHON=$(HOST_DIR)/bin/python3 \
 		$(MAKE) -C $(@D) \
-		$(TARGET_CONFIGURE_OPTS) \
-		NO_LOAD=cctest.target.mk \
-		PATH=$(@D)/bin:$(BR_PATH) \
-		LDFLAGS="$(NODEJS_LDFLAGS)" \
-		LD="$(TARGET_CXX)"
+		$(NODEJS_MAKE_OPTS)
 endef
 
 #
@@ -208,8 +230,7 @@ endef
 NODEJS_MODULES_LIST= $(call qstrip,\
 	$(BR2_PACKAGE_NODEJS_MODULES_ADDITIONAL))
 
-# Define NPM for other packages to use
-NPM = $(TARGET_CONFIGURE_OPTS) \
+NODEJS_BIN_ENV = $(TARGET_CONFIGURE_OPTS) \
 	LDFLAGS="$(NODEJS_LDFLAGS)" \
 	LD="$(TARGET_CXX)" \
 	npm_config_arch=$(NODEJS_CPU) \
@@ -217,13 +238,21 @@ NPM = $(TARGET_CONFIGURE_OPTS) \
 	npm_config_build_from_source=true \
 	npm_config_nodedir=$(BUILD_DIR)/nodejs-$(NODEJS_VERSION) \
 	npm_config_prefix=$(TARGET_DIR)/usr \
-	npm_config_cache=$(BUILD_DIR)/.npm-cache \
-	$(HOST_DIR)/bin/npm
+	npm_config_cache=$(BUILD_DIR)/.npm-cache
+
+# Define various packaging tools for other packages to use
+NPM = $(NODEJS_BIN_ENV) $(HOST_DIR)/bin/npm
+ifeq ($(BR2_PACKAGE_HOST_NODEJS_COREPACK),y)
+COREPACK = $(NODEJS_BIN_ENV) $(HOST_DIR)/bin/corepack
+PNPM = $(NODEJS_BIN_ENV) $(HOST_DIR)/bin/pnpm
+YARN = $(NODEJS_BIN_ENV) $(HOST_DIR)/bin/yarn
+endif
 
 #
 # We can only call NPM if there's something to install.
 #
 ifneq ($(NODEJS_MODULES_LIST),)
+NODEJS_DEPENDENCIES += host-nodejs
 define NODEJS_INSTALL_MODULES
 	# If you're having trouble with module installation, adding -d to the
 	# npm install call below and setting npm_config_rollback=false can both
@@ -236,22 +265,14 @@ define NODEJS_INSTALL_STAGING_CMDS
 	$(TARGET_MAKE_ENV) PYTHON=$(HOST_DIR)/bin/python3 \
 		$(MAKE) -C $(@D) install \
 		DESTDIR=$(STAGING_DIR) \
-		$(TARGET_CONFIGURE_OPTS) \
-		NO_LOAD=cctest.target.mk \
-		PATH=$(@D)/bin:$(BR_PATH) \
-		LDFLAGS="$(NODEJS_LDFLAGS)" \
-		LD="$(TARGET_CXX)"
+		$(NODEJS_MAKE_OPTS)
 endef
 
 define NODEJS_INSTALL_TARGET_CMDS
 	$(TARGET_MAKE_ENV) PYTHON=$(HOST_DIR)/bin/python3 \
 		$(MAKE) -C $(@D) install \
 		DESTDIR=$(TARGET_DIR) \
-		$(TARGET_CONFIGURE_OPTS) \
-		NO_LOAD=cctest.target.mk \
-		PATH=$(@D)/bin:$(BR_PATH) \
-		LDFLAGS="$(NODEJS_LDFLAGS)" \
-		LD="$(TARGET_CXX)"
+		$(NODEJS_MAKE_OPTS)
 	$(NODEJS_INSTALL_MODULES)
 endef
 
