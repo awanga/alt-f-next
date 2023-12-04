@@ -35,23 +35,6 @@ TRANSMISSION_CPE_ID_VENDOR = transmissionbt
 
 TRANSMISSION_CONF_ENV += ac_cv_func_iconv=no
 
-ifeq ($(BR2_PACKAGE_LIBMINIUPNPC),y)
-TRANSMISSION_DEPENDENCIES += libminiupnpc
-endif
-
-ifeq ($(BR2_PACKAGE_LIBNATPMP),y)
-TRANSMISSION_DEPENDENCIES += libnatpmp
-TRANSMISSION_CONF_OPTS += --enable-external-natpmp
-else
-TRANSMISSION_CONF_OPTS += --disable-external-natpmp
-endif
-
-ifeq ($(BR2_PACKAGE_TRANSMISSION_UTP),y)
-TRANSMISSION_CONF_OPTS += --enable-utp
-else
-TRANSMISSION_CONF_OPTS += --disable-utp
-endif
-
 # Uses __atomic_load_8
 ifeq ($(BR2_TOOLCHAIN_HAS_LIBATOMIC),y)
 TRANSMISSION_CONF_OPTS += -DCMAKE_EXE_LINKER_FLAGS=-latomic

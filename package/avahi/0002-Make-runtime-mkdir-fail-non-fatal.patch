@@ -1,0 +1,11 @@
+--- a/avahi-daemon/Makefile.in	2023-12-06 16:48:19.134235600 +0000
++++ b/avahi-daemon/Makefile.in	2023-12-06 16:48:45.078645073 +0000
+@@ -1625,7 +1625,7 @@
+ 	done
+ 
+ install-data-local:
+-	test -z "$(avahi_runtime_dir)" || $(MKDIR_P) "$(DESTDIR)$(avahi_runtime_dir)"
++	test -z "$(avahi_runtime_dir)" || $(MKDIR_P) "$(DESTDIR)$(avahi_runtime_dir)" || true
+ 
+ update-systemd:
+ 	curl http://cgit.freedesktop.org/systemd/plain/src/sd-daemon.c > sd-daemon.c

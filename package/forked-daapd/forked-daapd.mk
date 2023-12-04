@@ -38,4 +38,6 @@ FORKED_DAAPD_CONF_OPTS = \
 	--without-pulseaudio \
 	--without-libevent_pthreads
 
+FORKED_DAAPD_LDFLAGS += -lsqlite3
+
 $(eval $(autotools-package))

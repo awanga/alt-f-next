@@ -1,0 +1,12 @@
+--- a/plugins/sudoers/Makefile.in	2023-12-06 19:46:36.442700626 +0000
++++ b/plugins/sudoers/Makefile.in	2023-12-06 19:47:07.111090387 +0000
+@@ -557,7 +557,7 @@
+ 	    $(DESTDIR)$(sysconfdir) $(DESTDIR)$(docdir) \
+ 	    `echo $(DESTDIR)$(rundir)|$(SED) 's,/[^/]*$$,,'` \
+-	    `echo $(DESTDIR)$(vardir)|$(SED) 's,/[^/]*$$,,'`
+-	$(INSTALL) -d $(INSTALL_OWNER) -m 0711 $(DESTDIR)$(rundir)
++ 	    `echo $(DESTDIR)$(vardir)|$(SED) 's,/[^/]*$$,,'` || true
++	$(INSTALL) -d $(INSTALL_OWNER) -m 0711 $(DESTDIR)$(rundir) || true
+ 	$(INSTALL) -d $(INSTALL_OWNER) -m 0711 $(DESTDIR)$(vardir)
+ 	$(INSTALL) -d $(INSTALL_OWNER) -m 0700 $(DESTDIR)$(vardir)/lectured
+ 

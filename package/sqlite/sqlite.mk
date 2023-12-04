@@ -75,5 +75,8 @@ else
 SQLITE_CONF_OPTS += --disable-editline --disable-readline
 endif
 
+SQLITE_CONF_ENV += \
+	CFLAGS="$(TARGET_CFLAGS) $(SQLITE_CFLAGS)"
+
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))

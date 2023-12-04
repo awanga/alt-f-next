@@ -47,14 +47,22 @@ endif
 # make sure busybox doesn't get overwritten by make install
 ifeq ($(BR2_PACKAGE_ALT_F_UTILS_TARGET),y)
 define BZIP2_INSTALL_TARGET_CMDS
-	mv $(TARGET_DIR)/usr/bin/bunzip2 $(TARGET_DIR)/usr/bin/bunzip2.bkp
-	mv $(TARGET_DIR)/usr/bin/bzcat $(TARGET_DIR)/usr/bin/bzcat.bkp
+	test -e $(TARGET_DIR)/usr/bin/bunzip2 && \
+		mv $(TARGET_DIR)/usr/bin/bunzip2 $(TARGET_DIR)/usr/bin/bunzip2.bkp || \
+		true
+	test -e $(TARGET_DIR)/usr/bin/bzcat && \
+		mv $(TARGET_DIR)/usr/bin/bzcat $(TARGET_DIR)/usr/bin/bzcat.bkp || \
+		true
 	$(TARGET_MAKE_ENV) $(MAKE) \
 		PREFIX=$(TARGET_DIR)/usr -C $(@D) install
 	mv $(TARGET_DIR)/usr/bin/bunzip2 $(TARGET_DIR)/usr/bin/bunzip2-bzip2
 	mv $(TARGET_DIR)/usr/bin/bzcat $(TARGET_DIR)/usr/bin/bzcat-bzip2
-	mv $(TARGET_DIR)/usr/bin/bunzip2.bkp $(TARGET_DIR)/usr/bin/bunzip2
-	mv $(TARGET_DIR)/usr/bin/bzcat.bkp $(TARGET_DIR)/usr/bin/bzcat
+	test -e $(TARGET_DIR)/usr/bin/bunzip2.bkp && \
+		mv $(TARGET_DIR)/usr/bin/bunzip2.bkp $(TARGET_DIR)/usr/bin/bunzip2 || \
+		true
+	test -e $(TARGET_DIR)/usr/bin/bzcat.bkp && \
+		mv $(TARGET_DIR)/usr/bin/bzcat.bkp $(TARGET_DIR)/usr/bin/bzcat || \
+		true
 	$(BZIP2_INSTALL_TARGET_SHARED_CMDS)
 endef
 else

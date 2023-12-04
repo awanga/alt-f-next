@@ -62,7 +62,7 @@ NMAP_CONF_OPTS += --without-ncat
 endif
 
 ifeq ($(BR2_PACKAGE_NMAP_NMAP),y)
-NMAP_DEPENDENCIES += pcre2
+NMAP_DEPENDENCIES += pcre
 NMAP_CONF_OPTS += --with-libpcre="$(STAGING_DIR)/usr"
 NMAP_MAKE_OPTS += nmap
 NMAP_INSTALL_TARGET_OPTS += install-nmap
