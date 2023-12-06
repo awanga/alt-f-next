@@ -1,6 +1,6 @@
 Package: sudo
 Description: Allows a sysadmin to give limited root privileges to users.
-Version: 1.9.5p2
+Version: 1.9.13p3
 Depends: ipkg
 Architecture: arm
 Priority: optional

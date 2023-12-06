@@ -1,6 +1,6 @@
 Package: libaio
 Description: A Linux-native asynchronous I/O access library 
-Version: 0.3.112
+Version: 0.3.113
 Depends: ipkg
 Architecture: arm
 Priority: optional

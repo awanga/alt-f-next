@@ -4,11 +4,10 @@
 ./usr/bin/out123
 ./usr/lib/libmpg123.so
 ./usr/lib/libmpg123.so.0
-./usr/lib/libmpg123.so.0.44.10
+./usr/lib/libmpg123.so.0.44.12
 ./usr/lib/libout123.so
 ./usr/lib/libout123.so.0
 ./usr/lib/libout123.so.0.2.2
-./usr/lib/mpg123
 ./usr/lib/mpg123/output_alsa.so
 ./usr/lib/mpg123/output_dummy.so
 ./usr/lib/mpg123/output_oss.so

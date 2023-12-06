@@ -1,4 +1,4 @@
-./usr/lib/micropython
+./usr/bin/micropython
 ./usr/lib/micropython/__future__.py
 ./usr/lib/micropython/_libc.py
 ./usr/lib/micropython/_markupbase.py
@@ -6,7 +6,6 @@
 ./usr/lib/micropython/argparse.py
 ./usr/lib/micropython/asyncio_slow.py
 ./usr/lib/micropython/base64.py
-./usr/lib/micropython/benchmark
 ./usr/lib/micropython/benchmark/boom_uasyncio.py
 ./usr/lib/micropython/benchmark/test-ab-medium.sh
 ./usr/lib/micropython/benchmark/test-boom-heavy.sh
@@ -22,23 +21,18 @@
 ./usr/lib/micropython/code.py
 ./usr/lib/micropython/codecs.py
 ./usr/lib/micropython/codeop.py
-./usr/lib/micropython/collections
 ./usr/lib/micropython/collections/__init__.py
 ./usr/lib/micropython/collections/defaultdict.py
 ./usr/lib/micropython/collections/deque.py
-./usr/lib/micropython/concurrent
-./usr/lib/micropython/concurrent/futures
 ./usr/lib/micropython/concurrent/futures/__init__.py
 ./usr/lib/micropython/contextlib.py
 ./usr/lib/micropython/copy.py
 ./usr/lib/micropython/csv.py
-./usr/lib/micropython/curses
 ./usr/lib/micropython/curses/ascii.py
 ./usr/lib/micropython/datetime.py
 ./usr/lib/micropython/dbm.py
 ./usr/lib/micropython/decimal.py
 ./usr/lib/micropython/difflib.py
-./usr/lib/micropython/email
 ./usr/lib/micropython/email/_encoded_words.py
 ./usr/lib/micropython/email/_parseaddr.py
 ./usr/lib/micropython/email/_policybase.py
@@ -103,7 +97,6 @@
 ./usr/lib/micropython/gettext.py
 ./usr/lib/micropython/glob.py
 ./usr/lib/micropython/gzip.py
-./usr/lib/micropython/hashlib
 ./usr/lib/micropython/hashlib/__init__.py
 ./usr/lib/micropython/hashlib/sha224.py
 ./usr/lib/micropython/hashlib/sha256.py
@@ -111,11 +104,9 @@
 ./usr/lib/micropython/hashlib/sha512.py
 ./usr/lib/micropython/heapq.py
 ./usr/lib/micropython/hmac.py
-./usr/lib/micropython/html
 ./usr/lib/micropython/html/__init__.py
 ./usr/lib/micropython/html/entities.py
 ./usr/lib/micropython/html/parser.py
-./usr/lib/micropython/http
 ./usr/lib/micropython/http/client.py
 ./usr/lib/micropython/imaplib.py
 ./usr/lib/micropython/imp.py
@@ -124,7 +115,6 @@
 ./usr/lib/micropython/io.py
 ./usr/lib/micropython/ipaddress.py
 ./usr/lib/micropython/itertools.py
-./usr/lib/micropython/json
 ./usr/lib/micropython/json/__init__.py
 ./usr/lib/micropython/json/decoder.py
 ./usr/lib/micropython/json/encoder.py
@@ -134,7 +124,6 @@
 ./usr/lib/micropython/linecache.py
 ./usr/lib/micropython/locale.py
 ./usr/lib/micropython/logging.py
-./usr/lib/micropython/machine
 ./usr/lib/micropython/machine/__init__.py
 ./usr/lib/micropython/machine/pin.py
 ./usr/lib/micropython/machine/timer.py
@@ -146,7 +135,6 @@
 ./usr/lib/micropython/numbers.py
 ./usr/lib/micropython/operator.py
 ./usr/lib/micropython/optparse.py
-./usr/lib/micropython/os
 ./usr/lib/micropython/os/__init__.py
 ./usr/lib/micropython/os/path.py
 ./usr/lib/micropython/pathlib.py
@@ -193,10 +181,8 @@
 ./usr/lib/micropython/tarfile.py
 ./usr/lib/micropython/telnetlib.py
 ./usr/lib/micropython/tempfile.py
-./usr/lib/micropython/test
 ./usr/lib/micropython/test/pystone.py
 ./usr/lib/micropython/test/support.py
-./usr/lib/micropython/tests
 ./usr/lib/micropython/tests.py
 ./usr/lib/micropython/tests/test.py
 ./usr/lib/micropython/textwrap.py
@@ -208,15 +194,12 @@
 ./usr/lib/micropython/tty.py
 ./usr/lib/micropython/types.py
 ./usr/lib/micropython/typing.py
-./usr/lib/micropython/uasyncio
 ./usr/lib/micropython/uasyncio.py
 ./usr/lib/micropython/uasyncio/__init__.py
 ./usr/lib/micropython/uasyncio/core.py
 ./usr/lib/micropython/uasyncio/queues.py
 ./usr/lib/micropython/ucontextlib.py
-./usr/lib/micropython/ucurses
 ./usr/lib/micropython/ucurses/__init__.py
-./usr/lib/micropython/umqtt
 ./usr/lib/micropython/umqtt/robust.py
 ./usr/lib/micropython/umqtt/simple.py
 ./usr/lib/micropython/unicodedata.py
@@ -225,7 +208,6 @@
 ./usr/lib/micropython/upip_utarfile.py
 ./usr/lib/micropython/upysh.py
 ./usr/lib/micropython/urequests.py
-./usr/lib/micropython/urllib
 ./usr/lib/micropython/urllib.py
 ./usr/lib/micropython/urllib/parse.py
 ./usr/lib/micropython/urllib/urequest.py

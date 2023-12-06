@@ -1,5 +1,4 @@
 ./etc/init.d/S62opensshd
-./etc/ssh
 ./etc/ssh/moduli
 ./etc/ssh/ssh_config
 ./etc/ssh/sshd_config

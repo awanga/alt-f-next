@@ -1,7 +1,7 @@
 Package: ncurses
 Description: The Ncurses (new curses) library is a free software emulation of curses in SVR4.
 Depends: ipkg
-Version: 6.1
+Version: 6.4-20230429
 Architecture: arm
 Priority: optional
 Section: admin

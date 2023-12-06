@@ -1,1 +1,4 @@
 ./usr/bin/gettext
+./usr/lib/libintl.so
+./usr/lib/libintl.so.8
+./usr/lib/libintl.so.8.1.6

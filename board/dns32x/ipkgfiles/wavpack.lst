@@ -4,4 +4,4 @@
 ./usr/bin/wvunpack
 ./usr/lib/libwavpack.so
 ./usr/lib/libwavpack.so.1
-./usr/lib/libwavpack.so.1.2.3
+./usr/lib/libwavpack.so.1.2.4

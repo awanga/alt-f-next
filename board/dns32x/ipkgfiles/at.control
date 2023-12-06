@@ -1,6 +1,6 @@
 Package: at
 Description: Delayed job execution and batch processing
-Version: 3.2.1
+Version: 3.2.5
 Depends: msmtp, ipkg
 Architecture: arm
 Priority: optional

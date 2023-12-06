@@ -1,6 +1,6 @@
 Package: mdadm
 Description: Utility for managing RAID hardware.
-Version: 4.1
+Version: 4.2
 Depends: ipkg
 Architecture: arm
 Priority: optional

@@ -1,6 +1,6 @@
 Package: pcre2
 Depends: ipkg
-Version: 10.35
+Version: 10.42
 Description: Perl Compatible Regular Expressions
 Architecture: arm
 Priority: optional

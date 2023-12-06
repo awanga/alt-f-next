@@ -1,7 +1,5 @@
 ./etc/screenrc
 ./usr/bin/screen
-./usr/share/screen
-./usr/share/screen/utf8encodings
 ./usr/share/screen/utf8encodings/01
 ./usr/share/screen/utf8encodings/02
 ./usr/share/screen/utf8encodings/03

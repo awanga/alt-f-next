@@ -2,9 +2,6 @@
 ./bin/compile_et
 ./bin/lsattr
 ./bin/mk_cmds
-./etc/cron.d
-./etc/cron.d/e2scrub_all
-./etc/e2scrub.conf
 ./etc/mke2fs.conf
 ./sbin/e2label
 ./sbin/e2mmpstatus
@@ -14,8 +11,6 @@
 ./sbin/mkfs.ext2
 ./sbin/mkfs.ext3
 ./sbin/mkfs.ext4
-./usr/lib/e2fsprogs
-./usr/lib/e2fsprogs/e2scrub_all_cron
 ./usr/lib/libcom_err.so
 ./usr/lib/libcom_err.so.2
 ./usr/lib/libcom_err.so.2.1
@@ -32,8 +27,6 @@
 ./usr/sbin/dumpe2fs
 ./usr/sbin/e2freefrag
 ./usr/sbin/e2fsck
-./usr/sbin/e2scrub
-./usr/sbin/e2scrub_all
 ./usr/sbin/e2undo
 ./usr/sbin/e4crypt
 ./usr/sbin/filefrag

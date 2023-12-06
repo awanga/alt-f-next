@@ -1,7 +1,7 @@
 Package: unrar
 Description: Portable UnRAR - free utility for RAR archives. Provides unrar decompressor
 Depends: ipkg
-Version: 5.9.4
+Version: 6.2.6
 Architecture: arm
 Priority: optional
 Section: admin

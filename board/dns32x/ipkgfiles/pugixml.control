@@ -1,6 +1,6 @@
 Package: pugixml
 Description: Light-weight, simple and fast XML parser for C++
-Version: 1.11.4
+Version: 1.13
 Depends: ipkg
 Architecture: arm
 Priority: optional

@@ -2,7 +2,7 @@
 ./usr/bin/pcretest
 ./usr/lib/libpcre.so
 ./usr/lib/libpcre.so.1
-./usr/lib/libpcre.so.1.2.12
+./usr/lib/libpcre.so.1.2.13
 ./usr/lib/libpcrecpp.so
 ./usr/lib/libpcrecpp.so.0
 ./usr/lib/libpcrecpp.so.0.0.2

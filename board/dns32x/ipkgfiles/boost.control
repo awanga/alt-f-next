@@ -1,0 +1,9 @@
+Package: boost
+Description: A general purpose C++ library
+Version: 1.82.0
+Depends: icu, ipkg
+Architecture: arm
+Priority: optional
+Section: admin
+Source: http://www.boost.org/
+Maintainer: awanga

@@ -1,6 +1,6 @@
 Package: libgpiod
 Depends: ipkg
-Version: 1.6.2
+Version: 1.6.3
 Description: A C library that abstracts the GPIO character device operations on linux.
 Architecture: arm
 Priority: optional

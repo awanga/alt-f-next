@@ -11,7 +11,7 @@ Description: 	  Libite is a lightweight library of frog DNA. It can be used
 	  - highly recommended when traversing lists to delete/free
 	  nodes.
 	  https://github.com/troglobit/libite
-Version: 2.2.0
+Version: 2.5.3
 Depends: ipkg
 Architecture: arm
 Priority: optional

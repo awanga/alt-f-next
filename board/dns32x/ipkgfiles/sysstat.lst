@@ -1,4 +1,3 @@
-./etc/sysconfig
 ./etc/sysconfig/sysstat
 ./etc/sysconfig/sysstat.ioconf
 ./usr/bin/cifsiostat
@@ -8,3 +7,6 @@
 ./usr/bin/sadf
 ./usr/bin/sar
 ./usr/bin/tapestat
+./usr/lib64/sa/sa1
+./usr/lib64/sa/sa2
+./usr/lib64/sa/sadc

@@ -2,6 +2,7 @@
 ./etc/rsyncd.conf
 ./etc/rsyncd.secrets
 ./usr/bin/rsync
+./usr/bin/rsync-ssl
 ./usr/www/cgi-bin/rsync.cgi
 ./usr/www/cgi-bin/rsync_proc.cgi
 ./usr/www/cgi-bin/rsyncd.cgi

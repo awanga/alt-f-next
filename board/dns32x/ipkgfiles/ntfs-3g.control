@@ -1,6 +1,6 @@
 Package: ntfs-3g
 Description: A stable, read-write NTFS driver for Linux and other operating systems.
-Version: 2017.3.23
+Version: 2022.10.3
 Depends: ipkg
 Architecture: arm
 Priority: optional

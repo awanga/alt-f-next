@@ -1,6 +1,6 @@
-Package: python
+Package: python3
 Description: The python language interpreter.
-Version: 2.7.18
+Version: 3.11.4
 Depends: ncurses, ncurses-panel, readline, gettext, expat, sqlite, db, gdbm, bzip2, libffi
 Architecture: arm
 Priority: optional

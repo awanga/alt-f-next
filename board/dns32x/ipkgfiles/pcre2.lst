@@ -2,7 +2,7 @@
 ./usr/bin/pcre2test
 ./usr/lib/libpcre2-8.so
 ./usr/lib/libpcre2-8.so.0
-./usr/lib/libpcre2-8.so.0.10.0
+./usr/lib/libpcre2-8.so.0.11.2
 ./usr/lib/libpcre2-posix.so
-./usr/lib/libpcre2-posix.so.2
-./usr/lib/libpcre2-posix.so.2.0.3
+./usr/lib/libpcre2-posix.so.3
+./usr/lib/libpcre2-posix.so.3.0.4

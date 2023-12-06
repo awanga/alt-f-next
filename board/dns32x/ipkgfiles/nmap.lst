@@ -1,7 +1,6 @@
 ./usr/bin/nmap
 ./usr/lib/liblinear.so
-./usr/lib/liblinear.so.3
-./usr/share/nmap
+./usr/lib/liblinear.so.5
 ./usr/share/nmap/nmap-mac-prefixes
 ./usr/share/nmap/nmap-os-db
 ./usr/share/nmap/nmap-payloads

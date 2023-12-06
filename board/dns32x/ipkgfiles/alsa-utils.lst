@@ -19,7 +19,6 @@
 ./usr/share/alsa/init/info
 ./usr/share/alsa/init/test
 ./usr/share/alsa/speaker-test
-./usr/share/alsa/speaker-test/sample_map.csv
 ./usr/share/sounds
 ./usr/share/sounds/alsa/Front_Center.wav
 ./usr/share/sounds/alsa/Front_Left.wav

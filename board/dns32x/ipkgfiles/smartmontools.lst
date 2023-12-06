@@ -1,10 +1,8 @@
 ./etc/init.d/S28smart
-./etc/smartd.conf.sample
 ./etc/smartd_warning.sh
 ./usr/sbin/smartctl
 ./usr/sbin/smartd
 ./usr/sbin/update-smart-drivedb
-./usr/share/smartmontools
 ./usr/share/smartmontools/drivedb.h
 ./usr/www/cgi-bin/smart.cgi
 ./usr/www/cgi-bin/smart_proc.cgi

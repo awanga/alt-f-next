@@ -1,6 +1,6 @@
 Package: fmt
 Description: A modern formatting library
-Version: 7.1.3
+Version: 9.1.0
 Depends: ipkg
 Architecture: arm
 Priority: optional

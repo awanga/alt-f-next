@@ -16,5 +16,8 @@
 ./usr/bin/tiffset
 ./usr/bin/tiffsplit
 ./usr/lib/libtiff.so
-./usr/lib/libtiff.so.5
-./usr/lib/libtiff.so.5.6.0
+./usr/lib/libtiff.so.6
+./usr/lib/libtiff.so.6.0.1
+./usr/lib/libtiffxx.so
+./usr/lib/libtiffxx.so.6
+./usr/lib/libtiffxx.so.6.0.1

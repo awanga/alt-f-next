@@ -1,6 +1,6 @@
 Package: json-c
 Description: A JSON implementation in C
-Version: 0.15
+Version: 0.16
 Depends: ipkg
 Architecture: arm
 Priority: optional

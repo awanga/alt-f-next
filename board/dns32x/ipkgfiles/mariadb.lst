@@ -22,11 +22,13 @@
 ./usr/lib/libmysqlclient_r.so
 ./usr/lib/mysql/plugin/caching_sha2_password.so
 ./usr/lib/mysql/plugin/client_ed25519.so
+./usr/lib/mysql/plugin/daemon_example.ini
 ./usr/lib/mysql/plugin/dialog.so
 ./usr/lib/mysql/plugin/mysql_clear_password.so
 ./usr/lib/mysql/plugin/sha256_password.so
 ./usr/share/mysql/binary-configure
 ./usr/share/mysql/charsets/Index.xml
+./usr/share/mysql/charsets/README
 ./usr/share/mysql/charsets/armscii8.xml
 ./usr/share/mysql/charsets/ascii.xml
 ./usr/share/mysql/charsets/cp1250.xml
@@ -55,5 +57,12 @@
 ./usr/share/mysql/mysql-log-rotate
 ./usr/share/mysql/mysql.server
 ./usr/share/mysql/mysqld_multi.server
+./usr/share/mysql/policy/apparmor/README
+./usr/share/mysql/policy/apparmor/usr.sbin.mysqld
+./usr/share/mysql/policy/apparmor/usr.sbin.mysqld.local
+./usr/share/mysql/policy/selinux/README
+./usr/share/mysql/policy/selinux/mariadb-server.fc
+./usr/share/mysql/policy/selinux/mariadb-server.te
+./usr/share/mysql/policy/selinux/mariadb.te
 ./usr/share/mysql/wsrep.cnf
 ./usr/share/mysql/wsrep_notify

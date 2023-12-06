@@ -2,7 +2,7 @@ Package: micropython
 Description: 	  Micro Python is a lean and fast implementation of the Python 3
 	  programming language that is optimised to run on a microcontroller.
 	  http://micropython.org
-Version: 1.13
+Version: 1.19.1
 Depends: libffi, ipkg
 Architecture: arm
 Priority: optional

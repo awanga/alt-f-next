@@ -1,6 +1,6 @@
 Package: dialog
 Description: Display dialog boxes from shell scripts
-Version: 1.3-20200327
+Version: 1.3-20220117
 Depends: ncurses, ipkg
 Architecture: arm
 Priority: optional

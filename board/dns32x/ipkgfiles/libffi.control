@@ -1,6 +1,6 @@
 Package: libffi
 Depends: ipkg
-Version: 3.3
+Version: 3.4.4
 Description: A Portable Foreign Function Interface Library
 Architecture: arm
 Priority: optional

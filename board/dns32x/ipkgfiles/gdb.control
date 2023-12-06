@@ -1,6 +1,6 @@
 Package: gdb
 Description: The GNU debugger
-Version: 9.2
+Version: 11.2
 Depends: libstdc++, ncurses, ipkg
 Architecture: arm
 Priority: optional

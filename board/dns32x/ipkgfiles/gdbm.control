@@ -1,6 +1,6 @@
 Package: gdbm
 Depends: ipkg
-Version: 1.18.1
+Version: 1.23
 Description: A set of database routines that use extensible hashing.
 Architecture: arm
 Priority: optional

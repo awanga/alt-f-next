@@ -2,11 +2,4 @@
 ./usr/bin/gpgrt-config
 ./usr/lib/libgpg-error.so
 ./usr/lib/libgpg-error.so.0
-./usr/lib/libgpg-error.so.0.31.1
-./usr/share/common-lisp
-./usr/share/common-lisp/source
-./usr/share/common-lisp/source/gpg-error
-./usr/share/common-lisp/source/gpg-error/gpg-error-codes.lisp
-./usr/share/common-lisp/source/gpg-error/gpg-error-package.lisp
-./usr/share/common-lisp/source/gpg-error/gpg-error.asd
-./usr/share/common-lisp/source/gpg-error/gpg-error.lisp
+./usr/lib/libgpg-error.so.0.34.0

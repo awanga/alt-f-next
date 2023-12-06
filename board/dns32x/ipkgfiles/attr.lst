@@ -3,4 +3,4 @@
 ./usr/bin/getfattr
 ./usr/lib/libattr.so
 ./usr/lib/libattr.so.1
-./usr/lib/libattr.so.1.1.2448
+./usr/lib/libattr.so.1.1.2501

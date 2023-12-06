@@ -1,3 +1,2 @@
 ./sbin/mount.smb3
-./usr/bin/smbinfo
 ./usr/sbin/mount.cifs

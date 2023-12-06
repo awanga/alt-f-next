@@ -1,6 +1,6 @@
 Package: libplist
 Description: A client for manipulating Apple Property List (.plist) files
-Version: 2.1.0
+Version: 2.2.0
 Depends: libstdc++, ipkg
 Architecture: arm
 Priority: optional

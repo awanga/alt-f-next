@@ -1,5 +1,8 @@
 ./usr/bin/flac
 ./usr/bin/metaflac
+./usr/lib/libFLAC++.so
+./usr/lib/libFLAC++.so.10
+./usr/lib/libFLAC++.so.10.0.0
 ./usr/lib/libFLAC.so
-./usr/lib/libFLAC.so.8
-./usr/lib/libFLAC.so.8.3.0
+./usr/lib/libFLAC.so.12
+./usr/lib/libFLAC.so.12.0.0
