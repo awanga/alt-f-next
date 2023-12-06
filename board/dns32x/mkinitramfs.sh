@@ -145,7 +145,7 @@ esac
 rm -f ${BLDDIR}/target/THIS_IS_NOT_YOUR_ROOT_FILESYSTEM
 mkdir -p ${BLDDIR}/images/$board
 
-CWD=$PWD
+CWD=${BLDDIR}/..
 
 # base packages /etc configuration files
 base_conf=$(for i in $base_pkgs $base_pkgs2; do grep './etc/' $CWD/board/dns32x/ipkgfiles/$i.lst; done)

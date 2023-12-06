@@ -135,8 +135,10 @@ case "$1" in
 		if test -f $TFILES; then
 			mv -f $TFILES $TFILES-
 		fi
-		#find . ! -type d | sort > $TFILES
-		find . | sort > $TFILES 2> /dev/null
+		find . -type f ! -type d >  $TFILES 2> /dev/null
+		find . -type l ! -type d >> $TFILES 2> /dev/null
+		find . -type d -empty >> $TFILES 2> /dev/null
+		sort $TFILES -o $TFILES
 		chmod -w $TFILES
 		exit 0
 		;;
@@ -144,8 +146,10 @@ case "$1" in
 	-diff)
 		cd $ROOTFSDIR
 		TF=$(mktemp)
-		#find . ! -type d | sort > $TF
-		find . | sort > $TF 2> /dev/null
+		find . -type f ! -type d >  $TF 2> /dev/null
+		find . -type l ! -type d >> $TF 2> /dev/null
+		find . -type d -empty >> $TF 2> /dev/null
+		sort $TF -o $TF
 		diff $TFILES $TF | sed -n 's\> ./\./\p'
 		rm $TF
 		exit 0
