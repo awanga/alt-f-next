@@ -84,14 +84,16 @@ case "$1" in
 	start)
 		istart
 		avahi_add
-		if ! start $NAME; then # corrupted conf file?
+	        echo -n "Starting $NAME: "
+		if ! start-stop-daemon -S -q -x $NAME -- $CONFF; then # corrupted conf file?
 			msg="$0: inetd not starting, starting with an alternative minimum safe configuration."
 			logger -st error $msg
 			echo "<li>$msg</li>" >> $SERRORL
 			mv $CONFF $CONFF.old
 			cp $CONFS $CONFF
-			start $NAME
+			start-stop-daemon -S -q -x $NAME -- $CONFF
 		fi
+		omsg $?
 		;;
 	stop) stop $NAME; avahi_remove ;;
 	restart) restart $NAME ;;
