@@ -1,2 +1,3 @@
+./etc/init.d/S30rpcbind
 ./usr/bin/rpcinfo
 ./usr/sbin/rpcbind
