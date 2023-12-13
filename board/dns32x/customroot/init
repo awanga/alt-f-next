@@ -26,7 +26,7 @@ if grep -q "initdbg" /proc/cmdline; then
 	echo "pre-init: initdbg"
 	mount -t sysfs sysfs /sys
 	mount -t tmpfs tmpfs /tmp
-	mount -t tmpfs tmpfs /dev
+	mount -t devtmpfs devtmpfs /dev
 	mkdir /dev/pts
 	mount -t devpts devpts /dev/pts
 	mount_usr_squashfs
