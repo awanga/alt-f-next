@@ -99,7 +99,7 @@ check() {
 # "rcall start" is being executed. A "can't stat <file>: No such file or directory" appears.
 #
 # affected Alt-F directories on the base firmware:
-# /var/lib/misc (rcurandom) /var/lib/nfs (rcnfs)
+# /var/lib/seedrng (rcurandom) /var/lib/nfs (rcnfs)
 # /var/spool/atjobs /var/spool/atspool (rcat)
 # /var/spool/cron (rccron)
 # /var/spool/lpd /var/spool/samba
@@ -142,7 +142,7 @@ case $1 in
 		#for i in nfs misc; do
 		#	cp -a /var/lib/$i /Alt-F/var/lib
 		#done
-		cp -a /var/lib/misc /Alt-F/var/lib
+		cp -a /var/lib/seedrng /Alt-F/var/lib
 		if ! grep -q 'DELAY_NFS=y' /etc/misc.conf; then
 			cp -a /var/lib/nfs /Alt-F/var/lib 2> /dev/null
 		fi

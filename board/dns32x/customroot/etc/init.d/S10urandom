@@ -5,8 +5,8 @@
 NAME=urandom
 TYPE=required
 
-RDIR=/var/lib/misc
-RFILE=$RDIR/random-seed
+RDIR=/var/lib/seedrng
+RFILE=$RDIR/seed.credit
 
 . /etc/init.d/common
 
@@ -18,7 +18,8 @@ case "$1" in
 		# Load and then save 512 bytes, which is the size of the entropy pool
 		loadsave_settings -gr
 		if test -s $RFILE; then
-			cat $RFILE > /dev/urandom
+			#cat $RFILE > /dev/urandom
+			seedrng --seed-dir=$RDIR
 		else
 			logger -st urandom "Missing random-seed"
 		fi

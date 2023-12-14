@@ -16,7 +16,7 @@ source $BASE_DIR/../board/dns32x/exports.source $BR2_PROJECT
 # the files to remove from root before creating the filesystem:
 # this should be fixed in buildroot and packages.mk
 
-RMF="etc/default/ntpd etc/random-seed
+RMF="etc/default/ntpd etc/random-seed etc/init.d/S20seedrng
 etc/init.d/S20urandom etc/init.d/S99at etc/init.d/S13portmap etc/init.d/S40network etc/init.d/S50dropbear etc/init.d/S49ntp etc/init.d/S70vsftpd etc/init.d/S91smb
 etc/init.d/S30dbus
 etc/smartd.conf.sample etc/ksmbd/ksmbd.conf.example etc/ksmbd/smb.conf etc/ssl/openssl.cnf.dist

@@ -67,8 +67,8 @@ get_fsckboot() {
 # save random-seed
 set_random() {
 	lmount
-	if test -f /var/lib/misc/random-seed; then
-		cp -f /var/lib/misc/random-seed $save_dir/random-seed
+	if test -f /var/lib/seedrng/seed.credit; then
+		cp -f /var/lib/seedrng/seed.credit $save_dir/random-seed
 	fi
 	lumount
 }
@@ -77,7 +77,7 @@ set_random() {
 get_random() {
 	lmount
 	if test -s $save_dir/random-seed; then
-		cp $save_dir/random-seed /var/lib/misc/random-seed
+		cp $save_dir/random-seed /var/lib/seedrng/seed.credit
 	fi
 	lumount
 }
