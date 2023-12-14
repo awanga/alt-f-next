@@ -13,7 +13,7 @@ mount -t devtmpfs devtmpfs /dev
 mkdir -p /dev/pts
 mount -t devpts devpts /dev/pts
 
-depmod -a &
+depmod -a
 
 rmdir /newroot/rootmnt /newroot >& /dev/null
 
@@ -76,6 +76,8 @@ elif echo $board | grep -qE "DNS-321|DNS-323"; then
 	ln -sf "/sys/class/leds/power:blue" /tmp/sys/power_led
 	ln -sf "/sys/class/leds/left:amber" /tmp/sys/left_led
 	ln -sf "/sys/class/leds/right:amber" /tmp/sys/right_led
+
+	modprobe ehci-orion
 
 elif echo $board | grep -qE "DNS-320|DNS-325|DNS-327L"; then
 	kernel_mtd=/dev/mtd1; kernel_mn="90 2"
